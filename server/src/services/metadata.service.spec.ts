@@ -373,6 +373,7 @@ describe(MetadataService.name, () => {
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -401,6 +402,7 @@ describe(MetadataService.name, () => {
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -427,6 +429,7 @@ describe(MetadataService.name, () => {
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -445,6 +448,8 @@ describe(MetadataService.name, () => {
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockImplementation((asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }));
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
@@ -463,6 +468,8 @@ describe(MetadataService.name, () => {
       });
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.create).toHaveBeenCalledTimes(0);
@@ -472,7 +479,7 @@ describe(MetadataService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledTimes(0);
     });
 
-    it('should link and hide motion photo video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
+    it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
       metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
@@ -482,6 +489,8 @@ describe(MetadataService.name, () => {
       });
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
@@ -492,6 +501,26 @@ describe(MetadataService.name, () => {
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
+    });
+
+    it('should not update storage usage if motion photo is external', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.livePhotoStillAsset, livePhotoVideoId: null, isExternal: true },
+      ]);
+      metadataMock.readTags.mockResolvedValue({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      assetMock.getByChecksum.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      expect(userRepository.updateUsage).not.toHaveBeenCalled();
     });
 
     it('should save all metadata', async () => {
