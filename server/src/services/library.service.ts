@@ -627,6 +627,10 @@ export class LibraryService extends EventEmitter {
     const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
     for await (const page of pagination) {
       for (const asset of page) {
+        if (!asset.isExternal) {
+          continue;
+        }
+
         const isOffline = !crawledAssetPaths.has(asset.originalPath);
         if (isOffline && !asset.isOffline) {
           assetIdsToMarkOffline.push(asset.id);
