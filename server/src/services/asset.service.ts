@@ -400,7 +400,7 @@ export class AssetService {
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!fromExternal && !asset.isReadOnly) {
+    if (!(asset.isExternal || asset.isReadOnly)) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
