@@ -1,11 +1,11 @@
 import { ConcurrentQueueName } from 'src/interfaces/job.interface';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-export type SystemConfigValue = string | number | boolean;
+export type SystemConfigValue = string | string[] | number | boolean;
 
 // https://stackoverflow.com/a/47058976
 // https://stackoverflow.com/a/70692231
-type PathsToStringProps<T> = T extends SystemConfigValue | string[]
+type PathsToStringProps<T> = T extends SystemConfigValue
   ? []
   : {
       [K in keyof T]: [K, ...PathsToStringProps<T[K]>];
@@ -22,7 +22,7 @@ type Join<T extends string[], D extends string> = T extends []
       : string;
 
 // dot notation matches path in `SystemConfig`
-export const SystemConfigKey: Record<string, Join<PathsToStringProps<SystemConfig>, '.'>> = {
+export const SystemConfigKey = {
   FFMPEG_CRF: 'ffmpeg.crf',
   FFMPEG_THREADS: 'ffmpeg.threads',
   FFMPEG_PRESET: 'ffmpeg.preset',
@@ -120,12 +120,14 @@ export const SystemConfigKey: Record<string, Join<PathsToStringProps<SystemConfi
   THEME_CUSTOM_CSS: 'theme.customCss',
 
   USER_DELETE_DELAY: 'user.deleteDelay',
-} as const;
+} as const satisfies Record<string, Join<PathsToStringProps<SystemConfig>, '.'>>;
+
+export type SystemConfigKeyPaths = (typeof SystemConfigKey)[keyof typeof SystemConfigKey];
 
 @Entity('system_config')
 export class SystemConfigEntity<T = SystemConfigValue> {
   @PrimaryColumn({ type: 'enum', enum: Object.values(SystemConfigKey), enumName: 'SystemConfigKey' })
-  key!: (typeof SystemConfigKey)[keyof typeof SystemConfigKey];
+  key!: SystemConfigKeyPaths;
 
   @Column({ type: 'varchar', nullable: true, transformer: { to: JSON.stringify, from: JSON.parse } })
   value!: T;
