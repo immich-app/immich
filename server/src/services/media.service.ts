@@ -167,12 +167,13 @@ export class MediaService {
   }
 
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
+    const { image } = await this.configCore.getConfig();
     const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, ImageFormat.JPEG);
+    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
   }
@@ -210,18 +211,19 @@ export class MediaService {
       }
     }
     this.logger.log(
-      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`,
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${asset.id}`,
     );
     return path;
   }
 
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
+    const { image } = await this.configCore.getConfig();
     const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, ImageFormat.WEBP);
+    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
   }
