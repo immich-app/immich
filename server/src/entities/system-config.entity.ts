@@ -99,10 +99,12 @@ export enum SystemConfigKey {
   STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
-  THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
-  THUMBNAIL_JPEG_SIZE = 'thumbnail.jpegSize',
-  THUMBNAIL_QUALITY = 'thumbnail.quality',
-  THUMBNAIL_COLORSPACE = 'thumbnail.colorspace',
+  IMAGE_THUMBNAIL_FORMAT = 'image.thumbnailFormat',
+  IMAGE_THUMBNAIL_SIZE = 'image.thumbnailSize',
+  IMAGE_PREVIEW_FORMAT = 'image.previewFormat',
+  IMAGE_PREVIEW_SIZE = 'image.previewSize',
+  IMAGE_QUALITY = 'image.quality',
+  IMAGE_COLORSPACE = 'image.colorspace',
 
   TRASH_ENABLED = 'trash.enabled',
   TRASH_DAYS = 'trash.days',
