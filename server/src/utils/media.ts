@@ -37,9 +37,12 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const videoCodec = [TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy';
+
     const options = [
-      `-c:v ${[TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy'}`,
-      `-c:a ${[TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy'}`,
+      `-c:v ${videoCodec}`,
+      `-c:a ${audioCodec}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -61,7 +64,10 @@ class BaseConfig implements VideoCodecSWConfig {
       options.push(`-g ${this.getGopSize()}`);
     }
 
-    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+    if (
+      this.config.targetVideoCodec === VideoCodec.HEVC &&
+      (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
+    ) {
       options.push('-tag:v hvc1');
     }
 
