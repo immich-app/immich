@@ -210,25 +210,22 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it.each([ImageFormat.JPEG, ImageFormat.WEBP])(
-      'should generate a %s preview for an image when specified',
-      async (format) => {
-        configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
-        assetMock.getByIds.mockResolvedValue([assetStub.image]);
-        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
+    it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
 
-        await sut.handleGeneratePreview({ id: assetStub.image.id });
+      await sut.handleGeneratePreview({ id: assetStub.image.id });
 
-        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-        expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
-          size: 1440,
-          format,
-          quality: 80,
-          colorspace: Colorspace.SRGB,
-        });
-        expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
-      },
-    );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
+        size: 1440,
+        format,
+        quality: 80,
+        colorspace: Colorspace.SRGB,
+      });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+    });
 
     it('should generate a P3 thumbnail for a wide gamut image', async () => {
       assetMock.getByIds.mockResolvedValue([
@@ -341,7 +338,7 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it.each([ImageFormat.JPEG, ImageFormat.WEBP])(
+    it.each(Object.values(ImageFormat))(
       'should generate a %s thumbnail for an image when specified',
       async (format) => {
         configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_THUMBNAIL_FORMAT, value: format }]);
