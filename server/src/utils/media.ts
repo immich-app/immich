@@ -346,11 +346,13 @@ export class H264Config extends BaseConfig {
     if (this.config.threads <= 0) {
       return [];
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x264-params "pools=none"',
-      `-x264-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    const params = [`frame-threads=${this.config.threads}`];
+    if (this.config.threads === 1) {
+      params.push('pools=none');
+    }
+
+    return [...super.getThreadOptions(), `-x264-params ${params.join(':')}`];
   }
 }
 
@@ -359,11 +361,13 @@ export class HEVCConfig extends BaseConfig {
     if (this.config.threads <= 0) {
       return [];
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x265-params "pools=none"',
-      `-x265-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    const params = [`frame-threads=${this.config.threads}`];
+    if (this.config.threads === 1) {
+      params.push('pools=none');
+    }
+
+    return [...super.getThreadOptions(), `-x265-params ${params.join(':')}`];
   }
 }
 
