@@ -210,25 +210,21 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it('should generate a thumbnail for an image', async () => {
+    it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
+
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-        {
-          size: 1440,
-          format: ImageFormat.JPEG,
-          quality: 80,
-          colorspace: Colorspace.SRGB,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
+        size: 1440,
+        format,
+        quality: 80,
+        colorspace: Colorspace.SRGB,
       });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
 
     it('should generate a P3 thumbnail for a wide gamut image', async () => {
@@ -342,25 +338,25 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it('should generate a thumbnail', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+    it.each(Object.values(ImageFormat))(
+      'should generate a %s thumbnail for an image when specified',
+      async (format) => {
+        configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_THUMBNAIL_FORMAT, value: format }]);
+        assetMock.getByIds.mockResolvedValue([assetStub.image]);
+        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
 
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
-        {
-          format: ImageFormat.WEBP,
+        await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+        expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', thumbnailPath, {
           size: 250,
+          format,
           quality: 80,
           colorspace: Colorspace.SRGB,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        thumbnailPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
-      });
-    });
+        });
+        expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
+      },
+    );
   });
 
   it('should generate a P3 thumbnail for a wide gamut image', async () => {
