@@ -443,7 +443,7 @@ export class MetadataService {
           deviceId: 'NONE',
         });
         if (!asset.isExternal) {
-          await this.userRepository.updateUsage(asset.ownerId, video.length);
+          await this.userRepository.updateUsage(asset.ownerId, length);
         }
 
         this.storageCore.ensureFolders(motionPath);
