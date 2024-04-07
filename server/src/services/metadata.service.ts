@@ -442,7 +442,9 @@ export class MetadataService {
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
-        await this.userRepository.updateUsage(asset.ownerId, video.length);
+        if (!asset.isExternal) {
+          await this.userRepository.updateUsage(asset.ownerId, video.length);
+        }
 
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
