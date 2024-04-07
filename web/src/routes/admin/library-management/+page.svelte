@@ -118,7 +118,9 @@
 
   const handleCreate = async (ownerId: string) => {
     try {
-      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId, type: LibraryType.External } });
+      const createdLibrary = await createLibrary({
+        createLibraryDto: { ownerId, type: LibraryType.External },
+      });
 
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
