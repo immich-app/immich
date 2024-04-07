@@ -126,7 +126,7 @@ export type SystemConfigKeyPaths = (typeof SystemConfigKey)[keyof typeof SystemC
 
 @Entity('system_config')
 export class SystemConfigEntity<T = SystemConfigValue> {
-  @PrimaryColumn({ type: 'enum', enum: Object.values(SystemConfigKey), enumName: 'SystemConfigKey' })
+  @PrimaryColumn({ type: 'varchar' })
   key!: SystemConfigKeyPaths;
 
   @Column({ type: 'varchar', nullable: true, transformer: { to: JSON.stringify, from: JSON.parse } })
