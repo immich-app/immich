@@ -210,25 +210,21 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it('should generate a thumbnail for an image', async () => {
+    it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
+
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-        {
-          size: 1440,
-          format: ImageFormat.JPEG,
-          quality: 80,
-          colorspace: Colorspace.SRGB,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
+        size: 1440,
+        format,
+        quality: 80,
+        colorspace: Colorspace.SRGB,
       });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
 
     it('should generate a P3 thumbnail for a wide gamut image', async () => {
@@ -342,25 +338,25 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it('should generate a thumbnail', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+    it.each(Object.values(ImageFormat))(
+      'should generate a %s thumbnail for an image when specified',
+      async (format) => {
+        configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_THUMBNAIL_FORMAT, value: format }]);
+        assetMock.getByIds.mockResolvedValue([assetStub.image]);
+        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
 
-      expect(mediaMock.resize).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
-        {
-          format: ImageFormat.WEBP,
+        await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+        expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.jpg', thumbnailPath, {
           size: 250,
+          format,
           quality: 80,
           colorspace: Colorspace.SRGB,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        thumbnailPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
-      });
-    });
+        });
+        expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
+      },
+    );
   });
 
   it('should generate a P3 thumbnail for a wide gamut image', async () => {
@@ -747,6 +743,67 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should not include hevc tag when target is hevc and video stream is copied from a different codec', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamH264);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
+        { key: SystemConfigKey.FFMPEG_ACCEPTED_VIDEO_CODECS, value: [VideoCodec.H264, VideoCodec.HEVC] },
+        { key: SystemConfigKey.FFMPEG_ACCEPTED_AUDIO_CODECS, value: [AudioCodec.AAC] },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v copy',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should include hevc tag when target is hevc and copying hevc video stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
+        { key: SystemConfigKey.FFMPEG_ACCEPTED_VIDEO_CODECS, value: [VideoCodec.H264, VideoCodec.HEVC] },
+        { key: SystemConfigKey.FFMPEG_ACCEPTED_AUDIO_CODECS, value: [AudioCodec.AAC] },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v copy',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-tag:v hvc1',
+            '-v verbose',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should copy audio stream when audio matches target', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.audioStreamAac);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);
@@ -1091,9 +1148,9 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should disable thread pooling for h264 if thread limit is above 0', async () => {
+    it('should disable thread pooling for h264 if thread limit is 1', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_THREADS, value: 2 }]);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_THREADS, value: 1 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -1111,9 +1168,8 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
-            '-threads 2',
-            '-x264-params "pools=none"',
-            '-x264-params "frame-threads=2"',
+            '-threads 1',
+            '-x264-params frame-threads=1:pools=none',
             '-crf 23',
           ],
           twoPass: false,
@@ -1148,10 +1204,10 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should disable thread pooling for hevc if thread limit is above 0', async () => {
+    it('should disable thread pooling for hevc if thread limit is 1', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.FFMPEG_THREADS, value: 2 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 1 },
         { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
       ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
@@ -1172,9 +1228,8 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
-            '-threads 2',
-            '-x265-params "pools=none"',
-            '-x265-params "frame-threads=2"',
+            '-threads 1',
+            '-x265-params frame-threads=1:pools=none',
             '-crf 23',
           ],
           twoPass: false,
