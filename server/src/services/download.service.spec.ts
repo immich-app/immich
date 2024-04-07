@@ -60,7 +60,7 @@ describe(DownloadService.name, () => {
 
     it('should throw an error if the asset is offline', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.offline]);
+      assetMock.getByIds.mockResolvedValue([assetStub.externalOffline]);
 
       await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
 

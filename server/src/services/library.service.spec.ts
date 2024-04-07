@@ -257,7 +257,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.image],
+        items: [assetStub.external],
         hasNextPage: false,
       });
 
@@ -278,16 +278,16 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield assetStub.offline.originalPath;
+        yield assetStub.externalOffline.originalPath;
       });
       assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.offline],
+        items: [assetStub.externalOffline],
         hasNextPage: false,
       });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.externalOffline.id], { isOffline: false });
       expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
@@ -590,23 +590,23 @@ describe(LibraryService.name, () => {
 
     it('should online a previously-offline asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.offline.id,
+        id: assetStub.externalOffline.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
         force: false,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offline);
-      assetMock.create.mockResolvedValue(assetStub.offline);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.externalOffline);
+      assetMock.create.mockResolvedValue(assetStub.externalOffline);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.offline.id, isOffline: false });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.externalOffline.id, isOffline: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.METADATA_EXTRACTION,
         data: {
-          id: assetStub.offline.id,
+          id: assetStub.externalOffline.id,
           source: 'upload',
         },
       });
@@ -614,7 +614,7 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: {
-          id: assetStub.offline.id,
+          id: assetStub.externalOffline.id,
         },
       });
     });
