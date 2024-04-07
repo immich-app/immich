@@ -709,17 +709,20 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: {
-          files: [
-            assetStub.readOnly.thumbnailPath,
-            assetStub.readOnly.previewPath,
-            assetStub.readOnly.encodedVideoPath,
-            assetStub.readOnly.sidecarPath,
-          ],
-        },
-      });
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.external.thumbnailPath,
+                assetStub.external.previewPath,
+                assetStub.external.encodedVideoPath,
+              ],
+            },
+          },
+        ],
+      ]);
 
       expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
     });
@@ -758,7 +761,6 @@ describe(AssetService.name, () => {
                 assetStub.external.thumbnailPath,
                 assetStub.external.previewPath,
                 assetStub.external.encodedVideoPath,
-                assetStub.external.sidecarPath,
               ],
             },
           },

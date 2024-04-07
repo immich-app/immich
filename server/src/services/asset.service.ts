@@ -399,9 +399,9 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath];
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
     if (!fromExternal && !asset.isReadOnly) {
-      files.push(asset.originalPath);
+      files.push(asset.sidecarPath, asset.originalPath);
     }
 
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
