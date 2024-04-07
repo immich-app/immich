@@ -69,8 +69,8 @@ class BackgroundService {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
       final String title =
           "backup_background_service_default_notification".tr();
-      final bool ok = await _foregroundChannel
-          .invokeMethod('enable', [callback.toRawHandle(), title, immediate, getServerUrl()]);
+      final bool ok = await _foregroundChannel.invokeMethod(
+          'enable', [callback.toRawHandle(), title, immediate, getServerUrl()]);
       return ok;
     } catch (error) {
       return false;
