@@ -695,7 +695,7 @@ describe(AssetService.name, () => {
       });
     });
 
-    it('should not schedule delete-files job for readonly assets', async () => {
+    it('should only delete generated files for readonly assets', async () => {
       when(assetMock.getById)
         .calledWith(assetStub.readOnly.id, {
           faces: {
@@ -709,7 +709,17 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
-      expect(jobMock.queue.mock.calls).toEqual([]);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: {
+          files: [
+            assetStub.readOnly.thumbnailPath,
+            assetStub.readOnly.previewPath,
+            assetStub.readOnly.encodedVideoPath,
+            assetStub.readOnly.sidecarPath,
+          ],
+        },
+      });
 
       expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
     });
