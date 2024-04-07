@@ -261,6 +261,7 @@ FROM
     SELECT
       "AssetEntity"."id" AS "AssetEntity_id",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
+      "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
       "AssetEntity"."isOffline" AS "AssetEntity_isOffline"
     FROM
       "assets" "AssetEntity"
@@ -464,7 +465,7 @@ FROM
 WHERE
   (
     (
-      ("AssetEntity"."ownerId" = $1)
+      ("AssetEntity"."libraryId" = $1)
       AND ("AssetEntity"."checksum" = $2)
     )
   )
