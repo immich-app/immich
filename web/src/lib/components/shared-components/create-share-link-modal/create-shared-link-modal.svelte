@@ -32,6 +32,7 @@
   const dispatch = createEventDispatcher<{
     close: void;
     escape: void;
+    created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
@@ -78,6 +79,7 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
     }
@@ -143,20 +145,16 @@
       handleError(error, 'Failed to edit shared link');
     }
   };
+
+  const getTitle = () => {
+    if (editingLink) {
+      return 'Edit link';
+    }
+    return 'Create link to share';
+  };
 </script>
 
-<BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <Icon path={mdiLink} size={24} />
-      {#if editingLink}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
-      {:else}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
-      {/if}
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} on:close>
   <section class="mx-6 mb-6">
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
@@ -201,25 +199,33 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch id="require-password" bind:checked={enablePassword} title={'Require password'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch id="show-metadata" bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
+          <SettingSwitch
+            id="allow-public-download"
+            bind:checked={allowDownload}
+            title={'Allow public user to download'}
+          />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch id="allow-public-upload" bind:checked={allowUpload} title={'Allow public user to upload'} />
         </div>
 
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
+              <SettingSwitch
+                id="change-expiration-time"
+                bind:checked={shouldChangeExpirationTime}
+                title={'Change expiration time'}
+              />
             </p>
           {:else}
             <p class="immich-form-label my-2">Expire after</p>
@@ -241,11 +247,11 @@
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
+          <Button size="sm" on:click={handleEditLink}>Confirm</Button>
         </div>
       {:else}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
+          <Button size="sm" on:click={handleCreateSharedLink}>Create link</Button>
         </div>
       {/if}
     {:else}
