@@ -18,6 +18,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -34,6 +35,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 
 describe(MetadataService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
@@ -48,6 +50,7 @@ describe(MetadataService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let eventMock: jest.Mocked<IEventRepository>;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let userRepository: jest.Mocked<IUserRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -63,6 +66,7 @@ describe(MetadataService.name, () => {
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
+    userRepository = newUserRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -77,6 +81,7 @@ describe(MetadataService.name, () => {
       personMock,
       storageMock,
       configMock,
+      userRepository,
     );
   });
 
