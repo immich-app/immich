@@ -26,6 +26,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -390,7 +391,9 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    if (asset.library.type !== LibraryType.EXTERNAL) {
+      await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
