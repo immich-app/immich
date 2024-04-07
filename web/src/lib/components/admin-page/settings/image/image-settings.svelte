@@ -63,14 +63,17 @@
           desc="Image quality from 1-100. Higher is better for quality but produces larger files."
           bind:value={config.image.quality}
           isEdited={config.image.quality !== savedConfig.image.quality}
+          {disabled}
         />
 
         <SettingSwitch
+          id="prefer-wide-gamut"
           title="PREFER WIDE GAMUT"
           subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
           checked={config.image.colorspace === Colorspace.P3}
           on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
           isEdited={config.image.colorspace !== savedConfig.image.colorspace}
+          {disabled}
         />
       </div>
 

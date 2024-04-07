@@ -232,6 +232,7 @@
         />
 
         <SettingSwitch
+          id="two-pass-encoding"
           title="TWO-PASS ENCODING"
           {disabled}
           subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
@@ -283,9 +284,11 @@
                 { value: CQMode.Cqp, text: 'CQP' },
               ]}
               isEdited={config.ffmpeg.cqMode !== savedConfig.ffmpeg.cqMode}
+              {disabled}
             />
 
             <SettingSwitch
+              id="temporal-aq"
               title="TEMPORAL AQ"
               {disabled}
               subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
@@ -294,10 +297,11 @@
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="PREFERRED HARDWARE DEVICE FOR TRANSCODING"
-              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding. Set to 'auto' to let immich decide for you"
+              label="PREFERRED HARDWARE DEVICE"
+              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding."
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
+              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -314,6 +318,7 @@
               desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
               bind:value={config.ffmpeg.npl}
               isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
+              {disabled}
             />
 
             <SettingInputField
@@ -322,6 +327,7 @@
               desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
+              {disabled}
             />
 
             <SettingInputField
@@ -330,6 +336,7 @@
               desc="The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
+              {disabled}
             />
 
             <SettingInputField
@@ -338,6 +345,7 @@
               desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
+              {disabled}
             />
           </div>
         </SettingAccordion>
