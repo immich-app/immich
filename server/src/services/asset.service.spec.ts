@@ -715,9 +715,9 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetStub.external.thumbnailPath,
-                assetStub.external.previewPath,
-                assetStub.external.encodedVideoPath,
+                assetStub.readOnly.thumbnailPath,
+                assetStub.readOnly.previewPath,
+                assetStub.readOnly.encodedVideoPath,
               ],
             },
           },
