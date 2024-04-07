@@ -236,7 +236,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['storageTemplate'] })}
           on:save={() => dispatch('save', { storageTemplate: config.storageTemplate })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig) && !minified}
+          showResetToDefault={!isEqual(savedConfig.storageTemplate, defaultConfig.storageTemplate) && !minified}
           {disabled}
         />
       {/if}
