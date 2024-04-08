@@ -11,9 +11,11 @@ body:
     validations:
       required: true
     attributes:
-      label: I have searched the existing feature requests to make sure this is not a duplicate request.
+      label: Platform1
       options:
-        - label: Some label
+        - label: Server1
+        - label: Web1
+        - label: Mobile1
   
   - type: textarea
     id: feature
