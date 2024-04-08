@@ -26,41 +26,20 @@ After we have defined the locations for these files, we will edit the `docker-co
 ```diff title="docker-compose.yml"
 services:
   immich-server:
-    container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    command: ['start.sh', 'immich']
-    volumes:
+      volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    ports:
-      - 2283:3001
-    depends_on:
-      - redis
-      - database
-    restart: always
+
+...
 
   immich-microservices:
-    container_name: immich_microservices
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/hardware-transcoding
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    command: ['start.sh', 'microservices']
-    volumes:
+      volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - database
-    restart: always
 ```
 
 Restart Immich.
