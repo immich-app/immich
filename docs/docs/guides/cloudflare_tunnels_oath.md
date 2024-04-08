@@ -20,20 +20,20 @@ Setup a public hostname in Networks/Tunnels for (ie immich.yourdomain.com) in yo
    ```
    Note: Replace "local_IP" with local LAN IP address for immich server, and "immich.yourdomain.com" with your public domain.
 
-    - Disable "Proof Key for Code Exchange (PKCE)"
-    - Set your App Launcher URL to your https://immich.yourdomain.com/ set in step 1.
-    - Add a [custom icon link](https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.png).
-    - Under "Policies", add a policy:
-        - Policy name: email
-        - Action: Allow
-        - Create Additional Rules: Include Login Methods: Your Auth provider
-   - Under Authentication, set it to whichever Identity Providers you want to support.
+- Disable "Proof Key for Code Exchange (PKCE)"
+- Set your App Launcher URL to your https://immich.yourdomain.com/ set in step 1.
+- Add a [custom icon link](https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.png).
+- Under "Policies", add a policy:
+ - Policy name: email
+ - Action: Allow
+ - Create Additional Rules: Include Login Methods: Your Auth provider
+- Under Authentication, set it to whichever Identity Providers you want to support.
 
 ## 3. In immich:
-    - Go to Administration/Settings/OAuth Authentication
-    - Input the values provided by Cloudflare access for Issuer (Issuer URL), Client ID and Client Secret.
-    - Click Save.
+- Go to Administration/Settings/OAuth Authentication
+- Input the values provided by Cloudflare access for Issuer (Issuer URL), Client ID and Client Secret.
+- Click Save.
 
 ## 4. Optional: Once tested working, you can do the following final steps in immich:
-    - Enable "Auto Launch" to streamline things.
-    - Under "Password Authentication", disable it (forcing users to use OAuth).
+- Enable "Auto Launch" to streamline things.
+- Under "Password Authentication", disable it (forcing users to use OAuth).
