@@ -30,8 +30,14 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-  $: isAssetStackSelected = !!($selectedAssets.size === 1 && [...$selectedAssets][0].stack);
+  let isAllFavorite: boolean;
+  let isAssetStackSelected: boolean;
+
+  $: {
+    const selection = [...$selectedAssets];
+    isAllFavorite = selection.every((asset) => asset.isFavorite);
+    isAssetStackSelected = selection.length === 1 && !!selection[0].stack;
+  }
 
   const handleEscape = () => {
     if ($showAssetViewer) {
