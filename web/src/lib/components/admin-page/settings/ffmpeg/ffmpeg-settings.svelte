@@ -284,6 +284,7 @@
                 { value: CQMode.Cqp, text: 'CQP' },
               ]}
               isEdited={config.ffmpeg.cqMode !== savedConfig.ffmpeg.cqMode}
+              {disabled}
             />
 
             <SettingSwitch
@@ -296,10 +297,11 @@
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="PREFERRED HARDWARE DEVICE FOR TRANSCODING"
-              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding. Set to 'auto' to let immich decide for you"
+              label="PREFERRED HARDWARE DEVICE"
+              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding."
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
+              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -316,6 +318,7 @@
               desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
               bind:value={config.ffmpeg.npl}
               isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
+              {disabled}
             />
 
             <SettingInputField
@@ -324,6 +327,7 @@
               desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
+              {disabled}
             />
 
             <SettingInputField
@@ -332,6 +336,7 @@
               desc="The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
+              {disabled}
             />
 
             <SettingInputField
@@ -340,6 +345,7 @@
               desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
+              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -349,7 +355,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
           on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
-          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />
       </div>
