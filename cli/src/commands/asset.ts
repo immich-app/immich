@@ -62,15 +62,7 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
     return;
   }
 
-  let newFiles;
-  let duplicates: Asset[] = [];
-
-  if (options.skipHash) {
-    newFiles = scanFiles;
-  } else {
-    ({ newFiles, duplicates } = await checkForDuplicates(scanFiles, options));
-  }
-
+  const { newFiles, duplicates } = await checkForDuplicates(scanFiles, options);
   const newAssets = await uploadFiles(newFiles, options);
   await updateAlbums([...newAssets, ...duplicates], options);
   await deleteFiles(newFiles, options);
@@ -91,7 +83,12 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-const checkForDuplicates = async (files: string[], { concurrency }: UploadOptionsDto) => {
+const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
+  if (skipHash) {
+    console.log('Skipping hash check, assuming all files are new');
+    return { newFiles: files, duplicates: [] };
+  }
+
   const progressBar = new SingleBar(
     { format: 'Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
@@ -154,17 +151,32 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
   uploadProgress.start(totalSize, 0);
   uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
 
-  let totalSizeUploaded = 0;
+  let duplicateCount = 0;
+  let duplicateSize = 0;
+  let successCount = 0;
+  let successSize = 0;
+
   const newAssets: Asset[] = [];
+
   try {
     for (const items of chunk(files, concurrency)) {
       await Promise.all(
         items.map(async (filepath) => {
           const stats = statsMap.get(filepath) as Stats;
           const response = await uploadFile(filepath, stats);
-          totalSizeUploaded += stats.size ?? 0;
-          uploadProgress.update(totalSizeUploaded, { value_formatted: byteSize(totalSizeUploaded) });
+
           newAssets.push({ id: response.id, filepath });
+
+          if (response.duplicate) {
+            duplicateCount++;
+            duplicateSize += stats.size ?? 0;
+          } else {
+            successCount++;
+            successSize += stats.size ?? 0;
+          }
+
+          uploadProgress.update(successSize, { value_formatted: byteSize(successSize + duplicateSize) });
+
           return response;
         }),
       );
@@ -173,7 +185,10 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
     uploadProgress.stop();
   }
 
-  console.log(`Successfully uploaded ${newAssets.length} asset${s(newAssets.length)} (${byteSize(totalSizeUploaded)})`);
+  console.log(`Successfully uploaded ${successCount} new asset${s(successCount)} (${byteSize(successSize)})`);
+  if (duplicateCount > 0) {
+    console.log(`Skipped ${duplicateCount} duplicate asset${s(duplicateCount)} (${byteSize(duplicateSize)})`);
+  }
   return newAssets;
 };
 
