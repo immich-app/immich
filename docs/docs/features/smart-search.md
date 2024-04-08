@@ -27,9 +27,6 @@ Smart search features include:
 - Search by media types: image, video or all (**Note:** Image includes live images).
 - Search by condition: not in any album or archive or Favorite or all conditions.
 
-
-
-
 <Tabs>
   <TabItem value="Computer" label="Computer" default>
 
@@ -39,13 +36,10 @@ Some search examples:
 
 <img src={require('./img/search-ex-1.png').default} width="70%" title='Search Example 1' />
 
-
 </TabItem>
   <TabItem value="Mobile" label="Mobile">
 
-
 <img src={require('./img/moblie-smart-serach.webp').default} width="30%" title='Smart search on mobile' />
-
 
 </TabItem>
 </Tabs>
