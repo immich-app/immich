@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -16,7 +17,7 @@ class MediaTypePicker extends HookWidget {
       shrinkWrap: true,
       children: [
         RadioListTile(
-          title: const Text("All"),
+          title: const Text("search_filter_media_type_all").tr(),
           value: AssetType.other,
           onChanged: (value) {
             selectedMediaType.value = value!;
@@ -25,7 +26,7 @@ class MediaTypePicker extends HookWidget {
           groupValue: selectedMediaType.value,
         ),
         RadioListTile(
-          title: const Text("Image"),
+          title: const Text("search_filter_media_type_image").tr(),
           value: AssetType.image,
           onChanged: (value) {
             selectedMediaType.value = value!;
@@ -34,7 +35,7 @@ class MediaTypePicker extends HookWidget {
           groupValue: selectedMediaType.value,
         ),
         RadioListTile(
-          title: const Text("Video"),
+          title: const Text("search_filter_media_type_video").tr(),
           value: AssetType.video,
           onChanged: (value) {
             selectedMediaType.value = value!;

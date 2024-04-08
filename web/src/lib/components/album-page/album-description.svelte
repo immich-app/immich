@@ -37,7 +37,7 @@
     on:input={(e) => autoGrowHeight(e.currentTarget)}
     on:focusout={handleUpdateDescription}
     use:autoGrowHeight
-    placeholder="Add description"
+    placeholder="Add a description"
     use:shortcut={{
       shortcut: { key: 'Enter', ctrl: true },
       onShortcut: (e) => e.currentTarget.blur(),

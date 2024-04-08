@@ -162,6 +162,7 @@
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
             <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
             <SettingSwitch
+              id="show-in-timeline"
               title="Show in timeline"
               subtitle="Show photos and videos from this user in your timeline"
               bind:checked={partner.inTimeline}

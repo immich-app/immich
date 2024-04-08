@@ -1,16 +1,18 @@
+import type { AssetResponseDto } from '@immich/sdk';
+
 export class SlideshowHistory {
-  private history: string[] = [];
+  private history: AssetResponseDto[] = [];
   private index = 0;
 
-  constructor(private onChange: (assetId: string) => void) {}
+  constructor(private onChange: (asset: AssetResponseDto) => void) {}
 
   reset() {
     this.history = [];
     this.index = 0;
   }
 
-  queue(assetId: string) {
-    this.history.push(assetId);
+  queue(asset: AssetResponseDto) {
+    this.history.push(asset);
 
     // If we were at the end of the slideshow history, move the index to the new end
     if (this.index === this.history.length - 2) {

@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.100.0",
+  "version": "1.101.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -41,7 +41,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.35.1",
-    "eslint-plugin-unicorn": "^51.0.1",
+    "eslint-plugin-unicorn": "^52.0.0",
     "factory.ts": "^1.4.1",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",

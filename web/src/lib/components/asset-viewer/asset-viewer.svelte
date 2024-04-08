@@ -29,6 +29,7 @@
     runAssetJobs,
     updateAsset,
     updateAssets,
+    updateAlbumInfo,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -62,7 +63,7 @@
 
   let reactions: ActivityResponseDto[] = [];
 
-  const { setAssetId } = assetViewingStore;
+  const { setAsset } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -193,7 +194,7 @@
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset.id);
+        slideshowHistory.queue(asset);
         handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
         handlePromiseError(handleStopSlideshow());
@@ -203,7 +204,7 @@
     shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
-        slideshowHistory.queue(asset.id);
+        slideshowHistory.queue(asset);
       }
     });
 
@@ -278,9 +279,9 @@
       return;
     }
 
-    slideshowHistory.queue(asset.id);
+    slideshowHistory.queue(asset);
 
-    await setAssetId(asset.id);
+    setAsset(asset);
     $restartSlideshowProgress = true;
   };
 
@@ -299,9 +300,7 @@
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext =
-        order === 'previous'
-          ? await assetStore.getPreviousAssetId(asset.id)
-          : await assetStore.getNextAssetId(asset.id);
+        order === 'previous' ? await assetStore.getPreviousAsset(asset.id) : await assetStore.getNextAsset(asset.id);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -441,8 +440,8 @@
 
   let assetViewerHtmlElement: HTMLElement;
 
-  const slideshowHistory = new SlideshowHistory((assetId: string) => {
-    handlePromiseError(setAssetId(assetId));
+  const slideshowHistory = new SlideshowHistory((asset) => {
+    setAsset(asset);
     $restartSlideshowProgress = true;
   });
 
@@ -498,6 +497,27 @@
       handleError(error, `Unable to unstack`);
     }
   };
+
+  const handleUpdateThumbnail = async () => {
+    if (!album) {
+      return;
+    }
+    try {
+      await updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          albumThumbnailAssetId: asset.id,
+        },
+      });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Album cover updated',
+        timeout: 1500,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to update album cover');
+    }
+  };
 </script>
 
 <svelte:window
@@ -526,6 +546,7 @@
       <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
         <AssetViewerNavBar
           {asset}
+          {album}
           isMotionPhotoPlaying={shouldPlayMotionPhoto}
           showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
           showZoomButton={asset.type === AssetTypeEnum.Image}
@@ -546,6 +567,7 @@
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
           on:toggleArchive={toggleArchive}
           on:asProfileImage={() => (isShowProfileImageCrop = true)}
+          on:setAsAlbumCover={handleUpdateThumbnail}
           on:runJob={({ detail: job }) => handleRunJob(job)}
           on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
           on:unstack={handleUnstack}

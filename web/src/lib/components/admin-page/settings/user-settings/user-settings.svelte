@@ -36,7 +36,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['user'] })}
           on:save={() => dispatch('save', { user: config.user })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.user, defaultConfig.user)}
           {disabled}
         />
       </div>

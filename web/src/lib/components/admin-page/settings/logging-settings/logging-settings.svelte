@@ -20,7 +20,13 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingSwitch title="ENABLED" {disabled} subtitle="Logging" bind:checked={config.logging.enabled} />
+        <SettingSwitch
+          id="enable-logging"
+          title="ENABLED"
+          {disabled}
+          subtitle="Logging"
+          bind:checked={config.logging.enabled}
+        />
         <SettingSelect
           label="LEVEL"
           desc="When enabled, what log level to use."

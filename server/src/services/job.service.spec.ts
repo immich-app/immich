@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -360,7 +360,7 @@ describe(JobService.name, () => {
       });
     }
 
-    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKeyPaths }> = [
       {
         queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.SMART_SEARCH,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
@@ -48,7 +49,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                     onClear();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Clear'),
+                  child: const Text('action_common_clear').tr(),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -56,7 +57,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                     onSearch();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Apply filter'),
+                  child: const Text('search_filter_apply').tr(),
                 ),
               ],
             ),
