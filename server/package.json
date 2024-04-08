@@ -59,7 +59,6 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "exiftool-vendored": "~24.6.0",
-    "exiftool-vendored.pl": "12.78",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
