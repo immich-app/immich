@@ -179,7 +179,7 @@
         <SettingSelect
           label="TRANSCODE POLICY"
           {disabled}
-          desc="Policy for when a video should be transcoded. HDR videos will always be transcoded (expect if transcoding is disabled)."
+          desc="Policy for when a video should be transcoded. HDR videos will always be transcoded (except if transcoding is disabled)."
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
