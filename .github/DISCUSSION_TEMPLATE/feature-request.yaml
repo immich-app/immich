@@ -8,6 +8,8 @@ body:
         Please use this form to request new feature for Immich
   
   - type: checkboxes
+    validations:
+      required: true
     attributes:
       label: I have searched the existing feature requests to make sure this is not a duplicate request.
       options:
