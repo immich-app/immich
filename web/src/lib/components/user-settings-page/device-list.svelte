@@ -49,6 +49,7 @@
 
 {#if deleteDevice}
   <ConfirmDialogue
+    id="log-out-device-modal"
     prompt="Are you sure you want to log out this device?"
     onConfirm={() => handleDelete()}
     onClose={() => (deleteDevice = null)}
@@ -57,6 +58,7 @@
 
 {#if deleteAll}
   <ConfirmDialogue
+    id="log-out-all-modal"
     prompt="Are you sure you want to log out all devices?"
     onConfirm={() => handleDeleteAll()}
     onClose={() => (deleteAll = false)}

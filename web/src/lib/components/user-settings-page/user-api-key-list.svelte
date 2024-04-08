@@ -81,7 +81,7 @@
 
 {#if newKey}
   <APIKeyForm
-    title="New API Key"
+    title="New API key"
     submitText="Create"
     apiKey={newKey}
     on:submit={({ detail }) => handleCreate(detail)}
@@ -95,6 +95,7 @@
 
 {#if editKey}
   <APIKeyForm
+    title="API key"
     submitText="Save"
     apiKey={editKey}
     on:submit={({ detail }) => handleUpdate(detail)}
@@ -104,7 +105,8 @@
 
 {#if deleteKey}
   <ConfirmDialogue
-    prompt="Are you sure you want to delete this API Key?"
+    id="confirm-api-key-delete-modal"
+    prompt="Are you sure you want to delete this API key?"
     onConfirm={() => handleDelete()}
     onClose={() => (deleteKey = null)}
   />

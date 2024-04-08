@@ -42,7 +42,8 @@
 </script>
 
 <ConfirmDialogue
-  title="Delete User"
+  id="delete-user-confirmation-modal"
+  title="Delete user"
   confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
   onConfirm={handleDeleteUser}
   onClose={() => dispatch('cancel')}
