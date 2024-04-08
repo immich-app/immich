@@ -3,7 +3,7 @@
 This assumes you've setup an Auth Provider in Cloudflare Zero Trust Settings/Authentication already. Example setup for [Google here](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/google/).
 
 ## 1. In Cloudflare Zero Trust / Networks
-    - Setup a public hostname in Networks/Tunnels for (ie immich.yourdomain.com) in your tunnel with no access control
+Setup a public hostname in Networks/Tunnels for (ie immich.yourdomain.com) in your tunnel with no access control
 
 ## 2. In Cloudflare Access, setup a SaaS application called immich
     - Follow the OAuth setup for immich [here](https://immich.app/docs/administration/oauth/#prerequisites).
