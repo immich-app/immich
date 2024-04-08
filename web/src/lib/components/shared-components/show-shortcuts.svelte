@@ -20,7 +20,8 @@
     general: [
       { key: ['←', '→'], action: 'Previous or next photo' },
       { key: ['Esc'], action: 'Back, close, or deselect' },
-      { key: ['/'], action: 'Search your photos' },
+      { key: ['Ctrl', 'k'], action: 'Search your photos' },
+      { key: ['Ctrl', '⇧', 'k'], action: 'Open the search filters' },
     ],
     actions: [
       { key: ['f'], action: 'Favorite or unfavorite photo' },
@@ -40,7 +41,7 @@
 <FullScreenModal onClose={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
     <div
-      class="w-[400px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[650px]"
+      class="rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
     >
       <div class="relative px-4 pt-4">
         <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Keyboard Shortcuts</h1>
@@ -54,7 +55,7 @@
           <h2>General</h2>
           <div class="text-sm">
             {#each shortcuts.general as shortcut}
-              <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
+              <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
                 <div class="flex justify-self-end">
                   {#each shortcut.key as key}
                     <p
@@ -74,7 +75,7 @@
           <h2>Actions</h2>
           <div class="text-sm">
             {#each shortcuts.actions as shortcut}
-              <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
+              <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
                 <div class="flex justify-self-end">
                   {#each shortcut.key as key}
                     <p
