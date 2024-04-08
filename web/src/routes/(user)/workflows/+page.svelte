@@ -8,7 +8,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <section class="grid grid-cols-[400px_1fr] h-full">
+  <section class="grid grid-cols-[25%_1fr] h-full">
     <WorkflowList />
     <WorkflowEditor />
   </section>
