@@ -86,7 +86,6 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         val prefs = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
 
         prefs.getString(SHARED_PREF_SERVER_URL, null)
-            .also { println("SERVER_URL=$it") }
             ?.takeIf { it.isNotEmpty() }
             ?.let { serverUrl -> doCoroutineWork(serverUrl) }
             ?: doWork()
@@ -95,13 +94,13 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     /**
      * This function is used to check if server URL is reachable before starting the backup work.
+     * Check must be done in a background to avoid blocking the main thread.
      */
     private fun doCoroutineWork(serverUrl : String) {
         CoroutineScope(Dispatchers.Default + job).launch {
             val isReachable = isUrlReachableHttp(serverUrl)
             withContext(Dispatchers.Main) {
                 if (isReachable) {
-                    println("!!!Server URL is reachable: $serverUrl")
                     doWork()
                 } else {
                     // Fail when the URL is not reachable
@@ -112,6 +111,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     }
 
     private fun doWork() {
+      Log.d(TAG, "doWork")
       val ctx = applicationContext
 
       if (!flutterLoader.initialized()) {
@@ -193,7 +193,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         engine = null
         if (result != null) {
             Log.d(TAG, "stopEngine result=${result}")
-            this.completer?.set(result)
+            this.completer.set(result)
         }
         waitOnSetForegroundAsync()
     }
