@@ -4,7 +4,7 @@
 </script>
 
 <div
-  class="bg-gray-700 text-white min-h-[60px] grid grid-cols-[15%_70%_15%] place-items-center place-content-center rounded-2xl mx-4 mt-2 p-2"
+  class="bg-zinc-200 text-black dark:bg-zinc-700 dark:text-white min-h-[60px] grid grid-cols-[15%_70%_15%] place-items-center place-content-center rounded-2xl mx-4 mt-2 p-2"
 >
   <p class="col-start-2 col-span-1">And has Alex and Henry and Nate</p>
 

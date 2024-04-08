@@ -7,7 +7,7 @@
   export let data: PageData;
 </script>
 
-<UserPageLayout title={data.meta.title}>
+<UserPageLayout title={data.meta.title} scrollbar={false}>
   <section class="grid grid-cols-[25%_1fr] h-full">
     <WorkflowList />
     <WorkflowEditor />
