@@ -49,14 +49,7 @@ docker compose down
 docker compose up -d
 ```
 
-This guide shows only some of the customization options that can be applied, you can also set the following variables accordingly:
-
-- /usr/src/app/upload - root directory for all immich content.
-- /usr/src/app/upload/thumbs - thumbnails are written here.
-- /usr/src/app/upload/encoded-video - transcoded videos are written here.
-- /usr/src/app/upload/profile - profile picture is saved here.
-- /usr/src/app/upload/upload - on upload, files are written here.
-- /usr/src/app/upload/library - after storage template is applied they get moved here (Storage template is [off by default](/docs/administration/backup-and-restore#asset-types-and-storage-locations)).
+This guide shows only some of the customization options that can be applied, you can also set the following variables accordingly. More information about the folder structure in Immich can be found [here](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
 
 You can configure all or just some of the volumes, as needed. Variables should only be needed (in addition to UPLOAD_LOCATION) if you are trying to move specific sub-folders to another drive location, otherwise they'll show up inside of UPLOAD_LOCATION.
 
