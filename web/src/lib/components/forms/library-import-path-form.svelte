@@ -33,9 +33,7 @@
 <FullScreenModal id="library-import-path-modal" {title} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
     <p class="py-5 text-sm">
-      Specify a folder to import. This folder, including subfolders, will be scanned for images and videos. Note that
-      you are only allowed to import paths inside of your account's external path, configured in the administrative
-      settings.
+      Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.
     </p>
 
     <div class="my-4 flex flex-col gap-2">
