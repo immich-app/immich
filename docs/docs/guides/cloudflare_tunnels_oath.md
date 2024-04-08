@@ -34,6 +34,7 @@ Setup a public hostname in Networks/Tunnels for (ie immich.yourdomain.com) in yo
 - Input the values provided by Cloudflare access for Issuer (Issuer URL), Client ID and Client Secret.
 - Click Save.
 
-## 4. Optional: Once tested working, you can do the following final steps in immich:
+## 4. Optional: 
+### Once tested working, you can do the following final steps in immich:
 - Enable "Auto Launch" to streamline things.
 - Under "Password Authentication", disable it (forcing users to use OAuth).
