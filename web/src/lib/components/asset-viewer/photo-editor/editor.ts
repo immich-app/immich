@@ -86,10 +86,10 @@ export class Editor {
     options
       ? (this.options = options)
       : (this.options = {
-        zoomSpeed: 0.02,
-        maxZoom: 5,
-        minZoom: 1,
-      });
+          zoomSpeed: 0.02,
+          maxZoom: 5,
+          minZoom: 1,
+        });
     this.mode = 'crop';
   }
 
@@ -273,9 +273,11 @@ export class Editor {
     this.imageWrapper.innerHTML = '';
     image.style.width = '100%';
     image.style.height = '100%';
-    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast
-      }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity
-      }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+      filter.contrast
+    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
+      filter.opacity
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
     this.imageWrapper.append(image);
     this.updateHtml();
   }

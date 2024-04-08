@@ -19,7 +19,7 @@ const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
         let offset = 0;
 
         // Check if the image is a valid JPEG
-        if (dataView.getUint16(offset) !== 0xFF_D8) {
+        if (dataView.getUint16(offset) !== 0xff_d8) {
           return reject('Not a valid JPEG');
         }
 
@@ -32,14 +32,14 @@ const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
           const marker = dataView.getUint16(offset);
 
           // Break if we've reached the start of the image data
-          if (marker === 0xFF_DA) {
+          if (marker === 0xff_da) {
             break;
           }
 
           const size = dataView.getUint16(offset + 2);
 
           // If we've found the EXIF data, return it
-          if (marker === 0xFF_E1 && dataView.getUint32(offset + 4) === 0x45_78_69_66) {
+          if (marker === 0xff_e1 && dataView.getUint32(offset + 4) === 0x45_78_69_66) {
             found = true;
             return resolve(new Blob([imageBlob.slice(offset, offset + 2 + size)]));
           }

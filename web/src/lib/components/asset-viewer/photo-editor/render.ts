@@ -128,9 +128,11 @@ export class Render {
     if (flipY) {
       ctx.scale(1, -1);
     }
-    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${filter.grayscale
-      }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${filter.saturation
-      }) sepia(${filter.sepia})`;
+    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
+      filter.grayscale
+    }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
+      filter.saturation
+    }) sepia(${filter.sepia})`;
 
     const { scaledWidth, scaledHeight } = this.scaleImage(originalWidth, originalHeight, zoom);
     ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
