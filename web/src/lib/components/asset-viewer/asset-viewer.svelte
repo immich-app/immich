@@ -34,19 +34,21 @@
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
-  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import ActivityStatus from './activity-status.svelte';
-  import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
   import NavigationArea from './navigation-area.svelte';
+
+  import PhotoEditor from './photo-editor/photo-editor.svelte';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import ActivityViewer from './activity-viewer.svelte';
+  import ActivityStatus from './activity-status.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
@@ -189,6 +191,7 @@
       handlePromiseError(getNumberOfComments());
     }
   }
+  let shouldShowPhotoEditor = false;
 
   onMount(async () => {
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -425,6 +428,7 @@
     }
   };
 
+  $: console.log(shouldShowPhotoEditor);
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
@@ -571,6 +575,7 @@
           on:runJob={({ detail: job }) => handleRunJob(job)}
           on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
           on:unstack={handleUnstack}
+          on:edit={() => (shouldShowPhotoEditor = true)}
           on:showShareModal={() => (isShowShareModal = true)}
         />
       </div>
@@ -775,6 +780,10 @@
 
     {#if isShowShareModal}
       <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
+    {/if}
+
+    {#if shouldShowPhotoEditor}
+      <PhotoEditor {asset} on:close={() => (shouldShowPhotoEditor = false)} />
     {/if}
   </section>
 </FocusTrap>
