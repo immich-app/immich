@@ -13,7 +13,7 @@ Partner sharing include:
 - You cannot favorite partners' assets (yet)
 
 :::info
-Partner sharing is one-sided, whoever shared with you will not be able to see your photos  
+Partner sharing is one-way, whoever shared with you will not be able to see your photos  
 unless you share them with them through partner sharing from your user.
 :::
 
@@ -45,7 +45,7 @@ to enable parter-shared photos to be displayed in the main timeline. This featur
 
 ### For the web interface:
 
-Account’s Setting -> Sharing -> Show in timeline
+Account Settings -> Sharing -> Show in timeline
 
 <img src={require('./img/partner-sharing-5.png').default} width="70%" title='Partner Sharing for the web interface' />
 
