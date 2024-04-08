@@ -90,13 +90,6 @@ export class SystemConfigService {
     return mapConfig(newConfig);
   }
 
-  // this is only used by the cli on config change, and it's not actually needed anymore
-  async refreshConfig() {
-    this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);
-    await this.core.refreshConfig();
-    return true;
-  }
-
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     const options = new SystemConfigTemplateStorageOptionDto();
 
