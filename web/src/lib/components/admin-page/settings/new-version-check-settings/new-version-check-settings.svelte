@@ -29,7 +29,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['newVersionCheck'] })}
           on:save={() => dispatch('save', { newVersionCheck: config.newVersionCheck })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.newVersionCheck, defaultConfig.newVersionCheck)}
           {disabled}
         />
       </div>

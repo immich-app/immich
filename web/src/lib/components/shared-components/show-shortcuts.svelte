@@ -19,7 +19,8 @@
     general: [
       { key: ['←', '→'], action: 'Previous or next photo' },
       { key: ['Esc'], action: 'Back, close, or deselect' },
-      { key: ['/'], action: 'Search your photos' },
+      { key: ['Ctrl', 'k'], action: 'Search your photos' },
+      { key: ['Ctrl', '⇧', 'k'], action: 'Open the search filters' },
     ],
     actions: [
       { key: ['f'], action: 'Favorite or unfavorite photo' },
@@ -43,11 +44,11 @@
   onClose={() => dispatch('close')}
 >
   <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
-    <div class="px-4 py-4">
+    <div class="p-4">
       <h2>General</h2>
       <div class="text-sm">
         {#each shortcuts.general as shortcut}
-          <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
+          <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
             <div class="flex justify-self-end">
               {#each shortcut.key as key}
                 <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
@@ -61,11 +62,11 @@
       </div>
     </div>
 
-    <div class="px-4 py-4">
+    <div class="p-4">
       <h2>Actions</h2>
       <div class="text-sm">
         {#each shortcuts.actions as shortcut}
-          <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
+          <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
             <div class="flex justify-self-end">
               {#each shortcut.key as key}
                 <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
