@@ -167,6 +167,16 @@
         }}
       />
     {/if}
+
+    {#if !isOwner && showDownloadButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiFolderDownloadOutline}
+        on:click={() => dispatch('download')}
+        title="Download"
+      />
+    {/if}
+
     {#if showDetailButton}
       <CircleIconButton
         isOpacity={true}
@@ -175,6 +185,7 @@
         title="Info"
       />
     {/if}
+
     {#if isOwner}
       <CircleIconButton
         isOpacity={true}

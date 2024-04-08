@@ -304,6 +304,8 @@ class ApiClient {
           return FileReportFixDto.fromJson(value);
         case 'FileReportItemDto':
           return FileReportItemDto.fromJson(value);
+        case 'ImageFormat':
+          return ImageFormatTypeTransformer().decode(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':
@@ -334,8 +336,16 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MapTheme':
           return MapThemeTypeTransformer().decode(value);
+        case 'MemoryCreateDto':
+          return MemoryCreateDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MemoryResponseDto':
+          return MemoryResponseDto.fromJson(value);
+        case 'MemoryType':
+          return MemoryTypeTypeTransformer().decode(value);
+        case 'MemoryUpdateDto':
+          return MemoryUpdateDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
@@ -348,6 +358,8 @@ class ApiClient {
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
           return OAuthConfigDto.fromJson(value);
+        case 'OnThisDayDto':
+          return OnThisDayDto.fromJson(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
         case 'PathEntityType':
@@ -432,6 +444,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigImageDto':
+          return SystemConfigImageDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':
@@ -462,8 +476,6 @@ class ApiClient {
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
         case 'SystemConfigThemeDto':
           return SystemConfigThemeDto.fromJson(value);
-        case 'SystemConfigThumbnailDto':
-          return SystemConfigThumbnailDto.fromJson(value);
         case 'SystemConfigTrashDto':
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':

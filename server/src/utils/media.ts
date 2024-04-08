@@ -37,9 +37,12 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const videoCodec = [TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy';
+
     const options = [
-      `-c:v ${[TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy'}`,
-      `-c:a ${[TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy'}`,
+      `-c:v ${videoCodec}`,
+      `-c:a ${audioCodec}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -61,7 +64,10 @@ class BaseConfig implements VideoCodecSWConfig {
       options.push(`-g ${this.getGopSize()}`);
     }
 
-    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+    if (
+      this.config.targetVideoCodec === VideoCodec.HEVC &&
+      (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
+    ) {
       options.push('-tag:v hvc1');
     }
 
@@ -343,27 +349,23 @@ export class ThumbnailConfig extends BaseConfig {
 
 export class H264Config extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x264-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x264-params "pools=none"',
-      `-x264-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 
 export class HEVCConfig extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x265-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x265-params "pools=none"',
-      `-x265-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 

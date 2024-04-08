@@ -39,7 +39,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadAlbum } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -82,7 +82,7 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   $: album = data.album;
@@ -231,7 +231,7 @@
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
-      await setAssetId(asset.id);
+      setAsset(asset);
       $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
@@ -342,7 +342,7 @@
   };
 
   const handleDownloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
+    await downloadAlbum(album);
   };
 
   const handleRemoveAlbum = async () => {
@@ -369,6 +369,18 @@
     viewMode = ViewMode.VIEW;
     assetInteractionStore.clearMultiselect();
 
+    await updateThumbnail(assetId);
+  };
+
+  const updateThumbnailUsingCurrentSelection = async () => {
+    if ($selectedAssets.size === 1) {
+      const assetId = [...$selectedAssets][0].id;
+      assetInteractionStore.clearMultiselect();
+      await updateThumbnail(assetId);
+    }
+  };
+
+  const updateThumbnail = async (assetId: string) => {
     try {
       await updateAlbumInfo({
         id: album.id,
@@ -400,6 +412,13 @@
           {#if isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
+            {#if $selectedAssets.size === 1}
+              <MenuOption
+                text="Set as album cover"
+                icon={mdiImageOutline}
+                on:click={() => updateThumbnailUsingCurrentSelection()}
+              />
+            {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
           {#if isOwned || isAllUserOwned}

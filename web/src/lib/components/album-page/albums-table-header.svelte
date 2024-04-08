@@ -1,30 +1,31 @@
 <script lang="ts">
-  import { albumViewSettings } from '$lib/stores/preferences.store';
-  import type { Sort } from '$lib/components/album-page/albums-list.svelte';
+  import { albumViewSettings, SortOrder } from '$lib/stores/preferences.store';
+  import type { AlbumSortOptionMetadata } from '$lib/utils/album-utils';
 
-  export let option: Sort;
+  export let option: AlbumSortOptionMetadata;
 
   const handleSort = () => {
-    if ($albumViewSettings.sortBy === option.title) {
-      $albumViewSettings.sortDesc = !option.sortDesc;
-      option.sortDesc = !option.sortDesc;
+    if ($albumViewSettings.sortBy === option.id) {
+      $albumViewSettings.sortOrder = $albumViewSettings.sortOrder === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
     } else {
-      $albumViewSettings.sortBy = option.title;
+      $albumViewSettings.sortBy = option.id;
+      $albumViewSettings.sortOrder = option.defaultOrder;
     }
   };
 </script>
 
-<th class="{option.widthClass} text-sm font-medium"
-  ><button
+<th class="text-sm font-medium {option.columnStyle}">
+  <button
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
-    on:click={() => handleSort()}
+    on:click={handleSort}
   >
-    {#if $albumViewSettings.sortBy === option.title}
-      {#if option.sortDesc}
+    {#if $albumViewSettings.sortBy === option.id}
+      {#if $albumViewSettings.sortOrder === SortOrder.Desc}
         &#8595;
       {:else}
         &#8593;
       {/if}
-    {/if}{option.title}</button
-  ></th
->
+    {/if}
+    {option.text}
+  </button>
+</th>

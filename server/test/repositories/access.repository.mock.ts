@@ -8,6 +8,7 @@ export interface IAccessRepositoryMock {
   authDevice: jest.Mocked<IAccessRepository['authDevice']>;
   library: jest.Mocked<IAccessRepository['library']>;
   timeline: jest.Mocked<IAccessRepository['timeline']>;
+  memory: jest.Mocked<IAccessRepository['memory']>;
   person: jest.Mocked<IAccessRepository['person']>;
   partner: jest.Mocked<IAccessRepository['partner']>;
 }
@@ -47,6 +48,10 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
     timeline: {
       checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+    },
+
+    memory: {
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     person: {

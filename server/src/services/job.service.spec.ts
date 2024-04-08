@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -279,7 +279,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_JPEG_THUMBNAIL],
+        jobs: [JobName.GENERATE_PREVIEW],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -290,24 +290,24 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
+        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
@@ -329,7 +329,7 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
@@ -360,7 +360,7 @@ describe(JobService.name, () => {
       });
     }
 
-    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKeyPaths }> = [
       {
         queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.SMART_SEARCH,

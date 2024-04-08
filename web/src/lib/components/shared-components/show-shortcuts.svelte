@@ -25,6 +25,7 @@
     actions: [
       { key: ['f'], action: 'Favorite or unfavorite photo' },
       { key: ['i'], action: 'Show or hide info' },
+      { key: ['s'], action: 'Stack selected photos' },
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
       { key: ['Space'], action: 'Play or pause video' },
