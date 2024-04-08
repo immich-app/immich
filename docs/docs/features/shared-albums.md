@@ -69,7 +69,7 @@ You can edit the link properties, options include;
 - **Show metadata -** whether to show metadata to whoever the link will be shared with (optional).
 - **Allow public user to download -** whether to allow whoever has the link to download all the images or a certain image (optional).
 - **Allow public user to upload -** whether to allow whoever has the link to upload assets to the album (optional).
-  :::info 
+  :::info
   whoever has the link and have uploaded files cannot delete them.
   :::
 - **Expire after -** adding an expiration date to the link (optional).
