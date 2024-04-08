@@ -125,6 +125,7 @@
       </div>
       <div class="ml-4">
         <SettingSwitch
+          id="loop-video"
           title="Loop videos"
           subtitle="Enable to automatically loop a video in the detail viewer."
           bind:checked={$loopVideo}
