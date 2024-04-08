@@ -8,16 +8,12 @@ body:
         Please use this form to request new feature for Immich
 
   - type: checkboxes
-    id: do-you-need-one-of-these-maybe
-    validations:
-      required: true
     attributes:
-      label: Platform1
+      label: I have searched the existing feature requests to make sure this is not a duplicate request.
       options:
-        - label: Server1
-        - label: Web1
-        - label: Mobile1
-  
+        - label: "Yes"
+          required: true
+
   - type: textarea
     id: feature
     attributes:
