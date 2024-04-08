@@ -322,27 +322,28 @@ export const stackAssets = async (assets: AssetResponseDto[]) => {
 };
 
 export const unstackAssets = async (assets: AssetResponseDto[]) => {
+  const ids = assets.map(({ id }) => id);
   try {
-    const ids = assets.map(({ id }) => id);
     await updateAssets({
       assetBulkUpdateDto: {
         ids,
         removeParent: true,
       },
     });
-    for (const asset of assets) {
-      asset.stackParentId = null;
-      asset.stackCount = null;
-      asset.stack = [];
-    }
-    notificationController.show({
-      type: NotificationType.Info,
-      message: `Un-stacked ${assets.length} assets`,
-    });
-    return assets;
   } catch (error) {
     handleError(error, 'Failed to un-stack assets');
+    return;
   }
+  for (const asset of assets) {
+    asset.stackParentId = null;
+    asset.stackCount = null;
+    asset.stack = [];
+  }
+  notificationController.show({
+    type: NotificationType.Info,
+    message: `Un-stacked ${assets.length} assets`,
+  });
+  return assets;
 };
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
