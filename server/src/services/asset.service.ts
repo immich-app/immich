@@ -399,14 +399,12 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath];
-    if (!fromExternal) {
-      files.push(asset.originalPath);
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
+    if (!(asset.isExternal || asset.isReadOnly)) {
+      files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    if (!asset.isReadOnly) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
-    }
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }
