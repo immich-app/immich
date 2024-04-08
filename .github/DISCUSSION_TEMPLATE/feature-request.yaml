@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Please use this form to request new feature for Immich
-  
+
   - type: checkboxes
     validations:
       required: true
