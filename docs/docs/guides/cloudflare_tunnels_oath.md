@@ -1,4 +1,4 @@
-# Guide to setup an immich server hosted behind Cloudflare Tunnel to authenticate using OAuth
+# Guide - Cloudflare Tunnel & OAuth
 
 This assumes you've setup an Auth Provider in Cloudflare Zero Trust Settings/Authentication already. Example setup for [Google here](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/google/).
 
