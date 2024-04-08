@@ -11,14 +11,14 @@ Setup a public hostname in Networks/Tunnels for (ie immich.yourdomain.com) in yo
  - Choose OpenID Connect (OIDC)
  - Set "Scopes" to `openid` `email` `profile`
  - You should have at least these setup for Redirect URIs/Origins:
- ```
- app.immich:/
- http://local_IP:2283/auth/login
- http://local_IP:2283/user-settings
- https://immich.yourdomain.com/auth/login
- https://immich.yourdomain.com/user-settings
- ```
- Note: Replace "local_IP" with local LAN IP address for immich server, and "immich.yourdomain.com" with your public domain.
+   ```
+   app.immich:/
+   http://local_IP:2283/auth/login
+   http://local_IP:2283/user-settings
+   https://immich.yourdomain.com/auth/login
+   https://immich.yourdomain.com/user-settings
+   ```
+   Note: Replace "local_IP" with local LAN IP address for immich server, and "immich.yourdomain.com" with your public domain.
 
     - Disable "Proof Key for Code Exchange (PKCE)"
     - Set your App Launcher URL to your https://immich.yourdomain.com/ set in step 1.
