@@ -17,6 +17,7 @@ export const libraryStub = {
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: [],
   }),
   externalLibrary1: Object.freeze<LibraryEntity>({
@@ -31,6 +32,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: [],
   }),
   externalLibrary2: Object.freeze<LibraryEntity>({
@@ -45,6 +47,22 @@ export const libraryStub = {
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
+    exclusionPatterns: [],
+  }),
+  externalLibraryNotReadOnly: Object.freeze<LibraryEntity>({
+    id: 'library-id-not-read-only',
+    name: 'library-external-not-read-only',
+    assets: [],
+    owner: userStub.admin,
+    ownerId: 'admin_id',
+    type: LibraryType.EXTERNAL,
+    importPaths: [],
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2022-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+    isReadOnly: false,
     exclusionPatterns: [],
   }),
   externalLibraryWithImportPaths1: Object.freeze<LibraryEntity>({
@@ -59,6 +77,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: [],
   }),
   externalLibraryWithImportPaths2: Object.freeze<LibraryEntity>({
@@ -73,6 +92,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: [],
   }),
   externalLibraryWithExclusionPattern: Object.freeze<LibraryEntity>({
@@ -87,6 +107,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: ['**/dir1/**'],
   }),
   patternPath: Object.freeze<LibraryEntity>({
@@ -101,6 +122,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: ['**/dir1/**'],
   }),
   hasImmichPaths: Object.freeze<LibraryEntity>({
@@ -115,6 +137,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
+    isReadOnly: null,
     exclusionPatterns: ['**/dir1/**'],
   }),
 };

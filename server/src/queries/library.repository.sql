@@ -17,6 +17,7 @@ FROM
       "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
       "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
       "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
+      "LibraryEntity"."isReadOnly" AS "LibraryEntity_isReadOnly",
       "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
       "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
       "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -90,7 +91,8 @@ SELECT
   "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible"
+  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
+  "LibraryEntity"."isReadOnly" AS "LibraryEntity_isReadOnly"
 FROM
   "libraries" "LibraryEntity"
 WHERE
@@ -133,6 +135,7 @@ SELECT
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
+  "LibraryEntity"."isReadOnly" AS "LibraryEntity_isReadOnly",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -179,6 +182,7 @@ SELECT
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
+  "LibraryEntity"."isReadOnly" AS "LibraryEntity_isReadOnly",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -219,6 +223,7 @@ SELECT
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
+  "LibraryEntity"."isReadOnly" AS "LibraryEntity_isReadOnly",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -259,6 +264,7 @@ SELECT
   "libraries"."deletedAt" AS "libraries_deletedAt",
   "libraries"."refreshedAt" AS "libraries_refreshedAt",
   "libraries"."isVisible" AS "libraries_isVisible",
+  "libraries"."isReadOnly" AS "libraries_isReadOnly",
   COUNT("assets"."id") FILTER (
     WHERE
       "assets"."type" = 'IMAGE'

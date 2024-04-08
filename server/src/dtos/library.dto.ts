@@ -43,6 +43,9 @@ export class UpdateLibraryDto {
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
+  @ValidateBoolean({ optional: true })
+  isReadOnly?: boolean;
+
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -128,6 +131,8 @@ export class LibraryResponseDto {
   createdAt!: Date;
   updatedAt!: Date;
   refreshedAt!: Date | null;
+
+  isReadOnly!: boolean | null;
 }
 
 export class LibraryStatsResponseDto {
@@ -160,5 +165,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     assetCount,
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
+    isReadOnly: entity.isReadOnly,
   };
 }

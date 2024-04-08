@@ -439,6 +439,7 @@ export type CreateLibraryDto = {
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
+    isReadOnly?: boolean;
     isVisible?: boolean;
     name?: string;
 };
