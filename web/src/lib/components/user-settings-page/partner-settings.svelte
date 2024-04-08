@@ -189,6 +189,7 @@
 
 {#if removePartnerDto}
   <ConfirmDialogue
+    id="stop-sharing-photos-modal"
     title="Stop sharing your photos?"
     prompt="{removePartnerDto.name} will no longer be able to access your photos."
     onClose={() => (removePartnerDto = null)}

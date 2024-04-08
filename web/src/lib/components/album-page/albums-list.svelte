@@ -432,7 +432,7 @@
 {#if allowEdit}
   <!-- Edit Modal -->
   {#if albumToEdit}
-    <FullScreenModal onClose={() => (albumToEdit = null)}>
+    <FullScreenModal id="edit-album-modal" title="Edit album" width="wide" onClose={() => (albumToEdit = null)}>
       <EditAlbumForm album={albumToEdit} onEditSuccess={successEditAlbumInfo} onCancel={() => (albumToEdit = null)} />
     </FullScreenModal>
   {/if}
@@ -458,7 +458,8 @@
   <!-- Delete Modal -->
   {#if albumToDelete}
     <ConfirmDialogue
-      title="Delete Album"
+      id="delete-album-dialogue-modal"
+      title="Delete album"
       confirmText="Delete"
       onConfirm={deleteSelectedAlbum}
       onClose={() => (albumToDelete = null)}

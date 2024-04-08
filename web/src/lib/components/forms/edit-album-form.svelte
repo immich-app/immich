@@ -34,39 +34,29 @@
   };
 </script>
 
-<div
-  class="max-h-screen w-[700px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
->
-  <div
-    class="flex flex-col place-content-center place-items-center gap-4 px-4 mb-4 text-immich-primary dark:text-immich-dark-primary"
-  >
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit Album</h1>
+<form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off">
+  <div class="flex items-center">
+    <div class="hidden sm:flex">
+      <AlbumCover {album} css="h-[200px] w-[200px] m-4 shadow-lg" />
+    </div>
+
+    <div class="flex-grow">
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="name">Name</label>
+        <input class="immich-form-input" id="name" type="text" bind:value={albumName} />
+      </div>
+
+      <div class="m-4 flex flex-col gap-2">
+        <label class="immich-form-label" for="description">Description</label>
+        <textarea class="immich-form-input" id="description" bind:value={description} />
+      </div>
+    </div>
   </div>
 
-  <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off">
-    <div class="flex items-center">
-      <div class="hidden sm:flex">
-        <AlbumCover {album} css="h-[200px] w-[200px] m-4 shadow-lg" />
-      </div>
-
-      <div class="flex-grow">
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="name">Name</label>
-          <input class="immich-form-input" id="name" type="text" bind:value={albumName} />
-        </div>
-
-        <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="description">Description</label>
-          <textarea class="immich-form-input" id="description" bind:value={description} />
-        </div>
-      </div>
+  <div class="flex justify-center">
+    <div class="mt-8 flex w-full sm:w-2/3 gap-4">
+      <Button color="gray" fullwidth on:click={() => onCancel?.()}>Cancel</Button>
+      <Button type="submit" fullwidth disabled={isSubmitting}>OK</Button>
     </div>
-
-    <div class="flex justify-center">
-      <div class="mt-8 flex w-full sm:w-2/3 gap-4 px-4">
-        <Button color="gray" fullwidth on:click={() => onCancel?.()}>Cancel</Button>
-        <Button type="submit" fullwidth disabled={isSubmitting}>OK</Button>
-      </div>
-    </div>
-  </form>
-</div>
+  </div>
+</form>
