@@ -1058,14 +1058,6 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).not.toHaveBeenCalled();
       });
-
-      it('should not create watched', async () => {
-        await expect(sut.create({ ownerId: authStub.admin.user.id, type: LibraryType.UPLOAD })).rejects.toBeInstanceOf(
-          BadRequestException,
-        );
-
-        expect(storageMock.watch).not.toHaveBeenCalled();
-      });
     });
   });
 

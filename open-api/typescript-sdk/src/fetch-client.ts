@@ -461,7 +461,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
