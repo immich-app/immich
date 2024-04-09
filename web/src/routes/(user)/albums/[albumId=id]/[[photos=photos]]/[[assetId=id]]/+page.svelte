@@ -137,15 +137,16 @@
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   afterNavigate(({ from }) => {
-    assetViewingStore.showAssetViewer(false);
-
     let url: string | undefined = from?.url?.pathname;
 
-    if (from?.route.id === '/(user)/search') {
+    if (from?.route.id?.startsWith('/(user)/search')) {
       url = from.url.href;
     }
 
-    if (from?.route.id === '/(user)/albums/[albumId]' || from?.route.id === '/(user)/people/[personId]') {
+    if (
+      from?.route.id?.startsWith('/(user)/albums/[albumId=id]') ||
+      from?.route.id?.startsWith('/(user)/people/[personId]')
+    ) {
       url = AppRoute.ALBUMS;
     }
 
