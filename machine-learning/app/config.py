@@ -6,13 +6,18 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseSettings
+from pydantic import BaseModel, BaseSettings
 from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
 from .schemas import ModelType
+
+
+class PreloadModelData(BaseModel):
+    clip: str | None
+    facial_recognition: str | None
 
 
 class Settings(BaseSettings):
@@ -27,10 +32,12 @@ class Settings(BaseSettings):
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0
     ann: bool = True
+    preload: PreloadModelData | None = None
 
     class Config:
         env_prefix = "MACHINE_LEARNING_"
         case_sensitive = False
+        env_nested_delimiter = "__"
 
 
 class LogSettings(BaseSettings):

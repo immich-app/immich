@@ -1,13 +1,15 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -54,7 +56,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDisableLogin on:cancel={() => handleConfirm(false)} on:confirm={() => handleConfirm(true)} />
+  <ConfirmDisableLogin onCancel={() => handleConfirm(false)} onConfirm={() => handleConfirm(true)} />
 {/if}
 
 <div class="mt-2">
@@ -69,7 +71,13 @@
         >.
       </p>
 
-      <SettingSwitch {disabled} title="ENABLE" subtitle="Login with OAuth" bind:checked={config.oauth.enabled} />
+      <SettingSwitch
+        id="login-with-oauth"
+        {disabled}
+        title="ENABLE"
+        subtitle="Login with OAuth"
+        bind:checked={config.oauth.enabled}
+      />
 
       {#if config.oauth.enabled}
         <hr />
@@ -130,6 +138,26 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
+          label="STORAGE QUOTA CLAIM"
+          desc="Automatically set the user's storage quota to the value of this claim."
+          bind:value={config.oauth.storageQuotaClaim}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.storageQuotaClaim == savedConfig.oauth.storageQuotaClaim)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          label="DEFAULT STORAGE QUOTA (GiB)"
+          desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
+          bind:value={config.oauth.defaultStorageQuota}
+          required={true}
+          disabled={disabled || !config.oauth.enabled}
+          isEdited={!(config.oauth.defaultStorageQuota == savedConfig.oauth.defaultStorageQuota)}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
           label="BUTTON TEXT"
           bind:value={config.oauth.buttonText}
           required={false}
@@ -138,6 +166,7 @@
         />
 
         <SettingSwitch
+          id="auto-register-new-users"
           title="AUTO REGISTER"
           subtitle="Automatically register new users after signing in with OAuth"
           bind:checked={config.oauth.autoRegister}
@@ -145,6 +174,7 @@
         />
 
         <SettingSwitch
+          id="auto-launch-oauth"
           title="AUTO LAUNCH"
           subtitle="Start the OAuth login flow automatically upon navigating to the login page"
           disabled={disabled || !config.oauth.enabled}
@@ -152,6 +182,7 @@
         />
 
         <SettingSwitch
+          id="mobile-redirect-uri-override"
           title="MOBILE REDIRECT URI OVERRIDE"
           subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
           disabled={disabled || !config.oauth.enabled}

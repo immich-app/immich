@@ -40,7 +40,7 @@ class PartnerService {
         return userDtos.map((u) => User.fromPartnerDto(u)).toList();
       }
     } catch (e) {
-      _log.warning("failed to get partners for direction $direction:\n$e");
+      _log.warning("Failed to get partners for direction $direction", e);
     }
     return null;
   }
@@ -51,7 +51,7 @@ class PartnerService {
       partner.isPartnerSharedBy = false;
       await _db.writeTxn(() => _db.users.put(partner));
     } catch (e) {
-      _log.warning("failed to remove partner ${partner.id}:\n$e");
+      _log.warning("Failed to remove partner ${partner.id}", e);
       return false;
     }
     return true;
@@ -66,7 +66,7 @@ class PartnerService {
         return true;
       }
     } catch (e) {
-      _log.warning("failed to add partner ${partner.id}:\n$e");
+      _log.warning("Failed to add partner ${partner.id}", e);
     }
     return false;
   }
@@ -81,7 +81,7 @@ class PartnerService {
         return true;
       }
     } catch (e) {
-      _log.warning("failed to update partner ${partner.id}:\n$e");
+      _log.warning("Failed to update partner ${partner.id}", e);
     }
     return false;
   }

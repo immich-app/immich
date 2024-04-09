@@ -8,7 +8,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
-  export let altText: string;
+  export let altText: string | undefined;
   export let title: string | null = null;
   export let heightStyle: string | undefined = undefined;
   export let widthStyle: string;
@@ -47,6 +47,7 @@
   class:rounded-xl={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}
+  class:aspect-square={circle || !heightStyle}
   class:opacity-0={!thumbhash && !complete}
   draggable="false"
 />

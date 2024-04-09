@@ -1,14 +1,15 @@
 <script lang="ts">
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, SharedLinkType } from '@api';
-  import type { PageData } from './$types';
-  import { handleError } from '$lib/utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
+  import type { PageData } from './$types';
+  import { setSharedLink } from '$lib/utils';
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
@@ -18,9 +19,9 @@
 
   const handlePasswordSubmit = async () => {
     try {
-      const result = await api.sharedLinkApi.getMySharedLink({ password, key });
+      sharedLink = await getMySharedLink({ password, key });
+      setSharedLink(sharedLink);
       passwordRequired = false;
-      sharedLink = result.data;
       isOwned = $user ? $user.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
       description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
@@ -38,9 +39,8 @@
   <header>
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
-          <ImmichLogo height={30} width={30} />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
+          <ImmichLogo class="h-10" />
         </a>
       </svelte:fragment>
 

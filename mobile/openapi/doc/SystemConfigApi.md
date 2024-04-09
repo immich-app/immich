@@ -119,7 +119,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapStyle**
-> Object getMapStyle(theme)
+> Object getMapStyle(theme, key)
 
 
 
@@ -143,9 +143,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = SystemConfigApi();
 final theme = ; // MapTheme | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getMapStyle(theme);
+    final result = api_instance.getMapStyle(theme, key);
     print(result);
 } catch (e) {
     print('Exception when calling SystemConfigApi->getMapStyle: $e\n');
@@ -157,6 +158,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **theme** | [**MapTheme**](.md)|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 

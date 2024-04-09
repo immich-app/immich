@@ -136,7 +136,7 @@ class BackupVerificationService {
     ExifInfo? exif = remote.exifInfo;
     if (exif != null && exif.lat != null) return false;
     if (exif == null || exif.fileSize == null) {
-      final dto = await apiService.assetApi.getAssetById(remote.remoteId!);
+      final dto = await apiService.assetApi.getAssetInfo(remote.remoteId!);
       if (dto != null && dto.exifInfo != null) {
         exif = ExifInfo.fromDto(dto.exifInfo!);
       }
@@ -165,8 +165,8 @@ class BackupVerificationService {
           // (skip first few KBs containing metadata)
           final Uint64List localImage =
               _fakeDecodeImg(local, await file.readAsBytes());
-          final res = await apiService.assetApi
-              .downloadFileOldWithHttpInfo(remote.remoteId!);
+          final res = await apiService.downloadApi
+              .downloadFileWithHttpInfo(remote.remoteId!);
           final Uint64List remoteImage = _fakeDecodeImg(remote, res.bodyBytes);
 
           final eq = const ListEquality().equals(remoteImage, localImage);

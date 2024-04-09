@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 import 'package:isar/isar.dart';
 
@@ -15,7 +15,6 @@ class ThumbnailImage extends StatelessWidget {
   final int totalAssets;
   final bool showStorageIndicator;
   final bool showStack;
-  final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
   final Function? onSelect;
@@ -30,7 +29,6 @@ class ThumbnailImage extends StatelessWidget {
     required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
-    this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
     this.onDeselect,
@@ -136,10 +134,10 @@ class ThumbnailImage extends StatelessWidget {
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
-          child: ImmichImage(
-            asset,
-            useGrayBoxPlaceholder: useGrayBoxPlaceholder,
-            fit: BoxFit.cover,
+          child: ImmichThumbnail(
+            asset: asset,
+            height: 250,
+            width: 250,
           ),
         ),
       );

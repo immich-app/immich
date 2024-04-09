@@ -1,11 +1,13 @@
 <script lang="ts">
-  import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -39,7 +41,7 @@
           <SettingButtonsRow
             on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['server'] })}
             on:save={() => dispatch('save', { server: config.server })}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            showResetToDefault={!isEqual(savedConfig.server, defaultConfig.server)}
             {disabled}
           />
         </div>

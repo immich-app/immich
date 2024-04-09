@@ -1,11 +1,11 @@
 <script lang="ts">
-  import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
-  import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
-  import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
-  import { api } from '@api';
   import { goto } from '$app/navigation';
-  import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
+  import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
+  import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
+  import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
+  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { setAdminOnboarding } from '@immich/sdk';
 
   let index = 0;
 
@@ -28,18 +28,18 @@
 
   const handleDoneClicked = async () => {
     if (index >= onboardingSteps.length - 1) {
-      await api.serverInfoApi.setAdminOnboarding();
-      goto(AppRoute.PHOTOS);
+      await setAdminOnboarding();
+      await goto(AppRoute.PHOTOS);
     } else {
       index++;
-      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
     if (index >= 1) {
       index--;
-      goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
     }
   };
 </script>

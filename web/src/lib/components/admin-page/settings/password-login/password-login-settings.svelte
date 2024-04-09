@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@api';
+  import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -41,7 +41,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDisableLogin on:cancel={() => handleConfirm(false)} on:confirm={() => handleConfirm(true)} />
+  <ConfirmDisableLogin onCancel={() => handleConfirm(false)} onConfirm={() => handleConfirm(true)} />
 {/if}
 
 <div>
@@ -49,6 +49,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col">
         <SettingSwitch
+          id="enable-password-login"
           title="ENABLED"
           {disabled}
           subtitle="Login with email and password"

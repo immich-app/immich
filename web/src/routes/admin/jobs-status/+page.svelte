@@ -1,38 +1,36 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { type AllJobStatusResponseDto, api } from '@api';
-  import { onDestroy, onMount } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import type { PageData } from './$types';
+  import { asyncTimeout } from '$lib/utils';
+  import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
   import { mdiCog } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
-  let timer: ReturnType<typeof setInterval>;
-
   let jobs: AllJobStatusResponseDto;
 
-  const load = async () => {
-    const { data } = await api.jobApi.getAllJobsStatus();
-    jobs = data;
-  };
+  let running = true;
 
   onMount(async () => {
-    await load();
-    timer = setInterval(load, 5000);
+    while (running) {
+      jobs = await getAllJobsStatus();
+      await asyncTimeout(5000);
+    }
   });
 
   onDestroy(() => {
-    clearInterval(timer);
+    running = false;
   });
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job">
+    <a href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
       <LinkButton>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCog} size="18" />

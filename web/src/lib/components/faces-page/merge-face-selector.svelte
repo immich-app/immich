@@ -1,22 +1,22 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
+  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { api, type PersonResponseDto } from '@api';
-  import FaceThumbnail from './face-thumbnail.svelte';
+  import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { flip } from 'svelte/animate';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { goto } from '$app/navigation';
-  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import { page } from '$app/stores';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -35,7 +35,7 @@
   );
 
   onMount(async () => {
-    const { data } = await api.personApi.getAllPeople({ withHidden: false });
+    const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
 
@@ -43,10 +43,10 @@
     dispatch('back');
   };
 
-  const handleSwapPeople = () => {
+  const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
-    goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
+    await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
   const onSelect = (selected: PersonResponseDto) => {
@@ -68,11 +68,11 @@
 
   const handleMerge = async () => {
     try {
-      let { data: results } = await api.personApi.mergePerson({
+      let results = await mergePerson({
         id: person.id,
         mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
       });
-      const { data: mergedPerson } = await api.personApi.getPerson({ id: person.id });
+      const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
@@ -135,7 +135,12 @@
                 </div>
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
-                    <CircleIconButton icon={mdiSwapHorizontal} size="24" on:click={handleSwapPeople} />
+                    <CircleIconButton
+                      title="Swap merge direction"
+                      icon={mdiSwapHorizontal}
+                      size="24"
+                      on:click={handleSwapPeople}
+                    />
                   </div>
                 {/if}
               </div>
@@ -156,10 +161,11 @@
 
     {#if isShowConfirmation}
       <ConfirmDialogue
+        id="merge-people-modal"
         title="Merge people"
         confirmText="Merge"
-        on:confirm={handleMerge}
-        on:cancel={() => (isShowConfirmation = false)}
+        onConfirm={handleMerge}
+        onClose={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
           <p>Are you sure you want merge these people ?</p></svelte:fragment

@@ -26,9 +26,27 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     var uploadProgress = !isManualUpload
         ? ref.watch(backupProvider).progressInPercentage
         : ref.watch(manualUploadProvider).progressInPercentage;
+    var uploadFileProgress = !isManualUpload
+        ? ref.watch(backupProvider).progressInFileSize
+        : ref.watch(manualUploadProvider).progressInFileSize;
+    var uploadFileSpeed = !isManualUpload
+        ? ref.watch(backupProvider).progressInFileSpeed
+        : ref.watch(manualUploadProvider).progressInFileSpeed;
     var iCloudDownloadProgress =
         ref.watch(backupProvider).iCloudDownloadProgress;
     final isShowThumbnail = useState(false);
+
+    String formatUploadFileSpeed(double uploadFileSpeed) {
+      if (uploadFileSpeed < 1024) {
+        return '${uploadFileSpeed.toStringAsFixed(2)} B/s';
+      } else if (uploadFileSpeed < 1024 * 1024) {
+        return '${(uploadFileSpeed / 1024).toStringAsFixed(2)} KB/s';
+      } else if (uploadFileSpeed < 1024 * 1024 * 1024) {
+        return '${(uploadFileSpeed / (1024 * 1024)).toStringAsFixed(2)} MB/s';
+      } else {
+        return '${(uploadFileSpeed / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB/s';
+      }
+    }
 
     String getAssetCreationDate() {
       return DateFormat.yMMMMd().format(
@@ -202,7 +220,26 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             ),
             Text(
               " ${uploadProgress.toStringAsFixed(0)}%",
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12, fontFamily: "OverpassMono"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    buildUploadStats() {
+      return Padding(
+        padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              uploadFileProgress,
+              style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
+            ),
+            Text(
+              formatUploadFileSpeed(uploadFileSpeed),
+              style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
             ),
           ],
         ),
@@ -265,6 +302,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           children: [
             if (Platform.isIOS) buildiCloudDownloadProgerssBar(),
             buildUploadProgressBar(),
+            buildUploadStats(),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: buildAssetInfoTable(),

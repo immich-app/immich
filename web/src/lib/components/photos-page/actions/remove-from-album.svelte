@@ -5,10 +5,10 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { type AlbumResponseDto, api } from '@api';
+  import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
+  import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiDeleteOutline } from '@mdi/js';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined;
@@ -21,13 +21,12 @@
   const removeFromAlbum = async () => {
     try {
       const ids = [...getAssets()].map((a) => a.id);
-      const { data: results } = await api.albumApi.removeAssetFromAlbum({
+      const results = await removeAssetFromAlbum({
         id: album.id,
         bulkIdsDto: { ids },
       });
 
-      const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
-      album = data;
+      album = await getAlbumInfo({ id: album.id });
 
       onRemove?.(ids);
 
@@ -51,17 +50,18 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Remove from album" on:click={() => (isShowConfirmation = true)} />
+  <MenuOption text="Remove from album" icon={mdiImageRemoveOutline} on:click={() => (isShowConfirmation = true)} />
 {:else}
   <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
 {/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
+    id="remove-from-album-modal"
     title="Remove from {album.albumName}"
     confirmText="Remove"
-    on:confirm={removeFromAlbum}
-    on:cancel={() => (isShowConfirmation = false)}
+    onConfirm={removeFromAlbum}
+    onClose={() => (isShowConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

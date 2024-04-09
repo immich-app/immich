@@ -79,6 +79,9 @@ String parameterToString(dynamic value) {
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
   }
+  if (value is ImageFormat) {
+    return ImageFormatTypeTransformer().encode(value).toString();
+  }
   if (value is JobCommand) {
     return JobCommandTypeTransformer().encode(value).toString();
   }
@@ -94,6 +97,9 @@ String parameterToString(dynamic value) {
   if (value is MapTheme) {
     return MapThemeTypeTransformer().encode(value).toString();
   }
+  if (value is MemoryType) {
+    return MemoryTypeTypeTransformer().encode(value).toString();
+  }
   if (value is ModelType) {
     return ModelTypeTypeTransformer().encode(value).toString();
   }
@@ -108,6 +114,9 @@ String parameterToString(dynamic value) {
   }
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is SearchSuggestionType) {
+    return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
@@ -132,6 +141,9 @@ String parameterToString(dynamic value) {
   }
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();
+  }
+  if (value is UserStatus) {
+    return UserStatusTypeTransformer().encode(value).toString();
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();

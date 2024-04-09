@@ -1,16 +1,16 @@
 <script lang="ts">
+  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { type AlbumResponseDto, api, type UserResponseDto } from '@api';
-  import BaseModal from '../shared-components/base-modal.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { getContextMenuPosition } from '../../utils/context-menu';
+  import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import BaseModal from '../shared-components/base-modal.svelte';
+  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { handleError } from '../../utils/handle-error';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { getContextMenuPosition } from '../../utils/context-menu';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let album: AlbumResponseDto;
 
@@ -28,8 +28,7 @@
 
   onMount(async () => {
     try {
-      const { data } = await api.userApi.getMyUserInfo();
-      currentUser = data;
+      currentUser = await getMyUserInfo();
     } catch (error) {
       handleError(error, 'Unable to refresh user');
     }
@@ -54,7 +53,7 @@
     const userId = selectedRemoveUser.id === currentUser?.id ? 'me' : selectedRemoveUser.id;
 
     try {
-      await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
+      await removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
@@ -67,13 +66,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <BaseModal on:close={() => dispatch('close')}>
-    <svelte:fragment slot="title">
-      <span class="flex place-items-center gap-2">
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
-      </span>
-    </svelte:fragment>
-
+  <BaseModal id="share-info-modal" title="Options" on:close>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -98,6 +91,7 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
+                  title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
                   backgroundColor="transparent"
@@ -127,20 +121,22 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialogue
-    title="Leave Album?"
+    id="leave-album-modal"
+    title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
-    on:confirm={handleRemoveUser}
-    on:cancel={() => (selectedRemoveUser = null)}
+    onConfirm={handleRemoveUser}
+    onClose={() => (selectedRemoveUser = null)}
   />
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
-    title="Remove User?"
+    id="remove-user-modal"
+    title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}"
     confirmText="Remove"
-    on:confirm={handleRemoveUser}
-    on:cancel={() => (selectedRemoveUser = null)}
+    onConfirm={handleRemoveUser}
+    onClose={() => (selectedRemoveUser = null)}
   />
 {/if}

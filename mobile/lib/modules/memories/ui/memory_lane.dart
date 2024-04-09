@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
-import 'package:openapi/api.dart';
 
 class MemoryLane extends HookConsumerWidget {
   const MemoryLane({super.key});
@@ -61,8 +61,10 @@ class MemoryLane extends HookConsumerWidget {
                                     fit: BoxFit.cover,
                                     width: 130,
                                     height: 200,
-                                    useGrayBoxPlaceholder: true,
-                                    type: ThumbnailFormat.JPEG,
+                                    placeholder: const ThumbnailPlaceholder(
+                                      width: 130,
+                                      height: 200,
+                                    ),
                                   ),
                                 ),
                               ),

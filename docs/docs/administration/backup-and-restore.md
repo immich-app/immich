@@ -20,8 +20,8 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 <Tabs>
   <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
 
-```bash title='Bash'
-docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > "/path/to/backup/dump.sql.gz"
+```bash title='Backup'
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
 ```bash title='Restore'
@@ -30,7 +30,7 @@ docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gunzip < "/path/to/backup/dump.sql.gz" | docker exec -i immich_postgres psql -U postgres -d immich    # Restore Backup
+gunzip < "/path/to/backup/dump.sql.gz" | docker exec -i immich_postgres psql --username=postgres    # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
@@ -38,7 +38,7 @@ docker compose up -d    # Start remainder of Immich apps
   <TabItem value="Windows system based Backup" label="Windows system based Backup">
 
 ```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall -c -U postgres > "\path\to\backup\dump.sql"
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "\path\to\backup\dump.sql"
 ```
 
 ```powershell title='Restore'
@@ -47,7 +47,7 @@ docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql -U postgres -d immich    # Restore Backup
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres    # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
@@ -68,10 +68,11 @@ services:
       - .env
     environment:
       POSTGRES_HOST: database
-      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_CLUSTER: 'TRUE'
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       SCHEDULE: "@daily"
+      POSTGRES_EXTRA_OPTS: '--clean --if-exists'
       BACKUP_DIR: /db_dumps
     volumes:
       - ./db_dumps:/db_dumps
@@ -82,7 +83,7 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
-gunzip < db_dumps/last/immich-latest.sql.gz | docker exec -i immich_postgres psql -U postgres -d immich
+gunzip < db_dumps/last/immich-latest.sql.gz | docker exec -i immich_postgres psql --username=postgres
 ```
 
 ## Filesystem
@@ -101,7 +102,7 @@ Some storage locations are impacted by the Storage Template. See below for more 
   <TabItem value="Storage Template Off (Default)." label="Storage Template Off (Default)." default>
 
 :::note
-`UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
+`UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template).
 :::
 
 **1. User-Specific Folders:**

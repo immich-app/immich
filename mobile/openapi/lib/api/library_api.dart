@@ -104,7 +104,10 @@ class LibraryApi {
   }
 
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
-  Future<Response> getLibrariesWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [LibraryType] type:
+  Future<Response> getAllLibrariesWithHttpInfo({ LibraryType? type, }) async {
     // ignore: prefer_const_declarations
     final path = r'/library';
 
@@ -114,6 +117,10 @@ class LibraryApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
 
     const contentTypes = <String>[];
 
@@ -129,8 +136,11 @@ class LibraryApi {
     );
   }
 
-  Future<List<LibraryResponseDto>?> getLibraries() async {
-    final response = await getLibrariesWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [LibraryType] type:
+  Future<List<LibraryResponseDto>?> getAllLibraries({ LibraryType? type, }) async {
+    final response = await getAllLibrariesWithHttpInfo( type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -151,7 +161,7 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getLibraryInfoWithHttpInfo(String id,) async {
+  Future<Response> getLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/library/{id}'
       .replaceAll('{id}', id);
@@ -180,8 +190,8 @@ class LibraryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<LibraryResponseDto?> getLibraryInfo(String id,) async {
-    final response = await getLibraryInfoWithHttpInfo(id,);
+  Future<LibraryResponseDto?> getLibrary(String id,) async {
+    final response = await getLibraryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -374,6 +384,58 @@ class LibraryApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto',) as LibraryResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /library/{id}/validate' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [ValidateLibraryDto] validateLibraryDto (required):
+  Future<Response> validateWithHttpInfo(String id, ValidateLibraryDto validateLibraryDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/library/{id}/validate'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = validateLibraryDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [ValidateLibraryDto] validateLibraryDto (required):
+  Future<ValidateLibraryResponseDto?> validate(String id, ValidateLibraryDto validateLibraryDto,) async {
+    final response = await validateWithHttpInfo(id, validateLibraryDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ValidateLibraryResponseDto',) as ValidateLibraryResponseDto;
     
     }
     return null;

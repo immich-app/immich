@@ -1,4 +1,4 @@
-import { IKeyRepository } from '@app/domain';
+import { IKeyRepository } from 'src/interfaces/api-key.interface';
 
 export const newKeyRepositoryMock = (): jest.Mocked<IKeyRepository> => {
   return {

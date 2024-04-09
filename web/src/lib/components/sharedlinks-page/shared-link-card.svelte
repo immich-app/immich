@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { api, type AssetResponseDto, type SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import * as luxon from 'luxon';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import { AppRoute } from '$lib/constants';
+  import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
+  import * as luxon from 'luxon';
+  import { createEventDispatcher } from 'svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import AlbumCover from '$lib/components/album-page/album-cover.svelte';
 
   export let link: SharedLinkResponseDto;
 
@@ -19,26 +18,12 @@
     edit: void;
   }>();
 
-  const getThumbnail = async (): Promise<AssetResponseDto> => {
-    let assetId = '';
-
-    if (link.album?.albumThumbnailAssetId) {
-      assetId = link.album.albumThumbnailAssetId;
-    } else if (link.assets.length > 0) {
-      assetId = link.assets[0].id;
-    }
-
-    const { data } = await api.assetApi.getAssetInfo({ id: assetId });
-
-    return data;
-  };
-
   const getCountDownExpirationDate = () => {
     if (!link.expiresAt) {
       return;
     }
 
-    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString());
+    const expiresAtDate = luxon.DateTime.fromISO(new Date(link.expiresAt).toISOString(), { locale: $locale });
     const now = luxon.DateTime.now();
 
     expirationCountdown = expiresAtDate.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
@@ -66,28 +51,7 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    {#if link?.album?.albumThumbnailAssetId || link.assets.length > 0}
-      {#await getThumbnail()}
-        <LoadingSpinner />
-      {:then asset}
-        <img
-          id={asset.id}
-          src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
-          alt={asset.id}
-          class="h-[100px] w-[100px] rounded-lg object-cover"
-          loading="lazy"
-          draggable="false"
-        />
-      {/await}
-    {:else}
-      <img
-        src={noThumbnailUrl}
-        alt={'Album without assets'}
-        class="h-[100px] w-[100px] rounded-lg object-cover"
-        loading="lazy"
-        draggable="false"
-      />
-    {/if}
+    <AlbumCover album={link?.album} css="h-[100px] w-[100px] transition-all duration-300 hover:shadow-lg" />
   </div>
 
   <div class="flex flex-col justify-between">
@@ -117,15 +81,9 @@
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div
-              class="hover:cursor-pointer"
-              title="Go to share page"
-              on:click={() => goto(`${AppRoute.SHARE}/${link.key}`)}
-              on:keydown={() => goto(`${AppRoute.SHARE}/${link.key}`)}
-            >
+            <a href="{AppRoute.SHARE}/{link.key}" title="Go to share page">
               <Icon path={mdiOpenInNew} />
-            </div>
+            </a>
           {/if}
         </div>
 
@@ -170,9 +128,9 @@
 
   <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
-      <CircleIconButton icon={mdiDelete} on:click={() => dispatch('delete')} />
-      <CircleIconButton icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
-      <CircleIconButton icon={mdiContentCopy} on:click={() => dispatch('copy')} />
+      <CircleIconButton title="Delete link" icon={mdiDelete} on:click={() => dispatch('delete')} />
+      <CircleIconButton title="Edit link" icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
+      <CircleIconButton title="Copy link" icon={mdiContentCopy} on:click={() => dispatch('copy')} />
     </div>
   </div>
 </div>

@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { type AssetResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { notificationController, NotificationType } from './notification/notification';
+  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import domtoimage from 'dom-to-image';
+  import { createEventDispatcher, onMount } from 'svelte';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
-  import BaseModal from './base-modal.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import BaseModal from './base-modal.svelte';
+  import { NotificationType, notificationController } from './notification/notification';
 
   export let asset: AssetResponseDto;
 
@@ -56,12 +57,13 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      await api.userApi.createProfileImage({ file });
+      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: 'Profile picture set.',
         timeout: 3000,
       });
+      $user.profileImagePath = profileImagePath;
     } catch (error) {
       handleError(error, 'Error setting profile picture.');
     }
@@ -69,12 +71,7 @@
   };
 </script>
 
-<BaseModal on:close>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <p class="font-medium">Set profile picture</p>
-    </span>
-  </svelte:fragment>
+<BaseModal id="profile-image-cropper" title="Set profile picture" on:close>
   <div class="flex place-items-center items-center justify-center">
     <div
       class="relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"

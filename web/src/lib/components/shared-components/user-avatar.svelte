@@ -3,8 +3,9 @@
 </script>
 
 <script lang="ts">
+  import { getProfileImageUrl } from '$lib/utils';
+  import { type UserAvatarColor } from '@immich/sdk';
   import { onMount, tick } from 'svelte';
-  import { UserAvatarColor, api } from '@api';
 
   interface User {
     id: string;
@@ -21,6 +22,7 @@
   export let interactive = false;
   export let showTitle = true;
   export let showProfileImage = true;
+  export let label: string | undefined = undefined;
 
   let img: HTMLImageElement;
   let showFallback = true;
@@ -60,7 +62,7 @@
 
   $: colorClass = colorClasses[color];
   $: sizeClass = sizeClasses[size];
-  $: title = `${user.name} (${user.email})`;
+  $: title = label ?? `${user.name} (${user.email})`;
   $: interactiveClass = interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
     : '';
@@ -74,7 +76,7 @@
   {#if showProfileImage && user.profileImagePath}
     <img
       bind:this={img}
-      src={api.getProfileImageUrl(user.id)}
+      src={getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
       class="h-full w-full object-cover"
       class:hidden={showFallback}

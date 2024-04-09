@@ -5,11 +5,9 @@ import 'package:photo_manager/photo_manager.dart';
 class AvailableAlbum {
   final AssetPathEntity albumEntity;
   final DateTime? lastBackup;
-  final Uint8List? thumbnailData;
   AvailableAlbum({
     required this.albumEntity,
     this.lastBackup,
-    this.thumbnailData,
   });
 
   AvailableAlbum copyWith({
@@ -20,7 +18,6 @@ class AvailableAlbum {
     return AvailableAlbum(
       albumEntity: albumEntity ?? this.albumEntity,
       lastBackup: lastBackup ?? this.lastBackup,
-      thumbnailData: thumbnailData ?? this.thumbnailData,
     );
   }
 
@@ -34,7 +31,7 @@ class AvailableAlbum {
 
   @override
   String toString() =>
-      'AvailableAlbum(albumEntity: $albumEntity, lastBackup: $lastBackup, thumbnailData: $thumbnailData)';
+      'AvailableAlbum(albumEntity: $albumEntity, lastBackup: $lastBackup)';
 
   @override
   bool operator ==(Object other) {

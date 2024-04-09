@@ -73,15 +73,14 @@ Future<void> initApp() async {
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     log.severe(
-      'FlutterError - Catch all error: ${details.toString()} - ${details.exception} - ${details.library} - ${details.context} - ${details.stack}',
-      details,
+      'FlutterError - Catch all',
+      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
       details.stack,
     );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    log.severe('PlatformDispatcher - Catch all error: $error', error, stack);
-    debugPrint("PlatformDispatcher - Catch all error: $error $stack");
+    log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
 
@@ -216,10 +215,10 @@ class MainWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyLocalization(
-      supportedLocales: locales,
+      supportedLocales: locales.values.toList(),
       path: translationsPath,
       useFallbackTranslations: true,
-      fallbackLocale: locales.first,
+      fallbackLocale: locales.values.first,
       child: const ImmichApp(),
     );
   }

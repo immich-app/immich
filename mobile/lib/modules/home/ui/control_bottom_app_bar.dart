@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
@@ -11,8 +12,17 @@ import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
-class ControlBottomAppBar extends ConsumerWidget {
+final controlBottomAppBarNotifier = ControlBottomAppBarNotifier();
+
+class ControlBottomAppBarNotifier with ChangeNotifier {
+  void minimize() {
+    notifyListeners();
+  }
+}
+
+class ControlBottomAppBar extends HookConsumerWidget {
   final void Function(bool shareLocal) onShare;
   final void Function()? onFavorite;
   final void Function()? onArchive;
@@ -64,6 +74,25 @@ class ControlBottomAppBar extends ConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     const bottomPadding = 0.20;
+    final scrollController = useDraggableScrollController();
+
+    void minimize() {
+      scrollController.animateTo(
+        bottomPadding,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+
+    useEffect(
+      () {
+        controlBottomAppBarNotifier.addListener(minimize);
+        return () {
+          controlBottomAppBarNotifier.removeListener(minimize);
+        };
+      },
+      [],
+    );
 
     void showForceDeleteDialog(
       Function(bool) deleteCb, {
@@ -125,6 +154,19 @@ class ControlBottomAppBar extends ConsumerWidget {
                 .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
+        if (hasLocal && hasRemote && onDelete != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.delete_sweep_outlined,
+              label: "control_bottom_app_bar_delete".tr(),
+              onPressed: enabled
+                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
+                  : null,
+              onLongPressed:
+                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
+            ),
+          ),
         if (hasRemote && onDeleteServer != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 85),
@@ -172,49 +214,48 @@ class ControlBottomAppBar extends ConsumerWidget {
                   : null,
             ),
           ),
-        if (hasLocal && hasRemote && onDelete != null)
+        if (hasRemote && onEditTime != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 95),
+            child: ControlBoxButton(
+              iconData: Icons.edit_calendar_outlined,
+              label: "control_bottom_app_bar_edit_time".tr(),
+              onPressed: enabled ? onEditTime : null,
+            ),
+          ),
+        if (hasRemote && onEditLocation != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
-              iconData: Icons.delete_sweep_outlined,
-              label: "control_bottom_app_bar_delete".tr(),
-              onPressed: enabled
-                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
-                  : null,
-              onLongPressed:
-                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
+              iconData: Icons.edit_location_alt_outlined,
+              label: "control_bottom_app_bar_edit_location".tr(),
+              onPressed: enabled ? onEditLocation : null,
             ),
-          ),
-        if (hasRemote && onEditTime != null)
-          ControlBoxButton(
-            iconData: Icons.edit_calendar_outlined,
-            label: "control_bottom_app_bar_edit_time".tr(),
-            onPressed: enabled ? onEditTime : null,
-          ),
-        if (hasRemote && onEditLocation != null)
-          ControlBoxButton(
-            iconData: Icons.edit_location_alt_outlined,
-            label: "control_bottom_app_bar_edit_location".tr(),
-            onPressed: enabled ? onEditLocation : null,
           ),
         if (!selectionAssetState.hasLocal &&
             selectionAssetState.selectedCount > 1 &&
             onStack != null)
-          ControlBoxButton(
-            iconData: Icons.filter_none_rounded,
-            label: "control_bottom_app_bar_stack".tr(),
-            onPressed: enabled ? onStack : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.filter_none_rounded,
+              label: "control_bottom_app_bar_stack".tr(),
+              onPressed: enabled ? onStack : null,
+            ),
           ),
         if (onRemoveFromAlbum != null)
-          ControlBoxButton(
-            iconData: Icons.delete_sweep_rounded,
-            label: 'album_viewer_appbar_share_remove'.tr(),
-            onPressed: enabled ? onRemoveFromAlbum : null,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.delete_sweep_rounded,
+              label: 'album_viewer_appbar_share_remove'.tr(),
+              onPressed: enabled ? onRemoveFromAlbum : null,
+            ),
           ),
         if (selectionAssetState.hasLocal)
           ControlBoxButton(
             iconData: Icons.backup_outlined,
-            label: "Upload",
+            label: "control_bottom_app_bar_upload".tr(),
             onPressed: enabled
                 ? () => showDialog(
                       context: context,
@@ -230,9 +271,10 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: hasRemote ? 0.30 : bottomPadding,
+      controller: scrollController,
+      initialChildSize: hasRemote ? 0.35 : bottomPadding,
       minChildSize: bottomPadding,
-      maxChildSize: hasRemote ? 0.60 : bottomPadding,
+      maxChildSize: hasRemote ? 0.65 : bottomPadding,
       snap: true,
       builder: (
         BuildContext context,
@@ -257,9 +299,9 @@ class ControlBottomAppBar extends ConsumerWidget {
                   children: <Widget>[
                     const SizedBox(height: 12),
                     const CustomDraggingHandle(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
                     SizedBox(
-                      height: 90,
+                      height: 100,
                       child: ListView(
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,

@@ -18,12 +18,11 @@ Thanks for being interested in contributing 😊
 
 ### Server and web app
 
-This environment includes the following services:
+This environment includes the services below. Additional details are available in each service's README.
 
-- Core server - `/server/src/immich`
-- Machine learning - `/machine-learning`
-- Microservices - `/server/src/microservicess`
-- Web app - `/web`
+- Server - [`/server`](https://github.com/immich-app/immich/tree/main/server)
+- Web app - [`/web`](https://github.com/immich-app/immich/tree/main/web)
+- Machine learning - [`/machine-learning`](https://github.com/immich-app/immich/tree/main/machine-learning)
 - Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to acess it
 
@@ -58,12 +57,13 @@ Please refer to the [Flutter's official documentation](https://flutter.dev/docs/
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Enter the web directory - `cd web/`
-2. Install web dependencies - `npm i`
-3. Start the web development server
+1. Build the Immich SDK - `cd open-api/typescript-sdk && npm i && npm run build && cd -`
+2. Enter the web directory - `cd web/`
+3. Install web dependencies - `npm i`
+4. Start the web development server
 
-```
-IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
+```bash
+IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
 ```
 
 ## IDE setup

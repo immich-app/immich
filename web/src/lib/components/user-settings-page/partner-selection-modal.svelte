@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { api, type UserResponseDto } from '@api';
+  import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { createEventDispatcher, onMount } from 'svelte';
 
   export let user: UserResponseDto;
 
@@ -15,13 +14,13 @@
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
-    let { data: users } = await api.userApi.getAllUsers({ isAll: false });
+    let users = await getAllUsers({ isAll: false });
 
     // remove invalid users
     users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
     // exclude partners from the list of users available for selection
-    const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
+    const partners = await getPartners({ direction: 'shared-by' });
     const partnerIds = new Set(partners.map((partner) => partner.id));
     availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });
@@ -33,14 +32,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <ImmichLogo width={24} />
-      <p class="font-medium">Add partner</p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="partner-selection-modal" title="Add partner" showLogo on:close>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}

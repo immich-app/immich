@@ -22,44 +22,47 @@
     <key>CFBundleLocalizations</key>
     <array>
       <string>en</string>
-      <string>de</string>
-      <string>da</string>
-      <string>it</string>
-      <string>es</string>
-      <string>vi</string>
-      <string>fr</string>
-      <string>ja</string>
-      <string>pl</string>
-      <string>fi</string>
-      <string>pt</string>
-      <string>cs</string>
-      <string>uk</string>
-      <string>ru</string>
-      <string>zh</string>
-      <string>sk</string>
-      <string>nl</string>
-      <string>nb</string>
-      <string>sv</string>
-      <string>mn</string>
-      <string>ko</string>
-      <string>sr</string>
-      <string>hi</string>
+      <string>ar</string>
       <string>ca</string>
+      <string>cs</string>
+      <string>da</string>
+      <string>de</string>
+      <string>es</string>
+      <string>fi</string>
+      <string>fr</string>
+      <string>he</string>
+      <string>hi</string>
       <string>hu</string>
+      <string>it</string>
+      <string>ja</string>
+      <string>ko</string>
       <string>lv</string>
-      <string>th</string>
+      <string>mn</string>
+      <string>nb</string>
+      <string>nl</string>
+      <string>pl</string>
+      <string>pt</string>
+      <string>ro</string>
+      <string>ru</string>
+      <string>sk</string>
       <string>sl</string>
+      <string>sr</string>
+      <string>sv</string>
+      <string>th</string>
+      <string>uk</string>
+      <string>vi</string>
+      <string>zh</string>
     </array>
     <key>CFBundleName</key>
     <string>immich_mobile</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.94.1</string>
+    <string>1.101.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>137</string>
+    <string>147</string>
     <key>FLTEnableImpeller</key>
     <true />
     <key>ITSAppUsesNonExemptEncryption</key>

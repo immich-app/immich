@@ -1,14 +1,21 @@
+import { getKey } from '$lib/utils';
+import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
-import { api, type AssetResponseDto } from '@api';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
+  const preloadAssets = writable<AssetResponseDto[]>([]);
   const viewState = writable<boolean>(false);
 
-  const setAssetId = async (id: string) => {
-    const { data } = await api.assetApi.getAssetInfo({ id, key: api.getKey() });
-    viewingAssetStoreState.set(data);
+  const setAsset = (asset: AssetResponseDto, assetsToPreload: AssetResponseDto[] = []) => {
+    preloadAssets.set(assetsToPreload);
+    viewingAssetStoreState.set(asset);
     viewState.set(true);
+  };
+
+  const setAssetId = async (id: string) => {
+    const asset = await getAssetInfo({ id, key: getKey() });
+    setAsset(asset);
   };
 
   const showAssetViewer = (show: boolean) => {
@@ -19,10 +26,14 @@ function createAssetViewingStore() {
     asset: {
       subscribe: viewingAssetStoreState.subscribe,
     },
+    preloadAssets: {
+      subscribe: preloadAssets.subscribe,
+    },
     isViewing: {
       subscribe: viewState.subscribe,
       set: viewState.set,
     },
+    setAsset,
     setAssetId,
     showAssetViewer,
   };

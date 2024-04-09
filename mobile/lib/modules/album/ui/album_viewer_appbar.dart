@@ -73,20 +73,18 @@ class AlbumViewerAppbar extends HookConsumerWidget
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Delete album'),
-            content: const Text(
-              'Are you sure you want to delete this album from your account?',
-            ),
+            title: const Text('album_viewer_appbar_share_delete').tr(),
+            content: const Text('album_viewer_appbar_delete_confirm').tr(),
             actions: <Widget>[
               TextButton(
                 onPressed: () => context.pop('Cancel'),
                 child: Text(
-                  'Cancel',
+                  'action_common_cancel',
                   style: TextStyle(
                     color: context.primaryColor,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
+                ).tr(),
               ),
               TextButton(
                 onPressed: () {
@@ -94,12 +92,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   deleteAlbum();
                 },
                 child: Text(
-                  'Confirm',
+                  'action_common_confirm',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: !context.isDarkTheme ? Colors.red : Colors.red[300],
                   ),
-                ),
+                ).tr(),
               ),
             ],
           );
@@ -211,8 +209,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(top: 24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                shrinkWrap: true,
                 children: [
                   ...buildBottomSheetActions(),
                   if (onAddPhotos != null) ...commonActions,

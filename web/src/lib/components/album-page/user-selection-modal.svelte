@@ -1,14 +1,19 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute } from '$lib/constants';
+  import {
+    getAllSharedLinks,
+    getAllUsers,
+    type AlbumResponseDto,
+    type SharedLinkResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
+  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { type AlbumResponseDto, api, type SharedLinkResponseDto, type UserResponseDto } from '@api';
+  import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { goto } from '$app/navigation';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
 
   export let album: AlbumResponseDto;
   let users: UserResponseDto[] = [];
@@ -22,7 +27,7 @@
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
-    const { data } = await api.userApi.getAllUsers({ isAll: false });
+    const data = await getAllUsers({ isAll: false });
 
     // remove invalid users
     users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
@@ -34,8 +39,7 @@
   });
 
   const getSharedLinks = async () => {
-    const { data } = await api.sharedLinkApi.getAllSharedLinks();
-
+    const data = await getAllSharedLinks();
     sharedLinks = data.filter((link) => link.album?.id === album.id);
   };
 
@@ -50,14 +54,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <ImmichLogo width={24} />
-      <p class="font-medium">Invite to album</p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="user-selection-modal" title="Invite to album" showLogo on:close>
   {#if selectedUsers.length > 0}
     <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
       <p class="font-medium">To</p>

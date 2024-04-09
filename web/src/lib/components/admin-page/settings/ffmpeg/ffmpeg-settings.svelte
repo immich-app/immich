@@ -1,25 +1,27 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import {
     AudioCodec,
     CQMode,
-    type SystemConfigDto,
     ToneMapping,
     TranscodeHWAccel,
     TranscodePolicy,
     VideoCodec,
-  } from '@api';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
-  import SettingCheckboxes from '../setting-checkboxes.svelte';
-  import { isEqual, sortBy } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import SettingAccordion from '../setting-accordion.svelte';
+    type SystemConfigDto,
+  } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { isEqual, sortBy } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField, {
+    SettingInputFieldType,
+  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -90,7 +92,10 @@
           ]}
           name="acodec"
           isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          on:select={() => (config.ffmpeg.acceptedAudioCodecs = [config.ffmpeg.targetAudioCodec])}
+          on:select={() =>
+            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
+              ? null
+              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
         />
 
         <SettingCheckboxes
@@ -174,7 +179,7 @@
         <SettingSelect
           label="TRANSCODE POLICY"
           {disabled}
-          desc="Policy for when a video should be transcoded."
+          desc="Policy for when a video should be transcoded. HDR videos will always be transcoded (except if transcoding is disabled)."
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
@@ -227,6 +232,7 @@
         />
 
         <SettingSwitch
+          id="two-pass-encoding"
           title="TWO-PASS ENCODING"
           {disabled}
           subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
@@ -235,6 +241,7 @@
         />
 
         <SettingAccordion
+          key="hardware-acceleration"
           title="Hardware Acceleration"
           subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
         >
@@ -277,9 +284,11 @@
                 { value: CQMode.Cqp, text: 'CQP' },
               ]}
               isEdited={config.ffmpeg.cqMode !== savedConfig.ffmpeg.cqMode}
+              {disabled}
             />
 
             <SettingSwitch
+              id="temporal-aq"
               title="TEMPORAL AQ"
               {disabled}
               subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
@@ -288,15 +297,20 @@
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="PREFERRED HARDWARE DEVICE FOR TRANSCODING"
-              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding. Set to 'auto' to let immich decide for you"
+              label="PREFERRED HARDWARE DEVICE"
+              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding."
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
+              {disabled}
             />
           </div>
         </SettingAccordion>
 
-        <SettingAccordion title="Advanced" subtitle="Options most users should not need to change">
+        <SettingAccordion
+          key="advanced-options"
+          title="Advanced"
+          subtitle="Options most users should not need to change"
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
@@ -304,6 +318,7 @@
               desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
               bind:value={config.ffmpeg.npl}
               isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
+              {disabled}
             />
 
             <SettingInputField
@@ -312,6 +327,7 @@
               desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
+              {disabled}
             />
 
             <SettingInputField
@@ -320,6 +336,7 @@
               desc="The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
+              {disabled}
             />
 
             <SettingInputField
@@ -328,6 +345,7 @@
               desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
+              {disabled}
             />
           </div>
         </SettingAccordion>
@@ -337,7 +355,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
           on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
-          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />
       </div>

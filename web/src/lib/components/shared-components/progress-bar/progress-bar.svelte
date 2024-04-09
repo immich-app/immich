@@ -6,6 +6,8 @@
 </script>
 
 <script lang="ts">
+  import { handlePromiseError } from '$lib/utils';
+
   import { createEventDispatcher, onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
@@ -16,19 +18,28 @@
   export let autoplay = false;
 
   /**
-   * Duration in milliseconds
-   * @default 5000
-   */
-  export let duration = 5000;
-
-  /**
    * Progress bar status
    */
   export let status: ProgressBarStatus = ProgressBarStatus.Paused;
 
-  let progress = tweened<number>(0, {
-    duration: (from: number, to: number) => (to ? duration * (to - from) : 0),
-  });
+  export let hidden = false;
+
+  export let duration = 5;
+
+  const onChange = async () => {
+    progress = setDuration(duration);
+    await play();
+  };
+
+  let progress = setDuration(duration);
+
+  $: duration, handlePromiseError(onChange());
+
+  $: {
+    if ($progress === 1) {
+      dispatch('done');
+    }
+  }
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -36,48 +47,44 @@
     paused: void;
   }>();
 
-  onMount(() => {
+  onMount(async () => {
     if (autoplay) {
-      play();
+      await play();
     }
   });
 
-  export const play = () => {
+  export const play = async () => {
     status = ProgressBarStatus.Playing;
     dispatch('playing');
-    progress.set(1);
+    await progress.set(1);
   };
 
-  export const pause = () => {
+  export const pause = async () => {
     status = ProgressBarStatus.Paused;
     dispatch('paused');
-    progress.set($progress);
+    await progress.set($progress);
   };
 
-  export const restart = (autoplay: boolean) => {
-    progress.set(0);
+  export const restart = async (autoplay: boolean) => {
+    await progress.set(0);
 
     if (autoplay) {
-      play();
+      await play();
     }
   };
 
-  export const reset = () => {
+  export const reset = async () => {
     status = ProgressBarStatus.Paused;
-    progress.set(0);
+    await progress.set(0);
   };
 
-  export const setDuration = (newDuration: number) => {
-    progress = tweened<number>(0, {
-      duration: (from: number, to: number) => (to ? newDuration * (to - from) : 0),
+  function setDuration(newDuration: number) {
+    return tweened<number>(0, {
+      duration: (from: number, to: number) => (to ? newDuration * 1000 * (to - from) : 0),
     });
-  };
-
-  progress.subscribe((value) => {
-    if (value === 1) {
-      dispatch('done');
-    }
-  });
+  }
 </script>
 
-<span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
+{#if !hidden}
+  <span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
+{/if}

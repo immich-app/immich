@@ -23,11 +23,13 @@
     --immich-dark-warning: 245 124 0;
   }
 }
+
 @font-face {
   font-family: 'Overpass';
   src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
   font-weight: 1 999;
   font-style: normal;
+  ascent-override: 100%;
 }
 
 @font-face {
@@ -35,6 +37,7 @@
   src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
   font-weight: 1 999;
   font-style: monospace;
+  ascent-override: 100%;
 }
 
 @font-face {
@@ -46,6 +49,14 @@
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
   --navbar-height: calc(theme(spacing.18) + 4px);
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+:root:not(.dark) {
+  color-scheme: light;
 }
 
 html {

@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
-  import type { AuthDeviceResponseDto } from '@api';
-  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import type { AuthDeviceResponseDto } from '@immich/sdk';
   import {
     mdiAndroid,
     mdiApple,
     mdiAppleSafari,
-    mdiMicrosoftWindows,
-    mdiLinux,
     mdiGoogleChrome,
-    mdiTrashCanOutline,
     mdiHelp,
+    mdiLinux,
+    mdiMicrosoftWindows,
+    mdiTrashCanOutline,
   } from '@mdi/js';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
+  import { createEventDispatcher } from 'svelte';
 
   export let device: AuthDeviceResponseDto;
 
@@ -28,7 +28,6 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <!-- TODO: Device Image -->
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
@@ -57,7 +56,11 @@
       </span>
       <div class="text-sm">
         <span class="">Last seen</span>
-        <span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
+        <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+        </span>
       </div>
     </div>
     {#if !device.current}

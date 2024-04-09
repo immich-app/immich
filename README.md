@@ -1,6 +1,6 @@
 <p align="center"> 
   <br/>  
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: MIT"></a>
+  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
   <a href="https://discord.gg/D8JsnBEuKb">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
@@ -9,26 +9,26 @@
 </p>
 
 <p align="center">
-<img src="design/immich-logo.svg" width="150" title="Login With Custom URL">
+<img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - High performance self-hosted photo and video backup solution</h3>
+<h3 align="center">High performance self-hosted photo and video management solution</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
 </a>
 <br/>
 <p align="center">
-  <a href="README_ca_ES.md">Català</a>
-  <a href="README_es_ES.md">Español</a>
-  <a href="README_fr_FR.md">Français</a>
-  <a href="README_it_IT.md">Italiano</a>
-  <a href="README_ja_JP.md">日本語</a>
-  <a href="README_ko_KR.md">한국어</a>
-  <a href="README_de_DE.md">Deutsch</a>
-  <a href="README_nl_NL.md">Nederlands</a>
-  <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
-  <a href="README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_ca_ES.md">Català</a>
+  <a href="readme_i18n/README_es_ES.md">Español</a>
+  <a href="readme_i18n/README_fr_FR.md">Français</a>
+  <a href="readme_i18n/README_it_IT.md">Italiano</a>
+  <a href="readme_i18n/README_ja_JP.md">日本語</a>
+  <a href="readme_i18n/README_ko_KR.md">한국어</a>
+  <a href="readme_i18n/README_de_DE.md">Deutsch</a>
+  <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
+  <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
+  <a href="readme_i18n/README_zh_CN.md">中文</a>
+  <a href="readme_i18n/README_ru_RU.md">Русский</a>
 </p>
 
 ## Disclaimer
@@ -68,6 +68,9 @@ password: demo
 ```
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
+
+## Activities
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Features
 
@@ -117,11 +120,21 @@ If you feel like this is the right cause and the app is something you are seeing
 - [One-time donation](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Liberapay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
+- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
 - ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Contributors
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
+
+## Star History
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
 </a>

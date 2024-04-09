@@ -22,7 +22,6 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -54,25 +53,27 @@
     assets={$selectedAssets}
     clearSelect={() => assetInteractionStore.clearMultiselect()}
   >
-    <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
+    <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets
-      on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-    />
+    <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
       <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
       {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
+      <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <DeleteAssets
+        menuItem
+        on:escape={() => (handleEscapeKey = true)}
+        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
+      />
+      <hr />
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
@@ -89,11 +90,6 @@
     {#if $user.memoriesEnabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder
-      text="CLICK TO UPLOAD YOUR FIRST PHOTO"
-      actionHandler={() => openFileUploadDialog()}
-      slot="empty"
-    />
+    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>
-<UpdatePanel {assetStore} />

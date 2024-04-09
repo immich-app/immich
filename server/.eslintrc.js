@@ -25,7 +25,15 @@ module.exports = {
     'unicorn/prefer-top-level-await': 'off',
     'unicorn/prefer-event-target': 'off',
     'unicorn/no-thenable': 'off',
+    'unicorn/import-style': 'off',
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-misused-promises': 'error',
+    // Note: you must disable the base rule as it can report incorrect errors
+    'require-await': 'off',
+    '@typescript-eslint/require-await': 'error',
     curly: 2,
     'prettier/prettier': 0,
+    'no-restricted-imports': ['error', { patterns: [{ group: ['.*'], message: 'Relative imports are not allowed.' }] }],
   },
 };

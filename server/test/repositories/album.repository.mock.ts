@@ -1,4 +1,4 @@
-import { IAlbumRepository } from '@app/domain';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 
 export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
   return {
@@ -14,9 +14,9 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     softDeleteAll: jest.fn(),
     deleteAll: jest.fn(),
     getAll: jest.fn(),
-    addAssets: jest.fn(),
+    addAssetIds: jest.fn(),
     removeAsset: jest.fn(),
-    removeAssets: jest.fn(),
+    removeAssetIds: jest.fn(),
     getAssetIds: jest.fn(),
     hasAsset: jest.fn(),
     create: jest.fn(),

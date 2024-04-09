@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -45,7 +45,7 @@
     <!-- Image grid -->
     <div class="flex flex-wrap gap-[2px]">
       {#each album.assets as asset (asset.id)}
-        <Thumbnail {asset} on:click={() => (selectedThumbnail = asset)} selected={isSelected(asset.id)} />
+        <Thumbnail {asset} onClick={() => (selectedThumbnail = asset)} selected={isSelected(asset.id)} />
       {/each}
     </div>
   </section>

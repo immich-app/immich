@@ -1,10 +1,4 @@
-import {
-  CreateLibraryDto,
-  LibraryResponseDto,
-  LibraryStatsResponseDto,
-  ScanLibraryDto,
-  UpdateLibraryDto,
-} from '@app/domain';
+import { CreateLibraryDto, LibraryResponseDto, ScanLibraryDto } from 'src/dtos/library.dto';
 import request from 'supertest';
 
 export const libraryApi = {
@@ -34,28 +28,6 @@ export const libraryApi = {
       .post(`/library/${id}/scan`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send(dto);
-    expect(status).toBe(201);
-  },
-  removeOfflineFiles: async (server: any, accessToken: string, id: string) => {
-    const { status } = await request(server)
-      .post(`/library/${id}/removeOffline`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send();
-    expect(status).toBe(201);
-  },
-  getLibraryStatistics: async (server: any, accessToken: string, id: string): Promise<LibraryStatsResponseDto> => {
-    const { body, status } = await request(server)
-      .get(`/library/${id}/statistics`)
-      .set('Authorization', `Bearer ${accessToken}`);
-    expect(status).toBe(200);
-    return body;
-  },
-  update: async (server: any, accessToken: string, id: string, data: UpdateLibraryDto) => {
-    const { body, status } = await request(server)
-      .put(`/library/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send(data);
-    expect(status).toBe(200);
-    return body as LibraryResponseDto;
+    expect(status).toBe(204);
   },
 };

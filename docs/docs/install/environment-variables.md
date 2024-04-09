@@ -17,10 +17,10 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                            |
-| :---------------- | :-------------------- | :-------: | :-------------------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning, web, proxy |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                               |
+| Variable          | Description           |  Default  | Services                                |
+| :---------------- | :-------------------- | :-------: | :-------------------------------------- |
+| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
+| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
 
 :::tip
 
@@ -30,29 +30,26 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                        | Description                                  |       Default        | Services                                     |
-| :------------------------------ | :------------------------------------------- | :------------------: | :------------------------------------------- |
-| `TZ`                            | Timezone                                     |                      | microservices                                |
-| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning, web |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                        |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server                                       |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                       |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
+| Variable                        | Description                                  |       Default        | Services                                |
+| :------------------------------ | :------------------------------------------- | :------------------: | :-------------------------------------- |
+| `TZ`                            | Timezone                                     |                      | microservices                           |
+| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning |
+| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices, machine learning |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                   |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                   |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                  |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                           |
 
 :::tip
+`TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
 
-`TZ` is only used by the `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
-
-`exiftool` is only present in the microservices container.
-
+`TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
 ## Ports
 
 | Variable                | Description           |  Default  | Services         |
 | :---------------------- | :-------------------- | :-------: | :--------------- |
-| `PORT`                  | Web Port              |  `3000`   | web              |
 | `SERVER_PORT`           | Server Port           |  `3001`   | server           |
 | `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices    |
 | `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
@@ -60,14 +57,17 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Database
 
-| Variable      | Description       |   Default   | Services              |
-| :------------ | :---------------- | :---------: | :-------------------- |
-| `DB_URL`      | Database URL      |             | server, microservices |
-| `DB_HOSTNAME` | Database Host     | `localhost` | server, microservices |
-| `DB_PORT`     | Database Port     |   `5432`    | server, microservices |
-| `DB_USERNAME` | Database User     | `postgres`  | server, microservices |
-| `DB_PASSWORD` | Database Password | `postgres`  | server, microservices |
-| `DB_DATABASE` | Database Name     |  `immich`   | server, microservices |
+| Variable                            | Description                                                   |   Default    | Services              |
+| :---------------------------------- | :------------------------------------------------------------ | :----------: | :-------------------- |
+| `DB_URL`                            | Database URL                                                  |              | server, microservices |
+| `DB_HOSTNAME`                       | Database Host                                                 | `localhost`  | server, microservices |
+| `DB_PORT`                           | Database Port                                                 |    `5432`    | server, microservices |
+| `DB_USERNAME`                       | Database User                                                 |  `postgres`  | server, microservices |
+| `DB_PASSWORD`                       | Database Password                                             |  `postgres`  | server, microservices |
+| `DB_DATABASE_NAME`                  | Database Name                                                 |   `immich`   | server, microservices |
+| `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`]) | `pgvecto.rs` | server, microservices |
+
+\*1: This setting cannot be changed after the server has successfully started up
 
 :::info
 
@@ -121,16 +121,18 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                        |       Default       | Services         |
-| :----------------------------------------------- | :----------------------------------------------------------------- | :-----------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0) |        `300`        | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)  |        `10`         | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                              |      `/cache`       | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)        | number of CPU cores | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                |         `1`         | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                         |         `2`         | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                |         `1`         | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed     |        `120`        | machine learning |
+| Variable                                         | Description                                                          |       Default       | Services         |
+| :----------------------------------------------- | :------------------------------------------------------------------- | :-----------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)   |        `300`        | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)    |        `10`         | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                |      `/cache`       | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)          | number of CPU cores | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                  |         `1`         | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                           |         `2`         | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                  |         `1`         | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed       |        `120`        | machine learning |
+| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache               |                     | machine learning |
+| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache |                     | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
@@ -142,6 +144,18 @@ Other machine learning parameters can be tuned from the admin UI.
 
 :::
 
+## Prometheus
+
+| Variable                       | Description                                                                                   | Default | Services              |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
+
+\*1: Overridden for a metric group when its corresponding environmental variable is set.
+
 ## Docker Secrets
 
 The following variables support the use of [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) for additional security.
@@ -149,13 +163,14 @@ The following variables support the use of [Docker secrets](https://docs.docker.
 To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
 the `_FILE` variable should be set to the path of a file containing the variable value.
 
-|  Regular Variable  | Equivalent Docker Secrets '\_FILE' Variable |
-| :----------------: | :-----------------------------------------: |
-|   `DB_HOSTNAME`    |      `DB_HOSTNAME_FILE`<sup>\*1</sup>       |
-| `DB_DATABASE_NAME` |    `DB_DATABASE_NAME_FILE`<sup>\*1</sup>    |
-|   `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
-|   `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
-|  `REDIS_PASSWORD`  |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
+| Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
+| :----------------- | :------------------------------------------ |
+| `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
+| `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
+| `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
+| `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
+| `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
+| `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
 
 \*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
 details on how to use Docker Secrets in the Postgres image.

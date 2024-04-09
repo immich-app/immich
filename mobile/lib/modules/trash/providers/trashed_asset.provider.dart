@@ -44,7 +44,7 @@ class TrashNotifier extends StateNotifier<bool> {
           .read(syncServiceProvider)
           .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
     } catch (error, stack) {
-      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
+      _log.severe("Cannot empty trash", error, stack);
     }
   }
 
@@ -70,7 +70,7 @@ class TrashNotifier extends StateNotifier<bool> {
 
       return isRemoved;
     } catch (error, stack) {
-      _log.severe("Cannot empty trash ${error.toString()}", error, stack);
+      _log.severe("Cannot remove assets", error, stack);
     }
     return false;
   }
@@ -93,7 +93,7 @@ class TrashNotifier extends StateNotifier<bool> {
         return true;
       }
     } catch (error, stack) {
-      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore assets", error, stack);
     }
     return false;
   }
@@ -123,7 +123,7 @@ class TrashNotifier extends StateNotifier<bool> {
         await _db.assets.putAll(updatedAssets);
       });
     } catch (error, stack) {
-      _log.severe("Cannot restore trash ${error.toString()}", error, stack);
+      _log.severe("Cannot restore trash", error, stack);
     }
   }
 }

@@ -46,6 +46,7 @@ export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
   onlyFavorites: boolean;
+  withPartners: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -55,6 +56,7 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
+  withPartners: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
@@ -65,9 +67,16 @@ export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {})
 export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
-  sortBy: string;
-  sortDesc: boolean;
   view: string;
+  filter: string;
+  groupBy: string;
+  groupOrder: string;
+  sortBy: string;
+  sortOrder: string;
+  collapsedGroups: {
+    // Grouping Option => Array<Group ID>
+    [group: string]: string[];
+  };
 }
 
 export interface SidebarSettings {
@@ -80,15 +89,49 @@ export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', 
   sharing: true,
 });
 
+export enum SortOrder {
+  Asc = 'asc',
+  Desc = 'desc',
+}
+
 export enum AlbumViewMode {
   Cover = 'Cover',
   List = 'List',
 }
 
+export enum AlbumFilter {
+  All = 'All',
+  Owned = 'Owned',
+  Shared = 'Shared',
+}
+
+export enum AlbumGroupBy {
+  None = 'None',
+  Year = 'Year',
+  Owner = 'Owner',
+}
+
+export enum AlbumSortBy {
+  Title = 'Title',
+  ItemCount = 'ItemCount',
+  DateModified = 'DateModified',
+  DateCreated = 'DateCreated',
+  MostRecentPhoto = 'MostRecentPhoto',
+  OldestPhoto = 'OldestPhoto',
+}
+
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
-  sortBy: 'Most recent photo',
-  sortDesc: true,
   view: AlbumViewMode.Cover,
+  filter: AlbumFilter.All,
+  groupBy: AlbumGroupBy.Year,
+  groupOrder: SortOrder.Desc,
+  sortBy: AlbumSortBy.MostRecentPhoto,
+  sortOrder: SortOrder.Desc,
+  collapsedGroups: {},
 });
 
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
+
+export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});
+
+export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});

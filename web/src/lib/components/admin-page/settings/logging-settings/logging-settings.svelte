@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { LogLevel, type SystemConfigDto } from '@api';
+  import { LogLevel, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
-  import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingSelect from '../setting-select.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -20,7 +20,13 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingSwitch title="ENABLED" {disabled} subtitle="Logging" bind:checked={config.logging.enabled} />
+        <SettingSwitch
+          id="enable-logging"
+          title="ENABLED"
+          {disabled}
+          subtitle="Logging"
+          bind:checked={config.logging.enabled}
+        />
         <SettingSelect
           label="LEVEL"
           desc="When enabled, what log level to use."

@@ -88,11 +88,10 @@ const config = {
         },
       },
       navbar: {
-        title: 'IMMICH',
         logo: {
-          alt: 'Immich University Logo',
-          src: 'img/color-logo.png',
-          srcDark: 'img/logo.png',
+          alt: 'Immich Logo',
+          src: 'img/immich-logo-inline-light.png',
+          srcDark: 'img/immich-logo-inline-dark.png',
         },
         items: [
           {
@@ -161,7 +160,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Immich is available as open source under the terms of the MIT License.`,
+        copyright: `Immich is available as open source under the terms of the GNU AGPL v3 License.`,
       },
       prism: {
         theme: prism.themes.github,

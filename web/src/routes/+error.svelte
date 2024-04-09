@@ -2,8 +2,8 @@
   import { page } from '$app/stores';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { copyToClipboard } from '$lib/utils';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
-  import { copyToClipboard } from '../api/utils';
 
   const handleCopy = async () => {
     //
@@ -20,8 +20,7 @@
   <section class="bg-immich-bg dark:bg-immich-dark-bg">
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
-        <ImmichLogo height="35" width="35" />
-        <h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        <ImmichLogo width="55%" />
       </a>
     </div>
   </section>

@@ -1,8 +1,8 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:8d773321add21be41f1f891b43177a41aaae0d1b83f3638872ec84636179594a as builder-cpu
+FROM python:3.11-bookworm@sha256:e2ed446c899827ed992f8a5a8875fa0853fcab32581e61418b650322061aa3c4 as builder-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as builder-openvino
+FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as builder-openvino
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends python3-dev
 
@@ -21,10 +21,12 @@ FROM builder-${DEVICE} as builder
 
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PIP_NO_CACHE_DIR=true \
-  VIRTUAL_ENV="/opt/venv" \
-  PATH="/opt/venv/bin:${PATH}"
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=true \
+    VIRTUAL_ENV="/opt/venv" \
+    PATH="/opt/venv/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends g++
 
 RUN pip install --upgrade pip && pip install poetry
 RUN poetry config installer.max-workers 10 && \
@@ -34,12 +36,12 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:d11b9bd5e49ea7401753d78f4d3b56f3aec952b85b49bcae88981f0452818e0b as prod-cpu
+FROM python:3.11-slim-bookworm@sha256:90f8795536170fd08236d2ceb74fe7065dbf74f738d8b84bfbf263656654dc9b as prod-cpu
 
-FROM openvino/ubuntu22_runtime:2023.1.0@sha256:002842a9005ba01543b7169ff6f14ecbec82287f09c4d1dd37717f0a8e8754a7 as prod-openvino
+FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as prod-openvino
 USER root
 
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04@sha256:85fb7ac694079fff1061a0140fd5b5a641997880e12112d92589c3bbb1e8b7ca as prod-cuda
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04@sha256:2d913b09e6be8387e1a10976933642c73c840c0b735f0bf3c28d97fc9bc422e0 as prod-cuda
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
@@ -52,17 +54,18 @@ ENV LD_LIBRARY_PATH=/opt/armnn
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir --parents /etc/OpenCL/vendors && \
-    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
+    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd && \
+    mkdir /opt/armnn
 
 COPY --from=builder-armnn \
-      /opt/armnn/libarmnn.so.?? \
-      /opt/armnn/libarmnnOnnxParser.so.?? \
-      /opt/armnn/libarmnnDeserializer.so.?? \
-      /opt/armnn/libarmnnTfLiteParser.so.?? \
-      /opt/armnn/libprotobuf.so.?.??.?.? \
-      /opt/ann/libann.s[o] \
-      /opt/ann/build.sh \
-      /opt/armnn/
+    /opt/armnn/libarmnn.so.?? \
+    /opt/armnn/libarmnnOnnxParser.so.?? \
+    /opt/armnn/libarmnnDeserializer.so.?? \
+    /opt/armnn/libarmnnTfLiteParser.so.?? \
+    /opt/armnn/libprotobuf.so.?.??.?.? \
+    /opt/ann/libann.s[o] \
+    /opt/ann/build.sh \
+    /opt/armnn/
 
 FROM prod-${DEVICE} as prod
 
@@ -72,11 +75,12 @@ RUN apt-get update && \
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-  TRANSFORMERS_CACHE=/cache \
-  PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PATH="/opt/venv/bin:$PATH" \
-  PYTHONPATH=/usr/src
+    TRANSFORMERS_CACHE=/cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=/usr/src \
+    DEVICE=${DEVICE}
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \

@@ -1,23 +1,9 @@
-import { activityApi } from './activity-api';
-import { albumApi } from './album-api';
-import { apiKeyApi } from './api-key-api';
-import { assetApi } from './asset-api';
-import { authApi } from './auth-api';
-import { libraryApi } from './library-api';
-import { partnerApi } from './partner-api';
-import { serverInfoApi } from './server-info-api';
-import { sharedLinkApi } from './shared-link-api';
-import { userApi } from './user-api';
+import { assetApi } from 'e2e/client/asset-api';
+import { authApi } from 'e2e/client/auth-api';
+import { libraryApi } from 'e2e/client/library-api';
 
 export const api = {
-  activityApi,
   authApi,
-  apiKeyApi,
   assetApi,
   libraryApi,
-  serverInfoApi,
-  sharedLinkApi,
-  albumApi,
-  userApi,
-  partnerApi,
 };
