@@ -51,6 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import { createAssetEvent, type AssetEventTypes, type AssetDetail } from '$lib/utils/custom-events';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -97,6 +98,7 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
+  let element: Element;
 
   $: isFullScreen = fullscreenElement !== null;
 
@@ -191,6 +193,7 @@
   }
 
   onMount(async () => {
+    element.dispatchEvent(createAssetEvent('asset-opened', { assetId: asset.id }));
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -267,7 +270,10 @@
     closeViewer();
   };
 
-  const closeViewer = () => dispatch('close');
+  const closeViewer = () => {
+    dispatch('close');
+    element.dispatchEvent(createAssetEvent('asset-closed', { assetId: asset.id }));
+  };
 
   const navigateAssetRandom = async () => {
     if (!assetStore) {
@@ -538,6 +544,7 @@
 
 <FocusTrap>
   <section
+    bind:this={element}
     id="immich-asset-viewer"
     class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   >

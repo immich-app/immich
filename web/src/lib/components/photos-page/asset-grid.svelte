@@ -22,6 +22,7 @@
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
+  import { createAssetEvent } from '$lib/utils/custom-events';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -139,22 +140,26 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
+    const id = $viewingAsset.id;
+    const previousAsset = await assetStore.getPreviousAsset(id);
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
+      element.dispatchEvent(createAssetEvent('asset-changed', { fromAssetId: id, toAssetId: previousAsset.id }));
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
+    const id = $viewingAsset.id;
     const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
 
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
+      element.dispatchEvent(createAssetEvent('asset-changed', { fromAssetId: id, toAssetId: nextAsset.id }));
     }
 
     return !!nextAsset;
