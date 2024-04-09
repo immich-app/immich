@@ -456,7 +456,7 @@
   {/if}
 </section>
 
-<Portal target="body">
+<Portal target="main">
   {#if $showAssetViewer}
     {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
       <AssetViewer.default

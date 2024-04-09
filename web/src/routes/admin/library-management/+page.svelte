@@ -394,7 +394,7 @@
                   </button>
 
                   {#if showContextMenu}
-                    <Portal target="body">
+                    <Portal target="main">
                       <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 

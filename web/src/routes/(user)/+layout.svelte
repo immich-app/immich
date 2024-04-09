@@ -15,5 +15,8 @@
   }
 </script>
 
-<slot />
+<main>
+  <slot />
+</main>
+
 <UploadCover />
