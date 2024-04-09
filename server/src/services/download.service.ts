@@ -37,8 +37,6 @@ export class DownloadService {
       throw new BadRequestException('Asset is offline');
     }
 
-    console.log(asset);
-
     return new ImmichFileResponse({
       path: asset.originalPath,
       contentType: mimeTypes.lookup(asset.originalPath),
