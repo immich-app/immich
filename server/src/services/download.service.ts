@@ -94,9 +94,12 @@ export class DownloadService {
         continue;
       }
 
-      const { originalPath, originalFileName } = asset;
+      const { originalPath, originalFileName, type } = asset;
 
       let filename = originalFileName;
+      if (type === 'VIDEO') {
+        filename = `${parse(originalFileName).name}.mp4`;
+      }
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
