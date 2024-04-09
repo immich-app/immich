@@ -19,6 +19,7 @@ const image: Record<string, string[]> = {
   '.gif': ['image/gif'],
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
+  '.livp': ['image/livp'],
   '.hif': ['image/hif'],
   '.iiq': ['image/iiq', 'image/x-phaseone-iiq'],
   '.insp': ['image/jpeg'],
