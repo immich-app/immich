@@ -6,13 +6,14 @@ body:
     attributes:
       value: |
         Please use this form to request new feature for Immich
-  
+
   - type: checkboxes
     attributes:
+      label: I have searched the existing feature requests to make sure this is not a duplicate request.
       options:
-        - label: I have searched the existing feature requests to make sure this is not a duplicate request.
+        - label: "Yes"
           required: true
-  
+
   - type: textarea
     id: feature
     attributes:

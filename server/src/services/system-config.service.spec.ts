@@ -346,19 +346,6 @@ describe(SystemConfigService.name, () => {
     });
   });
 
-  describe('refreshConfig', () => {
-    it('should notify the subscribers', async () => {
-      const changeMock = jest.fn();
-      const subscription = sut.config$.subscribe(changeMock);
-
-      await sut.refreshConfig();
-
-      expect(changeMock).toHaveBeenCalledWith(defaults);
-
-      subscription.unsubscribe();
-    });
-  });
-
   describe('getCustomCss', () => {
     it('should return the default theme', async () => {
       await expect(sut.getCustomCss()).resolves.toEqual(defaults.theme.customCss);

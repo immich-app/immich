@@ -98,7 +98,8 @@
 
 {#if isShowEmptyConfirmation}
   <ConfirmDialogue
-    title="Empty Trash"
+    id="empty-trash-modal"
+    title="Empty trash"
     confirmText="Empty"
     onConfirm={handleEmptyTrash}
     onClose={() => (isShowEmptyConfirmation = false)}

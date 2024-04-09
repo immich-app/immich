@@ -88,7 +88,8 @@
 
 {#if deleteLinkId}
   <ConfirmDialogue
-    title="Delete Shared Link"
+    id="delete-shared-link-modal"
+    title="Delete shared link"
     prompt="Are you sure you want to delete this shared link?"
     confirmText="Delete"
     onConfirm={() => handleDeleteLink()}
