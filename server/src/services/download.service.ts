@@ -37,6 +37,8 @@ export class DownloadService {
       throw new BadRequestException('Asset is offline');
     }
 
+    console.log(asset);
+
     return new ImmichFileResponse({
       path: asset.originalPath,
       contentType: mimeTypes.lookup(asset.originalPath),
@@ -94,12 +96,10 @@ export class DownloadService {
         continue;
       }
 
-      const { originalPath, originalFileName, type } = asset;
+      const { originalPath, originalFileName } = asset;
 
-      let filename = originalFileName;
-      if (type === 'VIDEO') {
-        filename = `${parse(originalFileName).name}.mp4`;
-      }
+      const extension = parse(originalPath).ext;
+      let filename = `${parse(originalFileName).name}${extension}`;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
