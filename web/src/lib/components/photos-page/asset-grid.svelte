@@ -87,10 +87,12 @@
   };
 
   const onStackAssets = async () => {
-    await stackAssets(Array.from($selectedAssets), (ids) => {
-      assetStore.removeAssets(ids);
-      dispatch('escape');
-    });
+    if ($selectedAssets.size > 1) {
+      await stackAssets(Array.from($selectedAssets), (ids) => {
+        assetStore.removeAssets(ids);
+        dispatch('escape');
+      });
+    }
   };
 
   $: shortcutList = (() => {
