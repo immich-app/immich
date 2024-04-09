@@ -45,9 +45,9 @@
     "@nestjs/swagger": "^7.1.8",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
-    "@opentelemetry/auto-instrumentations-node": "^0.43.0",
-    "@opentelemetry/exporter-prometheus": "^0.49.0",
-    "@opentelemetry/sdk-node": "^0.49.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.44.0",
+    "@opentelemetry/exporter-prometheus": "^0.50.0",
+    "@opentelemetry/sdk-node": "^0.50.0",
     "@socket.io/postgres-adapter": "^0.3.1",
     "@types/picomatch": "^2.3.3",
     "archiver": "^7.0.0",
@@ -167,6 +167,6 @@
     "globalSetup": "<rootDir>/test/global-setup.js"
   },
   "volta": {
-    "node": "20.12.0"
+    "node": "20.12.1"
   }
 }
