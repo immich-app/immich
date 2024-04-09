@@ -272,7 +272,7 @@ describe(LibraryService.name, () => {
 
       storageMock.checkFileExists.mockResolvedValue(false);
 
-      await sut.handleOfflineCheck(mockAssetJob);
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
@@ -287,7 +287,7 @@ describe(LibraryService.name, () => {
 
       storageMock.checkFileExists.mockResolvedValue(true);
 
-      await sut.handleOfflineCheck(mockAssetJob);
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
