@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsBoolean, IsEnum, IsString } from 'class-validator';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -151,3 +152,9 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
 
 export const mapAlbumWithAssets = (entity: AlbumEntity) => mapAlbum(entity, true);
 export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, false);
+
+export class AddPeopleDto extends BulkIdsDto {
+  @ValidateBoolean({ optional: true })
+  @ApiProperty({ type:'boolean' })
+  together?: boolean;
+}

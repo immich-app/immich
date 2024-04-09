@@ -79,6 +79,69 @@ class AlbumApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /album/{id}/people' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AddPeopleDto] addPeopleDto (required):
+  ///
+  /// * [String] key:
+  Future<Response> addPeopleToAlbumWithHttpInfo(String id, AddPeopleDto addPeopleDto, { String? key, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{id}/people'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = addPeopleDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AddPeopleDto] addPeopleDto (required):
+  ///
+  /// * [String] key:
+  Future<List<BulkIdResponseDto>?> addPeopleToAlbum(String id, AddPeopleDto addPeopleDto, { String? key, }) async {
+    final response = await addPeopleToAlbumWithHttpInfo(id, addPeopleDto,  key: key, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /album/{id}/users' operation and returns the [Response].
   /// Parameters:
   ///

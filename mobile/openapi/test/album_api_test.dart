@@ -22,6 +22,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<BulkIdResponseDto>> addPeopleToAlbum(String id, AddPeopleDto addPeopleDto, { String key }) async
+    test('test addPeopleToAlbum', () async {
+      // TODO
+    });
+
     //Future<AlbumResponseDto> addUsersToAlbum(String id, AddUsersDto addUsersDto) async
     test('test addUsersToAlbum', () async {
       // TODO

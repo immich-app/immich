@@ -59,6 +59,8 @@
     type ActivityResponseDto,
     type UserResponseDto,
     AssetOrder,
+    type PersonResponseDto,
+    addPeopleToAlbum,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -72,6 +74,7 @@
     mdiCogOutline,
     mdiImageOutline,
     mdiImagePlusOutline,
+    mdiAccountCircle,
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -79,15 +82,22 @@
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
+  import AlbumPeopleGrid from '$lib/components/album-page/album-people-grid.svelte';
+  import { writable } from 'svelte/store';
+  import Slider from '$lib/components/elements/slider.svelte';
 
   export let data: PageData;
 
   let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
+  let boundSelectedPeople = writable([] as Array<PersonResponseDto>);
 
   $: album = data.album;
   $: albumId = album.id;
   $: albumKey = `${albumId}_${albumOrder}`;
+
+  $: people = data.people.people;
+  $: selectedPeopleOnlyTogether = false;
 
   $: {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
@@ -101,6 +111,7 @@
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
     SELECT_ASSETS = 'select-assets',
+    SELECT_PEOPLE_ASSETS = 'select-people-assets',
     ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
@@ -290,6 +301,32 @@
       await refreshAlbum();
 
       timelineInteractionStore.clearMultiselect();
+      viewMode = ViewMode.VIEW;
+    } catch (error) {
+      handleError(error, 'Error adding assets to album');
+    }
+  };
+
+  const handleAddPeople = async () => {
+    const peopleIds = $boundSelectedPeople.map((person) => person.id);
+
+    try {
+      const results = await addPeopleToAlbum({
+        id: album.id,
+        addPeopleDto: {
+          ids: peopleIds,
+          together: selectedPeopleOnlyTogether,
+        },
+      });
+
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+      });
+
+      await refreshAlbum();
+
       viewMode = ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error adding assets to album');
@@ -492,28 +529,54 @@
         </ControlAppBar>
       {/if}
 
-      {#if viewMode === ViewMode.SELECT_ASSETS}
+      {#if viewMode === ViewMode.SELECT_ASSETS || viewMode === ViewMode.SELECT_PEOPLE_ASSETS}
         <ControlAppBar on:close={handleCloseSelectAssets}>
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
-              {#if $timelineSelected.size === 0}
+              {#if viewMode === ViewMode.SELECT_ASSETS && $timelineSelected.size === 0}
                 Add to album
-              {:else}
-                {$timelineSelected.size.toLocaleString($locale)} selected
+              {/if}
+              {#if viewMode === ViewMode.SELECT_ASSETS && $timelineSelected.size > 0}
+                {$timelineSelected.size.toLocaleString($locale)}
+                selected
+              {/if}
+              {#if viewMode === ViewMode.SELECT_PEOPLE_ASSETS}
+                Add people
               {/if}
             </p>
           </svelte:fragment>
 
           <svelte:fragment slot="trailing">
-            <button
-              on:click={handleSelectFromComputer}
-              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
-            >
-              Select from computer
-            </button>
-            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
-              >Done</Button
-            >
+            {#if viewMode === ViewMode.SELECT_ASSETS}
+              <button
+                on:click={handleSelectFromComputer}
+                class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+              >
+                Select from computer
+              </button>
+              <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}>
+                Done
+              </Button>
+            {/if}
+            {#if viewMode === ViewMode.SELECT_PEOPLE_ASSETS}
+              <div
+                class="flex items-center gap-2 px-6 py-2 text-sm font-medium dark:text-immich-dark-fg text-immich-fg
+                {$boundSelectedPeople.length <= 1 ? 'opacity-50' : 'opacity-100'}"
+              >
+                <span>Together only</span>
+                <Slider
+                  id="select-people-assets-together-toggle"
+                  disabled={$boundSelectedPeople.length <= 1}
+                  on:toggle={({ detail }) => {
+                    selectedPeopleOnlyTogether = detail;
+                  }}
+                  ariaDescribedBy="People assets only together toggle"
+                />
+              </div>
+              <Button size="sm" rounded="lg" disabled={$boundSelectedPeople.length === 0} on:click={handleAddPeople}>
+                Done
+              </Button>
+            {/if}
           </svelte:fragment>
         </ControlAppBar>
       {/if}
@@ -531,13 +594,26 @@
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
       {#key albumKey}
+        {#if viewMode === ViewMode.SELECT_PEOPLE_ASSETS}
+          <section id="select-people-assets" class="w-full h-full px-5">
+            <div class="my-5">
+              <span>
+                New and previous photos featuring any of these faces will automatically be added to this album
+              </span>
+            </div>
+            <AlbumPeopleGrid {people} bind:selectedPeople={boundSelectedPeople} />
+          </section>
+        {/if}
+
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             assetStore={timelineStore}
             assetInteractionStore={timelineInteractionStore}
             isSelectionMode={true}
           />
-        {:else}
+        {/if}
+        
+        {#if viewMode !== ViewMode.SELECT_ASSETS && viewMode !== ViewMode.SELECT_PEOPLE_ASSETS}
           <AssetGrid
             {album}
             {assetStore}
@@ -603,9 +679,20 @@
             {/if}
 
             {#if album.assetCount === 0}
-              <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+              <section id="empty-album" class=" mt-20 flex place-content-center place-items-center">
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+
+                  <button
+                    on:click={() => (viewMode = ViewMode.SELECT_PEOPLE_ASSETS)}
+                    class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  >
+                    <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                      ><Icon path={mdiAccountCircle} size="24" />
+                    </span>
+                    <span class="text-lg">Select people</span>
+                  </button>
+
                   <button
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"

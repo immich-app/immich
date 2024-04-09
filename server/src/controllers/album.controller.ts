@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  AddPeopleDto,
   AddUsersDto,
   AlbumCountResponseDto,
   AlbumInfoDto,
@@ -68,6 +69,16 @@ export class AlbumController {
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
+  }
+
+  @SharedLinkRoute()
+  @Put(':id/people')
+  addPeopleToAlbum(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AddPeopleDto,
+  ): Promise<BulkIdResponseDto[]> {
+    return this.service.addPeople(auth, id, dto);
   }
 
   @Delete(':id/assets')

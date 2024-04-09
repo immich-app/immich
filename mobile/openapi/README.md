@@ -82,6 +82,7 @@ Class | Method | HTTP request | Description
 *ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
 *ActivityApi* | [**getActivityStatistics**](doc//ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
+*AlbumApi* | [**addPeopleToAlbum**](doc//AlbumApi.md#addpeopletoalbum) | **PUT** /album/{id}/people | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
@@ -230,6 +231,7 @@ Class | Method | HTTP request | Description
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
+ - [AddPeopleDto](doc//AddPeopleDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)

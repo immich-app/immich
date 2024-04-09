@@ -160,6 +160,7 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
+  getAllByPersonsIds(ownerId: string, personsIds: string[], strict?: boolean): Promise<AssetEntity[]>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;

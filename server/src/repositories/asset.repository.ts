@@ -33,13 +33,16 @@ import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
+  And,
   Brackets,
+  Equal,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
   In,
   IsNull,
   Not,
+  Or,
   Repository,
 } from 'typeorm';
 
@@ -206,6 +209,31 @@ export class AssetRepository implements IAssetRepository {
       skip: pagination.skip,
       take: pagination.take,
     });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  async getAllByPersonsIds(ownerId: string, personsIds: string[], strict = false) {
+    const filters = personsIds.map((personId) => Equal(personId));
+
+    const results = await this.repository.find({
+      select: {
+        id: true,
+        faces: true,
+      },
+      where: {
+        ownerId,
+        isVisible: true,
+        faces: { personId: Or(...filters) },
+      },
+      relations: { faces: { person: true } },
+      withDeleted: true,
+    });
+
+    if (strict) {
+      return results.filter((asset) => personsIds.every((id) => asset.faces.some((face) => face.personId === id)));
+    }
+
+    return results;
   }
 
   /**

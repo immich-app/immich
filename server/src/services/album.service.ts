@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import {
+  AddPeopleDto,
   AddUsersDto,
   AlbumCountResponseDto,
   AlbumInfoDto,
@@ -178,6 +179,41 @@ export class AlbumService {
         id,
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
+      });
+    }
+
+    return results;
+  }
+
+  private resolveAlbumName(names: string[], together: boolean = false){
+    if(names.length > 2){
+      const nameItems = [...names];
+      const lastItem = nameItems.pop();
+      return nameItems.join(', ').concat(` and ${lastItem} ${together ? 'together': ''}`)
+    }
+    return names.join(` ${together ? 'with' : 'and'} `)
+  }
+
+  async addPeople(auth: AuthDto, id: string, dto: AddPeopleDto): Promise<BulkIdResponseDto[]> {
+    const album = await this.findOrFail(id, { withAssets: false });
+    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
+
+    const assets = await this.assetRepository.getAllByPersonsIds(auth.user.id, dto.ids, dto.together);
+    const names = new Set(assets.flatMap(({ faces }) => faces.map(({ person }) => `${person?.name}`)));
+
+    const results = await addAssets(
+      auth,
+      { accessRepository: this.accessRepository, repository: this.albumRepository },
+      { id, assetIds: assets.map(({ id }) => id) },
+    );
+
+    const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
+    if (firstNewAssetId) {
+      await this.albumRepository.update({
+        id,
+        updatedAt: new Date(),
+        albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
+        albumName: this.resolveAlbumName([...names], dto.together),
       });
     }
 

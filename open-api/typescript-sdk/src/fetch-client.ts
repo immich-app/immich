@@ -187,6 +187,10 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
+export type AddPeopleDto = {
+    ids: string[];
+    together?: boolean;
+};
 export type AddUsersDto = {
     sharedUserIds: string[];
 };
@@ -1186,6 +1190,22 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
+    })));
+}
+export function addPeopleToAlbum({ id, key, addPeopleDto }: {
+    id: string;
+    key?: string;
+    addPeopleDto: AddPeopleDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/album/${encodeURIComponent(id)}/people${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: addPeopleDto
     })));
 }
 export function removeUserFromAlbum({ id, userId }: {
