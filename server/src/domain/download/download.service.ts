@@ -83,8 +83,8 @@ export class DownloadService {
     const assets = await this.assetRepository.getByIds(dto.assetIds);
     const paths: Record<string, number> = {};
 
-    for (const { originalPath, originalFileName } of assets) {
-      const extension = extname(originalPath);
+    for (const { originalPath, originalFileName, type } of assets) {
+      const extension = type === 'VIDEO' ? '.mp4' : extname(originalPath);
       let filename = `${originalFileName}${extension}`;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
