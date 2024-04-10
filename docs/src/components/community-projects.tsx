@@ -28,6 +28,11 @@ const projects: CommunityProjectProps[] = [
     description: 'A python script to remove offline files.',
     url: 'https://gist.github.com/Thoroslives/ca5d8e1efd15111febc1e7b34ac72668',
   },
+  {
+    title: 'Podman/Quadlets Install',
+    description: 'Documentation for simple podman setup using quadlets.',
+    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
