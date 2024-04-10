@@ -20,13 +20,18 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'API Album Sync',
-    description: 'A python script to sync folders as albums.',
+    description: 'A Python script to sync folders as albums.',
     url: 'https://git.orenit.solutions/open/immichalbumpull',
   },
   {
     title: 'Remove offline files',
-    description: 'A python script to remove offline files.',
+    description: 'A Python script to remove offline files.',
     url: 'https://gist.github.com/Thoroslives/ca5d8e1efd15111febc1e7b34ac72668',
+  },
+  {
+    title: 'Create albums from folders',
+    description: 'A Python script to create albums based on the folder structure of an external library.',
+    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
     title: 'Podman/Quadlets Install',

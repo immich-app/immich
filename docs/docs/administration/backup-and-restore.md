@@ -63,7 +63,7 @@ services:
   ...
   backup:
     container_name: immich_db_dumper
-    image: prodrigestivill/postgres-backup-local
+    image: prodrigestivill/postgres-backup-local:14
     env_file:
       - .env
     environment:
