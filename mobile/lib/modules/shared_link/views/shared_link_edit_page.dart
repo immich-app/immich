@@ -273,7 +273,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 3,
-            label: "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
+            label:
+                "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30 * 12,
