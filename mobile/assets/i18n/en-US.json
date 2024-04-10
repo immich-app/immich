@@ -439,6 +439,8 @@
   "shared_link_edit_expire_after_option_hours": "{} hours",
   "shared_link_edit_expire_after_option_minute": "1 minute",
   "shared_link_edit_expire_after_option_minutes": "{} minutes",
+  "shared_link_edit_expire_after_option_months": "{} months",
+  "shared_link_edit_expire_after_option_year": "{} year",
   "shared_link_edit_expire_after_option_never": "Never",
   "shared_link_edit_password": "Password",
   "shared_link_edit_password_hint": "Enter the share password",
