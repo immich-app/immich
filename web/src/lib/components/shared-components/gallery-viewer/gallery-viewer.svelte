@@ -10,7 +10,7 @@
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { calculateWidth } from '$lib/utils/timeline-util';
-  import { pushState, replaceState } from '$app/navigation';
+  import { navigate } from '$lib/utils/navigation';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -20,17 +20,15 @@
   export let showArchiveIcon = false;
   export let viewport: Viewport;
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
 
-  let selectedAsset: AssetResponseDto;
   let currentViewAssetIndex = 0;
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
   const viewAssetHandler = (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
-    selectedAsset = assets[currentViewAssetIndex];
-    $showAssetViewer = true;
-    updateAssetState(selectedAsset.id, false);
+    setAsset(assets[currentViewAssetIndex]);
+    navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
   };
 
   const selectAssetHandler = (asset: AssetResponseDto) => {
@@ -48,9 +46,8 @@
   const navigateAssetForward = () => {
     try {
       if (currentViewAssetIndex < assets.length - 1) {
-        currentViewAssetIndex++;
-        selectedAsset = assets[currentViewAssetIndex];
-        updateAssetState(selectedAsset.id);
+        setAsset(assets[++currentViewAssetIndex]);
+        navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to the next asset');
@@ -60,28 +57,12 @@
   const navigateAssetBackward = () => {
     try {
       if (currentViewAssetIndex > 0) {
-        currentViewAssetIndex--;
-        selectedAsset = assets[currentViewAssetIndex];
-        updateAssetState(selectedAsset.id);
+        setAsset(assets[--currentViewAssetIndex]);
+        navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to previous asset');
     }
-  };
-
-  const updateAssetState = (assetId: string, replace = true) => {
-    const route = `${$page.url.pathname}/photos/${assetId}`;
-
-    if (replace) {
-      replaceState(route, {});
-    } else {
-      pushState(route, {});
-    }
-  };
-
-  const closeViewer = () => {
-    $showAssetViewer = false;
-    pushState(`${$page.url.pathname}${$page.url.search}`, {});
   };
 
   onDestroy(() => {
@@ -106,8 +87,6 @@
     };
   })();
 </script>
-
-<svelte:window on:popstate|preventDefault={closeViewer} />
 
 {#if assets.length > 0}
   <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
@@ -136,10 +115,5 @@
 
 <!-- Overlay Asset Viewer -->
 {#if $showAssetViewer}
-  <AssetViewer
-    asset={selectedAsset}
-    on:previous={navigateAssetBackward}
-    on:next={navigateAssetForward}
-    on:close={closeViewer}
-  />
+  <AssetViewer asset={$viewingAsset} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
 {/if}
