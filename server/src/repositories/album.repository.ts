@@ -40,6 +40,10 @@ export class AlbumRepository implements IAlbumRepository {
       };
     }
 
+    if (options.withPeople) {
+      relations.people = true;
+    }
+
     return this.repository.findOne({ where: { id }, relations, order });
   }
 

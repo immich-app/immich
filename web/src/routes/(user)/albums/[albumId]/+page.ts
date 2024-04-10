@@ -4,7 +4,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   await authenticate();
-  const album = await getAlbumInfo({ id: params.albumId, withoutAssets: true });
+  const album = await getAlbumInfo({ id: params.albumId, withoutAssets: true, withoutPeople: false });
   const people = await getAllPeople({ withHidden: true });
 
   return {

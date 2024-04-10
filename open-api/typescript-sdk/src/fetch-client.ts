@@ -141,6 +141,13 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     updatedAt: string;
 };
+export type PersonResponseDto = {
+    birthDate: string | null;
+    id: string;
+    isHidden: boolean;
+    name: string;
+    thumbnailPath: string;
+};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
@@ -156,6 +163,8 @@ export type AlbumResponseDto = {
     order?: AssetOrder;
     owner: UserResponseDto;
     ownerId: string;
+    people?: PersonResponseDto[];
+    peopleTogether?: boolean;
     shared: boolean;
     sharedUsers: UserResponseDto[];
     startDate?: string;
@@ -394,13 +403,6 @@ export type DownloadArchiveInfo = {
 export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
-};
-export type PersonResponseDto = {
-    birthDate: string | null;
-    id: string;
-    isHidden: boolean;
-    name: string;
-    thumbnailPath: string;
 };
 export type AssetFaceResponseDto = {
     boundingBoxX1: number;
@@ -1135,17 +1137,19 @@ export function deleteAlbum({ id }: {
         method: "DELETE"
     }));
 }
-export function getAlbumInfo({ id, key, withoutAssets }: {
+export function getAlbumInfo({ id, key, withoutAssets, withoutPeople }: {
     id: string;
     key?: string;
     withoutAssets?: boolean;
+    withoutPeople?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto;
     }>(`/album/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
-        withoutAssets
+        withoutAssets,
+        withoutPeople
     }))}`, {
         ...opts
     }));

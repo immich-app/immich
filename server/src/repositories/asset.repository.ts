@@ -33,7 +33,6 @@ import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
-  And,
   Brackets,
   Equal,
   FindOptionsRelations,
@@ -230,7 +229,11 @@ export class AssetRepository implements IAssetRepository {
     });
 
     if (strict) {
-      return results.filter((asset) => personsIds.every((id) => asset.faces.some((face) => face.personId === id)));
+      return results.filter((asset) => {
+        return personsIds.every((id) => {
+          return asset.faces.some((face) => face.personId === id);
+        });
+      });
     }
 
     return results;

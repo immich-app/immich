@@ -1,7 +1,9 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import { dateFormats } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { mdiRefreshAuto } from '@mdi/js';
 
   export let album: AlbumResponseDto;
 
@@ -29,4 +31,11 @@
   <p>{getDateRange(startDate, endDate)}</p>
   <p>·</p>
   <p>{album.assetCount} items</p>
+  {#if album.people}
+    <p>·</p>
+    <div class="flex gap-1">
+      <Icon path={mdiRefreshAuto} size={20} />
+      <p>Auto-update</p>
+    </div>
+  {/if}
 </span>

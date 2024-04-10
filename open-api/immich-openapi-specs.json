@@ -393,6 +393,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withoutPeople",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -7196,6 +7204,15 @@
           },
           "ownerId": {
             "type": "string"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            },
+            "type": "array"
+          },
+          "peopleTogether": {
+            "type": "boolean"
           },
           "shared": {
             "type": "boolean"

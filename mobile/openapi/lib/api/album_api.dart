@@ -330,7 +330,9 @@ class AlbumApi {
   /// * [String] key:
   ///
   /// * [bool] withoutAssets:
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
+  ///
+  /// * [bool] withoutPeople:
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, bool? withoutPeople, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{id}'
       .replaceAll('{id}', id);
@@ -347,6 +349,9 @@ class AlbumApi {
     }
     if (withoutAssets != null) {
       queryParams.addAll(_queryParams('', 'withoutAssets', withoutAssets));
+    }
+    if (withoutPeople != null) {
+      queryParams.addAll(_queryParams('', 'withoutPeople', withoutPeople));
     }
 
     const contentTypes = <String>[];
@@ -370,8 +375,10 @@ class AlbumApi {
   /// * [String] key:
   ///
   /// * [bool] withoutAssets:
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, bool? withoutAssets, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, withoutAssets: withoutAssets, );
+  ///
+  /// * [bool] withoutPeople:
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, bool? withoutAssets, bool? withoutPeople, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  key: key, withoutAssets: withoutAssets, withoutPeople: withoutPeople, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

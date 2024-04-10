@@ -1,4 +1,5 @@
 import { AssetEntity } from 'src/entities/asset.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
@@ -68,4 +69,20 @@ export class AlbumEntity {
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
   order!: AssetOrder;
+
+  @ManyToMany(() => PersonEntity)
+  @JoinTable({
+    joinColumn: {
+      name: 'albumId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'personId',
+      referencedColumnName: 'id',
+    },
+  })
+  people?: PersonEntity[];
+
+  @Column({ type: 'boolean', default: false })
+  peopleTogether?: boolean;
 }

@@ -12,6 +12,7 @@
   import type { RenderedOption } from '../elements/dropdown.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { findKey } from 'lodash-es';
+  import FaceThumbnail from '$lib/components/faces-page/face-thumbnail.svelte';
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
@@ -66,6 +67,30 @@
         </div>
 
         <div class=" items-center justify-center p-4">
+          {#if album.people}
+            <div class="py-2">
+              <h2 class="text-gray text-sm mb-2">PEOPLE</h2>
+              <div
+                class="flex p-2 {album.peopleTogether
+                  ? 'gap-0'
+                  : 'gap-2'} items-center text-gray-900 dark:text-gray-400"
+              >
+                {#each album.people as person, index}
+                  <div class={album.peopleTogether && index != 0 ? '-ml-4' : ''}>
+                    <FaceThumbnail
+                      {person}
+                      circle={true}
+                      thumbnailSize={54}
+                      showName={false}
+                      on:click={() => {}}
+                      tooltip={true}
+                    />
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
           <div class="py-2">
             <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
             <div class="grid p-2 gap-y-2">
@@ -87,7 +112,7 @@
             </div>
           </div>
           <div class="py-2">
-            <div class="text-gray text-sm mb-3">PEOPLE</div>
+            <div class="text-gray text-sm mb-3">SHARE WITH</div>
             <div class="p-2">
               <button class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
                 <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">

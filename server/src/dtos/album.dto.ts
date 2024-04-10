@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsBoolean, IsEnum, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { PersonResponseDto, mapPerson } from 'src/dtos/person.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
@@ -10,6 +11,9 @@ import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 export class AlbumInfoDto {
   @ValidateBoolean({ optional: true })
   withoutAssets?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withoutPeople?: boolean;
 }
 
 export class AddUsersDto {
@@ -106,6 +110,10 @@ export class AlbumResponseDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
+  @Optional()
+  people?: PersonResponseDto[];
+  @Optional()
+  peopleTogether?: boolean;
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -147,6 +155,10 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    ...(entity.people?.length && {
+      people: entity.people.map((person) => mapPerson(person)),
+      peopleTogether: entity.peopleTogether,
+    }),
   };
 };
 
@@ -155,6 +167,6 @@ export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, f
 
 export class AddPeopleDto extends BulkIdsDto {
   @ValidateBoolean({ optional: true })
-  @ApiProperty({ type:'boolean' })
+  @ApiProperty({ type: 'boolean' })
   together?: boolean;
 }

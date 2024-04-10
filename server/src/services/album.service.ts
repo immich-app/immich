@@ -17,6 +17,7 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
@@ -101,7 +102,7 @@ export class AlbumService {
     await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
-    const album = await this.findOrFail(id, { withAssets });
+    const album = await this.findOrFail(id, { withAssets, withPeople: !dto.withoutPeople });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
     return {
@@ -185,13 +186,13 @@ export class AlbumService {
     return results;
   }
 
-  private resolveAlbumName(names: string[], together: boolean = false){
-    if(names.length > 2){
+  private resolveAlbumName(names: string[], together: boolean = false) {
+    if (names.length > 2) {
       const nameItems = [...names];
       const lastItem = nameItems.pop();
-      return nameItems.join(', ').concat(` and ${lastItem} ${together ? 'together': ''}`)
+      return nameItems.join(', ').concat(` and ${lastItem} ${together ? 'together' : ''}`);
     }
-    return names.join(` ${together ? 'with' : 'and'} `)
+    return names.join(` ${together ? 'with' : 'and'} `);
   }
 
   async addPeople(auth: AuthDto, id: string, dto: AddPeopleDto): Promise<BulkIdResponseDto[]> {
@@ -214,6 +215,8 @@ export class AlbumService {
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
         albumName: this.resolveAlbumName([...names], dto.together),
+        people: dto.ids.map((id) => ({ id }) as PersonEntity),
+        peopleTogether: dto.together,
       });
     }
 

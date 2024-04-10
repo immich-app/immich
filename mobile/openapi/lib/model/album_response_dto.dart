@@ -27,6 +27,8 @@ class AlbumResponseDto {
     this.order,
     required this.owner,
     required this.ownerId,
+    this.people = const [],
+    this.peopleTogether,
     required this.shared,
     this.sharedUsers = const [],
     this.startDate,
@@ -79,6 +81,16 @@ class AlbumResponseDto {
 
   String ownerId;
 
+  List<PersonResponseDto> people;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? peopleTogether;
+
   bool shared;
 
   List<UserResponseDto> sharedUsers;
@@ -109,6 +121,8 @@ class AlbumResponseDto {
     other.order == order &&
     other.owner == owner &&
     other.ownerId == ownerId &&
+    _deepEquality.equals(other.people, people) &&
+    other.peopleTogether == peopleTogether &&
     other.shared == shared &&
     _deepEquality.equals(other.sharedUsers, sharedUsers) &&
     other.startDate == startDate &&
@@ -131,13 +145,15 @@ class AlbumResponseDto {
     (order == null ? 0 : order!.hashCode) +
     (owner.hashCode) +
     (ownerId.hashCode) +
+    (people.hashCode) +
+    (peopleTogether == null ? 0 : peopleTogether!.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
     (startDate == null ? 0 : startDate!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, people=$people, peopleTogether=$peopleTogether, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -171,6 +187,12 @@ class AlbumResponseDto {
     }
       json[r'owner'] = this.owner;
       json[r'ownerId'] = this.ownerId;
+      json[r'people'] = this.people;
+    if (this.peopleTogether != null) {
+      json[r'peopleTogether'] = this.peopleTogether;
+    } else {
+    //  json[r'peopleTogether'] = null;
+    }
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
     if (this.startDate != null) {
@@ -204,6 +226,8 @@ class AlbumResponseDto {
         order: AssetOrder.fromJson(json[r'order']),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        people: PersonResponseDto.listFromJson(json[r'people']),
+        peopleTogether: mapValueOfType<bool>(json, r'peopleTogether'),
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
         startDate: mapDateTime(json, r'startDate', r''),

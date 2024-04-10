@@ -358,7 +358,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAlbumInfo**
-> AlbumResponseDto getAlbumInfo(id, key, withoutAssets)
+> AlbumResponseDto getAlbumInfo(id, key, withoutAssets, withoutPeople)
 
 
 
@@ -384,9 +384,10 @@ final api_instance = AlbumApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final key = key_example; // String | 
 final withoutAssets = true; // bool | 
+final withoutPeople = true; // bool | 
 
 try {
-    final result = api_instance.getAlbumInfo(id, key, withoutAssets);
+    final result = api_instance.getAlbumInfo(id, key, withoutAssets, withoutPeople);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->getAlbumInfo: $e\n');
@@ -400,6 +401,7 @@ Name | Type | Description  | Notes
  **id** | **String**|  | 
  **key** | **String**|  | [optional] 
  **withoutAssets** | **bool**|  | [optional] 
+ **withoutPeople** | **bool**|  | [optional] 
 
 ### Return type
 

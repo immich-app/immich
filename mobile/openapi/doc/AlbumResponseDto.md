@@ -22,6 +22,8 @@ Name | Type | Description | Notes
 **order** | [**AssetOrder**](AssetOrder.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
+**people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
+**peopleTogether** | **bool** |  | [optional] 
 **shared** | **bool** |  | 
 **sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 

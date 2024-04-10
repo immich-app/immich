@@ -12,6 +12,7 @@ export interface AlbumAssetCount {
 
 export interface AlbumInfoOptions {
   withAssets: boolean;
+  withPeople?: boolean;
 }
 
 export interface AlbumAsset {
