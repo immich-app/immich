@@ -31,42 +31,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   describe('POST /library/:id/scan', () => {
-    it('should offline missing files', async () => {
-      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
-        recursive: true,
-      });
-
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
-      });
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const onlineAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(onlineAssets.length).toBeGreaterThan(1);
-
-      await restoreTempFolder();
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'el_torcal_rocks.jpg',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'tanners_ridge.jpg',
-          }),
-        ]),
-      );
-    });
-
     it('should scan new files', async () => {
       const library = await api.libraryApi.create(server, admin.accessToken, {
         ownerId: admin.userId,

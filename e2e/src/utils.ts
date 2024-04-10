@@ -1,4 +1,5 @@
 import {
+  AllJobStatusResponseDto,
   AssetFileUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
@@ -18,6 +19,7 @@ import {
   defaults,
   deleteAssets,
   getAllAssets,
+  getAllJobsStatus,
   getAssetInfo,
   login,
   searchMetadata,
@@ -31,6 +33,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
+import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
@@ -405,6 +408,34 @@ export const utils = {
         sameSite: 'Lax',
       },
     ]),
+
+  deleteTempFolder: () => {
+    rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
+  },
+
+  isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {
+    const queues = await getAllJobsStatus({ headers: asBearerAuth(accessToken) });
+    const jobCounts = queues[queue].jobCounts;
+    console.log(jobCounts);
+    return !jobCounts.active && !jobCounts.waiting;
+  },
+
+  waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+    return new Promise<void>(async (resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
+
+      while (true) {
+        const done = await utils.isQueueEmpty(accessToken, queue);
+        if (done) {
+          break;
+        }
+        await setAsyncTimeout(300);
+      }
+
+      clearTimeout(timeout);
+      resolve();
+    });
+  },
 
   cliLogin: async (accessToken: string) => {
     const key = await utils.createApiKey(accessToken);
