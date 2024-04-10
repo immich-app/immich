@@ -11,8 +11,6 @@
     viewer = new Viewer({
       container,
       panorama,
-      touchmoveTwoFingers: true,
-      mousewheelCtrlKey: false,
       navbar: false,
     });
   });

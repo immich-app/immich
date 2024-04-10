@@ -151,13 +151,13 @@ class SearchPage extends HookConsumerWidget {
                 Icon(Icons.search, color: context.primaryColor),
                 const SizedBox(width: 16.0),
                 Text(
-                  "Search your photos",
+                  "search_bar_hint",
                   style: context.textTheme.bodyLarge?.copyWith(
                     color:
                         context.isDarkTheme ? Colors.white70 : Colors.black54,
                     fontWeight: FontWeight.w400,
                   ),
-                ),
+                ).tr(),
               ],
             ),
           ),

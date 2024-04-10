@@ -111,7 +111,7 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
     ]);
 
-    user2Assets = await Promise.all([utils.createAsset(user2.accessToken)]);
+    user2Assets = [await utils.createAsset(user2.accessToken)];
 
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),

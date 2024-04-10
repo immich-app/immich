@@ -121,7 +121,8 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialogue
-    title="Leave Album?"
+    id="leave-album-modal"
+    title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
     onConfirm={handleRemoveUser}
@@ -131,7 +132,8 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
-    title="Remove User?"
+    id="remove-user-modal"
+    title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}"
     confirmText="Remove"
     onConfirm={handleRemoveUser}

@@ -266,9 +266,6 @@ export class LibraryService extends EventEmitter {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
-        if (dto.isWatched) {
-          throw new BadRequestException('Upload libraries cannot be watched');
-        }
         break;
       }
     }

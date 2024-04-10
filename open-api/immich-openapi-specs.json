@@ -6942,7 +6942,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.100.0",
+    "version": "1.101.0",
     "contact": {}
   },
   "tags": [],
@@ -8068,9 +8068,6 @@
             "type": "array"
           },
           "isVisible": {
-            "type": "boolean"
-          },
-          "isWatched": {
             "type": "boolean"
           },
           "name": {

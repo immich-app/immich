@@ -5,13 +5,14 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
+import { createAlbum } from '$lib/utils/album-utils';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
-  createAlbum,
   defaults,
   getDownloadInfo,
   updateAssets,
+  type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
@@ -48,33 +49,30 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
-  try {
-    const album = await createAlbum({
-      createAlbumDto: {
-        albumName,
-        assetIds,
-      },
-    });
-    const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
-    notificationController.show({
-      type: NotificationType.Info,
-      timeout: 5000,
-      message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
-      html: true,
-      button: {
-        text: 'View Album',
-        onClick() {
-          return goto(`${AppRoute.ALBUMS}/${album.id}`);
-        },
-      },
-    });
-    return album;
-  } catch {
-    notificationController.show({
-      type: NotificationType.Error,
-      message: 'Failed to create album',
-    });
+  const album = await createAlbum(albumName, assetIds);
+  if (!album) {
+    return;
   }
+  const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
+  notificationController.show({
+    type: NotificationType.Info,
+    timeout: 5000,
+    message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+    html: true,
+    button: {
+      text: 'View Album',
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${album.id}`);
+      },
+    },
+  });
+  return album;
+};
+
+export const downloadAlbum = async (album: AlbumResponseDto) => {
+  await downloadArchive(`${album.albumName}.zip`, {
+    albumId: album.id,
+  });
 };
 
 export const downloadBlob = (data: Blob, filename: string) => {

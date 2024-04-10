@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.100.0
+ * 1.101.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -461,7 +461,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
