@@ -8,6 +8,7 @@ export const isExternalUrl = (url: string): boolean => {
   return new URL(url, window.location.href).origin !== window.location.origin;
 };
 
+export const isPhotosRoute = (route?: string | null) => route?.startsWith('/(user)/photos/[[assetId=id]]') || false;
 export const isSharedLinkRoute = (route?: string | null) => route?.startsWith('/(user)/share/[key]') || false;
 export const isSearchRoute = (route?: string | null) => route?.startsWith('/(user)/search') || false;
 export const isAlbumsRoute = (route?: string | null) => route?.startsWith('/(user)/albums/[albumId=id]') || false;
@@ -24,7 +25,7 @@ function currentUrlWithoutAsset() {
   const $page = get(page);
   // This contains special casing for the /photos/:assetId route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
-  return $page.route.id === '/(user)/photos/[[assetId=id]]'
+  return isPhotosRoute($page.route.id)
     ? AppRoute.PHOTOS + $page.url.search
     : $page.url.pathname.replace(/(\/photos.*)$/, '') + $page.url.search;
 }
@@ -33,7 +34,7 @@ function currentUrlReplaceAssetId(assetId: string) {
   const $page = get(page);
   // this contains special casing for the /photos/:assetId photos route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
-  return $page.route.id === '/(user)/photos/[[assetId=id]]'
+  return isPhotosRoute($page.route.id)
     ? `${AppRoute.PHOTOS}/${assetId}${$page.url.search}`
     : `${$page.url.pathname.replace(/(\/photos.*)$/, '')}/photos/${assetId}${$page.url.search}`;
 }

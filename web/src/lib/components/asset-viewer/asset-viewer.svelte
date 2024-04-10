@@ -98,7 +98,6 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-  let element: Element;
 
   $: isFullScreen = fullscreenElement !== null;
 
@@ -544,7 +543,6 @@
 
 <FocusTrap>
   <section
-    bind:this={element}
     id="immich-asset-viewer"
     class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   >
