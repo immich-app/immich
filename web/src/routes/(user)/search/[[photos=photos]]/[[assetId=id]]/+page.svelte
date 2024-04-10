@@ -38,6 +38,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
+  import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -73,12 +74,13 @@
     if (from?.url && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
     }
+    const route = from?.route?.id;
 
-    if (from?.route.id === '/(user)/people/[personId]') {
+    if (isPeopleRoute(route)) {
       previousRoute = AppRoute.PHOTOS;
     }
 
-    if (from?.route.id === '/(user)/albums/[albumId]') {
+    if (isAlbumsRoute(route)) {
       previousRoute = AppRoute.EXPLORE;
     }
   });

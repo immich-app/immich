@@ -51,7 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
-  import { createAssetEvent, type AssetEventTypes, type AssetDetail } from '$lib/utils/custom-events';
+  import { navigate } from '$lib/utils/navigation';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -193,7 +193,7 @@
   }
 
   onMount(async () => {
-    element.dispatchEvent(createAssetEvent('asset-opened', { assetId: asset.id }));
+    navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -272,7 +272,7 @@
 
   const closeViewer = () => {
     dispatch('close');
-    element.dispatchEvent(createAssetEvent('asset-closed', { assetId: asset.id }));
+    navigate({ targetRoute: 'current', assetId: null });
   };
 
   const navigateAssetRandom = async () => {

@@ -17,10 +17,9 @@
   import { handleError } from '$lib/utils/handle-error';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
+  import { isSharedLinkRoute } from '$lib/utils/navigation';
 
   let showNavigationLoadingBar = false;
-
-  const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
 
   $: changeTheme($colorTheme);
 

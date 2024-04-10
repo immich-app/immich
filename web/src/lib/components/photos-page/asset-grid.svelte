@@ -22,7 +22,7 @@
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
-  import { createAssetEvent } from '$lib/utils/custom-events';
+  import { navigate } from '$lib/utils/navigation';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -140,26 +140,24 @@
   }
 
   const handlePrevious = async () => {
-    const id = $viewingAsset.id;
-    const previousAsset = await assetStore.getPreviousAsset(id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
 
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
-      element.dispatchEvent(createAssetEvent('asset-changed', { fromAssetId: id, toAssetId: previousAsset.id }));
+      navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
-    const id = $viewingAsset.id;
     const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
 
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
-      element.dispatchEvent(createAssetEvent('asset-changed', { fromAssetId: id, toAssetId: nextAsset.id }));
+      navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
     return !!nextAsset;
@@ -461,7 +459,7 @@
   {/if}
 </section>
 
-<Portal target="main">
+<Portal target="body">
   {#if $showAssetViewer}
     {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
       <AssetViewer.default

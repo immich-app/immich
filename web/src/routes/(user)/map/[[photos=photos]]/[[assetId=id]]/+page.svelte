@@ -111,7 +111,7 @@
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div></UserPageLayout
   >
-  <Portal target="main">
+  <Portal target="body">
     {#if $showAssetViewer}
       <AssetViewer
         asset={$viewingAsset}

@@ -87,7 +87,7 @@
 </div>
 
 {#if showContextMenu}
-  <Portal target="main">
+  <Portal target="body">
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
       <MenuOption on:click={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text="Hide person" />
       <MenuOption on:click={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text="Change name" />

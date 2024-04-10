@@ -79,6 +79,7 @@
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
+  import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
 
   export let data: PageData;
 
@@ -139,14 +140,12 @@
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
 
-    if (from?.route.id?.startsWith('/(user)/search')) {
-      url = from.url.href;
+    const route = from?.route?.id;
+    if (isSearchRoute(route)) {
+      url = from?.url.href;
     }
 
-    if (
-      from?.route.id?.startsWith('/(user)/albums/[albumId=id]') ||
-      from?.route.id?.startsWith('/(user)/people/[personId]')
-    ) {
+    if (isAlbumsRoute(route) || isPeopleRoute(route)) {
       url = AppRoute.ALBUMS;
     }
 
