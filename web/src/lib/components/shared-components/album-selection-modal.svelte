@@ -16,10 +16,10 @@
   const dispatch = createEventDispatcher<{
     newAlbum: string;
     album: AlbumResponseDto;
-    close: void;
   }>();
 
   export let shared: boolean;
+  export let onClose: () => void;
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -52,7 +52,7 @@
   };
 </script>
 
-<BaseModal id="album-selection-modal" title={getTitle()} on:close>
+<BaseModal id="album-selection-modal" title={getTitle()} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
