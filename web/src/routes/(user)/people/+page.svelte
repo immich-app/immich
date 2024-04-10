@@ -464,24 +464,22 @@
 
   {#if showChangeNameModal}
     <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
-      <form on:submit|preventDefault={submitNameChange} autocomplete="off">
+      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
-          <!-- svelte-ignore a11y-autofocus -->
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
-        </div>
-
-        <div class="mt-8 flex w-full gap-4">
-          <Button
-            color="gray"
-            fullwidth
-            on:click={() => {
-              showChangeNameModal = false;
-            }}>Cancel</Button
-          >
-          <Button type="submit" fullwidth>Ok</Button>
+          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
         </div>
       </form>
+      <svelte:fragment slot="sticky-bottom">
+        <Button
+          color="gray"
+          fullwidth
+          on:click={() => {
+            showChangeNameModal = false;
+          }}>Cancel</Button
+        >
+        <Button type="submit" fullwidth form="change-name-form">Ok</Button>
+      </svelte:fragment>
     </FullScreenModal>
   {/if}
 

@@ -7,7 +7,6 @@
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -432,9 +431,12 @@
 {#if allowEdit}
   <!-- Edit Modal -->
   {#if albumToEdit}
-    <FullScreenModal id="edit-album-modal" title="Edit album" width="wide" onClose={() => (albumToEdit = null)}>
-      <EditAlbumForm album={albumToEdit} onEditSuccess={successEditAlbumInfo} onCancel={() => (albumToEdit = null)} />
-    </FullScreenModal>
+    <EditAlbumForm
+      album={albumToEdit}
+      onEditSuccess={successEditAlbumInfo}
+      onCancel={() => (albumToEdit = null)}
+      onClose={() => (albumToEdit = null)}
+    />
   {/if}
 
   <!-- Share Modal -->

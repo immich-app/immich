@@ -9,7 +9,6 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -21,14 +20,7 @@
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { copyToClipboard } from '$lib/utils';
   import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import {
-    mdiAccountEditOutline,
-    mdiClose,
-    mdiContentCopy,
-    mdiDeleteRestore,
-    mdiPencilOutline,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -123,32 +115,22 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          id="create-new-user-modal"
-          title="Create new user"
-          showLogo
+        <CreateUserForm
+          on:submit={onUserCreated}
+          on:cancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
-        >
-          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          id="edit-user-modal"
-          title="Edit user"
-          icon={mdiAccountEditOutline}
+        <EditUserForm
+          user={selectedUser}
+          bind:newPassword
+          canResetPassword={selectedUser?.id !== $user.id}
+          on:editSuccess={onEditUserSuccess}
+          on:resetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
-        >
-          <EditUserForm
-            user={selectedUser}
-            bind:newPassword
-            canResetPassword={selectedUser?.id !== $user.id}
-            on:editSuccess={onEditUserSuccess}
-            on:resetPasswordSuccess={onEditPasswordSuccess}
-            on:close={() => (shouldShowEditUserForm = false)}
-          />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowDeleteConfirmDialog}

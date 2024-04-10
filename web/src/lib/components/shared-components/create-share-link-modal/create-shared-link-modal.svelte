@@ -241,17 +241,15 @@
     </div>
   </section>
 
-  <hr />
-
   <section slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
-          <Button size="sm" on:click={handleEditLink}>Confirm</Button>
+          <Button size="sm" fullwidth on:click={handleEditLink}>Confirm</Button>
         </div>
       {:else}
         <div class="flex justify-end">
-          <Button size="sm" on:click={handleCreateSharedLink}>Create link</Button>
+          <Button size="sm" fullwidth on:click={handleCreateSharedLink}>Create link</Button>
         </div>
       {/if}
     {:else}
@@ -260,7 +258,7 @@
 
         <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
           <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} size="18" />
+            <Icon path={mdiContentCopy} ariaLabel="Copy link to clipboard" size="18" />
           </div>
         </LinkButton>
       </div>

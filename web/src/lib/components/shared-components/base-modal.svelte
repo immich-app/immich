@@ -71,7 +71,9 @@
       </div>
 
       {#if $$slots['sticky-bottom']}
-        <div class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray">
+        <div
+          class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500"
+        >
           <slot name="sticky-bottom" />
         </div>
       {/if}
