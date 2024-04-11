@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.da
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/ui/overnight_backup.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
@@ -21,6 +22,65 @@ import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
 @RoutePage()
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backupProgress =
+        ref.watch(backupProvider.select((value) => value.backupProgress));
+    final showOvernightBackup = useState(false);
+
+    void startBackup() {
+      ref.watch(errorBackupListProvider.notifier).empty();
+      if (ref.watch(backupProvider).backupProgress !=
+          BackUpProgressEnum.inBackground) {
+        ref.watch(backupProvider.notifier).startBackupProcess();
+      }
+    }
+
+    void stopBackup() {
+      if (backupProgress == BackUpProgressEnum.manualInProgress) {
+        ref.read(manualUploadProvider.notifier).cancelBackup();
+      } else {
+        ref.read(backupProvider.notifier).cancelBackup();
+      }
+    }
+
+    void startOvernightBackup() {
+      showOvernightBackup.value = true;
+      startBackup();
+    }
+
+    void stopOvernightBackup() {
+      showOvernightBackup.value = false;
+      stopBackup();
+    }
+
+    return ValueListenableBuilder(
+      valueListenable: showOvernightBackup,
+      child: PopScope(
+        canPop: false,
+        child: OvernightBackup(stopOvernightBackup: stopOvernightBackup),
+      ),
+      builder: (_, show, child) => show
+          ? child!
+          : _BackupController(
+              startBackup: startBackup,
+              stopBackup: stopBackup,
+              startOvernightBackup: startOvernightBackup,
+            ),
+    );
+  }
+}
+
+class _BackupController extends HookConsumerWidget {
+  final void Function() startBackup;
+  final void Function() stopBackup;
+  final void Function() startOvernightBackup;
+
+  const _BackupController({
+    required this.startBackup,
+    required this.stopBackup,
+    required this.startOvernightBackup,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -128,7 +188,7 @@ class BackupControllerPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
             side: BorderSide(
               color: context.isDarkTheme
                   ? const Color.fromARGB(255, 56, 56, 56)
@@ -180,14 +240,6 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    void startBackup() {
-      ref.watch(errorBackupListProvider.notifier).empty();
-      if (ref.watch(backupProvider).backupProgress !=
-          BackUpProgressEnum.inBackground) {
-        ref.watch(backupProvider.notifier).startBackupProcess();
-      }
-    }
-
     Widget buildBackupButton() {
       return Padding(
         padding: const EdgeInsets.only(
@@ -203,14 +255,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     backgroundColor: Colors.red[300],
                     // padding: const EdgeInsets.all(14),
                   ),
-                  onPressed: () {
-                    if (backupState.backupProgress ==
-                        BackUpProgressEnum.manualInProgress) {
-                      ref.read(manualUploadProvider.notifier).cancelBackup();
-                    } else {
-                      ref.read(backupProvider.notifier).cancelBackup();
-                    }
-                  },
+                  onPressed: stopBackup,
                   child: const Text(
                     "backup_controller_page_cancel",
                     style: TextStyle(
@@ -219,15 +264,43 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ).tr(),
                 )
-              : ElevatedButton(
-                  onPressed: shouldBackup ? startBackup : null,
-                  child: const Text(
-                    "backup_controller_page_start_backup",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (Platform.isIOS)
+                      ElevatedButton(
+                        onPressed: shouldBackup ? startOvernightBackup : null,
+                        style: context.themeData.elevatedButtonTheme.style
+                            ?.copyWith(
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith<Color?>(
+                            (Set<MaterialState> states) {
+                              if (!states.contains(MaterialState.disabled)) {
+                                return context.colorScheme.secondary;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        child: const Text(
+                          "overnight_upload_start",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ).tr(),
+                      ),
+                    ElevatedButton(
+                      onPressed: shouldBackup ? startBackup : null,
+                      child: const Text(
+                        "backup_controller_page_start_backup",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).tr(),
                     ),
-                  ).tr(),
+                  ],
                 ),
         ),
       );
@@ -268,14 +341,6 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
         ),
         actions: [
-          if (Platform.isIOS)
-            IconButton(
-              onPressed: () => context.pushRoute(const OvernightUploadRoute()),
-              splashRadius: 24,
-              icon: const Icon(
-                Icons.bedtime_outlined,
-              ),
-            ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(

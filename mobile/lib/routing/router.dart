@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_options_page.dart';
-import 'package:immich_mobile/modules/backup/views/overnight_upload_page.dart';
 import 'package:immich_mobile/modules/map/views/map_location_picker_page.dart';
 import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
@@ -225,10 +224,6 @@ class AppRouter extends _$AppRouter {
       page: SearchInputRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.noTransition,
-    ),
-    AutoRoute(
-      page: OvernightUploadRoute.page,
-      guards: [_authGuard, _duplicateGuard],
     ),
   ];
 }
