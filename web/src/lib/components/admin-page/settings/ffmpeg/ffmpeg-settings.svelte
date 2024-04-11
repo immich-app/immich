@@ -54,7 +54,7 @@
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label="CONSTANT RATE FACTOR (-crf)"
-          desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC or AV1, and 31 for VP9. Lower is better, but produces larger files."
+          desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, 31 for VP9, and 35 for AV1. Lower is better, but produces larger files."
           bind:value={config.ffmpeg.crf}
           required={true}
           isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
