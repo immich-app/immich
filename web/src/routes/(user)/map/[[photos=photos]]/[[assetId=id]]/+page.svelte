@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import MapSettingsModal from '$lib/components/map-page/map-settings-modal.svelte';
   import Map from '$lib/components/shared-components/map/map.svelte';
@@ -16,7 +15,6 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
-  import { getAssetInfo } from '@immich/sdk';
   import { navigate } from '$lib/utils/navigation';
 
   export let data: PageData;
@@ -117,14 +115,16 @@
   >
   <Portal target="body">
     {#if $showAssetViewer}
-      <AssetViewer
-        asset={$viewingAsset}
-        showNavigation={viewingAssets.length > 1}
-        on:next={navigateNext}
-        on:previous={navigatePrevious}
-        on:close={() => assetViewingStore.showAssetViewer(false)}
-        isShared={false}
-      />
+      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then AssetViewer}
+        <AssetViewer.default
+          asset={$viewingAsset}
+          showNavigation={viewingAssets.length > 1}
+          on:next={navigateNext}
+          on:previous={navigatePrevious}
+          on:close={() => assetViewingStore.showAssetViewer(false)}
+          isShared={false}
+        />
+      {/await}
     {/if}
   </Portal>
 
