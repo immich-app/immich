@@ -43,8 +43,8 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
-2. Still in `immich-machine-learning`, add one of -[armnn, cuda, openvino] to the `image` section's tag at the end of the line.
-3. Redeploy the `immich-machine-learning` container with these updated settings.
+3. Still in `immich-machine-learning`, add one of -[armnn, cuda, openvino] to the `image` section's tag at the end of the line.
+4. Redeploy the `immich-machine-learning` container with these updated settings.
 
 #### Single Compose File
 
