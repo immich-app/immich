@@ -449,24 +449,83 @@ class ServerEndpointInput extends StatelessWidget {
     return null;
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return TextFormField(
+  //     controller: controller,
+  //     decoration: InputDecoration(
+  //       labelText: 'login_form_endpoint_url'.tr(),
+  //       border: const OutlineInputBorder(),
+  //       hintText: 'login_form_endpoint_hint'.tr(),
+  //       errorMaxLines: 4,
+  //     ),
+  //     validator: _validateInput,
+  //     autovalidateMode: AutovalidateMode.always,
+  //     focusNode: focusNode,
+  //     autofillHints: const [AutofillHints.url],
+  //     keyboardType: TextInputType.url,
+  //     autocorrect: false,
+  //     onFieldSubmitted: (_) => onSubmit?.call(),
+  //     textInputAction: TextInputAction.go,
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: 'login_form_endpoint_url'.tr(),
-        border: const OutlineInputBorder(),
-        hintText: 'login_form_endpoint_hint'.tr(),
-        errorMaxLines: 4,
-      ),
-      validator: _validateInput,
-      autovalidateMode: AutovalidateMode.always,
-      focusNode: focusNode,
-      autofillHints: const [AutofillHints.url],
-      keyboardType: TextInputType.url,
-      autocorrect: false,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      textInputAction: TextInputAction.go,
+    return LayoutBuilder(
+      builder: (context, contraints) {
+        return DropdownMenu(
+          dropdownMenuEntries: [
+            DropdownMenuEntry<String>(
+              label: "http://10.1.15.104:2283/api",
+              value: "http://10.1.15.104:2283/api",
+              trailingIcon: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                ),
+              ),
+            ),
+            const DropdownMenuEntry<String>(
+              label: "http://10.1.15.216:2283/api",
+              value: "http://10.1.15.216:2283/api",
+            ),
+            const DropdownMenuEntry<String>(
+              label: "https://demo.immich.app",
+              value: "https://demo.immich.app",
+            ),
+          ],
+          menuHeight: 150,
+          width: contraints.maxWidth,
+          controller: controller,
+          requestFocusOnTap: true,
+          enableFilter: true,
+          enableSearch: true,
+          hintText: 'login_form_endpoint_hint'.tr(),
+          label: Text("login_form_endpoint_url".tr()),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            contentPadding: const EdgeInsets.only(left: 16),
+            activeIndicatorBorder: BorderSide(
+              color: context.primaryColor,
+              width: 2,
+            ),
+          ),
+          menuStyle: MenuStyle(
+            shape: MaterialStatePropertyAll<OutlinedBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            backgroundColor: MaterialStatePropertyAll<Color>(
+              context.isDarkTheme ? Colors.black : Colors.white,
+            ),
+          ),
+        );
+      },
     );
   }
 }
