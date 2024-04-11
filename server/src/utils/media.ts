@@ -124,7 +124,7 @@ class BaseConfig implements VideoCodecSWConfig {
       return false;
     }
 
-    return this.isBitrateConstrained() || this.config.targetVideoCodec === VideoCodec.VP9;
+    return this.isBitrateConstrained();
   }
 
   getBitrateDistribution() {
@@ -394,6 +394,10 @@ export class VP9Config extends BaseConfig {
   getThreadOptions() {
     return ['-row-mt 1', ...super.getThreadOptions()];
   }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
+  }
 }
 
 export class AV1Config extends BaseConfig {
@@ -423,6 +427,10 @@ export class AV1Config extends BaseConfig {
 
   getThreadOptions() {
     return []; // Already set above with svtav1-params
+  }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
   }
 }
 
