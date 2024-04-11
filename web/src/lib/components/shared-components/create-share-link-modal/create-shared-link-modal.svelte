@@ -15,6 +15,7 @@
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
 
+  export let onClose: () => void;
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
@@ -30,8 +31,6 @@
   let enablePassword = false;
 
   const dispatch = createEventDispatcher<{
-    close: void;
-    escape: void;
     created: void;
   }>();
 
@@ -146,7 +145,7 @@
         message: 'Edited',
       });
 
-      dispatch('close');
+      onClose();
     } catch (error) {
       handleError(error, 'Failed to edit shared link');
     }
@@ -160,7 +159,7 @@
   };
 </script>
 
-<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} on:close>
+<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} {onClose}>
   <section class="mx-6 mb-6">
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
