@@ -134,7 +134,7 @@
   <ConfirmDialogue
     id="remove-user-modal"
     title="Remove user?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
+    prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"
     onConfirm={handleRemoveUser}
     onClose={() => (selectedRemoveUser = null)}
