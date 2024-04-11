@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import Portal from '../portal/portal.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
@@ -115,5 +115,7 @@
 
 <!-- Overlay Asset Viewer -->
 {#if $showAssetViewer}
-  <AssetViewer asset={$viewingAsset} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
+  <Portal target="body">
+    <AssetViewer asset={$viewingAsset} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
+  </Portal>
 {/if}

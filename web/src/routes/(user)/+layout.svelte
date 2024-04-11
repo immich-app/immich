@@ -16,5 +16,13 @@
   }
 </script>
 
-<slot />
+<div class:display-none={$showAssetViewer}>
+  <slot />
+</div>
 <UploadCover />
+
+<style>
+  .display-none {
+    display: none;
+  }
+</style>
