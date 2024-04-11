@@ -6,13 +6,13 @@ import {
   getAllLibraries,
   scanLibrary,
 } from '@immich/sdk';
-import { existsSync } from 'node:fs';
-import { cp } from 'node:fs/promises';
+import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
+import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
@@ -30,17 +30,17 @@ describe('/library', () => {
     user = await utils.userSetup(admin.accessToken, userDto.user1);
     library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId, type: LibraryType.External });
     websocket = await utils.connectWebsocket(admin.accessToken);
+    utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
+    utils.createImageFile(`${testAssetDir}/temp/directoryB/assetB.png`);
   });
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
+    utils.deleteTempFolder();
   });
 
   beforeEach(() => {
     utils.resetEvents();
-    utils.deleteTempFolder();
-    utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
-    utils.createImageFile(`${testAssetDir}/temp/directoryB/assetB.png`);
   });
 
   describe('GET /library', () => {
@@ -458,43 +458,150 @@ describe('/library', () => {
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
       expect(newAssets.count).toBe(3);
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
     });
 
     it('should offline missing files', async () => {
-      await cp(`${testAssetDir}/albums/nature`, `${testAssetDir}/temp`, {
-        recursive: true,
-      });
-
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await scan(admin.accessToken, library.id, { refreshAllFiles: true });
+      await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const onlineAssets = await utils.getAllAssets(admin.accessToken);
-      expect(onlineAssets.length).toBeGreaterThan(1);
-
-      utils.deleteTempFolder();
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const assets = await utils.getAllAssets(admin.accessToken);
-      expect(assets).toEqual(
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             isOffline: true,
-            originalFileName: 'el_torcal_rocks.jpg',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'tanners_ridge.jpg',
+            originalFileName: 'assetB.png',
           }),
         ]),
       );
+    });
+
+    it('should scan new files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            originalFileName: 'assetC.png',
+          }),
+        ]),
+      );
+    });
+
+    describe('with refreshModifiedFiles=true', () => {
+      it('should reimport modified files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          type: LibraryType.External,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(1);
+      });
+
+      it('should not reimport unmodified files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          type: LibraryType.External,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(0);
+      });
+    });
+
+    describe('with refreshAllFiles=true', () => {
+      it('should reimport all files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          type: LibraryType.External,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id, { refreshAllFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(1);
+      });
     });
   });
 
@@ -504,6 +611,72 @@ describe('/library', () => {
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should remove offline files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+      });
+      expect(initialAssets.count).toBe(3);
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        isOffline: true,
+      });
+      expect(offlineAssets.count).toBe(1);
+
+      const { status } = await request(app)
+        .post(`/library/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+    });
+
+    it('should not remove online files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        type: LibraryType.External,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: assetsBefore } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      expect(assetsBefore.count).toBeGreaterThan(1);
+
+      const { status } = await request(app)
+        .post(`/library/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets).toEqual(assetsBefore);
     });
   });
 
@@ -643,4 +816,40 @@ describe('/library', () => {
       expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
     });
   });
+
+  // describe('Watching', () => {
+  //   beforeAll(async () => {
+  //     const config = await getConfigDefaults({ headers: asBearerAuth(admin.accessToken) });
+  //     await updateConfig(
+  //       { systemConfigDto: { ...config, library: { ...config.library, watch: { enabled: true } } } },
+  //       { headers: asBearerAuth(admin.accessToken) },
+  //     );
+  //   });
+
+  //   afterAll(async () => {
+  //     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(admin.accessToken) });
+  //     await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(admin.accessToken) });
+  //     rmSync(`${testAssetDir}/temp/watch`, { recursive: true });
+  //   });
+
+  //   describe('Single import path', () => {
+  //     let library: LibraryResponseDto;
+  //     beforeEach(async () => {
+  //       library = await utils.createLibrary(admin.accessToken, {
+  //         ownerId: admin.userId,
+  //         type: LibraryType.External,
+  //         importPaths: [`${testAssetDirInternal}/temp`],
+  //       });
+  //     });
+
+  //     it('should import a new file', async () => {
+  //       utils.createImageFile(`${testAssetDir}/temp/watch/assetA.png`);
+
+  //       await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+
+  //       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+  //       expect(assets.count).toEqual(3);
+  //     });
+  //   });
+  // });
 });

@@ -212,35 +212,33 @@ export const utils = {
     }
   },
 
-  waitForWebsocketEvent: async ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
-    if (!id && !count) {
-      throw new Error('id or count must be provided for waitForWebsocketEvent');
-    }
-
-    const type = id ? `id=${id}` : `count=${count}`;
-    console.log(`Waiting for ${event} [${type}]`);
-    const set = events[event];
-    if ((id && set.has(id)) || (count && set.size >= count)) {
-      return;
-    }
-
+  waitForWebsocketEvent: ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      if (!id && !count) {
+        reject(new Error('id or count must be provided for waitForWebsocketEvent'));
+      }
+
       const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
+      const type = id ? `id=${id}` : `count=${count}`;
+      console.log(`Waiting for ${event} [${type}]`);
+      const set = events[event];
+      const onId = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      if ((id && set.has(id)) || (count && set.size >= count)) {
+        onId();
+        return;
+      }
 
       if (id) {
-        idCallbacks[id] = () => {
-          clearTimeout(timeout);
-          resolve();
-        };
+        idCallbacks[id] = onId;
       }
 
       if (count) {
         countCallbacks[event] = {
           count,
-          callback: () => {
-            clearTimeout(timeout);
-            resolve();
-          },
+          callback: onId,
         };
       }
     });
@@ -416,7 +414,6 @@ export const utils = {
   isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {
     const queues = await getAllJobsStatus({ headers: asBearerAuth(accessToken) });
     const jobCounts = queues[queue].jobCounts;
-    console.log(jobCounts);
     return !jobCounts.active && !jobCounts.waiting;
   },
 
@@ -429,7 +426,7 @@ export const utils = {
         if (done) {
           break;
         }
-        await setAsyncTimeout(300);
+        await setAsyncTimeout(200);
       }
 
       clearTimeout(timeout);
