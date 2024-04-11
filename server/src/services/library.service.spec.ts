@@ -257,7 +257,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.image],
+        items: [assetStub.external],
         hasNextPage: false,
       });
 
@@ -278,16 +278,16 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield assetStub.offline.originalPath;
+        yield assetStub.externalOffline.originalPath;
       });
       assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.offline],
+        items: [assetStub.externalOffline],
         hasNextPage: false,
       });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.externalOffline.id], { isOffline: false });
       expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
