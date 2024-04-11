@@ -66,7 +66,7 @@ The mobile app `(/mobile)` will required Flutter toolchain 3.13.x to be installe
 
 Please refer to the [Flutter's official documentation](https://flutter.dev/docs/get-started/install) for more information on setting up the toolchain on your machine.
 
-The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or can run the server yourself per the instructions in the prior section.
+The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or can run the server yourself per the instructions above.
 
 ## IDE setup
 
