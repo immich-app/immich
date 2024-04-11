@@ -503,6 +503,26 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should not update storage usage if motion photo is external', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.livePhotoStillAsset, livePhotoVideoId: null, isExternal: true },
+      ]);
+      metadataMock.readTags.mockResolvedValue({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      assetMock.getByChecksum.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      expect(userRepository.updateUsage).not.toHaveBeenCalled();
+    });
+
     it('should save all metadata', async () => {
       const tags: ImmichTags = {
         BitsPerSample: 1,
