@@ -33,6 +33,11 @@ const projects: CommunityProjectProps[] = [
     description: 'A Python script to create albums based on the folder structure of an external library.',
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
+  {
+    title: 'Podman/Quadlets Install',
+    description: 'Documentation for simple podman setup using quadlets.',
+    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {

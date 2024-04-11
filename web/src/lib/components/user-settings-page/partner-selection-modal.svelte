@@ -6,11 +6,12 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let user: UserResponseDto;
+  export let onClose: () => void;
 
   let availableUsers: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
-  const dispatch = createEventDispatcher<{ close: void; 'add-users': UserResponseDto[] }>();
+  const dispatch = createEventDispatcher<{ 'add-users': UserResponseDto[] }>();
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
@@ -32,7 +33,7 @@
   };
 </script>
 
-<BaseModal id="partner-selection-modal" title="Add partner" showLogo on:close>
+<BaseModal id="partner-selection-modal" title="Add partner" showLogo {onClose}>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
