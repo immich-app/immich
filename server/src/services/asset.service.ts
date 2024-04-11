@@ -396,7 +396,10 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      await this.jobRepository.queue({
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.livePhotoVideoId, fromExternal },
+      });
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
