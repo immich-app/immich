@@ -16,10 +16,12 @@
   import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
+  import { getAssetInfo } from '@immich/sdk';
+  import { navigate } from '$lib/utils/navigation';
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
 
   let abortController: AbortController;
   let mapMarkers: MapMarkerResponseDto[] = [];
@@ -87,20 +89,22 @@
   }
 
   async function onViewAssets(assetIds: string[]) {
-    await assetViewingStore.setAssetId(assetIds[0]);
     viewingAssets = assetIds;
     viewingAssetCursor = 0;
+    await setAssetId(assetIds[0]);
   }
 
   async function navigateNext() {
     if (viewingAssetCursor < viewingAssets.length - 1) {
-      await assetViewingStore.setAssetId(viewingAssets[++viewingAssetCursor]);
+      await setAssetId(viewingAssets[++viewingAssetCursor]);
+      navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   }
 
   async function navigatePrevious() {
     if (viewingAssetCursor > 0) {
-      await assetViewingStore.setAssetId(viewingAssets[--viewingAssetCursor]);
+      await setAssetId(viewingAssets[--viewingAssetCursor]);
+      navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   }
 </script>
