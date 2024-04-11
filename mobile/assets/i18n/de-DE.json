@@ -205,7 +205,7 @@
   "home_page_add_to_album_err_local": "Es können lokale Elemente noch nicht zu Alben hinzugefügt werden, überspringen...",
   "home_page_add_to_album_success": "{added} Elemente zu {album} hinzugefügt.",
   "home_page_album_err_partner": "Inhalte von Partnern können derzeit nicht zu Alben hinzugefügt werden",
-  "home_page_archive_err_local": "Kann lokale Elemente nicht archvieren, überspringen...",
+  "home_page_archive_err_local": "Kann lokale Elemente nicht archivieren, überspringen...",
   "home_page_archive_err_partner": "Inhalte von Partnern können nicht archiviert werden",
   "home_page_building_timeline": "Zeitachse wird erstellt.",
   "home_page_delete_err_partner": "Inhalte von Partnern können nicht gelöscht werden",
