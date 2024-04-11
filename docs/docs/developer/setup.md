@@ -72,7 +72,7 @@ IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
 
 Setting these in the IDE give a better developer experience, auto-formatting code on save, and providing instant feedback on lint issues.
 
-### Dart Code Metris
+### Dart Code Metrics
 
 The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/getting-started/#installation) page for more information on setting up DCM
 
