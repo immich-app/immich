@@ -32,6 +32,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import {
+  AV1Config,
   H264Config,
   HEVCConfig,
   NVENCConfig,
@@ -40,7 +41,6 @@ import {
   ThumbnailConfig,
   VAAPIConfig,
   VP9Config,
-  AV1Config,
 } from 'src/utils/media';
 import { usePagination } from 'src/utils/pagination';
 
