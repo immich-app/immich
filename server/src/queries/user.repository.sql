@@ -159,10 +159,13 @@ SET
       COALESCE(SUM(exif."fileSizeInByte"), 0)
     FROM
       "assets" "assets"
+      LEFT JOIN "libraries" "library" ON "library"."id" = "assets"."libraryId"
+      AND ("library"."deletedAt" IS NULL)
       LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
     WHERE
       "assets"."ownerId" = users.id
       AND NOT "assets"."isExternal"
+      AND "library"."type" != 'EXTERNAL'
   ),
   "updatedAt" = CURRENT_TIMESTAMP
 WHERE
