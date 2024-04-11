@@ -261,6 +261,7 @@ FROM
     SELECT
       "AssetEntity"."id" AS "AssetEntity_id",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
+      "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
       "AssetEntity"."isOffline" AS "AssetEntity_isOffline"
     FROM
       "assets" "AssetEntity"

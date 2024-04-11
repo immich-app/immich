@@ -162,7 +162,7 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
-      select: { id: true, originalPath: true, isOffline: true },
+      select: { id: true, originalPath: true, isExternal: true, isOffline: true },
       where: { library: { id: libraryId } },
     });
   }
