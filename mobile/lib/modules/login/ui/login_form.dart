@@ -506,12 +506,26 @@ class ServerEndpointInput extends StatelessWidget {
           label: Text("login_form_endpoint_url".tr()),
           inputDecorationTheme: InputDecorationTheme(
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: context.primaryColor,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: context.primaryColor,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: context.primaryColor,
+              ),
             ),
             contentPadding: const EdgeInsets.only(left: 16),
             activeIndicatorBorder: BorderSide(
               color: context.primaryColor,
-              width: 2,
             ),
           ),
           menuStyle: MenuStyle(
