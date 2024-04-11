@@ -17,7 +17,8 @@
   });
 
   $: isDuplicate = exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern);
-  $: canSubmit = exclusionPattern !== '' && exclusionPattern !== null && !exclusionPatterns.includes(exclusionPattern);
+  $: canSubmit =
+    exclusionPattern !== '' && exclusionPattern !== undefined && !exclusionPatterns.includes(exclusionPattern);
 
   const dispatch = createEventDispatcher<{
     cancel: void;
