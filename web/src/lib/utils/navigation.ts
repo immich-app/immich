@@ -2,6 +2,7 @@ import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { AppRoute } from '$lib/constants';
 import { getAssetInfo } from '@immich/sdk';
+import type { NavigationTarget } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 
 export const isExternalUrl = (url: string): boolean => {
@@ -13,6 +14,9 @@ export const isSharedLinkRoute = (route?: string | null) => route?.startsWith('/
 export const isSearchRoute = (route?: string | null) => route?.startsWith('/(user)/search') || false;
 export const isAlbumsRoute = (route?: string | null) => route?.startsWith('/(user)/albums/[albumId=id]') || false;
 export const isPeopleRoute = (route?: string | null) => route?.startsWith('/(user)/people/[personId]') || false;
+
+export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
+  (target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {})) || false;
 
 export async function getAssetInfoFromParam(params: { assetId?: string }) {
   if (params.assetId) {
@@ -39,6 +43,12 @@ function currentUrlReplaceAssetId(assetId: string) {
     : `${$page.url.pathname.replace(/(\/photos.*)$/, '')}/photos/${assetId}${$page.url.search}`;
 }
 
+function currentUrl() {
+  const $page = get(page);
+  const current = $page.url;
+  return current.pathname + current.search;
+}
+
 interface Route {
   /**
    * The route to target, or 'current' to stay on current route.
@@ -57,9 +67,10 @@ function isAssetRoute(route: Route): route is AssetRoute {
 
 function navigateAssetRoute(route: AssetRoute) {
   const { assetId } = route;
-  return assetId
-    ? void goto(currentUrlReplaceAssetId(assetId), { replaceState: false })
-    : void goto(currentUrlWithoutAsset(), { replaceState: false });
+  const next = assetId ? currentUrlReplaceAssetId(assetId) : currentUrlWithoutAsset();
+  if (next !== currentUrl()) {
+    void goto(next, { replaceState: false });
+  }
 }
 
 export function navigate<T extends Route>(change: T) {

@@ -17,7 +17,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
-  import { isSharedLinkRoute } from '$lib/utils/navigation';
+  import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
 
   let showNavigationLoadingBar = false;
 
@@ -61,7 +61,10 @@
     setKey($page.params.key);
   }
 
-  beforeNavigate(() => {
+  beforeNavigate(({ from, to }) => {
+    if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
+      return;
+    }
     showNavigationLoadingBar = true;
   });
 
