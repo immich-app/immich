@@ -1,20 +1,18 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import { clickOutside } from '$lib/utils/click-outside';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
   /**
    * Unique identifier for the modal.
    */
   export let id: string;
   export let title: string;
+  export let onClose: () => void;
   export let zIndex = 9999;
   /**
    * If true, the logo will be displayed next to the modal title.
@@ -57,14 +55,14 @@
   >
     <div
       use:clickOutside={{
-        onOutclick: () => dispatch('close'),
-        onEscape: () => dispatch('close'),
+        onOutclick: onClose,
+        onEscape: onClose,
       }}
       class="min-h-[200px] w-[450px] overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar scroll-pb-20"
       style="max-height: min(95vh, 800px);"
       tabindex="-1"
     >
-      <ModalHeader id={titleId} {title} {showLogo} {icon} on:close />
+      <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
 
       <div>
         <slot />
