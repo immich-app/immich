@@ -464,7 +464,7 @@ FROM
 WHERE
   (
     (
-      ("AssetEntity"."ownerId" = $1)
+      ("AssetEntity"."libraryId" = $1)
       AND ("AssetEntity"."checksum" = $2)
     )
   )
