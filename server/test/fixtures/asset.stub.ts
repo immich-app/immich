@@ -225,7 +225,7 @@ export const assetStub = {
     deviceId: 'device-id',
     originalPath: '/data/user1/photo.jpg',
     previewPath: '/uploads/user-id/thumbs/path.jpg',
-    checksum: Buffer.from('file hash', 'utf8'),
+    checksum: Buffer.from('path hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbnailPath: '/uploads/user-id/webp/path.ext',
     thumbhash: Buffer.from('blablabla', 'base64'),
