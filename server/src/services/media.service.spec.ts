@@ -1268,6 +1268,157 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should map `veryslow` preset to 4 for av1', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_PRESET, value: 'veryslow' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 4',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set max bitrate for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '2M' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params mbr=2M',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set threads for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 4 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params lp=4',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set both bitrate and threads for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 4 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '2M' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params lp=4:mbr=2M',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should skip transcoding for audioless videos with optimal policy if video codec is correct', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.noAudioStreams);
       configMock.load.mockResolvedValue([
