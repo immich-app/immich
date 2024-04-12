@@ -279,8 +279,6 @@ export class AlbumService {
       throw new BadRequestException('Album not shared with user');
     }
 
-    console.log(userId, id, dto.readonly);
-
     await this.albumPermissionRepository.update(userId, id, { readonly: dto.readonly });
   }
 
