@@ -124,8 +124,6 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    console.log(readWrite);
-
     return this.albumRepository
       .find({
         select: { id: true },
