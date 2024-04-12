@@ -27,7 +27,11 @@ SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09
 SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
-```sql title="Find by checksum" (sha1)
+:::note
+You can calculate the checksum for a particular file by using the command `sha1sum <filename>`.
+:::
+
+```sql title="Find by checksum (SHA1)"
 SELECT encode("checksum", 'hex') FROM "assets";
 SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
 ```
