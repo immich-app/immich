@@ -121,14 +121,17 @@ export class AlbumService {
       }
     }
 
+    const allowedAssetIdsSet = await this.access.checkAccess(auth, Permission.ASSET_SHARE, new Set(dto.assetIds));
+    const assets = [...allowedAssetIdsSet].map((id) => ({ id }) as AssetEntity);
+
     const album = await this.albumRepository.create({
       ownerId: auth.user.id,
       albumName: dto.albumName,
       description: dto.description,
       albumPermissions:
         dto.sharedWithUserIds?.map((userId) => ({ users: { id: userId } }) as AlbumPermissionEntity) ?? [],
-      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
-      albumThumbnailAssetId: dto.assetIds?.[0] || null,
+      assets,
+      albumThumbnailAssetId: assets[0]?.id || null,
     });
 
     return mapAlbumWithAssets(album);

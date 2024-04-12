@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -31,7 +30,6 @@
     type AlbumResponseDto,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { flip } from 'svelte/animate';
   import type { Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -39,6 +37,7 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
+  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -275,13 +274,7 @@
     {#if searchResultAlbums.length > 0}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
-          {#each searchResultAlbums as album, index (album.id)}
-            <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView={false} showItemCount={false} />
-            </a>
-          {/each}
-        </div>
+        <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
         <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
       </section>

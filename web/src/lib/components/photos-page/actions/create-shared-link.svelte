@@ -11,5 +11,5 @@
 <CircleIconButton title="Share" icon={mdiShareVariantOutline} on:click={() => (showModal = true)} />
 
 {#if showModal}
-  <CreateSharedLinkModal assetIds={[...getAssets()].map(({ id }) => id)} on:close={() => (showModal = false)} />
+  <CreateSharedLinkModal assetIds={[...getAssets()].map(({ id }) => id)} onClose={() => (showModal = false)} />
 {/if}

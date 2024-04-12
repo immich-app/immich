@@ -16,13 +16,13 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let album: AlbumResponseDto;
+  export let onClose: () => void;
   let users: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     select: UserResponseDto[];
     share: void;
-    close: void;
   }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
@@ -54,7 +54,7 @@
   };
 </script>
 
-<BaseModal id="user-selection-modal" title="Invite to album" showLogo on:close>
+<BaseModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
   {#if selectedUsers.length > 0}
     <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
       <p class="font-medium">To</p>

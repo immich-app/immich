@@ -29,6 +29,7 @@
     runAssetJobs,
     updateAsset,
     updateAssets,
+    updateAlbumInfo,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -496,6 +497,27 @@
       handleError(error, `Unable to unstack`);
     }
   };
+
+  const handleUpdateThumbnail = async () => {
+    if (!album) {
+      return;
+    }
+    try {
+      await updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          albumThumbnailAssetId: asset.id,
+        },
+      });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Album cover updated',
+        timeout: 1500,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to update album cover');
+    }
+  };
 </script>
 
 <svelte:window
@@ -524,6 +546,7 @@
       <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
         <AssetViewerNavBar
           {asset}
+          {album}
           isMotionPhotoPlaying={shouldPlayMotionPhoto}
           showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
           showZoomButton={asset.type === AssetTypeEnum.Image}
@@ -544,6 +567,7 @@
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
           on:toggleArchive={toggleArchive}
           on:asProfileImage={() => (isShowProfileImageCrop = true)}
+          on:setAsAlbumCover={handleUpdateThumbnail}
           on:runJob={({ detail: job }) => handleRunJob(job)}
           on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
           on:unstack={handleUnstack}
@@ -732,7 +756,7 @@
         shared={addToSharedAlbum}
         on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
         on:album={({ detail }) => handleAddToAlbum(detail)}
-        on:close={() => (isShowAlbumPicker = false)}
+        onClose={() => (isShowAlbumPicker = false)}
       />
     {/if}
 
@@ -746,11 +770,11 @@
     {/if}
 
     {#if isShowProfileImageCrop}
-      <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+      <ProfileImageCropper {asset} onClose={() => (isShowProfileImageCrop = false)} />
     {/if}
 
     {#if isShowShareModal}
-      <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
+      <CreateSharedLinkModal assetIds={[asset.id]} onClose={() => (isShowShareModal = false)} />
     {/if}
   </section>
 </FocusTrap>

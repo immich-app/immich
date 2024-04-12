@@ -8024,9 +8024,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "isWatched": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -11258,7 +11255,8 @@
         "enum": [
           "h264",
           "hevc",
-          "vp9"
+          "vp9",
+          "av1"
         ],
         "type": "string"
       }

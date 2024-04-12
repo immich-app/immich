@@ -25,7 +25,8 @@
 </script>
 
 <ConfirmDialogue
-  title="Permanently Delete Asset{size > 1 ? 's' : ''}"
+  id="permanently-delete-asset-modal"
+  title="Permanently delete asset{size > 1 ? 's' : ''}"
   confirmText="Delete"
   onConfirm={handleConfirm}
   onClose={() => dispatch('cancel')}

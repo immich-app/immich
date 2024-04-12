@@ -7,9 +7,9 @@ _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in
 
 def resize(img: Image.Image, size: int) -> Image.Image:
     if img.width < img.height:
-        return img.resize((size, int((img.height / img.width) * size)), resample=Image.BICUBIC)
+        return img.resize((size, int((img.height / img.width) * size)), resample=Image.Resampling.BICUBIC)
     else:
-        return img.resize((int((img.width / img.height) * size), size), resample=Image.BICUBIC)
+        return img.resize((int((img.width / img.height) * size), size), resample=Image.Resampling.BICUBIC)
 
 
 # https://stackoverflow.com/a/60883103
