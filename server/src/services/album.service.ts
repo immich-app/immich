@@ -215,7 +215,7 @@ export class AlbumService {
   async addUsers(auth: AuthDto, id: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
-    const album = await this.findOrFail(id, { withAssets: false });
+    const album = await this.findOrFail(id, { withAssets: true });
 
     for (const userId of dto.sharedUserIds) {
       if (album.ownerId === userId) {
