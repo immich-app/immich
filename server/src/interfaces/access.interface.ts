@@ -1,5 +1,7 @@
 export const IAccessRepository = 'IAccessRepository';
 
+export type ReadWrite = 'read' | 'write';
+
 export interface IAccessRepository {
   activity: {
     checkOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>>;
@@ -20,7 +22,7 @@ export interface IAccessRepository {
 
   album: {
     checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
-    checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
+    checkSharedAlbumAccess(userId: string, albumIds: Set<string>, readWrite: ReadWrite): Promise<Set<string>>;
     checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 

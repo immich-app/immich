@@ -10,9 +10,9 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAccessRepository, ReadWrite } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Brackets, In, Repository } from 'typeorm';
+import { Brackets, Equal, In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -118,18 +118,24 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, readWrite: ReadWrite): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
 
+    console.log(readWrite);
+
     return this.albumRepository
       .find({
         select: { id: true },
+        relations: { albumPermissions: true },
+        // -@ts-expect-error asd
         where: {
           id: In([...albumIds]),
-          sharedUsers: {
-            id: userId,
+          albumPermissions: {
+            users: Equal(userId),
+            // If write is needed we check for it, otherwise both are accepted
+            readonly: readWrite === 'write' ? false : undefined,
           },
         },
       })

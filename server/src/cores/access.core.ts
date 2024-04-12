@@ -20,6 +20,7 @@ export enum Permission {
 
   // ALBUM_CREATE = 'album.create',
   ALBUM_READ = 'album.read',
+  ALBUM_WRITE = 'album.write',
   ALBUM_UPDATE = 'album.update',
   ALBUM_DELETE = 'album.delete',
   ALBUM_REMOVE_ASSET = 'album.removeAsset',
@@ -215,7 +216,21 @@ export class AccessCore {
 
       case Permission.ALBUM_READ: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          'read',
+        );
+        return setUnion(isOwner, isShared);
+      }
+
+      case Permission.ALBUM_WRITE: {
+        const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          'write',
+        );
         return setUnion(isOwner, isShared);
       }
 
@@ -233,7 +248,11 @@ export class AccessCore {
 
       case Permission.ALBUM_DOWNLOAD: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          'read',
+        );
         return setUnion(isOwner, isShared);
       }
 

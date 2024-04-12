@@ -1,3 +1,4 @@
+import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -58,6 +59,9 @@ export class AlbumEntity {
     synchronize: false, // Table is managed by AlbumPermissionEntity
   })
   sharedUsers!: UserEntity[];
+
+  @OneToMany(() => AlbumPermissionEntity, (permission) => permission.albums)
+  albumPermissions!: AlbumPermissionEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
   @JoinTable()
