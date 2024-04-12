@@ -3,17 +3,19 @@ import { UserEntity } from 'src/entities/user.entity';
 import { Column, Entity, Index, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('albums_shared_users_users')
+// Indices for JoinTable
 @Index('IDX_427c350ad49bd3935a50baab73', ['albums'])
 @Index('IDX_f48513bf9bccefd6ff3ad30bd0', ['users'])
-export class AlbumPermissionsEntity {
-  @PrimaryColumn({ type: 'uuid', name: 'albumsId', foreignKeyConstraintName: 'FK_f48513bf9bccefd6ff3ad30bd06' })
+export class AlbumPermissionEntity {
+  @PrimaryColumn({ type: 'uuid', name: 'albumsId' })
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   albums!: AlbumEntity;
 
-  @PrimaryColumn({ type: 'uuid', name: 'usersId', foreignKeyConstraintName: 'FK_427c350ad49bd3935a50baab737' })
+  @PrimaryColumn({ type: 'uuid', name: 'usersId' })
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   users!: UserEntity;
 
-  @Column({ default: true })
+  // Readonly is false when migrating previous entries
+  @Column({ default: false })
   readonly!: boolean;
 }
