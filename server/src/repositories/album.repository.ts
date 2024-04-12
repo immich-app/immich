@@ -8,7 +8,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
-import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, Equal, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -23,7 +23,7 @@ export class AlbumRepository implements IAlbumRepository {
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
     const relations: FindOptionsRelations<AlbumEntity> = {
       owner: true,
-      sharedUsers: true,
+      albumPermissions: { users: true },
       assets: false,
       sharedLinks: true,
     };
@@ -52,7 +52,7 @@ export class AlbumRepository implements IAlbumRepository {
       },
       relations: {
         owner: true,
-        sharedUsers: true,
+        albumPermissions: { users: true },
       },
     });
   }
@@ -62,9 +62,9 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.find({
       where: [
         { ownerId, assets: { id: assetId } },
-        { sharedUsers: { id: ownerId }, assets: { id: assetId } },
+        { albumPermissions: { users: Equal(ownerId) }, assets: { id: assetId } },
       ],
-      relations: { owner: true, sharedUsers: true },
+      relations: { owner: true, albumPermissions: { users: true } },
       order: { createdAt: 'DESC' },
     });
   }
@@ -129,7 +129,7 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getOwned(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { albumPermissions: { users: true }, sharedLinks: true, owner: true },
       where: { ownerId },
       order: { createdAt: 'DESC' },
     });
@@ -141,11 +141,11 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { albumPermissions: { users: true }, sharedLinks: true, owner: true },
       where: [
-        { sharedUsers: { id: ownerId } },
+        { albumPermissions: { users: Equal(ownerId) } },
         { sharedLinks: { userId: ownerId } },
-        { ownerId, sharedUsers: { id: Not(IsNull()) } },
+        { ownerId, albumPermissions: { users: Not(IsNull()) } },
       ],
       order: { createdAt: 'DESC' },
     });
@@ -157,8 +157,8 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getNotShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
-      where: { ownerId, sharedUsers: { id: IsNull() }, sharedLinks: { id: IsNull() } },
+      relations: { albumPermissions: true, sharedLinks: true, owner: true },
+      where: { ownerId, albumPermissions: { users: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
     });
   }
@@ -282,7 +282,7 @@ export class AlbumRepository implements IAlbumRepository {
       where: { id },
       relations: {
         owner: true,
-        sharedUsers: true,
+        albumPermissions: { users: true },
         sharedLinks: true,
         assets: true,
       },

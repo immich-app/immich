@@ -83,6 +83,11 @@ export class AlbumCountResponseDto {
   notShared!: number;
 }
 
+export class AlbumPermissionResponseDto {
+  user!: UserResponseDto;
+  readonly!: boolean;
+}
+
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -92,7 +97,9 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumPermissions' })
   sharedUsers!: UserResponseDto[];
+  albumPermissions!: AlbumPermissionResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
   owner!: UserResponseDto;
@@ -109,10 +116,15 @@ export class AlbumResponseDto {
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
+  const albumPermissions: AlbumPermissionResponseDto[] = [];
 
-  if (entity.sharedUsers) {
-    for (const user of entity.sharedUsers) {
-      sharedUsers.push(mapUser(user));
+  if (entity.albumPermissions) {
+    for (const permission of entity.albumPermissions) {
+      sharedUsers.push(mapUser(permission.users));
+      albumPermissions.push({
+        user: mapUser(permission.users),
+        readonly: permission.readonly,
+      });
     }
   }
 
@@ -138,6 +150,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
+    albumPermissions,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,

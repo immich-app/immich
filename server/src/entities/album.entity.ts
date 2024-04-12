@@ -53,13 +53,6 @@ export class AlbumEntity {
   @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
-  @ManyToMany(() => UserEntity)
-  @JoinTable({
-    name: 'albums_shared_users_users',
-    synchronize: false, // Table is managed by AlbumPermissionEntity
-  })
-  sharedUsers!: UserEntity[];
-
   @OneToMany(() => AlbumPermissionEntity, (permission) => permission.albums)
   albumPermissions!: AlbumPermissionEntity[];
 
