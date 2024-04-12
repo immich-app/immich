@@ -32,22 +32,25 @@ FROM
       "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
       "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
       "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
-      "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-      "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-      "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-      "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-      "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-      "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-      "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-      "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-      "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-      "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-      "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-      "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-      "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-      "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-      "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-      "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
+      "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+      "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+      "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."id" AS "0cf106548010af7bbb874df2a426f3f6525803ba_id",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."name" AS "0cf106548010af7bbb874df2a426f3f6525803ba_name",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."avatarColor" AS "0cf106548010af7bbb874df2a426f3f6525803ba_avatarColor",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."isAdmin" AS "0cf106548010af7bbb874df2a426f3f6525803ba_isAdmin",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."email" AS "0cf106548010af7bbb874df2a426f3f6525803ba_email",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."storageLabel" AS "0cf106548010af7bbb874df2a426f3f6525803ba_storageLabel",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."oauthId" AS "0cf106548010af7bbb874df2a426f3f6525803ba_oauthId",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."profileImagePath" AS "0cf106548010af7bbb874df2a426f3f6525803ba_profileImagePath",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."shouldChangePassword" AS "0cf106548010af7bbb874df2a426f3f6525803ba_shouldChangePassword",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."createdAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_createdAt",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_deletedAt",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."status" AS "0cf106548010af7bbb874df2a426f3f6525803ba_status",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."updatedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_updatedAt",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."memoriesEnabled" AS "0cf106548010af7bbb874df2a426f3f6525803ba_memoriesEnabled",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaSizeInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaSizeInBytes",
+      "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaUsageInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaUsageInBytes",
       "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
       "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
       "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -66,10 +69,10 @@ FROM
       AND (
         "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
       )
-      LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-      LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+      LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+      LEFT JOIN "users" "0cf106548010af7bbb874df2a426f3f6525803ba" ON "0cf106548010af7bbb874df2a426f3f6525803ba"."id" = "AlbumEntity__AlbumEntity_albumPermissions"."usersId"
       AND (
-        "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
+        "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" IS NULL
       )
       LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
     WHERE
@@ -109,32 +112,35 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
   "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
   "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-  "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-  "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-  "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-  "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-  "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-  "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes"
+  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."id" AS "0cf106548010af7bbb874df2a426f3f6525803ba_id",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."name" AS "0cf106548010af7bbb874df2a426f3f6525803ba_name",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."avatarColor" AS "0cf106548010af7bbb874df2a426f3f6525803ba_avatarColor",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."isAdmin" AS "0cf106548010af7bbb874df2a426f3f6525803ba_isAdmin",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."email" AS "0cf106548010af7bbb874df2a426f3f6525803ba_email",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."storageLabel" AS "0cf106548010af7bbb874df2a426f3f6525803ba_storageLabel",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."oauthId" AS "0cf106548010af7bbb874df2a426f3f6525803ba_oauthId",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."profileImagePath" AS "0cf106548010af7bbb874df2a426f3f6525803ba_profileImagePath",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."shouldChangePassword" AS "0cf106548010af7bbb874df2a426f3f6525803ba_shouldChangePassword",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."createdAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_createdAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_deletedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."status" AS "0cf106548010af7bbb874df2a426f3f6525803ba_status",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."updatedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_updatedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."memoriesEnabled" AS "0cf106548010af7bbb874df2a426f3f6525803ba_memoriesEnabled",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaSizeInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaSizeInBytes",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaUsageInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
   AND (
     "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
   )
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "0cf106548010af7bbb874df2a426f3f6525803ba" ON "0cf106548010af7bbb874df2a426f3f6525803ba"."id" = "AlbumEntity__AlbumEntity_albumPermissions"."usersId"
   AND (
-    "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
+    "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" IS NULL
   )
 WHERE
   ((("AlbumEntity"."id" IN ($1))))
@@ -168,32 +174,35 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_owner_memoriesEnabled",
   "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
   "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-  "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-  "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-  "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-  "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-  "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-  "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes"
+  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."id" AS "0cf106548010af7bbb874df2a426f3f6525803ba_id",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."name" AS "0cf106548010af7bbb874df2a426f3f6525803ba_name",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."avatarColor" AS "0cf106548010af7bbb874df2a426f3f6525803ba_avatarColor",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."isAdmin" AS "0cf106548010af7bbb874df2a426f3f6525803ba_isAdmin",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."email" AS "0cf106548010af7bbb874df2a426f3f6525803ba_email",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."storageLabel" AS "0cf106548010af7bbb874df2a426f3f6525803ba_storageLabel",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."oauthId" AS "0cf106548010af7bbb874df2a426f3f6525803ba_oauthId",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."profileImagePath" AS "0cf106548010af7bbb874df2a426f3f6525803ba_profileImagePath",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."shouldChangePassword" AS "0cf106548010af7bbb874df2a426f3f6525803ba_shouldChangePassword",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."createdAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_createdAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_deletedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."status" AS "0cf106548010af7bbb874df2a426f3f6525803ba_status",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."updatedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_updatedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."memoriesEnabled" AS "0cf106548010af7bbb874df2a426f3f6525803ba_memoriesEnabled",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaSizeInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaSizeInBytes",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaUsageInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
   AND (
     "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
   )
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "0cf106548010af7bbb874df2a426f3f6525803ba" ON "0cf106548010af7bbb874df2a426f3f6525803ba"."id" = "AlbumEntity__AlbumEntity_albumPermissions"."usersId"
   AND (
-    "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
+    "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" IS NULL
   )
   LEFT JOIN "albums_assets_assets" "AlbumEntity_AlbumEntity__AlbumEntity_assets" ON "AlbumEntity_AlbumEntity__AlbumEntity_assets"."albumsId" = "AlbumEntity"."id"
   LEFT JOIN "assets" "AlbumEntity__AlbumEntity_assets" ON "AlbumEntity__AlbumEntity_assets"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_assets"."assetsId"
@@ -213,7 +222,9 @@ WHERE
         (
           (
             (
-              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $3)
+              (
+                "AlbumEntity__AlbumEntity_albumPermissions"."usersId" = $3
+              )
             )
           )
           AND ((("AlbumEntity__AlbumEntity_assets"."id" = $4)))
@@ -283,22 +294,25 @@ SELECT
   "AlbumEntity"."albumThumbnailAssetId" AS "AlbumEntity_albumThumbnailAssetId",
   "AlbumEntity"."isActivityEnabled" AS "AlbumEntity_isActivityEnabled",
   "AlbumEntity"."order" AS "AlbumEntity_order",
-  "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-  "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-  "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-  "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-  "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-  "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-  "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
+  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."id" AS "0cf106548010af7bbb874df2a426f3f6525803ba_id",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."name" AS "0cf106548010af7bbb874df2a426f3f6525803ba_name",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."avatarColor" AS "0cf106548010af7bbb874df2a426f3f6525803ba_avatarColor",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."isAdmin" AS "0cf106548010af7bbb874df2a426f3f6525803ba_isAdmin",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."email" AS "0cf106548010af7bbb874df2a426f3f6525803ba_email",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."storageLabel" AS "0cf106548010af7bbb874df2a426f3f6525803ba_storageLabel",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."oauthId" AS "0cf106548010af7bbb874df2a426f3f6525803ba_oauthId",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."profileImagePath" AS "0cf106548010af7bbb874df2a426f3f6525803ba_profileImagePath",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."shouldChangePassword" AS "0cf106548010af7bbb874df2a426f3f6525803ba_shouldChangePassword",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."createdAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_createdAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_deletedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."status" AS "0cf106548010af7bbb874df2a426f3f6525803ba_status",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."updatedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_updatedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."memoriesEnabled" AS "0cf106548010af7bbb874df2a426f3f6525803ba_memoriesEnabled",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaSizeInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaSizeInBytes",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaUsageInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -329,10 +343,10 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "0cf106548010af7bbb874df2a426f3f6525803ba" ON "0cf106548010af7bbb874df2a426f3f6525803ba"."id" = "AlbumEntity__AlbumEntity_albumPermissions"."usersId"
   AND (
-    "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
+    "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" IS NULL
   )
   LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
@@ -357,22 +371,25 @@ SELECT
   "AlbumEntity"."albumThumbnailAssetId" AS "AlbumEntity_albumThumbnailAssetId",
   "AlbumEntity"."isActivityEnabled" AS "AlbumEntity_isActivityEnabled",
   "AlbumEntity"."order" AS "AlbumEntity_order",
-  "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-  "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-  "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-  "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-  "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-  "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-  "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
+  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."id" AS "0cf106548010af7bbb874df2a426f3f6525803ba_id",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."name" AS "0cf106548010af7bbb874df2a426f3f6525803ba_name",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."avatarColor" AS "0cf106548010af7bbb874df2a426f3f6525803ba_avatarColor",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."isAdmin" AS "0cf106548010af7bbb874df2a426f3f6525803ba_isAdmin",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."email" AS "0cf106548010af7bbb874df2a426f3f6525803ba_email",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."storageLabel" AS "0cf106548010af7bbb874df2a426f3f6525803ba_storageLabel",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."oauthId" AS "0cf106548010af7bbb874df2a426f3f6525803ba_oauthId",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."profileImagePath" AS "0cf106548010af7bbb874df2a426f3f6525803ba_profileImagePath",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."shouldChangePassword" AS "0cf106548010af7bbb874df2a426f3f6525803ba_shouldChangePassword",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."createdAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_createdAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_deletedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."status" AS "0cf106548010af7bbb874df2a426f3f6525803ba_status",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."updatedAt" AS "0cf106548010af7bbb874df2a426f3f6525803ba_updatedAt",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."memoriesEnabled" AS "0cf106548010af7bbb874df2a426f3f6525803ba_memoriesEnabled",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaSizeInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaSizeInBytes",
+  "0cf106548010af7bbb874df2a426f3f6525803ba"."quotaUsageInBytes" AS "0cf106548010af7bbb874df2a426f3f6525803ba_quotaUsageInBytes",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -403,10 +420,10 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "0cf106548010af7bbb874df2a426f3f6525803ba" ON "0cf106548010af7bbb874df2a426f3f6525803ba"."id" = "AlbumEntity__AlbumEntity_albumPermissions"."usersId"
   AND (
-    "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
+    "0cf106548010af7bbb874df2a426f3f6525803ba"."deletedAt" IS NULL
   )
   LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
@@ -420,7 +437,9 @@ WHERE
         (
           (
             (
-              ("AlbumEntity__AlbumEntity_sharedUsers"."id" = $1)
+              (
+                "AlbumEntity__AlbumEntity_albumPermissions"."usersId" = $1
+              )
             )
           )
         )
@@ -443,7 +462,7 @@ WHERE
             (
               (
                 NOT (
-                  "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+                  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" IS NULL
                 )
               )
             )
@@ -468,22 +487,9 @@ SELECT
   "AlbumEntity"."albumThumbnailAssetId" AS "AlbumEntity_albumThumbnailAssetId",
   "AlbumEntity"."isActivityEnabled" AS "AlbumEntity_isActivityEnabled",
   "AlbumEntity"."order" AS "AlbumEntity_order",
-  "AlbumEntity__AlbumEntity_sharedUsers"."id" AS "AlbumEntity__AlbumEntity_sharedUsers_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."name" AS "AlbumEntity__AlbumEntity_sharedUsers_name",
-  "AlbumEntity__AlbumEntity_sharedUsers"."avatarColor" AS "AlbumEntity__AlbumEntity_sharedUsers_avatarColor",
-  "AlbumEntity__AlbumEntity_sharedUsers"."isAdmin" AS "AlbumEntity__AlbumEntity_sharedUsers_isAdmin",
-  "AlbumEntity__AlbumEntity_sharedUsers"."email" AS "AlbumEntity__AlbumEntity_sharedUsers_email",
-  "AlbumEntity__AlbumEntity_sharedUsers"."storageLabel" AS "AlbumEntity__AlbumEntity_sharedUsers_storageLabel",
-  "AlbumEntity__AlbumEntity_sharedUsers"."oauthId" AS "AlbumEntity__AlbumEntity_sharedUsers_oauthId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."profileImagePath" AS "AlbumEntity__AlbumEntity_sharedUsers_profileImagePath",
-  "AlbumEntity__AlbumEntity_sharedUsers"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_sharedUsers_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_sharedUsers"."createdAt" AS "AlbumEntity__AlbumEntity_sharedUsers_createdAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_deletedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."status" AS "AlbumEntity__AlbumEntity_sharedUsers_status",
-  "AlbumEntity__AlbumEntity_sharedUsers"."updatedAt" AS "AlbumEntity__AlbumEntity_sharedUsers_updatedAt",
-  "AlbumEntity__AlbumEntity_sharedUsers"."memoriesEnabled" AS "AlbumEntity__AlbumEntity_sharedUsers_memoriesEnabled",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_sharedUsers"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_sharedUsers_quotaUsageInBytes",
+  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
+  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly",
   "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
   "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
   "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
@@ -514,11 +520,7 @@ SELECT
   "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_sharedUsers"."usersId"
-  AND (
-    "AlbumEntity__AlbumEntity_sharedUsers"."deletedAt" IS NULL
-  )
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
   LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
   LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
   AND (
@@ -531,7 +533,7 @@ WHERE
       AND (
         (
           (
-            "AlbumEntity__AlbumEntity_sharedUsers"."id" IS NULL
+            "AlbumEntity__AlbumEntity_albumPermissions"."usersId" IS NULL
           )
         )
       )

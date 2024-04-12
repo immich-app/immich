@@ -37,8 +37,8 @@ SELECT
   "album"."id" AS "album_id"
 FROM
   "albums" "album"
-  LEFT JOIN "albums_shared_users_users" "album_sharedUsers" ON "album_sharedUsers"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "album_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "albumPermissions" ON "albumPermissions"."albumsId" = "album"."id"
+  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumPermissions"."usersId"
   AND ("sharedUsers"."deletedAt" IS NULL)
 WHERE
   (
@@ -110,8 +110,8 @@ FROM
   INNER JOIN "albums_assets_assets" "album_asset" ON "album_asset"."albumsId" = "album"."id"
   INNER JOIN "assets" "asset" ON "asset"."id" = "album_asset"."assetsId"
   AND ("asset"."deletedAt" IS NULL)
-  LEFT JOIN "albums_shared_users_users" "album_sharedUsers" ON "album_sharedUsers"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "album_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "albumPermissions" ON "albumPermissions"."albumsId" = "album"."id"
+  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumPermissions"."usersId"
   AND ("sharedUsers"."deletedAt" IS NULL)
 WHERE
   (

@@ -79,7 +79,8 @@ class ActivityAccess implements IActivityAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .select('album.id')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumPermissions', 'albumPermissions')
+      .leftJoin('albumPermissions.users', 'sharedUsers')
       .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
       .andWhere('album.isActivityEnabled = true')
       .andWhere(
@@ -181,7 +182,8 @@ class AssetAccess implements IAssetAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .innerJoin('album.assets', 'asset')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumPermissions', 'albumPermissions')
+      .leftJoin('albumPermissions.users', 'sharedUsers')
       .select('asset.id', 'assetId')
       .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
       .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
