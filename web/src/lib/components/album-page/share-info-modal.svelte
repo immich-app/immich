@@ -92,7 +92,11 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.albumPermissions as {user, readonly}}
+      {#each album.albumPermissions.toSorted((a, b) => {
+        if (a.readonly && !b.readonly) return 1;
+        if (!a.readonly && b.readonly) return -1;
+        return a.user.name.localeCompare(b.user.name);
+      }) as {user, readonly}}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
