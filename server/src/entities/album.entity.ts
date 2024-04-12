@@ -57,14 +57,15 @@ export class AlbumEntity {
     name: 'albums_shared_users_users',
     inverseJoinColumn: {
       name: 'usersId',
-      referencedColumnName: 'id',
-      foreignKeyConstraintName: 'FK_f48513bf9bccefd6ff3ad30bd06',
+      // referencedColumnName: 'id',
+      // foreignKeyConstraintName: 'FK_f48513bf9bccefd6ff3ad30bd06',
     },
     joinColumn: {
       name: 'albumsId',
-      referencedColumnName: 'id',
-      foreignKeyConstraintName: 'FK_427c350ad49bd3935a50baab737',
+      // referencedColumnName: 'id',
+      // foreignKeyConstraintName: 'FK_427c350ad49bd3935a50baab737',
     },
+    synchronize: false,
   })
   sharedUsers!: UserEntity[];
 
