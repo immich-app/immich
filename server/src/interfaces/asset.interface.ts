@@ -133,6 +133,20 @@ export interface MetadataSearchOptions {
   numResults: number;
 }
 
+export interface AssetFullSyncOptions {
+  ownerId: string;
+  lastCreationDate?: Date;
+  lastId?: string;
+  updatedUntil: Date;
+  limit: number;
+}
+
+export interface AssetDeltaSyncOptions {
+  userIds: string[];
+  updatedAfter: Date;
+  limit: number;
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
@@ -175,4 +189,6 @@ export interface IAssetRepository {
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
+  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
+  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
 }

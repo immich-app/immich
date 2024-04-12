@@ -43,6 +43,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getAllForUserFullSync(num limit, DateTime updatedUntil, { DateTime lastCreationDate, String lastId, String userId }) async
+    test('test getAllForUserFullSync', () async {
+      // TODO
+    });
+
     // Get all asset of a device that are in the database, ID only.
     //
     //Future<List<String>> getAllUserAssetsByDeviceId(String deviceId) async
@@ -77,6 +82,11 @@ void main() {
 
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
+      // TODO
+    });
+
+    //Future<AssetDeltaSyncResponseDto> getDeltaSync(DateTime updatedAfter, List<String> userIds) async
+    test('test getDeltaSync', () async {
       // TODO
     });
 

@@ -4,6 +4,9 @@ import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetDeltaSyncDto,
+  AssetDeltaSyncResponseDto,
+  AssetFullSyncDto,
   AssetJobsDto,
   AssetStatsDto,
   AssetStatsResponseDto,
@@ -92,6 +95,16 @@ export class AssetController {
   @HttpCode(HttpStatus.OK)
   updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(auth, dto);
+  }
+
+  @Get('full-sync')
+  getAllForUserFullSync(@Auth() auth: AuthDto, @Query() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
+    return this.service.getAllForUserFullSync(auth, dto);
+  }
+
+  @Get('delta-sync')
+  getDeltaSync(@Auth() auth: AuthDto, @Query() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
+    return this.service.getChangesDeltaSync(auth, dto);
   }
 
   @SharedLinkRoute()

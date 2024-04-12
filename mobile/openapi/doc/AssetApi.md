@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
+[**getAllForUserFullSync**](AssetApi.md#getallforuserfullsync) | **GET** /asset/full-sync | 
 [**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetInfo**](AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
@@ -20,6 +21,7 @@ Method | HTTP request | Description
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+[**getDeltaSync**](AssetApi.md#getdeltasync) | **GET** /asset/delta-sync | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
@@ -254,6 +256,69 @@ Name | Type | Description  | Notes
  **take** | **int**|  | [optional] 
  **updatedAfter** | **DateTime**|  | [optional] 
  **updatedBefore** | **DateTime**|  | [optional] 
+ **userId** | **String**|  | [optional] 
+
+### Return type
+
+[**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAllForUserFullSync**
+> List<AssetResponseDto> getAllForUserFullSync(limit, updatedUntil, lastCreationDate, lastId, userId)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final limit = 8.14; // num | 
+final updatedUntil = 2013-10-20T19:20:30+01:00; // DateTime | 
+final lastCreationDate = 2013-10-20T19:20:30+01:00; // DateTime | 
+final lastId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+
+try {
+    final result = api_instance.getAllForUserFullSync(limit, updatedUntil, lastCreationDate, lastId, userId);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAllForUserFullSync: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **limit** | **num**|  | 
+ **updatedUntil** | **DateTime**|  | 
+ **lastCreationDate** | **DateTime**|  | [optional] 
+ **lastId** | **String**|  | [optional] 
  **userId** | **String**|  | [optional] 
 
 ### Return type
@@ -644,6 +709,63 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**List<CuratedObjectsResponseDto>**](CuratedObjectsResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getDeltaSync**
+> AssetDeltaSyncResponseDto getDeltaSync(updatedAfter, userIds)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final userIds = []; // List<String> | 
+
+try {
+    final result = api_instance.getDeltaSync(updatedAfter, userIds);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getDeltaSync: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **updatedAfter** | **DateTime**|  | 
+ **userIds** | [**List<String>**](String.md)|  | [default to const []]
+
+### Return type
+
+[**AssetDeltaSyncResponseDto**](AssetDeltaSyncResponseDto.md)
 
 ### Authorization
 
