@@ -7,6 +7,7 @@ import {
   AlbumResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  SetAlbumPermissionDto,
   UpdateAlbumDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -95,5 +96,15 @@ export class AlbumController {
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.service.removeUser(auth, id, userId);
+  }
+
+  @Put(':id/permission/:userId')
+  setAlbumPermission(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Body() dto: SetAlbumPermissionDto,
+  ): Promise<void> {
+    return this.service.setAlbumPermission(auth, id, userId, dto);
   }
 }

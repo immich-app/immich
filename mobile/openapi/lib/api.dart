@@ -175,6 +175,7 @@ part 'model/server_ping_response.dart';
 part 'model/server_stats_response_dto.dart';
 part 'model/server_theme_dto.dart';
 part 'model/server_version_response_dto.dart';
+part 'model/set_album_permission_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';
 part 'model/shared_link_response_dto.dart';

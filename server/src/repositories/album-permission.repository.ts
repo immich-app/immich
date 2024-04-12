@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Equals } from 'class-validator';
 import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
 import { IAlbumPermissionRepository } from 'src/interfaces/album-permission.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -16,9 +17,11 @@ export class AlbumPermissionRepository implements IAlbumPermissionRepository {
   }
 
   async update(userId: string, albumId: string, dto: Partial<AlbumPermissionEntity>): Promise<AlbumPermissionEntity> {
-    await this.repository.update({ users: { id: userId }, albums: { id: albumId } }, dto);
+    // @ts-expect-error I'm pretty sure I messed something up with the entity because
+    // if I follow what typescript says I get postgres errors
+    await this.repository.update({ users: userId, albums: albumId }, dto);
     return this.repository.findOneOrFail({
-      where: { users: { id: userId }, albums: { id: albumId } },
+      where: { users: Equal(userId), albums: Equal(albumId) },
       relations: { users: true },
     });
   }

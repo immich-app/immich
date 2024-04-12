@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto, setAlbumPermission } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -17,6 +17,7 @@
 
   const dispatch = createEventDispatcher<{
     remove: string;
+    updatePermissions: void
   }>();
 
   let currentUser: UserResponseDto;
@@ -63,6 +64,19 @@
       selectedRemoveUser = null;
     }
   };
+
+  const handleSetReadonly = async (user: UserResponseDto, readonly: boolean) => {
+    try {
+      await setAlbumPermission({ id: album.id, userId: user.id , setAlbumPermissionDto: { readonly } });
+      const message = readonly ? `Set ${user.name} as viewer` : `Set ${user.name} as editor`;
+      dispatch('updatePermissions');
+      notificationController.show({ type: NotificationType.Info, message });
+    } catch (error) {
+      handleError(error, 'Unable to set permission');
+    } finally {
+      selectedRemoveUser = null;
+    }
+  }
 </script>
 
 {#if !selectedRemoveUser}
@@ -78,7 +92,7 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.sharedUsers as user}
+      {#each album.albumPermissions as {user, readonly}}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
@@ -87,7 +101,14 @@
             <p class="text-sm font-medium">{user.name}</p>
           </div>
 
-          <div id="icon-{user.id}" class="flex place-items-center">
+          <div id="icon-{user.id}" class="flex place-items-center gap-2">
+            <div>
+              {#if readonly}
+                Viewer
+              {:else}
+                Editor
+              {/if}
+            </div>
             {#if isOwned}
               <div>
                 <CircleIconButton
@@ -101,6 +122,11 @@
 
                 {#if selectedMenuUser === user}
                   <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                    {#if readonly}
+                      <MenuOption on:click={() => handleSetReadonly(user, false)} text="Allow edits" />
+                    {:else}
+                      <MenuOption on:click={() => handleSetReadonly(user, true)} text="Disallow edits" />
+                    {/if}
                     <MenuOption on:click={handleMenuRemove} text="Remove" />
                   </ContextMenu>
                 {/if}

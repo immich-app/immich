@@ -264,6 +264,26 @@ export class AlbumService {
     await this.albumPermissionRepository.delete(userId, id);
   }
 
+  async setAlbumPermission(
+    auth: AuthDto,
+    id: string,
+    userId: string,
+    dto: Partial<AlbumPermissionEntity>,
+  ): Promise<void> {
+    await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
+
+    const album = await this.findOrFail(id, { withAssets: false });
+
+    const permission = album.albumPermissions.find(({ users: { id } }) => id === userId);
+    if (!permission) {
+      throw new BadRequestException('Album not shared with user');
+    }
+
+    console.log(userId, id, dto.readonly);
+
+    await this.albumPermissionRepository.update(userId, id, { readonly: dto.readonly });
+  }
+
   private async findOrFail(id: string, options: AlbumInfoOptions) {
     const album = await this.albumRepository.getById(id, options);
     if (!album) {

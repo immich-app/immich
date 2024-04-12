@@ -90,6 +90,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
+*AlbumApi* | [**setAlbumPermission**](doc//AlbumApi.md#setalbumpermission) | **PUT** /album/{id}/permission/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
@@ -346,6 +347,7 @@ Class | Method | HTTP request | Description
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
+ - [SetAlbumPermissionDto](doc//SetAlbumPermissionDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)

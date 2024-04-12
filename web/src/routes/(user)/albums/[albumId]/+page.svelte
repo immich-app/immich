@@ -344,6 +344,14 @@
     }
   };
 
+  const handleUpdatePermissions = async () => {
+    try {
+      await refreshAlbum();
+    } catch (error) {
+      handleError(error, 'Error updating permissions');
+    }
+  };
+
   const handleDownloadAlbum = async () => {
     await downloadAlbum(album);
   };
@@ -695,6 +703,7 @@
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
+    on:updatePermissions={handleUpdatePermissions}
   />
 {/if}
 

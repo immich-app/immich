@@ -193,6 +193,9 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
+export type SetAlbumPermissionDto = {
+    "readonly": boolean;
+};
 export type AddUsersDto = {
     sharedUserIds: string[];
 };
@@ -1191,6 +1194,17 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
+    })));
+}
+export function setAlbumPermission({ id, userId, setAlbumPermissionDto }: {
+    id: string;
+    userId: string;
+    setAlbumPermissionDto: SetAlbumPermissionDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/permission/${encodeURIComponent(userId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: setAlbumPermissionDto
     })));
 }
 export function removeUserFromAlbum({ id, userId }: {

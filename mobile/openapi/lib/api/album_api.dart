@@ -485,6 +485,55 @@ class AlbumApi {
     }
   }
 
+  /// Performs an HTTP 'PUT /album/{id}/permission/{userId}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [SetAlbumPermissionDto] setAlbumPermissionDto (required):
+  Future<Response> setAlbumPermissionWithHttpInfo(String id, String userId, SetAlbumPermissionDto setAlbumPermissionDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{id}/permission/{userId}'
+      .replaceAll('{id}', id)
+      .replaceAll('{userId}', userId);
+
+    // ignore: prefer_final_locals
+    Object? postBody = setAlbumPermissionDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [SetAlbumPermissionDto] setAlbumPermissionDto (required):
+  Future<void> setAlbumPermission(String id, String userId, SetAlbumPermissionDto setAlbumPermissionDto,) async {
+    final response = await setAlbumPermissionWithHttpInfo(id, userId, setAlbumPermissionDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'PATCH /album/{id}' operation and returns the [Response].
   /// Parameters:
   ///

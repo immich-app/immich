@@ -83,6 +83,11 @@ export class AlbumCountResponseDto {
   notShared!: number;
 }
 
+export class SetAlbumPermissionDto {
+  @ValidateBoolean()
+  readonly!: boolean;
+}
+
 export class AlbumPermissionResponseDto {
   user!: UserResponseDto;
   readonly!: boolean;

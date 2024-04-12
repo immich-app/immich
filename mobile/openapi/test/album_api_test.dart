@@ -62,6 +62,11 @@ void main() {
       // TODO
     });
 
+    //Future setAlbumPermission(String id, String userId, SetAlbumPermissionDto setAlbumPermissionDto) async
+    test('test setAlbumPermission', () async {
+      // TODO
+    });
+
     //Future<AlbumResponseDto> updateAlbumInfo(String id, UpdateAlbumDto updateAlbumDto) async
     test('test updateAlbumInfo', () async {
       // TODO

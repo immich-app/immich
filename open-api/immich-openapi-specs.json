@@ -589,6 +589,59 @@
         ]
       }
     },
+    "/album/{id}/permission/{userId}": {
+      "put": {
+        "operationId": "setAlbumPermission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetAlbumPermissionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -9911,6 +9964,17 @@
           "major",
           "minor",
           "patch"
+        ],
+        "type": "object"
+      },
+      "SetAlbumPermissionDto": {
+        "properties": {
+          "readonly": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "readonly"
         ],
         "type": "object"
       },
