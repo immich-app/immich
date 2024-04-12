@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -21,6 +22,7 @@ final assetServiceProvider = Provider(
   (ref) => AssetService(
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
+    ref.watch(userServiceProvider),
     ref.watch(dbProvider),
   ),
 );
@@ -28,24 +30,32 @@ final assetServiceProvider = Provider(
 class AssetService {
   final ApiService _apiService;
   final SyncService _syncService;
+  final UserService _userService;
   final log = Logger('AssetService');
   final Isar _db;
 
   AssetService(
     this._apiService,
     this._syncService,
+    this._userService,
     this._db,
   );
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
-  Future<bool> refreshRemoteAssets([User? user]) async {
-    user ??= Store.get<User>(StoreKey.currentUser);
+  Future<bool> refreshRemoteAssets() async {
+    final List<User> users = await _db.users
+        .filter()
+        .isPartnerSharedWithEqualTo(true)
+        .or()
+        .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+        .findAll();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
-      user,
-      _getRemoteAssetChanges,
-      _getRemoteAssets,
+      users: users,
+      getChangedAssets: _getRemoteAssetChanges,
+      loadAssets: _getRemoteAssets,
+      refreshUsers: _userService.getUsersFromServer,
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
@@ -53,14 +63,12 @@ class AssetService {
 
   /// Returns `(null, null)` if changes are invalid -> requires full sync
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
-      _getRemoteAssetChanges(User user, DateTime since) async {
-    final deleted = await _apiService.auditApi
-        .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
-    if (deleted == null || deleted.needsFullSync) return (null, null);
-    final assetDto = await _apiService.assetApi
-        .getAllAssets(userId: user.id, updatedAfter: since);
-    if (assetDto == null) return (null, null);
-    return (assetDto.map(Asset.remote).toList(), deleted.ids);
+      _getRemoteAssetChanges(List<User> users, DateTime since) async {
+    final changes = await _apiService.syncApi
+        .getDeltaSync(since, users.map((e) => e.id).toList());
+    return changes == null || changes.needsFullSync
+        ? (null, null)
+        : (changes.upserted.map(Asset.remote).toList(), changes.deleted);
   }
 
   /// Returns the list of people of the given asset id.
@@ -85,38 +93,31 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user) async {
+  Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
     const int chunkSize = 10000;
     try {
-      final DateTime now = DateTime.now().toUtc();
       final List<Asset> allAssets = [];
-      for (int i = 0;; i += chunkSize) {
+      DateTime? lastCreationDate;
+      String? lastId;
+      // will break on error or once all assets are loaded
+      while (true) {
         final List<AssetResponseDto>? assets =
-            await _apiService.assetApi.getAllAssets(
+            await _apiService.syncApi.getAllForUserFullSync(
+          chunkSize,
+          until,
           userId: user.id,
-          // updatedBefore is important! without it we could
-          // a) get the same Asset multiple times in different versions (when
-          // the asset is modified while the chunks are loaded from the server)
-          // b) miss assets when new assets are inserted in between the calls
-          updatedBefore: now,
-          skip: i,
-          take: chunkSize,
+          lastCreationDate: lastCreationDate,
+          lastId: lastId,
         );
-        if (assets == null) {
-          return null;
-        }
+        if (assets == null) return null;
         allAssets.addAll(assets.map(Asset.remote));
-        if (assets.length < chunkSize) {
-          break;
-        }
+        if (assets.length < chunkSize) break;
+        lastCreationDate = assets.last.fileCreatedAt;
+        lastId = assets.last.id;
       }
       return allAssets;
     } catch (error, stack) {
-      log.severe(
-        'Error while getting remote assets',
-        error,
-        stack,
-      );
+      log.severe('Error while getting remote assets', error, stack);
       return null;
     }
   }

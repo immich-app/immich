@@ -40,18 +40,20 @@ class SyncService {
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
-  Future<bool> syncRemoteAssetsToDb(
-    User user,
-    Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      User user,
+  Future<bool> syncRemoteAssetsToDb({
+    required List<User> users,
+    required Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
+      List<User> users,
       DateTime since,
     ) getChangedAssets,
-    FutureOr<List<Asset>?> Function(User user) loadAssets,
-  ) =>
+    required FutureOr<List<Asset>?> Function(User user, DateTime until)
+        loadAssets,
+    required FutureOr<List<User>?> Function() refreshUsers,
+  }) =>
       _lock.run(
         () async =>
-            await _syncRemoteAssetChanges(user, getChangedAssets) ??
-            await _syncRemoteAssetsFull(user, loadAssets),
+            await _syncRemoteAssetChanges(users, getChangedAssets) ??
+            await _syncRemoteAssetsFull(refreshUsers, loadAssets),
       );
 
   /// Syncs remote albums to the database
@@ -149,16 +151,18 @@ class SyncService {
 
   /// Efficiently syncs assets via changes. Returns `null` when a full sync is required.
   Future<bool?> _syncRemoteAssetChanges(
-    User user,
+    List<User> users,
     Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      User user,
+      List<User> users,
       DateTime since,
     ) getChangedAssets,
   ) async {
-    final DateTime? since = _db.eTags.getByIdSync(user.id)?.time?.toUtc();
+    final currentUser = Store.get(StoreKey.currentUser);
+    final DateTime? since =
+        _db.eTags.getSync(currentUser.isarId)?.time?.toUtc();
     if (since == null) return null;
     final DateTime now = DateTime.now();
-    final (toUpsert, toDelete) = await getChangedAssets(user, since);
+    final (toUpsert, toDelete) = await getChangedAssets(users, since);
     if (toUpsert == null || toDelete == null) return null;
     try {
       if (toDelete.isNotEmpty) {
@@ -169,7 +173,7 @@ class SyncService {
         await upsertAssetsWithExif(updated);
       }
       if (toUpsert.isNotEmpty || toDelete.isNotEmpty) {
-        await _updateUserAssetsETag(user, now);
+        await _updateUserAssetsETag(currentUser, now);
         return true;
       }
       return false;
@@ -203,11 +207,34 @@ class SyncService {
 
   /// Syncs assets by loading and comparing all assets from the server.
   Future<bool> _syncRemoteAssetsFull(
+    FutureOr<List<User>?> Function() refreshUsers,
+    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+  ) async {
+    final serverUsers = await refreshUsers();
+    if (serverUsers == null) {
+      _log.warning("_syncRemoteAssetsFull aborted because user refresh failed");
+      return false;
+    }
+    await _syncUsersFromServer(serverUsers);
+    final List<User> users = await _db.users
+        .filter()
+        .isPartnerSharedWithEqualTo(true)
+        .or()
+        .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+        .findAll();
+    bool changes = false;
+    for (User u in users) {
+      changes |= await _syncRemoteAssetsForUser(u, loadAssets);
+    }
+    return changes;
+  }
+
+  Future<bool> _syncRemoteAssetsForUser(
     User user,
-    FutureOr<List<Asset>?> Function(User user) loadAssets,
+    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
   ) async {
     final DateTime now = DateTime.now().toUtc();
-    final List<Asset>? remote = await loadAssets(user);
+    final List<Asset>? remote = await loadAssets(user, now);
     if (remote == null) {
       return false;
     }

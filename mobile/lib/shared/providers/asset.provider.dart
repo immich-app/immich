@@ -65,16 +65,8 @@ class AssetNotifier extends StateNotifier<bool> {
     try {
       final stopwatch = Stopwatch()..start();
       _getPartnerAssetsInProgress = true;
-      if (partner == null) {
-        await _userService.refreshUsers();
-        final List<User> partners =
-            await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
-        for (User u in partners) {
-          await _assetService.refreshRemoteAssets(u);
-        }
-      } else {
-        await _assetService.refreshRemoteAssets(partner);
-      }
+      await _userService.refreshUsers();
+      await _assetService.refreshRemoteAssets();
       log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getPartnerAssetsInProgress = false;
