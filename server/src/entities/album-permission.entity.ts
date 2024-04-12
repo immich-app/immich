@@ -15,7 +15,6 @@ export class AlbumPermissionEntity {
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   users!: UserEntity;
 
-  // Readonly is false when migrating previous entries
-  @Column({ default: false })
+  @Column({ default: true })
   readonly!: boolean;
 }
