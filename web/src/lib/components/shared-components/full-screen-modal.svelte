@@ -58,7 +58,7 @@
       class:scroll-pb-40={isStickyBottom}
       class:sm:scroll-p-24={isStickyBottom}
     >
-      <ModalHeader id={titleId} {title} {showLogo} {icon} on:close={() => onClose?.()} />
+      <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
       <div class="p-5 pt-0">
         <slot />
       </div>

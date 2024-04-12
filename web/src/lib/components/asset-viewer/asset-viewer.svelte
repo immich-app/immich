@@ -756,7 +756,7 @@
         shared={addToSharedAlbum}
         on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
         on:album={({ detail }) => handleAddToAlbum(detail)}
-        on:close={() => (isShowAlbumPicker = false)}
+        onClose={() => (isShowAlbumPicker = false)}
       />
     {/if}
 
@@ -770,11 +770,11 @@
     {/if}
 
     {#if isShowProfileImageCrop}
-      <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+      <ProfileImageCropper {asset} onClose={() => (isShowProfileImageCrop = false)} />
     {/if}
 
     {#if isShowShareModal}
-      <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
+      <CreateSharedLinkModal assetIds={[asset.id]} onClose={() => (isShowShareModal = false)} />
     {/if}
   </section>
 </FocusTrap>

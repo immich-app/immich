@@ -46,6 +46,6 @@
     {shared}
     on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
     on:album={({ detail }) => handleAddToAlbum(detail)}
-    on:close={handleHideAlbumPicker}
+    onClose={handleHideAlbumPicker}
   />
 {/if}

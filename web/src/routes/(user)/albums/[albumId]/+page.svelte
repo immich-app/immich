@@ -665,17 +665,17 @@
     {album}
     on:select={({ detail: users }) => handleAddUsers(users)}
     on:share={() => (viewMode = ViewMode.LINK_SHARING)}
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   />
 {/if}
 
 {#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} on:close={() => (viewMode = ViewMode.VIEW)} />
+  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = ViewMode.VIEW)} />
 {/if}
 
 {#if viewMode === ViewMode.VIEW_USERS}
   <ShareInfoModal
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
   />
