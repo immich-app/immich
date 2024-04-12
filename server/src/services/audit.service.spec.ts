@@ -67,7 +67,7 @@ describe(AuditService.name, () => {
     });
 
     it('should get any new or updated assets and deleted ids', async () => {
-      auditMock.getAfter.mockResolvedValue([auditStub.delete]);
+      auditMock.getAfter.mockResolvedValue([auditStub.delete.entityId]);
 
       const date = new Date();
       await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({

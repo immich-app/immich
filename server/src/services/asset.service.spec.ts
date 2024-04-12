@@ -5,6 +5,7 @@ import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/a
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobItem, JobName } from 'src/interfaces/job.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -20,6 +21,7 @@ import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
@@ -156,6 +158,7 @@ describe(AssetService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
   let assetStackMock: jest.Mocked<IAssetStackRepository>;
+  let auditMock: jest.Mocked<IAuditRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -171,6 +174,7 @@ describe(AssetService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
+    auditMock = newAuditRepositoryMock();
 
     sut = new AssetService(
       accessMock,
@@ -182,6 +186,7 @@ describe(AssetService.name, () => {
       eventMock,
       partnerMock,
       assetStackMock,
+      auditMock,
     );
 
     when(assetMock.getById)
