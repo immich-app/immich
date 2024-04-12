@@ -24,7 +24,8 @@
 </header>
 <main
   tabindex="-1"
-  class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+  id="immich-main-layout"
+  class="relative grid grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
 >
   <slot name="sidebar">
     {#if admin}
@@ -54,3 +55,19 @@
     </div>
   </section>
 </main>
+
+<style>
+  #immich-main-layout {
+    height: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    /*
+     * On mobile browsers, like iOS Safari, prevent the page height to be greater
+     * than the viewport height when the browser's navbar is visible
+     */
+    #immich-main-layout {
+      height: 100dvh;
+    }
+  }
+</style>
