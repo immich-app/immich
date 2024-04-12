@@ -51,6 +51,7 @@
   >
     <div
       class="z-[9999] max-w-[95vw] max-h-[95vh] {modalWidth} overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
+      style="max-height: min(95vh, 900px);"
       use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
       tabindex="-1"
       aria-modal="true"
