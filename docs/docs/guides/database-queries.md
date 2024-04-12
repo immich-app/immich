@@ -62,16 +62,11 @@ SELECT "assets"."type", COUNT(*) FROM "assets" GROUP BY "assets"."type";
 ```
 
 ```sql title="Count by type (per user)"
-SELECT
-  "users"."email", "assets"."type", COUNT(*)
-FROM
-  "assets"
-JOIN
-  "users" ON "assets"."ownerId" = "users"."id"
-GROUP BY
-  "assets"."type", "users"."email"
-ORDER BY
-  "users"."email";
+SELECT "users"."email", "assets"."type", COUNT(*)
+FROM "assets"
+JOIN "users" ON "assets"."ownerId" = "users"."id"
+GROUP BY "assets"."type", "users"."email"
+ORDER BY "users"."email";
 ```
 
 ```sql title="Failed file movements"
