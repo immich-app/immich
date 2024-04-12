@@ -73,6 +73,11 @@ class SplashScreenPage extends HookConsumerWidget {
         }
         context.replaceRoute(const TabControllerRoute());
       } else {
+        log.severe(
+          'Unable to login through offline or online methods - logging out completely',
+        );
+
+        ref.read(authenticationProvider.notifier).logout();
         // User was unable to login through either offline or online methods
         context.replaceRoute(const LoginRoute());
       }
