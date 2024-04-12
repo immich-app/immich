@@ -63,4 +63,4 @@ When installing a new version of pgvecto.rs, you will need to manually update th
 
 #### Permission denied for view
 
-If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat to <immichdbusername>;`.
+If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat TO <immichdbusername>;`.
