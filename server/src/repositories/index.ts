@@ -1,5 +1,6 @@
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
+import { IAlbumPermissionRepository } from 'src/interfaces/album-permission.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
@@ -30,6 +31,7 @@ import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumPermissionRepository } from 'src/repositories/album-permission.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetStackRepository } from 'src/repositories/asset-stack.repository';
@@ -63,6 +65,7 @@ export const repositories = [
   { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
+  { provide: IAlbumPermissionRepository, useClass: AlbumPermissionRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },

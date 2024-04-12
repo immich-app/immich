@@ -18,6 +18,7 @@ import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumPermissionRepository } from 'src/interfaces/album-permission.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -31,6 +32,7 @@ export class AlbumService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IAlbumPermissionRepository) private albumPermissionRepository: IAlbumPermissionRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -227,16 +229,12 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      album.albumPermissions.push({ users: { id: userId } } as AlbumPermissionEntity);
+      album.albumPermissions.push(
+        await this.albumPermissionRepository.create({ users: { id: userId }, albums: { id } } as AlbumPermissionEntity),
+      );
     }
 
-    return this.albumRepository
-      .update({
-        id: album.id,
-        updatedAt: new Date(),
-        albumPermissions: album.albumPermissions,
-      })
-      .then(mapAlbumWithoutAssets);
+    return mapAlbumWithoutAssets(album);
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -260,11 +258,7 @@ export class AlbumService {
       await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
     }
 
-    await this.albumRepository.update({
-      id: album.id,
-      updatedAt: new Date(),
-      albumPermissions: album.albumPermissions.filter(({ users: { id } }) => id !== userId),
-    });
+    await this.albumPermissionRepository.delete(userId, id);
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {
