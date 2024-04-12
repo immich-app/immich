@@ -57,6 +57,11 @@
 </main>
 
 <style>
+  :root {
+    /* On touch devices, prevent the page from bouncing when overscrolling */
+    overscroll-behavior: none;
+  }
+
   #immich-main-layout {
     height: 100vh;
   }
