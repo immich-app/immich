@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // List<AlbumPermissionResponseDto> albumPermissions (default value: const [])
+    test('to test the property `albumPermissions`', () async {
+      // TODO
+    });
+
     // String albumThumbnailAssetId
     test('to test the property `albumThumbnailAssetId`', () async {
       // TODO
@@ -91,6 +96,7 @@ void main() {
       // TODO
     });
 
+    // Deprecated in favor of albumPermissions
     // List<UserResponseDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO

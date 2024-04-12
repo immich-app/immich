@@ -200,6 +200,8 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
+        case 'AlbumPermissionResponseDto':
+          return AlbumPermissionResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':

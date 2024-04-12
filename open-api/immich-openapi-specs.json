@@ -7065,10 +7065,31 @@
         ],
         "type": "object"
       },
+      "AlbumPermissionResponseDto": {
+        "properties": {
+          "readonly": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "readonly",
+          "user"
+        ],
+        "type": "object"
+      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
             "type": "string"
+          },
+          "albumPermissions": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumPermissionResponseDto"
+            },
+            "type": "array"
           },
           "albumThumbnailAssetId": {
             "nullable": true,
@@ -7120,6 +7141,8 @@
             "type": "boolean"
           },
           "sharedUsers": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumPermissions",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7136,6 +7159,7 @@
         },
         "required": [
           "albumName",
+          "albumPermissions",
           "albumThumbnailAssetId",
           "assetCount",
           "assets",

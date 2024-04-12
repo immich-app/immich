@@ -232,6 +232,7 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
+ - [AlbumPermissionResponseDto](doc//AlbumPermissionResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)

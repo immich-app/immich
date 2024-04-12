@@ -38,6 +38,28 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
+};
+export type AlbumPermissionResponseDto = {
+    "readonly": boolean;
+    user: UserResponseDto;
+};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -60,24 +82,6 @@ export type ExifResponseDto = {
     projectionType?: string | null;
     state?: string | null;
     timeZone?: string | null;
-};
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
@@ -143,6 +147,7 @@ export type AssetResponseDto = {
 };
 export type AlbumResponseDto = {
     albumName: string;
+    albumPermissions: AlbumPermissionResponseDto[];
     albumThumbnailAssetId: string | null;
     assetCount: number;
     assets: AssetResponseDto[];
@@ -157,6 +162,7 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
+    /** Deprecated in favor of albumPermissions */
     sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;

@@ -14,6 +14,7 @@ class AlbumResponseDto {
   /// Returns a new [AlbumResponseDto] instance.
   AlbumResponseDto({
     required this.albumName,
+    this.albumPermissions = const [],
     required this.albumThumbnailAssetId,
     required this.assetCount,
     this.assets = const [],
@@ -34,6 +35,8 @@ class AlbumResponseDto {
   });
 
   String albumName;
+
+  List<AlbumPermissionResponseDto> albumPermissions;
 
   String? albumThumbnailAssetId;
 
@@ -81,6 +84,7 @@ class AlbumResponseDto {
 
   bool shared;
 
+  /// Deprecated in favor of albumPermissions
   List<UserResponseDto> sharedUsers;
 
   ///
@@ -96,6 +100,7 @@ class AlbumResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
     other.albumName == albumName &&
+    _deepEquality.equals(other.albumPermissions, albumPermissions) &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
     other.assetCount == assetCount &&
     _deepEquality.equals(other.assets, assets) &&
@@ -118,6 +123,7 @@ class AlbumResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
+    (albumPermissions.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (assetCount.hashCode) +
     (assets.hashCode) +
@@ -137,11 +143,12 @@ class AlbumResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumPermissions=$albumPermissions, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
+      json[r'albumPermissions'] = this.albumPermissions;
     if (this.albumThumbnailAssetId != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
@@ -191,6 +198,7 @@ class AlbumResponseDto {
 
       return AlbumResponseDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
+        albumPermissions: AlbumPermissionResponseDto.listFromJson(json[r'albumPermissions']),
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
@@ -256,6 +264,7 @@ class AlbumResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'albumName',
+    'albumPermissions',
     'albumThumbnailAssetId',
     'assetCount',
     'assets',
