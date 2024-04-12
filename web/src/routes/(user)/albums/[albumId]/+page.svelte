@@ -136,6 +136,9 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
+  $: userHasWriteAccess = !album.albumPermissions.find(({ user: {id } }) => id === $user.id)?.readonly;
+  $: albumHasReadonlyUsers = album.albumPermissions.some(({ readonly }) => readonly);
+
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
@@ -414,11 +417,13 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
-            <CircleIconButton
-              title="Add photos"
-              on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              icon={mdiImagePlusOutline}
-            />
+            {#if userHasWriteAccess}
+              <CircleIconButton
+                title="Add photos"
+                on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                icon={mdiImagePlusOutline}
+              />
+            {/if}
 
             {#if isOwned}
               <CircleIconButton
@@ -559,12 +564,24 @@
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
-                    <!-- users -->
-                    {#each album.sharedUsers as user (user.id)}
+                    <!-- users with write access (collaborators) -->
+                    {#each album.albumPermissions.filter(({readonly}) => !readonly) as {user} (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
+
+                    <!-- display ellipsis if there are readonly users too -->
+                    {#if albumHasReadonlyUsers}
+                      <CircleIconButton
+                        title="View all users"
+                        backgroundColor="#d3d3d3"
+                        forceDark
+                        size="20"
+                        icon={mdiDotsVertical}
+                        on:click={() => (viewMode = ViewMode.VIEW_USERS)}
+                      />
+                    {/if}
 
                     {#if isOwned}
                       <CircleIconButton
