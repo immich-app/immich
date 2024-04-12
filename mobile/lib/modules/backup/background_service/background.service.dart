@@ -70,7 +70,9 @@ class BackgroundService {
       final String title =
           "backup_background_service_default_notification".tr();
       final bool ok = await _foregroundChannel.invokeMethod(
-          'enable', [callback.toRawHandle(), title, immediate, getServerUrl()]);
+        'enable',
+        [callback.toRawHandle(), title, immediate, getServerUrl()],
+      );
       return ok;
     } catch (error) {
       return false;
