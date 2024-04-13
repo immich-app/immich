@@ -461,7 +461,6 @@
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title="Slideshow" on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
@@ -469,6 +468,7 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
+                        <MenuOption icon={mdiPresentationPlay} text="Slideshow" on:click={handleStartSlideshow} />
                         <MenuOption
                           icon={mdiImageOutline}
                           text="Select album cover"
