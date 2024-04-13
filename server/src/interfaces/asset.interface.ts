@@ -146,7 +146,7 @@ export interface IAssetRepository {
   ): Promise<AssetEntity[]>;
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
-  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;

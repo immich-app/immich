@@ -38,6 +38,16 @@ const projects: CommunityProjectProps[] = [
     description: 'Documentation for simple podman setup using quadlets.',
     url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
   },
+  {
+    title: 'Lightroom Publisher: mi.Immich.Publisher',
+    description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
+    url: 'https://github.com/midzelis/mi.Immich.Publisher',
+  },
+  {
+    title: 'Immich Duplicate Finder',
+    description: 'Webapp that uses machine learning to identify near-duplicate images.',
+    url: 'https://github.com/vale46n1/immich_duplicate_finder',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
