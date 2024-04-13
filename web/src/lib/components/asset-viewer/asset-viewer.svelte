@@ -305,7 +305,7 @@
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext =
-        order === 'previous' ? await assetStore.getPreviousAsset(asset.id) : await assetStore.getNextAsset(asset.id);
+        order === 'previous' ? await assetStore.getPreviousAsset(asset) : await assetStore.getNextAsset(asset);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
