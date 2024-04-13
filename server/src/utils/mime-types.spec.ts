@@ -145,7 +145,7 @@ describe('mimeTypes', () => {
 
     it('should be a sorted list', () => {
       const keys = Object.keys(mimeTypes.video);
-      expect(keys).toEqual(keys.toSorted());
+      expect(keys).toEqual([...keys].sort());
     });
 
     it('should contain only video mime types', () => {
@@ -171,7 +171,7 @@ describe('mimeTypes', () => {
 
     it('should be a sorted list', () => {
       const keys = Object.keys(mimeTypes.sidecar);
-      expect(keys).toEqual(keys.toSorted());
+      expect(keys).toEqual([...keys].sort());
     });
 
     it('should contain only xml mime types', () => {
