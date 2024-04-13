@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
@@ -15,7 +16,6 @@ import {
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
-import { exiftool } from 'exiftool-vendored';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
