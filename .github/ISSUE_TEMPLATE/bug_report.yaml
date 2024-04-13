@@ -88,12 +88,6 @@ body:
       required: true
 
   - type: textarea
-    attributes:
-      label: Additional information
-      description: >
-        If you have any additional information for us, use the field below.
-
-  - type: textarea
     id: logs
     attributes:
       label: Relevant log output
@@ -103,6 +97,12 @@ body:
     validations:
       required: false
       
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: >
+        If you have any additional information for us, use the field below.
+
   - type: markdown
     attributes:
       value: Thank you for submitting the form
