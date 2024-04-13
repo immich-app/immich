@@ -140,10 +140,10 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
 
     if (previousAsset) {
-      const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
@@ -152,10 +152,10 @@
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset);
 
     if (nextAsset) {
-      const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
