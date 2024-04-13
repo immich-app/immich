@@ -39,7 +39,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadAlbum } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -342,7 +342,7 @@
   };
 
   const handleDownloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
+    await downloadAlbum(album);
   };
 
   const handleRemoveAlbum = async () => {
@@ -369,6 +369,18 @@
     viewMode = ViewMode.VIEW;
     assetInteractionStore.clearMultiselect();
 
+    await updateThumbnail(assetId);
+  };
+
+  const updateThumbnailUsingCurrentSelection = async () => {
+    if ($selectedAssets.size === 1) {
+      const assetId = [...$selectedAssets][0].id;
+      assetInteractionStore.clearMultiselect();
+      await updateThumbnail(assetId);
+    }
+  };
+
+  const updateThumbnail = async (assetId: string) => {
     try {
       await updateAlbumInfo({
         id: album.id,
@@ -400,6 +412,13 @@
           {#if isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
+            {#if $selectedAssets.size === 1}
+              <MenuOption
+                text="Set as album cover"
+                icon={mdiImageOutline}
+                on:click={() => updateThumbnailUsingCurrentSelection()}
+              />
+            {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
           {#if isOwned || isAllUserOwned}
@@ -646,17 +665,17 @@
     {album}
     on:select={({ detail: users }) => handleAddUsers(users)}
     on:share={() => (viewMode = ViewMode.LINK_SHARING)}
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   />
 {/if}
 
 {#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} on:close={() => (viewMode = ViewMode.VIEW)} />
+  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = ViewMode.VIEW)} />
 {/if}
 
 {#if viewMode === ViewMode.VIEW_USERS}
   <ShareInfoModal
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
   />
@@ -664,6 +683,7 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
+    id="delete-album-modal"
     title="Delete album"
     confirmText="Delete"
     onConfirm={handleRemoveAlbum}

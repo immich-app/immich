@@ -3,17 +3,15 @@
   import { handleError } from '$lib/utils/handle-error';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import domtoimage from 'dom-to-image';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
   import Button from '../elements/buttons/button.svelte';
   import BaseModal from './base-modal.svelte';
   import { NotificationType, notificationController } from './notification/notification';
 
   export let asset: AssetResponseDto;
+  export let onClose: () => void;
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
   let imgElement: HTMLDivElement;
 
   onMount(() => {
@@ -67,11 +65,11 @@
     } catch (error) {
       handleError(error, 'Error setting profile picture.');
     }
-    dispatch('close');
+    onClose();
   };
 </script>
 
-<BaseModal id="profile-image-cropper" title="Set profile picture" on:close>
+<BaseModal id="profile-image-cropper" title="Set profile picture" {onClose}>
   <div class="flex place-items-center items-center justify-center">
     <div
       class="relative flex aspect-square w-1/2 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"

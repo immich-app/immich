@@ -30,6 +30,8 @@ class MapStateNotifier extends _$MapStateNotifier {
           .getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
       includeArchived: appSettingsProvider
           .getSetting<bool>(AppSettingsEnum.mapIncludeArchived),
+      withPartners:
+          appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapwithPartners),
       relativeTime:
           appSettingsProvider.getSetting<int>(AppSettingsEnum.mapRelativeDate),
     );
@@ -121,6 +123,17 @@ class MapStateNotifier extends _$MapStateNotifier {
         );
     state = state.copyWith(
       includeArchived: isIncludeArchived,
+      shouldRefetchMarkers: true,
+    );
+  }
+
+  void switchWithPartners(bool isWithPartners) {
+    ref.read(appSettingsServiceProvider).setSetting(
+          AppSettingsEnum.mapwithPartners,
+          isWithPartners,
+        );
+    state = state.copyWith(
+      withPartners: isWithPartners,
       shouldRefetchMarkers: true,
     );
   }
