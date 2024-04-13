@@ -115,7 +115,7 @@
   >
   <Portal target="body">
     {#if $showAssetViewer}
-      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then {default AssetViewer}}
+      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           asset={$viewingAsset}
           showNavigation={viewingAssets.length > 1}
