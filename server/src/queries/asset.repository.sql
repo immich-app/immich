@@ -253,7 +253,7 @@ DELETE FROM "assets"
 WHERE
   "ownerId" = $1
 
--- AssetRepository.getLibraryAssetPaths
+-- AssetRepository.getExternalLibraryAssetPaths
 SELECT DISTINCT
   "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
 FROM
@@ -261,7 +261,6 @@ FROM
     SELECT
       "AssetEntity"."id" AS "AssetEntity_id",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
       "AssetEntity"."isOffline" AS "AssetEntity_isOffline"
     FROM
       "assets" "AssetEntity"
@@ -273,6 +272,7 @@ FROM
       (
         (
           ((("AssetEntity__AssetEntity_library"."id" = $1)))
+          AND ("AssetEntity"."isExternal" = $2)
         )
       )
       AND ("AssetEntity"."deletedAt" IS NULL)
