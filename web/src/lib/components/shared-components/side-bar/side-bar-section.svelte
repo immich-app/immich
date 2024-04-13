@@ -1,10 +1,89 @@
 <script lang="ts">
+  import { isSideBarOpen, isSideBarHovered } from '$lib/stores/side-bar.store';
+  import { clickOutside, type OutClickEvent } from '$lib/utils/click-outside';
+  import { md, lg } from '$lib/utils/media-breakpoint';
+
+  enum SideBarState {
+    Closed,
+    Small,
+    Open,
+  }
+
+  let minimalState = SideBarState.Closed;
+  let sideBar: HTMLElement;
+  let sideBarClasses: string = '';
+
+  // We do not want to risk handling hover events on touch screen since we may
+  // get stuck in that state
+  let isTouchScreen = false;
+
+  $: if (sideBar) {
+    if (minimalState === SideBarState.Open) {
+      // Forced Open
+      sideBarClasses = 'open w-64 pr-6';
+    } else if ($isSideBarHovered || $isSideBarOpen) {
+      // Open
+      sideBarClasses = 'open sm w-64 pr-6 shadow-2xl border-r dark:border-r-immich-dark-gray';
+    } else if (minimalState === SideBarState.Small) {
+      // Small
+      sideBarClasses = 'closed sm w-18 border-r dark:border-r-immich-dark-gray';
+    } else {
+      // Closed
+      sideBarClasses = 'closed w-0';
+    }
+  }
+
+  const onClickOutside = (event: OutClickEvent) => {
+    if (minimalState === SideBarState.Open) {
+      return;
+    }
+    // MouseEvent
+    if ('clientX' in event) {
+      const elements = document.elementsFromPoint(event.x, event.y);
+      const button = elements.find(({ id }) => id === 'sidebar-toggle-button');
+
+      if (button) {
+        // This 'outclick' event has been emitted because the used clicked on
+        // the menu button
+        return;
+      }
+    }
+    $isSideBarOpen = false;
+  };
+
+  const setTouchScreen = () => {
+    isTouchScreen = true;
+    $isSideBarHovered = false;
+  };
+
+  const setHoverState = (isHover: boolean) => {
+    if (!isTouchScreen) {
+      $isSideBarHovered = isHover;
+    }
+  };
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <section
   id="sidebar"
   tabindex="-1"
-  class="immich-scrollbar group relative z-10 flex w-18 flex-col gap-1 overflow-y-auto bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg hover:sm:w-64 hover:sm:border-r hover:sm:pr-6 hover:sm:shadow-2xl hover:sm:dark:border-r-immich-dark-gray md:w-64 md:pr-6 hover:md:border-none hover:md:shadow-none"
+  bind:this={sideBar}
+  use:clickOutside
+  on:outclick={({ detail }) => onClickOutside(detail)}
+  on:touchstart={() => setTouchScreen()}
+  on:mouseenter={() => setHoverState(true)}
+  on:mouseleave={() => setHoverState(false)}
+  use:md={{
+    match: () => (minimalState = SideBarState.Small),
+    unmatch: () => (minimalState = SideBarState.Closed),
+  }}
+  use:lg={{
+    match: () => (minimalState = SideBarState.Open),
+    unmatch: () => (minimalState = SideBarState.Small),
+  }}
+  class="immich-scrollbar group relative z-10 flex {sideBarClasses} transition-[width,box-shadow,padding] duration-200 overflow-y-auto overflow-x-hidden bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <slot />
+  <div class="flex min-w-64 pr-6 overflow-x-hidden flex-col gap-1 pt-8">
+    <slot />
+  </div>
 </section>

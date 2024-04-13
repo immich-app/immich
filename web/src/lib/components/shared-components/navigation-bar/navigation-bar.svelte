@@ -7,9 +7,10 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { resetSavedUser, user } from '$lib/stores/user.store';
+  import { isSideBarOpen } from '$lib/stores/side-bar.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { logout } from '@immich/sdk';
-  import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiCog, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { AppRoute } from '../../../constants';
@@ -44,8 +45,15 @@
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink>Skip to content</SkipLink>
   <div
-    class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[min-content_theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[min-content_theme(spacing.64)_auto]"
   >
+    <div class="flex">
+      <div class="ml-4 lg:hidden" id="sidebar-toggle-button">
+        <IconButton title="Menu" on:click={() => ($isSideBarOpen = !$isSideBarOpen)}>
+          <Icon path={mdiMenu} class="h-6 w-6" />
+        </IconButton>
+      </div>
+    </div>
     <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
       <ImmichLogo width="55%" noText={innerWidth < 768} />
     </a>

@@ -51,7 +51,7 @@
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Icon path={mdiChartPie} size="24" />
     </div>
-    <div class="hidden group-hover:sm:block md:block">
+    <div class="block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
       {#if $serverInfo}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
@@ -75,7 +75,7 @@
     <div class="pb-11 pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Icon path={mdiDns} size="26" />
     </div>
-    <div class="hidden text-xs group-hover:sm:block md:block">
+    <div class="block text-xs">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
       <div class="mt-2 flex justify-between justify-items-center">

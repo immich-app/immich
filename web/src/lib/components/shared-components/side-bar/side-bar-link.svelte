@@ -13,8 +13,17 @@
   export let preloadData = true;
 
   let showMoreInformation = false;
+
   $: routePath = resolveRoute(routeId, {});
   $: isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+
+  // <a> (the button itself) additional classes
+  $: linkClasses = isSelected ? 'text-immich-primary' : '';
+
+  // Underlay (first <div>, used as background color) additional classes
+  $: underlayClasses = isSelected
+    ? 'bg-immich-primary/10 group-hover/navitem:bg-immich-primary/25 dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary'
+    : '';
 </script>
 
 <a
@@ -22,25 +31,26 @@
   data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
   draggable="false"
   aria-current={isSelected ? 'page' : undefined}
-  class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
-    {isSelected
-    ? 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/10 dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary'
-    : ''}
-		pl-5 group-hover:sm:px-5 md:px-5
-  "
+  class="relative group/navitem flex gap-4 px-5 py-3 w-full place-items-center justify-between rounded-r-full
+  transition-all duration-200 hover:cursor-pointer hover:text-immich-primary dark:text-immich-dark-fg
+  dark:hover:text-immich-dark-primary group-[.sm.closed]:ml-1 {linkClasses}"
 >
-  <div class="flex w-full place-items-center gap-4 overflow-hidden truncate">
+  <div
+    class="absolute inset-0 w-full rounded-r-full transition-all duration-200 group-hover/navitem:bg-immich-gray
+    dark:group-hover/navitem:bg-immich-dark-gray group-[.sm.closed]:w-14 group-[.sm.closed]:rounded-full
+    group-[.sm.closed]:ml-1 {underlayClasses}"
+  />
+
+  <div class="relative flex w-full place-items-center gap-4 overflow-hidden truncate">
     <Icon path={icon} size="1.5em" class="shrink-0" flipped={flippedLogo} ariaHidden />
-    <span class="text-sm font-medium">{title}</span>
+    <span class="text-sm font-medium group-[.sm.closed]:opacity-0 transition-opacity duration-200">{title}</span>
   </div>
 
-  <div
-    class="h-0 overflow-hidden transition-[height] delay-1000 duration-100 sm:group-hover:h-auto group-hover:sm:overflow-visible md:h-auto md:overflow-visible"
-  >
+  <div class="relative h-auto overflow-visible">
     {#if $$slots.moreInformation}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
-        class="relative flex cursor-default select-none justify-center"
+        class="relative z-10 flex cursor-default select-none justify-center"
         on:mouseenter={() => (showMoreInformation = true)}
         on:mouseleave={() => (showMoreInformation = false)}
       >

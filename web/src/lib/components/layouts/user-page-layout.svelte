@@ -25,7 +25,7 @@
 <main
   tabindex="-1"
   id="immich-main-layout"
-  class="relative grid grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
+  class="relative grid grid-cols-[0_auto] md:grid-cols-[theme(spacing.18)_auto] lg:grid-cols-[theme(spacing.64)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
 >
   <slot name="sidebar">
     {#if admin}

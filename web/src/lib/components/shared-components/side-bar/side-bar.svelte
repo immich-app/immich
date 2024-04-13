@@ -20,6 +20,7 @@
   import StatusBox from '../status-box.svelte';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
+  import SideBarSeparator from './side-bar-separator.svelte';
 
   const getStats = (dto: Parameters<typeof getAssetStatistics>[0]) => getAssetStatistics(dto);
 
@@ -85,10 +86,8 @@
       </SideBarLink>
     {/if}
 
-    <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
-      <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
-    </div>
+    <SideBarSeparator title="Library" hSeparator />
+
     <SideBarLink
       title="Favorites"
       routeId="/(user)/favorites"
@@ -148,7 +147,7 @@
   </nav>
 
   <!-- Status Box -->
-  <div class="mb-6 mt-auto">
+  <div class="my-6 group-[.sm.closed]:opacity-0 transition-opacity duration-200">
     <StatusBox />
   </div>
 </SideBarSection>
