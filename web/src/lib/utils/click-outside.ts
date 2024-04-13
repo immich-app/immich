@@ -13,6 +13,8 @@ interface Options {
   onEscape?: () => void;
 }
 
+export type OutClickEvent = MouseEvent | KeyboardEvent;
+
 export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<void, Attributes> {
   const { onOutclick, onEscape } = options;
 
@@ -25,7 +27,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
     if (onOutclick) {
       onOutclick();
     } else {
-      node.dispatchEvent(new CustomEvent('outclick'));
+      node.dispatchEvent(new CustomEvent<OutClickEvent>('outclick', { detail: event }));
     }
   };
 
@@ -38,7 +40,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
       event.stopPropagation();
       onEscape();
     } else {
-      node.dispatchEvent(new CustomEvent('escape'));
+      node.dispatchEvent(new CustomEvent<OutClickEvent>('escape', { detail: event }));
     }
   };
 
