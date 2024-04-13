@@ -307,8 +307,8 @@ describe('AssetStore', () => {
     });
 
     it('returns null for invalid assetId', async () => {
-      expect(() => assetStore.getPreviousAsset('invalid')).not.toThrow();
-      expect(await assetStore.getPreviousAsset('invalid')).toBeNull();
+      expect(() => assetStore.getPreviousAsset({ id: 'invalid' } as AssetResponseDto)).not.toThrow();
+      expect(await assetStore.getPreviousAsset({ id: 'invalid' } as AssetResponseDto)).toBeNull();
     });
 
     it('returns previous assetId', async () => {
