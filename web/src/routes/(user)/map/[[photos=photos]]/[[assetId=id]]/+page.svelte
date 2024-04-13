@@ -95,14 +95,14 @@
   async function navigateNext() {
     if (viewingAssetCursor < viewingAssets.length - 1) {
       await setAssetId(viewingAssets[++viewingAssetCursor]);
-      navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   }
 
   async function navigatePrevious() {
     if (viewingAssetCursor > 0) {
       await setAssetId(viewingAssets[--viewingAssetCursor]);
-      navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   }
 </script>
@@ -115,8 +115,8 @@
   >
   <Portal target="body">
     {#if $showAssetViewer}
-      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then AssetViewer}
-        <AssetViewer.default
+      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then {default AssetViewer}}
+        <AssetViewer
           asset={$viewingAsset}
           showNavigation={viewingAssets.length > 1}
           on:next={navigateNext}

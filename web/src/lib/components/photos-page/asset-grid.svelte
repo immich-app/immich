@@ -145,7 +145,7 @@
     if (previousAsset) {
       const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
-      navigate({ targetRoute: 'current', assetId: previousAsset.id });
+      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
     return !!previousAsset;
@@ -157,7 +157,7 @@
     if (nextAsset) {
       const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
-      navigate({ targetRoute: 'current', assetId: nextAsset.id });
+      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
     return !!nextAsset;
@@ -461,8 +461,8 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
-      <AssetViewer.default
+    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
         {withStacked}
         {assetStore}
         asset={$viewingAsset}

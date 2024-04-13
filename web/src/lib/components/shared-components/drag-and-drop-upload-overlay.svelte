@@ -6,7 +6,7 @@
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
 
-  $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
+  $: albumId = isAlbumsRoute($page.route?.id) && $page.params.albumId;
   $: isShare = isSharedLinkRoute($page.route?.id);
 
   let dragStartTarget: EventTarget | null = null;

@@ -25,10 +25,10 @@
   let currentViewAssetIndex = 0;
   $: isMultiSelectionMode = selectedAssets.size > 0;
 
-  const viewAssetHandler = (asset: AssetResponseDto) => {
+  const viewAssetHandler = async (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     setAsset(assets[currentViewAssetIndex]);
-    navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
   };
 
   const selectAssetHandler = (asset: AssetResponseDto) => {
@@ -43,22 +43,22 @@
     selectedAssets = temporary;
   };
 
-  const navigateAssetForward = () => {
+  const navigateAssetForward = async () => {
     try {
       if (currentViewAssetIndex < assets.length - 1) {
         setAsset(assets[++currentViewAssetIndex]);
-        navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to the next asset');
     }
   };
 
-  const navigateAssetBackward = () => {
+  const navigateAssetBackward = async () => {
     try {
       if (currentViewAssetIndex > 0) {
         setAsset(assets[--currentViewAssetIndex]);
-        navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
       handleError(error, 'Cannot navigate to previous asset');

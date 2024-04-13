@@ -9,20 +9,17 @@ export const isExternalUrl = (url: string): boolean => {
   return new URL(url, window.location.href).origin !== window.location.origin;
 };
 
-export const isPhotosRoute = (route?: string | null) => route?.startsWith('/(user)/photos/[[assetId=id]]') || false;
-export const isSharedLinkRoute = (route?: string | null) => route?.startsWith('/(user)/share/[key]') || false;
-export const isSearchRoute = (route?: string | null) => route?.startsWith('/(user)/search') || false;
-export const isAlbumsRoute = (route?: string | null) => route?.startsWith('/(user)/albums/[albumId=id]') || false;
-export const isPeopleRoute = (route?: string | null) => route?.startsWith('/(user)/people/[personId]') || false;
+export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');
+export const isSharedLinkRoute = (route?: string | null) => !!route?.startsWith('/(user)/share/[key]');
+export const isSearchRoute = (route?: string | null) => !!route?.startsWith('/(user)/search');
+export const isAlbumsRoute = (route?: string | null) => !!route?.startsWith('/(user)/albums/[albumId=id]');
+export const isPeopleRoute = (route?: string | null) => !!route?.startsWith('/(user)/people/[personId]');
 
 export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
-  (target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {})) || false;
+  !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
-export async function getAssetInfoFromParam(params: { assetId?: string }) {
-  if (params.assetId) {
-    return getAssetInfo({ id: params.assetId });
-  }
-  return null;
+export function getAssetInfoFromParam({ assetId }: { assetId?: string }) {
+  return assetId && getAssetInfo({ id: assetId });
 }
 
 function currentUrlWithoutAsset() {
@@ -65,15 +62,15 @@ function isAssetRoute(route: Route): route is AssetRoute {
   return route.targetRoute === 'current' && 'assetId' in route;
 }
 
-function navigateAssetRoute(route: AssetRoute) {
+async function navigateAssetRoute(route: AssetRoute) {
   const { assetId } = route;
   const next = assetId ? currentUrlReplaceAssetId(assetId) : currentUrlWithoutAsset();
   if (next !== currentUrl()) {
-    void goto(next, { replaceState: false });
+    await goto(next, { replaceState: false });
   }
 }
 
-export function navigate<T extends Route>(change: T) {
+export function navigate<T extends Route>(change: T): Promise<void> {
   if (isAssetRoute(change)) {
     return navigateAssetRoute(change);
   }

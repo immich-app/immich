@@ -192,7 +192,7 @@
   }
 
   onMount(async () => {
-    navigate({ targetRoute: 'current', assetId: asset.id });
+    await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -265,13 +265,13 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = () => {
-    closeViewer();
+  const handleCloseViewer = async () => {
+    await closeViewer();
   };
 
-  const closeViewer = () => {
+  const closeViewer = async () => {
     dispatch('close');
-    navigate({ targetRoute: 'current', assetId: null });
+    await navigate({ targetRoute: 'current', assetId: null });
   };
 
   const navigateAssetRandom = async () => {
