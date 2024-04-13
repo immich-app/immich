@@ -197,7 +197,7 @@ export class MediaService {
 
         try {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-          const imageOptions = { format, size, colorspace, quality: image.quality, extract: false };
+          const imageOptions = { format, size, colorspace, quality: image.quality };
           await this.mediaRepository.resize(extractedPath ?? asset.originalPath, path, imageOptions);
         } finally {
           if (extractedPath) {

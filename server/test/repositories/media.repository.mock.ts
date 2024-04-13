@@ -4,6 +4,7 @@ import { Mocked, vitest } from 'vitest';
 export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {
   return {
     generateThumbhash: vitest.fn(),
+    extract: jest.fn().mockResolvedValue(null),
     resize: vitest.fn(),
     crop: vitest.fn(),
     probe: vitest.fn(),
