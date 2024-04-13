@@ -15,6 +15,9 @@ import {
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
+import { exiftool } from 'exiftool-vendored';
+import { randomUUID } from 'node:crypto';
+import { parse } from 'node:path';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -26,6 +29,23 @@ export class MediaRepository implements IMediaRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MediaRepository.name);
   }
+  async extract(input: string): Promise<string | null> {
+    const tmpPath = `${parse(input).dir}/${randomUUID()}.jpg`;
+    try {
+      await exiftool.extractJpgFromRaw(input, tmpPath);
+    } catch (err: any) {
+      this.logger.debug('Could not extract JPEG from image, trying preview', err.message);
+      try {
+        await exiftool.extractPreview(input, tmpPath);
+      } catch (err: any) {
+        this.logger.debug('Could not extract preview from image', err.message);
+        return null;
+      }
+    }
+
+    return tmpPath;
+  }
+
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
       .pipelineColorspace('rgb16')
@@ -139,10 +159,5 @@ export class MediaRepository implements IMediaRepository {
       .outputOptions(options.outputOptions)
       .output(output)
       .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
-  }
-
-  private chainPath(existing: string, path: string) {
-    const separator = existing.endsWith(':') ? '' : ':';
-    return `${existing}${separator}${path}`;
   }
 }

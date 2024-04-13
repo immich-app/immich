@@ -42,6 +42,7 @@ import {
   VAAPIConfig,
   VP9Config,
 } from 'src/utils/media';
+import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -191,9 +192,18 @@ export class MediaService {
 
     switch (asset.type) {
       case AssetType.IMAGE: {
-        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-        const imageOptions = { format, size, colorspace, quality: image.quality };
-        await this.mediaRepository.resize(asset.originalPath, path, imageOptions);
+        const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
+        const extractedPath = shouldExtract ? await this.mediaRepository.extract(asset.originalPath) : null;
+
+        try {
+          const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+          const imageOptions = { format, size, colorspace, quality: image.quality, extract: false };
+          await this.mediaRepository.resize(extractedPath ?? asset.originalPath, path, imageOptions);
+        } finally {
+          if (extractedPath) {
+            await this.storageRepository.unlink(extractedPath);
+          }
+        }
         break;
       }
 

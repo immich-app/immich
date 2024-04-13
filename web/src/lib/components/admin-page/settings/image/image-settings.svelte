@@ -101,6 +101,16 @@
           isEdited={config.image.colorspace !== savedConfig.image.colorspace}
           {disabled}
         />
+
+        <SettingSwitch
+          id="prefer-embedded"
+          title="PREFER EMBEDDED PREVIEW"
+          subtitle="Use embedded previews in RAW photos when available. This can produce more accurate colors for some cameras, but increases compression artifacts."
+          checked={config.image.extractEmbedded}
+          on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
+          isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
+          {disabled}
+        />
       </div>
 
       <div class="ml-4">

@@ -129,6 +129,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+    extractEmbedded: true,
   },
   newVersionCheck: {
     enabled: true,
