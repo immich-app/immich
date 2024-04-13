@@ -164,8 +164,7 @@ SET
       LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
     WHERE
       "assets"."ownerId" = users.id
-      AND NOT "assets"."isExternal"
-      AND "library"."type" != 'EXTERNAL'
+      AND "library"."type" = 'UPLOAD'
   ),
   "updatedAt" = CURRENT_TIMESTAMP
 WHERE
