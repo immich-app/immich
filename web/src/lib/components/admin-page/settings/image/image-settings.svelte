@@ -105,7 +105,7 @@
         <SettingSwitch
           id="prefer-embedded"
           title="PREFER EMBEDDED PREVIEW"
-          subtitle="Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview depends on the camera."
+          subtitle="Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview is camera-dependent."
           checked={config.image.extractEmbedded}
           on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
           isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
