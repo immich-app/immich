@@ -49,6 +49,10 @@
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
+  $: {
+    void assetStore.updateViewport(viewport);
+  }
+
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   onMount(async () => {
