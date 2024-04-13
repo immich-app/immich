@@ -109,7 +109,7 @@
 
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
-    <div class="isolate h-full w-full">
+    <div class="h-full w-full">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div></UserPageLayout
   >
