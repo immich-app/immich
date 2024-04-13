@@ -125,8 +125,7 @@ export class UserRepository implements IUserRepository {
       .leftJoin('assets.library', 'library')
       .leftJoin('assets.exifInfo', 'exif')
       .where('assets.ownerId = users.id')
-      .andWhere('NOT assets.isExternal')
-      .andWhere(`library.type != '${LibraryType.EXTERNAL}'`)
+      .andWhere(`library.type == '${LibraryType.UPLOAD}'`)
       .withDeleted();
 
     const query = this.userRepository
