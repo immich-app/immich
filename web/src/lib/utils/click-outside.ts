@@ -13,12 +13,12 @@ interface Options {
   onEscape?: () => void;
 }
 
-export type OutClickEvent = MouseEvent | KeyboardEvent;
+export type OutClickEvent = MouseEvent | KeyboardEvent | TouchEvent;
 
 export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<void, Attributes> {
   const { onOutclick, onEscape } = options;
 
-  const handleClick = (event: MouseEvent) => {
+  const handleClick = (event: MouseEvent | TouchEvent) => {
     const targetNode = event.target as Node | null;
     if (node.contains(targetNode)) {
       return;
@@ -45,11 +45,13 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
   };
 
   document.addEventListener('click', handleClick, true);
+  document.addEventListener('touchstart', handleClick, true);
   node.addEventListener('keydown', handleKey, false);
 
   return {
     destroy() {
       document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('touchstart', handleClick, true);
       node.removeEventListener('keydown', handleKey, false);
     },
   };
