@@ -10,6 +10,7 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import ipaddr from 'ipaddr.js';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -70,6 +71,11 @@ interface ClaimOptions<T> {
   key: string;
   default: T;
   isValid: (value: unknown) => boolean;
+}
+
+const getHeader = (headers: IncomingHttpHeaders, key: string): string | undefined => {
+  const h = headers[key];
+  return Array.isArray(h) ? h[0] : h;
 }
 
 @Injectable()
@@ -161,24 +167,29 @@ export class AuthService {
     return mapUser(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
-    const userToken = (headers['x-immich-user-token'] ||
-      params.userToken ||
-      this.getBearerToken(headers) ||
-      this.getCookieToken(headers)) as string;
-    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>, remoteIpAddress?: string): Promise<AuthDto> {
+    const shareKey = getHeader(headers, 'x-immich-share-key') ?? params.key;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
     }
+    const userToken = getHeader(headers, 'x-immich-user-token') ??
+      params.userToken ??
+      this.getBearerToken(headers) ??
+      this.getCookieToken(headers);
 
     if (userToken) {
       return this.validateUserToken(userToken);
     }
 
+    const apiKey = getHeader(headers, IMMICH_API_KEY_HEADER) ?? params.apiKey;
+
     if (apiKey) {
       return this.validateApiKey(apiKey);
+    }
+    const remoteUser = getHeader(headers, 'remote-email');
+    if (remoteUser) {
+      return this.validateTrustedHeader(remoteUser, remoteIpAddress);
     }
 
     throw new UnauthorizedException('Authentication required');
@@ -423,6 +434,46 @@ export class AuthService {
     }
 
     throw new UnauthorizedException('Invalid user token');
+  }
+
+  private async validateTrustedHeader(email: string, remoteIpAddress: string | undefined): Promise<AuthDto> {
+    if (!process.env.IMMICH_TRUSTED_REMOTE_NETWORKS) {
+      this.logger.error('Trusted remote networks are not provided in environment variable when trying to validate trusted header');
+      throw new UnauthorizedException('Invalid trusted header');
+    }
+    if (!remoteIpAddress) {
+      this.logger.error('Remote IP address is not provided when trying to validate trusted header');
+      throw new UnauthorizedException('Invalid trusted header');
+    }
+    if (!ipaddr.isValid(remoteIpAddress)) {
+      this.logger.error(`Remote IP address '${remoteIpAddress}' is invalid when trying to validate trusted header`);
+      throw new UnauthorizedException('Invalid trusted header');
+    }
+    const cidrList = process.env.IMMICH_TRUSTED_REMOTE_NETWORKS.split(',').map((cidr) => cidr.trim());
+    const parsedCidrList = (() => {
+      try {
+        return cidrList.map((cidr) => ipaddr.parseCIDR(cidr));
+      }
+      catch {
+        this.logger.error(`Trusted remote networks ${JSON.stringify(cidrList)}, set by environment variable 'IMMICH_TRUSTED_REMOTE_NETWORKS' to '${process.env.IMMICH_TRUSTED_REMOTE_NETWORKS}' is invalid when trying to validate trusted header`);
+        throw new UnauthorizedException('Invalid trusted header');
+      }
+    })();
+    const parsedRemoteIp = ipaddr.process(remoteIpAddress);
+
+    // eslint-disable-next-line unicorn/prefer-regexp-test
+    if (!parsedCidrList.some((cidr) => { try { return (parsedRemoteIp.match as any)(cidr) } catch { return false } })) {
+      this.logger.warn(`Remote IP address '${remoteIpAddress}' is not in the trusted network '${process.env.IMMICH_TRUSTED_REMOTE_NETWORKS}' when trying to validate trusted header`);
+      throw new UnauthorizedException('Invalid trusted header');
+    }
+
+    const user = await this.userRepository.getByEmail(email);
+    if (user) {
+      return { user };
+    }
+
+    this.logger.warn(`User by email '${email}' not found when trying to validate trusted header`);
+    throw new UnauthorizedException('Invalid trusted header');
   }
 
   private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {

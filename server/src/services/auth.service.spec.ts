@@ -371,6 +371,48 @@ describe('AuthService', () => {
     });
   });
 
+
+  describe.only('validate - trusted header', () => {
+    const originalVariable = process.env.IMMICH_TRUSTED_REMOTE_NETWORKS;
+    beforeAll(() => {
+      process.env.IMMICH_TRUSTED_REMOTE_NETWORKS = "10.3.3.0/24";
+    });
+    afterAll(() => {
+      if (originalVariable) {
+        process.env.IMMICH_TRUSTED_REMOTE_NETWORKS = originalVariable;
+      } else {
+        delete process.env.IMMICH_TRUSTED_REMOTE_NETWORKS;
+      }
+    });
+
+    it('should throw an error if remote IP is not in trusted networks', async () => {
+      const headers: IncomingHttpHeaders = { 'remote-email': userStub.user1.email };
+      await expect(sut.validate(headers, {}, "10.2.65.2")).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should throw an error if remote email not found', async () => {
+      const headers: IncomingHttpHeaders = { 'remote-email': "non-exist-email" };
+      await expect(sut.validate(headers, {}, "10.3.3.2")).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should validate using trusted header', async () => {
+      userMock.getByEmail.mockResolvedValue(userStub.user1);
+      const headers: IncomingHttpHeaders = { 'remote-email': userStub.user1.email };
+      await expect(sut.validate(headers, {}, "10.3.3.2")).resolves.toEqual({
+        user: userStub.user1,
+      });
+    });
+
+    it('should validate with multiple trusted networks with IPv6', async () => {
+      process.env.IMMICH_TRUSTED_REMOTE_NETWORKS = "10.3.3.0/24, fd00:3::/32, 172.3.4.0/24";
+      userMock.getByEmail.mockResolvedValue(userStub.user1);
+      const headers: IncomingHttpHeaders = { 'remote-email': userStub.user1.email };
+      await expect(sut.validate(headers, {}, "fd00:3::9")).resolves.toEqual({
+        user: userStub.user1,
+      });
+    });
+  });
+
   describe('getDevices', () => {
     it('should get the devices', async () => {
       userTokenMock.getAll.mockResolvedValue([userTokenStub.userToken, userTokenStub.inactiveToken]);

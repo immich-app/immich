@@ -33,7 +33,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   constructor(
     private authService: AuthService,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
@@ -53,7 +53,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Websocket Connect:    ${client.id}`);
-      const auth = await this.authService.validate(client.request.headers, {});
+      const auth = await this.authService.validate(client.request.headers, {}, client.request.socket.remoteAddress);
       await client.join(auth.user.id);
       this.serverSend(ServerEvent.WEBSOCKET_CONNECT, { userId: auth.user.id });
     } catch (error: Error | any) {
