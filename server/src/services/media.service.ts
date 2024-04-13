@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
+import { dirname } from 'node:path';
 import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -193,14 +194,15 @@ export class MediaService {
     switch (asset.type) {
       case AssetType.IMAGE: {
         const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
-        const extractedPath = shouldExtract ? await this.mediaRepository.extract(asset.originalPath) : null;
+        const extractedPath = StorageCore.getTempPathInDir(dirname(path));
+        const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
 
         try {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const imageOptions = { format, size, colorspace, quality: image.quality };
-          await this.mediaRepository.resize(extractedPath ?? asset.originalPath, path, imageOptions);
+          await this.mediaRepository.resize(didExtract ? extractedPath : asset.originalPath, path, imageOptions);
         } finally {
-          if (extractedPath) {
+          if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
           }
         }

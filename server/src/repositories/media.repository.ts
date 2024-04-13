@@ -16,8 +16,6 @@ import {
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 import { exiftool } from 'exiftool-vendored';
-import { randomUUID } from 'node:crypto';
-import { parse } from 'node:path';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -29,21 +27,21 @@ export class MediaRepository implements IMediaRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MediaRepository.name);
   }
-  async extract(input: string): Promise<string | null> {
-    const tmpPath = `${parse(input).dir}/${randomUUID()}.jpg`;
+
+  async extract(input: string, output: string): Promise<boolean> {
     try {
-      await exiftool.extractJpgFromRaw(input, tmpPath);
-    } catch (err: any) {
-      this.logger.debug('Could not extract JPEG from image, trying preview', err.message);
+      await exiftool.extractJpgFromRaw(input, output);
+    } catch (error: any) {
+      this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
       try {
-        await exiftool.extractPreview(input, tmpPath);
-      } catch (err: any) {
-        this.logger.debug('Could not extract preview from image', err.message);
-        return null;
+        await exiftool.extractPreview(input, output);
+      } catch (error: any) {
+        this.logger.debug('Could not extract preview from image', error.message);
+        return false;
       }
     }
 
-    return tmpPath;
+    return true;
   }
 
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {

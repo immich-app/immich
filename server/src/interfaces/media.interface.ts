@@ -70,7 +70,7 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface IMediaRepository {
   // image
-  extract(input: string): Promise<string | null>;
+  extract(input: string, output: string): Promise<boolean>;
   resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
   crop(input: string, options: CropOptions): Promise<Buffer>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
