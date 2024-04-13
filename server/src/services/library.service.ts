@@ -616,7 +616,7 @@ export class LibraryService extends EventEmitter {
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
     );
 
     this.logger.verbose(`Crawled asset paths paginated`);
@@ -624,10 +624,6 @@ export class LibraryService extends EventEmitter {
     const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
     for await (const page of pagination) {
       for (const asset of page) {
-        if (!asset.isExternal) {
-          continue;
-        }
-
         const isOffline = !crawledAssetPaths.has(asset.originalPath);
         if (isOffline && !asset.isOffline) {
           assetIdsToMarkOffline.push(asset.id);

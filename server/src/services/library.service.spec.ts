@@ -160,7 +160,7 @@ describe(LibraryService.name, () => {
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -189,7 +189,7 @@ describe(LibraryService.name, () => {
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -238,7 +238,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -256,7 +256,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
         items: [assetStub.external],
         hasNextPage: false,
       });
@@ -280,7 +280,7 @@ describe(LibraryService.name, () => {
       storageMock.walk.mockImplementation(async function* generator() {
         yield assetStub.externalOffline.originalPath;
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
         items: [assetStub.externalOffline],
         hasNextPage: false,
       });
