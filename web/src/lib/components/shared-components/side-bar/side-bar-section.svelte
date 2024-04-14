@@ -2,6 +2,7 @@
   import { isSideBarOpen, isSideBarHovered } from '$lib/stores/side-bar.store';
   import { clickOutside, type OutClickEvent } from '$lib/utils/click-outside';
   import { md, lg } from '$lib/utils/media-breakpoint';
+  import { onMount, tick } from 'svelte';
 
   enum SideBarState {
     Closed,
@@ -21,7 +22,7 @@
     if (minimalState === SideBarState.Open) {
       // Forced Open
       sideBarClasses = 'open w-64 pr-6';
-    } else if ($isSideBarHovered || $isSideBarOpen) {
+    } else if (($isSideBarHovered && minimalState === SideBarState.Small) || $isSideBarOpen) {
       // Open
       sideBarClasses = 'open sm w-64 pr-6 shadow-2xl border-r dark:border-r-immich-dark-gray';
     } else if (minimalState === SideBarState.Small) {
@@ -67,6 +68,11 @@
       $isSideBarHovered = isHover;
     }
   };
+
+  onMount(async () => {
+    await tick();
+    $isSideBarOpen = false;
+  });
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
