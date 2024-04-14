@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsPositive } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
@@ -16,6 +17,7 @@ export class AssetFullSyncDto {
   @IsInt()
   @IsPositive()
   @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
   limit!: number;
 
   @ValidateUUID({ optional: true })

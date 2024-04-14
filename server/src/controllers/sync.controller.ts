@@ -9,7 +9,7 @@ import { SyncService } from 'src/services/sync.service';
 @ApiTags('Sync')
 @Controller('sync')
 @Authenticated()
-export class AssetController {
+export class SyncController {
   constructor(private service: SyncService) {}
 
   @Get('full-sync')
