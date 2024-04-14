@@ -16,7 +16,9 @@
     <SideBarLink title="Repair" routeId={AppRoute.ADMIN_REPAIR} icon={mdiTools} preloadData={false} />
   </nav>
 
-  <div class="mb-6 mt-auto">
-    <StatusBox />
+  <div class="mb-6 mt-auto group-[.sm.closed]:opacity-0 transition-opacity duration-200">
+    <div class="pt-6">
+      <StatusBox />
+    </div>
   </div>
 </SideBarSection>
