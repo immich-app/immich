@@ -1,9 +1,5 @@
-<script lang="ts" context="module">
-  export type Color = 'transparent-primary' | 'transparent-gray' | 'overlay-primary';
-</script>
-
 <script lang="ts">
-  import Button from './button.svelte';
+  import Button, { type Color } from './button.svelte';
 
   export let color: Color = 'transparent-primary';
   export let title: string | undefined = undefined;
