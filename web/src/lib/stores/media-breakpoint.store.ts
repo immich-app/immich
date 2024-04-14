@@ -15,18 +15,32 @@ const mediaBreakpoints: MediaBreakpoint[] = [
   MediaBreakpoint.LG,
   MediaBreakpoint.MD,
   MediaBreakpoint.SM,
+  MediaBreakpoint.XS,
 ];
 
-const getCurrentBreakpoint = () => {
-  const currentBreakpoint = mediaBreakpoints.find((breakpoint) => {
+const getCurrentBreakpointIndex = () => {
+  const currentBreakpointIndex = mediaBreakpoints.findIndex((breakpoint) => {
     return window?.matchMedia(`(min-width: ${breakpoint}px)`).matches;
   });
-  return currentBreakpoint ?? MediaBreakpoint.XS;
+  return currentBreakpointIndex >= 0 ? currentBreakpointIndex : mediaBreakpoints.length - 1;
 };
 
-export const currentMediaBreakpoint = readable(getCurrentBreakpoint(), (set) => {
+let currentIndex = getCurrentBreakpointIndex();
+
+export const currentMediaBreakpoint = readable(mediaBreakpoints[currentIndex], (set) => {
   const updateBreakpoint = () => {
-    set(getCurrentBreakpoint());
+    const newIndex = getCurrentBreakpointIndex();
+    if (newIndex === currentIndex) {
+      return;
+    }
+    // If the screen width has decreased, we will enter this while-loop
+    while (newIndex > currentIndex) {
+      set(mediaBreakpoints[++currentIndex]);
+    }
+    // If the screen width has increased, we will enter this while-loop
+    while (newIndex < currentIndex) {
+      set(mediaBreakpoints[--currentIndex]);
+    }
   };
 
   window.addEventListener('resize', updateBreakpoint);
