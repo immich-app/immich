@@ -147,7 +147,9 @@
   </nav>
 
   <!-- Status Box -->
-  <div class="my-6 group-[.sm.closed]:opacity-0 transition-opacity duration-200">
-    <StatusBox />
+  <div class="mb-6 mt-auto group-[.sm.closed]:opacity-0 transition-opacity duration-200">
+    <div class="pt-6">
+      <StatusBox />
+    </div>
   </div>
 </SideBarSection>
