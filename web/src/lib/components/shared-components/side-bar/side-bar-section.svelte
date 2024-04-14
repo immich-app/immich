@@ -33,22 +33,28 @@
     }
   }
 
-  const onClickOutside = (event: OutClickEvent) => {
-    if (minimalState === SideBarState.Open) {
-      return;
-    }
-    // MouseEvent
+  const findElementsFromPoint = (event: OutClickEvent): Element[] => {
     if ('clientX' in event) {
-      const elements = document.elementsFromPoint(event.x, event.y);
-      const button = elements.find(({ id }) => id === 'sidebar-toggle-button');
-
-      if (button) {
-        // This 'outclick' event has been emitted because the used clicked on
-        // the menu button
-        return;
-      }
+      // MouseEvent
+      return document.elementsFromPoint(event.x, event.y);
+    } else if ('touches' in event && event.touches.length > 0) {
+      // TouchEvent
+      const { clientX, clientY } = event.touches[0];
+      return document.elementsFromPoint(clientX, clientY);
+    } else {
+      return [];
     }
-    $isSideBarOpen = false;
+  };
+
+  const isHoverToggleButon = (event: OutClickEvent) => {
+    const elements = findElementsFromPoint(event);
+    return elements.some(({ id }) => id === 'sidebar-toggle-button');
+  };
+
+  const onClickOutside = (event: OutClickEvent) => {
+    if (minimalState !== SideBarState.Open && !isHoverToggleButon(event)) {
+      $isSideBarOpen = false;
+    }
   };
 
   const setTouchScreen = () => {
