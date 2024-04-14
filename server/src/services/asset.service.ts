@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -16,9 +15,6 @@ import {
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
-  AssetDeltaSyncDto,
-  AssetDeltaSyncResponseDto,
-  AssetFullSyncDto,
   AssetJobName,
   AssetJobsDto,
   AssetStatsDto,
@@ -30,12 +26,10 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeletionJob,
@@ -83,7 +77,6 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
-    @Inject(IAuditRepository) private auditRepository: IAuditRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -489,57 +482,6 @@ export class AssetService {
     }
 
     await this.jobRepository.queueAll(jobs);
-  }
-
-  async getAllForUserFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this.assetRepository.getAllForUserFullSync({
-      ownerId: userId,
-      lastCreationDate: dto.lastCreationDate,
-      updatedUntil: dto.updatedUntil,
-      lastId: dto.lastId,
-      limit: dto.limit,
-    });
-    const options = { auth, stripMetadata: false, withStack: true };
-    return assets.map((a) => mapAsset(a, options));
-  }
-
-  async getChangesDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, dto.userIds);
-    const partner = await this.partnerRepository.getAll(auth.user.id);
-    const userIds = partner.map((p) => p.sharedById);
-    userIds.sort();
-    dto.userIds.sort();
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
-
-    if (!_.isEqual(userIds, dto.userIds) || duration > AUDIT_LOG_MAX_DURATION) {
-      // app does not have the correct partners synced
-      // or app has not synced in the last 100 days
-      return { needsFullSync: true, deleted: [], upserted: [] };
-    }
-
-    const limit = 5000;
-    const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
-
-    if (upserted.length == limit) {
-      // too many changes -> do a full sync (paginated) instead
-      return { needsFullSync: true, deleted: [], upserted: [] };
-    }
-
-    const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
-      userIds: userIds,
-      entityType: EntityType.ASSET,
-      action: DatabaseAction.DELETE,
-    });
-
-    const options = { auth, stripMetadata: false, withStack: true };
-    const result = {
-      needsFullSync: false,
-      upserted: upserted.map((a) => mapAsset(a, options)),
-      deleted,
-    };
-    return result;
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {

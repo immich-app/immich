@@ -12,10 +12,9 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -130,36 +129,4 @@ export enum UploadFieldName {
   LIVE_PHOTO_DATA = 'livePhotoData',
   SIDECAR_DATA = 'sidecarData',
   PROFILE_DATA = 'file',
-}
-
-export class AssetFullSyncDto {
-  @ValidateUUID({ optional: true })
-  lastId?: string;
-
-  @ValidateDate({ optional: true })
-  lastCreationDate?: Date;
-
-  @ValidateDate()
-  updatedUntil!: Date;
-
-  @IsInt()
-  @IsPositive()
-  @Type(() => Number)
-  limit!: number;
-
-  @ValidateUUID({ optional: true })
-  userId?: string;
-}
-
-export class AssetDeltaSyncDto {
-  @ValidateDate()
-  updatedAfter!: Date;
-  @ValidateUUID({ each: true })
-  userIds!: string[];
-}
-
-export class AssetDeltaSyncResponseDto {
-  needsFullSync!: boolean;
-  upserted!: AssetResponseDto[];
-  deleted!: string[];
 }

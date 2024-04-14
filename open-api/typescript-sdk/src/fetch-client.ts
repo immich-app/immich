@@ -251,11 +251,6 @@ export type CuratedObjectsResponseDto = {
     "object": string;
     resizePath: string;
 };
-export type AssetDeltaSyncResponseDto = {
-    deleted: string[];
-    needsFullSync: boolean;
-    upserted: AssetResponseDto[];
-};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -1345,20 +1340,6 @@ export function getCuratedObjects(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getDeltaSync({ updatedAfter, userIds }: {
-    updatedAfter: string;
-    userIds: string[];
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetDeltaSyncResponseDto;
-    }>(`/asset/delta-sync${QS.query(QS.explode({
-        updatedAfter,
-        userIds
-    }))}`, {
-        ...opts
-    }));
-}
 /**
  * Get all asset of a device that are in the database, ID only.
  */
@@ -1400,26 +1381,6 @@ export function serveFile({ id, isThumb, isWeb, key }: {
         isThumb,
         isWeb,
         key
-    }))}`, {
-        ...opts
-    }));
-}
-export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
-    lastCreationDate?: string;
-    lastId?: string;
-    limit: number;
-    updatedUntil: string;
-    userId?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/asset/full-sync${QS.query(QS.explode({
-        lastCreationDate,
-        lastId,
-        limit,
-        updatedUntil,
-        userId
     }))}`, {
         ...opts
     }));
