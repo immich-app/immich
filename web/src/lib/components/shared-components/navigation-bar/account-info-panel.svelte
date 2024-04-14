@@ -52,7 +52,8 @@
     in:fade={{ duration: 100 }}
     out:fade={{ duration: 100 }}
     id="account-info-panel"
-    class="absolute right-[25px] top-[75px] z-[100] w-[360px] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+    class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border
+    dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
     <div
       class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
@@ -72,11 +73,13 @@
           </button>
         </div>
       </div>
-      <div>
+      <div class="w-full">
         <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
           {$user.name}
         </p>
-        <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
+        <p class="text-center text-sm text-gray-500 dark:text-immich-dark-fg break-words">
+          {$user.email}
+        </p>
       </div>
 
       <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
