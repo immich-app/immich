@@ -207,6 +207,7 @@ class InferenceModel(ABC):
     def sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = False
+        sess_options.add_session_config_entry("session.use_device_allocator_for_initializers", "1")
 
         # avoid thread contention between models
         if settings.model_inter_op_threads > 0:
