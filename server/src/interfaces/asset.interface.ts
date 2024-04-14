@@ -133,7 +133,7 @@ export interface MetadataSearchOptions {
   numResults: number;
 }
 
-export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline' | 'isExternal'>;
+export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
 
