@@ -816,14 +816,14 @@ describe('/asset', () => {
     });
 
     it('should not include gps data for webp thumbnails', async () => {
-      const { status, body, type } = await request(app)
-        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
       await utils.waitForWebsocketEvent({
         event: 'assetUpload',
         id: locationAsset.id,
       });
+
+      const { status, body, type } = await request(app)
+        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
