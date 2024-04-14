@@ -265,8 +265,8 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { ownerId: userId, checksum } });
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { libraryId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
