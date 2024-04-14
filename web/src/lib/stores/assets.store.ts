@@ -391,15 +391,16 @@ export class AssetStore {
 
   async getBucketInfoForAssetId({ id, localDateTime }: Pick<AssetResponseDto, 'id' | 'localDateTime'>) {
     const bucketInfo = this.assetToBucket[id];
-    if (!bucketInfo) {
-      let date = fromLocalDateTime(localDateTime);
-      if (this.options.size == TimeBucketSize.Month) {
-        date = date.set({ day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 });
-      } else if (this.options.size == TimeBucketSize.Day) {
-        date = date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-      }
-      await this.loadBucket(date.toISO()!, BucketPosition.Unknown);
+    if (bucketInfo) {
+      return bucketInfo;
     }
+    let date = fromLocalDateTime(localDateTime);
+    if (this.options.size == TimeBucketSize.Month) {
+      date = date.set({ day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 });
+    } else if (this.options.size == TimeBucketSize.Day) {
+      date = date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    }
+    await this.loadBucket(date.toISO()!, BucketPosition.Unknown);
     return this.assetToBucket[id] || null;
   }
 
