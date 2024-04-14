@@ -1,17 +1,19 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, Theme } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateUser, type UserAvatarColor } from '@immich/sdk';
-  import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
+  import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import { notificationController, NotificationType } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
+  import AccountPanelButton from './account-panel-button.svelte';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
+  import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
+  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
 
   let isShowSelectAvatar = false;
 
@@ -82,14 +84,33 @@
         </p>
       </div>
 
-      <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
-        <Button color="dark-gray" size="sm" shadow={false} border>
-          <div class="flex place-content-center place-items-center gap-2 px-2">
-            <Icon path={mdiCog} size="18" />
-            Account Settings
+      <div class="flex flex-col gap-2 w-[min(100%,200px)]">
+        <div>
+          <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
+            <AccountPanelButton title="Account Settings" icon={mdiCog} />
+          </a>
+        </div>
+
+        {#if !$colorTheme.system}
+          <div class="sm:hidden">
+            <AccountPanelButton on:click={handleToggleTheme}>
+              {#if $colorTheme.value === Theme.LIGHT}
+                <Icon path={moonPath} viewBox={sunViewBox} size="18" />
+                Dark Theme
+              {:else}
+                <Icon path={sunPath} viewBox={moonViewBox} size="18" />
+                Light Theme
+              {/if}
+            </AccountPanelButton>
           </div>
-        </Button>
-      </a>
+        {/if}
+
+        <div class="sm:hidden">
+          <a href={AppRoute.ADMIN_USER_MANAGEMENT} on:click={() => dispatch('close')}>
+            <AccountPanelButton title="Administration" icon={mdiWrench} />
+          </a>
+        </div>
+      </div>
     </div>
 
     <div class="mb-4 flex flex-col">
@@ -98,8 +119,8 @@
         on:click={() => dispatch('logout')}
       >
         <Icon path={mdiLogout} size={24} />
-        Sign Out</button
-      >
+        Sign Out
+      </button>
     </div>
   </div>
 </FocusTrap>

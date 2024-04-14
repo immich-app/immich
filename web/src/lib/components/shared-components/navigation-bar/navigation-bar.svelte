@@ -75,36 +75,38 @@
           </a>
         {/if}
 
-        <ThemeButton />
+        <div class="hidden sm:flex place-items-center justify-end gap-2">
+          <ThemeButton />
 
-        {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <div in:fly={{ x: 50, duration: 250 }}>
-            <LinkButton title="Upload" on:click={() => dispatch('uploadClicked')}>
-              <div class="flex gap-2">
-                <Icon path={mdiTrayArrowUp} size="1.5em" />
-                <span class="hidden lg:block">Upload</span>
-              </div>
-            </LinkButton>
-          </div>
-        {/if}
+          {#if !$page.url.pathname.includes('/admin') && showUploadButton}
+            <div in:fly={{ x: 50, duration: 250 }}>
+              <LinkButton title="Upload" on:click={() => dispatch('uploadClicked')}>
+                <div class="flex gap-2">
+                  <Icon path={mdiTrayArrowUp} size="1.5em" />
+                  <span class="hidden lg:block">Upload</span>
+                </div>
+              </LinkButton>
+            </div>
+          {/if}
 
-        {#if $user.isAdmin}
-          {@const isAdminPage = $page.url.pathname.includes('/admin')}
-          {@const buttonCss = isAdminPage ? 'text-immich-primary dark:text-immich-dark-primary' : ''}
-          <a
-            data-sveltekit-preload-data="hover"
-            href={AppRoute.ADMIN_USER_MANAGEMENT}
-            aria-label="Administration"
-            aria-current={isAdminPage ? 'page' : null}
-          >
-            <LinkButton title="Administration">
-              <div class="flex gap-2 {buttonCss}">
-                <Icon path={mdiWrench} size="1.5em" />
-                <span class="hidden lg:block">Administration</span>
-              </div>
-            </LinkButton>
-          </a>
-        {/if}
+          {#if $user.isAdmin}
+            {@const isAdminPage = $page.url.pathname.includes('/admin')}
+            {@const buttonCss = isAdminPage ? 'text-immich-primary dark:text-immich-dark-primary' : ''}
+            <a
+              data-sveltekit-preload-data="hover"
+              href={AppRoute.ADMIN_USER_MANAGEMENT}
+              aria-label="Administration"
+              aria-current={isAdminPage ? 'page' : null}
+            >
+              <LinkButton title="Administration">
+                <div class="flex gap-2 {buttonCss}">
+                  <Icon path={mdiWrench} size="1.5em" />
+                  <span class="hidden lg:block">Administration</span>
+                </div>
+              </LinkButton>
+            </a>
+          {/if}
+        </div>
 
         <div
           use:clickOutside
@@ -112,7 +114,7 @@
           on:escape={() => (shouldShowAccountInfoPanel = false)}
         >
           <button
-            class="flex mx-2"
+            class="flex ml-2"
             on:mouseover={() => (shouldShowAccountInfo = true)}
             on:focus={() => (shouldShowAccountInfo = true)}
             on:blur={() => (shouldShowAccountInfo = false)}
