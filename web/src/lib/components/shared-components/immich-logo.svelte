@@ -21,10 +21,10 @@
 </script>
 
 {#if today.month === 4 && today.day === 1}
-  <img src="data:image/png;base64, {alternativeLogo}" alt="Immich Logo" class="h-20" {draggable} />
+  <img src="data:image/png;base64, {alternativeLogo}" alt="Immich Logo" class="max-h-[60px]" {draggable} />
 {:else}
   <img
-    src={noText ? logoNoText : $colorTheme.value == Theme.LIGHT ? logoLightUrl : logoDarkUrl}
+    src={noText ? logoNoText : $colorTheme.value === Theme.LIGHT ? logoLightUrl : logoDarkUrl}
     alt="Immich Logo"
     {draggable}
     {...$$restProps}

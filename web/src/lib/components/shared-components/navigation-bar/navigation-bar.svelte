@@ -10,10 +10,11 @@
   import { isSideBarOpen } from '$lib/stores/side-bar.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { logout } from '@immich/sdk';
-  import { mdiMagnify, mdiMenu, mdiTrayArrowUp, mdiWrench } from '@mdi/js';
+  import { mdiMenu, mdiTrayArrowUp, mdiWrench } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import { AppRoute } from '../../../constants';
+  import { md } from '$lib/utils/media-breakpoint';
+  import { AppRoute } from '$lib/constants';
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
   import ThemeButton from '../theme-button.svelte';
@@ -24,7 +25,8 @@
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
-  let innerWidth: number;
+  let showLogoText = false;
+
   const dispatch = createEventDispatcher<{
     uploadClicked: void;
   }>();
@@ -40,12 +42,10 @@
   };
 </script>
 
-<svelte:window bind:innerWidth />
-
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink>Skip to content</SkipLink>
   <div
-    class="grid h-full grid-cols-[min-content_theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[min-content_theme(spacing.64)_auto]"
+    class="grid h-full grid-cols-[min-content_theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[min-content_theme(spacing.40)_auto]"
   >
     <div class="flex">
       <div class="ml-4 lg:hidden" id="sidebar-toggle-button">
@@ -54,8 +54,16 @@
         </IconButton>
       </div>
     </div>
-    <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo width="55%" noText={innerWidth < 768} />
+    <a
+      data-sveltekit-preload-data="hover"
+      class="ml-4"
+      href={AppRoute.PHOTOS}
+      use:md={{
+        match: () => (showLogoText = true),
+        unmatch: () => (showLogoText = false),
+      }}
+    >
+      <ImmichLogo class="w-[72%] md:w-[92%]" noText={!showLogoText} />
     </a>
     <div class="flex justify-between gap-16 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
