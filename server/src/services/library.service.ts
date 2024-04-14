@@ -616,7 +616,7 @@ export class LibraryService extends EventEmitter {
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
     );
 
     this.logger.verbose(`Crawled asset paths paginated`);
