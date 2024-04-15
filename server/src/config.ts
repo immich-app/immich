@@ -1,8 +1,10 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
+import { Request } from 'express';
 import { RedisOptions } from 'ioredis';
 import Joi from 'joi';
+import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { LogLevel } from 'src/entities/system-config.entity';
 import { QueueName } from 'src/interfaces/job.interface';
 
@@ -69,3 +71,17 @@ export const bullConfig: QueueOptions = {
 };
 
 export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
+
+export const clsConfig: ClsModuleOptions = {
+  middleware: {
+    mount: true,
+    generateId: true,
+    setup: (cls, req: Request) => {
+      const headerValue = req.headers['x-immich-cid'];
+      const cid = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+      if (cid) {
+        cls.set(CLS_ID, cid);
+      }
+    },
+  },
+};

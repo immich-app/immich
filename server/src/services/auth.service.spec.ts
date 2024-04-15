@@ -8,6 +8,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
@@ -23,6 +24,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserTokenRepositoryMock } from 'test/repositories/user-token.repository.mock';
@@ -60,6 +62,7 @@ describe('AuthService', () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let loggerMock: jest.Mocked<ILoggerRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
@@ -92,12 +95,23 @@ describe('AuthService', () => {
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(accessMock, cryptoMock, configMock, libraryMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(
+      accessMock,
+      cryptoMock,
+      configMock,
+      libraryMock,
+      loggerMock,
+      userMock,
+      userTokenMock,
+      shareMock,
+      keyMock,
+    );
   });
 
   it('should be defined', () => {
