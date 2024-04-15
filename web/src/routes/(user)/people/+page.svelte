@@ -40,6 +40,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
+  import { clearQueryParam } from '$lib/utils/navigation';
 
   export let data: PageData;
 
@@ -279,10 +280,7 @@
 
   const handleSearchPeople = async (force: boolean) => {
     if (searchName === '') {
-      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
-        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        await goto($page.url);
-      }
+      await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
       return;
     }
     if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
@@ -393,6 +391,11 @@
       handleError(error, 'Unable to save name');
     }
   };
+
+  const onResetSearchBar = async () => {
+    searchedPeople = [];
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+  };
 </script>
 
 <svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
@@ -421,9 +424,7 @@
               bind:name={searchName}
               isSearching={isSearchingPeople}
               placeholder="Search people"
-              on:reset={() => {
-                searchedPeople = [];
-              }}
+              on:reset={onResetSearchBar}
               on:search={({ detail }) => handleSearch(detail.force ?? false)}
             />
           </div>
