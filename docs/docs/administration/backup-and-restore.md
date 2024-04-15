@@ -62,21 +62,21 @@ Note that for the database restore to proceed properly, it requires a completely
 
 By default when using the Immich distribution of TrueNAS the database password is randomly generated, to back up Immich the database password is needed.
 
-1. [HeavyScript](https://github.com/Heavybullets8/heavy_script) and pgAdmin must be installed
+1. [HeavyScript](https://github.com/Heavybullets8/heavy_script) and pgAdmin must be installed.
 2. Go to System Settings -> Shell and enter:
    `sudo heavyscript dns immich`
    Copy the entry of immich-postgres It should look something like this:
    `immich-postgres.ix-immich.svc.cluster.local`
 3. Now enter:
    `heavyscript pod -s immich`
-4. Select immich-postgres
-5. Now write `env` and copy the POSTGRES_PASSWORD value
+4. Select immich-postgres.
+5. Now write `env` and copy the POSTGRES_PASSWORD value.
 6. Identify your database password, save it!
 
 Now go to pgAdmin
 
-1. Connect to the browser interface
-2. Select Add New Server
+1. Connect to the browser interface.
+2. Select Add New Server.
 3. Enter the following values:
 
    | Name                 | Value                      |
@@ -87,17 +87,17 @@ Now go to pgAdmin
    | Username             | `immich`                   |
    | Password             | `The value from section 6` |
 
-4. Under Databases select Immich -> right click -> backup
-5. Select the backup location and click Backup
+4. Under Databases select Immich -> right click -> backup.
+5. Select the backup location and click Backup.
 
 You have successfully backed up your database!
 
 #### Recovery
 
-1. Reinstall Immich (and keep it running!)
-2. Go through the steps from the previous section until connecting to the database
-3. In pgadmin under databases select Immich -> right click -> restore
-4. Load the backup file and under Query Options check the Clean before restore option
+1. Reinstall Immich (and keep it running!).
+2. Go through the steps from the previous section until connecting to the database.
+3. In pgadmin under databases select Immich -> right click -> restore.
+4. Load the backup file and under Query Options check the Clean before restore option.
 5. Wait for the backup to finish and open Immich.
 
 </TabItem>
