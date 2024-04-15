@@ -40,7 +40,7 @@ In all above scan methods, Immich will check if any files are missing. This can 
 
 Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under Administration > Libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
-In order to remove offline files that linked to spesifce paths, remove paths -> Scan for new files -> Then run remove offline files
+In order to remove offline files that linked to specific paths, click "remove paths" -> "Scan for new files" -> Then run remove offline files
 
 ### Import Paths
 
