@@ -55,9 +55,11 @@
                 <label for="stacktrace">Stacktrace</label>
                 <pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
               {/if}
-              <a href="/">
-                <Button size="sm">Go back</Button>
-              </a>
+              {#if $page.error?.code}
+                <a href="/">
+                  <Button size="sm">Go back</Button>
+                </a>
+              {/if}
             </div>
           </div>
 
