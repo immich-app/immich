@@ -8,7 +8,7 @@ Unable to set `app.immich:/` as a valid redirect URI? See [Mobile Redirect URI](
 
 ## Overview
 
-Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
+Immich supports 3rd party authentication via [OpenID Connect][oidc]https://openid.net/connect/ (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
 
 - [Authentik](https://goauthentik.io/integrations/sources/oauth/#openid-connect)
 - [Authelia](https://www.authelia.com/configuration/identity-providers/openid-connect/clients/)
