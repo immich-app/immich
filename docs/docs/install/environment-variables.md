@@ -49,7 +49,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 ## Ports
 
 | Variable                | Description           |  Default  | Services              |
-| :---------------------- | :-------------------- | :-------: | :---------------      |
+| :---------------------- | :-------------------- | :-------: | :-------------------- |
 | `HOST`                  | Host                  | `0.0.0.0` | server, microservices |
 | `SERVER_PORT`           | Server Port           |  `3001`   | server                |
 | `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices         |
