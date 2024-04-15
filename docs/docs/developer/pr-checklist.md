@@ -5,6 +5,7 @@ When contributing code through a pull request, please check the following:
 ## Web Checks
 
 - [ ] `npm run lint` (linting via ESLint)
+- [ ] `npm run format` (formatting via Prettier)
 - [ ] `npm run check:svelte` (Type checking via SvelteKit)
 - [ ] `npm test` (unit tests)
 
