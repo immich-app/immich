@@ -1,5 +1,6 @@
 <script>
   import { page } from '$app/stores';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { copyToClipboard } from '$lib/utils';
@@ -54,6 +55,9 @@
                 <label for="stacktrace">Stacktrace</label>
                 <pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
               {/if}
+              <a href="/">
+                <Button size="sm">Go back</Button>
+              </a>
             </div>
           </div>
 
