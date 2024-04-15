@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -23,36 +24,46 @@ class LanguageSettings extends HookConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        DropdownMenu(
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            contentPadding: const EdgeInsets.only(left: 16),
-          ),
-          menuStyle: MenuStyle(
-            shape: MaterialStatePropertyAll<OutlinedBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-          ),
-          menuHeight: context.height * 0.5,
-          hintText: "Languages",
-          label: const Text('Languages'),
-          dropdownMenuEntries: locales.keys
-              .map(
-                (countryName) => DropdownMenuEntry(
-                  value: locales[countryName],
-                  label: countryName,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return DropdownMenu(
+              width: constraints.maxWidth,
+              inputDecorationTheme: InputDecorationTheme(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              )
-              .toList(),
-          controller: textController,
-          onSelected: (value) {
-            if (value != null) {
-              selectedLocale.value = value;
-            }
+                contentPadding: const EdgeInsets.only(left: 16),
+              ),
+              menuStyle: MenuStyle(
+                shape: MaterialStatePropertyAll<OutlinedBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                backgroundColor: MaterialStatePropertyAll<Color>(
+                  context.isDarkTheme
+                      ? Colors.grey[900]!
+                      : context.scaffoldBackgroundColor,
+                ),
+              ),
+              menuHeight: context.height * 0.5,
+              hintText: "Languages",
+              label: const Text('Languages'),
+              dropdownMenuEntries: locales.keys
+                  .map(
+                    (countryName) => DropdownMenuEntry(
+                      value: locales[countryName],
+                      label: countryName,
+                    ),
+                  )
+                  .toList(),
+              controller: textController,
+              onSelected: (value) {
+                if (value != null) {
+                  selectedLocale.value = value;
+                }
+              },
+            );
           },
         ),
         const SizedBox(height: 16),
