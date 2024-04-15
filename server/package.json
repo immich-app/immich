@@ -76,7 +76,7 @@
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
     "picomatch": "^4.0.0",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.0",
