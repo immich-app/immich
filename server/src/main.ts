@@ -8,20 +8,21 @@ import sirv from 'sirv';
 import { ApiModule, ImmichAdminModule, MicroservicesModule } from 'src/app.module';
 import { WEB_ROOT, envName, excludePaths, isDev, serverVersion } from 'src/constants';
 import { LogLevel } from 'src/entities/system-config.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
 import { otelSDK } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { useSwagger } from 'src/utils/misc';
 
 async function bootstrapMicroservices() {
-  const logger = new ImmichLogger('ImmichMicroservice');
+  otelSDK.start();
+
   const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.MICROSERVICES_PORT) || 3002;
-
-  otelSDK.start();
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
-  app.useLogger(app.get(ImmichLogger));
+  const logger = app.get(ILoggerRepository);
+  logger.setContext('ImmichMicroservice');
+  app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
   await app.listen(port, host);
@@ -30,14 +31,15 @@ async function bootstrapMicroservices() {
 }
 
 async function bootstrapApi() {
-  const logger = new ImmichLogger('ImmichServer');
+  otelSDK.start();
+
   const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.SERVER_PORT) || 3001;
-
-  otelSDK.start();
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
+  const logger = app.get(ILoggerRepository);
 
-  app.useLogger(app.get(ImmichLogger));
+  logger.setContext('ImmichServer');
+  app.useLogger(logger);
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
   app.use(cookieParser());
