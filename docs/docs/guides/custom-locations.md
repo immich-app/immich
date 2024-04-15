@@ -1,19 +1,17 @@
 # Files Custom Locations
 
-When using Immich you may want to select a specific location for thumbnails or transcoded videos in order to save disk space.
-In this guide you will understand how you can define custom locations for the different types of files in Immich.
-
-Some users may find this useful for higher system performance where the thumbnails images are on SSD and the original images are stored on HDD.
+This guide explains storing generated and raw files with docker's volume mount in different locations.
 
 :::note Backup
-It is important to remember after following the guide to update the backup settings to back up the new backup paths if using automatic backup tools.
+It is important to remember to update the backup settings after following the guide to back up the new backup paths if using automatic backup tools.
 :::
-In our `.env` file we will define variables, they will help us in the future when we want to move to a more advanced server in the future
+
+In our `.env` file, we will define variables that will help us in the future when we want to move to a more advanced server in the future
 
 ```diff title=".env"
 # You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
 
-# Custom location where your uploaded,thumbnails and transcoded videos files are stored
+# Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - {UPLOAD_LOCATION}./
 + {UPLOAD_LOCATION}=/custom/location/on/your/system/
 + {THUMB_LOCATION}=/custom/location/on/your/system/
@@ -21,7 +19,7 @@ In our `.env` file we will define variables, they will help us in the future whe
 ...
 ```
 
-After we have defined the locations for these files, we will edit the `docker-compose.yml` file accordingly, and add the new vars to the immich-server, immich-microservices containers.
+After defining the locations for these files, we will edit the `docker-compose.yml` file accordingly and add the new variables to the `immich-server` and `immich-microservices` containers.
 
 ```diff title="docker-compose.yml"
 services:
@@ -42,15 +40,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
 ```
 
-Restart Immich.
+Restart Immich to register the changes.
 
 ```
 docker compose down
 docker compose up -d
 ```
-
-This guide shows only some of the customization options that can be applied, you can also set the following variables accordingly. More information about the folder structure in Immich can be found [here](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
-
-You can configure all or just some of the volumes, as needed. Variables should only be needed (in addition to UPLOAD_LOCATION) if you are trying to move specific sub-folders to another drive location, otherwise they'll show up inside of UPLOAD_LOCATION.
 
 Thanks to [Jrasm91](https://github.com/immich-app/immich/discussions/2110#discussioncomment-5477767) for writing the guide.
