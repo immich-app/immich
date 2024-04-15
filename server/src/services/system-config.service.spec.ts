@@ -4,6 +4,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageFormat,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -119,9 +120,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-  thumbnail: {
-    webpSize: 250,
-    jpegSize: 1440,
+  image: {
+    thumbnailFormat: ImageFormat.WEBP,
+    thumbnailSize: 250,
+    previewFormat: ImageFormat.JPEG,
+    previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
   },
@@ -340,19 +343,6 @@ describe(SystemConfigService.name, () => {
       configMock.readFile.mockResolvedValue(JSON.stringify({}));
       await expect(sut.updateConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(configMock.saveAll).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('refreshConfig', () => {
-    it('should notify the subscribers', async () => {
-      const changeMock = jest.fn();
-      const subscription = sut.config$.subscribe(changeMock);
-
-      await sut.refreshConfig();
-
-      expect(changeMock).toHaveBeenCalledWith(defaults);
-
-      subscription.unsubscribe();
     });
   });
 

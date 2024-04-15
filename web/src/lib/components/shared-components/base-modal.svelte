@@ -1,18 +1,29 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
-  import { mdiClose } from '@mdi/js';
+  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
+  import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
 
-  const dispatch = createEventDispatcher<{
-    escape: void;
-    close: void;
-  }>();
+  /**
+   * Unique identifier for the modal.
+   */
+  export let id: string;
+  export let title: string;
+  export let onClose: () => void;
   export let zIndex = 9999;
-  export let ignoreClickOutside = false;
+  /**
+   * If true, the logo will be displayed next to the modal title.
+   */
+  export let showLogo = false;
+  /**
+   * Optional icon to display next to the modal title, if `showLogo` is false.
+   */
+  export let icon: string | undefined = undefined;
+
+  $: titleId = `${id}-title`;
 
   onMount(() => {
     if (browser) {
@@ -34,36 +45,34 @@
   });
 </script>
 
-<div
-  id="immich-modal"
-  style:z-index={zIndex}
-  transition:fade={{ duration: 100, easing: quintOut }}
-  class="fixed left-0 top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50"
->
+<FocusTrap>
   <div
-    use:clickOutside
-    on:outclick={() => !ignoreClickOutside && dispatch('close')}
-    on:escape={() => dispatch('escape')}
-    class="max-h-[800px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
+    aria-modal="true"
+    aria-labelledby={titleId}
+    style:z-index={zIndex}
+    transition:fade={{ duration: 100, easing: quintOut }}
+    class="fixed left-0 top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50"
   >
-    <div class="flex place-items-center justify-between px-5 py-3">
+    <div
+      use:clickOutside={{
+        onOutclick: onClose,
+        onEscape: onClose,
+      }}
+      class="min-h-[200px] w-[450px] overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar scroll-pb-20"
+      style="max-height: min(95vh, 800px);"
+      tabindex="-1"
+    >
+      <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
+
       <div>
-        <slot name="title">
-          <p>Modal Title</p>
-        </slot>
+        <slot />
       </div>
 
-      <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} />
+      {#if $$slots['sticky-bottom']}
+        <div class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray">
+          <slot name="sticky-bottom" />
+        </div>
+      {/if}
     </div>
-
-    <div>
-      <slot />
-    </div>
-
-    {#if $$slots['sticky-bottom']}
-      <div class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray">
-        <slot name="sticky-bottom" />
-      </div>
-    {/if}
   </div>
-</div>
+</FocusTrap>

@@ -58,6 +58,7 @@
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
         <CircleIconButton
+          title="Close"
           on:click={handleClose}
           icon={backIcon}
           backgroundColor={'transparent'}

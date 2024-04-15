@@ -110,7 +110,7 @@ No. Our golden rule is that the original assets should always be untouched, so w
 
 ### How can I move all data (photos, persons, albums) from one user to another?
 
-This is not officially supported, but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.
+This is not officially supported, but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the `psql` command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.
 
 :::warning
 This is an advanced operation. If you can't do it with the steps described here, this is not for you.
@@ -253,8 +253,19 @@ The initial backup is the most intensive due to the number of jobs running. The 
 
 ### Can I limit the amount of CPU and RAM usage?
 
-By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows.
-You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to limit this.
+By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
+
+```yaml
+deploy:
+  resources:
+    limits:
+      # Number of CPU threads
+      cpus: '1.00'
+      # Gigabytes of memory
+      memory: '1G'
+```
+
+For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
 ### How can I boost machine learning speed?
 
@@ -296,6 +307,17 @@ You may need to add mount points or docker volumes for the following internal co
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
+For a further hardened system, you can add the following block to every container except for `immich_postgres`.
+
+```yaml
+security_opt:
+  # Prevent escalation of privileges after container is started
+  - no-new-privileges:true
+cap_drop:
+  # Prevent access to raw network traffic
+  - NET_RAW
+```
+
 ### How can I **purge** data from Immich?
 
 Data for Immich comes in two forms:
@@ -315,7 +337,7 @@ docker compose down -v
 
 :::note Portainer
 If you use portainer, bring down the stack in portainer. Go into the volumes section  
-and remove all the volumes related to immcih then restart the stack.
+and remove all the volumes related to immich then restart the stack.
 :::
 
 After removing the containers and volumes, the **Files** should be removed from the `UPLOAD_LOCATION` to provide a clean start.

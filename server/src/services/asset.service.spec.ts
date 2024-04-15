@@ -4,7 +4,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
-import { AssetStats, IAssetRepository, TimeBucketSize } from 'src/interfaces/asset.interface';
+import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobItem, JobName } from 'src/interfaces/job.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -307,13 +307,19 @@ describe(AssetService.name, () => {
       jest.useRealTimers();
     });
 
-    it('should set the title correctly', async () => {
+    it('should group the assets correctly', async () => {
+      const image1 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 0, 0, 0) };
+      const image2 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 1, 0, 0) };
+      const image3 = { ...assetStub.image, localDateTime: new Date(2015, 1, 15) };
+      const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
+
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
+      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3, image4]);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
-        { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
-        { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
+        { yearsAgo: 1, title: '1 year since...', assets: [mapAsset(image1), mapAsset(image2)] },
+        { yearsAgo: 9, title: '9 years since...', assets: [mapAsset(image3)] },
+        { yearsAgo: 15, title: '15 years since...', assets: [mapAsset(image4)] },
       ]);
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
@@ -321,135 +327,13 @@ describe(AssetService.name, () => {
 
     it('should get memories with partners with inTimeline enabled', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.user1ToAdmin1]);
+      assetMock.getByDayOfYear.mockResolvedValue([]);
 
       await sut.getMemoryLane(authStub.admin, { day: 15, month: 1 });
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([
         [[authStub.admin.user.id, userStub.user1.id], { day: 15, month: 1 }],
       ]);
-    });
-  });
-
-  describe('getTimeBuckets', () => {
-    it("should return buckets if userId and albumId aren't set", async () => {
-      assetMock.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
-
-      await expect(
-        sut.getTimeBuckets(authStub.admin, {
-          size: TimeBucketSize.DAY,
-        }),
-      ).resolves.toEqual(expect.arrayContaining([{ timeBucket: 'bucket', count: 1 }]));
-      expect(assetMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.DAY, userIds: [authStub.admin.user.id] });
-    });
-  });
-
-  describe('getTimeBucket', () => {
-    it('should return the assets for a album time bucket if user has album.read', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, { size: TimeBucketSize.DAY, timeBucket: 'bucket', albumId: 'album-id' }),
-      ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-
-      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-id']));
-      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
-        size: TimeBucketSize.DAY,
-        timeBucket: 'bucket',
-        albumId: 'album-id',
-      });
-    });
-
-    it('should return the assets for a archive time bucket if user has archive.read', async () => {
-      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isArchived: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
-        size: TimeBucketSize.DAY,
-        timeBucket: 'bucket',
-        isArchived: true,
-        userIds: [authStub.admin.user.id],
-      });
-    });
-
-    it('should return the assets for a library time bucket if user has library.read', async () => {
-      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          userId: authStub.admin.user.id,
-        }),
-      ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
-        size: TimeBucketSize.DAY,
-        timeBucket: 'bucket',
-        userIds: [authStub.admin.user.id],
-      });
-    });
-
-    it('should throw an error if withParners is true and isArchived true or undefined', async () => {
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isArchived: true,
-          withPartners: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isArchived: undefined,
-          withPartners: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-    });
-
-    it('should throw an error if withParners is true and isFavorite is either true or false', async () => {
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isFavorite: true,
-          withPartners: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isFavorite: false,
-          withPartners: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-    });
-
-    it('should throw an error if withParners is true and isTrash is true', async () => {
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isTrashed: true,
-          withPartners: true,
-          userId: authStub.admin.user.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
     });
   });
 
@@ -777,8 +661,8 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetWithFace.webpPath,
-                assetWithFace.resizePath,
+                assetWithFace.thumbnailPath,
+                assetWithFace.previewPath,
                 assetWithFace.encodedVideoPath,
                 assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
@@ -811,7 +695,7 @@ describe(AssetService.name, () => {
       });
     });
 
-    it('should not schedule delete-files job for readonly assets', async () => {
+    it('should only delete generated files for readonly assets', async () => {
       when(assetMock.getById)
         .calledWith(assetStub.readOnly.id, {
           faces: {
@@ -825,7 +709,20 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
-      expect(jobMock.queue.mock.calls).toEqual([]);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.readOnly.thumbnailPath,
+                assetStub.readOnly.previewPath,
+                assetStub.readOnly.encodedVideoPath,
+              ],
+            },
+          },
+        ],
+      ]);
 
       expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
     });
@@ -861,10 +758,9 @@ describe(AssetService.name, () => {
             name: JobName.DELETE_FILES,
             data: {
               files: [
-                assetStub.external.webpPath,
-                assetStub.external.resizePath,
+                assetStub.external.thumbnailPath,
+                assetStub.external.previewPath,
                 assetStub.external.encodedVideoPath,
-                assetStub.external.sidecarPath,
               ],
             },
           },
@@ -944,9 +840,7 @@ describe(AssetService.name, () => {
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queueAll).toHaveBeenCalledWith([
-          { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        ]);
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } }]);
     });
 
     it('should run the transcode video', async () => {

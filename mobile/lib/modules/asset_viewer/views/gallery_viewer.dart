@@ -20,6 +20,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/gallery_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
@@ -303,7 +304,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) async {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
-                HapticFeedback.selectionClick();
+
+                ref.read(hapticFeedbackProvider.notifier).selectionClick();
+
                 currentIndex.value = value;
                 stackIndex.value = -1;
                 isPlayingVideo.value = false;

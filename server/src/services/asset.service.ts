@@ -25,12 +25,11 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
-import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeletionJob,
@@ -174,86 +173,25 @@ export class AssetService {
     userIds.push(...partnersIds);
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
-
-    return _.chain(assets)
-      .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
-      .map((asset) => {
-        const years = currentYear - asset.localDateTime.getFullYear();
-
-        return {
-          title: `${years} year${years > 1 ? 's' : ''} since...`,
-          asset: mapAsset(asset, { auth }),
-        };
-      })
-      .groupBy((asset) => asset.title)
-      .map((items, title) => ({ title, assets: items.map(({ asset }) => asset) }))
-      .value();
-  }
-
-  private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
-    if (dto.albumId) {
-      await this.access.requirePermission(auth, Permission.ALBUM_READ, [dto.albumId]);
-    } else {
-      dto.userId = dto.userId || auth.user.id;
-    }
-
-    if (dto.userId) {
-      await this.access.requirePermission(auth, Permission.TIMELINE_READ, [dto.userId]);
-      if (dto.isArchived !== false) {
-        await this.access.requirePermission(auth, Permission.ARCHIVE_READ, [dto.userId]);
+    const groups: Record<number, AssetEntity[]> = {};
+    for (const asset of assets) {
+      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+      if (!groups[yearsAgo]) {
+        groups[yearsAgo] = [];
       }
+      groups[yearsAgo].push(asset);
     }
 
-    if (dto.withPartners) {
-      const requestedArchived = dto.isArchived === true || dto.isArchived === undefined;
-      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
-      const requestedTrash = dto.isTrashed === true;
-
-      if (requestedArchived || requestedFavorite || requestedTrash) {
-        throw new BadRequestException(
-          'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
-        );
-      }
-    }
-  }
-
-  async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
-    await this.timeBucketChecks(auth, dto);
-    const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-
-    return this.assetRepository.getTimeBuckets(timeBucketOptions);
-  }
-
-  async getTimeBucket(
-    auth: AuthDto,
-    dto: TimeBucketAssetDto,
-  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
-    await this.timeBucketChecks(auth, dto);
-    const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    return !auth.sharedLink || auth.sharedLink?.showExif
-      ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
-      : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
-  }
-
-  async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
-    let userIds: string[] | undefined = undefined;
-
-    if (userId) {
-      userIds = [userId];
-
-      if (dto.withPartners) {
-        const partners = await this.partnerRepository.getAll(auth.user.id);
-        const partnersIds = partners
-          .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
-          .map((partner) => partner.sharedById);
-
-        userIds.push(...partnersIds);
-      }
-    }
-
-    return { ...options, userIds };
+    return Object.keys(groups)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .filter((yearsAgo) => yearsAgo > 0)
+      .map((yearsAgo) => ({
+        yearsAgo,
+        // TODO move this to clients
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
+      }));
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
@@ -458,17 +396,18 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      await this.jobRepository.queue({
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.livePhotoVideoId, fromExternal },
+      });
     }
 
-    const files = [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath];
-    if (!fromExternal) {
-      files.push(asset.originalPath);
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
+    if (!(asset.isExternal || asset.isReadOnly)) {
+      files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    if (!asset.isReadOnly) {
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
-    }
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }
@@ -534,7 +473,7 @@ export class AssetService {
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id } });
           break;
         }
 

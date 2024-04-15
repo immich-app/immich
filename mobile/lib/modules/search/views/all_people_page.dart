@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
 
@@ -12,7 +13,7 @@ class AllPeoplePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final curatedPeople = ref.watch(getCuratedPeopleProvider);
+    final curatedPeople = ref.watch(getAllPeopleProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -27,7 +28,9 @@ class AllPeoplePage extends HookConsumerWidget {
       body: curatedPeople.widgetWhen(
         onData: (people) => ExploreGrid(
           isPeople: true,
-          curatedContent: people,
+          curatedContent: people
+              .map((e) => CuratedContent(label: e.name, id: e.id))
+              .toList(),
         ),
       ),
     );

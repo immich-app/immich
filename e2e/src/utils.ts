@@ -1,4 +1,5 @@
 import {
+  AllJobStatusResponseDto,
   AssetFileUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
@@ -18,6 +19,7 @@ import {
   defaults,
   deleteAssets,
   getAllAssets,
+  getAllJobsStatus,
   getAssetInfo,
   login,
   searchMetadata,
@@ -31,6 +33,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
+import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
@@ -39,7 +42,7 @@ import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetDelete' | 'userDelete';
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
@@ -82,6 +85,7 @@ let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
   assetUpload: new Set<string>(),
+  assetUpdate: new Set<string>(),
   assetDelete: new Set<string>(),
   userDelete: new Set<string>(),
 };
@@ -185,6 +189,7 @@ export const utils = {
       websocket
         .on('connect', () => resolve(websocket))
         .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
+        .on('on_asset_update', (data: AssetResponseDto) => onEvent({ event: 'assetUpdate', id: data.id }))
         .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
         .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
         .connect();
@@ -207,35 +212,33 @@ export const utils = {
     }
   },
 
-  waitForWebsocketEvent: async ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
-    if (!id && !count) {
-      throw new Error('id or count must be provided for waitForWebsocketEvent');
-    }
-
-    const type = id ? `id=${id}` : `count=${count}`;
-    console.log(`Waiting for ${event} [${type}]`);
-    const set = events[event];
-    if ((id && set.has(id)) || (count && set.size >= count)) {
-      return;
-    }
-
+  waitForWebsocketEvent: ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      if (!id && !count) {
+        reject(new Error('id or count must be provided for waitForWebsocketEvent'));
+      }
+
       const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
+      const type = id ? `id=${id}` : `count=${count}`;
+      console.log(`Waiting for ${event} [${type}]`);
+      const set = events[event];
+      const onId = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      if ((id && set.has(id)) || (count && set.size >= count)) {
+        onId();
+        return;
+      }
 
       if (id) {
-        idCallbacks[id] = () => {
-          clearTimeout(timeout);
-          resolve();
-        };
+        idCallbacks[id] = onId;
       }
 
       if (count) {
         countCallbacks[event] = {
           count,
-          callback: () => {
-            clearTimeout(timeout);
-            resolve();
-          },
+          callback: onId,
         };
       }
     });
@@ -403,6 +406,33 @@ export const utils = {
         sameSite: 'Lax',
       },
     ]),
+
+  deleteTempFolder: () => {
+    rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
+  },
+
+  isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {
+    const queues = await getAllJobsStatus({ headers: asBearerAuth(accessToken) });
+    const jobCounts = queues[queue].jobCounts;
+    return !jobCounts.active && !jobCounts.waiting;
+  },
+
+  waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+    return new Promise<void>(async (resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
+
+      while (true) {
+        const done = await utils.isQueueEmpty(accessToken, queue);
+        if (done) {
+          break;
+        }
+        await setAsyncTimeout(200);
+      }
+
+      clearTimeout(timeout);
+      resolve();
+    });
+  },
 
   cliLogin: async (accessToken: string) => {
     const key = await utils.createApiKey(accessToken);

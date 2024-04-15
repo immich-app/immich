@@ -23,8 +23,6 @@ Method | HTTP request | Description
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
-[**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
-[**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**searchAssets**](AssetApi.md#searchassets) | **GET** /assets | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -833,158 +831,6 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getTimeBucket**
-> List<AssetResponseDto> getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final size = ; // TimeBucketSize | 
-final timeBucket = timeBucket_example; // String | 
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final isArchived = true; // bool | 
-final isFavorite = true; // bool | 
-final isTrashed = true; // bool | 
-final key = key_example; // String | 
-final order = ; // AssetOrder | 
-final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final withPartners = true; // bool | 
-final withStacked = true; // bool | 
-
-try {
-    final result = api_instance.getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getTimeBucket: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **size** | [**TimeBucketSize**](.md)|  | 
- **timeBucket** | **String**|  | 
- **albumId** | **String**|  | [optional] 
- **isArchived** | **bool**|  | [optional] 
- **isFavorite** | **bool**|  | [optional] 
- **isTrashed** | **bool**|  | [optional] 
- **key** | **String**|  | [optional] 
- **order** | [**AssetOrder**](.md)|  | [optional] 
- **personId** | **String**|  | [optional] 
- **userId** | **String**|  | [optional] 
- **withPartners** | **bool**|  | [optional] 
- **withStacked** | **bool**|  | [optional] 
-
-### Return type
-
-[**List<AssetResponseDto>**](AssetResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getTimeBuckets**
-> List<TimeBucketResponseDto> getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final size = ; // TimeBucketSize | 
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final isArchived = true; // bool | 
-final isFavorite = true; // bool | 
-final isTrashed = true; // bool | 
-final key = key_example; // String | 
-final order = ; // AssetOrder | 
-final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final withPartners = true; // bool | 
-final withStacked = true; // bool | 
-
-try {
-    final result = api_instance.getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, order, personId, userId, withPartners, withStacked);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getTimeBuckets: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **size** | [**TimeBucketSize**](.md)|  | 
- **albumId** | **String**|  | [optional] 
- **isArchived** | **bool**|  | [optional] 
- **isFavorite** | **bool**|  | [optional] 
- **isTrashed** | **bool**|  | [optional] 
- **key** | **String**|  | [optional] 
- **order** | [**AssetOrder**](.md)|  | [optional] 
- **personId** | **String**|  | [optional] 
- **userId** | **String**|  | [optional] 
- **withPartners** | **bool**|  | [optional] 
- **withStacked** | **bool**|  | [optional] 
-
-### Return type
-
-[**List<TimeBucketResponseDto>**](TimeBucketResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **runAssetJobs**
 > runAssetJobs(assetJobsDto)
 
@@ -1040,7 +886,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchAssets**
-> List<AssetResponseDto> searchAssets(checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked)
+> List<AssetResponseDto> searchAssets(checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked)
 
 
 
@@ -1090,11 +936,13 @@ final originalFileName = originalFileName_example; // String |
 final originalPath = originalPath_example; // String | 
 final page = 8.14; // num | 
 final personIds = []; // List<String> | 
+final previewPath = previewPath_example; // String | 
 final resizePath = resizePath_example; // String | 
 final size = 8.14; // num | 
 final state = state_example; // String | 
 final takenAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final takenBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final thumbnailPath = thumbnailPath_example; // String | 
 final trashedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final trashedBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
 final type = ; // AssetTypeEnum | 
@@ -1108,7 +956,7 @@ final withPeople = true; // bool |
 final withStacked = true; // bool | 
 
 try {
-    final result = api_instance.searchAssets(checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked);
+    final result = api_instance.searchAssets(checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->searchAssets: $e\n');
@@ -1146,11 +994,13 @@ Name | Type | Description  | Notes
  **originalPath** | **String**|  | [optional] 
  **page** | **num**|  | [optional] 
  **personIds** | [**List<String>**](String.md)|  | [optional] [default to const []]
+ **previewPath** | **String**|  | [optional] 
  **resizePath** | **String**|  | [optional] 
  **size** | **num**|  | [optional] 
  **state** | **String**|  | [optional] 
  **takenAfter** | **DateTime**|  | [optional] 
  **takenBefore** | **DateTime**|  | [optional] 
+ **thumbnailPath** | **String**|  | [optional] 
  **trashedAfter** | **DateTime**|  | [optional] 
  **trashedBefore** | **DateTime**|  | [optional] 
  **type** | [**AssetTypeEnum**](.md)|  | [optional] 

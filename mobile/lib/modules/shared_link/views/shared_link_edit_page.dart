@@ -48,7 +48,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                "Public album | ",
+                'shared_link_public_album',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ).tr(),
+              const Text(
+                " | ",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -66,7 +70,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
           return Row(
             children: [
               const Text(
-                "Individual shared | ",
+                'shared_link_individual_shared',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ).tr(),
+              const Text(
+                " | ",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Expanded(
@@ -262,6 +270,15 @@ class SharedLinkEditPage extends HookConsumerWidget {
           DropdownMenuEntry(
             value: 60 * 24 * 30,
             label: "shared_link_edit_expire_after_option_days".tr(args: ["30"]),
+          ),
+          DropdownMenuEntry(
+            value: 60 * 24 * 30 * 3,
+            label:
+                "shared_link_edit_expire_after_option_months".tr(args: ["3"]),
+          ),
+          DropdownMenuEntry(
+            value: 60 * 24 * 30 * 12,
+            label: "shared_link_edit_expire_after_option_year".tr(args: ["1"]),
           ),
         ],
       );

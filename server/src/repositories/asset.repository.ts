@@ -75,7 +75,7 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.save(asset);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
+  @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
@@ -83,7 +83,7 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
-      AND entity.resizePath IS NOT NULL
+      AND entity.previewPath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -93,7 +93,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
-      .orderBy('entity.localDateTime', 'DESC')
+      .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
 
@@ -159,11 +159,11 @@ export class AssetRepository implements IAssetRepository {
     return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
+  @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
+  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
       select: { id: true, originalPath: true, isOffline: true },
-      where: { library: { id: libraryId } },
+      where: { library: { id: libraryId }, isExternal: true },
     });
   }
 
@@ -265,8 +265,8 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { ownerId: userId, checksum } });
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { libraryId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
@@ -302,10 +302,10 @@ export class AssetRepository implements IAssetRepository {
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
         where = [
-          { resizePath: IsNull(), isVisible: true },
-          { resizePath: '', isVisible: true },
-          { webpPath: IsNull(), isVisible: true },
-          { webpPath: '', isVisible: true },
+          { previewPath: IsNull(), isVisible: true },
+          { previewPath: '', isVisible: true },
+          { thumbnailPath: IsNull(), isVisible: true },
+          { thumbnailPath: '', isVisible: true },
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
@@ -339,7 +339,7 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           smartSearch: {
             embedding: IsNull(),
           },
@@ -352,7 +352,7 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
@@ -367,7 +367,7 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),
@@ -385,7 +385,7 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          resizePath: Not(IsNull()),
+          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: Not(IsNull()),

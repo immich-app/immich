@@ -80,17 +80,13 @@
     });
   }
 
-  const assetClickHandler = async (
-    asset: AssetResponseDto,
-    assetsInDateGroup: AssetResponseDto[],
-    groupTitle: string,
-  ) => {
+  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, groupTitle);
       return;
     }
 
-    await assetViewingStore.setAssetId(asset.id);
+    assetViewingStore.setAsset(asset);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });

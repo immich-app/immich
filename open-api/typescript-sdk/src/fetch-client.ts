@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.99.0
+ * 1.101.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -273,6 +273,7 @@ export type MapMarkerResponseDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     title: string;
+    yearsAgo: number;
 };
 export type UpdateStackParentDto = {
     newParentId: string;
@@ -282,10 +283,6 @@ export type AssetStatsResponseDto = {
     images: number;
     total: number;
     videos: number;
-};
-export type TimeBucketResponseDto = {
-    count: number;
-    timeBucket: string;
 };
 export type CreateAssetDto = {
     assetData: Blob;
@@ -464,7 +461,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -496,6 +492,35 @@ export type ValidateLibraryImportPathResponseDto = {
 };
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];
+};
+export type OnThisDayDto = {
+    year: number;
+};
+export type MemoryResponseDto = {
+    assets: AssetResponseDto[];
+    createdAt: string;
+    data: OnThisDayDto;
+    deletedAt?: string;
+    id: string;
+    isSaved: boolean;
+    memoryAt: string;
+    ownerId: string;
+    seenAt?: string;
+    "type": Type2;
+    updatedAt: string;
+};
+export type MemoryCreateDto = {
+    assetIds?: string[];
+    data: OnThisDayDto;
+    isSaved?: boolean;
+    memoryAt: string;
+    seenAt?: string;
+    "type": MemoryType;
+};
+export type MemoryUpdateDto = {
+    isSaved?: boolean;
+    memoryAt?: string;
+    seenAt?: string;
 };
 export type OAuthConfigDto = {
     redirectUri: string;
@@ -643,11 +668,13 @@ export type MetadataSearchDto = {
     originalPath?: string;
     page?: number;
     personIds?: string[];
+    previewPath?: string;
     resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -830,6 +857,14 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
+export type SystemConfigImageDto = {
+    colorspace: Colorspace;
+    previewFormat: ImageFormat;
+    previewSize: number;
+    quality: number;
+    thumbnailFormat: ImageFormat;
+    thumbnailSize: number;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -922,12 +957,6 @@ export type SystemConfigStorageTemplateDto = {
 export type SystemConfigThemeDto = {
     customCss: string;
 };
-export type SystemConfigThumbnailDto = {
-    colorspace: Colorspace;
-    jpegSize: number;
-    quality: number;
-    webpSize: number;
-};
 export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
@@ -937,6 +966,7 @@ export type SystemConfigUserDto = {
 };
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
+    image: SystemConfigImageDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -949,7 +979,6 @@ export type SystemConfigDto = {
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     theme: SystemConfigThemeDto;
-    thumbnail: SystemConfigThumbnailDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
 };
@@ -969,6 +998,10 @@ export type CreateTagDto = {
 };
 export type UpdateTagDto = {
     name?: string;
+};
+export type TimeBucketResponseDto = {
+    count: number;
+    timeBucket: string;
 };
 export type CreateUserDto = {
     email: string;
@@ -1455,72 +1488,6 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
-    albumId?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    isTrashed?: boolean;
-    key?: string;
-    order?: AssetOrder;
-    personId?: string;
-    size: TimeBucketSize;
-    timeBucket: string;
-    userId?: string;
-    withPartners?: boolean;
-    withStacked?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/asset/time-bucket${QS.query(QS.explode({
-        albumId,
-        isArchived,
-        isFavorite,
-        isTrashed,
-        key,
-        order,
-        personId,
-        size,
-        timeBucket,
-        userId,
-        withPartners,
-        withStacked
-    }))}`, {
-        ...opts
-    }));
-}
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
-    albumId?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    isTrashed?: boolean;
-    key?: string;
-    order?: AssetOrder;
-    personId?: string;
-    size: TimeBucketSize;
-    userId?: string;
-    withPartners?: boolean;
-    withStacked?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: TimeBucketResponseDto[];
-    }>(`/asset/time-buckets${QS.query(QS.explode({
-        albumId,
-        isArchived,
-        isFavorite,
-        isTrashed,
-        key,
-        order,
-        personId,
-        size,
-        userId,
-        withPartners,
-        withStacked
-    }))}`, {
-        ...opts
-    }));
-}
 export function uploadFile({ key, createAssetDto }: {
     key?: string;
     createAssetDto: CreateAssetDto;
@@ -1562,7 +1529,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
+export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
     checksum?: string;
     city?: string;
     country?: string;
@@ -1590,11 +1557,13 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
     originalPath?: string;
     page?: number;
     personIds?: string[];
+    previewPath?: string;
     resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
     takenBefore?: string;
+    thumbnailPath?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     $type?: AssetTypeEnum;
@@ -1638,11 +1607,13 @@ export function searchAssets({ checksum, city, country, createdAfter, createdBef
         originalPath,
         page,
         personIds,
+        previewPath,
         resizePath,
         size,
         state,
         takenAfter,
         takenBefore,
+        thumbnailPath,
         trashedAfter,
         trashedBefore,
         "type": $type,
@@ -1963,6 +1934,83 @@ export function validate({ id, validateLibraryDto }: {
         ...opts,
         method: "POST",
         body: validateLibraryDto
+    })));
+}
+export function searchMemories(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto[];
+    }>("/memories", {
+        ...opts
+    }));
+}
+export function createMemory({ memoryCreateDto }: {
+    memoryCreateDto: MemoryCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MemoryResponseDto;
+    }>("/memories", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: memoryCreateDto
+    })));
+}
+export function deleteMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/memories/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getMemory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateMemory({ id, memoryUpdateDto }: {
+    id: string;
+    memoryUpdateDto: MemoryUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto;
+    }>(`/memories/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: memoryUpdateDto
+    })));
+}
+export function removeMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
+export function addMemoryAssets({ id, bulkIdsDto }: {
+    id: string;
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>(`/memories/${encodeURIComponent(id)}/assets`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: bulkIdsDto
     })));
 }
 export function startOAuth({ oAuthConfigDto }: {
@@ -2487,13 +2535,15 @@ export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getMapStyle({ theme }: {
+export function getMapStyle({ key, theme }: {
+    key?: string;
     theme: MapTheme;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: object;
     }>(`/system-config/map/style.json${QS.query(QS.explode({
+        key,
         theme
     }))}`, {
         ...opts
@@ -2593,6 +2643,72 @@ export function tagAssets({ id, assetIdsDto }: {
         method: "PUT",
         body: assetIdsDto
     })));
+}
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, timeBucket, userId, withPartners, withStacked }: {
+    albumId?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    key?: string;
+    order?: AssetOrder;
+    personId?: string;
+    size: TimeBucketSize;
+    timeBucket: string;
+    userId?: string;
+    withPartners?: boolean;
+    withStacked?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/timeline/bucket${QS.query(QS.explode({
+        albumId,
+        isArchived,
+        isFavorite,
+        isTrashed,
+        key,
+        order,
+        personId,
+        size,
+        timeBucket,
+        userId,
+        withPartners,
+        withStacked
+    }))}`, {
+        ...opts
+    }));
+}
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, userId, withPartners, withStacked }: {
+    albumId?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isTrashed?: boolean;
+    key?: string;
+    order?: AssetOrder;
+    personId?: string;
+    size: TimeBucketSize;
+    userId?: string;
+    withPartners?: boolean;
+    withStacked?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TimeBucketResponseDto[];
+    }>(`/timeline/buckets${QS.query(QS.explode({
+        albumId,
+        isArchived,
+        isFavorite,
+        isTrashed,
+        key,
+        order,
+        personId,
+        size,
+        userId,
+        withPartners,
+        withStacked
+    }))}`, {
+        ...opts
+    }));
 }
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/trash/empty", {
@@ -2788,10 +2904,6 @@ export enum ThumbnailFormat {
     Jpeg = "JPEG",
     Webp = "WEBP"
 }
-export enum TimeBucketSize {
-    Day = "DAY",
-    Month = "MONTH"
-}
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
@@ -2803,8 +2915,8 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
-    JpegThumbnail = "jpeg_thumbnail",
-    WebpThumbnail = "webp_thumbnail",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",
     Sidecar = "sidecar",
     Face = "face",
@@ -2834,6 +2946,12 @@ export enum JobCommand {
 export enum LibraryType {
     Upload = "UPLOAD",
     External = "EXTERNAL"
+}
+export enum Type2 {
+    OnThisDay = "on_this_day"
+}
+export enum MemoryType {
+    OnThisDay = "on_this_day"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -2866,7 +2984,8 @@ export enum AudioCodec {
 export enum VideoCodec {
     H264 = "h264",
     Hevc = "hevc",
-    Vp9 = "vp9"
+    Vp9 = "vp9",
+    Av1 = "av1"
 }
 export enum CQMode {
     Auto = "auto",
@@ -2886,6 +3005,14 @@ export enum TranscodePolicy {
     Required = "required",
     Disabled = "disabled"
 }
+export enum Colorspace {
+    Srgb = "srgb",
+    P3 = "p3"
+}
+export enum ImageFormat {
+    Jpeg = "jpeg",
+    Webp = "webp"
+}
 export enum LogLevel {
     Verbose = "verbose",
     Debug = "debug",
@@ -2902,11 +3029,11 @@ export enum ModelType {
     FacialRecognition = "facial-recognition",
     Clip = "clip"
 }
-export enum Colorspace {
-    Srgb = "srgb",
-    P3 = "p3"
-}
 export enum MapTheme {
     Light = "light",
     Dark = "dark"
+}
+export enum TimeBucketSize {
+    Day = "DAY",
+    Month = "MONTH"
 }

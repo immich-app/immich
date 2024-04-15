@@ -5,6 +5,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
   import BaseModal from './base-modal.svelte';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -15,10 +16,10 @@
   const dispatch = createEventDispatcher<{
     newAlbum: string;
     album: AlbumResponseDto;
-    close: void;
   }>();
 
   export let shared: boolean;
+  export let onClose: () => void;
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -30,7 +31,7 @@
     filteredAlbums =
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
-            return album.albumName.toLowerCase().includes(search.toLowerCase());
+            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
           })
         : albums;
   }
@@ -42,17 +43,16 @@
   const handleNew = () => {
     dispatch('newAlbum', search.length > 0 ? search : '');
   };
+
+  const getTitle = () => {
+    if (shared) {
+      return 'Add to shared album';
+    }
+    return 'Add to album';
+  };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <p class="font-medium">
-        Add to {shared ? 'Shared ' : ''}Album
-      </p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="album-selection-modal" title={getTitle()} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
@@ -68,11 +68,9 @@
         </div>
       {/each}
     {:else}
-      <!-- svelte-ignore a11y-autofocus -->
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder="Search"
-        autofocus
         bind:value={search}
       />
       <div class="immich-scrollbar overflow-y-auto">
@@ -84,7 +82,7 @@
             <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
-            New {shared ? 'Shared ' : ''}Album {#if search.length > 0}<b>{search}</b>{/if}
+            New Album {#if search.length > 0}<b>{search}</b>{/if}
           </p>
         </button>
         {#if filteredAlbums.length > 0}

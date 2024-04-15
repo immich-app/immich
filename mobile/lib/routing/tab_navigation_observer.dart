@@ -38,7 +38,7 @@ class TabNavigationObserver extends AutoRouterObserver {
     if (route.name == 'SearchRoute') {
       // Refresh Location State
       ref.invalidate(getCuratedLocationProvider);
-      ref.invalidate(getCuratedPeopleProvider);
+      ref.invalidate(getAllPeopleProvider);
     }
 
     if (route.name == 'SharingRoute') {

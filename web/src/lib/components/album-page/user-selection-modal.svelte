@@ -13,17 +13,16 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import BaseModal from '../shared-components/base-modal.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let album: AlbumResponseDto;
+  export let onClose: () => void;
   let users: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     select: UserResponseDto[];
     share: void;
-    close: void;
   }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
@@ -55,14 +54,7 @@
   };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <ImmichLogo noText={true} width={36} />
-      <p class="font-medium">Invite to album</p>
-    </span>
-  </svelte:fragment>
-
+<BaseModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
   {#if selectedUsers.length > 0}
     <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
       <p class="font-medium">To</p>
