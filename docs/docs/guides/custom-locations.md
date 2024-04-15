@@ -12,7 +12,7 @@ In our `.env` file, we will define variables that will help us in the future whe
 # You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
-- {UPLOAD_LOCATION}./
+- {UPLOAD_LOCATION}=./library
 + {UPLOAD_LOCATION}=/custom/location/on/your/system/
 + {THUMB_LOCATION}=/custom/location/on/your/system/
 + {ENCODED_VIDEO_LOCATION}=/custom/location/on/your/system/
