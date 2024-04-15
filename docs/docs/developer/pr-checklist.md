@@ -5,11 +5,10 @@ When contributing code through a pull request, please check the following:
 ## Web Checks
 
 - [ ] `npm run lint` (linting via ESLint)
-- [ ] `npm run format:fix` (formatting via Prettier)
 - [ ] `npm run check:svelte` (Type checking via SvelteKit)
 - [ ] `npm test` (unit tests)
 
-:::tip
+:::tip AIO
 Run all web checks with `npm run check:all`
 :::
 
@@ -20,8 +19,12 @@ Run all web checks with `npm run check:all`
 - [ ] `npm run check` (Type checking via `tsc`)
 - [ ] `npm test` (unit tests)
 
-:::tip
+:::tip AIO
 Run all server checks with `npm run check:all`
+:::
+
+:::info Auto Fix
+You can use `npm run __:fix` to potentially correct some issues automatically for `npm run format` and `lint`.
 :::
 
 ## OpenAPI
