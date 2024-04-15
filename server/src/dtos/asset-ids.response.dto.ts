@@ -1,4 +1,4 @@
-import { ValidateUUID } from 'src/validation';
+import { ValidateAssetId, ValidateUUID } from 'src/validation';
 
 /** @deprecated Use `BulkIdResponseDto` instead */
 export enum AssetIdErrorReason {
@@ -22,7 +22,7 @@ export enum BulkIdErrorReason {
 }
 
 export class BulkIdsDto {
-  @ValidateUUID({ each: true })
+  @ValidateAssetId({ each: true })
   ids!: string[];
 }
 

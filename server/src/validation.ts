@@ -16,12 +16,14 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MinLength,
   ValidateIf,
   ValidationOptions,
   isDateString,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import sanitize from 'sanitize-filename';
+import { ID_SIZE } from 'src/entities/asset.entity';
 
 @Injectable()
 export class ParseMeUUIDPipe extends ParseUUIDPipe {
@@ -54,8 +56,8 @@ export class FileNotEmptyValidator extends FileValidator {
 }
 
 export class UUIDParamDto {
+  @MinLength(ID_SIZE)
   @IsNotEmpty()
-  @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   id!: string;
 }
@@ -85,6 +87,17 @@ export const ValidateUUID = (options?: UUIDOptions) => {
   const { optional, each } = { optional: false, each: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
+    ApiProperty({ format: 'uuid' }),
+    optional ? Optional() : IsNotEmpty(),
+    each ? IsArray() : IsString(),
+  );
+};
+
+type IdOptions = { optional?: boolean; each?: boolean };
+export const ValidateAssetId = (options?: IdOptions) => {
+  const { optional, each } = { optional: false, each: false, ...options };
+  return applyDecorators(
+    MinLength(ID_SIZE),
     ApiProperty({ format: 'uuid' }),
     optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),

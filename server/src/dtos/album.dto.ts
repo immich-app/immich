@@ -4,7 +4,7 @@ import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
   @ValidateBoolean({ optional: true })
@@ -29,7 +29,7 @@ export class CreateAlbumDto {
   @ValidateUUID({ optional: true, each: true })
   sharedWithUserIds?: string[];
 
-  @ValidateUUID({ optional: true, each: true })
+  @ValidateAssetId({ optional: true, each: true })
   assetIds?: string[];
 }
 
@@ -42,7 +42,7 @@ export class UpdateAlbumDto {
   @IsString()
   description?: string;
 
-  @ValidateUUID({ optional: true })
+  @ValidateAssetId({ optional: true })
   albumThumbnailAssetId?: string;
 
   @ValidateBoolean({ optional: true })
@@ -68,7 +68,7 @@ export class GetAlbumsDto {
    * Ignores the shared parameter
    * undefined: get all albums
    */
-  @ValidateUUID({ optional: true })
+  @ValidateAssetId({ optional: true })
   assetId?: string;
 }
 

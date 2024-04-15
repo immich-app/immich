@@ -8159,6 +8159,7 @@
         "properties": {
           "assetIds": {
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -8416,7 +8417,6 @@
             "type": "string"
           },
           "entityId": {
-            "format": "uuid",
             "type": "string"
           },
           "entityType": {

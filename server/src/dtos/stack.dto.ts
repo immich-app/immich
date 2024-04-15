@@ -1,9 +1,9 @@
-import { ValidateUUID } from 'src/validation';
+import { ValidateAssetId, ValidateUUID } from 'src/validation';
 
 export class UpdateStackParentDto {
-  @ValidateUUID()
+  @ValidateAssetId()
   oldParentId!: string;
 
-  @ValidateUUID()
+  @ValidateAssetId()
   newParentId!: string;
 }

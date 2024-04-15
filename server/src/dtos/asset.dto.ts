@@ -14,7 +14,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -49,10 +49,10 @@ export class UpdateAssetBase {
 }
 
 export class AssetBulkUpdateDto extends UpdateAssetBase {
-  @ValidateUUID({ each: true })
+  @ValidateAssetId({ each: true })
   ids!: string[];
 
-  @ValidateUUID({ optional: true })
+  @ValidateAssetId({ optional: true })
   stackParentId?: string;
 
   @ValidateBoolean({ optional: true })
@@ -79,7 +79,7 @@ export class AssetBulkDeleteDto extends BulkIdsDto {
 }
 
 export class AssetIdsDto {
-  @ValidateUUID({ each: true })
+  @ValidateAssetId({ each: true })
   assetIds!: string[];
 }
 

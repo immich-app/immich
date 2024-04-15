@@ -4,7 +4,7 @@ import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-va
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class PersonCreateDto {
   /**
@@ -55,7 +55,7 @@ export class PeopleUpdateItem extends PersonUpdateDto {
 }
 
 export class MergePersonDto {
-  @ValidateUUID({ each: true })
+  @ValidateAssetId({ each: true })
   ids!: string[];
 }
 
@@ -114,7 +114,7 @@ export class AssetFaceUpdateItem {
   @ValidateUUID()
   personId!: string;
 
-  @ValidateUUID()
+  @ValidateAssetId()
   assetId!: string;
 }
 

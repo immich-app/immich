@@ -72,7 +72,11 @@ export class AssetRepository implements IAssetRepository {
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
-    return this.repository.save(asset);
+    // @BeforeInsert listeners do not fire if arg to
+    // .save is not an instance of AssetEntity
+    const newAsset = new AssetEntity();
+    Object.assign(newAsset, asset);
+    return this.repository.save(newAsset);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })

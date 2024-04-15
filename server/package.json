@@ -71,6 +71,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.39.8",
+    "nanoid": "^3.3.5",
     "nest-commander": "^3.11.1",
     "nestjs-otel": "^5.1.5",
     "openid-client": "^5.4.3",

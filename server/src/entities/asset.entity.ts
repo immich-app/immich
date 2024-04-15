@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
@@ -10,6 +11,7 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -21,10 +23,11 @@ import {
   ManyToOne,
   OneToMany,
   OneToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
+export const ID_SIZE = 12;
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 
 @Entity('assets')
@@ -39,7 +42,12 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 @Index('idx_originalFileName_trigram', { synchronize: false })
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @BeforeInsert()
+  updateDates() {
+    // generate the object id
+    this.id = nanoid(ID_SIZE);
+  }
+  @PrimaryColumn('varchar', { length: 16 })
   id!: string;
 
   @Column()

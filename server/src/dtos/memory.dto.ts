@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { MemoryEntity, MemoryType } from 'src/entities/memory.entity';
-import { ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { ValidateAssetId, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true })
@@ -49,7 +49,7 @@ export class MemoryCreateDto extends MemoryBaseDto {
   @ValidateDate()
   memoryAt!: Date;
 
-  @ValidateUUID({ optional: true, each: true })
+  @ValidateAssetId({ optional: true, each: true })
   assetIds?: string[];
 }
 

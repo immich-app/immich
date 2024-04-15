@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { UserDto, mapSimpleUser } from 'src/dtos/user.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { Optional, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateUUID } from 'src/validation';
 
 export enum ReactionType {
   COMMENT = 'comment',
@@ -34,7 +34,7 @@ export class ActivityDto {
   @ValidateUUID()
   albumId!: string;
 
-  @ValidateUUID({ optional: true })
+  @ValidateAssetId({ optional: true })
   assetId?: string;
 }
 

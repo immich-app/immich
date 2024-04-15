@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsPositive } from 'class-validator';
-import { Optional, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateUUID } from 'src/validation';
 
 export class DownloadInfoDto {
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateAssetId({ each: true, optional: true })
   assetIds?: string[];
 
   @ValidateUUID({ optional: true })
@@ -28,5 +28,6 @@ export class DownloadResponseDto {
 export class DownloadArchiveInfo {
   @ApiProperty({ type: 'integer' })
   size!: number;
+  @ValidateAssetId({ optional: true, each: true })
   assetIds!: string[];
 }

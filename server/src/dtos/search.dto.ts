@@ -6,7 +6,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateAssetId, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true })
@@ -131,7 +131,7 @@ class BaseSearchDto {
 }
 
 export class MetadataSearchDto extends BaseSearchDto {
-  @ValidateUUID({ optional: true })
+  @ValidateAssetId({ optional: true })
   id?: string;
 
   @IsString()

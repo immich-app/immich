@@ -56,7 +56,6 @@ export class FileReportFixDto {
 
 // used both as request and response dto
 export class FileReportItemDto {
-  @ValidateUUID()
   entityId!: string;
 
   @ApiProperty({ enumName: 'PathEntityType', enum: PathEntityType })
