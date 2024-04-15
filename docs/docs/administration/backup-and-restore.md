@@ -34,6 +34,8 @@ gunzip < "/path/to/backup/dump.sql.gz" | docker exec -i immich_postgres psql -U 
 docker compose up -d    # Start remainder of Immich apps
 ```
 
+Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.).
+
 </TabItem>
   <TabItem value="Windows system based Backup" label="Windows system based Backup">
 
@@ -51,10 +53,55 @@ gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql -U postgre
 docker compose up -d    # Start remainder of Immich apps
 ```
 
+Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.).
+
+</TabItem>
+  <TabItem value="TrueNAS system based Backup" label="TrueNAS system based Backup">
+
+#### Backup
+
+By default when using the Immich distribution of TrueNAS the database password is randomly generated, to back up Immich the database password is needed.
+
+1. HeavyScript and pgAdmin must be installed
+2. Go to System Settings -> Shell and enter:
+   `sudo heavyscript dns immich`
+   Copy the entry of immich-postgres It should look something like this:
+   `immich-postgres.ix-immich.svc.cluster.local`
+3. Now enter:
+   `heavyscript pod -s immich`
+4. Select immich-postgres
+5. Now write `env` and copy the POSTGRES_PASSWORD value
+6. Identify your database password, save it!
+
+Now go to pgAdmin
+
+1. Connect to the browser interface
+2. Select Add New Server
+3. Enter the following values:
+
+   | Name                 | Value                      |
+   | -------------------- | -------------------------- |
+   | Host name/address    | `The value from section 2` |
+   | Port                 | `5432`                     |
+   | Maintenance database | `immich`                   |
+   | Username             | `immich`                   |
+   | Password             | `The value from section 6` |
+
+4. Under Databases select Immich -> right click -> backup
+5. Select the backup location and click Backup
+
+You have successfully backed up your database!
+
+#### Recovery
+
+1. Reinstall Immich (and keep it running!)
+2. Go through the steps from the previous section until connecting to the database
+3. In pgadmin under databases select Immich -> right click -> restore
+4. Load the backup file and under Query Options check the Clean before restore option
+5. Wait for the backup to finish and open Immich.
+
 </TabItem>
 </Tabs>
-
-Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.).
 
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 
@@ -130,7 +177,7 @@ Some storage locations are impacted by the Storage Template. See below for more 
 :::note
 If you choose to activate the storage template engine, it will move all assets to `UPLOAD_LOCATION/library/<userID>`.
 
-When you turn off the storage template engine, it will leave the assets in `UPLOAD_LOCATION/library/<userID>` and will not return them to `/library/upload`.  
+When you turn off the storage template engine, it will leave the assets in `UPLOAD_LOCATION/library/<userID>` and will not return them to `/library/upload`.
 **New assets** will be saved to `/library/upload`.
 :::
 
