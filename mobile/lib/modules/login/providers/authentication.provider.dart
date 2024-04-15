@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
@@ -92,7 +91,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         serverUrl: serverUrl,
       );
     } catch (e) {
-      HapticFeedback.vibrate();
       debugPrint("Error logging in $e");
       return false;
     }
