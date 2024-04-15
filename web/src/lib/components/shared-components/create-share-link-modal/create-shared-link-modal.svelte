@@ -15,6 +15,7 @@
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
 
+  export let onClose: () => void;
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
@@ -30,14 +31,12 @@
   let enablePassword = false;
 
   const dispatch = createEventDispatcher<{
-    close: void;
-    escape: void;
     created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',
-    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
+    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days', '3 months', '1 year'],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -105,6 +104,12 @@
       case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
       }
+      case '3 months': {
+        return 30 * 24 * 60 * 60 * 3 * 1000;
+      }
+      case '1 year': {
+        return 30 * 24 * 60 * 60 * 12 * 1000;
+      }
       default: {
         return 0;
       }
@@ -140,7 +145,7 @@
         message: 'Edited',
       });
 
-      dispatch('close');
+      onClose();
     } catch (error) {
       handleError(error, 'Failed to edit shared link');
     }
@@ -154,7 +159,7 @@
   };
 </script>
 
-<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} on:close>
+<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} {onClose}>
   <section class="mx-6 mb-6">
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}

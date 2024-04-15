@@ -160,10 +160,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
-  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
+  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
       select: { id: true, originalPath: true, isOffline: true },
-      where: { library: { id: libraryId } },
+      where: { library: { id: libraryId }, isExternal: true },
     });
   }
 
@@ -265,8 +265,8 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { ownerId: userId, checksum } });
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { libraryId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {

@@ -25,7 +25,7 @@
     "@faker-js/faker": "^8.4.1",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
-    "@sveltejs/enhanced-img": "^0.1.8",
+    "@sveltejs/enhanced-img": "^0.2.0",
     "@sveltejs/kit": "^2.5.2",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.4.2",
