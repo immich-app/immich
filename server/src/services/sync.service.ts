@@ -55,7 +55,7 @@ export class SyncService {
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
 
-    if (upserted.length == limit) {
+    if (upserted.length === limit) {
       // too many changes -> do a full sync (paginated) instead
       return { needsFullSync: true, deleted: [], upserted: [] };
     }
