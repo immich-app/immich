@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 @RoutePage()
@@ -127,7 +128,7 @@ class MemoryPage extends HookConsumerWidget {
     }
 
     Future<void> onAssetChanged(int otherIndex) async {
-      HapticFeedback.selectionClick();
+      ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
       updateProgressText();
       // Wait for page change animation to finish
@@ -169,7 +170,7 @@ class MemoryPage extends HookConsumerWidget {
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
             onPageChanged: (pageNumber) {
-              HapticFeedback.mediumImpact();
+              ref.read(hapticFeedbackProvider.notifier).mediumImpact();
               if (pageNumber < memories.length) {
                 currentMemoryIndex.value = pageNumber;
                 currentMemory.value = memories[pageNumber];
