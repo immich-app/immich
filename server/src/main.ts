@@ -16,6 +16,7 @@ import { useSwagger } from 'src/utils/misc';
 
 async function bootstrapMicroservices() {
   const logger = new ImmichLogger('ImmichMicroservice');
+  const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.MICROSERVICES_PORT) || 3002;
 
   otelSDK.start();
@@ -23,13 +24,14 @@ async function bootstrapMicroservices() {
   app.useLogger(app.get(ImmichLogger));
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await app.listen(port);
+  await app.listen(port, host);
 
   logger.log(`Immich Microservices is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
 }
 
 async function bootstrapApi() {
   const logger = new ImmichLogger('ImmichServer');
+  const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.SERVER_PORT) || 3001;
 
   otelSDK.start();
@@ -65,7 +67,7 @@ async function bootstrapApi() {
   }
   app.use(app.get(ApiService).ssr(excludePaths));
 
-  const server = await app.listen(port);
+  const server = await app.listen(port, host);
   server.requestTimeout = 30 * 60 * 1000;
 
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
