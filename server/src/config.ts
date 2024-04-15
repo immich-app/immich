@@ -1,7 +1,7 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
 import Joi from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
@@ -76,12 +76,12 @@ export const clsConfig: ClsModuleOptions = {
   middleware: {
     mount: true,
     generateId: true,
-    setup: (cls, req: Request) => {
-      const headerValue = req.headers['x-immich-cid'];
-      const cid = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-      if (cid) {
-        cls.set(CLS_ID, cid);
-      }
+    setup: (cls, req: Request, res: Response) => {
+      const headerValues = req.headers['x-immich-cid'];
+      const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
+      const cid = headerValue || cls.get(CLS_ID);
+      cls.set(CLS_ID, headerValue);
+      res.header('x-immich-cid', cid);
     },
   },
 };
