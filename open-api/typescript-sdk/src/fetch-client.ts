@@ -461,7 +461,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -2985,7 +2984,8 @@ export enum AudioCodec {
 export enum VideoCodec {
     H264 = "h264",
     Hevc = "hevc",
-    Vp9 = "vp9"
+    Vp9 = "vp9",
+    Av1 = "av1"
 }
 export enum CQMode {
     Auto = "auto",

@@ -266,9 +266,6 @@ export class LibraryService extends EventEmitter {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
-        if (dto.isWatched) {
-          throw new BadRequestException('Upload libraries cannot be watched');
-        }
         break;
       }
     }
@@ -619,7 +616,7 @@ export class LibraryService extends EventEmitter {
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
     );
 
     this.logger.verbose(`Crawled asset paths paginated`);

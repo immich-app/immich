@@ -160,7 +160,7 @@ describe(LibraryService.name, () => {
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -189,7 +189,7 @@ describe(LibraryService.name, () => {
       storageMock.walk.mockImplementation(async function* generator() {
         yield '/data/user1/photo.jpg';
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -238,7 +238,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      assetMock.getLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
@@ -256,8 +256,8 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.image],
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.external],
         hasNextPage: false,
       });
 
@@ -278,16 +278,16 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield assetStub.offline.originalPath;
+        yield assetStub.externalOffline.originalPath;
       });
-      assetMock.getLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.offline],
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
+        items: [assetStub.externalOffline],
         hasNextPage: false,
       });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.offline.id], { isOffline: false });
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.externalOffline.id], { isOffline: false });
       expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
@@ -1057,14 +1057,6 @@ describe(LibraryService.name, () => {
         ).rejects.toBeInstanceOf(BadRequestException);
 
         expect(libraryMock.create).not.toHaveBeenCalled();
-      });
-
-      it('should not create watched', async () => {
-        await expect(
-          sut.create({ ownerId: authStub.admin.user.id, type: LibraryType.UPLOAD, isWatched: true }),
-        ).rejects.toBeInstanceOf(BadRequestException);
-
-        expect(storageMock.watch).not.toHaveBeenCalled();
       });
     });
   });

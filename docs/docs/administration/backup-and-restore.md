@@ -63,7 +63,7 @@ services:
   ...
   backup:
     container_name: immich_db_dumper
-    image: prodrigestivill/postgres-backup-local
+    image: prodrigestivill/postgres-backup-local:14
     env_file:
       - .env
     environment:
@@ -85,6 +85,12 @@ Then you can restore with the same command but pointed at the latest dump.
 ```bash title='Automated Restore'
 gunzip < db_dumps/last/immich-latest.sql.gz | docker exec -i immich_postgres psql --username=postgres
 ```
+
+:::note
+If you see the error `ERROR:  type "earth" does not exist`, or you have problems with Reverse Geocoding after a restore, add the following `sed` fragment to your restore command.
+
+Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres`
+:::
 
 ## Filesystem
 

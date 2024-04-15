@@ -432,7 +432,7 @@
 {#if allowEdit}
   <!-- Edit Modal -->
   {#if albumToEdit}
-    <FullScreenModal onClose={() => (albumToEdit = null)}>
+    <FullScreenModal id="edit-album-modal" title="Edit album" width="wide" onClose={() => (albumToEdit = null)}>
       <EditAlbumForm album={albumToEdit} onEditSuccess={successEditAlbumInfo} onCancel={() => (albumToEdit = null)} />
     </FullScreenModal>
   {/if}
@@ -442,7 +442,7 @@
     {#if showShareByURLModal}
       <CreateSharedLinkModal
         albumId={albumToShare.id}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
         on:created={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
@@ -450,7 +450,7 @@
         album={albumToShare}
         on:select={({ detail: users }) => handleAddUsers(users)}
         on:share={() => (showShareByURLModal = true)}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
       />
     {/if}
   {/if}
@@ -458,7 +458,8 @@
   <!-- Delete Modal -->
   {#if albumToDelete}
     <ConfirmDialogue
-      title="Delete Album"
+      id="delete-album-dialogue-modal"
+      title="Delete album"
       confirmText="Delete"
       onConfirm={deleteSelectedAlbum}
       onClose={() => (albumToDelete = null)}
