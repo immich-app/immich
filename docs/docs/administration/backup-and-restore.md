@@ -62,7 +62,7 @@ Note that for the database restore to proceed properly, it requires a completely
 
 By default when using the Immich distribution of TrueNAS the database password is randomly generated, to back up Immich the database password is needed.
 
-1. HeavyScript and pgAdmin must be installed
+1. [HeavyScript](https://github.com/Heavybullets8/heavy_script) and [pgAdmin]() must be installed
 2. Go to System Settings -> Shell and enter:
    `sudo heavyscript dns immich`
    Copy the entry of immich-postgres It should look something like this:
