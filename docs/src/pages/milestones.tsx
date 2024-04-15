@@ -51,7 +51,6 @@ import {
   mdiVideo,
   mdiWeb,
   mdiScaleBalance,
-  mdiAllInclusive,
   mdiMagnifyScan,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
