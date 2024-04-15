@@ -61,8 +61,7 @@ import Timeline, { DateType, Item } from '../components/timeline';
 const items: Item[] = [
   {
     icon: mdiMagnifyScan,
-    description:
-      'Advanced search with filters by date, location and more',
+    description: 'Advanced search with filters by date, location and more',
     title: 'Search enhancement with advanced filters',
     release: 'v1.95.0',
     tag: 'v1.95.0',
