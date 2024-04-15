@@ -48,7 +48,7 @@ function CommunityGuide({ title, description, url }: CommunityGuidesProps): JSX.
           className="px-4 py-2 bg-immich-primary/10 dark:bg-gray-300  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
           to={url}
         >
-          View Guides
+          View Guide
         </Link>
       </div>
     </section>
