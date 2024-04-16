@@ -15,6 +15,7 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 const asset = {
   id: 'asset-1',
@@ -23,12 +24,12 @@ const asset = {
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
-  let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let machineMock: Mocked<IMachineLearningRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();

@@ -24,6 +24,7 @@ import { ImmichLogger } from 'src/utils/logger';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { MockInstance, Mocked, vitest } from 'vitest';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
@@ -156,10 +157,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let loggerMock: jest.Mocked<ILoggerRepository>;
-  let smartInfoMock: jest.Mocked<ISearchRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let smartInfoMock: Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
@@ -183,10 +184,10 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('getConfig', () => {
-    let warnLog: jest.SpyInstance;
+    let warnLog: MockInstance;
 
     beforeEach(() => {
-      warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
+      warnLog = vitest.spyOn(ImmichLogger.prototype, 'warn');
     });
 
     afterEach(() => {

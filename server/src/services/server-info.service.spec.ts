@@ -13,15 +13,16 @@ import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.r
 import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let serverInfoMock: Mocked<IServerInfoRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let systemMetadataMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();

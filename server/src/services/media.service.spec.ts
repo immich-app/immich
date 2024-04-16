@@ -32,17 +32,18 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();

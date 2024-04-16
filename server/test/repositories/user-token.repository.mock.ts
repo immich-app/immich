@@ -1,11 +1,12 @@
 import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newUserTokenRepositoryMock = (): jest.Mocked<IUserTokenRepository> => {
+export const newUserTokenRepositoryMock = (): Mocked<IUserTokenRepository> => {
   return {
-    create: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
-    getByToken: jest.fn(),
-    getAll: jest.fn(),
+    create: vitest.fn(),
+    save: vitest.fn(),
+    delete: vitest.fn(),
+    getByToken: vitest.fn(),
+    getAll: vitest.fn(),
   };
 };

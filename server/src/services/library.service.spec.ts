@@ -1,6 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
-import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapLibrary } from 'src/dtos/library.dto';
@@ -28,17 +26,18 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -89,15 +88,13 @@ describe(LibraryService.name, () => {
       ]);
 
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
+      libraryMock.get.mockImplementation((id) =>
+        Promise.resolve(
+          [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
+            (library) => library.id === id,
+          ) || null,
+        ),
+      );
 
       await sut.init();
 
@@ -751,7 +748,7 @@ describe(LibraryService.name, () => {
 
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
 
-      const mockClose = jest.fn();
+      const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();
@@ -1123,7 +1120,7 @@ describe(LibraryService.name, () => {
       it('should watch and unwatch library', async () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-        const mockClose = jest.fn();
+        const mockClose = vitest.fn();
         storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
         await sut.watchAll();
@@ -1260,15 +1257,15 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+      libraryMock.get.mockImplementation((id) =>
+        Promise.resolve(
+          [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
+            (library) => library.id === id,
+          ) || null,
+        ),
+      );
 
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
-
-      const mockClose = jest.fn();
+      const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();
@@ -1545,7 +1542,7 @@ describe(LibraryService.name, () => {
     it('should detect when import path is in immich media folder', async () => {
       storageMock.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       const validImport = libraryStub.hasImmichPaths.importPaths[1];
-      when(storageMock.checkFileExists).calledWith(validImport, R_OK).mockResolvedValue(true);
+      storageMock.checkFileExists.mockImplementation((importPath) => Promise.resolve(importPath === validImport));
 
       await expect(
         sut.validate('library-id', { importPaths: libraryStub.hasImmichPaths.importPaths }),
