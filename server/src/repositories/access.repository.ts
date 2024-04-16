@@ -12,7 +12,7 @@ import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { IAccessRepository, ReadWrite } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Brackets, Equal, In, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -80,7 +80,7 @@ class ActivityAccess implements IActivityAccess {
       .createQueryBuilder('album')
       .select('album.id')
       .leftJoin('album.sharedUsers', 'albumSharedUsers')
-      .leftJoin('albumSharedUsers.users', 'sharedUsers')
+      .leftJoin('albumSharedUsers.user', 'sharedUsers')
       .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
       .andWhere('album.isActivityEnabled = true')
       .andWhere(
@@ -128,11 +128,10 @@ class AlbumAccess implements IAlbumAccess {
       .find({
         select: { id: true },
         relations: { sharedUsers: true },
-        // -@ts-expect-error asd
         where: {
           id: In([...albumIds]),
           sharedUsers: {
-            user: Equal(userId),
+            user: { id: userId },
             // If write is needed we check for it, otherwise both are accepted
             readonly: readWrite === 'write' ? false : undefined,
           },
@@ -180,8 +179,8 @@ class AssetAccess implements IAssetAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .innerJoin('album.assets', 'asset')
-      .leftJoin('album.users', 'albumPermissions')
-      .leftJoin('albumPermissions.users', 'sharedUsers')
+      .leftJoin('album.sharedUsers', 'albumSharedUsers')
+      .leftJoin('albumSharedUsers.user', 'sharedUsers')
       .select('asset.id', 'assetId')
       .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
       .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {

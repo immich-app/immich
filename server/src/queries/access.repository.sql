@@ -37,8 +37,8 @@ SELECT
   "album"."id" AS "album_id"
 FROM
   "albums" "album"
-  LEFT JOIN "albums_shared_users_users" "albumPermissions" ON "albumPermissions"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumPermissions"."usersId"
+  LEFT JOIN "albums_shared_users_users" "albumSharedUsers" ON "albumSharedUsers"."albumsId" = "album"."id"
+  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumSharedUsers"."usersId"
   AND ("sharedUsers"."deletedAt" IS NULL)
 WHERE
   (
@@ -68,18 +68,22 @@ WHERE
 -- AccessRepository.album.checkSharedAlbumAccess
 SELECT
   "AlbumEntity"."id" AS "AlbumEntity_id",
-  "AlbumEntity__AlbumEntity_users"."albumsId" AS "AlbumEntity__AlbumEntity_users_albumsId",
-  "AlbumEntity__AlbumEntity_users"."usersId" AS "AlbumEntity__AlbumEntity_users_usersId",
-  "AlbumEntity__AlbumEntity_users"."readonly" AS "AlbumEntity__AlbumEntity_users_readonly"
+  "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" AS "AlbumEntity__AlbumEntity_sharedUsers_albumsId",
+  "AlbumEntity__AlbumEntity_sharedUsers"."usersId" AS "AlbumEntity__AlbumEntity_sharedUsers_usersId",
+  "AlbumEntity__AlbumEntity_sharedUsers"."readonly" AS "AlbumEntity__AlbumEntity_sharedUsers_readonly"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_users" ON "AlbumEntity__AlbumEntity_users"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
 WHERE
   (
     (
       ("AlbumEntity"."id" IN ($1))
       AND (
-        (("AlbumEntity__AlbumEntity_users"."usersId" = $2))
+        (
+          (
+            "AlbumEntity__AlbumEntity_sharedUsers"."usersId" = $2
+          )
+        )
       )
     )
   )
@@ -106,8 +110,8 @@ FROM
   INNER JOIN "albums_assets_assets" "album_asset" ON "album_asset"."albumsId" = "album"."id"
   INNER JOIN "assets" "asset" ON "asset"."id" = "album_asset"."assetsId"
   AND ("asset"."deletedAt" IS NULL)
-  LEFT JOIN "albums_shared_users_users" "albumPermissions" ON "albumPermissions"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumPermissions"."usersId"
+  LEFT JOIN "albums_shared_users_users" "albumSharedUsers" ON "albumSharedUsers"."albumsId" = "album"."id"
+  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumSharedUsers"."usersId"
   AND ("sharedUsers"."deletedAt" IS NULL)
 WHERE
   (
