@@ -32,6 +32,10 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 # DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify'
 ```
 
+:::info
+When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
+:::
+
 ## With superuser permission
 
 Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;` at the `psql` console. If you prefer not to grant superuser permissions, follow the instructions in the next section.
