@@ -53,7 +53,7 @@ export class AuditService {
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
 
     const audits = await this.repository.getAfter(dto.after, {
-      ownerId: userId,
+      userIds: [userId],
       entityType: dto.entityType,
       action: DatabaseAction.DELETE,
     });
@@ -62,7 +62,7 @@ export class AuditService {
 
     return {
       needsFullSync: duration > AUDIT_LOG_MAX_DURATION,
-      ids: audits.map(({ entityId }) => entityId),
+      ids: audits,
     };
   }
 

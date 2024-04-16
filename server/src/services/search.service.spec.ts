@@ -19,18 +19,19 @@ import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.m
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
-jest.useFakeTimers();
+vitest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let metadataMock: jest.Mocked<IMetadataRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let machineMock: Mocked<IMachineLearningRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();

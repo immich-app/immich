@@ -1,5 +1,4 @@
 import { BinaryField } from 'exiftool-vendored';
-import { when } from 'jest-when';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -34,20 +33,21 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let cryptoRepository: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let metadataMock: jest.Mocked<IMetadataRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoRepository: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -248,14 +248,13 @@ describe(MetadataService.name, () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.originalPath)
-        // higher priority tag
-        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.sidecarPath as string)
-        // lower priority tag, but in sidecar
-        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+      metadataMock.readTags.mockImplementation((path) => {
+        const map = {
+          [assetStub.sidecar.originalPath]: originalDate.toISOString(),
+          [assetStub.sidecar.sidecarPath as string]: sidecarDate.toISOString(),
+        };
+        return Promise.resolve({ CreationDate: map[path] ?? new Date().toISOString() });
+      });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);

@@ -4,7 +4,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { when } from 'jest-when';
 import { UpdateUserDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -26,6 +25,7 @@ import { newLibraryRepositoryMock } from 'test/repositories/library.repository.m
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -35,14 +35,14 @@ const makeDeletedAt = (daysAgo: number) => {
 
 describe(UserService.name, () => {
   let sut: UserService;
-  let userMock: jest.Mocked<IUserRepository>;
-  let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let cryptoRepositoryMock: Mocked<ICryptoRepository>;
 
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
@@ -55,10 +55,9 @@ describe(UserService.name, () => {
 
     sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, configMock, userMock);
 
-    when(userMock.get).calledWith(authStub.admin.user.id, {}).mockResolvedValue(userStub.admin);
-    when(userMock.get).calledWith(authStub.admin.user.id, { withDeleted: true }).mockResolvedValue(userStub.admin);
-    when(userMock.get).calledWith(authStub.user1.user.id, {}).mockResolvedValue(userStub.user1);
-    when(userMock.get).calledWith(authStub.user1.user.id, { withDeleted: true }).mockResolvedValue(userStub.user1);
+    userMock.get.mockImplementation((userId) =>
+      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
+    );
   });
 
   describe('getAll', () => {
@@ -136,12 +135,10 @@ describe(UserService.name, () => {
     });
 
     it('user can only update its information', async () => {
-      when(userMock.get)
-        .calledWith('not_immich_auth_user_id', {})
-        .mockResolvedValueOnce({
-          ...userStub.user1,
-          id: 'not_immich_auth_user_id',
-        });
+      userMock.get.mockResolvedValueOnce({
+        ...userStub.user1,
+        id: 'not_immich_auth_user_id',
+      });
 
       const result = sut.update(
         { user: userStub.user1 },
@@ -195,7 +192,7 @@ describe(UserService.name, () => {
         shouldChangePassword: true,
       };
 
-      when(userMock.update).calledWith(userStub.user1.id, update).mockResolvedValueOnce(userStub.user1);
+      userMock.update.mockResolvedValueOnce(userStub.user1);
       await sut.update(authStub.admin, update);
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
@@ -204,7 +201,7 @@ describe(UserService.name, () => {
     });
 
     it('update user information should throw error if user not found', async () => {
-      when(userMock.get).calledWith(userStub.user1.id, {}).mockResolvedValueOnce(null);
+      userMock.get.mockResolvedValueOnce(null);
 
       const result = sut.update(authStub.admin, {
         id: userStub.user1.id,
@@ -217,7 +214,7 @@ describe(UserService.name, () => {
     it('should let the admin update himself', async () => {
       const dto = { id: userStub.admin.id, shouldChangePassword: true, isAdmin: true };
 
-      when(userMock.update).calledWith(userStub.admin.id, dto).mockResolvedValueOnce(userStub.admin);
+      userMock.update.mockResolvedValueOnce(userStub.admin);
 
       await sut.update(authStub.admin, dto);
 
@@ -227,7 +224,7 @@ describe(UserService.name, () => {
     it('should not let the another user become an admin', async () => {
       const dto = { id: userStub.user1.id, shouldChangePassword: true, isAdmin: true };
 
-      when(userMock.get).calledWith(userStub.user1.id, {}).mockResolvedValueOnce(userStub.user1);
+      userMock.get.mockResolvedValueOnce(userStub.user1);
 
       await expect(sut.update(authStub.admin, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -235,7 +232,7 @@ describe(UserService.name, () => {
 
   describe('restore', () => {
     it('should throw error if user could not be found', async () => {
-      when(userMock.get).calledWith(userStub.admin.id, { withDeleted: true }).mockResolvedValue(null);
+      userMock.get.mockResolvedValue(null);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
       expect(userMock.update).not.toHaveBeenCalled();
     });
@@ -298,7 +295,7 @@ describe(UserService.name, () => {
 
   describe('create', () => {
     it('should not create a user if there is no local admin account', async () => {
-      when(userMock.getAdmin).calledWith().mockResolvedValueOnce(null);
+      userMock.getAdmin.mockResolvedValueOnce(null);
 
       await expect(
         sut.create({
@@ -335,6 +332,7 @@ describe(UserService.name, () => {
   describe('createProfileImage', () => {
     it('should throw an error if the user does not exist', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.get.mockResolvedValue(null);
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
@@ -422,7 +420,7 @@ describe(UserService.name, () => {
   describe('resetAdminPassword', () => {
     it('should only work when there is an admin account', async () => {
       userMock.getAdmin.mockResolvedValue(null);
-      const ask = jest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue('new-password');
 
       await expect(sut.resetAdminPassword(ask)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -431,7 +429,7 @@ describe(UserService.name, () => {
 
     it('should default to a random password', async () => {
       userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = jest.fn().mockImplementation(() => {});
+      const ask = vitest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -445,7 +443,7 @@ describe(UserService.name, () => {
 
     it('should use the supplied password', async () => {
       userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = jest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue('new-password');
 
       const response = await sut.resetAdminPassword(ask);
 

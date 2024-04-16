@@ -1,10 +1,11 @@
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { StorageService } from 'src/services/storage.service';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(StorageService.name, () => {
   let sut: StorageService;
-  let storageMock: jest.Mocked<IStorageRepository>;
+  let storageMock: Mocked<IStorageRepository>;
 
   beforeEach(() => {
     storageMock = newStorageRepositoryMock();

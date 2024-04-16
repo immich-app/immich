@@ -31,10 +31,10 @@
     <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret} />
   </div>
 
-  <div class="mt-8 flex w-full gap-4">
+  <svelte:fragment slot="sticky-bottom">
     {#if canCopyImagesToClipboard}
       <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
     {/if}
     <Button on:click={() => handleDone()} fullwidth>Done</Button>
-  </div>
+  </svelte:fragment>
 </FullScreenModal>

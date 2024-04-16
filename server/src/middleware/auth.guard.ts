@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   SetMetadata,
   applyDecorators,
@@ -11,8 +12,8 @@ import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } fr
 import { Request } from 'express';
 import { IMMICH_API_KEY_NAME } from 'src/constants';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { ImmichLogger } from 'src/utils/logger';
 import { UAParser } from 'ua-parser-js';
 
 export enum Metadata {
@@ -79,12 +80,13 @@ export interface AuthRequest extends Request {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private logger = new ImmichLogger(AuthGuard.name);
-
   constructor(
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     private reflector: Reflector,
     private authService: AuthService,
-  ) {}
+  ) {
+    this.logger.setContext(AuthGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler(), context.getClass()];

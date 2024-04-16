@@ -23,9 +23,10 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const makeMockHandlers = (status: JobStatus) => {
-  const mock = jest.fn().mockResolvedValue(status);
+  const mock = vitest.fn().mockResolvedValue(status);
   return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
@@ -34,12 +35,12 @@ const makeMockHandlers = (status: JobStatus) => {
 
 describe(JobService.name, () => {
   let sut: JobService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let metricMock: jest.Mocked<IMetricRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let metricMock: Mocked<IMetricRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
