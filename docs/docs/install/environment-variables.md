@@ -72,7 +72,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 :::info
 
-When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
+When `DB_URL` is defined, the other database (`DB_*`) variables are ignored, with the exception of `DB_VECTOR_EXTENSION`.
 
 :::
 
