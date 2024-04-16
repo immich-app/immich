@@ -20,11 +20,10 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { ImmichLogger } from 'src/utils/logger';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
-import { MockInstance, Mocked, vitest } from 'vitest';
+import { Mocked } from 'vitest';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
@@ -184,16 +183,6 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('getConfig', () => {
-    let warnLog: MockInstance;
-
-    beforeEach(() => {
-      warnLog = vitest.spyOn(ImmichLogger.prototype, 'warn');
-    });
-
-    afterEach(() => {
-      warnLog.mockRestore();
-    });
-
     it('should return the default config', async () => {
       configMock.load.mockResolvedValue([]);
 
@@ -271,7 +260,7 @@ describe(SystemConfigService.name, () => {
       configMock.readFile.mockResolvedValue(partialConfig);
 
       await sut.getConfig();
-      expect(warnLog).toHaveBeenCalled();
+      expect(loggerMock.warn).toHaveBeenCalled();
     });
 
     const tests = [
@@ -290,7 +279,7 @@ describe(SystemConfigService.name, () => {
 
         if (test.warn) {
           await sut.getConfig();
-          expect(warnLog).toHaveBeenCalled();
+          expect(loggerMock.warn).toHaveBeenCalled();
         } else {
           await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
         }

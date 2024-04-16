@@ -76,11 +76,11 @@ export class PersonService {
     this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       repository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
       this.logger,
     );
   }

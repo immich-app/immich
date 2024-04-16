@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
@@ -21,8 +21,9 @@ sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
 @Instrumentation()
+@Injectable()
 export class MediaRepository implements IMediaRepository {
-  constructor(@Inject(ILoggerRepository) private readonly logger: ILoggerRepository) {
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MediaRepository.name);
   }
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {

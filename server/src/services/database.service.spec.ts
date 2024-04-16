@@ -1,11 +1,10 @@
 import { DatabaseExtension, IDatabaseRepository, VectorIndex } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
-import { ImmichLogger } from 'src/utils/logger';
 import { Version, VersionType } from 'src/utils/version';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { MockInstance, Mocked, vitest } from 'vitest';
+import { Mocked } from 'vitest';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
@@ -26,14 +25,7 @@ describe(DatabaseService.name, () => {
     [{ vectorExt: DatabaseExtension.VECTORS, extName: 'pgvecto.rs', minVersion: new Version(0, 1, 1) }],
     [{ vectorExt: DatabaseExtension.VECTOR, extName: 'pgvector', minVersion: new Version(0, 5, 0) }],
   ] as const)('init', ({ vectorExt, extName, minVersion }) => {
-    let fatalLog: MockInstance;
-    let errorLog: MockInstance;
-    let warnLog: MockInstance;
-
     beforeEach(() => {
-      fatalLog = vitest.spyOn(ImmichLogger.prototype, 'fatal');
-      errorLog = vitest.spyOn(ImmichLogger.prototype, 'error');
-      warnLog = vitest.spyOn(ImmichLogger.prototype, 'warn');
       databaseMock.getPreferredVectorExtension.mockReturnValue(vectorExt);
       databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
 
@@ -43,11 +35,6 @@ describe(DatabaseService.name, () => {
       sut.minVectorsVersion = minVersion;
       sut.vectorVersionPin = VersionType.MINOR;
       sut.vectorsVersionPin = VersionType.MINOR;
-    });
-
-    afterEach(() => {
-      fatalLog.mockRestore();
-      warnLog.mockRestore();
     });
 
     it(`should resolve successfully if minimum supported PostgreSQL and ${extName} version are installed`, async () => {
@@ -60,7 +47,7 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalled();
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
 
     it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
@@ -77,7 +64,7 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.createExtension).toHaveBeenCalledWith(vectorExt);
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
 
     it(`should throw an error if ${extName} version is not installed even after createVectorExtension`, async () => {
@@ -137,7 +124,7 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.init()).rejects.toThrow('Failed to create extension');
 
-      expect(fatalLog).toHaveBeenCalledTimes(1);
+      expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
@@ -151,7 +138,7 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(vectorExt, version);
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
 
     it(`should not update ${extName} if a newer version is higher than the maximum`, async () => {
@@ -162,7 +149,7 @@ describe(DatabaseService.name, () => {
 
       expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
 
     it(`should warn if attempted to update ${extName} and failed`, async () => {
@@ -172,10 +159,10 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.init()).resolves.toBeUndefined();
 
-      expect(warnLog).toHaveBeenCalledTimes(1);
-      expect(warnLog.mock.calls[0][0]).toContain(extName);
-      expect(errorLog).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.warn).toHaveBeenCalledTimes(1);
+      expect(loggerMock.warn.mock.calls[0][0]).toContain(extName);
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(vectorExt, version);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
     });
@@ -187,11 +174,11 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.init()).resolves.toBeUndefined();
 
-      expect(warnLog).toHaveBeenCalledTimes(1);
-      expect(warnLog.mock.calls[0][0]).toContain(extName);
+      expect(loggerMock.warn).toHaveBeenCalledTimes(1);
+      expect(loggerMock.warn.mock.calls[0][0]).toContain(extName);
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(vectorExt, version);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-      expect(fatalLog).not.toHaveBeenCalled();
+      expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
 
     it.each([{ index: VectorIndex.CLIP }, { index: VectorIndex.FACE }])(
@@ -206,7 +193,7 @@ describe(DatabaseService.name, () => {
         expect(databaseMock.reindex).toHaveBeenCalledWith(index);
         expect(databaseMock.reindex).toHaveBeenCalledTimes(1);
         expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-        expect(fatalLog).not.toHaveBeenCalled();
+        expect(loggerMock.fatal).not.toHaveBeenCalled();
       },
     );
 
@@ -220,7 +207,7 @@ describe(DatabaseService.name, () => {
         expect(databaseMock.shouldReindex).toHaveBeenCalledTimes(2);
         expect(databaseMock.reindex).not.toHaveBeenCalled();
         expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
-        expect(fatalLog).not.toHaveBeenCalled();
+        expect(loggerMock.fatal).not.toHaveBeenCalled();
       },
     );
   });

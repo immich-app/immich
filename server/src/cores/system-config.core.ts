@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -175,10 +175,8 @@ export class SystemConfigCore {
 
   private constructor(
     private repository: ISystemConfigRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(SystemConfigCore.name);
-  }
+    private logger: ILoggerRepository,
+  ) {}
 
   static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
     if (!instance) {

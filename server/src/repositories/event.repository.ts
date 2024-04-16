@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
@@ -25,6 +25,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
   path: '/api/socket.io',
   transports: ['websocket'],
 })
+@Injectable()
 export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
   @WebSocketServer()
   private server?: Server;

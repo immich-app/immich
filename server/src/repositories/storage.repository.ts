@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob, globStream } from 'fast-glob';
@@ -18,10 +18,12 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Instrumentation()
+@Injectable()
 export class StorageRepository implements IStorageRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(StorageRepository.name);
   }
+
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);
   }

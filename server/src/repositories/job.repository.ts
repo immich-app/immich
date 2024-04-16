@@ -87,7 +87,7 @@ export class JobRepository implements IJobRepository {
   constructor(
     private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
-    @Inject(ILoggerRepository) private readonly logger: ILoggerRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(JobRepository.name);
   }
