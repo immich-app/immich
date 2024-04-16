@@ -11,6 +11,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
+import { Mocked, vitest } from 'vitest';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -25,8 +26,8 @@ const downloadResponse: DownloadResponseDto = {
 describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -82,8 +83,8 @@ describe(DownloadService.name, () => {
 
     it('should download an archive', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 
@@ -105,8 +106,8 @@ describe(DownloadService.name, () => {
 
     it('should handle duplicate file names', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 
@@ -128,8 +129,8 @@ describe(DownloadService.name, () => {
 
     it('should be deterministic', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 

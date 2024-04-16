@@ -8,10 +8,11 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
 import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(TagService.name, () => {
   let sut: TagService;
-  let tagMock: jest.Mocked<ITagRepository>;
+  let tagMock: Mocked<ITagRepository>;
 
   beforeEach(() => {
     tagMock = newTagRepositoryMock();

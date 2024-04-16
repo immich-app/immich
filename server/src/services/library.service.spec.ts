@@ -28,17 +28,18 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -751,7 +752,7 @@ describe(LibraryService.name, () => {
 
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
 
-      const mockClose = jest.fn();
+      const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();
@@ -1123,7 +1124,7 @@ describe(LibraryService.name, () => {
       it('should watch and unwatch library', async () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-        const mockClose = jest.fn();
+        const mockClose = vitest.fn();
         storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
         await sut.watchAll();
@@ -1268,7 +1269,7 @@ describe(LibraryService.name, () => {
         .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
         .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
 
-      const mockClose = jest.fn();
+      const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
       await sut.init();

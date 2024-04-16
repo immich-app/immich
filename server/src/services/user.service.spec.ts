@@ -26,6 +26,7 @@ import { newLibraryRepositoryMock } from 'test/repositories/library.repository.m
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -35,14 +36,14 @@ const makeDeletedAt = (daysAgo: number) => {
 
 describe(UserService.name, () => {
   let sut: UserService;
-  let userMock: jest.Mocked<IUserRepository>;
-  let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let cryptoRepositoryMock: Mocked<ICryptoRepository>;
 
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
@@ -422,7 +423,7 @@ describe(UserService.name, () => {
   describe('resetAdminPassword', () => {
     it('should only work when there is an admin account', async () => {
       userMock.getAdmin.mockResolvedValue(null);
-      const ask = jest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue('new-password');
 
       await expect(sut.resetAdminPassword(ask)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -431,7 +432,7 @@ describe(UserService.name, () => {
 
     it('should default to a random password', async () => {
       userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = jest.fn().mockImplementation(() => {});
+      const ask = vitest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
 
@@ -445,7 +446,7 @@ describe(UserService.name, () => {
 
     it('should use the supplied password', async () => {
       userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = jest.fn().mockResolvedValue('new-password');
+      const ask = vitest.fn().mockResolvedValue('new-password');
 
       const response = await sut.resetAdminPassword(ask);
 

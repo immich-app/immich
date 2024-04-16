@@ -16,16 +16,17 @@ import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.moc
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(AuditService.name, () => {
   let sut: AuditService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let auditMock: jest.Mocked<IAuditRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let auditMock: Mocked<IAuditRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

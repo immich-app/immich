@@ -1,6 +1,7 @@
 import { WatchOptions } from 'chokidar';
 import { StorageCore } from 'src/cores/storage.core';
 import { IStorageRepository, WatchEvents } from 'src/interfaces/storage.interface';
+import { Mocked, vitest } from 'vitest';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -38,29 +39,29 @@ export const makeMockWatcher =
     return () => Promise.resolve();
   };
 
-export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
+export const newStorageRepositoryMock = (reset = true): Mocked<IStorageRepository> => {
   if (reset) {
     StorageCore.reset();
   }
 
   return {
-    createZipStream: jest.fn(),
-    createReadStream: jest.fn(),
-    readFile: jest.fn(),
-    writeFile: jest.fn(),
-    unlink: jest.fn(),
-    unlinkDir: jest.fn().mockResolvedValue(true),
-    removeEmptyDirs: jest.fn(),
-    checkFileExists: jest.fn(),
-    mkdirSync: jest.fn(),
-    checkDiskUsage: jest.fn(),
-    readdir: jest.fn(),
-    stat: jest.fn(),
-    crawl: jest.fn(),
-    walk: jest.fn().mockImplementation(async function* () {}),
-    rename: jest.fn(),
-    copyFile: jest.fn(),
-    utimes: jest.fn(),
-    watch: jest.fn().mockImplementation(makeMockWatcher({})),
+    createZipStream: vitest.fn(),
+    createReadStream: vitest.fn(),
+    readFile: vitest.fn(),
+    writeFile: vitest.fn(),
+    unlink: vitest.fn(),
+    unlinkDir: vitest.fn().mockResolvedValue(true),
+    removeEmptyDirs: vitest.fn(),
+    checkFileExists: vitest.fn(),
+    mkdirSync: vitest.fn(),
+    checkDiskUsage: vitest.fn(),
+    readdir: vitest.fn(),
+    stat: vitest.fn(),
+    crawl: vitest.fn(),
+    walk: vitest.fn().mockImplementation(async function* () {}),
+    rename: vitest.fn(),
+    copyFile: vitest.fn(),
+    utimes: vitest.fn(),
+    watch: vitest.fn().mockImplementation(makeMockWatcher({})),
   };
 };

@@ -20,6 +20,7 @@ import { newLibraryRepositoryMock } from 'test/repositories/library.repository.m
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
+import { Mocked, vitest } from 'vitest';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -62,23 +63,23 @@ const _getAsset_1 = () => {
 describe('AssetService', () => {
   let sut: AssetServiceV1;
   let accessMock: IAccessRepositoryMock;
-  let assetRepositoryMockV1: jest.Mocked<IAssetRepositoryV1>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
+  let assetRepositoryMockV1: Mocked<IAssetRepositoryV1>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
     assetRepositoryMockV1 = {
-      get: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetsByChecksums: jest.fn(),
-      getExistingAssets: jest.fn(),
-      getByOriginalPath: jest.fn(),
+      get: vitest.fn(),
+      getAllByUserId: vitest.fn(),
+      getDetectedObjectsByUserId: vitest.fn(),
+      getLocationsByUserId: vitest.fn(),
+      getSearchPropertiesByUserId: vitest.fn(),
+      getAssetsByChecksums: vitest.fn(),
+      getExistingAssets: vitest.fn(),
+      getByOriginalPath: vitest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();

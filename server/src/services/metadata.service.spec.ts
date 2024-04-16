@@ -34,20 +34,21 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let cryptoRepository: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let metadataMock: jest.Mocked<IMetadataRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoRepository: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {

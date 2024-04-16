@@ -26,6 +26,7 @@ import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.m
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
@@ -148,14 +149,14 @@ const uploadTests = [
 describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let assetStackMock: jest.Mocked<IAssetStackRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let assetStackMock: Mocked<IAssetStackRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -299,12 +300,12 @@ describe(AssetService.name, () => {
 
   describe('getMemoryLane', () => {
     beforeAll(() => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-01-15'));
+      vitest.useFakeTimers();
+      vitest.setSystemTime(new Date('2024-01-15'));
     });
 
     afterAll(() => {
-      jest.useRealTimers();
+      vitest.useRealTimers();
     });
 
     it('should group the assets correctly', async () => {
