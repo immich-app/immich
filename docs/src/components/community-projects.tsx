@@ -34,9 +34,9 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
-    title: 'Podman/Quadlets Install',
-    description: 'Documentation for simple podman setup using quadlets.',
-    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+    title: 'Immich-Tiktok-Remover',
+    description: 'Script to search for and remove TikTok videos from your Immich library.',
+    url: 'https://github.com/mxc2/immich-tiktok-remover',
   },
   {
     title: 'Lightroom Publisher: mi.Immich.Publisher',
