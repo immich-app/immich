@@ -10,19 +10,30 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { handlePromiseError } from '$lib/utils';
+  import { asyncTimeout, handlePromiseError } from '$lib/utils';
   import { shortcuts } from '$lib/utils/shortcut';
   import { focusOutside } from '$lib/utils/focus-outside';
+  import { tick } from 'svelte';
+  import { fly, type FlyParams } from 'svelte/transition';
 
   export let value = '';
-  export let grayTheme: boolean;
+  export let grayTheme = false;
   export let searchQuery: MetadataSearchDto | SmartSearchDto = {};
+  export let fullWidth = false;
+  export let isOpen = false;
 
   let input: HTMLInputElement;
 
   let showHistory = false;
   let showFilter = false;
-  $: showClearIcon = value.length > 0;
+
+  $: showClearIcon = fullWidth || value.length > 0;
+
+  $: searchBarClasses = fullWidth ? 'absolute inset-x-2.5 top-2.5' : 'relative block w-full';
+
+  $: if (fullWidth && isOpen && input) {
+    input.focus();
+  }
 
   const onSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
@@ -36,6 +47,12 @@
   const clearSearchTerm = (searchTerm: string) => {
     input.focus();
     $savedSearchTerms = $savedSearchTerms.filter((item) => item !== searchTerm);
+  };
+
+  const onClearIconClick = () => {
+    if (value.length === 0) {
+      onFocusOut();
+    }
   };
 
   const saveSearchTerm = (saveValue: string) => {
@@ -64,6 +81,7 @@
     showHistory = false;
     $isSearchEnabled = false;
     showFilter = false;
+    isOpen = false;
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
@@ -71,18 +89,28 @@
     await onSearch(searchPayload);
   };
 
-  const onFilterClick = () => {
+  const onFilterClick = async () => {
     showFilter = !showFilter;
     value = '';
 
     if (showFilter) {
       showHistory = false;
+    } else {
+      await tick();
+      input.focus();
     }
   };
 
   const onSubmit = () => {
     handlePromiseError(onSearch({ query: value }));
     saveSearchTerm(value);
+  };
+
+  const animate = (node: Element, args?: FlyParams) => {
+    if (fullWidth) {
+      return fly(node, args);
+    }
+    return {};
   };
 </script>
 
@@ -94,7 +122,15 @@
   ]}
 />
 
-<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
+<div
+  class={searchBarClasses}
+  transition:animate={{
+    x: '50%',
+    duration: 350,
+  }}
+  use:clickOutside={{ onOutclick: onFocusOut }}
+  use:focusOutside={{ onFocusOut }}
+>
   <form
     draggable="false"
     autocomplete="off"
@@ -119,7 +155,7 @@
           : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
           $savedSearchTerms.length > 0) ||
         showFilter
-          ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
+          ? 'rounded-t-3xl border border-gray-200 bg-white opacity-100 dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
         placeholder="Search your photos"
         required
@@ -147,6 +183,7 @@
       <div class="absolute inset-y-0 right-0 flex items-center pr-4">
         <button
           type="reset"
+          on:click={onClearIconClick}
           class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
         >
           <Icon ariaLabel="clear" path={mdiClose} size="1.5em" />

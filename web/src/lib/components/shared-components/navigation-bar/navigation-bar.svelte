@@ -10,7 +10,7 @@
   import { isSideBarOpen } from '$lib/stores/side-bar.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { logout } from '@immich/sdk';
-  import { mdiMenu, mdiTrayArrowUp, mdiWrench } from '@mdi/js';
+  import { mdiMagnify, mdiMenu, mdiTrayArrowUp, mdiWrench } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { md } from '$lib/utils/media-breakpoint';
@@ -26,6 +26,8 @@
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
   let showLogoText = false;
+  let showSearchBar = false;
+  let isSearchBarFullWidth = true;
 
   const dispatch = createEventDispatcher<{
     uploadClicked: void;
@@ -40,12 +42,27 @@
     }
     resetSavedUser();
   };
+
+  const onSmallScreenDisplay = () => {
+    showLogoText = false;
+    isSearchBarFullWidth = true;
+  };
+
+  const onMediumScreenDisplay = () => {
+    showLogoText = true;
+    isSearchBarFullWidth = false;
+    showSearchBar = false;
+  };
 </script>
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink>Skip to content</SkipLink>
   <div
-    class="grid h-full grid-cols-[min-content_theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[min-content_theme(spacing.40)_auto]"
+    class="relative grid h-full grid-cols-[min-content_theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[min-content_theme(spacing.40)_auto]"
+    use:md={{
+      match: onMediumScreenDisplay,
+      unmatch: onSmallScreenDisplay,
+    }}
   >
     <div class="flex">
       <div class="ml-4 lg:hidden" id="sidebar-toggle-button">
@@ -54,34 +71,25 @@
         </IconButton>
       </div>
     </div>
-    <a
-      data-sveltekit-preload-data="hover"
-      class="ml-4"
-      href={AppRoute.PHOTOS}
-      use:md={{
-        match: () => (showLogoText = true),
-        unmatch: () => (showLogoText = false),
-      }}
-    >
+    <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
       <ImmichLogo class="w-[72%] md:w-[92%]" noText={!showLogoText} />
     </a>
-    <div class="flex justify-between gap-16 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
-        {#if $featureFlags.search}
-          <SearchBar grayTheme={true} />
+
+    <div class="flex justify-between gap-6 pr-6">
+      <div class="{isSearchBarFullWidth ? 'flex' : 'hidden'} sm:flex sm:w-full max-w-5xl pl-4 lg:pl-24">
+        {#if $featureFlags.search && (!isSearchBarFullWidth || showSearchBar)}
+          <SearchBar grayTheme fullWidth={isSearchBarFullWidth} bind:isOpen={showSearchBar} />
         {/if}
       </div>
 
       <section class="flex place-items-center justify-end gap-2 max-sm:w-full">
-        {#if $featureFlags.search}
-          <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
-            <IconButton title="Search">
-              <div class="flex gap-2">
-                <Icon path={mdiMagnify} size="1.5em" />
-              </div>
-            </IconButton>
-          </a>
-        {/if}
+        <div class="pl-4 md:hidden">
+          <IconButton title="Search" on:click={() => (showSearchBar = true)}>
+            <div class="flex gap-2">
+              <Icon path={mdiMagnify} size="1.5em" />
+            </div>
+          </IconButton>
+        </div>
 
         <div class="hidden sm:flex place-items-center justify-end gap-2">
           <ThemeButton />
