@@ -125,9 +125,9 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
 
   if (entity.sharedUsers) {
     for (const permission of entity.sharedUsers) {
-      sharedUsers.push(mapUser(permission.users));
+      sharedUsers.push(mapUser(permission.user));
       sharedUsersV2.push({
-        user: mapUser(permission.users),
+        user: mapUser(permission.user),
         readonly: permission.readonly,
       });
     }

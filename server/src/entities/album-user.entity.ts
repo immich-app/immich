@@ -1,20 +1,22 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { Column, Entity, Index, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('albums_shared_users_users')
-// Indices for JoinTable
-@Index('IDX_427c350ad49bd3935a50baab73', ['albums'])
-@Index('IDX_f48513bf9bccefd6ff3ad30bd0', ['users'])
+// Pre-existing indices from original album <--> user ManyToMany mapping
+@Index('IDX_427c350ad49bd3935a50baab73', ['album'])
+@Index('IDX_f48513bf9bccefd6ff3ad30bd0', ['user'])
 export class AlbumUserEntity {
   @PrimaryColumn({ type: 'uuid', name: 'albumsId' })
+  @JoinColumn({ name: 'albumsId' })
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  albums!: AlbumEntity;
+  album!: AlbumEntity;
 
   @PrimaryColumn({ type: 'uuid', name: 'usersId' })
+  @JoinColumn({ name: 'usersId' })
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  users!: UserEntity;
+  user!: UserEntity;
 
-  @Column({ default: true })
+  @Column({ default: false })
   readonly!: boolean;
 }

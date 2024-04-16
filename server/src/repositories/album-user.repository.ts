@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumPermissionId, IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Equal, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -11,21 +11,19 @@ export class AlbumUserRepository implements IAlbumUserRepository {
   constructor(@InjectRepository(AlbumUserEntity) private repository: Repository<AlbumUserEntity>) {}
 
   async create(dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
-    const { users, albums } = await this.repository.save(dto);
-    return this.repository.findOneOrFail({ where: { users, albums }, relations: { users: true } });
+    const { user, album } = await this.repository.save(dto);
+    return this.repository.findOneOrFail({ where: { user, album }, relations: { user: true } });
   }
 
   async update({ userId, albumId }: AlbumPermissionId, dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
-    // @ts-expect-error I'm pretty sure I messed something up with the entity because
-    // if I follow what typescript says I get postgres errors
-    await this.repository.update({ users: userId, albums: albumId }, dto);
+    await this.repository.update({ user: { id: userId }, album: { id: albumId } }, dto);
     return this.repository.findOneOrFail({
-      where: { users: Equal(userId), albums: Equal(albumId) },
-      relations: { users: true },
+      where: { user: { id: userId }, album: { id: albumId } },
+      relations: { user: true },
     });
   }
 
   async delete({ userId, albumId }: AlbumPermissionId): Promise<void> {
-    await this.repository.delete({ users: { id: userId }, albums: { id: albumId } });
+    await this.repository.delete({ user: { id: userId }, album: { id: albumId } });
   }
 }

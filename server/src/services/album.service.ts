@@ -128,7 +128,7 @@ export class AlbumService {
       ownerId: auth.user.id,
       albumName: dto.albumName,
       description: dto.description,
-      sharedUsers: dto.sharedWithUserIds?.map((userId) => ({ users: { id: userId } }) as AlbumUserEntity) ?? [],
+      sharedUsers: dto.sharedWithUserIds?.map((userId) => ({ user: { id: userId } }) as AlbumUserEntity) ?? [],
       assets,
       albumThumbnailAssetId: assets[0]?.id || null,
     });
@@ -221,7 +221,7 @@ export class AlbumService {
         throw new BadRequestException('Cannot be shared with owner');
       }
 
-      const exists = album.sharedUsers.find(({ users: { id } }) => id === userId);
+      const exists = album.sharedUsers.find(({ user: { id } }) => id === userId);
       if (exists) {
         throw new BadRequestException('User already added');
       }
@@ -232,7 +232,7 @@ export class AlbumService {
       }
 
       album.sharedUsers.push(
-        await this.albumPermissionRepository.create({ users: { id: userId }, albums: { id } } as AlbumUserEntity),
+        await this.albumPermissionRepository.create({ user: { id: userId }, album: { id } } as AlbumUserEntity),
       );
     }
 
@@ -250,7 +250,7 @@ export class AlbumService {
       throw new BadRequestException('Cannot remove album owner');
     }
 
-    const exists = album.sharedUsers.find(({ users: { id } }) => id === userId);
+    const exists = album.sharedUsers.find(({ user: { id } }) => id === userId);
     if (!exists) {
       throw new BadRequestException('Album not shared with user');
     }
@@ -268,7 +268,7 @@ export class AlbumService {
 
     const album = await this.findOrFail(id, { withAssets: false });
 
-    const permission = album.sharedUsers.find(({ users: { id } }) => id === userId);
+    const permission = album.sharedUsers.find(({ user: { id } }) => id === userId);
     if (!permission) {
       throw new BadRequestException('Album not shared with user');
     }

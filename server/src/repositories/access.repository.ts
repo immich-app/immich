@@ -132,7 +132,7 @@ class AlbumAccess implements IAlbumAccess {
         where: {
           id: In([...albumIds]),
           sharedUsers: {
-            users: Equal(userId),
+            user: Equal(userId),
             // If write is needed we check for it, otherwise both are accepted
             readonly: readWrite === 'write' ? false : undefined,
           },
