@@ -3,19 +3,20 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { getKey } from '$lib/utils';
+  import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
-      ? [
+      ? ([
           import('@photo-sphere-viewer/equirectangular-video-adapter').then(
             ({ EquirectangularVideoAdapter }) => EquirectangularVideoAdapter,
           ),
           import('@photo-sphere-viewer/video-plugin').then(({ VideoPlugin }) => [VideoPlugin]),
           true,
           import('@photo-sphere-viewer/video-plugin/index.css'),
-        ]
-      : [null, [], false];
+        ] as [PromiseLike<AdapterConstructor>, Promise<PluginConstructor[]>, true, unknown])
+      : ([undefined, [], false] as [undefined, [], false]);
 
   const loadAssetData = async () => {
     const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false, key: getKey() });
@@ -32,7 +33,7 @@
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
   {:then [data, module, adapter, plugins, navbar]}
-    <svelte:component this={module.default} panorama={data} {plugins} {navbar} {adapter} />
+    <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
   {:catch}
     Failed to load asset
   {/await}

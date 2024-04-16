@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { Viewer, EquirectangularAdapter } from '@photo-sphere-viewer/core';
+  import {
+    Viewer,
+    EquirectangularAdapter,
+    type PluginConstructor,
+    type AdapterConstructor,
+  } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
 
   export let panorama: string | { source: string };
-  export let adapter = EquirectangularAdapter;
-  export let plugins = [] as unknown[];
+  export let adapter: AdapterConstructor | [AdapterConstructor, unknown] = EquirectangularAdapter;
+  export let plugins: (PluginConstructor | [PluginConstructor, unknown])[] = [];
   export let navbar = false;
 
   let container: HTMLDivElement;
