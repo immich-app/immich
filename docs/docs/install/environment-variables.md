@@ -41,7 +41,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                           |
 
 :::tip
-`TZ` should be set to a `TZ identifier` from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example, `TZ="Etc/UTC"`.
+`TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 
 `TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
@@ -91,7 +91,7 @@ When `DB_URL` is defined, the other database (`DB_*`) variables are ignored, wit
 :::info
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
-More info can be found in the upstream [ioredis](https://ioredis.readthedocs.io/en/latest/API/) documentation.
+More info can be found in the upstream [ioredis][redis-api] documentation.
 
 - When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
 - When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
@@ -159,7 +159,7 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Docker Secrets
 
-The following variables support the use of [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) for additional security.
+The following variables support the use of [Docker secrets][docker-secrets] for additional security.
 
 To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
 the `_FILE` variable should be set to the path of a file containing the variable value.
@@ -173,8 +173,14 @@ the `_FILE` variable should be set to the path of a file containing the variable
 | `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
 | `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
 
-\*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
+\*1: See the [official documentation][docker-secrets-docs] for
 details on how to use Docker Secrets in the Postgres image.
 
-\*2: See [this comment](https://github.com/docker-library/redis/issues/46#issuecomment-335326234) for an example of how
+\*2: See [this comment][docker-secrets-example] for an example of how
 to use use a Docker secret for the password in the Redis container.
+
+[tz-list]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+[docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234
+[docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
+[docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
+[redis-api]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
