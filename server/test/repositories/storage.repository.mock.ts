@@ -1,6 +1,6 @@
 import { WatchOptions } from 'chokidar';
 import { StorageCore } from 'src/cores/storage.core';
-import { IStorageRepository, StorageEventType, WatchEvents } from 'src/interfaces/storage.interface';
+import { IStorageRepository, WatchEvents } from 'src/interfaces/storage.interface';
 
 interface MockWatcherOptions {
   items?: Array<{ event: 'change' | 'add' | 'unlink' | 'error'; value: string }>;
@@ -13,19 +13,19 @@ export const makeMockWatcher =
     events.onReady?.();
     for (const item of items || []) {
       switch (item.event) {
-        case StorageEventType.ADD: {
+        case 'add': {
           events.onAdd?.(item.value);
           break;
         }
-        case StorageEventType.CHANGE: {
+        case 'change': {
           events.onChange?.(item.value);
           break;
         }
-        case StorageEventType.UNLINK: {
+        case 'unlink': {
           events.onUnlink?.(item.value);
           break;
         }
-        case StorageEventType.ERROR: {
+        case 'error': {
           events.onError?.(new Error(item.value));
         }
       }

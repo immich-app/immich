@@ -13,7 +13,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { LibraryService } from 'src/services/library.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -933,12 +933,6 @@ describe(LibraryService.name, () => {
           type: LibraryType.EXTERNAL,
           importPaths: libraryStub.externalLibraryWithImportPaths1.importPaths,
         });
-
-        expect(storageMock.watch).toHaveBeenCalledWith(
-          libraryStub.externalLibraryWithImportPaths1.importPaths,
-          expect.anything(),
-          expect.anything(),
-        );
       });
 
       it('should create with exclusion patterns', async () => {
@@ -1087,45 +1081,6 @@ describe(LibraryService.name, () => {
       await expect(sut.update('library-id', {})).resolves.toEqual(mapLibrary(libraryStub.uploadLibrary1));
       expect(libraryMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'library-id' }));
     });
-
-    it('should re-watch library when updating import paths', async () => {
-      libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-
-      storageMock.stat.mockResolvedValue({
-        isDirectory: () => true,
-      } as Stats);
-
-      storageMock.checkFileExists.mockResolvedValue(true);
-
-      await expect(sut.update('library-id', { importPaths: ['/data/user1/foo'] })).resolves.toEqual(
-        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
-      );
-
-      expect(libraryMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'library-id' }));
-      expect(storageMock.watch).toHaveBeenCalledWith(
-        libraryStub.externalLibraryWithImportPaths1.importPaths,
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-
-    it('should re-watch library when updating exclusion patterns', async () => {
-      libraryMock.update.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-
-      await expect(sut.update('library-id', { exclusionPatterns: ['bar'] })).resolves.toEqual(
-        mapLibrary(libraryStub.externalLibraryWithImportPaths1),
-      );
-
-      expect(libraryMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'library-id' }));
-      expect(storageMock.watch).toHaveBeenCalledWith(
-        expect.arrayContaining([expect.any(String)]),
-        expect.anything(),
-        expect.anything(),
-      );
-    });
   });
 
   describe('watchAll', () => {
@@ -1198,9 +1153,7 @@ describe(LibraryService.name, () => {
       it('should handle a new file event', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
-        );
+        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
 
         await sut.watchAll();
 
@@ -1221,7 +1174,7 @@ describe(LibraryService.name, () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.CHANGE, value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1244,7 +1197,7 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.external);
         storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.UNLINK, value: '/foo/photo.jpg' }] }),
+          makeMockWatcher({ items: [{ event: 'unlink', value: '/foo/photo.jpg' }] }),
         );
 
         await sut.watchAll();
@@ -1258,19 +1211,17 @@ describe(LibraryService.name, () => {
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
         storageMock.watch.mockImplementation(
           makeMockWatcher({
-            items: [{ event: StorageEventType.ERROR, value: 'Error!' }],
+            items: [{ event: 'error', value: 'Error!' }],
           }),
         );
 
-        await expect(sut.watchAll()).rejects.toThrow('Error!');
+        await expect(sut.watchAll()).resolves.toBeUndefined();
       });
 
       it('should ignore unknown extensions', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/foo/photo.jpg' }] }),
-        );
+        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
 
         await sut.watchAll();
 
@@ -1280,9 +1231,7 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/dir1/photo.txt' }] }),
-        );
+        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/dir1/photo.txt' }] }));
 
         await sut.watchAll();
 
@@ -1292,9 +1241,7 @@ describe(LibraryService.name, () => {
       it('should ignore excluded paths without case sensitivity', async () => {
         libraryMock.get.mockResolvedValue(libraryStub.patternPath);
         libraryMock.getAll.mockResolvedValue([libraryStub.patternPath]);
-        storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: StorageEventType.ADD, value: '/DIR1/photo.txt' }] }),
-        );
+        storageMock.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/DIR1/photo.txt' }] }));
 
         await sut.watchAll();
 
