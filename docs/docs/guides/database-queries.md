@@ -37,15 +37,20 @@ SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e
 ```
 
 ```sql title="Live photos"
-SELECT * FROM "assets" where "livePhotoVideoId" IS NOT NULL;
+SELECT * FROM "assets" WHERE "livePhotoVideoId" IS NOT NULL;
 ```
 
 ```sql title="Without metadata"
-SELECT "assets".* FROM "exif" LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId" WHERE "exif"."assetId" IS NULL;
+SELECT "assets".* FROM "exif"
+  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
+  WHERE "exif"."assetId" IS NULL;
 ```
 
 ```sql title="size < 100,000 bytes, smallest to largest"
-SELECT * FROM "assets" JOIN "exif" ON "assets"."id" = "exif"."assetId" WHERE "exif"."fileSizeInByte" < 100000 ORDER BY "exif"."fileSizeInByte" ASC;
+SELECT * FROM "assets"
+  JOIN "exif" ON "assets"."id" = "exif"."assetId"
+  WHERE "exif"."fileSizeInByte" < 100000
+  ORDER BY "exif"."fileSizeInByte" ASC;
 ```
 
 ```sql title="Without thumbnails"
@@ -62,8 +67,7 @@ SELECT "assets"."type", COUNT(*) FROM "assets" GROUP BY "assets"."type";
 ```
 
 ```sql title="Count by type (per user)"
-SELECT "users"."email", "assets"."type", COUNT(*)
-  FROM "assets"
+SELECT "users"."email", "assets"."type", COUNT(*) FROM "assets"
   JOIN "users" ON "assets"."ownerId" = "users"."id"
   GROUP BY "assets"."type", "users"."email"
   ORDER BY "users"."email";
@@ -75,7 +79,7 @@ SELECT * FROM "move_history";
 
 ## Users
 
-```sql title="List"
+```sql title="List all users"
 SELECT * FROM "users";
 ```
 
@@ -86,9 +90,3 @@ SELECT "key", "value" FROM "system_config";
 ```
 
 (Only used when not using the [config file](/docs/install/config-file))
-
-## Persons
-
-```sql title="Delete person and unset it for the faces it was associated with"
-DELETE FROM person WHERE name = 'PersonNameHere';
-```
