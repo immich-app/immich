@@ -22,22 +22,23 @@ import {
   ServerAsyncEventMap,
   ServerEvent,
 } from 'src/interfaces/event.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class SystemConfigService {
-  private logger = new ImmichLogger(SystemConfigService.name);
   private core: SystemConfigCore;
 
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
     this.core.config$.subscribe((config) => this.setLogLevel(config));
+    this.logger.setContext(SystemConfigService.name);
   }
 
   async init() {
@@ -130,7 +131,7 @@ export class SystemConfigService {
     const envLevel = this.getEnvLogLevel();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
-    ImmichLogger.setLogLevel(level);
+    this.logger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
   }
 

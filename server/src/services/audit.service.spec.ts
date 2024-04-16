@@ -61,13 +61,13 @@ describe(AuditService.name, () => {
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
         action: DatabaseAction.DELETE,
-        ownerId: authStub.admin.user.id,
+        userIds: [authStub.admin.user.id],
         entityType: EntityType.ASSET,
       });
     });
 
     it('should get any new or updated assets and deleted ids', async () => {
-      auditMock.getAfter.mockResolvedValue([auditStub.delete]);
+      auditMock.getAfter.mockResolvedValue([auditStub.delete.entityId]);
 
       const date = new Date();
       await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
@@ -77,7 +77,7 @@ describe(AuditService.name, () => {
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
         action: DatabaseAction.DELETE,
-        ownerId: authStub.admin.user.id,
+        userIds: [authStub.admin.user.id],
         entityType: EntityType.ASSET,
       });
     });

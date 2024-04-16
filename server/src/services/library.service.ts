@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
-import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -37,7 +36,7 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -48,7 +47,7 @@ import { validateCronExpression } from 'src/validation';
 const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
-export class LibraryService extends EventEmitter {
+export class LibraryService {
   readonly logger = new ImmichLogger(LibraryService.name);
   private configCore: SystemConfigCore;
   private watchLibraries = false;
@@ -64,7 +63,6 @@ export class LibraryService extends EventEmitter {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
-    super();
     this.configCore = SystemConfigCore.create(configRepository);
   }
 
@@ -152,7 +150,6 @@ export class LibraryService extends EventEmitter {
             if (matcher(path)) {
               await this.scanAssets(library.id, [path], library.ownerId, false);
             }
-            this.emit(StorageEventType.ADD, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
@@ -163,7 +160,6 @@ export class LibraryService extends EventEmitter {
               // Note: if the changed file was not previously imported, it will be imported now.
               await this.scanAssets(library.id, [path], library.ownerId, false);
             }
-            this.emit(StorageEventType.CHANGE, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
@@ -174,13 +170,11 @@ export class LibraryService extends EventEmitter {
             if (asset && matcher(path)) {
               await this.assetRepository.update({ id: asset.id, isOffline: true });
             }
-            this.emit(StorageEventType.UNLINK, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
         onError: (error) => {
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
-          this.emit(StorageEventType.ERROR, error);
         },
       },
     );
@@ -281,10 +275,6 @@ export class LibraryService extends EventEmitter {
 
     this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);
 
-    if (dto.type === LibraryType.EXTERNAL) {
-      await this.watch(library.id);
-    }
-
     return mapLibrary(library);
   }
 
@@ -366,11 +356,6 @@ export class LibraryService extends EventEmitter {
           }
         }
       }
-    }
-
-    if (dto.importPaths || dto.exclusionPatterns) {
-      // Re-watch library to use new paths and/or exclusion patterns
-      await this.watch(id);
     }
 
     return mapLibrary(library);
@@ -616,7 +601,7 @@ export class LibraryService extends EventEmitter {
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
     );
 
     this.logger.verbose(`Crawled asset paths paginated`);

@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  # TODO: change to stable after 3.16 support
+  # TODO: upgrade to stable after 3.0.1 is released. 3.0.0 is broken
+  # https://github.com/fluttercandies/flutter_photo_manager/pull/990#issuecomment-2058066427
   photo_manager: ^3.0.0-dev.5
   photo_manager_image_provider: ^2.1.0
   flutter_hooks: ^0.20.4

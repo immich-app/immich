@@ -86,3 +86,9 @@ SELECT "key", "value" FROM "system_config";
 ```
 
 (Only used when not using the [config file](/docs/install/config-file))
+
+## Persons
+
+```sql title="Delete person and unset it for the faces it was associated with"
+DELETE FROM person WHERE name = 'PersonNameHere';
+```

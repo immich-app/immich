@@ -29,15 +29,14 @@
 </script>
 
 <FullScreenModal id="api-key-modal" {title} icon={mdiKeyVariant} onClose={handleCancel}>
-  <form on:submit|preventDefault={handleSubmit} autocomplete="off">
+  <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="api-key-form">
     <div class="mb-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
     </div>
-
-    <div class="mt-8 flex w-full gap-4">
-      <Button color="gray" fullwidth on:click={handleCancel}>{cancelText}</Button>
-      <Button type="submit" fullwidth>{submitText}</Button>
-    </div>
   </form>
+  <svelte:fragment slot="sticky-bottom">
+    <Button color="gray" fullwidth on:click={handleCancel}>{cancelText}</Button>
+    <Button type="submit" fullwidth form="api-key-form">{submitText}</Button>
+  </svelte:fragment>
 </FullScreenModal>

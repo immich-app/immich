@@ -5,9 +5,10 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { bullConfig, bullQueues, immichAppConfig } from 'src/config';
+import { bullConfig, bullQueues, clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
 import { databaseConfig } from 'src/database.config';
 import { entities } from 'src/entities';
@@ -19,10 +20,8 @@ import { services } from 'src/services';
 import { ApiService } from 'src/services/api.service';
 import { MicroservicesService } from 'src/services/microservices.service';
 import { otelConfig } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 
-const providers = [ImmichLogger];
-const common = [...services, ...providers, ...repositories];
+const common = [...services, ...repositories];
 
 const middleware = [
   FileUploadInterceptor,
@@ -34,6 +33,7 @@ const middleware = [
 const imports = [
   BullModule.forRoot(bullConfig),
   BullModule.registerQueue(...bullQueues),
+  ClsModule.forRoot(clsConfig),
   ConfigModule.forRoot(immichAppConfig),
   EventEmitterModule.forRoot(),
   OpenTelemetryModule.forRoot(otelConfig),
