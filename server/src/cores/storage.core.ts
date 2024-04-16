@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -7,11 +8,11 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -41,7 +42,6 @@ export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDE
 let instance: StorageCore | null;
 
 export class StorageCore {
-  private logger = new ImmichLogger(StorageCore.name);
   private configCore;
   private constructor(
     private assetRepository: IAssetRepository,
@@ -50,8 +50,10 @@ export class StorageCore {
     private cryptoRepository: ICryptoRepository,
     private repository: IStorageRepository,
     systemConfigRepository: ISystemConfigRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(systemConfigRepository);
+    this.logger.setContext(StorageCore.name);
+    this.configCore = SystemConfigCore.create(systemConfigRepository, this.logger);
   }
 
   static create(
@@ -61,6 +63,7 @@ export class StorageCore {
     cryptoRepository: ICryptoRepository,
     configRepository: ISystemConfigRepository,
     repository: IStorageRepository,
+    logger: ILoggerRepository,
   ) {
     if (!instance) {
       instance = new StorageCore(
@@ -70,6 +73,7 @@ export class StorageCore {
         cryptoRepository,
         repository,
         configRepository,
+        logger,
       );
     }
 

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -22,8 +22,8 @@ import {
   VideoCodec,
 } from 'src/entities/system-config.entity';
 import { QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -169,16 +169,20 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new ImmichLogger(SystemConfigCore.name);
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
   public config$ = new Subject<SystemConfig>();
 
-  private constructor(private repository: ISystemConfigRepository) {}
+  private constructor(
+    private repository: ISystemConfigRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(SystemConfigCore.name);
+  }
 
-  static create(repository: ISystemConfigRepository) {
+  static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
     if (!instance) {
-      instance = new SystemConfigCore(repository);
+      instance = new SystemConfigCore(repository, logger);
     }
     return instance;
   }

@@ -3,6 +3,7 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -13,6 +14,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -27,6 +29,7 @@ describe(AuditService.name, () => {
   let personMock: Mocked<IPersonRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -36,7 +39,8 @@ describe(AuditService.name, () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
-    sut = new AuditService(accessMock, assetMock, cryptoMock, personMock, auditMock, storageMock, userMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new AuditService(accessMock, assetMock, cryptoMock, personMock, auditMock, storageMock, userMock, loggerMock);
   });
 
   it('should work', () => {

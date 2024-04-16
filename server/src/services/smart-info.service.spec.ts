@@ -3,6 +3,7 @@ import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -12,6 +13,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
@@ -30,6 +32,7 @@ describe(SmartInfoService.name, () => {
   let searchMock: Mocked<ISearchRepository>;
   let machineMock: Mocked<IMachineLearningRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -38,7 +41,8 @@ describe(SmartInfoService.name, () => {
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
-    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock, loggerMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });

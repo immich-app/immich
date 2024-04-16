@@ -6,6 +6,7 @@ import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
@@ -16,6 +17,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
@@ -66,6 +68,7 @@ describe('AssetService', () => {
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
 
@@ -85,10 +88,20 @@ describe('AssetService', () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AssetServiceV1(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new AssetServiceV1(
+      accessMock,
+      assetRepositoryMockV1,
+      assetMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      userMock,
+      loggerMock,
+    );
 
     assetRepositoryMockV1.get.mockImplementation((assetId) =>
       Promise.resolve(

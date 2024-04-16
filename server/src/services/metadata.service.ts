@@ -25,13 +25,13 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -97,7 +97,6 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 @Injectable()
 export class MetadataService {
-  private logger = new ImmichLogger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private subscription: Subscription | null = null;
@@ -115,8 +114,10 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(MetadataService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       moveRepository,
@@ -124,6 +125,7 @@ export class MetadataService {
       cryptoRepository,
       configRepository,
       storageRepository,
+      this.logger,
     );
   }
 

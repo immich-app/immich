@@ -1,18 +1,21 @@
 import { DatabaseExtension, IDatabaseRepository, VectorIndex } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
 import { ImmichLogger } from 'src/utils/logger';
 import { Version, VersionType } from 'src/utils/version';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { MockInstance, Mocked, vitest } from 'vitest';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
   let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     databaseMock = newDatabaseRepositoryMock();
-
-    sut = new DatabaseService(databaseMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new DatabaseService(databaseMock, loggerMock);
   });
 
   it('should work', () => {
@@ -34,7 +37,7 @@ describe(DatabaseService.name, () => {
       databaseMock.getPreferredVectorExtension.mockReturnValue(vectorExt);
       databaseMock.getExtensionVersion.mockResolvedValue(minVersion);
 
-      sut = new DatabaseService(databaseMock);
+      sut = new DatabaseService(databaseMock, loggerMock);
 
       sut.minVectorVersion = minVersion;
       sut.minVectorsVersion = minVersion;

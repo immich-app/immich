@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { glob, globStream } from 'fast-glob';
@@ -5,6 +6,7 @@ import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DiskUsage,
   IStorageRepository,
@@ -13,13 +15,13 @@ import {
   WatchEvents,
 } from 'src/interfaces/storage.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Instrumentation()
 export class StorageRepository implements IStorageRepository {
-  private logger = new ImmichLogger(StorageRepository.name);
-
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+    this.logger.setContext(StorageRepository.name);
+  }
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);
   }

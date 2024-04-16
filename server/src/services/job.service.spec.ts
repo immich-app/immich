@@ -12,6 +12,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -20,6 +21,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
@@ -41,6 +43,7 @@ describe(JobService.name, () => {
   let jobMock: Mocked<IJobRepository>;
   let personMock: Mocked<IPersonRepository>;
   let metricMock: Mocked<IMetricRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -49,7 +52,8 @@ describe(JobService.name, () => {
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
     metricMock = newMetricRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock, loggerMock);
   });
 
   it('should work', () => {
@@ -235,7 +239,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.init(makeMockHandlers(JobStatus.FAILED));
 
-      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.SMART_SEARCH]: { concurrency: 10 },

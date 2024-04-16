@@ -1,9 +1,11 @@
+import { Inject } from '@nestjs/common';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { Colorspace } from 'src/entities/system-config.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   CropOptions,
   IMediaRepository,
@@ -12,7 +14,6 @@ import {
   VideoInfo,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
@@ -21,8 +22,9 @@ sharp.cache({ files: 0 });
 
 @Instrumentation()
 export class MediaRepository implements IMediaRepository {
-  private logger = new ImmichLogger(MediaRepository.name);
-
+  constructor(@Inject(ILoggerRepository) private readonly logger: ILoggerRepository) {
+    this.logger.setContext(MediaRepository.name);
+  }
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
       .pipelineColorspace('rgb16')

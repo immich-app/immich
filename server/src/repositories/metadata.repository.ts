@@ -11,10 +11,10 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
@@ -26,9 +26,10 @@ export class MetadataRepository implements IMetadataRepository {
     @Inject(ISystemMetadataRepository)
     private readonly systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
-  ) {}
-
-  private logger = new ImmichLogger(MetadataRepository.name);
+    @Inject(ILoggerRepository) private readonly logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(MetadataRepository.name);
+  }
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');

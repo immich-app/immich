@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
@@ -14,9 +15,9 @@ import {
   ServerEvent,
   ServerEventMap,
 } from 'src/interfaces/event.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Instrumentation()
 @WebSocketGateway({
@@ -25,15 +26,16 @@ import { ImmichLogger } from 'src/utils/logger';
   transports: ['websocket'],
 })
 export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
-  private logger = new ImmichLogger(EventRepository.name);
-
   @WebSocketServer()
   private server?: Server;
 
   constructor(
     private authService: AuthService,
     private eventEmitter: EventEmitter2,
-  ) {}
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(EventRepository.name);
+  }
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');

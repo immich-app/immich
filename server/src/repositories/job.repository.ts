@@ -1,5 +1,5 @@
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
@@ -15,8 +15,8 @@ import {
   QueueName,
   QueueStatus,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
@@ -83,12 +83,14 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
-  private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
     private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
-  ) {}
+    @Inject(ILoggerRepository) private readonly logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(JobRepository.name);
+  }
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);

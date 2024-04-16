@@ -2,6 +2,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchDto } from 'src/dtos/search.dto';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -13,6 +14,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
@@ -32,6 +34,7 @@ describe(SearchService.name, () => {
   let searchMock: Mocked<ISearchRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let metadataMock: Mocked<IMetadataRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -41,8 +44,18 @@ describe(SearchService.name, () => {
     searchMock = newSearchRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
-    sut = new SearchService(configMock, machineMock, personMock, searchMock, assetMock, partnerMock, metadataMock);
+    sut = new SearchService(
+      configMock,
+      machineMock,
+      personMock,
+      searchMock,
+      assetMock,
+      partnerMock,
+      metadataMock,
+      loggerMock,
+    );
   });
 
   it('should work', () => {
