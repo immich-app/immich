@@ -15,6 +15,7 @@ import { entities } from 'src/entities';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
+import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { services } from 'src/services';
 import { ApiService } from 'src/services/api.service';
@@ -26,6 +27,7 @@ const common = [...services, ...repositories];
 const middleware = [
   FileUploadInterceptor,
   { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+  { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
   { provide: APP_GUARD, useClass: AuthGuard },
 ];
