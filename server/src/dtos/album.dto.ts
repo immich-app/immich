@@ -102,7 +102,7 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of users' })
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of sharedUsersV2' })
   sharedUsers!: UserResponseDto[];
   sharedUsersV2!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
