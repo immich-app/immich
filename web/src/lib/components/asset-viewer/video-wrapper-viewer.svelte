@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AssetTypeEnum, ThumbnailFormat } from '@immich/sdk';
+  import { AssetTypeEnum } from '@immich/sdk';
   import { ProjectionType } from '$lib/constants';
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import PanoramaViewer from '$lib/components/asset-viewer/panorama-viewer.svelte';
