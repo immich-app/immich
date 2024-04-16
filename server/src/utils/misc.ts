@@ -17,12 +17,12 @@ import {
   IMMICH_API_KEY_NAME,
   serverVersion,
 } from 'src/constants';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
-import { ImmichLogger } from 'src/utils/logger';
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export const handlePromiseError = <T>(promise: Promise<T>, logger: ImmichLogger): void => {
+export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggerRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 

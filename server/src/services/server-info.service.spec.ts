@@ -1,6 +1,7 @@
 import { serverVersion } from 'src/constants';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -8,6 +9,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
@@ -23,6 +25,7 @@ describe(ServerInfoService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let systemMetadataMock: Mocked<ISystemMetadataRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -31,8 +34,17 @@ describe(ServerInfoService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     systemMetadataMock = newSystemMetadataRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
-    sut = new ServerInfoService(eventMock, configMock, userMock, serverInfoMock, storageMock, systemMetadataMock);
+    sut = new ServerInfoService(
+      eventMock,
+      configMock,
+      userMock,
+      serverInfoMock,
+      storageMock,
+      systemMetadataMock,
+      loggerMock,
+    );
   });
 
   it('should work', () => {

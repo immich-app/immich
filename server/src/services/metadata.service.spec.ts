@@ -11,6 +11,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -27,6 +28,7 @@ import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.moc
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
@@ -48,6 +50,7 @@ describe(MetadataService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let eventMock: Mocked<IEventRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -63,6 +66,7 @@ describe(MetadataService.name, () => {
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -77,6 +81,7 @@ describe(MetadataService.name, () => {
       personMock,
       storageMock,
       configMock,
+      loggerMock,
     );
   });
 

@@ -11,6 +11,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { LibraryService } from 'src/services/library.service';
@@ -24,6 +25,7 @@ import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.moc
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { Mocked, vitest } from 'vitest';
@@ -38,6 +40,7 @@ describe(LibraryService.name, () => {
   let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -47,8 +50,18 @@ describe(LibraryService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
-    sut = new LibraryService(assetMock, configMock, cryptoMock, jobMock, libraryMock, storageMock, databaseMock);
+    sut = new LibraryService(
+      assetMock,
+      configMock,
+      cryptoMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      databaseMock,
+      loggerMock,
+    );
 
     databaseMock.tryLock.mockResolvedValue(true);
   });
@@ -68,7 +81,7 @@ describe(LibraryService.name, () => {
       expect(configMock.load).toHaveBeenCalled();
       expect(jobMock.addCronJob).toHaveBeenCalled();
 
-      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
         library: {
           scan: {
             enabled: true,

@@ -6,6 +6,7 @@ import { Colorspace, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -23,6 +24,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
@@ -72,6 +74,7 @@ describe(PersonService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let searchMock: Mocked<ISearchRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let sut: PersonService;
 
   beforeEach(() => {
@@ -86,6 +89,7 @@ describe(PersonService.name, () => {
     storageMock = newStorageRepositoryMock();
     searchMock = newSearchRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     sut = new PersonService(
       accessMock,
       assetMock,
@@ -98,6 +102,7 @@ describe(PersonService.name, () => {
       jobMock,
       searchMock,
       cryptoMock,
+      loggerMock,
     );
 
     mediaMock.crop.mockResolvedValue(croppedFace);

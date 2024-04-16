@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuditEntity } from 'src/entities/audit.entity';
 import { AuditSearch, IAuditRepository } from 'src/interfaces/audit.interface';
@@ -5,6 +6,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { In, LessThan, MoreThan, Repository } from 'typeorm';
 
 @Instrumentation()
+@Injectable()
 export class AuditRepository implements IAuditRepository {
   constructor(@InjectRepository(AuditEntity) private repository: Repository<AuditEntity>) {}
 

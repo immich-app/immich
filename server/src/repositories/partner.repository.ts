@@ -8,7 +8,7 @@ import { DeepPartial, Repository } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
-  constructor(@InjectRepository(PartnerEntity) private readonly repository: Repository<PartnerEntity>) {}
+  constructor(@InjectRepository(PartnerEntity) private repository: Repository<PartnerEntity>) {}
 
   getAll(userId: string): Promise<PartnerEntity[]> {
     return this.repository.find({ where: [{ sharedWithId: userId }, { sharedById: userId }] });

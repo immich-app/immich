@@ -8,6 +8,7 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -20,6 +21,7 @@ import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock'
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
@@ -38,6 +40,7 @@ describe(StorageTemplateService.name, () => {
   let userMock: Mocked<IUserRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -53,6 +56,7 @@ describe(StorageTemplateService.name, () => {
     userMock = newUserRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
     configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
 
@@ -66,9 +70,10 @@ describe(StorageTemplateService.name, () => {
       userMock,
       cryptoMock,
       databaseMock,
+      loggerMock,
     );
 
-    SystemConfigCore.create(configMock).config$.next(defaults);
+    SystemConfigCore.create(configMock, loggerMock).config$.next(defaults);
   });
 
   describe('onValidateConfig', () => {

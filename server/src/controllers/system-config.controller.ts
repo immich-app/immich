@@ -8,7 +8,7 @@ import { SystemConfigService } from 'src/services/system-config.service';
 @Controller('system-config')
 @Authenticated({ admin: true })
 export class SystemConfigController {
-  constructor(private readonly service: SystemConfigService) {}
+  constructor(private service: SystemConfigService) {}
 
   @Get()
   getConfig(): Promise<SystemConfigDto> {
