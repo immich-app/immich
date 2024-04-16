@@ -46,6 +46,8 @@
       min={1}
       bind:value={$slideshowDelay}
     />
-    <Button class="w-full" color="gray" on:click={onClose}>Done</Button>
   </div>
+  <svelte:fragment slot="sticky-bottom">
+    <Button fullwidth color="primary" on:click={onClose}>Done</Button>
+  </svelte:fragment>
 </FullScreenModal>
