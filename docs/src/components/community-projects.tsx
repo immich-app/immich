@@ -48,6 +48,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Script to search for and remove TikTok videos from your Immich library.',
     url: 'https://github.com/mxc2/immich-tiktok-remover',
   },
+  {
+    title: 'Immich Android TV',
+    description: 'Unofficial Immich Android TV app.',
+    url: 'https://github.com/giejay/Immich-Android-TV',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
