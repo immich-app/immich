@@ -80,7 +80,7 @@ export const clsConfig: ClsModuleOptions = {
       const headerValues = req.headers['x-immich-cid'];
       const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
       const cid = headerValue || cls.get(CLS_ID);
-      cls.set(CLS_ID, headerValue);
+      cls.set(CLS_ID, cid);
       res.header('x-immich-cid', cid);
     },
   },
