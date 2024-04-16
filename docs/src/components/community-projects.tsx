@@ -53,6 +53,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Unofficial Immich Android TV app.',
     url: 'https://github.com/giejay/Immich-Android-TV',
   },
+  {
+    title: 'Powershell Module PSImmich',
+    description: 'Powershell Module for the Immich API',
+    url: 'https://github.com/hanpq/PSImmich',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
