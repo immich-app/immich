@@ -17,6 +17,6 @@ export class AlbumUserEntity {
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   user!: UserEntity;
 
-  @Column({ default: false })
+  @Column({ default: true })
   readonly!: boolean;
 }
