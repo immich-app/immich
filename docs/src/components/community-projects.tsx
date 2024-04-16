@@ -34,11 +34,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
-    title: 'Immich-Tiktok-Remover',
-    description: 'Script to search for and remove TikTok videos from your Immich library.',
-    url: 'https://github.com/mxc2/immich-tiktok-remover',
-  },
-  {
     title: 'Lightroom Publisher: mi.Immich.Publisher',
     description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
     url: 'https://github.com/midzelis/mi.Immich.Publisher',
@@ -47,6 +42,11 @@ const projects: CommunityProjectProps[] = [
     title: 'Immich Duplicate Finder',
     description: 'Webapp that uses machine learning to identify near-duplicate images.',
     url: 'https://github.com/vale46n1/immich_duplicate_finder',
+  },
+  {
+    title: 'Immich-Tiktok-Remover',
+    description: 'Script to search for and remove TikTok videos from your Immich library.',
+    url: 'https://github.com/mxc2/immich-tiktok-remover',
   },
 ];
 
