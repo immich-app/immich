@@ -10,7 +10,7 @@ Running with a pre-existing Postgres server can unlock powerful administrative f
 
 ## Prerequisites
 
-You must install pgvecto.rs into your instance of Postgres using their [instructions](https://docs.pgvecto.rs/getting-started/installation.html). After installation, add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vectors.so'`.
+You must install pgvecto.rs into your instance of Postgres using their [instructions][vectors-install]. After installation, add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vectors.so'`.
 
 :::note
 Immich is known to work with Postgres versions 14, 15, and 16. Earlier versions are unsupported.
@@ -70,3 +70,5 @@ When installing a new version of pgvecto.rs, you will need to manually update th
 #### Permission denied for view
 
 If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat TO <immichdbusername>;`.
+
+[vectors-install]: https://docs.pgvecto.rs/getting-started/installation.html
