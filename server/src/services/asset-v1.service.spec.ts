@@ -1,4 +1,3 @@
-import { when } from 'jest-when';
 import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-v1-response.dto';
 import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -91,12 +90,11 @@ describe('AssetService', () => {
 
     sut = new AssetServiceV1(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
 
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoStillAsset.id)
-      .mockResolvedValue(assetStub.livePhotoStillAsset);
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoMotionAsset.id)
-      .mockResolvedValue(assetStub.livePhotoMotionAsset);
+    assetRepositoryMockV1.get.mockImplementation((assetId) =>
+      Promise.resolve(
+        [assetStub.livePhotoMotionAsset, assetStub.livePhotoMotionAsset].find((asset) => asset.id === assetId) ?? null,
+      ),
+    );
   });
 
   describe('uploadFile', () => {

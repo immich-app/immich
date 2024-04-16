@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
@@ -224,14 +224,15 @@ describe(DownloadService.name, () => {
 
     it('should include the video portion of a live photo', async () => {
       const assetIds = [assetStub.livePhotoStillAsset.id];
+      const assets = [assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset];
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true })
-        .mockResolvedValue([assetStub.livePhotoStillAsset]);
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true })
-        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      assetMock.getByIds.mockImplementation(
+        (ids) =>
+          Promise.resolve(
+            ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),
+          ) as Promise<AssetEntity[]>,
+      );
 
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
         totalSize: 125_000,

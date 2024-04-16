@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { TagType } from 'src/entities/tag.entity';
 import { ITagRepository } from 'src/interfaces/tag.interface';
@@ -130,9 +129,7 @@ describe(TagService.name, () => {
 
     it('should reject duplicate asset ids and accept new ones', async () => {
       tagMock.getById.mockResolvedValue(tagStub.tag1);
-
-      when(tagMock.hasAsset).calledWith(authStub.admin.user.id, 'tag-1', 'asset-1').mockResolvedValue(true);
-      when(tagMock.hasAsset).calledWith(authStub.admin.user.id, 'tag-1', 'asset-2').mockResolvedValue(false);
+      tagMock.hasAsset.mockImplementation((userId, tagId, assetId) => Promise.resolve(assetId === 'asset-1'));
 
       await expect(
         sut.addAssets(authStub.admin, 'tag-1', {
@@ -161,9 +158,7 @@ describe(TagService.name, () => {
 
     it('should accept accept ids that are tagged and reject the rest', async () => {
       tagMock.getById.mockResolvedValue(tagStub.tag1);
-
-      when(tagMock.hasAsset).calledWith(authStub.admin.user.id, 'tag-1', 'asset-1').mockResolvedValue(true);
-      when(tagMock.hasAsset).calledWith(authStub.admin.user.id, 'tag-1', 'asset-2').mockResolvedValue(false);
+      tagMock.hasAsset.mockImplementation((userId, tagId, assetId) => Promise.resolve(assetId === 'asset-1'));
 
       await expect(
         sut.removeAssets(authStub.admin, 'tag-1', {

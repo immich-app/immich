@@ -1,5 +1,4 @@
 import { BinaryField } from 'exiftool-vendored';
-import { when } from 'jest-when';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -249,14 +248,13 @@ describe(MetadataService.name, () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.originalPath)
-        // higher priority tag
-        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.sidecarPath as string)
-        // lower priority tag, but in sidecar
-        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+      metadataMock.readTags.mockImplementation((path) => {
+        const map = {
+          [assetStub.sidecar.originalPath]: originalDate.toISOString(),
+          [assetStub.sidecar.sidecarPath as string]: sidecarDate.toISOString(),
+        };
+        return Promise.resolve({ CreationDate: map[path] ?? new Date().toISOString() });
+      });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);

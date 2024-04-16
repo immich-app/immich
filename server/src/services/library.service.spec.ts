@@ -1,6 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
-import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapLibrary } from 'src/dtos/library.dto';
@@ -90,15 +88,13 @@ describe(LibraryService.name, () => {
       ]);
 
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
+      libraryMock.get.mockImplementation((id) =>
+        Promise.resolve(
+          [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
+            (library) => library.id === id,
+          ) || null,
+        ),
+      );
 
       await sut.init();
 
@@ -1261,13 +1257,13 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths1.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-
-      when(libraryMock.get)
-        .calledWith(libraryStub.externalLibraryWithImportPaths2.id)
-        .mockResolvedValue(libraryStub.externalLibraryWithImportPaths2);
+      libraryMock.get.mockImplementation((id) =>
+        Promise.resolve(
+          [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
+            (library) => library.id === id,
+          ) || null,
+        ),
+      );
 
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
@@ -1546,7 +1542,7 @@ describe(LibraryService.name, () => {
     it('should detect when import path is in immich media folder', async () => {
       storageMock.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       const validImport = libraryStub.hasImmichPaths.importPaths[1];
-      when(storageMock.checkFileExists).calledWith(validImport, R_OK).mockResolvedValue(true);
+      storageMock.checkFileExists.mockImplementation((importPath) => Promise.resolve(importPath === validImport));
 
       await expect(
         sut.validate('library-id', { importPaths: libraryStub.hasImmichPaths.importPaths }),
