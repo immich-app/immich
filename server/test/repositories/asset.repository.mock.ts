@@ -35,5 +35,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getAssetIdByCity: jest.fn(),
     getAssetIdByTag: jest.fn(),
     searchMetadata: jest.fn(),
+    getAllForUserFullSync: jest.fn(),
+    getChangedDeltaSync: jest.fn(),
   };
 };
