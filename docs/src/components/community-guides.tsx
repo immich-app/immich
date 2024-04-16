@@ -28,6 +28,11 @@ const guides: CommunityGuidesProps[] = [
     description: `synchronize folders in imported library with albums having the folders name.`,
     url: 'https://github.com/immich-app/immich/discussions/3382',
   },
+  {
+    title: 'Podman/Quadlets Install',
+    description: 'Documentation for simple podman setup using quadlets.',
+    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+  },
 ];
 
 function CommunityGuide({ title, description, url }: CommunityGuidesProps): JSX.Element {
