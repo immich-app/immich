@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto, setAlbumPermission } from '@immich/sdk';
+  import {
+    getMyUserInfo,
+    removeUserFromAlbum,
+    type AlbumResponseDto,
+    type UserResponseDto,
+    updateAlbumUser,
+  } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -17,7 +23,7 @@
 
   const dispatch = createEventDispatcher<{
     remove: string;
-    updatePermissions: void
+    refreshAlbum: void;
   }>();
 
   let currentUser: UserResponseDto;
@@ -67,16 +73,16 @@
 
   const handleSetReadonly = async (user: UserResponseDto, readonly: boolean) => {
     try {
-      await setAlbumPermission({ id: album.id, userId: user.id , setAlbumPermissionDto: { readonly } });
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { readonly } });
       const message = readonly ? `Set ${user.name} as viewer` : `Set ${user.name} as editor`;
-      dispatch('updatePermissions');
+      dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, 'Unable to set permission');
     } finally {
       selectedRemoveUser = null;
     }
-  }
+  };
 </script>
 
 {#if !selectedRemoveUser}
@@ -92,11 +98,15 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.albumPermissions.toSorted((a, b) => {
-        if (a.readonly && !b.readonly) return 1;
-        if (!a.readonly && b.readonly) return -1;
+      {#each album.sharedUsersV2.toSorted((a, b) => {
+        if (a.readonly && !b.readonly) {
+          return 1;
+        }
+        if (!a.readonly && b.readonly) {
+          return -1;
+        }
         return a.user.name.localeCompare(b.user.name);
-      }) as {user, readonly}}
+      }) as { user, readonly }}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >

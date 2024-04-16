@@ -1,4 +1,4 @@
-import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -53,8 +53,8 @@ export class AlbumEntity {
   @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
-  @OneToMany(() => AlbumPermissionEntity, (permission) => permission.albums)
-  albumPermissions!: AlbumPermissionEntity[];
+  @OneToMany(() => AlbumUserEntity, (permission) => permission.albums)
+  sharedUsers!: AlbumUserEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
   @JoinTable()

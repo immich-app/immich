@@ -9,7 +9,6 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumName** | **String** |  | 
-**albumPermissions** | [**List<AlbumPermissionResponseDto>**](AlbumPermissionResponseDto.md) |  | [default to const []]
 **albumThumbnailAssetId** | **String** |  | 
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
@@ -24,7 +23,8 @@ Name | Type | Description | Notes
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 
-**sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) | Deprecated in favor of albumPermissions | [default to const []]
+**sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) | Deprecated in favor of users | [default to const []]
+**sharedUsersV2** | [**List<AlbumUserResponseDto>**](AlbumUserResponseDto.md) |  | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

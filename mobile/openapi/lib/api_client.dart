@@ -200,10 +200,10 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
-        case 'AlbumPermissionResponseDto':
-          return AlbumPermissionResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AlbumUserResponseDto':
+          return AlbumUserResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
@@ -428,8 +428,6 @@ class ApiClient {
           return ServerThemeDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
-        case 'SetAlbumPermissionDto':
-          return SetAlbumPermissionDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -502,6 +500,8 @@ class ApiClient {
           return TranscodePolicyTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
+        case 'UpdateAlbumUserDto':
+          return UpdateAlbumUserDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':

@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equals } from 'class-validator';
-import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
-import { IAlbumPermissionRepository } from 'src/interfaces/album-permission.interface';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
+import { AlbumPermissionId, IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Equal, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
-export class AlbumPermissionRepository implements IAlbumPermissionRepository {
-  constructor(@InjectRepository(AlbumPermissionEntity) private repository: Repository<AlbumPermissionEntity>) {}
+export class AlbumUserRepository implements IAlbumUserRepository {
+  constructor(@InjectRepository(AlbumUserEntity) private repository: Repository<AlbumUserEntity>) {}
 
-  async create(dto: Partial<AlbumPermissionEntity>): Promise<AlbumPermissionEntity> {
+  async create(dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
     const { users, albums } = await this.repository.save(dto);
     return this.repository.findOneOrFail({ where: { users, albums }, relations: { users: true } });
   }
 
-  async update(userId: string, albumId: string, dto: Partial<AlbumPermissionEntity>): Promise<AlbumPermissionEntity> {
+  async update({ userId, albumId }: AlbumPermissionId, dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
     // @ts-expect-error I'm pretty sure I messed something up with the entity because
     // if I follow what typescript says I get postgres errors
     await this.repository.update({ users: userId, albums: albumId }, dto);
@@ -26,7 +25,7 @@ export class AlbumPermissionRepository implements IAlbumPermissionRepository {
     });
   }
 
-  async delete(userId: string, albumId: string): Promise<void> {
+  async delete({ userId, albumId }: AlbumPermissionId): Promise<void> {
     await this.repository.delete({ users: { id: userId }, albums: { id: albumId } });
   }
 }

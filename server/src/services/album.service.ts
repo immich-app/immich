@@ -14,11 +14,11 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumPermissionEntity } from 'src/entities/album-permission.entity';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAlbumPermissionRepository } from 'src/interfaces/album-permission.interface';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -32,7 +32,7 @@ export class AlbumService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IAlbumPermissionRepository) private albumPermissionRepository: IAlbumPermissionRepository,
+    @Inject(IAlbumUserRepository) private albumPermissionRepository: IAlbumUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -128,8 +128,7 @@ export class AlbumService {
       ownerId: auth.user.id,
       albumName: dto.albumName,
       description: dto.description,
-      albumPermissions:
-        dto.sharedWithUserIds?.map((userId) => ({ users: { id: userId } }) as AlbumPermissionEntity) ?? [],
+      sharedUsers: dto.sharedWithUserIds?.map((userId) => ({ users: { id: userId } }) as AlbumUserEntity) ?? [],
       assets,
       albumThumbnailAssetId: assets[0]?.id || null,
     });
@@ -222,7 +221,7 @@ export class AlbumService {
         throw new BadRequestException('Cannot be shared with owner');
       }
 
-      const exists = album.albumPermissions.find(({ users: { id } }) => id === userId);
+      const exists = album.sharedUsers.find(({ users: { id } }) => id === userId);
       if (exists) {
         throw new BadRequestException('User already added');
       }
@@ -232,8 +231,8 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      album.albumPermissions.push(
-        await this.albumPermissionRepository.create({ users: { id: userId }, albums: { id } } as AlbumPermissionEntity),
+      album.sharedUsers.push(
+        await this.albumPermissionRepository.create({ users: { id: userId }, albums: { id } } as AlbumUserEntity),
       );
     }
 
@@ -251,7 +250,7 @@ export class AlbumService {
       throw new BadRequestException('Cannot remove album owner');
     }
 
-    const exists = album.albumPermissions.find(({ users: { id } }) => id === userId);
+    const exists = album.sharedUsers.find(({ users: { id } }) => id === userId);
     if (!exists) {
       throw new BadRequestException('Album not shared with user');
     }
@@ -261,25 +260,20 @@ export class AlbumService {
       await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
     }
 
-    await this.albumPermissionRepository.delete(userId, id);
+    await this.albumPermissionRepository.delete({ albumId: id, userId });
   }
 
-  async setAlbumPermission(
-    auth: AuthDto,
-    id: string,
-    userId: string,
-    dto: Partial<AlbumPermissionEntity>,
-  ): Promise<void> {
+  async updateAlbumUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });
 
-    const permission = album.albumPermissions.find(({ users: { id } }) => id === userId);
+    const permission = album.sharedUsers.find(({ users: { id } }) => id === userId);
     if (!permission) {
       throw new BadRequestException('Album not shared with user');
     }
 
-    await this.albumPermissionRepository.update(userId, id, { readonly: dto.readonly });
+    await this.albumPermissionRepository.update({ albumId: id, userId }, { readonly: dto.readonly });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

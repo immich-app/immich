@@ -7,8 +7,8 @@ import {
   AlbumResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
-  SetAlbumPermissionDto,
   UpdateAlbumDto,
+  UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -99,12 +99,12 @@ export class AlbumController {
   }
 
   @Put(':id/permission/:userId')
-  setAlbumPermission(
+  updateAlbumUser(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-    @Body() dto: SetAlbumPermissionDto,
+    @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
-    return this.service.setAlbumPermission(auth, id, userId, dto);
+    return this.service.updateAlbumUser(auth, id, userId, dto);
   }
 }

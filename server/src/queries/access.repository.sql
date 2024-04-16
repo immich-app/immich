@@ -68,22 +68,18 @@ WHERE
 -- AccessRepository.album.checkSharedAlbumAccess
 SELECT
   "AlbumEntity"."id" AS "AlbumEntity_id",
-  "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" AS "AlbumEntity__AlbumEntity_albumPermissions_albumsId",
-  "AlbumEntity__AlbumEntity_albumPermissions"."usersId" AS "AlbumEntity__AlbumEntity_albumPermissions_usersId",
-  "AlbumEntity__AlbumEntity_albumPermissions"."readonly" AS "AlbumEntity__AlbumEntity_albumPermissions_readonly"
+  "AlbumEntity__AlbumEntity_users"."albumsId" AS "AlbumEntity__AlbumEntity_users_albumsId",
+  "AlbumEntity__AlbumEntity_users"."usersId" AS "AlbumEntity__AlbumEntity_users_usersId",
+  "AlbumEntity__AlbumEntity_users"."readonly" AS "AlbumEntity__AlbumEntity_users_readonly"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumPermissions" ON "AlbumEntity__AlbumEntity_albumPermissions"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_users" ON "AlbumEntity__AlbumEntity_users"."albumsId" = "AlbumEntity"."id"
 WHERE
   (
     (
       ("AlbumEntity"."id" IN ($1))
       AND (
-        (
-          (
-            "AlbumEntity__AlbumEntity_albumPermissions"."usersId" = $2
-          )
-        )
+        (("AlbumEntity__AlbumEntity_users"."usersId" = $2))
       )
     )
   )

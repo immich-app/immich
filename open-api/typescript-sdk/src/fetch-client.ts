@@ -38,28 +38,6 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
-};
-export type AlbumPermissionResponseDto = {
-    "readonly": boolean;
-    user: UserResponseDto;
-};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -82,6 +60,24 @@ export type ExifResponseDto = {
     projectionType?: string | null;
     state?: string | null;
     timeZone?: string | null;
+};
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
 };
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
@@ -145,9 +141,12 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     updatedAt: string;
 };
+export type AlbumUserResponseDto = {
+    "readonly": boolean;
+    user: UserResponseDto;
+};
 export type AlbumResponseDto = {
     albumName: string;
-    albumPermissions: AlbumPermissionResponseDto[];
     albumThumbnailAssetId: string | null;
     assetCount: number;
     assets: AssetResponseDto[];
@@ -162,8 +161,9 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** Deprecated in favor of albumPermissions */
+    /** Deprecated in favor of users */
     sharedUsers: UserResponseDto[];
+    sharedUsersV2: AlbumUserResponseDto[];
     startDate?: string;
     updatedAt: string;
 };
@@ -193,7 +193,7 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
-export type SetAlbumPermissionDto = {
+export type UpdateAlbumUserDto = {
     "readonly": boolean;
 };
 export type AddUsersDto = {
@@ -1196,15 +1196,15 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function setAlbumPermission({ id, userId, setAlbumPermissionDto }: {
+export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
     id: string;
     userId: string;
-    setAlbumPermissionDto: SetAlbumPermissionDto;
+    updateAlbumUserDto: UpdateAlbumUserDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/permission/${encodeURIComponent(userId)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: setAlbumPermissionDto
+        body: updateAlbumUserDto
     })));
 }
 export function removeUserFromAlbum({ id, userId }: {

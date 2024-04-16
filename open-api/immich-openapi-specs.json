@@ -591,7 +591,7 @@
     },
     "/album/{id}/permission/{userId}": {
       "put": {
-        "operationId": "setAlbumPermission",
+        "operationId": "updateAlbumUser",
         "parameters": [
           {
             "name": "id",
@@ -615,7 +615,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetAlbumPermissionDto"
+                "$ref": "#/components/schemas/UpdateAlbumUserDto"
               }
             }
           },
@@ -7118,31 +7118,10 @@
         ],
         "type": "object"
       },
-      "AlbumPermissionResponseDto": {
-        "properties": {
-          "readonly": {
-            "type": "boolean"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          }
-        },
-        "required": [
-          "readonly",
-          "user"
-        ],
-        "type": "object"
-      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
             "type": "string"
-          },
-          "albumPermissions": {
-            "items": {
-              "$ref": "#/components/schemas/AlbumPermissionResponseDto"
-            },
-            "type": "array"
           },
           "albumThumbnailAssetId": {
             "nullable": true,
@@ -7195,9 +7174,15 @@
           },
           "sharedUsers": {
             "deprecated": true,
-            "description": "Deprecated in favor of albumPermissions",
+            "description": "Deprecated in favor of users",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
+            },
+            "type": "array"
+          },
+          "sharedUsersV2": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
             },
             "type": "array"
           },
@@ -7212,7 +7197,6 @@
         },
         "required": [
           "albumName",
-          "albumPermissions",
           "albumThumbnailAssetId",
           "assetCount",
           "assets",
@@ -7225,7 +7209,23 @@
           "ownerId",
           "shared",
           "sharedUsers",
+          "sharedUsersV2",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumUserResponseDto": {
+        "properties": {
+          "readonly": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "readonly",
+          "user"
         ],
         "type": "object"
       },
@@ -9967,17 +9967,6 @@
         ],
         "type": "object"
       },
-      "SetAlbumPermissionDto": {
-        "properties": {
-          "readonly": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "readonly"
-        ],
-        "type": "object"
-      },
       "SharedLinkCreateDto": {
         "properties": {
           "albumId": {
@@ -10969,6 +10958,17 @@
             "$ref": "#/components/schemas/AssetOrder"
           }
         },
+        "type": "object"
+      },
+      "UpdateAlbumUserDto": {
+        "properties": {
+          "readonly": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "readonly"
+        ],
         "type": "object"
       },
       "UpdateAssetDto": {

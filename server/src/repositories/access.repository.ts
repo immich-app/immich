@@ -79,8 +79,8 @@ class ActivityAccess implements IActivityAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .select('album.id')
-      .leftJoin('album.albumPermissions', 'albumPermissions')
-      .leftJoin('albumPermissions.users', 'sharedUsers')
+      .leftJoin('album.sharedUsers', 'albumSharedUsers')
+      .leftJoin('albumSharedUsers.users', 'sharedUsers')
       .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
       .andWhere('album.isActivityEnabled = true')
       .andWhere(
@@ -127,11 +127,11 @@ class AlbumAccess implements IAlbumAccess {
     return this.albumRepository
       .find({
         select: { id: true },
-        relations: { albumPermissions: true },
+        relations: { sharedUsers: true },
         // -@ts-expect-error asd
         where: {
           id: In([...albumIds]),
-          albumPermissions: {
+          sharedUsers: {
             users: Equal(userId),
             // If write is needed we check for it, otherwise both are accepted
             readonly: readWrite === 'write' ? false : undefined,
@@ -180,7 +180,7 @@ class AssetAccess implements IAssetAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .innerJoin('album.assets', 'asset')
-      .leftJoin('album.albumPermissions', 'albumPermissions')
+      .leftJoin('album.users', 'albumPermissions')
       .leftJoin('albumPermissions.users', 'sharedUsers')
       .select('asset.id', 'assetId')
       .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')

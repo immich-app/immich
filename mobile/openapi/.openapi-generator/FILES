@@ -15,8 +15,8 @@ doc/ActivityStatisticsResponseDto.md
 doc/AddUsersDto.md
 doc/AlbumApi.md
 doc/AlbumCountResponseDto.md
-doc/AlbumPermissionResponseDto.md
 doc/AlbumResponseDto.md
+doc/AlbumUserResponseDto.md
 doc/AllJobStatusResponseDto.md
 doc/AssetApi.md
 doc/AssetBulkDeleteDto.md
@@ -142,7 +142,6 @@ doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerThemeDto.md
 doc/ServerVersionResponseDto.md
-doc/SetAlbumPermissionDto.md
 doc/SharedLinkApi.md
 doc/SharedLinkCreateDto.md
 doc/SharedLinkEditDto.md
@@ -184,6 +183,7 @@ doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
 doc/TrashApi.md
 doc/UpdateAlbumDto.md
+doc/UpdateAlbumUserDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
 doc/UpdatePartnerDto.md
@@ -238,8 +238,8 @@ lib/model/activity_response_dto.dart
 lib/model/activity_statistics_response_dto.dart
 lib/model/add_users_dto.dart
 lib/model/album_count_response_dto.dart
-lib/model/album_permission_response_dto.dart
 lib/model/album_response_dto.dart
+lib/model/album_user_response_dto.dart
 lib/model/all_job_status_response_dto.dart
 lib/model/api_key_create_dto.dart
 lib/model/api_key_create_response_dto.dart
@@ -356,7 +356,6 @@ lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_theme_dto.dart
 lib/model/server_version_response_dto.dart
-lib/model/set_album_permission_dto.dart
 lib/model/shared_link_create_dto.dart
 lib/model/shared_link_edit_dto.dart
 lib/model/shared_link_response_dto.dart
@@ -393,6 +392,7 @@ lib/model/tone_mapping.dart
 lib/model/transcode_hw_accel.dart
 lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
+lib/model/update_album_user_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
 lib/model/update_partner_dto.dart
@@ -417,8 +417,8 @@ test/activity_statistics_response_dto_test.dart
 test/add_users_dto_test.dart
 test/album_api_test.dart
 test/album_count_response_dto_test.dart
-test/album_permission_response_dto_test.dart
 test/album_response_dto_test.dart
+test/album_user_response_dto_test.dart
 test/all_job_status_response_dto_test.dart
 test/api_key_api_test.dart
 test/api_key_create_dto_test.dart
@@ -549,7 +549,6 @@ test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_theme_dto_test.dart
 test/server_version_response_dto_test.dart
-test/set_album_permission_dto_test.dart
 test/shared_link_api_test.dart
 test/shared_link_create_dto_test.dart
 test/shared_link_edit_dto_test.dart
@@ -591,6 +590,7 @@ test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
 test/trash_api_test.dart
 test/update_album_dto_test.dart
+test/update_album_user_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart
 test/update_partner_dto_test.dart

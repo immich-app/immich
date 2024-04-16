@@ -6,7 +6,7 @@ import { Column, Entity, Index, ManyToOne, PrimaryColumn } from 'typeorm';
 // Indices for JoinTable
 @Index('IDX_427c350ad49bd3935a50baab73', ['albums'])
 @Index('IDX_f48513bf9bccefd6ff3ad30bd0', ['users'])
-export class AlbumPermissionEntity {
+export class AlbumUserEntity {
   @PrimaryColumn({ type: 'uuid', name: 'albumsId' })
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   albums!: AlbumEntity;

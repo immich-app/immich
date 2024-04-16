@@ -83,12 +83,12 @@ export class AlbumCountResponseDto {
   notShared!: number;
 }
 
-export class SetAlbumPermissionDto {
+export class UpdateAlbumUserDto {
   @ValidateBoolean()
   readonly!: boolean;
 }
 
-export class AlbumPermissionResponseDto {
+export class AlbumUserResponseDto {
   user!: UserResponseDto;
   readonly!: boolean;
 }
@@ -102,9 +102,9 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumPermissions' })
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of users' })
   sharedUsers!: UserResponseDto[];
-  albumPermissions!: AlbumPermissionResponseDto[];
+  sharedUsersV2!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
   owner!: UserResponseDto;
@@ -121,12 +121,12 @@ export class AlbumResponseDto {
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
-  const albumPermissions: AlbumPermissionResponseDto[] = [];
+  const sharedUsersV2: AlbumUserResponseDto[] = [];
 
-  if (entity.albumPermissions) {
-    for (const permission of entity.albumPermissions) {
+  if (entity.sharedUsers) {
+    for (const permission of entity.sharedUsers) {
       sharedUsers.push(mapUser(permission.users));
-      albumPermissions.push({
+      sharedUsersV2.push({
         user: mapUser(permission.users),
         readonly: permission.readonly,
       });
@@ -155,7 +155,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
-    albumPermissions,
+    sharedUsersV2,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,

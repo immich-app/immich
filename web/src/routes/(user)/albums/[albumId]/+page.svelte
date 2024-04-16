@@ -136,8 +136,8 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: userHasWriteAccess = !album.albumPermissions.find(({ user: {id } }) => id === $user.id)?.readonly;
-  $: albumHasReadonlyUsers = album.albumPermissions.some(({ readonly }) => readonly);
+  $: userHasWriteAccess = !album.sharedUsersV2.find(({ user: { id } }) => id === $user.id)?.readonly;
+  $: albumHasReadonlyUsers = album.sharedUsersV2.some(({ readonly }) => readonly);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -341,14 +341,6 @@
       viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error deleting share users');
-    }
-  };
-
-  const handleUpdatePermissions = async () => {
-    try {
-      await refreshAlbum();
-    } catch (error) {
-      handleError(error, 'Error updating permissions');
     }
   };
 
@@ -592,7 +584,7 @@
                     </button>
 
                     <!-- users with write access (collaborators) -->
-                    {#each album.albumPermissions.filter(({readonly}) => !readonly) as {user} (user.id)}
+                    {#each album.sharedUsersV2.filter(({ readonly }) => !readonly) as { user } (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
@@ -703,7 +695,7 @@
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
-    on:updatePermissions={handleUpdatePermissions}
+    on:refreshAlbum={refreshAlbum}
   />
 {/if}
 
