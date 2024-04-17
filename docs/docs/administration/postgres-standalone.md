@@ -56,8 +56,7 @@ ALTER DATABASE <immichdatabasename> OWNER TO <immichdbusername>;
 CREATE EXTENSION vectors;
 CREATE EXTENSION earthdistance CASCADE;
 ALTER DATABASE <immichdatabasename> SET search_path TO "$user", public, vectors;
-GRANT USAGE ON SCHEMA vectors TO <immichdbusername>;
-ALTER DEFAULT PRIVILEGES IN SCHEMA vectors GRANT SELECT ON TABLES TO <immichdbusername>;
+ALTER SCHEMA vectors OWNER TO <immichdbusername>;
 COMMIT;
 ```
 
