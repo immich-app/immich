@@ -196,11 +196,12 @@ export class MediaService {
         const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
         const extractedPath = StorageCore.getTempPathInDir(dirname(path));
         const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
+        const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
 
+        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+        const imageOptions = { format, size, colorspace, quality: image.quality };
         try {
-          const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-          const imageOptions = { format, size, colorspace, quality: image.quality };
-          await this.mediaRepository.resize(didExtract ? extractedPath : asset.originalPath, path, imageOptions);
+          await this.mediaRepository.resize(useExtracted ? extractedPath : asset.originalPath, path, imageOptions);
         } finally {
           if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
@@ -523,7 +524,7 @@ export class MediaService {
     }
   }
 
-  parseBitrateToBps(bitrateString: string) {
+  private parseBitrateToBps(bitrateString: string) {
     const bitrateValue = Number.parseInt(bitrateString);
 
     if (Number.isNaN(bitrateValue)) {
@@ -537,5 +538,12 @@ export class MediaService {
     } else {
       return bitrateValue;
     }
+  }
+
+  private async shouldUseExtractedImage(extractedPath: string, targetSize: number) {
+    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPath);
+    const extractedSize = Math.min(width, height);
+
+    return extractedSize >= targetSize;
   }
 }

@@ -34,6 +34,11 @@ export interface VideoFormat {
   bitrate: number;
 }
 
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
@@ -74,6 +79,7 @@ export interface IMediaRepository {
   resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
   crop(input: string, options: CropOptions): Promise<Buffer>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
+  getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
   probe(input: string): Promise<VideoInfo>;

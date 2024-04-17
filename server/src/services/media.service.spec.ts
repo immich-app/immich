@@ -397,6 +397,7 @@ describe(MediaService.name, () => {
 
   it('should extract embedded image if enabled and available', async () => {
     mediaMock.extract.mockResolvedValue(true);
+    mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
     configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
     assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
 
@@ -417,6 +418,28 @@ describe(MediaService.name, () => {
     expect(mediaMock.resize.mock.calls[0][0].toString().endsWith('.tmp'));
   });
 
+  it('should resize original image if embedded image is too small', async () => {
+    mediaMock.extract.mockResolvedValue(true);
+    mediaMock.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.resize.mock.calls).toEqual([
+      [
+        assetStub.imageDng.originalPath,
+        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        {
+          format: ImageFormat.WEBP,
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+        },
+      ],
+    ]);
+  });
+
   it('should resize original image if embedded image not found', async () => {
     configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
     assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
@@ -433,6 +456,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
       },
     );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
   });
 
   it('should resize original image if embedded image extraction is not enabled', async () => {
@@ -452,6 +476,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
       },
     );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
   });
 
   describe('handleGenerateThumbhash', () => {

@@ -10,6 +10,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   CropOptions,
   IMediaRepository,
+  ImageDimensions,
   ResizeOptions,
   TranscodeOptions,
   VideoInfo,
@@ -149,6 +150,11 @@ export class MediaRepository implements IMediaRepository {
 
     const thumbhash = await import('thumbhash');
     return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
+  }
+
+  async getImageDimensions(input: string): Promise<ImageDimensions> {
+    const { width = 0, height = 0 } = await sharp(input).metadata();
+    return { width, height };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
