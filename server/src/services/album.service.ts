@@ -231,9 +231,7 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      album.sharedUsers.push(
-        await this.albumUserRepository.create({ user: { id: userId }, album: { id } } as AlbumUserEntity),
-      );
+      album.sharedUsers.push(await this.albumUserRepository.create({ userId: userId, albumId: id }));
     }
 
     return mapAlbumWithoutAssets(album);

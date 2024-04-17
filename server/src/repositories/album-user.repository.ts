@@ -11,19 +11,18 @@ export class AlbumUserRepository implements IAlbumUserRepository {
   constructor(@InjectRepository(AlbumUserEntity) private repository: Repository<AlbumUserEntity>) {}
 
   async create(dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
-    const { user, album } = await this.repository.save(dto);
-    return this.repository.findOneOrFail({ where: { user, album }, relations: { user: true } });
+    const { userId, albumId } = await this.repository.save(dto);
+    return this.repository.findOneOrFail({ where: { userId, albumId } });
   }
 
   async update({ userId, albumId }: AlbumPermissionId, dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
-    await this.repository.update({ user: { id: userId }, album: { id: albumId } }, dto);
+    await this.repository.update({ userId, albumId }, dto);
     return this.repository.findOneOrFail({
-      where: { user: { id: userId }, album: { id: albumId } },
-      relations: { user: true },
+      where: { userId, albumId },
     });
   }
 
   async delete({ userId, albumId }: AlbumPermissionId): Promise<void> {
-    await this.repository.delete({ user: { id: userId }, album: { id: albumId } });
+    await this.repository.delete({ userId, albumId });
   }
 }
