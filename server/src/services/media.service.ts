@@ -196,11 +196,12 @@ export class MediaService {
         const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
         const extractedPath = StorageCore.getTempPathInDir(dirname(path));
         const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
-        const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
-
-        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-        const imageOptions = { format, size, colorspace, quality: image.quality };
+        
         try {
+          const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
+          const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+          const imageOptions = { format, size, colorspace, quality: image.quality };
+
           await this.mediaRepository.resize(useExtracted ? extractedPath : asset.originalPath, path, imageOptions);
         } finally {
           if (didExtract) {

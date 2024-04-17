@@ -403,9 +403,10 @@ describe(MediaService.name, () => {
 
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
+    const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
     expect(mediaMock.resize.mock.calls).toEqual([
       [
-        expect.any(String),
+        extractedPath,
         'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
         {
           format: ImageFormat.WEBP,
@@ -415,7 +416,8 @@ describe(MediaService.name, () => {
         },
       ],
     ]);
-    expect(mediaMock.resize.mock.calls[0][0].toString().endsWith('.tmp'));
+    expect(extractedPath?.endsWith('.tmp')).toBe(true);
+    expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
   });
 
   it('should resize original image if embedded image is too small', async () => {
@@ -438,6 +440,9 @@ describe(MediaService.name, () => {
         },
       ],
     ]);
+    const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+    expect(extractedPath?.endsWith('.tmp')).toBe(true);
+    expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
   });
 
   it('should resize original image if embedded image not found', async () => {
