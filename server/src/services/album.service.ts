@@ -32,7 +32,7 @@ export class AlbumService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IAlbumUserRepository) private albumPermissionRepository: IAlbumUserRepository,
+    @Inject(IAlbumUserRepository) private albumUserRepository: IAlbumUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -232,7 +232,7 @@ export class AlbumService {
       }
 
       album.sharedUsers.push(
-        await this.albumPermissionRepository.create({ user: { id: userId }, album: { id } } as AlbumUserEntity),
+        await this.albumUserRepository.create({ user: { id: userId }, album: { id } } as AlbumUserEntity),
       );
     }
 
@@ -260,7 +260,7 @@ export class AlbumService {
       await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
     }
 
-    await this.albumPermissionRepository.delete({ albumId: id, userId });
+    await this.albumUserRepository.delete({ albumId: id, userId });
   }
 
   async updateAlbumUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
@@ -273,7 +273,7 @@ export class AlbumService {
       throw new BadRequestException('Album not shared with user');
     }
 
-    await this.albumPermissionRepository.update({ albumId: id, userId }, { role: dto.role });
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

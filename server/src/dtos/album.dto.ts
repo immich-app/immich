@@ -127,11 +127,11 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
   const sharedUsersV2: AlbumUserResponseDto[] = [];
 
   if (entity.sharedUsers) {
-    for (const permission of entity.sharedUsers) {
-      sharedUsers.push(mapUser(permission.user));
+    for (const albumUser of entity.sharedUsers) {
+      sharedUsers.push(mapUser(albumUser.user));
       sharedUsersV2.push({
-        user: mapUser(permission.user),
-        role: permission.role,
+        user: mapUser(albumUser.user),
+        role: albumUser.role,
       });
     }
   }
