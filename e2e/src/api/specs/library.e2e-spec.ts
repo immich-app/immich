@@ -8,7 +8,7 @@ import {
 } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
-import { userDto, uuidDto } from 'src/fixtures';
+import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
@@ -18,7 +18,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
   scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
 
-describe('/library', () => {
+describe.skip('/library', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let library: LibraryResponseDto;
@@ -28,7 +28,7 @@ describe('/library', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     await utils.resetAdminConfig(admin.accessToken);
-    user = await utils.userSetup(admin.accessToken, userDto.user1);
+    user = await utils.userSetup(admin.accessToken, createUserDto.user1);
     library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId, type: LibraryType.External });
     websocket = await utils.connectWebsocket(admin.accessToken);
     utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);

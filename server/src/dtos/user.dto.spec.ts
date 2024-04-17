@@ -1,5 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { PermissionPreset } from 'src/dtos/auth.dto';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto, UpdateUserDto } from 'src/dtos/user.dto';
 
 describe('update user DTO', () => {
@@ -22,6 +23,7 @@ describe('create user DTO', () => {
       email: undefined,
       password: 'password',
       name: 'name',
+      permissionPreset: PermissionPreset.USER,
     };
     let dto: CreateUserDto = plainToInstance(CreateUserDto, params);
     let errors = await validate(dto);
@@ -45,6 +47,7 @@ describe('create user DTO', () => {
       email: someEmail,
       password: 'some password',
       name: 'some name',
+      permissionPreset: 'user',
     });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);

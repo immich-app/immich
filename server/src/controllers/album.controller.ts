@@ -10,34 +10,36 @@ import {
   UpdateAlbumDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { AuthDto, Permission } from 'src/dtos/auth.dto';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')
 @Controller('album')
-@Authenticated()
 export class AlbumController {
   constructor(private service: AlbumService) {}
 
   @Get('count')
+  @Authenticated(Permission.ALBUM_READ)
   getAlbumCount(@Auth() auth: AuthDto): Promise<AlbumCountResponseDto> {
     return this.service.getCount(auth);
   }
 
   @Get()
+  @Authenticated(Permission.ALBUM_READ)
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query);
   }
 
   @Post()
+  @Authenticated(Permission.ALBUM_CREATE)
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
-  @SharedLinkRoute()
   @Get(':id')
+  @Authenticated(Permission.ALBUM_READ, { sharedLink: true })
   getAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -47,6 +49,7 @@ export class AlbumController {
   }
 
   @Patch(':id')
+  @Authenticated(Permission.ALBUM_UPDATE)
   updateAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -56,12 +59,13 @@ export class AlbumController {
   }
 
   @Delete(':id')
+  @Authenticated(Permission.ALBUM_DELETE)
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 
-  @SharedLinkRoute()
   @Put(':id/assets')
+  @Authenticated(Permission.ALBUM_ADD_ASSET, { sharedLink: true })
   addAssetsToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -71,6 +75,7 @@ export class AlbumController {
   }
 
   @Delete(':id/assets')
+  @Authenticated(Permission.ALBUM_REMOVE_ASSET)
   removeAssetFromAlbum(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
@@ -80,6 +85,7 @@ export class AlbumController {
   }
 
   @Put(':id/users')
+  @Authenticated(Permission.ALBUM_ADD_USER)
   addUsersToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -89,6 +95,7 @@ export class AlbumController {
   }
 
   @Delete(':id/user/:userId')
+  @Authenticated(Permission.ALBUM_REMOVE_USER, { bypassParamId: 'userId' })
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

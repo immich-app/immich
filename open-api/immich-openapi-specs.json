@@ -6436,15 +6436,6 @@
           },
           {
             "api_key": []
-          },
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
           }
         ],
         "tags": [
@@ -6564,15 +6555,6 @@
           }
         },
         "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          },
           {
             "bearer": []
           },
@@ -7975,6 +7957,103 @@
         ],
         "type": "object"
       },
+      "AuthorizationPermission": {
+        "enum": [
+          "activity.create",
+          "activity.read",
+          "activity.update",
+          "activity.delete",
+          "album.create",
+          "album.read",
+          "album.update",
+          "album.delete",
+          "asset.create",
+          "asset.read",
+          "asset.update",
+          "asset.delete",
+          "apiKey.create",
+          "apiKey.read",
+          "apiKey.update",
+          "apiKey.delete",
+          "authDevice.create",
+          "authDevice.read",
+          "authDevice.update",
+          "authDevice.delete",
+          "face.create",
+          "face.read",
+          "face.update",
+          "face.delete",
+          "library.create",
+          "library.read",
+          "library.update",
+          "library.delete",
+          "memory.create",
+          "memory.read",
+          "memory.update",
+          "memory.delete",
+          "memory.addAsset",
+          "memory.removeAsset",
+          "partner.create",
+          "partner.read",
+          "partner.update",
+          "partner.delete",
+          "person.create",
+          "person.read",
+          "person.update",
+          "person.delete",
+          "report.create",
+          "report.read",
+          "report.update",
+          "report.delete",
+          "session.create",
+          "session.read",
+          "session.update",
+          "session.delete",
+          "sharedLink.create",
+          "sharedLink.read",
+          "sharedLink.update",
+          "sharedLink.delete",
+          "systemConfig.create",
+          "systemConfig.read",
+          "systemConfig.update",
+          "systemConfig.delete",
+          "systemMetadata.create",
+          "systemMetadata.read",
+          "systemMetadata.update",
+          "systemMetadata.delete",
+          "stack.create",
+          "stack.read",
+          "stack.update",
+          "stack.delete",
+          "tag.create",
+          "tag.read",
+          "tag.update",
+          "tag.delete",
+          "user.create",
+          "user.read",
+          "user.update",
+          "user.delete",
+          "auth.changePassword",
+          "auth.oauth",
+          "album.addAsset",
+          "album.removeAsset",
+          "album.addUser",
+          "album.removeUser",
+          "asset.viewThumb",
+          "asset.viewPreview",
+          "asset.viewOriginal",
+          "asset.upload",
+          "asset.download",
+          "job.read",
+          "job.run",
+          "map.read",
+          "user.readSimple",
+          "user.changePassword",
+          "server.read",
+          "server.setup"
+        ],
+        "type": "string"
+      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -8284,6 +8363,15 @@
           "password": {
             "type": "string"
           },
+          "permissionPreset": {
+            "$ref": "#/components/schemas/PermissionPreset"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/AuthorizationPermission"
+            },
+            "type": "array"
+          },
           "quotaSizeInBytes": {
             "format": "int64",
             "nullable": true,
@@ -8300,7 +8388,8 @@
         "required": [
           "email",
           "name",
-          "password"
+          "password",
+          "permissionPreset"
         ],
         "type": "object"
       },
@@ -9364,6 +9453,106 @@
           "oauthId": {
             "type": "string"
           },
+          "permissions": {
+            "items": {
+              "enum": [
+                "activity.create",
+                "activity.read",
+                "activity.update",
+                "activity.delete",
+                "album.create",
+                "album.read",
+                "album.update",
+                "album.delete",
+                "asset.create",
+                "asset.read",
+                "asset.update",
+                "asset.delete",
+                "apiKey.create",
+                "apiKey.read",
+                "apiKey.update",
+                "apiKey.delete",
+                "authDevice.create",
+                "authDevice.read",
+                "authDevice.update",
+                "authDevice.delete",
+                "face.create",
+                "face.read",
+                "face.update",
+                "face.delete",
+                "library.create",
+                "library.read",
+                "library.update",
+                "library.delete",
+                "memory.create",
+                "memory.read",
+                "memory.update",
+                "memory.delete",
+                "memory.addAsset",
+                "memory.removeAsset",
+                "partner.create",
+                "partner.read",
+                "partner.update",
+                "partner.delete",
+                "person.create",
+                "person.read",
+                "person.update",
+                "person.delete",
+                "report.create",
+                "report.read",
+                "report.update",
+                "report.delete",
+                "session.create",
+                "session.read",
+                "session.update",
+                "session.delete",
+                "sharedLink.create",
+                "sharedLink.read",
+                "sharedLink.update",
+                "sharedLink.delete",
+                "systemConfig.create",
+                "systemConfig.read",
+                "systemConfig.update",
+                "systemConfig.delete",
+                "systemMetadata.create",
+                "systemMetadata.read",
+                "systemMetadata.update",
+                "systemMetadata.delete",
+                "stack.create",
+                "stack.read",
+                "stack.update",
+                "stack.delete",
+                "tag.create",
+                "tag.read",
+                "tag.update",
+                "tag.delete",
+                "user.create",
+                "user.read",
+                "user.update",
+                "user.delete",
+                "auth.changePassword",
+                "auth.oauth",
+                "album.addAsset",
+                "album.removeAsset",
+                "album.addUser",
+                "album.removeUser",
+                "asset.viewThumb",
+                "asset.viewPreview",
+                "asset.viewOriginal",
+                "asset.upload",
+                "asset.download",
+                "job.read",
+                "job.run",
+                "map.read",
+                "user.readSimple",
+                "user.changePassword",
+                "server.read",
+                "server.setup"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -9496,6 +9685,14 @@
           "id"
         ],
         "type": "object"
+      },
+      "PermissionPreset": {
+        "enum": [
+          "user",
+          "admin",
+          "custom"
+        ],
+        "type": "string"
       },
       "PersonCreateDto": {
         "properties": {
@@ -11252,6 +11449,15 @@
           "password": {
             "type": "string"
           },
+          "permissionPreset": {
+            "$ref": "#/components/schemas/PermissionPreset"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/AuthorizationPermission"
+            },
+            "type": "array"
+          },
           "quotaSizeInBytes": {
             "format": "int64",
             "nullable": true,
@@ -11376,6 +11582,106 @@
           },
           "oauthId": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "enum": [
+                "activity.create",
+                "activity.read",
+                "activity.update",
+                "activity.delete",
+                "album.create",
+                "album.read",
+                "album.update",
+                "album.delete",
+                "asset.create",
+                "asset.read",
+                "asset.update",
+                "asset.delete",
+                "apiKey.create",
+                "apiKey.read",
+                "apiKey.update",
+                "apiKey.delete",
+                "authDevice.create",
+                "authDevice.read",
+                "authDevice.update",
+                "authDevice.delete",
+                "face.create",
+                "face.read",
+                "face.update",
+                "face.delete",
+                "library.create",
+                "library.read",
+                "library.update",
+                "library.delete",
+                "memory.create",
+                "memory.read",
+                "memory.update",
+                "memory.delete",
+                "memory.addAsset",
+                "memory.removeAsset",
+                "partner.create",
+                "partner.read",
+                "partner.update",
+                "partner.delete",
+                "person.create",
+                "person.read",
+                "person.update",
+                "person.delete",
+                "report.create",
+                "report.read",
+                "report.update",
+                "report.delete",
+                "session.create",
+                "session.read",
+                "session.update",
+                "session.delete",
+                "sharedLink.create",
+                "sharedLink.read",
+                "sharedLink.update",
+                "sharedLink.delete",
+                "systemConfig.create",
+                "systemConfig.read",
+                "systemConfig.update",
+                "systemConfig.delete",
+                "systemMetadata.create",
+                "systemMetadata.read",
+                "systemMetadata.update",
+                "systemMetadata.delete",
+                "stack.create",
+                "stack.read",
+                "stack.update",
+                "stack.delete",
+                "tag.create",
+                "tag.read",
+                "tag.update",
+                "tag.delete",
+                "user.create",
+                "user.read",
+                "user.update",
+                "user.delete",
+                "auth.changePassword",
+                "auth.oauth",
+                "album.addAsset",
+                "album.removeAsset",
+                "album.addUser",
+                "album.removeUser",
+                "asset.viewThumb",
+                "asset.viewPreview",
+                "asset.viewOriginal",
+                "asset.upload",
+                "asset.download",
+                "job.read",
+                "job.run",
+                "map.read",
+                "user.readSimple",
+                "user.changePassword",
+                "server.read",
+                "server.setup"
+              ],
+              "type": "string"
+            },
+            "type": "array"
           },
           "profileImagePath": {
             "type": "string"

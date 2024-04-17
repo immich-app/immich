@@ -15,6 +15,7 @@ import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
+  ALL_PERMISSIONS,
   AuthDto,
   ChangePasswordDto,
   ImmichCookie,
@@ -25,6 +26,7 @@ import {
   OAuthCallbackDto,
   OAuthConfigDto,
   SignUpDto,
+  USER_PERMISSIONS,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -143,6 +145,7 @@ export class AuthService {
       name: dto.name,
       password: dto.password,
       storageLabel: 'admin',
+      permissions: ALL_PERMISSIONS,
     });
 
     return mapUser(admin);
@@ -238,6 +241,7 @@ export class AuthService {
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
         storageLabel: storageLabel || null,
+        permissions: USER_PERMISSIONS,
       });
     }
 

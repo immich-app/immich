@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -78,7 +78,7 @@ export class AssetServiceV1 {
 
     try {
       const libraryId = await this.getLibraryId(auth, dto.libraryId);
-      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      await this.access.requirePermission(auth, AccessPermission.ASSET_UPLOAD, libraryId);
       this.requireQuota(auth, file.size);
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
@@ -111,13 +111,13 @@ export class AssetServiceV1 {
 
   public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    await this.access.requirePermission(auth, AccessPermission.TIMELINE_READ, userId);
     const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_VIEW, assetId);
 
     const asset = await this.assetRepositoryV1.get(assetId);
     if (!asset) {
@@ -135,7 +135,7 @@ export class AssetServiceV1 {
 
   public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
     // this is not quite right as sometimes this returns the original still
-    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_VIEW, assetId);
 
     const asset = await this.assetRepository.getById(assetId);
     if (!asset) {

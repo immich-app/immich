@@ -10,48 +10,39 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto, Permission } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UAParser } from 'ua-parser-js';
 
 export enum Metadata {
-  AUTH_ROUTE = 'auth_route',
-  ADMIN_ROUTE = 'admin_route',
   SHARED_ROUTE = 'shared_route',
   PUBLIC_SECURITY = 'public_security',
   API_KEY_SECURITY = 'api_key',
+  PERMISSION = 'auth_permission',
 }
 
-export interface AuthenticatedOptions {
-  admin?: true;
-  isShared?: true;
-}
+type AuthenticatedOptions = {
+  sharedLink?: true;
+  /** skip permission check when param id matches calling user */
+  bypassParamId?: string;
+};
 
-export const Authenticated = (options: AuthenticatedOptions = {}) => {
-  const decorators: MethodDecorator[] = [
+export const Authenticated = (permission: Permission, options?: AuthenticatedOptions) => {
+  const { sharedLink } = { sharedLink: false, ...options };
+
+  const decorators = sharedLink
+    ? [SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false })]
+    : [];
+
+  return applyDecorators(
     ApiBearerAuth(),
     ApiCookieAuth(),
     ApiSecurity(Metadata.API_KEY_SECURITY),
-    SetMetadata(Metadata.AUTH_ROUTE, true),
-  ];
-
-  if (options.admin) {
-    decorators.push(AdminRoute());
-  }
-
-  if (options.isShared) {
-    decorators.push(SharedLinkRoute());
-  }
-
-  return applyDecorators(...decorators);
+    SetMetadata(Metadata.PERMISSION, permission),
+    ...decorators,
+  );
 };
-
-export const PublicRoute = () =>
-  applyDecorators(SetMetadata(Metadata.AUTH_ROUTE, false), ApiSecurity(Metadata.PUBLIC_SECURITY));
-export const SharedLinkRoute = () =>
-  applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
-export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
 export const Auth = createParamDecorator((data, context: ExecutionContext): AuthDto => {
   return context.switchToHttp().getRequest<{ user: AuthDto }>().user;
@@ -89,26 +80,29 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const targets = [context.getHandler(), context.getClass()];
+    const method = context.getHandler();
 
-    const isAuthRoute = this.reflector.getAllAndOverride(Metadata.AUTH_ROUTE, targets);
-    const isAdminRoute = this.reflector.getAllAndOverride(Metadata.ADMIN_ROUTE, targets);
-    const isSharedRoute = this.reflector.getAllAndOverride(Metadata.SHARED_ROUTE, targets);
+    const permission = this.reflector.get<Permission>(Metadata.PERMISSION, method);
+    const isSharedRoute = this.reflector.get<boolean>(Metadata.SHARED_ROUTE, method);
 
-    if (!isAuthRoute) {
+    // public
+    if (!permission) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     const authDto = await this.authService.validate(request.headers, request.query as Record<string, string>);
+    const isApiKey = !!authDto.apiKey;
+    const isUserToken = !!authDto.session;
+
     if (authDto.sharedLink && !isSharedRoute) {
       this.logger.warn(`Denied access to non-shared route: ${request.path}`);
       return false;
     }
 
-    if (isAdminRoute && !authDto.user.isAdmin) {
-      this.logger.warn(`Denied access to admin only route: ${request.path}`);
+    if ((isApiKey || isUserToken) && !authDto.user.permissions.includes(permission)) {
+      this.logger.warn(`Denied access to route: no ${permission} permission: ${request.path}. `);
       return false;
     }
 

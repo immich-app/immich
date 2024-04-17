@@ -1,3 +1,4 @@
+import { Permission } from 'src/dtos/auth.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import {
@@ -87,4 +88,7 @@ export class UserEntity {
 
   @Column({ type: 'bigint', default: 0 })
   quotaUsageInBytes!: number;
+
+  @Column({ type: 'varchar', array: true })
+  permissions!: Permission[];
 }

@@ -9,21 +9,20 @@ import {
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
+  Permission,
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
 
 @ApiTags('Authentication')
 @Controller('auth')
-@Authenticated()
 export class AuthController {
   constructor(private service: AuthService) {}
 
-  @PublicRoute()
   @Post('login')
   async login(
     @Body() loginCredential: LoginCredentialDto,
@@ -41,25 +40,27 @@ export class AuthController {
     });
   }
 
-  @PublicRoute()
   @Post('admin-sign-up')
   signUpAdmin(@Body() dto: SignUpDto): Promise<UserResponseDto> {
     return this.service.adminSignUp(dto);
   }
 
   @Post('validateToken')
+  @Authenticated(Permission.AUTH_DEVICE_READ)
   @HttpCode(HttpStatus.OK)
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
 
   @Post('change-password')
+  @Authenticated(Permission.AUTH_CHANGE_PASSWORD)
   @HttpCode(HttpStatus.OK)
   changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.service.changePassword(auth, dto).then(mapUser);
   }
 
   @Post('logout')
+  @Authenticated(Permission.AUTH_DEVICE_DELETE)
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() request: Request,

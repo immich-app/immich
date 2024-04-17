@@ -71,6 +71,7 @@ export type UserResponseDto = {
     memoriesEnabled?: boolean;
     name: string;
     oauthId: string;
+    permissions?: ("activity.create" | "activity.read" | "activity.update" | "activity.delete" | "album.create" | "album.read" | "album.update" | "album.delete" | "apiKey.create" | "apiKey.read" | "apiKey.update" | "apiKey.delete" | "asset.create" | "asset.read" | "asset.update" | "asset.delete" | "authDevice.create" | "authDevice.read" | "authDevice.update" | "authDevice.delete" | "face.create" | "face.read" | "face.update" | "face.delete" | "memory.create" | "memory.read" | "memory.update" | "memory.delete" | "partner.create" | "partner.read" | "partner.update" | "partner.delete" | "person.create" | "person.read" | "person.update" | "person.delete" | "sharedLink.create" | "sharedLink.read" | "sharedLink.update" | "sharedLink.delete" | "systemConfig.read" | "systemConfig.update" | "systemConfig.delete" | "stack.create" | "stack.read" | "stack.update" | "stack.delete" | "tag.create" | "tag.read" | "tag.update" | "tag.delete" | "user.create" | "user.readSimple" | "user.read" | "user.update" | "user.delete")[];
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -513,6 +514,7 @@ export type PartnerResponseDto = {
     memoriesEnabled?: boolean;
     name: string;
     oauthId: string;
+    permissions?: ("activity.create" | "activity.read" | "activity.update" | "activity.delete" | "album.create" | "album.read" | "album.update" | "album.delete" | "apiKey.create" | "apiKey.read" | "apiKey.update" | "apiKey.delete" | "asset.create" | "asset.read" | "asset.update" | "asset.delete" | "authDevice.create" | "authDevice.read" | "authDevice.update" | "authDevice.delete" | "face.create" | "face.read" | "face.update" | "face.delete" | "memory.create" | "memory.read" | "memory.update" | "memory.delete" | "partner.create" | "partner.read" | "partner.update" | "partner.delete" | "person.create" | "person.read" | "person.update" | "person.delete" | "sharedLink.create" | "sharedLink.read" | "sharedLink.update" | "sharedLink.delete" | "systemConfig.read" | "systemConfig.update" | "systemConfig.delete" | "stack.create" | "stack.read" | "stack.update" | "stack.delete" | "tag.create" | "tag.read" | "tag.update" | "tag.delete" | "user.create" | "user.readSimple" | "user.read" | "user.update" | "user.delete")[];
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -1021,6 +1023,8 @@ export type CreateUserDto = {
     memoriesEnabled?: boolean;
     name: string;
     password: string;
+    permissionPreset: PermissionPreset;
+    permissions?: AuthorizationPermission[];
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
@@ -1033,6 +1037,8 @@ export type UpdateUserDto = {
     memoriesEnabled?: boolean;
     name?: string;
     password?: string;
+    permissionPreset?: PermissionPreset;
+    permissions?: AuthorizationPermission[];
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string;
@@ -3102,4 +3108,67 @@ export enum MapTheme {
 export enum TimeBucketSize {
     Day = "DAY",
     Month = "MONTH"
+}
+export enum PermissionPreset {
+    User = "user",
+    Admin = "admin",
+    Custom = "custom"
+}
+export enum AuthorizationPermission {
+    ActivityCreate = "activity.create",
+    ActivityRead = "activity.read",
+    ActivityUpdate = "activity.update",
+    ActivityDelete = "activity.delete",
+    AlbumCreate = "album.create",
+    AlbumRead = "album.read",
+    AlbumUpdate = "album.update",
+    AlbumDelete = "album.delete",
+    ApiKeyCreate = "apiKey.create",
+    ApiKeyRead = "apiKey.read",
+    ApiKeyUpdate = "apiKey.update",
+    ApiKeyDelete = "apiKey.delete",
+    AssetCreate = "asset.create",
+    AssetRead = "asset.read",
+    AssetUpdate = "asset.update",
+    AssetDelete = "asset.delete",
+    AuthDeviceCreate = "authDevice.create",
+    AuthDeviceRead = "authDevice.read",
+    AuthDeviceUpdate = "authDevice.update",
+    AuthDeviceDelete = "authDevice.delete",
+    FaceCreate = "face.create",
+    FaceRead = "face.read",
+    FaceUpdate = "face.update",
+    FaceDelete = "face.delete",
+    MemoryCreate = "memory.create",
+    MemoryRead = "memory.read",
+    MemoryUpdate = "memory.update",
+    MemoryDelete = "memory.delete",
+    PartnerCreate = "partner.create",
+    PartnerRead = "partner.read",
+    PartnerUpdate = "partner.update",
+    PartnerDelete = "partner.delete",
+    PersonCreate = "person.create",
+    PersonRead = "person.read",
+    PersonUpdate = "person.update",
+    PersonDelete = "person.delete",
+    SharedLinkCreate = "sharedLink.create",
+    SharedLinkRead = "sharedLink.read",
+    SharedLinkUpdate = "sharedLink.update",
+    SharedLinkDelete = "sharedLink.delete",
+    SystemConfigRead = "systemConfig.read",
+    SystemConfigUpdate = "systemConfig.update",
+    SystemConfigDelete = "systemConfig.delete",
+    StackCreate = "stack.create",
+    StackRead = "stack.read",
+    StackUpdate = "stack.update",
+    StackDelete = "stack.delete",
+    TagCreate = "tag.create",
+    TagRead = "tag.read",
+    TagUpdate = "tag.update",
+    TagDelete = "tag.delete",
+    UserCreate = "user.create",
+    UserReadSimple = "user.readSimple",
+    UserRead = "user.read",
+    UserUpdate = "user.update",
+    UserDelete = "user.delete"
 }

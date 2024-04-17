@@ -48,6 +48,10 @@ export class UserCore {
       throw new BadRequestException('The server already has an admin');
     }
 
+    if (dto.permissions) {
+      // TODO validate granted permissions
+    }
+
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== id) {
@@ -93,6 +97,11 @@ export class UserCore {
     if (payload.storageLabel) {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
+
+    if (payload.permissions) {
+      // TODO validate permissions
+    }
+
     const userEntity = await this.userRepository.create(payload);
     await this.libraryRepository.create({
       owner: { id: userEntity.id } as UserEntity,

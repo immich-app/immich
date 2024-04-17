@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
@@ -210,7 +210,7 @@ export class AssetService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, id);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_READ, id);
 
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
@@ -250,7 +250,7 @@ export class AssetService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_UPDATE, id);
 
     const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
@@ -273,7 +273,7 @@ export class AssetService {
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_UPDATE, ids);
 
     // TODO: refactor this logic into separate API calls POST /stack, PUT /stack, etc.
     const stackIdsToCheckForDelete: string[] = [];
@@ -289,7 +289,7 @@ export class AssetService {
       );
     } else if (options.stackParentId) {
       //Creating new stack if parent doesn't have one already. If it does, then we add to the existing stack
-      await this.access.requirePermission(auth, Permission.ASSET_UPDATE, options.stackParentId);
+      await this.access.requirePermission(auth, AccessPermission.ASSET_UPDATE, options.stackParentId);
       const primaryAsset = await this.assetRepository.getById(options.stackParentId, { stack: { assets: true } });
       if (!primaryAsset) {
         throw new BadRequestException('Asset not found for given stackParentId');
@@ -418,7 +418,7 @@ export class AssetService {
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_DELETE, ids);
 
     if (force) {
       await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
@@ -430,8 +430,8 @@ export class AssetService {
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
     const { oldParentId, newParentId } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_READ, oldParentId);
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, newParentId);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_READ, oldParentId);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_UPDATE, newParentId);
 
     const childIds: string[] = [];
     const oldParent = await this.assetRepository.getById(oldParentId, {
@@ -464,7 +464,7 @@ export class AssetService {
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_UPDATE, dto.assetIds);
 
     const jobs: JobItem[] = [];
 

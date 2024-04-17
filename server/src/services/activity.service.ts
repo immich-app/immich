@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -28,7 +28,7 @@ export class ActivityService {
   }
 
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
+    await this.access.requirePermission(auth, AccessPermission.ALBUM_READ, dto.albumId);
     const activities = await this.repository.search({
       userId: dto.userId,
       albumId: dto.albumId,
@@ -40,12 +40,12 @@ export class ActivityService {
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
+    await this.access.requirePermission(auth, AccessPermission.ALBUM_READ, dto.albumId);
     return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
-    await this.access.requirePermission(auth, Permission.ACTIVITY_CREATE, dto.albumId);
+    await this.access.requirePermission(auth, AccessPermission.ACTIVITY_CREATE, dto.albumId);
 
     const common = {
       userId: auth.user.id,
@@ -79,7 +79,7 @@ export class ActivityService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.access.requirePermission(auth, Permission.ACTIVITY_DELETE, id);
+    await this.access.requirePermission(auth, AccessPermission.ACTIVITY_DELETE, id);
     await this.repository.delete(id);
   }
 }

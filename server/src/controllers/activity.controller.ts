@@ -8,28 +8,30 @@ import {
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
 } from 'src/dtos/activity.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto, Permission } from 'src/dtos/auth.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ActivityService } from 'src/services/activity.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Activity')
 @Controller('activity')
-@Authenticated()
 export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get()
+  @Authenticated(Permission.ACTIVITY_READ)
   getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
   @Get('statistics')
+  @Authenticated(Permission.ACTIVITY_READ)
   getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
 
   @Post()
+  @Authenticated(Permission.ACTIVITY_CREATE)
   async createActivity(
     @Auth() auth: AuthDto,
     @Body() dto: ActivityCreateDto,
@@ -43,6 +45,7 @@ export class ActivityController {
   }
 
   @Delete(':id')
+  @Authenticated(Permission.ACTIVITY_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);

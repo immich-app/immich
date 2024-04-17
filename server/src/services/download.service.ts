@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
@@ -26,7 +26,7 @@ export class DownloadService {
   }
 
   async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_DOWNLOAD, id);
 
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
@@ -81,7 +81,7 @@ export class DownloadService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, dto.assetIds);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_DOWNLOAD, dto.assetIds);
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
@@ -117,20 +117,20 @@ export class DownloadService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
+      await this.access.requirePermission(auth, AccessPermission.ASSET_DOWNLOAD, assetIds);
       const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {
       const albumId = dto.albumId;
-      await this.access.requirePermission(auth, Permission.ALBUM_DOWNLOAD, albumId);
+      await this.access.requirePermission(auth, AccessPermission.ALBUM_DOWNLOAD, albumId);
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
     }
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
+      await this.access.requirePermission(auth, AccessPermission.TIMELINE_DOWNLOAD, userId);
       return usePagination(PAGINATION_SIZE, (pagination) =>
         this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
       );

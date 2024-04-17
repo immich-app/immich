@@ -1,5 +1,5 @@
 import { BadRequestException, Inject } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
@@ -59,15 +59,15 @@ export class TimelineService {
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
     if (dto.albumId) {
-      await this.accessCore.requirePermission(auth, Permission.ALBUM_READ, [dto.albumId]);
+      await this.accessCore.requirePermission(auth, AccessPermission.ALBUM_READ, [dto.albumId]);
     } else {
       dto.userId = dto.userId || auth.user.id;
     }
 
     if (dto.userId) {
-      await this.accessCore.requirePermission(auth, Permission.TIMELINE_READ, [dto.userId]);
+      await this.accessCore.requirePermission(auth, AccessPermission.TIMELINE_READ, [dto.userId]);
       if (dto.isArchived !== false) {
-        await this.accessCore.requirePermission(auth, Permission.ARCHIVE_READ, [dto.userId]);
+        await this.accessCore.requirePermission(auth, AccessPermission.ARCHIVE_READ, [dto.userId]);
       }
     }
 

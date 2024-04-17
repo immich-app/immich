@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
@@ -48,7 +48,7 @@ export class PartnerService {
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
-    await this.access.requirePermission(auth, Permission.PARTNER_UPDATE, sharedById);
+    await this.access.requirePermission(auth, AccessPermission.PARTNER_UPDATE, sharedById);
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });

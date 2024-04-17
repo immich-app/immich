@@ -1,4 +1,4 @@
-import { UserAvatarColor } from '@immich/sdk';
+import { PermissionPreset, UserAvatarColor } from '@immich/sdk';
 
 export const uuidDto = {
   invalid: 'invalid-uuid',
@@ -26,33 +26,39 @@ export const createUserDto = {
       email: `${key}@immich.cloud`,
       name: `Generated User ${key}`,
       password: `password-${key}`,
+      permissionPreset: PermissionPreset.User,
     };
   },
   user1: {
     email: 'user1@immich.cloud',
     name: 'User 1',
     password: 'password1',
+    permissionPreset: PermissionPreset.User,
   },
   user2: {
     email: 'user2@immich.cloud',
     name: 'User 2',
     password: 'password12',
+    permissionPreset: PermissionPreset.User,
   },
   user3: {
     email: 'user3@immich.cloud',
     name: 'User 3',
+    permissionPreset: PermissionPreset.User,
     password: 'password123',
   },
   user4: {
     email: 'user4@immich.cloud',
     name: 'User 4',
     password: 'password123',
+    permissionPreset: PermissionPreset.User,
   },
   userQuota: {
     email: 'user-quota@immich.cloud',
     name: 'User Quota',
     password: 'password-quota',
     quotaSizeInBytes: 512,
+    permissionPreset: PermissionPreset.User,
   },
 };
 

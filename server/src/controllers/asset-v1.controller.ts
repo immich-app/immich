@@ -31,8 +31,8 @@ import {
   GetAssetThumbnailDto,
   ServeFileDto,
 } from 'src/dtos/asset-v1.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { AuthDto, Permission } from 'src/dtos/auth.dto';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { sendFile } from 'src/utils/file';
@@ -46,12 +46,11 @@ interface UploadFiles {
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)
-@Authenticated()
 export class AssetControllerV1 {
   constructor(private service: AssetServiceV1) {}
 
-  @SharedLinkRoute()
   @Post('upload')
+  @Authenticated(Permission.ASSET_UPLOAD, { sharedLink: true })
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -85,8 +84,8 @@ export class AssetControllerV1 {
     return responseDto;
   }
 
-  @SharedLinkRoute()
   @Get('/file/:id')
+  @Authenticated(Permission.ASSET_VIEW_ORIGINAL, { sharedLink: true })
   @FileResponse()
   async serveFile(
     @Res() res: Response,
@@ -98,8 +97,8 @@ export class AssetControllerV1 {
     await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
   }
 
-  @SharedLinkRoute()
   @Get('/thumbnail/:id')
+  @Authenticated(Permission.ASSET_VIEW_THUMB, { sharedLink: true })
   @FileResponse()
   async getAssetThumbnail(
     @Res() res: Response,
@@ -112,16 +111,19 @@ export class AssetControllerV1 {
   }
 
   @Get('/curated-objects')
+  @Authenticated(Permission.ASSET_READ)
   getCuratedObjects(@Auth() auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
     return this.service.getCuratedObject(auth);
   }
 
   @Get('/curated-locations')
+  @Authenticated(Permission.ASSET_READ)
   getCuratedLocations(@Auth() auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
     return this.service.getCuratedLocation(auth);
   }
 
   @Get('/search-terms')
+  @Authenticated(Permission.ASSET_READ)
   getAssetSearchTerms(@Auth() auth: AuthDto): Promise<string[]> {
     return this.service.getAssetSearchTerm(auth);
   }
@@ -130,6 +132,7 @@ export class AssetControllerV1 {
    * Get all AssetEntity belong to the user
    */
   @Get('/')
+  @Authenticated(Permission.ASSET_READ)
   @ApiHeader({
     name: 'if-none-match',
     description: 'ETag of data already cached on the client',
@@ -144,6 +147,7 @@ export class AssetControllerV1 {
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('/exist')
+  @Authenticated(Permission.ASSET_READ)
   @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @Auth() auth: AuthDto,
@@ -156,6 +160,7 @@ export class AssetControllerV1 {
    * Checks if assets exist by checksums
    */
   @Post('/bulk-upload-check')
+  @Authenticated(Permission.ASSET_READ)
   @HttpCode(HttpStatus.OK)
   checkBulkUpload(
     @Auth() auth: AuthDto,

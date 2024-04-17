@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -23,7 +23,7 @@ export class TrashService {
 
   async restoreAssets(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     const { ids } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
+    await this.access.requirePermission(auth, AccessPermission.ASSET_RESTORE, ids);
     await this.restoreAndSend(auth, ids);
   }
 

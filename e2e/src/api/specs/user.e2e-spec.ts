@@ -135,7 +135,7 @@ describe('/user', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    for (const key of Object.keys(createUserDto.user1)) {
+    for (const key of ['email', 'password', 'name', 'permissionPreset']) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
           .post(`/user`)
@@ -146,6 +146,17 @@ describe('/user', () => {
       });
     }
 
+    it(`should require permissions when using the custom preset `, async () => {
+      const { status, body } = await request(app)
+        .post(`/user`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ ...createUserDto.user1, permissionPreset: 'custom' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.badRequest([expect.stringContaining('each value in permissions must be one of the following')]),
+      );
+    });
+
     it('should ignore `isAdmin`', async () => {
       const { status, body } = await request(app)
         .post(`/user`)
@@ -154,6 +165,7 @@ describe('/user', () => {
           email: 'user5@immich.cloud',
           password: 'password123',
           name: 'Immich',
+          permissionPreset: 'user',
         })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toMatchObject({
@@ -172,6 +184,7 @@ describe('/user', () => {
           password: 'Password123',
           name: 'No Memories',
           memoriesEnabled: false,
+          permissionPreset: 'user',
         })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toMatchObject({

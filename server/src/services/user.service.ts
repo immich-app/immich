@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto, presetToPermissions } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
@@ -60,8 +60,9 @@ export class UserService {
     return this.findOrFail(auth.user.id, {}).then(mapUser);
   }
 
-  create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userCore.createUser(createUserDto).then(mapUser);
+  create(dto: CreateUserDto): Promise<UserResponseDto> {
+    const permissions = presetToPermissions(dto);
+    return this.userCore.createUser({ ...dto, permissions }).then(mapUser);
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
@@ -71,7 +72,8 @@ export class UserService {
       await this.userRepository.syncUsage(dto.id);
     }
 
-    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
+    const permissions = presetToPermissions(dto);
+    return this.userCore.updateUser(auth.user, dto.id, { ...dto, permissions }).then(mapUser);
   }
 
   async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {

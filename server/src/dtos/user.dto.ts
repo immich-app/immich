@@ -1,9 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { Permission, PermissionPreset } from 'src/dtos/auth.dto';
 import { getRandomAvatarColor } from 'src/dtos/user-profile.dto';
 import { UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
+
+const isCustomPreset = ({ permissionPreset }: CreateUserDto) =>
+  permissionPreset && permissionPreset === PermissionPreset.CUSTOM;
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })
@@ -34,6 +38,15 @@ export class CreateUserDto {
 
   @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
+
+  @IsEnum(PermissionPreset)
+  @ApiProperty({ enum: PermissionPreset, enumName: 'PermissionPreset' })
+  permissionPreset!: PermissionPreset;
+
+  @ValidateIf(isCustomPreset)
+  @IsEnum(Permission, { each: true })
+  @ApiPropertyOptional({ enum: Permission, enumName: 'AuthorizationPermission' })
+  permissions?: Permission[];
 }
 
 export class CreateAdminDto {
@@ -112,6 +125,16 @@ export class UpdateUserDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional()
+  @IsEnum(PermissionPreset)
+  @ApiProperty({ enum: PermissionPreset, enumName: 'PermissionPreset' })
+  permissionPreset?: PermissionPreset;
+
+  @ValidateIf(isCustomPreset)
+  @IsEnum(Permission, { each: true })
+  @ApiPropertyOptional({ enum: Permission, enumName: 'AuthorizationPermission' })
+  permissions?: Permission[];
 }
 
 export class UserDto {
@@ -139,6 +162,7 @@ export class UserResponseDto extends UserDto {
   quotaUsageInBytes!: number | null;
   @ApiProperty({ enumName: 'UserStatus', enum: UserStatus })
   status!: string;
+  permissions?: Permission[];
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -165,5 +189,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
+    permissions: entity.permissions,
   };
 }

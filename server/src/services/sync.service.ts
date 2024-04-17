@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
@@ -26,7 +26,7 @@ export class SyncService {
 
   async getAllAssetsForUserFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    await this.access.requirePermission(auth, AccessPermission.TIMELINE_READ, userId);
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
       lastCreationDate: dto.lastCreationDate,
@@ -39,7 +39,7 @@ export class SyncService {
   }
 
   async getChangesForDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, dto.userIds);
+    await this.access.requirePermission(auth, AccessPermission.TIMELINE_READ, dto.userIds);
     const partner = await this.partnerRepository.getAll(auth.user.id);
     const userIds = [auth.user.id, ...partner.filter((p) => p.sharedWithId == auth.user.id).map((p) => p.sharedById)];
     userIds.sort();

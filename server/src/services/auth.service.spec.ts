@@ -55,6 +55,7 @@ const oauthUserWithDefaultQuota = {
   oauthId: sub,
   quotaSizeInBytes: 1_073_741_824,
   storageLabel: null,
+  permissions: expect.any(Array),
 };
 
 describe('AuthService', () => {
@@ -492,6 +493,7 @@ describe('AuthService', () => {
         oauthId: sub,
         quotaSizeInBytes: null,
         storageLabel: null,
+        permissions: expect.any(Array),
       });
     });
 
@@ -512,6 +514,7 @@ describe('AuthService', () => {
         oauthId: sub,
         quotaSizeInBytes: 5_368_709_120,
         storageLabel: null,
+        permissions: expect.any(Array),
       });
     });
   });

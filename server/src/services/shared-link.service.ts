@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -59,7 +59,7 @@ export class SharedLinkService {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await this.access.requirePermission(auth, Permission.ALBUM_SHARE, dto.albumId);
+        await this.access.requirePermission(auth, AccessPermission.ALBUM_SHARE, dto.albumId);
         break;
       }
 
@@ -68,7 +68,7 @@ export class SharedLinkService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await this.access.requirePermission(auth, Permission.ASSET_SHARE, dto.assetIds);
+        await this.access.requirePermission(auth, AccessPermission.ASSET_SHARE, dto.assetIds);
 
         break;
       }
@@ -129,7 +129,7 @@ export class SharedLinkService {
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
-    const allowedAssetIds = await this.access.checkAccess(auth, Permission.ASSET_SHARE, notPresentAssetIds);
+    const allowedAssetIds = await this.access.checkAccess(auth, AccessPermission.ASSET_SHARE, notPresentAssetIds);
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {

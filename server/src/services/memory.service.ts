@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
@@ -25,7 +25,7 @@ export class MemoryService {
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
-    await this.access.requirePermission(auth, Permission.MEMORY_READ, id);
+    await this.access.requirePermission(auth, AccessPermission.MEMORY_READ, id);
     const memory = await this.findOrFail(id);
     return mapMemory(memory);
   }
@@ -34,7 +34,7 @@ export class MemoryService {
     // TODO validate type/data combination
 
     const assetIds = dto.assetIds || [];
-    const allowedAssetIds = await this.access.checkAccess(auth, Permission.ASSET_SHARE, assetIds);
+    const allowedAssetIds = await this.access.checkAccess(auth, AccessPermission.ASSET_SHARE, assetIds);
     const memory = await this.repository.create({
       ownerId: auth.user.id,
       type: dto.type,
@@ -49,7 +49,7 @@ export class MemoryService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, AccessPermission.MEMORY_WRITE, id);
 
     const memory = await this.repository.update({
       id,
@@ -62,12 +62,12 @@ export class MemoryService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await this.access.requirePermission(auth, Permission.MEMORY_DELETE, id);
+    await this.access.requirePermission(auth, AccessPermission.MEMORY_DELETE, id);
     await this.repository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.MEMORY_READ, id);
+    await this.access.requirePermission(auth, AccessPermission.MEMORY_READ, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
     const results = await addAssets(auth, repos, { id, assetIds: dto.ids });
@@ -81,10 +81,10 @@ export class MemoryService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, AccessPermission.MEMORY_WRITE, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
-    const permissions = [Permission.ASSET_SHARE];
+    const permissions = [AccessPermission.ASSET_SHARE];
     const results = await removeAssets(auth, repos, { id, assetIds: dto.ids, permissions });
 
     const hasSuccess = results.find(({ success }) => success);

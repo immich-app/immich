@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -25,7 +25,7 @@ export class SessionService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.access.requirePermission(auth, Permission.AUTH_DEVICE_DELETE, id);
+    await this.access.requirePermission(auth, AccessPermission.AUTH_DEVICE_DELETE, id);
     await this.sessionRepository.delete(id);
   }
 

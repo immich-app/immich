@@ -1,4 +1,4 @@
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore, AccessPermission } from 'src/cores/access.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -20,7 +20,7 @@ export const addAssets = async (
 
   const existingAssetIds = await repository.getAssetIds(dto.id, dto.assetIds);
   const notPresentAssetIds = dto.assetIds.filter((id) => !existingAssetIds.has(id));
-  const allowedAssetIds = await access.checkAccess(auth, Permission.ASSET_SHARE, notPresentAssetIds);
+  const allowedAssetIds = await access.checkAccess(auth, AccessPermission.ASSET_SHARE, notPresentAssetIds);
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {
@@ -50,7 +50,7 @@ export const addAssets = async (
 export const removeAssets = async (
   auth: AuthDto,
   repositories: { accessRepository: IAccessRepository; repository: IBulkAsset },
-  dto: { id: string; assetIds: string[]; permissions: Permission[] },
+  dto: { id: string; assetIds: string[]; permissions: AccessPermission[] },
 ) => {
   const { accessRepository, repository } = repositories;
   const access = AccessCore.create(accessRepository);

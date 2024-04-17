@@ -4,7 +4,7 @@ import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { setDifference, setIsEqual, setUnion } from 'src/utils/set';
 
-export enum Permission {
+export enum AccessPermission {
   ACTIVITY_CREATE = 'activity.create',
   ACTIVITY_DELETE = 'activity.delete',
 
@@ -74,7 +74,7 @@ export class AccessCore {
    * Check if user has access to all ids, for the given permission.
    * Throws error if user does not have access to any of the ids.
    */
-  async requirePermission(auth: AuthDto, permission: Permission, ids: string[] | string) {
+  async requirePermission(auth: AuthDto, permission: AccessPermission, ids: string[] | string) {
     ids = Array.isArray(ids) ? ids : [ids];
     const allowedIds = await this.checkAccess(auth, permission, ids);
     if (!setIsEqual(new Set(ids), allowedIds)) {
@@ -88,7 +88,7 @@ export class AccessCore {
    *
    * @returns Set<string>
    */
-  async checkAccess(auth: AuthDto, permission: Permission, ids: Set<string> | string[]): Promise<Set<string>> {
+  async checkAccess(auth: AuthDto, permission: AccessPermission, ids: Set<string> | string[]): Promise<Set<string>> {
     const idSet = Array.isArray(ids) ? new Set(ids) : ids;
     if (idSet.size === 0) {
       return new Set();
@@ -103,40 +103,40 @@ export class AccessCore {
 
   private async checkAccessSharedLink(
     sharedLink: SharedLinkEntity,
-    permission: Permission,
+    permission: AccessPermission,
     ids: Set<string>,
   ): Promise<Set<string>> {
     const sharedLinkId = sharedLink.id;
 
     switch (permission) {
-      case Permission.ASSET_READ: {
+      case AccessPermission.ASSET_READ: {
         return await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids);
       }
 
-      case Permission.ASSET_VIEW: {
+      case AccessPermission.ASSET_VIEW: {
         return await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids);
       }
 
-      case Permission.ASSET_DOWNLOAD: {
+      case AccessPermission.ASSET_DOWNLOAD: {
         return sharedLink.allowDownload
           ? await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids)
           : new Set();
       }
 
-      case Permission.ASSET_UPLOAD: {
+      case AccessPermission.ASSET_UPLOAD: {
         return sharedLink.allowUpload ? ids : new Set();
       }
 
-      case Permission.ASSET_SHARE: {
+      case AccessPermission.ASSET_SHARE: {
         // TODO: fix this to not use sharedLink.userId for access control
         return await this.repository.asset.checkOwnerAccess(sharedLink.userId, ids);
       }
 
-      case Permission.ALBUM_READ: {
+      case AccessPermission.ALBUM_READ: {
         return await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids);
       }
 
-      case Permission.ALBUM_DOWNLOAD: {
+      case AccessPermission.ALBUM_DOWNLOAD: {
         return sharedLink.allowDownload
           ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
           : new Set();
@@ -148,15 +148,15 @@ export class AccessCore {
     }
   }
 
-  private async checkAccessOther(auth: AuthDto, permission: Permission, ids: Set<string>): Promise<Set<string>> {
+  private async checkAccessOther(auth: AuthDto, permission: AccessPermission, ids: Set<string>): Promise<Set<string>> {
     switch (permission) {
       // uses album id
-      case Permission.ACTIVITY_CREATE: {
+      case AccessPermission.ACTIVITY_CREATE: {
         return await this.repository.activity.checkCreateAccess(auth.user.id, ids);
       }
 
       // uses activity id
-      case Permission.ACTIVITY_DELETE: {
+      case AccessPermission.ACTIVITY_DELETE: {
         const isOwner = await this.repository.activity.checkOwnerAccess(auth.user.id, ids);
         const isAlbumOwner = await this.repository.activity.checkAlbumOwnerAccess(
           auth.user.id,
@@ -165,7 +165,7 @@ export class AccessCore {
         return setUnion(isOwner, isAlbumOwner);
       }
 
-      case Permission.ASSET_READ: {
+      case AccessPermission.ASSET_READ: {
         const isOwner = await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
         const isAlbum = await this.repository.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
         const isPartner = await this.repository.asset.checkPartnerAccess(
@@ -175,13 +175,13 @@ export class AccessCore {
         return setUnion(isOwner, isAlbum, isPartner);
       }
 
-      case Permission.ASSET_SHARE: {
+      case AccessPermission.ASSET_SHARE: {
         const isOwner = await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
         const isPartner = await this.repository.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
         return setUnion(isOwner, isPartner);
       }
 
-      case Permission.ASSET_VIEW: {
+      case AccessPermission.ASSET_VIEW: {
         const isOwner = await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
         const isAlbum = await this.repository.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
         const isPartner = await this.repository.asset.checkPartnerAccess(
@@ -191,7 +191,7 @@ export class AccessCore {
         return setUnion(isOwner, isAlbum, isPartner);
       }
 
-      case Permission.ASSET_DOWNLOAD: {
+      case AccessPermission.ASSET_DOWNLOAD: {
         const isOwner = await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
         const isAlbum = await this.repository.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
         const isPartner = await this.repository.asset.checkPartnerAccess(
@@ -201,101 +201,101 @@ export class AccessCore {
         return setUnion(isOwner, isAlbum, isPartner);
       }
 
-      case Permission.ASSET_UPDATE: {
+      case AccessPermission.ASSET_UPDATE: {
         return await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ASSET_DELETE: {
+      case AccessPermission.ASSET_DELETE: {
         return await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ASSET_RESTORE: {
+      case AccessPermission.ASSET_RESTORE: {
         return await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ALBUM_READ: {
+      case AccessPermission.ALBUM_READ: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
         const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
         return setUnion(isOwner, isShared);
       }
 
-      case Permission.ALBUM_UPDATE: {
+      case AccessPermission.ALBUM_UPDATE: {
         return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ALBUM_DELETE: {
+      case AccessPermission.ALBUM_DELETE: {
         return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ALBUM_SHARE: {
+      case AccessPermission.ALBUM_SHARE: {
         return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ALBUM_DOWNLOAD: {
+      case AccessPermission.ALBUM_DOWNLOAD: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
         const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
         return setUnion(isOwner, isShared);
       }
 
-      case Permission.ALBUM_REMOVE_ASSET: {
+      case AccessPermission.ALBUM_REMOVE_ASSET: {
         return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ASSET_UPLOAD: {
+      case AccessPermission.ASSET_UPLOAD: {
         return await this.repository.library.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.ARCHIVE_READ: {
+      case AccessPermission.ARCHIVE_READ: {
         return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
       }
 
-      case Permission.AUTH_DEVICE_DELETE: {
+      case AccessPermission.AUTH_DEVICE_DELETE: {
         return await this.repository.authDevice.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.TIMELINE_READ: {
+      case AccessPermission.TIMELINE_READ: {
         const isOwner = ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set<string>();
         const isPartner = await this.repository.timeline.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
         return setUnion(isOwner, isPartner);
       }
 
-      case Permission.TIMELINE_DOWNLOAD: {
+      case AccessPermission.TIMELINE_DOWNLOAD: {
         return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
       }
 
-      case Permission.MEMORY_READ: {
+      case AccessPermission.MEMORY_READ: {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.MEMORY_WRITE: {
+      case AccessPermission.MEMORY_WRITE: {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.MEMORY_DELETE: {
+      case AccessPermission.MEMORY_DELETE: {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_READ: {
+      case AccessPermission.PERSON_READ: {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_WRITE: {
+      case AccessPermission.PERSON_WRITE: {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_MERGE: {
+      case AccessPermission.PERSON_MERGE: {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_CREATE: {
+      case AccessPermission.PERSON_CREATE: {
         return this.repository.person.checkFaceOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_REASSIGN: {
+      case AccessPermission.PERSON_REASSIGN: {
         return this.repository.person.checkFaceOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PARTNER_UPDATE: {
+      case AccessPermission.PARTNER_UPDATE: {
         return await this.repository.partner.checkUpdateAccess(auth.user.id, ids);
       }
 
