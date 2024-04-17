@@ -1,3 +1,4 @@
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -34,7 +35,15 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [userStub.user1],
+    sharedUsers: [
+      {
+        user: userStub.user1,
+        album: undefined as unknown as AlbumEntity,
+        role: AlbumUserRole.Editor,
+        userId: userStub.user1.id,
+        albumId: 'album-2',
+      },
+    ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -51,7 +60,22 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [userStub.user1, userStub.user2],
+    sharedUsers: [
+      {
+        user: userStub.user1,
+        album: undefined as unknown as AlbumEntity,
+        role: AlbumUserRole.Editor,
+        userId: userStub.user1.id,
+        albumId: 'album-3',
+      },
+      {
+        user: userStub.user2,
+        album: undefined as unknown as AlbumEntity,
+        role: AlbumUserRole.Editor,
+        userId: userStub.user2.id,
+        albumId: 'album-3',
+      },
+    ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -68,7 +92,15 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [userStub.admin],
+    sharedUsers: [
+      {
+        user: userStub.admin,
+        album: undefined as unknown as AlbumEntity,
+        role: AlbumUserRole.Editor,
+        userId: userStub.admin.id,
+        albumId: 'album-3',
+      },
+    ],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),

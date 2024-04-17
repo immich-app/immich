@@ -1,6 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -9,6 +11,7 @@ import { albumStub } from 'test/fixtures/album.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -19,14 +22,16 @@ describe(AlbumService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let albumUserMock: jest.Mocked<IAlbumUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     userMock = newUserRepositoryMock();
+    albumUserMock = newAlbumUserRepositoryMock();
 
-    sut = new AlbumService(accessMock, albumMock, assetMock, userMock);
+    sut = new AlbumService(accessMock, albumMock, assetMock, userMock, albumUserMock);
   });
 
   it('should work', () => {
@@ -188,7 +193,7 @@ describe(AlbumService.name, () => {
         ownerId: authStub.admin.user.id,
         albumName: albumStub.empty.albumName,
         description: albumStub.empty.description,
-        sharedUsers: [{ id: 'user-id' }],
+        sharedUsers: [{ user: { id: 'user-id' } }],
         assets: [{ id: '123' }],
         albumThumbnailAssetId: '123',
       });
@@ -355,11 +360,17 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithAdmin));
       albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
       userMock.get.mockResolvedValue(userStub.user2);
+      albumUserMock.create.mockResolvedValue({
+        userId: userStub.user2.id,
+        user: userStub.user2,
+        albumId: albumStub.sharedWithAdmin.id,
+        album: albumStub.sharedWithAdmin,
+        role: AlbumUserRole.Editor,
+      });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.user.id] });
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: albumStub.sharedWithAdmin.id,
-        updatedAt: expect.any(Date),
-        sharedUsers: [userStub.admin, { id: authStub.user2.user.id }],
+      expect(albumUserMock.create).toHaveBeenCalledWith({
+        userId: authStub.user2.user.id,
+        albumId: albumStub.sharedWithAdmin.id,
       });
     });
   });
@@ -380,11 +391,10 @@ describe(AlbumService.name, () => {
         sut.removeUser(authStub.admin, albumStub.sharedWithUser.id, userStub.user1.id),
       ).resolves.toBeUndefined();
 
-      expect(albumMock.update).toHaveBeenCalledTimes(1);
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: albumStub.sharedWithUser.id,
-        updatedAt: expect.any(Date),
-        sharedUsers: [],
+      expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
+      expect(albumUserMock.delete).toHaveBeenCalledWith({
+        albumId: albumStub.sharedWithUser.id,
+        userId: userStub.user1.id,
       });
       expect(albumMock.getById).toHaveBeenCalledWith(albumStub.sharedWithUser.id, { withAssets: false });
     });
@@ -396,7 +406,7 @@ describe(AlbumService.name, () => {
         sut.removeUser(authStub.user1, albumStub.sharedWithMultiple.id, authStub.user2.user.id),
       ).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(albumMock.update).not.toHaveBeenCalled();
+      expect(albumUserMock.delete).not.toHaveBeenCalled();
       expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.user1.user.id,
         new Set([albumStub.sharedWithMultiple.id]),
@@ -408,11 +418,10 @@ describe(AlbumService.name, () => {
 
       await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, authStub.user1.user.id);
 
-      expect(albumMock.update).toHaveBeenCalledTimes(1);
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: albumStub.sharedWithUser.id,
-        updatedAt: expect.any(Date),
-        sharedUsers: [],
+      expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
+      expect(albumUserMock.delete).toHaveBeenCalledWith({
+        albumId: albumStub.sharedWithUser.id,
+        userId: authStub.user1.user.id,
       });
     });
 
@@ -421,11 +430,10 @@ describe(AlbumService.name, () => {
 
       await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, 'me');
 
-      expect(albumMock.update).toHaveBeenCalledTimes(1);
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: albumStub.sharedWithUser.id,
-        updatedAt: expect.any(Date),
-        sharedUsers: [],
+      expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
+      expect(albumUserMock.delete).toHaveBeenCalledWith({
+        albumId: albumStub.sharedWithUser.id,
+        userId: authStub.user1.user.id,
       });
     });
 
@@ -511,6 +519,7 @@ describe(AlbumService.name, () => {
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.user1.user.id,
         new Set(['album-123']),
+        AlbumUserRole.Viewer,
       );
     });
 
@@ -521,6 +530,7 @@ describe(AlbumService.name, () => {
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set(['album-123']),
+        AlbumUserRole.Viewer,
       );
     });
   });
