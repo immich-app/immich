@@ -22,6 +22,7 @@
   export let fullWidth = false;
   export let isOpen = false;
 
+  let searchBar: HTMLElement;
   let input: HTMLInputElement;
 
   let showHistory = false;
@@ -124,6 +125,7 @@
 
 <div
   class={searchBarClasses}
+  bind:this={searchBar}
   transition:animate={{
     x: '50%',
     duration: 350,
@@ -202,6 +204,8 @@
   </form>
 
   {#if showFilter}
-    <SearchFilterBox {searchQuery} on:search={({ detail }) => onSearch(detail)} />
+    <div class="absolute w-full">
+      <SearchFilterBox {searchQuery} {searchBar} on:search={({ detail }) => onSearch(detail)} />
+    </div>
   {/if}
 </div>

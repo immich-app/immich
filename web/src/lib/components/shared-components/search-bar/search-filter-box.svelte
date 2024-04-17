@@ -24,11 +24,11 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
-  import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
+  import SearchCameraSection from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -36,6 +36,7 @@
   import SearchTextSection from './search-text-section.svelte';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
+  export let searchBar: HTMLElement;
 
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
@@ -72,6 +73,8 @@
   };
 
   let filterBoxWidth = 0;
+  let filterBoxLeft = 0;
+  let filterBoxMinWidth = 0;
 
   const resetForm = () => {
     filter = {
@@ -111,12 +114,42 @@
 
     dispatch('search', payload);
   };
+
+  const computeWidthAndPosition = () => {
+    const searchBarRect = searchBar.getBoundingClientRect();
+    const minMargin = 50;
+    const minWidth = 750;
+
+    filterBoxLeft = 0;
+    filterBoxMinWidth = 0;
+
+    if (searchBarRect.width < minWidth) {
+      // Larger than the search bar.
+      const maxWidth = Math.max(window.innerWidth - minMargin, 0);
+      filterBoxMinWidth = Math.min(maxWidth, minWidth);
+
+      if (window.innerWidth < 2 * searchBarRect.left + filterBoxMinWidth) {
+        // Window-centered
+        const marginLeft = searchBarRect.left;
+        const marginRight = window.innerWidth - (searchBarRect.left + filterBoxMinWidth);
+        filterBoxLeft = (marginLeft + marginRight) / 2 - marginLeft;
+      }
+    }
+  };
+
+  onMount(() => {
+    computeWidthAndPosition();
+  });
 </script>
+
+<svelte:window on:resize={computeWidthAndPosition} />
 
 <div
   bind:clientWidth={filterBoxWidth}
   transition:fly={{ y: 25, duration: 250 }}
-  class="absolute w-full rounded-b-3xl border border-t-0 border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
+  class="relative w-full -top-[1px] rounded-b-3xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
+  style:left="{filterBoxLeft}px"
+  style:min-width="{filterBoxMinWidth}px"
 >
   <form
     id="search-filter-form"
