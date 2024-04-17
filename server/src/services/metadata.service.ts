@@ -32,6 +32,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -114,6 +115,7 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataService.name);
@@ -446,10 +448,14 @@ export class MetadataService {
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+        if (!asset.isExternal) {
+          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+        }
       }
 
       if (asset.livePhotoVideoId !== motionAsset.id) {
         await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
+
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
