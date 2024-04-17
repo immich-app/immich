@@ -5566,6 +5566,140 @@
         ]
       }
     },
+    "/sync/delta-sync": {
+      "get": {
+        "operationId": "getDeltaSync",
+        "parameters": [
+          {
+            "name": "updatedAfter",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userIds",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDeltaSyncResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/sync/full-sync": {
+      "get": {
+        "operationId": "getAllForUserFullSync",
+        "parameters": [
+          {
+            "name": "lastCreationDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "updatedUntil",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/system-config": {
       "get": {
         "operationId": "getConfig",
@@ -7335,6 +7469,31 @@
         ],
         "type": "object"
       },
+      "AssetDeltaSyncResponseDto": {
+        "properties": {
+          "deleted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          },
+          "upserted": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "deleted",
+          "needsFullSync",
+          "upserted"
+        ],
+        "type": "object"
+      },
       "AssetFaceResponseDto": {
         "properties": {
           "boundingBoxX1": {
@@ -7998,9 +8157,6 @@
             "type": "array"
           },
           "isVisible": {
-            "type": "boolean"
-          },
-          "isWatched": {
             "type": "boolean"
           },
           "name": {
@@ -11234,7 +11390,8 @@
         "enum": [
           "h264",
           "hevc",
-          "vp9"
+          "vp9",
+          "av1"
         ],
         "type": "string"
       }

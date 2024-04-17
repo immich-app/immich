@@ -1,30 +1,31 @@
 import { IMetricRepository } from 'src/interfaces/metric.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newMetricRepositoryMock = (): jest.Mocked<IMetricRepository> => {
+export const newMetricRepositoryMock = (): Mocked<IMetricRepository> => {
   return {
     api: {
-      addToCounter: jest.fn(),
-      addToGauge: jest.fn(),
-      addToHistogram: jest.fn(),
-      configure: jest.fn(),
+      addToCounter: vitest.fn(),
+      addToGauge: vitest.fn(),
+      addToHistogram: vitest.fn(),
+      configure: vitest.fn(),
     },
     host: {
-      addToCounter: jest.fn(),
-      addToGauge: jest.fn(),
-      addToHistogram: jest.fn(),
-      configure: jest.fn(),
+      addToCounter: vitest.fn(),
+      addToGauge: vitest.fn(),
+      addToHistogram: vitest.fn(),
+      configure: vitest.fn(),
     },
     jobs: {
-      addToCounter: jest.fn(),
-      addToGauge: jest.fn(),
-      addToHistogram: jest.fn(),
-      configure: jest.fn(),
+      addToCounter: vitest.fn(),
+      addToGauge: vitest.fn(),
+      addToHistogram: vitest.fn(),
+      configure: vitest.fn(),
     },
     repo: {
-      addToCounter: jest.fn(),
-      addToGauge: jest.fn(),
-      addToHistogram: jest.fn(),
-      configure: jest.fn(),
+      addToCounter: vitest.fn(),
+      addToGauge: vitest.fn(),
+      addToHistogram: vitest.fn(),
+      configure: vitest.fn(),
     },
   };
 };

@@ -461,7 +461,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -835,6 +834,11 @@ export type AssetIdsResponseDto = {
     assetId: string;
     error?: Error2;
     success: boolean;
+};
+export type AssetDeltaSyncResponseDto = {
+    deleted: string[];
+    needsFullSync: boolean;
+    upserted: AssetResponseDto[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2508,6 +2512,40 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+export function getDeltaSync({ updatedAfter, userIds }: {
+    updatedAfter: string;
+    userIds: string[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetDeltaSyncResponseDto;
+    }>(`/sync/delta-sync${QS.query(QS.explode({
+        updatedAfter,
+        userIds
+    }))}`, {
+        ...opts
+    }));
+}
+export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
+    lastCreationDate?: string;
+    lastId?: string;
+    limit: number;
+    updatedUntil: string;
+    userId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/sync/full-sync${QS.query(QS.explode({
+        lastCreationDate,
+        lastId,
+        limit,
+        updatedUntil,
+        userId
+    }))}`, {
+        ...opts
+    }));
+}
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2985,7 +3023,8 @@ export enum AudioCodec {
 export enum VideoCodec {
     H264 = "h264",
     Hevc = "hevc",
-    Vp9 = "vp9"
+    Vp9 = "vp9",
+    Av1 = "av1"
 }
 export enum CQMode {
     Auto = "auto",

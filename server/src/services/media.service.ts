@@ -25,13 +25,14 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import {
+  AV1Config,
   H264Config,
   HEVCConfig,
   NVENCConfig,
@@ -45,7 +46,6 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService {
-  private logger = new ImmichLogger(MediaService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
   private hasOpenCL?: boolean = undefined;
@@ -59,15 +59,18 @@ export class MediaService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(MediaService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       personRepository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -167,12 +170,15 @@ export class MediaService {
   }
 
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig(),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, ImageFormat.JPEG);
+    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
   }
@@ -210,18 +216,21 @@ export class MediaService {
       }
     }
     this.logger.log(
-      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`,
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${asset.id}`,
     );
     return path;
   }
 
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig(),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, ImageFormat.WEBP);
+    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
   }
@@ -432,6 +441,9 @@ export class MediaService {
       }
       case VideoCodec.VP9: {
         return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
       }
       default: {
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);

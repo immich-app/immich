@@ -173,4 +173,8 @@ export const probeStub = {
       bitrate: 0,
     },
   }),
+  videoStreamH264: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
+  }),
 };

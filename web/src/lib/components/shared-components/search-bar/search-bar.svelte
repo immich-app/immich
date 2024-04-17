@@ -11,7 +11,7 @@
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { focusOutside } from '$lib/utils/focus-outside';
 
   export let value = '';
@@ -87,12 +87,11 @@
 </script>
 
 <svelte:window
-  use:shortcut={{
-    shortcut: { key: 'Escape' },
-    onShortcut: () => {
-      onFocusOut();
-    },
-  }}
+  use:shortcuts={[
+    { shortcut: { key: 'Escape' }, onShortcut: onFocusOut },
+    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input.focus() },
+    { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
+  ]}
 />
 
 <div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
@@ -130,12 +129,10 @@
         on:click={onFocusIn}
         on:focus={onFocusIn}
         disabled={showFilter}
-        use:shortcut={{
-          shortcut: { key: 'Escape' },
-          onShortcut: () => {
-            onFocusOut();
-          },
-        }}
+        use:shortcuts={[
+          { shortcut: { key: 'Escape' }, onShortcut: onFocusOut },
+          { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
+        ]}
       />
 
       <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-5'} flex items-center pl-6 transition-all">

@@ -1,14 +1,14 @@
-import { AuditEntity, DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
 
 export const IAuditRepository = 'IAuditRepository';
 
 export interface AuditSearch {
   action?: DatabaseAction;
   entityType?: EntityType;
-  ownerId?: string;
+  userIds: string[];
 }
 
 export interface IAuditRepository {
-  getAfter(since: Date, options: AuditSearch): Promise<AuditEntity[]>;
+  getAfter(since: Date, options: AuditSearch): Promise<string[]>;
   removeBefore(before: Date): Promise<void>;
 }

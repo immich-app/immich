@@ -54,7 +54,7 @@
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label="CONSTANT RATE FACTOR (-crf)"
-          desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger files."
+          desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, 31 for VP9, and 35 for AV1. Lower is better, but produces larger files."
           bind:value={config.ffmpeg.crf}
           required={true}
           isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
@@ -115,12 +115,13 @@
         <SettingSelect
           label="VIDEO CODEC"
           {disabled}
-          desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files."
+          desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files. AV1 is the most efficient codec but lacks support on older devices."
           bind:value={config.ffmpeg.targetVideoCodec}
           options={[
             { value: VideoCodec.H264, text: 'h264' },
             { value: VideoCodec.Hevc, text: 'hevc' },
             { value: VideoCodec.Vp9, text: 'vp9' },
+            { value: VideoCodec.Av1, text: 'av1' },
           ]}
           name="vcodec"
           isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
@@ -137,6 +138,7 @@
             { value: VideoCodec.H264, text: 'H.264' },
             { value: VideoCodec.Hevc, text: 'HEVC' },
             { value: VideoCodec.Vp9, text: 'VP9' },
+            { value: VideoCodec.Av1, text: 'AV1' },
           ]}
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
         />
@@ -179,7 +181,7 @@
         <SettingSelect
           label="TRANSCODE POLICY"
           {disabled}
-          desc="Policy for when a video should be transcoded."
+          desc="Policy for when a video should be transcoded. HDR videos will always be transcoded (except if transcoding is disabled)."
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
@@ -355,7 +357,7 @@
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
           on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
-          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />
       </div>
