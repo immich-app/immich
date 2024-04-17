@@ -1,5 +1,4 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { UserEntity } from 'src/entities/user.entity';
 import { UserService } from 'src/services/user.service';
 
 @Command({
@@ -13,16 +12,7 @@ export class ListUsersCommand extends CommandRunner {
 
   async run(): Promise<void> {
     try {
-      const users = await this.userService.getAll(
-        {
-          user: {
-            id: 'cli',
-            email: 'cli@immich.app',
-            isAdmin: true,
-          } as UserEntity,
-        },
-        true,
-      );
+      const users = await this.userService.listUsers();
       console.dir(users);
     } catch (error) {
       console.error(error);
