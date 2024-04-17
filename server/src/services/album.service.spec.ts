@@ -599,6 +599,17 @@ describe(AlbumService.name, () => {
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
     });
 
+    it('should not allow a shared user with viewer access to add assets', async () => {
+      accessMock.album.checkSharedAlbumAccess.mockResolvedValue(new Set([]));
+      albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithUser));
+
+      await expect(
+        sut.addAssets(authStub.user2, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
     it('should allow a shared link user to add assets', async () => {
       accessMock.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
