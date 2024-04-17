@@ -10,7 +10,7 @@
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { asyncTimeout, handlePromiseError } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { shortcuts } from '$lib/utils/shortcut';
   import { focusOutside } from '$lib/utils/focus-outside';
   import { tick } from 'svelte';
