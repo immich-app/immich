@@ -144,6 +144,12 @@ export class AccessCore {
           : new Set();
       }
 
+      case Permission.ALBUM_WRITE: {
+        return sharedLink.allowUpload
+          ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
+          : new Set();
+      }
+
       default: {
         return new Set();
       }
