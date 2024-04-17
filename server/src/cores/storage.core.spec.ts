@@ -1,6 +1,7 @@
 import { StorageCore } from 'src/cores/storage.core';
+import { vitest } from 'vitest';
 
-jest.mock('src/constants', () => ({
+vitest.mock('src/constants', () => ({
   APP_MEDIA_LOCATION: '/photos',
 }));
 

@@ -8,6 +8,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
@@ -23,10 +24,12 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserTokenRepositoryMock } from 'test/repositories/user-token.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mock, Mocked, vitest } from 'vitest';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -56,33 +59,34 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
-  let accessMock: jest.Mocked<IAccessRepositoryMock>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let userTokenMock: jest.Mocked<IUserTokenRepository>;
-  let shareMock: jest.Mocked<ISharedLinkRepository>;
-  let keyMock: jest.Mocked<IKeyRepository>;
+  let accessMock: Mocked<IAccessRepositoryMock>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let userTokenMock: Mocked<IUserTokenRepository>;
+  let shareMock: Mocked<ISharedLinkRepository>;
+  let keyMock: Mocked<IKeyRepository>;
 
-  let callbackMock: jest.Mock;
-  let userinfoMock: jest.Mock;
+  let callbackMock: Mock;
+  let userinfoMock: Mock;
 
   beforeEach(() => {
-    callbackMock = jest.fn().mockReturnValue({ access_token: 'access-token' });
-    userinfoMock = jest.fn().mockResolvedValue({ sub, email });
+    callbackMock = vitest.fn().mockReturnValue({ access_token: 'access-token' });
+    userinfoMock = vitest.fn().mockResolvedValue({ sub, email });
 
-    jest.spyOn(generators, 'state').mockReturnValue('state');
-    jest.spyOn(Issuer, 'discover').mockResolvedValue({
+    vitest.spyOn(generators, 'state').mockReturnValue('state');
+    vitest.spyOn(Issuer, 'discover').mockResolvedValue({
       id_token_signing_alg_values_supported: ['RS256'],
-      Client: jest.fn().mockResolvedValue({
+      Client: vitest.fn().mockResolvedValue({
         issuer: {
           metadata: {
             end_session_endpoint: 'http://end-session-endpoint',
           },
         },
-        authorizationUrl: jest.fn().mockReturnValue('http://authorization-url'),
-        callbackParams: jest.fn().mockReturnValue({ state: 'state' }),
+        authorizationUrl: vitest.fn().mockReturnValue('http://authorization-url'),
+        callbackParams: vitest.fn().mockReturnValue({ state: 'state' }),
         callback: callbackMock,
         userinfo: userinfoMock,
       }),
@@ -92,12 +96,23 @@ describe('AuthService', () => {
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(accessMock, cryptoMock, configMock, libraryMock, userMock, userTokenMock, shareMock, keyMock);
+    sut = new AuthService(
+      accessMock,
+      cryptoMock,
+      configMock,
+      libraryMock,
+      loggerMock,
+      userMock,
+      userTokenMock,
+      shareMock,
+      keyMock,
+    );
   });
 
   it('should be defined', () => {

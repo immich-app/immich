@@ -1,5 +1,4 @@
 import { BinaryField } from 'exiftool-vendored';
-import { when } from 'jest-when';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -12,6 +11,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -29,6 +29,7 @@ import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.moc
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
@@ -36,21 +37,23 @@ import { newPersonRepositoryMock } from 'test/repositories/person.repository.moc
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let cryptoRepository: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let metadataMock: jest.Mocked<IMetadataRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
-  let userRepository: jest.Mocked<IUserRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoRepository: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -66,7 +69,8 @@ describe(MetadataService.name, () => {
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
-    userRepository = newUserRepositoryMock();
+    userMock = newUserRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -81,7 +85,8 @@ describe(MetadataService.name, () => {
       personMock,
       storageMock,
       configMock,
-      userRepository,
+      userMock,
+      loggerMock,
     );
   });
 
@@ -253,14 +258,13 @@ describe(MetadataService.name, () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.originalPath)
-        // higher priority tag
-        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
-      when(metadataMock.readTags)
-        .calledWith(assetStub.sidecar.sidecarPath as string)
-        // lower priority tag, but in sidecar
-        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+      metadataMock.readTags.mockImplementation((path) => {
+        const map = {
+          [assetStub.sidecar.originalPath]: originalDate.toISOString(),
+          [assetStub.sidecar.sidecarPath as string]: sidecarDate.toISOString(),
+        };
+        return Promise.resolve({ CreationDate: map[path] ?? new Date().toISOString() });
+      });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);
@@ -373,7 +377,7 @@ describe(MetadataService.name, () => {
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
-      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
+      expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -402,7 +406,7 @@ describe(MetadataService.name, () => {
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
-      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
+      expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -429,7 +433,7 @@ describe(MetadataService.name, () => {
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
       expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
-      expect(userRepository.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
+      expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoStillAsset.id,
@@ -520,7 +524,7 @@ describe(MetadataService.name, () => {
       storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(userRepository.updateUsage).not.toHaveBeenCalled();
+      expect(userMock.updateUsage).not.toHaveBeenCalled();
     });
 
     it('should save all metadata', async () => {

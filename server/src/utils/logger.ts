@@ -4,6 +4,7 @@ import { LogLevel } from 'src/entities/system-config.entity';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
+// TODO move implementation to logger.repository.ts
 export class ImmichLogger extends ConsoleLogger {
   private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
