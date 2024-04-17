@@ -1,9 +1,10 @@
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+import { Mocked } from 'vitest';
 
-export const newAlbumUserRepositoryMock = (): jest.Mocked<IAlbumUserRepository> => {
+export const newAlbumUserRepositoryMock = (): Mocked<IAlbumUserRepository> => {
   return {
-    create: jest.fn(),
-    delete: jest.fn(),
-    update: jest.fn(),
+    create: vitest.fn(),
+    delete: vitest.fn(),
+    update: vitest.fn(),
   };
 };
