@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
@@ -50,6 +51,9 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 
 final albumProvider =
     StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
+  // listen to changes for assets and refresh the remote albums on assets delete or restore to the album
+  ref.watch(assetProvider);
+  ref.watch(albumServiceProvider).refreshRemoteAlbums(isShared: false);
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
