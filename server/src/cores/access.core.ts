@@ -1,5 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { setDifference, setIsEqual, setUnion } from 'src/utils/set';
@@ -219,7 +220,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          'read',
+          AlbumUserRole.Viewer,
         );
         return setUnion(isOwner, isShared);
       }
@@ -229,7 +230,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          'write',
+          AlbumUserRole.Editor,
         );
         return setUnion(isOwner, isShared);
       }
@@ -251,7 +252,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          'read',
+          AlbumUserRole.Viewer,
         );
         return setUnion(isOwner, isShared);
       }

@@ -1,6 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -10,7 +11,7 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { IAccessRepository, ReadWrite } from 'src/interfaces/access.interface';
+import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
 
@@ -119,7 +120,7 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, readWrite: ReadWrite): Promise<Set<string>> {
+  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
@@ -132,8 +133,9 @@ class AlbumAccess implements IAlbumAccess {
           id: In([...albumIds]),
           sharedUsers: {
             user: { id: userId },
-            // If write is needed we check for it, otherwise both are accepted
-            readonly: readWrite === 'write' ? false : undefined,
+            // If editor access is needed we check for it, otherwise both are accepted
+            role:
+              access === AlbumUserRole.Editor ? AlbumUserRole.Editor : In([AlbumUserRole.Editor, AlbumUserRole.Viewer]),
           },
         },
       })

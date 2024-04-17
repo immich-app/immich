@@ -273,7 +273,7 @@ export class AlbumService {
       throw new BadRequestException('Album not shared with user');
     }
 
-    await this.albumPermissionRepository.update({ albumId: id, userId }, { readonly: dto.readonly });
+    await this.albumPermissionRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

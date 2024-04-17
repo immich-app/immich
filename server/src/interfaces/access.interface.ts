@@ -1,3 +1,5 @@
+import { AlbumUserRole } from 'src/entities/album-user.entity';
+
 export const IAccessRepository = 'IAccessRepository';
 
 export type ReadWrite = 'read' | 'write';
@@ -22,7 +24,7 @@ export interface IAccessRepository {
 
   album: {
     checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
-    checkSharedAlbumAccess(userId: string, albumIds: Set<string>, readWrite: ReadWrite): Promise<Set<string>>;
+    checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole): Promise<Set<string>>;
     checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 

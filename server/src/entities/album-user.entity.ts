@@ -2,6 +2,11 @@ import { AlbumEntity } from 'src/entities/album.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
+export enum AlbumUserRole {
+  Editor = 'editor',
+  Viewer = 'viewer',
+}
+
 @Entity('albums_shared_users_users')
 // Pre-existing indices from original album <--> user ManyToMany mapping
 @Index('IDX_427c350ad49bd3935a50baab73', ['album'])
@@ -17,6 +22,6 @@ export class AlbumUserEntity {
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   user!: UserEntity;
 
-  @Column({ default: true })
-  readonly!: boolean;
+  @Column({ type: 'varchar', default: 'viewer' })
+  role!: AlbumUserRole;
 }

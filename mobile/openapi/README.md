@@ -235,6 +235,7 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
+ - [AlbumUserRole](doc//AlbumUserRole.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)

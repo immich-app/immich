@@ -13,26 +13,26 @@ part of openapi.api;
 class UpdateAlbumUserDto {
   /// Returns a new [UpdateAlbumUserDto] instance.
   UpdateAlbumUserDto({
-    required this.readonly,
+    required this.role,
   });
 
-  bool readonly;
+  AlbumUserRole role;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumUserDto &&
-    other.readonly == readonly;
+    other.role == role;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (readonly.hashCode);
+    (role.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumUserDto[readonly=$readonly]';
+  String toString() => 'UpdateAlbumUserDto[role=$role]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'readonly'] = this.readonly;
+      json[r'role'] = this.role;
     return json;
   }
 
@@ -44,7 +44,7 @@ class UpdateAlbumUserDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAlbumUserDto(
-        readonly: mapValueOfType<bool>(json, r'readonly')!,
+        role: AlbumUserRole.fromJson(json[r'role'])!,
       );
     }
     return null;
@@ -92,7 +92,7 @@ class UpdateAlbumUserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'readonly',
+    'role',
   };
 }
 

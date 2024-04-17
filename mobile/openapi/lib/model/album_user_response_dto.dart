@@ -13,31 +13,31 @@ part of openapi.api;
 class AlbumUserResponseDto {
   /// Returns a new [AlbumUserResponseDto] instance.
   AlbumUserResponseDto({
-    required this.readonly,
+    required this.role,
     required this.user,
   });
 
-  bool readonly;
+  AlbumUserRole role;
 
   UserResponseDto user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumUserResponseDto &&
-    other.readonly == readonly &&
+    other.role == role &&
     other.user == user;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (readonly.hashCode) +
+    (role.hashCode) +
     (user.hashCode);
 
   @override
-  String toString() => 'AlbumUserResponseDto[readonly=$readonly, user=$user]';
+  String toString() => 'AlbumUserResponseDto[role=$role, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'readonly'] = this.readonly;
+      json[r'role'] = this.role;
       json[r'user'] = this.user;
     return json;
   }
@@ -50,7 +50,7 @@ class AlbumUserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumUserResponseDto(
-        readonly: mapValueOfType<bool>(json, r'readonly')!,
+        role: AlbumUserRole.fromJson(json[r'role'])!,
         user: UserResponseDto.fromJson(json[r'user'])!,
       );
     }
@@ -99,7 +99,7 @@ class AlbumUserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'readonly',
+    'role',
     'user',
   };
 }

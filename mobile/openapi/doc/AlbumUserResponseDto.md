@@ -8,7 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**readonly** | **bool** |  | 
+**role** | [**AlbumUserRole**](AlbumUserRole.md) |  | 
 **user** | [**UserResponseDto**](UserResponseDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

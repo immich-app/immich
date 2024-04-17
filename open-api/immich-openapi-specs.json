@@ -7174,7 +7174,7 @@
           },
           "sharedUsers": {
             "deprecated": true,
-            "description": "Deprecated in favor of users",
+            "description": "Deprecated in favor of sharedUsersV2",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7216,18 +7216,25 @@
       },
       "AlbumUserResponseDto": {
         "properties": {
-          "readonly": {
-            "type": "boolean"
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
-          "readonly",
+          "role",
           "user"
         ],
         "type": "object"
+      },
+      "AlbumUserRole": {
+        "enum": [
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
       },
       "AllJobStatusResponseDto": {
         "properties": {
@@ -10962,12 +10969,12 @@
       },
       "UpdateAlbumUserDto": {
         "properties": {
-          "readonly": {
-            "type": "boolean"
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
           }
         },
         "required": [
-          "readonly"
+          "role"
         ],
         "type": "object"
       },

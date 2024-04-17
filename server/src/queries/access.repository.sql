@@ -70,7 +70,7 @@ SELECT
   "AlbumEntity"."id" AS "AlbumEntity_id",
   "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" AS "AlbumEntity__AlbumEntity_sharedUsers_albumsId",
   "AlbumEntity__AlbumEntity_sharedUsers"."usersId" AS "AlbumEntity__AlbumEntity_sharedUsers_usersId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."readonly" AS "AlbumEntity__AlbumEntity_sharedUsers_readonly"
+  "AlbumEntity__AlbumEntity_sharedUsers"."role" AS "AlbumEntity__AlbumEntity_sharedUsers_role"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
@@ -82,6 +82,9 @@ WHERE
         (
           (
             "AlbumEntity__AlbumEntity_sharedUsers"."usersId" = $2
+          )
+          AND (
+            "AlbumEntity__AlbumEntity_sharedUsers"."role" IN ($3, $4)
           )
         )
       )

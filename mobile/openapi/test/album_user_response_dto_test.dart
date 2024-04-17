@@ -16,8 +16,8 @@ void main() {
   // final instance = AlbumUserResponseDto();
 
   group('test AlbumUserResponseDto', () {
-    // bool readonly
-    test('to test the property `readonly`', () async {
+    // AlbumUserRole role
+    test('to test the property `role`', () async {
       // TODO
     });
 

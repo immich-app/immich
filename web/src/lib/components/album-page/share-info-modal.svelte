@@ -4,8 +4,8 @@
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
-    updateAlbumUser,
-  } from '@immich/sdk';
+    updateAlbumUser, AlbumUserRole,
+  } from '@immich/sdk'
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -71,10 +71,10 @@
     }
   };
 
-  const handleSetReadonly = async (user: UserResponseDto, readonly: boolean) => {
+  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
-      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { readonly } });
-      const message = readonly ? `Set ${user.name} as viewer` : `Set ${user.name} as editor`;
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      const message = `Set ${user.name} as ${role}`;
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
@@ -99,14 +99,14 @@
         </div>
       </div>
       {#each album.sharedUsersV2.toSorted((a, b) => {
-        if (a.readonly && !b.readonly) {
+        if (a.role === AlbumUserRole.Viewer && b.role === AlbumUserRole.Editor) {
           return 1;
         }
-        if (!a.readonly && b.readonly) {
+        if (a.role === AlbumUserRole.Editor && b.role === AlbumUserRole.Viewer) {
           return -1;
         }
         return a.user.name.localeCompare(b.user.name);
-      }) as { user, readonly }}
+      }) as { user, role }}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
@@ -117,7 +117,7 @@
 
           <div id="icon-{user.id}" class="flex place-items-center gap-2">
             <div>
-              {#if readonly}
+              {#if role === AlbumUserRole.Viewer}
                 Viewer
               {:else}
                 Editor
@@ -136,10 +136,10 @@
 
                 {#if selectedMenuUser === user}
                   <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
-                    {#if readonly}
-                      <MenuOption on:click={() => handleSetReadonly(user, false)} text="Allow edits" />
+                    {#if role === AlbumUserRole.Viewer}
+                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
                     {:else}
-                      <MenuOption on:click={() => handleSetReadonly(user, true)} text="Disallow edits" />
+                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)} text="Disallow edits" />
                     {/if}
                     <MenuOption on:click={handleMenuRemove} text="Remove" />
                   </ContextMenu>

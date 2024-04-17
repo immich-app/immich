@@ -1,84 +1,83 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
-  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
-  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
-  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
-  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
-  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
-  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
-  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
-  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
-  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
-  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+  import {afterNavigate, goto} from '$app/navigation'
+  import AlbumDescription from '$lib/components/album-page/album-description.svelte'
+  import AlbumOptions from '$lib/components/album-page/album-options.svelte'
+  import AlbumSummary from '$lib/components/album-page/album-summary.svelte'
+  import AlbumTitle from '$lib/components/album-page/album-title.svelte'
+  import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte'
+  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte'
+  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte'
+  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte'
+  import Button from '$lib/components/elements/buttons/button.svelte'
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte'
+  import Icon from '$lib/components/elements/icon.svelte'
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte'
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte'
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte'
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte'
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte'
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte'
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte'
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte'
+  import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte'
+  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte'
+  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte'
+  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte'
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte'
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte'
+  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte'
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte'
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte'
+  import CreateSharedLinkModal
+    from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte'
+  import {notificationController, NotificationType,} from '$lib/components/shared-components/notification/notification'
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte'
+  import {AppRoute} from '$lib/constants'
+  import {numberOfComments, setNumberOfComments, updateNumberOfComments} from '$lib/stores/activity.store'
+  import {createAssetInteractionStore} from '$lib/stores/asset-interaction.store'
+  import {assetViewingStore} from '$lib/stores/asset-viewing.store'
+  import {AssetStore} from '$lib/stores/assets.store'
+  import {locale} from '$lib/stores/preferences.store'
+  import {SlideshowNavigation, SlideshowState, slideshowStore} from '$lib/stores/slideshow.store'
+  import {user} from '$lib/stores/user.store'
+  import {handlePromiseError} from '$lib/utils'
+  import {downloadAlbum} from '$lib/utils/asset-utils'
+  import {clickOutside} from '$lib/utils/click-outside'
+  import {getContextMenuPosition} from '$lib/utils/context-menu'
+  import {openFileUploadDialog} from '$lib/utils/file-uploader'
+  import {handleError} from '$lib/utils/handle-error'
   import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
-  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/utils/click-outside';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { handleError } from '$lib/utils/handle-error';
-  import {
-    ReactionLevel,
-    ReactionType,
+    type ActivityResponseDto,
     addAssetsToAlbum,
     addUsersToAlbum,
+    AlbumUserRole,
+    AssetOrder,
     createActivity,
     deleteActivity,
     deleteAlbum,
     getActivities,
     getActivityStatistics,
     getAlbumInfo,
+    ReactionLevel,
+    ReactionType,
     updateAlbumInfo,
-    type ActivityResponseDto,
     type UserResponseDto,
-    AssetOrder,
-  } from '@immich/sdk';
+  } from '@immich/sdk'
   import {
     mdiArrowLeft,
+    mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
     mdiFolderDownloadOutline,
-    mdiLink,
-    mdiPlus,
-    mdiShareVariantOutline,
-    mdiPresentationPlay,
-    mdiCogOutline,
     mdiImageOutline,
     mdiImagePlusOutline,
-  } from '@mdi/js';
-  import { fly } from 'svelte/transition';
-  import type { PageData } from './$types';
-  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
+    mdiLink,
+    mdiPlus,
+    mdiPresentationPlay,
+    mdiShareVariantOutline,
+  } from '@mdi/js'
+  import {fly} from 'svelte/transition'
+  import type {PageData} from './$types'
 
   export let data: PageData;
 
@@ -136,8 +135,8 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: userHasWriteAccess = !album.sharedUsersV2.find(({ user: { id } }) => id === $user.id)?.readonly;
-  $: albumHasReadonlyUsers = album.sharedUsersV2.some(({ readonly }) => readonly);
+  $: isEditor = album.sharedUsersV2.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor;
+  $: albumHasViewers = album.sharedUsersV2.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -436,7 +435,7 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
-            {#if userHasWriteAccess}
+            {#if isEditor}
               <CircleIconButton
                 title="Add photos"
                 on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
@@ -584,14 +583,14 @@
                     </button>
 
                     <!-- users with write access (collaborators) -->
-                    {#each album.sharedUsersV2.filter(({ readonly }) => !readonly) as { user } (user.id)}
+                    {#each album.sharedUsersV2.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
 
                     <!-- display ellipsis if there are readonly users too -->
-                    {#if albumHasReadonlyUsers}
+                    {#if albumHasViewers}
                       <CircleIconButton
                         title="View all users"
                         backgroundColor="#d3d3d3"

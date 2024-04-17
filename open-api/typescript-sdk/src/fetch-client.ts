@@ -142,7 +142,7 @@ export type AssetResponseDto = {
     updatedAt: string;
 };
 export type AlbumUserResponseDto = {
-    "readonly": boolean;
+    role: AlbumUserRole;
     user: UserResponseDto;
 };
 export type AlbumResponseDto = {
@@ -161,7 +161,7 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** Deprecated in favor of users */
+    /** Deprecated in favor of sharedUsersV2 */
     sharedUsers: UserResponseDto[];
     sharedUsersV2: AlbumUserResponseDto[];
     startDate?: string;
@@ -194,7 +194,7 @@ export type BulkIdResponseDto = {
     success: boolean;
 };
 export type UpdateAlbumUserDto = {
-    "readonly": boolean;
+    role: AlbumUserRole;
 };
 export type AddUsersDto = {
     sharedUserIds: string[];
@@ -2900,6 +2900,10 @@ export enum AssetTypeEnum {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
+}
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum Error {
     Duplicate = "duplicate",

@@ -63,6 +63,7 @@ part 'model/add_users_dto.dart';
 part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/album_user_response_dto.dart';
+part 'model/album_user_role.dart';
 part 'model/all_job_status_response_dto.dart';
 part 'model/asset_bulk_delete_dto.dart';
 part 'model/asset_bulk_update_dto.dart';

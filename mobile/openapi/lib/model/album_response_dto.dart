@@ -82,7 +82,7 @@ class AlbumResponseDto {
 
   bool shared;
 
-  /// Deprecated in favor of users
+  /// Deprecated in favor of sharedUsersV2
   List<UserResponseDto> sharedUsers;
 
   List<AlbumUserResponseDto> sharedUsersV2;

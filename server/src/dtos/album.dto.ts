@@ -3,6 +3,7 @@ import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -84,13 +85,15 @@ export class AlbumCountResponseDto {
 }
 
 export class UpdateAlbumUserDto {
-  @ValidateBoolean()
-  readonly!: boolean;
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
 }
 
 export class AlbumUserResponseDto {
   user!: UserResponseDto;
-  readonly!: boolean;
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
 }
 
 export class AlbumResponseDto {
@@ -128,7 +131,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
       sharedUsers.push(mapUser(permission.user));
       sharedUsersV2.push({
         user: mapUser(permission.user),
-        readonly: permission.readonly,
+        role: permission.role,
       });
     }
   }

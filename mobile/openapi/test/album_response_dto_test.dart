@@ -91,7 +91,7 @@ void main() {
       // TODO
     });
 
-    // Deprecated in favor of users
+    // Deprecated in favor of sharedUsersV2
     // List<UserResponseDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO
