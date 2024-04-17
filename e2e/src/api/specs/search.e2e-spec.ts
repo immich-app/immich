@@ -138,10 +138,10 @@ describe('/search', () => {
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
 
     const mapMarkers = await getMapMarkers({}, { headers: asBearerAuth(admin.accessToken) });
-    const filtered = mapMarkers.filter((mark) => mark.id !== assetSilver.id); // trashed asset
-    cities = [...new Set(filtered.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
-    states = [...new Set(filtered.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
-    countries = [...new Set(filtered.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
+    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver.id);
+    cities = [...new Set(nonTrashed.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
+    states = [...new Set(nonTrashed.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
+    countries = [...new Set(nonTrashed.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
   }, 30_000);
 
   afterAll(async () => {
