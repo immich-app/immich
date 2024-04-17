@@ -43,12 +43,12 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
-import { ImmichLogger } from 'src/utils/logger';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -76,7 +76,6 @@ interface ClaimOptions<T> {
 export class AuthService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private logger = new ImmichLogger(AuthService.name);
   private userCore: UserCore;
 
   constructor(
@@ -84,13 +83,15 @@ export class AuthService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    this.logger.setContext(AuthService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository, logger);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });

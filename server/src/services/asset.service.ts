@@ -40,11 +40,11 @@ import {
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
@@ -63,7 +63,6 @@ export interface UploadFile {
 }
 
 export class AssetService {
-  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -77,9 +76,11 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
@@ -391,7 +392,9 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    if (asset.library.type === LibraryType.UPLOAD) {
+      await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
