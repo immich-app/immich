@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
@@ -26,6 +27,7 @@ type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
 
 @Instrumentation()
+@Injectable()
 class ActivityAccess implements IActivityAccess {
   constructor(
     private activityRepository: Repository<ActivityEntity>,

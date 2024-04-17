@@ -19,7 +19,7 @@ import { UUIDParamDto } from 'src/validation';
 @Controller('shared-link')
 @Authenticated()
 export class SharedLinkController {
-  constructor(private readonly service: SharedLinkService) {}
+  constructor(private service: SharedLinkService) {}
 
   @Get()
   getAllSharedLinks(@Auth() auth: AuthDto): Promise<SharedLinkResponseDto[]> {

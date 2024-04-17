@@ -15,14 +15,15 @@ import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.reposit
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
   let accessMock: IAccessRepositoryMock;
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let albumUserMock: jest.Mocked<IAlbumUserRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let albumUserMock: Mocked<IAlbumUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

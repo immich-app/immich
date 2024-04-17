@@ -26,6 +26,7 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
+doc/AssetDeltaSyncResponseDto.md
 doc/AssetFaceResponseDto.md
 doc/AssetFaceUpdateDto.md
 doc/AssetFaceUpdateItem.md
@@ -151,6 +152,7 @@ doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
 doc/SmartSearchDto.md
+doc/SyncApi.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -221,6 +223,7 @@ lib/api/person_api.dart
 lib/api/search_api.dart
 lib/api/server_info_api.dart
 lib/api/shared_link_api.dart
+lib/api/sync_api.dart
 lib/api/system_config_api.dart
 lib/api/tag_api.dart
 lib/api/timeline_api.dart
@@ -253,6 +256,7 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
+lib/model/asset_delta_sync_response_dto.dart
 lib/model/asset_face_response_dto.dart
 lib/model/asset_face_update_dto.dart
 lib/model/asset_face_update_item.dart
@@ -435,6 +439,7 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
+test/asset_delta_sync_response_dto_test.dart
 test/asset_face_response_dto_test.dart
 test/asset_face_update_dto_test.dart
 test/asset_face_update_item_test.dart
@@ -560,6 +565,7 @@ test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
 test/smart_search_dto_test.dart
+test/sync_api_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart

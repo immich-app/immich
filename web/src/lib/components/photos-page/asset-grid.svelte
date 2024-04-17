@@ -71,11 +71,13 @@
   };
 
   const onDelete = () => {
-    if (!isTrashEnabled && $showDeleteModal) {
+    const hasTrashedAsset = Array.from($selectedAssets).some((asset) => asset.isTrashed);
+
+    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
       return;
     }
-    handlePromiseError(trashOrDelete(false));
+    handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
   const onForceDelete = () => {

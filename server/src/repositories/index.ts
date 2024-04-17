@@ -12,6 +12,7 @@ import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
@@ -43,6 +44,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
+import { LoggerRepository } from 'src/repositories/logger.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -74,6 +76,7 @@ export const repositories = [
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
+  { provide: ILoggerRepository, useClass: LoggerRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },

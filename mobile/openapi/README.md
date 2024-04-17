@@ -192,6 +192,8 @@ Class | Method | HTTP request | Description
 *SharedLinkApi* | [**removeSharedLink**](doc//SharedLinkApi.md#removesharedlink) | **DELETE** /shared-link/{id} | 
 *SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
 *SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
+*SyncApi* | [**getAllForUserFullSync**](doc//SyncApi.md#getallforuserfullsync) | **GET** /sync/full-sync | 
+*SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **GET** /sync/delta-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
@@ -243,6 +245,7 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
+ - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)

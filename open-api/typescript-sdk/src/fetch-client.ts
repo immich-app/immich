@@ -844,6 +844,11 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     success: boolean;
 };
+export type AssetDeltaSyncResponseDto = {
+    deleted: string[];
+    needsFullSync: boolean;
+    upserted: AssetResponseDto[];
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     acceptedAudioCodecs: AudioCodec[];
@@ -2526,6 +2531,40 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         method: "PUT",
         body: assetIdsDto
     })));
+}
+export function getDeltaSync({ updatedAfter, userIds }: {
+    updatedAfter: string;
+    userIds: string[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetDeltaSyncResponseDto;
+    }>(`/sync/delta-sync${QS.query(QS.explode({
+        updatedAfter,
+        userIds
+    }))}`, {
+        ...opts
+    }));
+}
+export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
+    lastCreationDate?: string;
+    lastId?: string;
+    limit: number;
+    updatedUntil: string;
+    userId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/sync/full-sync${QS.query(QS.explode({
+        lastCreationDate,
+        lastId,
+        limit,
+        updatedUntil,
+        userId
+    }))}`, {
+        ...opts
+    }));
 }
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
