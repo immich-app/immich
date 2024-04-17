@@ -12,12 +12,16 @@ export enum AlbumUserRole {
 @Index('IDX_427c350ad49bd3935a50baab73', ['album'])
 @Index('IDX_f48513bf9bccefd6ff3ad30bd0', ['user'])
 export class AlbumUserEntity {
-  @PrimaryColumn({ type: 'uuid', name: 'albumsId' })
+  @PrimaryColumn({ type: 'uuid' })
+  albumsId!: string;
+
+  @PrimaryColumn({ type: 'uuid' })
+  usersId!: string;
+
   @JoinColumn({ name: 'albumsId' })
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   album!: AlbumEntity;
 
-  @PrimaryColumn({ type: 'uuid', name: 'usersId' })
   @JoinColumn({ name: 'usersId' })
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   user!: UserEntity;

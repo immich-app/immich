@@ -74,6 +74,10 @@ SELECT
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a" ON "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."id" = "AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  AND (
+    "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."deletedAt" IS NULL
+  )
 WHERE
   (
     (
@@ -81,7 +85,11 @@ WHERE
       AND (
         (
           (
-            "AlbumEntity__AlbumEntity_sharedUsers"."usersId" = $2
+            (
+              (
+                "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."id" = $2
+              )
+            )
           )
           AND (
             "AlbumEntity__AlbumEntity_sharedUsers"."role" IN ($3, $4)
