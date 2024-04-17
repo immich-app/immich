@@ -4,8 +4,9 @@
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
-    updateAlbumUser, AlbumUserRole,
-  } from '@immich/sdk'
+    updateAlbumUser,
+    AlbumUserRole,
+  } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -139,7 +140,10 @@
                     {#if role === AlbumUserRole.Viewer}
                       <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
                     {:else}
-                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)} text="Disallow edits" />
+                      <MenuOption
+                        on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                        text="Disallow edits"
+                      />
                     {/if}
                     <MenuOption on:click={handleMenuRemove} text="Remove" />
                   </ContextMenu>
