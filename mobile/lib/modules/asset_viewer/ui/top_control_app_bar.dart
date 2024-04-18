@@ -94,7 +94,7 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
-    Widget buildAddToAlbumButtom() {
+    Widget buildAddToAlbumButton() {
       return IconButton(
         onPressed: () {
           onAddToAlbumPressed();
@@ -170,7 +170,7 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && !asset.isOffline && isOwner)
           buildDownloadButton(),
-        if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButtom(),
+        if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButton(),
         if (album != null && album.shared) buildActivitiesButton(),
         buildMoreInfoButton(),
       ],
