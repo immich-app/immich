@@ -77,3 +77,10 @@ export function navigate<T extends Route>(change: T): Promise<void> {
   // future navigation requests here
   throw `Invalid navigation: ${JSON.stringify(change)}`;
 }
+
+export const clearQueryParam = async (queryParam: string, url: URL) => {
+  if (url.searchParams.has(queryParam)) {
+    url.searchParams.delete(queryParam);
+    await goto(url);
+  }
+};

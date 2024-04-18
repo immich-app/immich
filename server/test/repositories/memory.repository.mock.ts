@@ -1,14 +1,15 @@
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newMemoryRepositoryMock = (): jest.Mocked<IMemoryRepository> => {
+export const newMemoryRepositoryMock = (): Mocked<IMemoryRepository> => {
   return {
-    search: jest.fn().mockResolvedValue([]),
-    get: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getAssetIds: jest.fn().mockResolvedValue(new Set()),
-    addAssetIds: jest.fn(),
-    removeAssetIds: jest.fn(),
+    search: vitest.fn().mockResolvedValue([]),
+    get: vitest.fn(),
+    create: vitest.fn(),
+    update: vitest.fn(),
+    delete: vitest.fn(),
+    getAssetIds: vitest.fn().mockResolvedValue(new Set()),
+    addAssetIds: vitest.fn(),
+    removeAssetIds: vitest.fn(),
   };
 };

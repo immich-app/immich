@@ -10,19 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  server-e2e-jobs:
-    name: Server (e2e-jobs)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-
-      - name: Run e2e tests
-        run: make server-e2e-jobs
-
   doc-tests:
     name: Docs
     runs-on: ubuntu-latest

@@ -22,6 +22,7 @@ import { SharedLinkService } from 'src/services/shared-link.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
+import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { TagService } from 'src/services/tag.service';
 import { TimelineService } from 'src/services/timeline.service';
@@ -53,6 +54,7 @@ export const services = [
   SmartInfoService,
   StorageService,
   StorageTemplateService,
+  SyncService,
   SystemConfigService,
   TagService,
   TimelineService,

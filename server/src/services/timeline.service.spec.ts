@@ -7,12 +7,13 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(TimelineService.name, () => {
   let sut: TimelineService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();

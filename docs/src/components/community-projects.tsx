@@ -34,11 +34,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
-    title: 'Podman/Quadlets Install',
-    description: 'Documentation for simple podman setup using quadlets.',
-    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
-  },
-  {
     title: 'Lightroom Publisher: mi.Immich.Publisher',
     description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
     url: 'https://github.com/midzelis/mi.Immich.Publisher',
@@ -47,6 +42,21 @@ const projects: CommunityProjectProps[] = [
     title: 'Immich Duplicate Finder',
     description: 'Webapp that uses machine learning to identify near-duplicate images.',
     url: 'https://github.com/vale46n1/immich_duplicate_finder',
+  },
+  {
+    title: 'Immich-Tiktok-Remover',
+    description: 'Script to search for and remove TikTok videos from your Immich library.',
+    url: 'https://github.com/mxc2/immich-tiktok-remover',
+  },
+  {
+    title: 'Immich Android TV',
+    description: 'Unofficial Immich Android TV app.',
+    url: 'https://github.com/giejay/Immich-Android-TV',
+  },
+  {
+    title: 'Powershell Module PSImmich',
+    description: 'Powershell Module for the Immich API',
+    url: 'https://github.com/hanpq/PSImmich',
   },
 ];
 

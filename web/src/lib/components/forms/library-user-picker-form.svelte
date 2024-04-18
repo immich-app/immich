@@ -33,15 +33,13 @@
   icon={mdiFolderSync}
   onClose={handleCancel}
 >
-  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
     <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
-
-    <div class="mt-8 flex w-full gap-4">
-      <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-
-      <Button type="submit" fullwidth>Create</Button>
-    </div>
   </form>
+  <svelte:fragment slot="sticky-bottom">
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
+    <Button type="submit" fullwidth form="select-library-owner-form">Create</Button>
+  </svelte:fragment>
 </FullScreenModal>

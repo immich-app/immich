@@ -65,7 +65,6 @@
   <ConfirmDialogue
     id="edit-date-time-modal"
     confirmColor="primary"
-    cancelColor="secondary"
     title="Edit date and time"
     prompt="Please select a new date:"
     disabled={!date.isValid}

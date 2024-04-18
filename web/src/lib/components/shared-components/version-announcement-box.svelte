@@ -53,8 +53,8 @@
       <code>Latest Version: {releaseVersion}</code>
     </div>
 
-    <div class="mt-8 text-right">
+    <svelte:fragment slot="sticky-bottom">
       <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
-    </div>
+    </svelte:fragment>
   </FullScreenModal>
 {/if}
