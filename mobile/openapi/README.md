@@ -110,6 +110,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
+*AssetApi* | [**updateFile**](doc//AssetApi.md#updatefile) | **PUT** /asset/{id}/upload | 
 *AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuditApi* | [**fixAuditFiles**](doc//AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 

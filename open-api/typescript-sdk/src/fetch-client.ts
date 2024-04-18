@@ -1488,8 +1488,7 @@ export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
         ...opts
     }));
 }
-export function getAssetThumbnail({ c, format, id, key }: {
-    c?: string;
+export function getAssetThumbnail({ format, id, key }: {
     format?: ThumbnailFormat;
     id: string;
     key?: string;
@@ -1498,7 +1497,6 @@ export function getAssetThumbnail({ c, format, id, key }: {
         status: 200;
         data: Blob;
     }>(`/asset/thumbnail/${encodeURIComponent(id)}${QS.query(QS.explode({
-        c,
         format,
         key
     }))}`, {

@@ -1397,6 +1397,134 @@ class AssetApi {
     }
   }
 
+  /// Performs an HTTP 'PUT /asset/{id}/upload' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MultipartFile] assetData (required):
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
+  ///
+  /// * [DateTime] fileCreatedAt (required):
+  ///
+  /// * [DateTime] fileModifiedAt (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] duration:
+  ///
+  /// * [MultipartFile] livePhotoData:
+  ///
+  /// * [MultipartFile] sidecarData:
+  Future<Response> updateFileWithHttpInfo(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/{id}/upload'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+
+    const contentTypes = <String>['multipart/form-data'];
+
+    bool hasFields = false;
+    final mp = MultipartRequest('PUT', Uri.parse(path));
+    if (assetData != null) {
+      hasFields = true;
+      mp.fields[r'assetData'] = assetData.field;
+      mp.files.add(assetData);
+    }
+    if (deviceAssetId != null) {
+      hasFields = true;
+      mp.fields[r'deviceAssetId'] = parameterToString(deviceAssetId);
+    }
+    if (deviceId != null) {
+      hasFields = true;
+      mp.fields[r'deviceId'] = parameterToString(deviceId);
+    }
+    if (duration != null) {
+      hasFields = true;
+      mp.fields[r'duration'] = parameterToString(duration);
+    }
+    if (fileCreatedAt != null) {
+      hasFields = true;
+      mp.fields[r'fileCreatedAt'] = parameterToString(fileCreatedAt);
+    }
+    if (fileModifiedAt != null) {
+      hasFields = true;
+      mp.fields[r'fileModifiedAt'] = parameterToString(fileModifiedAt);
+    }
+    if (livePhotoData != null) {
+      hasFields = true;
+      mp.fields[r'livePhotoData'] = livePhotoData.field;
+      mp.files.add(livePhotoData);
+    }
+    if (sidecarData != null) {
+      hasFields = true;
+      mp.fields[r'sidecarData'] = sidecarData.field;
+      mp.files.add(sidecarData);
+    }
+    if (hasFields) {
+      postBody = mp;
+    }
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MultipartFile] assetData (required):
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
+  ///
+  /// * [DateTime] fileCreatedAt (required):
+  ///
+  /// * [DateTime] fileModifiedAt (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] duration:
+  ///
+  /// * [MultipartFile] livePhotoData:
+  ///
+  /// * [MultipartFile] sidecarData:
+  Future<AssetFileUploadResponseDto?> updateFile(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+    final response = await updateFileWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, livePhotoData: livePhotoData, sidecarData: sidecarData, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetFileUploadResponseDto',) as AssetFileUploadResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /asset/stack/parent' operation and returns the [Response].
   /// Parameters:
   ///

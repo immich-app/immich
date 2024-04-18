@@ -28,6 +28,7 @@ Method | HTTP request | Description
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 [**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
+[**updateFile**](AssetApi.md#updatefile) | **PUT** /asset/{id}/upload | 
 [**updateStackParent**](AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
@@ -1197,6 +1198,79 @@ void (empty response body)
 
  - **Content-Type**: application/json
  - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateFile**
+> AssetFileUploadResponseDto updateFile(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, livePhotoData, sidecarData)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
+final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
+final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
+final key = key_example; // String | 
+final duration = duration_example; // String | 
+final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
+final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
+
+try {
+    final result = api_instance.updateFile(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration, livePhotoData, sidecarData);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->updateFile: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **assetData** | **MultipartFile**|  | 
+ **deviceAssetId** | **String**|  | 
+ **deviceId** | **String**|  | 
+ **fileCreatedAt** | **DateTime**|  | 
+ **fileModifiedAt** | **DateTime**|  | 
+ **key** | **String**|  | [optional] 
+ **duration** | **String**|  | [optional] 
+ **livePhotoData** | **MultipartFile**|  | [optional] 
+ **sidecarData** | **MultipartFile**|  | [optional] 
+
+### Return type
+
+[**AssetFileUploadResponseDto**](AssetFileUploadResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

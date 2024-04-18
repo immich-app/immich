@@ -120,6 +120,11 @@ void main() {
       // TODO
     });
 
+    //Future<AssetFileUploadResponseDto> updateFile(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration, MultipartFile livePhotoData, MultipartFile sidecarData }) async
+    test('test updateFile', () async {
+      // TODO
+    });
+
     //Future updateStackParent(UpdateStackParentDto updateStackParentDto) async
     test('test updateStackParent', () async {
       // TODO
