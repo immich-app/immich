@@ -11,6 +11,7 @@ export enum QueueName {
   SEARCH = 'search',
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
+  MATCH_SMART_ALBUMS ='matchSmartAlbums'
 }
 
 export type ConcurrentQueueName = Exclude<
@@ -89,6 +90,10 @@ export enum JobName {
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
+
+  //smart albums update
+  QUEUE_MATCH_SMART_ALBUMS = 'queue-match-smart-albums',
+  MATCH_SMART_ALBUMS = 'match-smart-albums'
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -216,7 +221,11 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
+  
+  // Match Smart Albums (People based)
+  | { name: JobName.QUEUE_MATCH_SMART_ALBUMS; data?: IBaseJob }
+  | { name: JobName.MATCH_SMART_ALBUMS; data: IEntityJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

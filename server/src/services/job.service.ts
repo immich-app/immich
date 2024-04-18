@@ -266,7 +266,11 @@ export class JobService {
         ];
 
         if (item.data.source === 'upload') {
-          jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
+          jobs.push(
+            { name: JobName.SMART_SEARCH, data: item.data }, 
+            { name: JobName.FACE_DETECTION, data: item.data }, 
+            { name: JobName.MATCH_SMART_ALBUMS, data: item.data }
+          );
 
           const [asset] = await this.assetRepository.getByIds([item.data.id]);
           if (asset) {
