@@ -52,8 +52,8 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
    Hostname
 
-   - `https://immich.example.com/auth/login`)
-   - `https://immich.example.com/user-settings`)
+   - `https://immich.example.com/auth/login`
+   - `https://immich.example.com/user-settings`
 
 ## Enable OAuth
 
