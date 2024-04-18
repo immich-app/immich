@@ -439,7 +439,7 @@ describe(MetadataService.name, () => {
       });
       cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
-      assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      assetMock.create.mockImplementation((asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }));
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
@@ -465,6 +465,30 @@ describe(MetadataService.name, () => {
       // The still asset gets saved by handleMetadataExtraction, but not the video
       expect(assetMock.update).toHaveBeenCalledTimes(1);
       expect(jobMock.queue).toHaveBeenCalledTimes(0);
+    });
+
+    it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
+      metadataMock.readTags.mockResolvedValue({
+        Directory: 'foo/bar/',
+        MotionPhoto: 1,
+        MicroVideo: 1,
+        MicroVideoOffset: 1,
+      });
+      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      assetMock.getByChecksum.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      const video = randomBytes(512);
+      storageMock.readFile.mockResolvedValue(video);
+
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      expect(assetMock.update).toHaveBeenNthCalledWith(1, {
+        id: assetStub.livePhotoMotionAsset.id,
+        isVisible: false,
+      });
+      expect(assetMock.update).toHaveBeenNthCalledWith(2, {
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
     });
 
     it('should save all metadata', async () => {

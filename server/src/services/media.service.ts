@@ -32,6 +32,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ImmichLogger } from 'src/utils/logger';
 import {
+  AV1Config,
   H264Config,
   HEVCConfig,
   NVENCConfig,
@@ -438,6 +439,9 @@ export class MediaService {
       }
       case VideoCodec.VP9: {
         return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
       }
       default: {
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
