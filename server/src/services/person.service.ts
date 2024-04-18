@@ -292,7 +292,7 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
+        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true, withArchived: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -424,7 +424,7 @@ export class PersonService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
