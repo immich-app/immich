@@ -12,7 +12,7 @@
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
-  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -28,7 +28,6 @@
     getAllAlbums,
     runAssetJobs,
     updateAsset,
-    updateAssets,
     updateAlbumInfo,
     type ActivityResponseDto,
     type AlbumResponseDto,
@@ -491,20 +490,15 @@
   };
 
   const handleUnstack = async () => {
-    try {
-      const ids = $stackAssetsStore.map(({ id }) => id);
-      await updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
-      for (const child of $stackAssetsStore) {
-        child.stackParentId = null;
-        child.stackCount = 0;
-        child.stack = [];
-        dispatch('action', { type: AssetAction.ADD, asset: child });
+    const unstackedAssets = await unstackAssets($stackAssetsStore);
+    if (unstackedAssets) {
+      for (const asset of unstackedAssets) {
+        dispatch('action', {
+          type: AssetAction.ADD,
+          asset,
+        });
       }
-
       dispatch('close');
-      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
-    } catch (error) {
-      handleError(error, `Unable to unstack`);
     }
   };
 

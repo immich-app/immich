@@ -71,11 +71,13 @@
   };
 
   const onDelete = () => {
-    if (!isTrashEnabled && $showDeleteModal) {
+    const hasTrashedAsset = Array.from($selectedAssets).some((asset) => asset.isTrashed);
+
+    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
       return;
     }
-    handlePromiseError(trashOrDelete(false));
+    handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
   const onForceDelete = () => {
@@ -87,11 +89,10 @@
   };
 
   const onStackAssets = async () => {
-    if ($selectedAssets.size > 1) {
-      await stackAssets(Array.from($selectedAssets), (ids) => {
-        assetStore.removeAssets(ids);
-        dispatch('escape');
-      });
+    const ids = await stackAssets(Array.from($selectedAssets));
+    if (ids) {
+      assetStore.removeAssets(ids);
+      dispatch('escape');
     }
   };
 

@@ -25,13 +25,14 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -97,7 +98,6 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 @Injectable()
 export class MetadataService {
-  private logger = new ImmichLogger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private subscription: Subscription | null = null;
@@ -115,15 +115,19 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(MetadataService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       personRepository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -444,10 +448,14 @@ export class MetadataService {
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+        if (!asset.isExternal) {
+          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+        }
       }
 
       if (asset.livePhotoVideoId !== motionAsset.id) {
         await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
+
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)

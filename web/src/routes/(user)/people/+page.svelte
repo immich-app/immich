@@ -40,6 +40,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
+  import { clearQueryParam } from '$lib/utils/navigation';
 
   export let data: PageData;
 
@@ -279,10 +280,7 @@
 
   const handleSearchPeople = async (force: boolean) => {
     if (searchName === '') {
-      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
-        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        await goto($page.url);
-      }
+      await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
       return;
     }
     if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
@@ -393,6 +391,11 @@
       handleError(error, 'Unable to save name');
     }
   };
+
+  const onResetSearchBar = async () => {
+    searchedPeople = [];
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+  };
 </script>
 
 <svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
@@ -421,9 +424,7 @@
               bind:name={searchName}
               isSearching={isSearchingPeople}
               placeholder="Search people"
-              on:reset={() => {
-                searchedPeople = [];
-              }}
+              on:reset={onResetSearchBar}
               on:search={({ detail }) => handleSearch(detail.force ?? false)}
             />
           </div>
@@ -464,24 +465,22 @@
 
   {#if showChangeNameModal}
     <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
-      <form on:submit|preventDefault={submitNameChange} autocomplete="off">
+      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
-          <!-- svelte-ignore a11y-autofocus -->
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
-        </div>
-
-        <div class="mt-8 flex w-full gap-4">
-          <Button
-            color="gray"
-            fullwidth
-            on:click={() => {
-              showChangeNameModal = false;
-            }}>Cancel</Button
-          >
-          <Button type="submit" fullwidth>Ok</Button>
+          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
         </div>
       </form>
+      <svelte:fragment slot="sticky-bottom">
+        <Button
+          color="gray"
+          fullwidth
+          on:click={() => {
+            showChangeNameModal = false;
+          }}>Cancel</Button
+        >
+        <Button type="submit" fullwidth form="change-name-form">Ok</Button>
+      </svelte:fragment>
     </FullScreenModal>
   {/if}
 

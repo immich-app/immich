@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 
 class GroupDividerTitle extends HookConsumerWidget {
   const GroupDividerTitle({
@@ -38,7 +38,7 @@ class GroupDividerTitle extends HookConsumerWidget {
     );
 
     void handleTitleIconClick() {
-      HapticFeedback.heavyImpact();
+      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
       if (selected) {
         onDeselect();
       } else {

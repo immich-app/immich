@@ -96,7 +96,6 @@
 <ConfirmDialogue
   id="change-location-modal"
   confirmColor="primary"
-  cancelColor="secondary"
   title="Change location"
   width="wide"
   onConfirm={handleConfirm}

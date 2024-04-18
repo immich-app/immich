@@ -36,18 +36,17 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 /** @deprecated */
 export class AssetServiceV1 {
-  readonly logger = new ImmichLogger(AssetServiceV1.name);
   private access: AccessCore;
 
   constructor(
@@ -58,9 +57,11 @@ export class AssetServiceV1 {
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.logger.setContext(AssetServiceV1.name);
   }
 
   public async uploadFile(

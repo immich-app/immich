@@ -1,5 +1,3 @@
-import { when } from 'jest-when';
-
 import { Stats } from 'node:fs';
 import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-v1-response.dto';
 import { CreateAssetDto, UpdateAssetDataDto } from 'src/dtos/asset-v1.dto';
@@ -11,6 +9,7 @@ import { AssetCreate, IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
@@ -25,9 +24,11 @@ import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock'
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
+import { Mocked, vitest } from 'vitest';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -110,30 +111,32 @@ const _getClonedLivePhotoMotionAsset = {
 describe('AssetService', () => {
   let sut: AssetServiceV1;
   let accessMock: IAccessRepositoryMock;
-  let assetRepositoryMockV1: jest.Mocked<IAssetRepositoryV1>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
+  let assetRepositoryMockV1: Mocked<IAssetRepositoryV1>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let eventMock: Mocked<IEventRepository>;
 
   beforeEach(() => {
     assetRepositoryMockV1 = {
-      get: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetsByChecksums: jest.fn(),
-      getExistingAssets: jest.fn(),
-      getByOriginalPath: jest.fn(),
+      get: vitest.fn(),
+      getAllByUserId: vitest.fn(),
+      getDetectedObjectsByUserId: vitest.fn(),
+      getLocationsByUserId: vitest.fn(),
+      getSearchPropertiesByUserId: vitest.fn(),
+      getAssetsByChecksums: vitest.fn(),
+      getExistingAssets: vitest.fn(),
+      getByOriginalPath: vitest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     eventMock = newEventRepositoryMock();
@@ -146,15 +149,15 @@ describe('AssetService', () => {
       libraryMock,
       storageMock,
       userMock,
+      loggerMock,
       eventMock,
     );
 
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoStillAsset.id)
-      .mockResolvedValue(assetStub.livePhotoStillAsset);
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoMotionAsset.id)
-      .mockResolvedValue(assetStub.livePhotoMotionAsset);
+    assetRepositoryMockV1.get.mockImplementation((assetId) =>
+      Promise.resolve(
+        [assetStub.livePhotoMotionAsset, assetStub.livePhotoMotionAsset].find((asset) => asset.id === assetId) ?? null,
+      ),
+    );
   });
 
   describe('uploadFile', () => {
@@ -457,7 +460,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is creating the live photo
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       // this is creating a clone of the existing
@@ -507,7 +510,7 @@ describe('AssetService', () => {
       // this is the existing live photo
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingLivePhotoMotionAsset);
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       const clonedLivePhotoMotionAsset = _getClonedLivePhotoMotionAsset;
       assetMock.create.mockResolvedValueOnce(clonedLivePhotoMotionAsset as AssetEntity);
 
