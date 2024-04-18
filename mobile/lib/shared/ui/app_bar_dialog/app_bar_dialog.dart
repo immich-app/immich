@@ -39,15 +39,27 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     );
 
     buildTopRow() {
-      return Align(
-        alignment: Alignment.topLeft,
-        child: InkWell(
-          onTap: () => context.pop(),
-          child: const Icon(
-            Icons.close,
-            size: 20,
+      return Stack(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: InkWell(
+              onTap: () => context.pop(),
+              child: const Icon(
+                Icons.close,
+                size: 20,
+              ),
+            ),
           ),
-        ),
+          Center(
+            child: Image.asset(
+              context.isDarkTheme
+                  ? 'assets/immich-text-dark.png'
+                  : 'assets/immich-text-light.png',
+              height: 16,
+            ),
+          ),
+        ],
       );
     }
 
