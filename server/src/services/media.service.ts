@@ -245,12 +245,16 @@ export class MediaService {
 
   async handleGenerateThumbhash({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset?.previewPath) {
+    if (!asset) {
       return JobStatus.FAILED;
     }
 
     if (!asset.isVisible) {
       return JobStatus.SKIPPED;
+    }
+
+    if (!asset.previewPath) {
+      return JobStatus.FAILED;
     }
 
     const thumbhash = await this.mediaRepository.generateThumbhash(asset.previewPath);
