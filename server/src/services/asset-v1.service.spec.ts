@@ -5,7 +5,7 @@ import { CreateAssetDto, UpdateAssetDataDto } from 'src/dtos/asset-v1.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
-import { AssetCreate, IAssetRepository } from 'src/interfaces/asset.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
@@ -342,7 +342,7 @@ describe('AssetService', () => {
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
@@ -371,11 +371,9 @@ describe('AssetService', () => {
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockImplementationOnce((asset: AssetCreate) =>
-        Promise.resolve(Object.assign(new AssetEntity(), asset, { id: 'cloned' })),
-      );
+      assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
       await expect(
         sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile, undefined, sidecarFile),
@@ -386,7 +384,7 @@ describe('AssetService', () => {
 
       expectAssetUpdate(existingAsset, updatedFile, dto, undefined, sidecarFile);
       expectAssetCreateFromClone(existingAsset);
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['cloned']);
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getClonedAsset.id]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -402,11 +400,9 @@ describe('AssetService', () => {
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockImplementationOnce((asset: AssetCreate) =>
-        Promise.resolve(Object.assign(new AssetEntity(), asset, { id: 'cloned' })),
-      );
+      assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
       await expect(sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile)).resolves.toEqual({
         duplicate: false,
@@ -415,7 +411,7 @@ describe('AssetService', () => {
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
       expectAssetCreateFromClone(existingAsset);
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['cloned']);
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getClonedAsset.id]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -435,11 +431,9 @@ describe('AssetService', () => {
       assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([existingAsset]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       // this is the original file size
-      storageMock.stat.mockResolvedValue(Promise.resolve({ size: 0 } as Stats));
+      storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockImplementationOnce((asset: AssetCreate) =>
-        Promise.resolve(Object.assign(new AssetEntity(), asset, { id: 'cloned' })),
-      );
+      assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
       await expect(sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile)).resolves.toEqual({
         duplicate: true,
