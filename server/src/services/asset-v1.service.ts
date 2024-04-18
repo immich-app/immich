@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import fs from 'node:fs/promises';
+
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
@@ -125,7 +125,6 @@ export class AssetServiceV1 {
       if (!existingAssetEntity) {
         throw new NotFoundException('Asset does not exist');
       }
-      let existingLivePhotoAsset;
 
       if (livePhotoFile) {
         livePhotoFile = {
@@ -134,38 +133,50 @@ export class AssetServiceV1 {
         };
       }
 
-      let livePhotoAsset: AssetEntity | null = null;
-
-      const libraryId = await this.getLibraryId(auth);
+      const libraryId = existingAssetEntity.libraryId;
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
       this.requireQuota(auth, file.size);
+
+      // If no livePhotoAsset is uploading with the asset, clear it.
+      // Otherise, if we created a livePhotoAsset, use it, otherwise clear it.
+      // Updating an existing photo with attached livephoto to a photo without a livephoto will probably be unexpected,
+      // since livephotos are derived from photos, leaving the live photo will likely be a mismatch.
+      // --
+      // For the sidecarPath - regardless if we had one or not, we want to use the update sidecarPath, or null if
+      // none supplied, since the sidecarPath is always connected with the photo location.
+
+      const existingLivePhotoAsset = existingAssetEntity.livePhotoVideoId
+        ? await this.assetRepositoryV1.get(existingAssetEntity.livePhotoVideoId)
+        : null;
+
+      let nextLivePhotoId;
+      let backupLivePhotoId = existingLivePhotoAsset?.id || null;
       if (livePhotoFile) {
-        if (existingAssetEntity.livePhotoVideoId) {
-          existingLivePhotoAsset = await this.assetRepositoryV1.get(existingAssetEntity.livePhotoVideoId);
-        }
+        // handle the case where new file has attached livephoto
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         if (existingLivePhotoAsset) {
+          // update existing live photo record with new upload
           await this.update(auth, existingLivePhotoAsset, livePhotoDto, livePhotoFile);
+          // clone original live photo record
+          const cloned = await this.clone(existingLivePhotoAsset);
+          nextLivePhotoId = existingLivePhotoAsset.id;
+          // original had a live photo, so ensure that the clone of the main asset links to the
+          // clone of the live photo
+          backupLivePhotoId = cloned.id;
         } else {
-          const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
-          livePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
+          const createdLivePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
+          nextLivePhotoId = createdLivePhotoAsset.id;
         }
       }
-
-      await this.update(
-        auth,
-        existingAssetEntity,
-        { ...dto, libraryId },
-        file,
-        livePhotoAsset?.id || (existingAssetEntity.livePhotoVideoId ?? undefined),
-        sidecarFile?.originalPath,
-      );
-
-      // now, clone the original, and immediately put it in the trash
-      const cloned = await this.clone(existingAssetEntity);
+      // update main asset record
+      await this.update(auth, existingAssetEntity, dto, file, nextLivePhotoId, sidecarFile?.originalPath);
+      // clone main asset record
+      const cloned = await this.clone({ ...existingAssetEntity, livePhotoVideoId: backupLivePhotoId });
+      // and immediate trash it
       await this.assetRepository.softDeleteAll([cloned.id]);
       this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [cloned.id]);
 
+      // original records are already counted in usage, only need to add the deltas
       await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
       return { id: id, duplicate: false };
@@ -395,6 +406,11 @@ export class AssetServiceV1 {
     return library.id;
   }
 
+  /**
+   * Clones (makes a copy) of the specified asset creating a new asset record in the database,
+   * using only vital properties, excluding things like: stacks, faces, smart search info, etc,
+   * and then queues a METADATA_EXTRACTION job.
+   */
   private async clone(asset: AssetEntity): Promise<AssetEntity> {
     const created = await this.assetRepository.create({
       ownerId: asset.ownerId,
@@ -408,13 +424,11 @@ export class AssetServiceV1 {
       fileCreatedAt: asset.fileCreatedAt,
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
+      livePhotoVideoId: asset.livePhotoVideoId || null,
+      sidecarPath: asset.sidecarPath || null,
     });
 
-    if (created.sidecarPath) {
-      await this.storageRepository.utimes(created.sidecarPath, new Date(), new Date(created.fileModifiedAt));
-    }
-    const { size } = await fs.stat(created.originalPath);
-    await this.storageRepository.utimes(created.originalPath, new Date(), new Date(created.fileModifiedAt));
+    const { size } = await this.storageRepository.stat(created.originalPath);
     await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'clone' } });
     return created;
@@ -442,11 +456,11 @@ export class AssetServiceV1 {
       localDateTime: dto.fileCreatedAt,
 
       type: mimeTypes.assetType(file.originalPath),
-      isFavorite: dto.isFavorite,
+      isFavorite: dto.isFavorite ?? false,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
-      livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
+      livePhotoVideo: livePhotoAssetId ? ({ id: livePhotoAssetId } as AssetEntity) : null,
       originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
@@ -462,10 +476,17 @@ export class AssetServiceV1 {
 
     return asset;
   }
+
+  /**
+   * Updates the specified asset to vital properties, like device(Asset)?Id, checksum,
+   * file modification, and livePhotoId, and sidecar path. Stacks, and derived properties like:
+   * faces, smart search info, etc are UNTOUCHED. File modification times are updated, exif if
+   * upserted, and then A METADATA_EXTRACTION job is queued to update these derived properties.
+   */
   private async update(
     auth: AuthDto,
     existingEntity: AssetEntity,
-    dto: UpdateAssetDataDto & { libraryId: string },
+    dto: UpdateAssetDataDto,
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,
@@ -473,7 +494,7 @@ export class AssetServiceV1 {
     await this.assetRepository.update({
       id: existingEntity.id,
       ownerId: auth.user.id,
-      libraryId: dto.libraryId,
+      libraryId: existingEntity.libraryId,
 
       checksum: file.checksum,
       originalPath: file.originalPath,

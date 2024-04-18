@@ -13,4 +13,19 @@ export const fileStub = {
     originalName: 'asset_1.mp4',
     size: 69,
   }),
+  photo: Object.freeze({
+    uuid: 'photo',
+    originalPath: 'fake_path/photo1.jpeg',
+    mimeType: 'image/jpeg',
+    checksum: Buffer.from('photo file hash', 'utf8'),
+    originalName: 'photo1.jpeg',
+    size: 24,
+  }),
+  photoSidecar: Object.freeze({
+    uuid: 'photo-sidecar',
+    originalPath: 'fake_path/photo1.jpeg.xmp',
+    originalName: 'photo1.jpeg.xmp',
+    checksum: Buffer.from('photo-sidecar file hash', 'utf8'),
+    size: 96,
+  }),
 };
