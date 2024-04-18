@@ -51,6 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -97,7 +98,7 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-
+  let unsubscribe: () => void;
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
@@ -191,6 +192,12 @@
   }
 
   onMount(async () => {
+    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -234,6 +241,9 @@
 
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
+    }
+    if (unsubscribe) {
+      unsubscribe();
     }
   });
 
@@ -610,6 +620,7 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              checksum={previewStackedAsset.checksum}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -630,6 +641,7 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                checksum={asset.checksum}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -643,6 +655,7 @@
           {:else}
             <VideoViewer
               assetId={asset.id}
+              checksum={asset.checksum}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}

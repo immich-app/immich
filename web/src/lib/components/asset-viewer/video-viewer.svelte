@@ -8,6 +8,19 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
+  export let checksum: string;
+
+  let assetFileUrl: string;
+  $: {
+    let prev = assetFileUrl;
+    const next = getAssetFileUrl(assetId, false, true, checksum);
+    if (prev !== next) {
+      assetFileUrl = getAssetFileUrl(assetId, false, true, checksum);
+      if (element) {
+        element.load();
+      }
+    }
+  }
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
@@ -43,9 +56,9 @@
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg, checksum)}
   >
-    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
   </video>
 

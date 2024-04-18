@@ -21,7 +21,7 @@
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
-  let assetData: string;
+  let assetData: string | undefined;
   let abortController: AbortController;
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
@@ -37,15 +37,22 @@
     });
   }
 
+  $: {
+    // this reative effect block is triggered when properties on this page change, like
+    // asset id. When this happens, we load the data and set it to a property, which is
+    // bound in the html template below. Need to use a IIFE because of async/await is not
+    // in the svelte reative block, but $effect in svelte5 will fix this.
+    void (async () => {
+      assetData = await loadAssetData({ loadOriginal: loadOriginalByDefault });
+    })();
+  }
+
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
-
-    imageLoaded = false;
-    await loadAssetData({ loadOriginal: loadOriginalByDefault });
   });
 
   onDestroy(() => {
@@ -64,21 +71,17 @@
         signal: abortController.signal,
       });
 
-      assetData = URL.createObjectURL(data);
-      imageLoaded = true;
-
-      if (!preloadAssets) {
-        return;
-      }
-
-      for (const preloadAsset of preloadAssets) {
+      for (const preloadAsset of preloadAssets || []) {
         if (preloadAsset.type === AssetTypeEnum.Image) {
-          await downloadRequest({
+          // no need to wait for these preloads
+          void downloadRequest({
             url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
             signal: abortController.signal,
           });
         }
       }
+      imageLoaded = true;
+      return URL.createObjectURL(data);
     } catch {
       imageLoaded = false;
     }

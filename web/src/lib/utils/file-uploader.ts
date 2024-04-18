@@ -17,16 +17,32 @@ const getExtensions = async () => {
   }
   return _extensions;
 };
+// the following set of interfaces ensure that either albumId OR assetId
+// may be specified, but not both.
+interface FileUploadParams {
+  multiple?: boolean;
+}
+interface FileUploadWithAlbum extends FileUploadParams {
+  albumId?: string;
+  assetId?: never;
+}
+interface FileUploadWithAsset extends FileUploadParams {
+  albumId?: never;
+  assetId?: string;
+}
+type FileUploadParam = FileUploadWithAlbum | FileUploadWithAsset;
+const defaultParams: FileUploadWithAlbum = {
+  multiple: true,
+};
 
-export const openFileUploadDialog = async (albumId?: string | undefined) => {
+export const openFileUploadDialog = async ({ albumId, multiple, assetId }: FileUploadParam = defaultParams) => {
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
-
       fileSelector.type = 'file';
-      fileSelector.multiple = true;
+      fileSelector.multiple = !!multiple;
       fileSelector.accept = extensions.join(',');
       fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
@@ -35,7 +51,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
         }
         const files = Array.from(target.files);
 
-        resolve(fileUploadHandler(files, albumId));
+        resolve(fileUploadHandler(files, albumId, assetId));
       });
 
       fileSelector.click();
@@ -46,14 +62,14 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
   });
 };
 
-export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
+export const fileUploadHandler = async (files: File[], albumId?: string, assetId?: string): Promise<string[]> => {
   const extensions = await getExtensions();
   const promises = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
     if (extensions.some((extension) => name.endsWith(extension))) {
-      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId, assetId });
+      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId, assetId)));
     }
   }
 
@@ -66,7 +82,7 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
+async function fileUploader(asset: File, albumId?: string, assetId?: string): Promise<string | undefined> {
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(asset);
 
@@ -87,6 +103,14 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
       const key = getKey();
 
+      if (assetId) {
+        return uploadRequest<AssetFileUploadResponseDto>({
+          url: defaults.baseUrl + '/asset/' + assetId + '/upload' + (key ? `?key=${key}` : ''),
+          method: 'PUT',
+          data: formData,
+          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+        });
+      }
       return uploadRequest<AssetFileUploadResponseDto>({
         url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
         data: formData,

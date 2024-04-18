@@ -21,6 +21,7 @@
     mdiHeart,
     mdiHeartOutline,
     mdiImageAlbum,
+    mdiUpload,
     mdiImageMinusOutline,
     mdiImageOutline,
     mdiImageRefreshOutline,
@@ -35,6 +36,7 @@
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
@@ -237,6 +239,11 @@
                 on:click={() => dispatch('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
+              />
+              <MenuOption
+                icon={mdiUpload}
+                on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                text="Replace with upload"
               />
               <hr />
               <MenuOption

@@ -25,6 +25,7 @@ interface DownloadRequestOptions<T = unknown> {
 
 interface UploadRequestOptions {
   url: string;
+  method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
@@ -64,7 +65,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
       xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
-    xhr.open('POST', url);
+    xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
   });
@@ -156,9 +157,13 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return defaults.baseUrl + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
+export const getAssetFileUrl = (
+  ...[assetId, isWeb, isThumb, checksum]:
+    | [assetId: string, isWeb: boolean, isThumb: boolean]
+    | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
+) => {
   const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey() });
+  return createUrl(path, { isThumb, isWeb, key: getKey(), c: checksum });
 };
 
 export const getAssetThumbnailUrl = (
