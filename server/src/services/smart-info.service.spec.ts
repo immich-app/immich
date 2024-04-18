@@ -1,4 +1,3 @@
-import { AssetEntity } from 'src/entities/asset.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
