@@ -1666,15 +1666,6 @@
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
-            "name": "c",
-            "required": false,
-            "in": "query",
-            "description": "Cache-buster, usually set to checksum",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "format",
             "required": false,
             "in": "query",

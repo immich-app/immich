@@ -159,13 +159,6 @@ export class GetAssetThumbnailDto {
     enumName: 'ThumbnailFormat',
   })
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
-
-  @Optional()
-  @ApiProperty({
-    description: 'Cache-buster, usually set to checksum',
-    required: false,
-  })
-  c?: string;
 }
 
 export class SearchPropertiesDto {
