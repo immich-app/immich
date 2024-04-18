@@ -322,6 +322,14 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      await this.assetRepository.upsertJobStatus({
+        assetId: asset.id,
+        facesRecognizedAt: new Date(),
+      });
+      return JobStatus.SKIPPED;
+    }
+
     const faces = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
       { imagePath: asset.previewPath },
