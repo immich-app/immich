@@ -14,6 +14,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { SlideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+
+  const { slideshowState, slideshowLook } = slideshowStore;
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | null = null;
@@ -158,7 +161,9 @@
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
         alt={getAltText(asset)}
-        class="h-full w-full object-contain"
+        class="h-full w-full {$slideshowState === SlideshowState.None
+          ? 'object-contain'
+          : SlideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
