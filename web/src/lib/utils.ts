@@ -168,8 +168,8 @@ export const getAssetFileUrl = (
 
 export const getAssetThumbnailUrl = (
   ...[assetId, format, checksum]:
-    | [assetId: string, format: ThumbnailFormat]
-    | [assetId: string, format: ThumbnailFormat, checksum: string]
+    | [assetId: string, format: ThumbnailFormat | undefined]
+    | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
 ) => {
   // checksum (optional) is used as a cache-buster param, since thumbs are
   // served with static resource cache headers

@@ -21,7 +21,7 @@
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
-  let assetData: string | undefined;
+  let assetData: string;
   let abortController: AbortController;
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
@@ -43,7 +43,7 @@
     // bound in the html template below. Need to use a IIFE because of async/await is not
     // in the svelte reative block, but $effect in svelte5 will fix this.
     void (async () => {
-      assetData = await loadAssetData({ loadOriginal: loadOriginalByDefault });
+      assetData = (await loadAssetData({ loadOriginal: loadOriginalByDefault }))!;
     })();
   }
 

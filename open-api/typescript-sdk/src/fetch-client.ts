@@ -312,6 +312,16 @@ export type UpdateAssetDto = {
     latitude?: number;
     longitude?: number;
 };
+export type UpdateAssetDataDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+    livePhotoData?: Blob;
+    sidecarData?: Blob;
+};
 export type AuditDeletesResponseDto = {
     ids: string[];
     needsFullSync: boolean;
@@ -1478,7 +1488,8 @@ export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
         ...opts
     }));
 }
-export function getAssetThumbnail({ format, id, key }: {
+export function getAssetThumbnail({ c, format, id, key }: {
+    c?: string;
     format?: ThumbnailFormat;
     id: string;
     key?: string;
@@ -1487,6 +1498,7 @@ export function getAssetThumbnail({ format, id, key }: {
         status: 200;
         data: Blob;
     }>(`/asset/thumbnail/${encodeURIComponent(id)}${QS.query(QS.explode({
+        c,
         format,
         key
     }))}`, {
@@ -1532,6 +1544,22 @@ export function updateAsset({ id, updateAssetDto }: {
         ...opts,
         method: "PUT",
         body: updateAssetDto
+    })));
+}
+export function updateFile({ id, key, updateAssetDataDto }: {
+    id: string;
+    key?: string;
+    updateAssetDataDto: UpdateAssetDataDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetFileUploadResponseDto;
+    }>(`/asset/${encodeURIComponent(id)}/upload${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "PUT",
+        body: updateAssetDataDto
     })));
 }
 export function searchAssets({ checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isNotInAlbum, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, personIds, previewPath, resizePath, size, state, takenAfter, takenBefore, thumbnailPath, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, webpPath, withArchived, withDeleted, withExif, withPeople, withStacked }: {
