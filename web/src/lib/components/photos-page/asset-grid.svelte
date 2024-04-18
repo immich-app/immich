@@ -106,6 +106,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
+      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
+      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = viewport.height) },
     ];
 
     if ($isMultiSelectState) {
