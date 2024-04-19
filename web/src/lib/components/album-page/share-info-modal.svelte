@@ -99,7 +99,7 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.sharedUsersV2.toSorted((a, b) => {
+      {#each album.albumUsers.toSorted((a, b) => {
         if (a.role === AlbumUserRole.Viewer && b.role === AlbumUserRole.Editor) {
           return 1;
         }

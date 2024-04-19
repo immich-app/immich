@@ -38,6 +38,28 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
+};
+export type AlbumUserResponseDto = {
+    role: AlbumUserRole;
+    user: UserResponseDto;
+};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -60,24 +82,6 @@ export type ExifResponseDto = {
     projectionType?: string | null;
     state?: string | null;
     timeZone?: string | null;
-};
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
@@ -141,13 +145,10 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     updatedAt: string;
 };
-export type AlbumUserResponseDto = {
-    role: AlbumUserRole;
-    user: UserResponseDto;
-};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -161,9 +162,8 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** Deprecated in favor of sharedUsersV2 */
+    /** Deprecated in favor of albumUsers */
     sharedUsers: UserResponseDto[];
-    sharedUsersV2: AlbumUserResponseDto[];
     startDate?: string;
     updatedAt: string;
 };
@@ -2920,6 +2920,10 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
+}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
@@ -2939,10 +2943,6 @@ export enum AssetTypeEnum {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
-}
-export enum AlbumUserRole {
-    Editor = "editor",
-    Viewer = "viewer"
 }
 export enum Error {
     Duplicate = "duplicate",

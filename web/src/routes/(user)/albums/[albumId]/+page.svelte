@@ -137,8 +137,8 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: isEditor = album.sharedUsersV2.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor;
-  $: albumHasViewers = album.sharedUsersV2.some(({ role }) => role === AlbumUserRole.Viewer);
+  $: isEditor = album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor;
+  $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -585,7 +585,7 @@
                     </button>
 
                     <!-- users with write access (collaborators) -->
-                    {#each album.sharedUsersV2.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
+                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>

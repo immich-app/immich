@@ -7261,6 +7261,12 @@
             "nullable": true,
             "type": "string"
           },
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
+            },
+            "type": "array"
+          },
           "assetCount": {
             "type": "integer"
           },
@@ -7308,15 +7314,9 @@
           },
           "sharedUsers": {
             "deprecated": true,
-            "description": "Deprecated in favor of sharedUsersV2",
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
-            },
-            "type": "array"
-          },
-          "sharedUsersV2": {
-            "items": {
-              "$ref": "#/components/schemas/AlbumUserResponseDto"
             },
             "type": "array"
           },
@@ -7332,6 +7332,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumUsers",
           "assetCount",
           "assets",
           "createdAt",
@@ -7343,7 +7344,6 @@
           "ownerId",
           "shared",
           "sharedUsers",
-          "sharedUsersV2",
           "updatedAt"
         ],
         "type": "object"

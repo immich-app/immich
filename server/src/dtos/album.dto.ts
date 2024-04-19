@@ -105,9 +105,9 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of sharedUsersV2' })
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
   sharedUsers!: UserResponseDto[];
-  sharedUsersV2!: AlbumUserResponseDto[];
+  albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
   owner!: UserResponseDto;
@@ -158,7 +158,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
-    sharedUsersV2,
+    albumUsers: sharedUsersV2,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,
