@@ -327,29 +327,28 @@ export class AlbumService {
     );
 
     const { id: assetId = '' } = data;
-    const asset = await this.assetRepository.getById(assetId);
+    const asset = await this.assetRepository.getById(assetId, { faces: { person: true } });
 
     if (!asset) {
       return JobStatus.SKIPPED;
     }
 
-    const assetOwnerAlbums = await this.albumRepository.getOwned(asset?.ownerId);
+    const assetOwnerAlbums = await this.albumRepository.getOwned(asset?.ownerId, { people: true });
     const assetPeopleIds = new Set(asset.faces.map((face) => face.personId));
+    const albumsWithPeople = assetOwnerAlbums.filter((album) => {
+      if (!album.people?.length) {
+        return false;
+      }
+
+      if (album.peopleTogether) {
+        return album.people?.every((person) => assetPeopleIds.has(person.id));
+      }
+
+      return album.people?.some((person) => assetPeopleIds.has(person.id));
+    });
 
     await Promise.all(
-      assetOwnerAlbums
-        .filter((album) => {
-          if (!album.people?.length) {
-            return false;
-          }
-
-          if (album.peopleTogether) {
-            return album.people?.every((person) => assetPeopleIds.has(person.id));
-          }
-
-          return album.people?.some((person) => assetPeopleIds.has(person.id));
-        })
-        .map((album) => this.albumRepository.addAssetIds(album.id, [assetId])),
+      albumsWithPeople.map(async (album) => await this.albumRepository.addAssetIds(album.id, [assetId])),
     );
 
     return JobStatus.SUCCESS;

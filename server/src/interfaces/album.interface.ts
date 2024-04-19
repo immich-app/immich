@@ -1,5 +1,6 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IBulkAsset } from 'src/utils/asset.util';
+import { FindOptionsRelations } from 'typeorm';
 
 export const IAlbumRepository = 'IAlbumRepository';
 
@@ -35,7 +36,7 @@ export interface IAlbumRepository extends IBulkAsset {
   removeAssetIds(albumId: string, assetIds: string[]): Promise<void>;
   getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]>;
   getInvalidThumbnail(): Promise<string[]>;
-  getOwned(ownerId: string): Promise<AlbumEntity[]>;
+  getOwned(ownerId: string, relations?: FindOptionsRelations<AlbumEntity>): Promise<AlbumEntity[]>;
   getShared(ownerId: string): Promise<AlbumEntity[]>;
   getNotShared(ownerId: string): Promise<AlbumEntity[]>;
   restoreAll(userId: string): Promise<void>;

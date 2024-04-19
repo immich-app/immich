@@ -131,9 +131,9 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getOwned(ownerId: string): Promise<AlbumEntity[]> {
+  getOwned(ownerId: string, relations?: FindOptionsRelations<AlbumEntity>): Promise<AlbumEntity[]> {
     return this.repository.find({
-      relations: { sharedUsers: true, sharedLinks: true, owner: true },
+      relations: { sharedUsers: true, sharedLinks: true, owner: true, ...relations },
       where: { ownerId },
       order: { createdAt: 'DESC' },
     });
