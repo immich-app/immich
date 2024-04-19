@@ -73,7 +73,7 @@
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
-
+      asset.exifInfo = data.exifInfo;
       description = data.exifInfo?.description || '';
     }
     originalDescription = description;
