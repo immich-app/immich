@@ -8,13 +8,14 @@
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import BaseModal from '../base-modal.svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
+  export let onClose: () => void;
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
@@ -30,14 +31,12 @@
   let enablePassword = false;
 
   const dispatch = createEventDispatcher<{
-    close: void;
-    escape: void;
     created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',
-    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
+    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days', '3 months', '1 year'],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -105,6 +104,12 @@
       case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
       }
+      case '3 months': {
+        return 30 * 24 * 60 * 60 * 3 * 1000;
+      }
+      case '1 year': {
+        return 30 * 24 * 60 * 60 * 12 * 1000;
+      }
       default: {
         return 0;
       }
@@ -140,7 +145,7 @@
         message: 'Edited',
       });
 
-      dispatch('close');
+      onClose();
     } catch (error) {
       handleError(error, 'Failed to edit shared link');
     }
@@ -154,8 +159,8 @@
   };
 </script>
 
-<BaseModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} on:close>
-  <section class="mx-6 mb-6">
+<FullScreenModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} {onClose}>
+  <section>
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
         <div>Let anyone with the link see photos and people in this album.</div>
@@ -241,29 +246,22 @@
     </div>
   </section>
 
-  <hr />
-
-  <section slot="sticky-bottom">
+  <svelte:fragment slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}
-        <div class="flex justify-end">
-          <Button size="sm" on:click={handleEditLink}>Confirm</Button>
-        </div>
+        <Button size="sm" fullwidth on:click={handleEditLink}>Confirm</Button>
       {:else}
-        <div class="flex justify-end">
-          <Button size="sm" on:click={handleCreateSharedLink}>Create link</Button>
-        </div>
+        <Button size="sm" fullwidth on:click={handleCreateSharedLink}>Create link</Button>
       {/if}
     {:else}
-      <div class="flex w-full gap-4">
+      <div class="flex w-full gap-2">
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
-
         <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
           <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} size="18" />
+            <Icon path={mdiContentCopy} ariaLabel="Copy link to clipboard" size="18" />
           </div>
         </LinkButton>
       </div>
     {/if}
-  </section>
-</BaseModal>
+  </svelte:fragment>
+</FullScreenModal>

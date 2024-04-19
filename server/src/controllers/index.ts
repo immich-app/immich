@@ -17,6 +17,7 @@ import { PersonController } from 'src/controllers/person.controller';
 import { SearchController } from 'src/controllers/search.controller';
 import { ServerInfoController } from 'src/controllers/server-info.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
+import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
@@ -43,6 +44,7 @@ export const controllers = [
   SearchController,
   ServerInfoController,
   SharedLinkController,
+  SyncController,
   SystemConfigController,
   TagController,
   TimelineController,

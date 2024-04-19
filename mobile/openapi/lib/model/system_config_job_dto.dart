@@ -16,6 +16,7 @@ class SystemConfigJobDto {
     required this.backgroundTask,
     required this.faceDetection,
     required this.library_,
+    required this.matchSmartAlbums,
     required this.metadataExtraction,
     required this.migration,
     required this.search,
@@ -30,6 +31,8 @@ class SystemConfigJobDto {
   JobSettingsDto faceDetection;
 
   JobSettingsDto library_;
+
+  JobSettingsDto matchSmartAlbums;
 
   JobSettingsDto metadataExtraction;
 
@@ -50,6 +53,7 @@ class SystemConfigJobDto {
     other.backgroundTask == backgroundTask &&
     other.faceDetection == faceDetection &&
     other.library_ == library_ &&
+    other.matchSmartAlbums == matchSmartAlbums &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
     other.search == search &&
@@ -64,6 +68,7 @@ class SystemConfigJobDto {
     (backgroundTask.hashCode) +
     (faceDetection.hashCode) +
     (library_.hashCode) +
+    (matchSmartAlbums.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
     (search.hashCode) +
@@ -73,13 +78,14 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, matchSmartAlbums=$matchSmartAlbums, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'faceDetection'] = this.faceDetection;
       json[r'library'] = this.library_;
+      json[r'matchSmartAlbums'] = this.matchSmartAlbums;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
       json[r'search'] = this.search;
@@ -101,6 +107,7 @@ class SystemConfigJobDto {
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
         faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
+        matchSmartAlbums: JobSettingsDto.fromJson(json[r'matchSmartAlbums'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
@@ -158,6 +165,7 @@ class SystemConfigJobDto {
     'backgroundTask',
     'faceDetection',
     'library',
+    'matchSmartAlbums',
     'metadataExtraction',
     'migration',
     'search',

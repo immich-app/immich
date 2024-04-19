@@ -12,17 +12,17 @@
   import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let album: AlbumResponseDto;
+  export let onClose: () => void;
   let users: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     select: UserResponseDto[];
     share: void;
-    close: void;
   }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
@@ -54,7 +54,7 @@
   };
 </script>
 
-<BaseModal id="user-selection-modal" title="Invite to album" showLogo on:close>
+<FullScreenModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
   {#if selectedUsers.length > 0}
     <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
       <p class="font-medium">To</p>
@@ -75,13 +75,13 @@
 
   <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
     {#if users.length > 0}
-      <p class="px-5 text-xs font-medium">SUGGESTIONS</p>
+      <p class="text-xs font-medium">SUGGESTIONS</p>
 
       <div class="my-4">
         {#each users as user}
           <button
             on:click={() => handleSelect(user)}
-            class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+            class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
           >
             {#if selectedUsers.includes(user)}
               <div
@@ -112,7 +112,7 @@
   </div>
 
   {#if users.length > 0}
-    <div class="p-3">
+    <div class="py-3">
       <Button
         size="sm"
         fullwidth
@@ -125,7 +125,7 @@
 
   <hr />
 
-  <div id="shared-buttons" class="my-4 flex place-content-center place-items-center justify-around">
+  <div id="shared-buttons" class="mt-4 flex place-content-center place-items-center justify-around">
     <button
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
       on:click={() => dispatch('share')}
@@ -144,4 +144,4 @@
       </button>
     {/if}
   </div>
-</BaseModal>
+</FullScreenModal>

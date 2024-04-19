@@ -1,8 +1,8 @@
-import { AssetEntity } from 'src/entities/asset.entity';
 import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -12,23 +12,21 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
-
-const asset = {
-  id: 'asset-1',
-  previewPath: 'path/to/resize.ext',
-} as AssetEntity;
+import { Mocked } from 'vitest';
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
-  let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let databaseMock: jest.Mocked<IDatabaseRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let machineMock: Mocked<IMachineLearningRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -37,9 +35,10 @@ describe(SmartInfoService.name, () => {
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
-    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock, loggerMock);
 
-    assetMock.getByIds.mockResolvedValue([asset]);
+    assetMock.getByIds.mockResolvedValue([assetStub.image]);
   });
 
   it('should work', () => {
@@ -87,17 +86,16 @@ describe(SmartInfoService.name, () => {
     it('should do nothing if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
-      await sut.handleEncodeClip({ id: '123' });
+      expect(await sut.handleEncodeClip({ id: '123' })).toEqual(JobStatus.SKIPPED);
 
       expect(assetMock.getByIds).not.toHaveBeenCalled();
       expect(machineMock.encodeImage).not.toHaveBeenCalled();
     });
 
     it('should skip assets without a resize path', async () => {
-      const asset = { previewPath: '' } as AssetEntity;
-      assetMock.getByIds.mockResolvedValue([asset]);
+      assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
 
-      await sut.handleEncodeClip({ id: asset.id });
+      expect(await sut.handleEncodeClip({ id: assetStub.noResizePath.id })).toEqual(JobStatus.FAILED);
 
       expect(searchMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.encodeImage).not.toHaveBeenCalled();
@@ -106,14 +104,23 @@ describe(SmartInfoService.name, () => {
     it('should save the returned objects', async () => {
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
-      await sut.handleEncodeClip({ id: asset.id });
+      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 
       expect(machineMock.encodeImage).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
-        { imagePath: 'path/to/resize.ext' },
+        { imagePath: assetStub.image.previewPath },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith('asset-1', [0.01, 0.02, 0.03]);
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
+    });
+
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleEncodeClip({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(machineMock.encodeImage).not.toHaveBeenCalled();
+      expect(searchMock.upsert).not.toHaveBeenCalled();
     });
   });
 

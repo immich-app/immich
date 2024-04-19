@@ -124,7 +124,7 @@ class BaseConfig implements VideoCodecSWConfig {
       return false;
     }
 
-    return this.isBitrateConstrained() || this.config.targetVideoCodec === VideoCodec.VP9;
+    return this.isBitrateConstrained();
   }
 
   getBitrateDistribution() {
@@ -265,7 +265,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC];
   }
 
   validateDevices(devices: string[]) {
@@ -393,6 +393,44 @@ export class VP9Config extends BaseConfig {
 
   getThreadOptions() {
     return ['-row-mt 1', ...super.getThreadOptions()];
+  }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
+  }
+}
+
+export class AV1Config extends BaseConfig {
+  getPresetOptions() {
+    const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
+    if (speed >= 0) {
+      return [`-preset ${speed}`];
+    }
+    return [];
+  }
+
+  getBitrateOptions() {
+    const options = [`-crf ${this.config.crf}`];
+    const bitrates = this.getBitrateDistribution();
+    const svtparams = [];
+    if (this.config.threads > 0) {
+      svtparams.push(`lp=${this.config.threads}`);
+    }
+    if (bitrates.max > 0) {
+      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`);
+    }
+    if (svtparams.length > 0) {
+      options.push(`-svtav1-params ${svtparams.join(':')}`);
+    }
+    return options;
+  }
+
+  getThreadOptions() {
+    return []; // Already set above with svtav1-params
+  }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
   }
 }
 
@@ -527,6 +565,10 @@ export class QSVConfig extends BaseHWConfig {
     return options;
   }
 
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+  }
+
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
   getBFrames() {
     if (this.config.bframes < 0) {
@@ -603,6 +645,10 @@ export class VAAPIConfig extends BaseHWConfig {
     }
 
     return options;
+  }
+
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
   }
 
   useCQP() {

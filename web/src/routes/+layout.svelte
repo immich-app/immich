@@ -19,7 +19,6 @@
   import '../app.css';
 
   let showNavigationLoadingBar = false;
-  let albumId: string | undefined;
 
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
 
@@ -111,7 +110,7 @@
   </FullscreenContainer>
 </noscript>
 
-<slot {albumId} />
+<slot />
 
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />

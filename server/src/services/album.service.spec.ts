@@ -12,13 +12,14 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
   let accessMock: IAccessRepositoryMock;
-  let albumMock: jest.Mocked<IAlbumRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -175,6 +176,7 @@ describe(AlbumService.name, () => {
     it('creates album', async () => {
       albumMock.create.mockResolvedValue(albumStub.empty);
       userMock.get.mockResolvedValue(userStub.user1);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['123']));
 
       await sut.create(authStub.admin, {
         albumName: 'Empty album',
@@ -193,6 +195,7 @@ describe(AlbumService.name, () => {
       });
 
       expect(userMock.get).toHaveBeenCalledWith('user-id', {});
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
     });
 
     it('should require valid userIds', async () => {
@@ -205,6 +208,31 @@ describe(AlbumService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(userMock.get).toHaveBeenCalledWith('user-3', {});
       expect(albumMock.create).not.toHaveBeenCalled();
+    });
+
+    it('should only add assets the user is allowed to access', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+      albumMock.create.mockResolvedValue(albumStub.oneAsset);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.create(authStub.admin, {
+        albumName: 'Test album',
+        description: '',
+        assetIds: ['asset-1', 'asset-2'],
+      });
+
+      expect(albumMock.create).toHaveBeenCalledWith({
+        ownerId: authStub.admin.user.id,
+        albumName: 'Test album',
+        description: '',
+        sharedUsers: [],
+        assets: [{ id: 'asset-1' }],
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1', 'asset-2']),
+      );
     });
   });
 

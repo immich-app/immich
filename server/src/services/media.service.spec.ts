@@ -14,6 +14,7 @@ import {
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -27,22 +28,25 @@ import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let mediaMock: jest.Mocked<IMediaRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let moveMock: Mocked<IMoveRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -53,8 +57,19 @@ describe(MediaService.name, () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock, cryptoMock);
+    sut = new MediaService(
+      assetMock,
+      personMock,
+      jobMock,
+      mediaMock,
+      storageMock,
+      configMock,
+      moveMock,
+      cryptoMock,
+      loggerMock,
+    );
   });
 
   it('should be defined', () => {
@@ -210,6 +225,15 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGeneratePreview({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
     it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -338,6 +362,15 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbnail({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
     it.each(Object.values(ImageFormat))(
       'should generate a %s thumbnail for an image when specified',
       async (format) => {
@@ -393,6 +426,15 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGenerateThumbhash({ id: assetStub.noResizePath.id });
       expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbhash({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should generate a thumbhash', async () => {
@@ -1262,6 +1304,157 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should map `veryslow` preset to 4 for av1', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_PRESET, value: 'veryslow' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 4',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set max bitrate for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '2M' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params mbr=2M',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set threads for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 4 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params lp=4',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should set both bitrate and threads for av1 if specified', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.AV1 },
+        { key: SystemConfigKey.FFMPEG_THREADS, value: 4 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '2M' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v av1',
+            '-c:a copy',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-preset 12',
+            '-crf 23',
+            '-svtav1-params lp=4:mbr=2M',
           ],
           twoPass: false,
         },

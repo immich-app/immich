@@ -485,6 +485,7 @@
             {/if}
 
             {#if album.assetCount > 0}
+              <CircleIconButton title="Slideshow" on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
@@ -492,7 +493,6 @@
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
                     {#if viewMode === ViewMode.ALBUM_OPTIONS}
                       <ContextMenu {...contextMenuPosition}>
-                        <MenuOption icon={mdiPresentationPlay} text="Slideshow" on:click={handleStartSlideshow} />
                         <MenuOption
                           icon={mdiImageOutline}
                           text="Select album cover"
@@ -752,17 +752,17 @@
     {album}
     on:select={({ detail: users }) => handleAddUsers(users)}
     on:share={() => (viewMode = ViewMode.LINK_SHARING)}
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
   />
 {/if}
 
 {#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} on:close={() => (viewMode = ViewMode.VIEW)} />
+  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = ViewMode.VIEW)} />
 {/if}
 
 {#if viewMode === ViewMode.VIEW_USERS}
   <ShareInfoModal
-    on:close={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
   />
@@ -770,6 +770,7 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
+    id="delete-album-modal"
     title="Delete album"
     confirmText="Delete"
     onConfirm={handleRemoveAlbum}

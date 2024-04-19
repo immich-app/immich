@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **faceDetection** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **facialRecognition** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **library_** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**matchSmartAlbums** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **metadataExtraction** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **migration** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **search** | [**JobStatusDto**](JobStatusDto.md) |  | 

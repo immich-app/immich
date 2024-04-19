@@ -7,7 +7,6 @@
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -432,9 +431,12 @@
 {#if allowEdit}
   <!-- Edit Modal -->
   {#if albumToEdit}
-    <FullScreenModal onClose={() => (albumToEdit = null)}>
-      <EditAlbumForm album={albumToEdit} onEditSuccess={successEditAlbumInfo} onCancel={() => (albumToEdit = null)} />
-    </FullScreenModal>
+    <EditAlbumForm
+      album={albumToEdit}
+      onEditSuccess={successEditAlbumInfo}
+      onCancel={() => (albumToEdit = null)}
+      onClose={() => (albumToEdit = null)}
+    />
   {/if}
 
   <!-- Share Modal -->
@@ -442,7 +444,7 @@
     {#if showShareByURLModal}
       <CreateSharedLinkModal
         albumId={albumToShare.id}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
         on:created={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
@@ -450,7 +452,7 @@
         album={albumToShare}
         on:select={({ detail: users }) => handleAddUsers(users)}
         on:share={() => (showShareByURLModal = true)}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
       />
     {/if}
   {/if}
@@ -458,7 +460,8 @@
   <!-- Delete Modal -->
   {#if albumToDelete}
     <ConfirmDialogue
-      title="Delete Album"
+      id="delete-album-dialogue-modal"
+      title="Delete album"
       confirmText="Delete"
       onConfirm={deleteSelectedAlbum}
       onClose={() => (albumToDelete = null)}

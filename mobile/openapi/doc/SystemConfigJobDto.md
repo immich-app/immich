@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **backgroundTask** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **faceDetection** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **library_** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
+**matchSmartAlbums** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **metadataExtraction** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **migration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **search** | [**JobSettingsDto**](JobSettingsDto.md) |  | 

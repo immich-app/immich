@@ -6,11 +6,12 @@ import { activityStub } from 'test/fixtures/activity.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
   let accessMock: IAccessRepositoryMock;
-  let activityMock: jest.Mocked<IActivityRepository>;
+  let activityMock: Mocked<IActivityRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

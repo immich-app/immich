@@ -17,7 +17,9 @@
 
   const getFocusableElements = () => {
     return Array.from(
-      container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      container.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
     ) as HTMLElement[];
   };
 

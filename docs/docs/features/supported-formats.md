@@ -3,7 +3,7 @@
 Immich supports a number of image and video formats, the most common of which are outlined here.
 
 :::note
-For the full list, you can refer to the [Immich source code](https://github.com/immich-app/immich/blob/main/server/src/utils/mime-types.ts).
+For the full list, refer to the [Immich source code](https://github.com/immich-app/immich/blob/main/server/src/utils/mime-types.ts).
 :::
 
 ## Image formats

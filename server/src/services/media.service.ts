@@ -25,13 +25,14 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import {
+  AV1Config,
   H264Config,
   HEVCConfig,
   NVENCConfig,
@@ -45,7 +46,6 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService {
-  private logger = new ImmichLogger(MediaService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
   private hasOpenCL?: boolean = undefined;
@@ -59,22 +59,25 @@ export class MediaService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(MediaService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       personRepository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
@@ -175,6 +178,10 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
@@ -227,6 +234,10 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
@@ -234,7 +245,15 @@ export class MediaService {
 
   async handleGenerateThumbhash({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset?.previewPath) {
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    if (!asset.previewPath) {
       return JobStatus.FAILED;
     }
 
@@ -438,6 +457,9 @@ export class MediaService {
       }
       case VideoCodec.VP9: {
         return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
       }
       default: {
         throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);

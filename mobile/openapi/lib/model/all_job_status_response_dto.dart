@@ -17,6 +17,7 @@ class AllJobStatusResponseDto {
     required this.faceDetection,
     required this.facialRecognition,
     required this.library_,
+    required this.matchSmartAlbums,
     required this.metadataExtraction,
     required this.migration,
     required this.search,
@@ -34,6 +35,8 @@ class AllJobStatusResponseDto {
   JobStatusDto facialRecognition;
 
   JobStatusDto library_;
+
+  JobStatusDto matchSmartAlbums;
 
   JobStatusDto metadataExtraction;
 
@@ -57,6 +60,7 @@ class AllJobStatusResponseDto {
     other.faceDetection == faceDetection &&
     other.facialRecognition == facialRecognition &&
     other.library_ == library_ &&
+    other.matchSmartAlbums == matchSmartAlbums &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
     other.search == search &&
@@ -73,6 +77,7 @@ class AllJobStatusResponseDto {
     (faceDetection.hashCode) +
     (facialRecognition.hashCode) +
     (library_.hashCode) +
+    (matchSmartAlbums.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
     (search.hashCode) +
@@ -83,7 +88,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, matchSmartAlbums=$matchSmartAlbums, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +96,7 @@ class AllJobStatusResponseDto {
       json[r'faceDetection'] = this.faceDetection;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'library'] = this.library_;
+      json[r'matchSmartAlbums'] = this.matchSmartAlbums;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
       json[r'search'] = this.search;
@@ -114,6 +120,7 @@ class AllJobStatusResponseDto {
         faceDetection: JobStatusDto.fromJson(json[r'faceDetection'])!,
         facialRecognition: JobStatusDto.fromJson(json[r'facialRecognition'])!,
         library_: JobStatusDto.fromJson(json[r'library'])!,
+        matchSmartAlbums: JobStatusDto.fromJson(json[r'matchSmartAlbums'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
@@ -173,6 +180,7 @@ class AllJobStatusResponseDto {
     'faceDetection',
     'facialRecognition',
     'library',
+    'matchSmartAlbums',
     'metadataExtraction',
     'migration',
     'search',

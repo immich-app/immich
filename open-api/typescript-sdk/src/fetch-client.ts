@@ -438,6 +438,7 @@ export type AllJobStatusResponseDto = {
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
     library: JobStatusDto;
+    matchSmartAlbums: JobStatusDto;
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
     search: JobStatusDto;
@@ -467,7 +468,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -842,6 +842,11 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     success: boolean;
 };
+export type AssetDeltaSyncResponseDto = {
+    deleted: string[];
+    needsFullSync: boolean;
+    upserted: AssetResponseDto[];
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     acceptedAudioCodecs: AudioCodec[];
@@ -879,6 +884,7 @@ export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
+    matchSmartAlbums: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
     search: JobSettingsDto;
@@ -2532,6 +2538,40 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+export function getDeltaSync({ updatedAfter, userIds }: {
+    updatedAfter: string;
+    userIds: string[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetDeltaSyncResponseDto;
+    }>(`/sync/delta-sync${QS.query(QS.explode({
+        updatedAfter,
+        userIds
+    }))}`, {
+        ...opts
+    }));
+}
+export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
+    lastCreationDate?: string;
+    lastId?: string;
+    limit: number;
+    updatedUntil: string;
+    userId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/sync/full-sync${QS.query(QS.explode({
+        lastCreationDate,
+        lastId,
+        limit,
+        updatedUntil,
+        userId
+    }))}`, {
+        ...opts
+    }));
+}
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2959,7 +2999,8 @@ export enum JobName {
     Migration = "migration",
     Search = "search",
     Sidecar = "sidecar",
-    Library = "library"
+    Library = "library",
+    MatchSmartAlbums = "matchSmartAlbums"
 }
 export enum JobCommand {
     Start = "start",
@@ -3009,7 +3050,8 @@ export enum AudioCodec {
 export enum VideoCodec {
     H264 = "h264",
     Hevc = "hevc",
-    Vp9 = "vp9"
+    Vp9 = "vp9",
+    Av1 = "av1"
 }
 export enum CQMode {
     Auto = "auto",

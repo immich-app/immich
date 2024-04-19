@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto matchSmartAlbums
+    test('to test the property `matchSmartAlbums`', () async {
+      // TODO
+    });
+
     // JobSettingsDto metadataExtraction
     test('to test the property `metadataExtraction`', () async {
       // TODO
