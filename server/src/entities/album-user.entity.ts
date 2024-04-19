@@ -3,8 +3,8 @@ import { UserEntity } from 'src/entities/user.entity';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 export enum AlbumUserRole {
-  Editor = 'editor',
-  Viewer = 'viewer',
+  EDITOR = 'editor',
+  VIEWER = 'viewer',
 }
 
 @Entity('albums_shared_users_users')

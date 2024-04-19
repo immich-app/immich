@@ -366,7 +366,7 @@ describe(AlbumService.name, () => {
         user: userStub.user2,
         albumId: albumStub.sharedWithAdmin.id,
         album: albumStub.sharedWithAdmin,
-        role: AlbumUserRole.Editor,
+        role: AlbumUserRole.EDITOR,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.user.id] });
       expect(albumUserMock.create).toHaveBeenCalledWith({
@@ -520,7 +520,7 @@ describe(AlbumService.name, () => {
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.user1.user.id,
         new Set(['album-123']),
-        AlbumUserRole.Viewer,
+        AlbumUserRole.VIEWER,
       );
     });
 
@@ -531,7 +531,7 @@ describe(AlbumService.name, () => {
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set(['album-123']),
-        AlbumUserRole.Viewer,
+        AlbumUserRole.VIEWER,
       );
     });
   });

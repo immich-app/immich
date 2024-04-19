@@ -137,7 +137,7 @@ class AlbumAccess implements IAlbumAccess {
             user: { id: userId },
             // If editor access is needed we check for it, otherwise both are accepted
             role:
-              access === AlbumUserRole.Editor ? AlbumUserRole.Editor : In([AlbumUserRole.Editor, AlbumUserRole.Viewer]),
+              access === AlbumUserRole.EDITOR ? AlbumUserRole.EDITOR : In([AlbumUserRole.EDITOR, AlbumUserRole.VIEWER]),
           },
         },
       })

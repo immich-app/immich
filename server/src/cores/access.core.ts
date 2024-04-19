@@ -226,7 +226,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          AlbumUserRole.Viewer,
+          AlbumUserRole.VIEWER,
         );
         return setUnion(isOwner, isShared);
       }
@@ -236,7 +236,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          AlbumUserRole.Editor,
+          AlbumUserRole.EDITOR,
         );
         return setUnion(isOwner, isShared);
       }
@@ -258,7 +258,7 @@ export class AccessCore {
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
           setDifference(ids, isOwner),
-          AlbumUserRole.Viewer,
+          AlbumUserRole.VIEWER,
         );
         return setUnion(isOwner, isShared);
       }
