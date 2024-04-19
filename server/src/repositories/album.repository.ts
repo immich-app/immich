@@ -62,7 +62,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.find({
       where: [
         { ownerId, assets: { id: assetId } },
-        { albumUsers: { user: Equal(ownerId) }, assets: { id: assetId } },
+        { albumUsers: { userId: ownerId }, assets: { id: assetId } },
       ],
       relations: { owner: true, albumUsers: { user: true } },
       order: { createdAt: 'DESC' },
@@ -143,7 +143,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.find({
       relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
       where: [
-        { albumUsers: { user: Equal(ownerId) } },
+        { albumUsers: { userId: ownerId } },
         { sharedLinks: { userId: ownerId } },
         { ownerId, albumUsers: { user: Not(IsNull()) } },
       ],
