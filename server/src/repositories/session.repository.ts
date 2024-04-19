@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
-import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
+import { SessionEntity } from 'src/entities/session.entity';
+import { ISessionRepository } from 'src/interfaces/session.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
-export class UserTokenRepository implements IUserTokenRepository {
-  constructor(@InjectRepository(UserTokenEntity) private repository: Repository<UserTokenEntity>) {}
+export class SessionRepository implements ISessionRepository {
+  constructor(@InjectRepository(SessionEntity) private repository: Repository<SessionEntity>) {}
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getByToken(token: string): Promise<UserTokenEntity | null> {
+  getByToken(token: string): Promise<SessionEntity | null> {
     return this.repository.findOne({ where: { token }, relations: { user: true } });
   }
 
-  getAll(userId: string): Promise<UserTokenEntity[]> {
+  getByUserId(userId: string): Promise<SessionEntity[]> {
     return this.repository.find({
       where: {
         userId,
@@ -31,12 +31,12 @@ export class UserTokenRepository implements IUserTokenRepository {
     });
   }
 
-  create(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
-    return this.repository.save(userToken);
+  create(session: Partial<SessionEntity>): Promise<SessionEntity> {
+    return this.repository.save(session);
   }
 
-  save(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
-    return this.repository.save(userToken);
+  update(session: Partial<SessionEntity>): Promise<SessionEntity> {
+    return this.repository.save(session);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
