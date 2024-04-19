@@ -407,6 +407,7 @@
   const handleRestoreAsset = async () => {
     try {
       await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+      asset.isTrashed = false;
 
       dispatch('action', { type: AssetAction.RESTORE, asset });
 
