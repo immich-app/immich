@@ -25,6 +25,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { TagService } from 'src/services/tag.service';
 import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
@@ -58,6 +59,7 @@ export const services = [
   StorageTemplateService,
   SyncService,
   SystemConfigService,
+  SystemMetadataService,
   TagService,
   TimelineService,
   TrashService,

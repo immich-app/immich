@@ -998,6 +998,13 @@ export type SystemConfigTemplateStorageOptionDto = {
     weekOptions: string[];
     yearOptions: string[];
 };
+export type AdminOnboardingUpdateDto = {
+    isOnboarded: boolean;
+};
+export type ReverseGeocodingStateResponseDto = {
+    lastImportFileName: string | null;
+    lastUpdate: string | null;
+};
 export type CreateTagDto = {
     name: string;
     "type": TagTypeEnum;
@@ -2330,12 +2337,6 @@ export function getServerInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function setAdminOnboarding(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/server-info/admin-onboarding", {
-        ...opts,
-        method: "POST"
-    }));
-}
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2594,6 +2595,31 @@ export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: SystemConfigTemplateStorageOptionDto;
     }>("/system-config/storage-template-options", {
+        ...opts
+    }));
+}
+export function getAdminOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AdminOnboardingUpdateDto;
+    }>("/system-metadata/admin-onboarding", {
+        ...opts
+    }));
+}
+export function updateAdminOnboarding({ adminOnboardingUpdateDto }: {
+    adminOnboardingUpdateDto: AdminOnboardingUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/system-metadata/admin-onboarding", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: adminOnboardingUpdateDto
+    })));
+}
+export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ReverseGeocodingStateResponseDto;
+    }>("/system-metadata/reverse-geocoding-state", {
         ...opts
     }));
 }

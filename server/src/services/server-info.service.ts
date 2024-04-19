@@ -51,7 +51,9 @@ export class ServerInfoService {
 
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {
-      await this.setAdminOnboarding();
+      await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, {
+        isOnboarded: true,
+      });
     }
   }
 
@@ -103,10 +105,6 @@ export class ServerInfoService {
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
     };
-  }
-
-  setAdminOnboarding(): Promise<void> {
-    return this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {

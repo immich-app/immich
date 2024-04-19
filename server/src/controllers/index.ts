@@ -20,6 +20,7 @@ import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
+import { SystemMetadataController } from 'src/controllers/system-metadata.controller';
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
@@ -48,6 +49,7 @@ export const controllers = [
   SharedLinkController,
   SyncController,
   SystemConfigController,
+  SystemMetadataController,
   TagController,
   TimelineController,
   TrashController,
