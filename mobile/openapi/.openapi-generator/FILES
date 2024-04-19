@@ -41,7 +41,6 @@ doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuditApi.md
 doc/AuditDeletesResponseDto.md
-doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
 doc/BulkIdResponseDto.md
 doc/BulkIdsDto.md
@@ -142,6 +141,8 @@ doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
 doc/ServerThemeDto.md
 doc/ServerVersionResponseDto.md
+doc/SessionResponseDto.md
+doc/SessionsApi.md
 doc/SharedLinkApi.md
 doc/SharedLinkCreateDto.md
 doc/SharedLinkEditDto.md
@@ -219,6 +220,7 @@ lib/api/partner_api.dart
 lib/api/person_api.dart
 lib/api/search_api.dart
 lib/api/server_info_api.dart
+lib/api/sessions_api.dart
 lib/api/shared_link_api.dart
 lib/api/sync_api.dart
 lib/api/system_config_api.dart
@@ -267,7 +269,6 @@ lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/audit_deletes_response_dto.dart
-lib/model/auth_device_response_dto.dart
 lib/model/bulk_id_response_dto.dart
 lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
@@ -357,6 +358,7 @@ lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
 lib/model/server_theme_dto.dart
 lib/model/server_version_response_dto.dart
+lib/model/session_response_dto.dart
 lib/model/shared_link_create_dto.dart
 lib/model/shared_link_edit_dto.dart
 lib/model/shared_link_response_dto.dart
@@ -448,7 +450,6 @@ test/asset_type_enum_test.dart
 test/audio_codec_test.dart
 test/audit_api_test.dart
 test/audit_deletes_response_dto_test.dart
-test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
 test/bulk_id_response_dto_test.dart
 test/bulk_ids_dto_test.dart
@@ -549,6 +550,8 @@ test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
 test/server_theme_dto_test.dart
 test/server_version_response_dto_test.dart
+test/session_response_dto_test.dart
+test/sessions_api_test.dart
 test/shared_link_api_test.dart
 test/shared_link_create_dto_test.dart
 test/shared_link_edit_dto_test.dart
