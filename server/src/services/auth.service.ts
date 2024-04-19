@@ -10,23 +10,16 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import {
-  AuthType,
-  IMMICH_ACCESS_COOKIE,
-  IMMICH_API_KEY_HEADER,
-  IMMICH_AUTH_TYPE_COOKIE,
-  IMMICH_IS_AUTHENTICATED,
-  LOGIN_URL,
-  MOBILE_REDIRECT,
-} from 'src/constants';
+import { AuthType, LOGIN_URL, MOBILE_REDIRECT } from 'src/constants';
 import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
   AuthDto,
   ChangePasswordDto,
+  ImmichCookie,
+  ImmichHeader,
   LoginCredentialDto,
-  LoginResponseDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
@@ -53,11 +46,6 @@ export interface LoginDetails {
   clientIp: string;
   deviceType: string;
   deviceOS: string;
-}
-
-interface LoginResponse {
-  response: LoginResponseDto;
-  cookie: string[];
 }
 
 interface OAuthProfile extends UserinfoResponse {
@@ -95,7 +83,7 @@ export class AuthService {
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
-  async login(dto: LoginCredentialDto, details: LoginDetails): Promise<LoginResponse> {
+  async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.configCore.getConfig();
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
@@ -114,7 +102,7 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    return this.createLoginResponse(user, AuthType.PASSWORD, details);
+    return this.createLoginResponse(user, details);
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -161,13 +149,13 @@ export class AuthService {
   }
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
-    const session = (headers['x-immich-user-token'] ||
-      headers['x-immich-session-token'] ||
+    const shareKey = (headers[ImmichHeader.SHARED_LINK_TOKEN] || params.key) as string;
+    const session = (headers[ImmichHeader.USER_TOKEN] ||
+      headers[ImmichHeader.SESSION_TOKEN] ||
       params.sessionKey ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
+    const apiKey = (headers[ImmichHeader.API_KEY] || params.apiKey) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -204,10 +192,7 @@ export class AuthService {
     return { url };
   }
 
-  async callback(
-    dto: OAuthCallbackDto,
-    loginDetails: LoginDetails,
-  ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
+  async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
     const config = await this.configCore.getConfig();
     const profile = await this.getOAuthProfile(config, dto.url);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -256,7 +241,7 @@ export class AuthService {
       });
     }
 
-    return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
+    return this.createLoginResponse(user, loginDetails);
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
@@ -353,7 +338,7 @@ export class AuthService {
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = cookieParser.parse(headers.cookie || '');
-    return cookies[IMMICH_ACCESS_COOKIE] || null;
+    return cookies[ImmichCookie.ACCESS_TOKEN] || null;
   }
 
   async validateSharedLink(key: string | string[]): Promise<AuthDto> {
@@ -405,7 +390,7 @@ export class AuthService {
     throw new UnauthorizedException('Invalid user token');
   }
 
-  private async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
+  private async createLoginResponse(user: UserEntity, loginDetails: LoginDetails) {
     const key = this.cryptoRepository.newPassword(32);
     const token = this.cryptoRepository.hashSha256(key);
 
@@ -416,28 +401,7 @@ export class AuthService {
       deviceType: loginDetails.deviceType,
     });
 
-    const response = mapLoginResponse(user, key);
-    const cookie = this.getCookies(response, authType, loginDetails);
-    return { response, cookie };
-  }
-
-  private getCookies(loginResponse: LoginResponseDto, authType: AuthType, { isSecure }: LoginDetails) {
-    const maxAge = 400 * 24 * 3600; // 400 days
-
-    let authTypeCookie = '';
-    let accessTokenCookie = '';
-    let isAuthenticatedCookie = '';
-
-    if (isSecure) {
-      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-    } else {
-      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-      isAuthenticatedCookie = `${IMMICH_IS_AUTHENTICATED}=true; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
-    }
-    return [accessTokenCookie, authTypeCookie, isAuthenticatedCookie];
+    return mapLoginResponse(user, key);
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {

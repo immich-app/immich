@@ -112,9 +112,29 @@ describe('/auth/*', () => {
 
       const cookies = headers['set-cookie'];
       expect(cookies).toHaveLength(3);
-      expect(cookies[0]).toEqual(`immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`);
-      expect(cookies[1]).toEqual('immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;');
-      expect(cookies[2]).toEqual('immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;');
+      expect(cookies[0].split(';').map((item) => item.trim())).toEqual([
+        `immich_access_token=${token}`,
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[1].split(';').map((item) => item.trim())).toEqual([
+        'immich_auth_type=password',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[2].split(';').map((item) => item.trim())).toEqual([
+        'immich_is_authenticated=true',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'SameSite=Lax',
+      ]);
     });
   });
 
