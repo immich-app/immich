@@ -126,8 +126,8 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
   const sharedUsers: UserResponseDto[] = [];
   const albumUsers: AlbumUserResponseDto[] = [];
 
-  if (entity.sharedUsers) {
-    for (const albumUser of entity.sharedUsers) {
+  if (entity.albumUsers) {
+    for (const albumUser of entity.albumUsers) {
       sharedUsers.push(mapUser(albumUser.user));
       albumUsers.push({
         user: mapUser(albumUser.user),

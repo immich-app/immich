@@ -187,7 +187,7 @@ export const sharedLinkStub = {
       deletedAt: null,
       albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
-      sharedUsers: [],
+      albumUsers: [],
       sharedLinks: [],
       isActivityEnabled: true,
       order: AssetOrder.DESC,

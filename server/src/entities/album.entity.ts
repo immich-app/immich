@@ -54,7 +54,7 @@ export class AlbumEntity {
   albumThumbnailAssetId!: string | null;
 
   @OneToMany(() => AlbumUserEntity, (permission) => permission.album)
-  sharedUsers!: AlbumUserEntity[];
+  albumUsers!: AlbumUserEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
   @JoinTable()

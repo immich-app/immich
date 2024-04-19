@@ -18,7 +18,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -35,7 +35,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [
+    albumUsers: [
       {
         user: userStub.user1,
         album: undefined as unknown as AlbumEntity,
@@ -60,7 +60,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [
+    albumUsers: [
       {
         user: userStub.user1,
         album: undefined as unknown as AlbumEntity,
@@ -92,7 +92,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [
+    albumUsers: [
       {
         user: userStub.admin,
         album: undefined as unknown as AlbumEntity,
@@ -117,7 +117,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -134,7 +134,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -151,7 +151,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -168,7 +168,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -185,7 +185,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
@@ -202,7 +202,7 @@ export const albumStub = {
     updatedAt: new Date(),
     deletedAt: null,
     sharedLinks: [],
-    sharedUsers: [],
+    albumUsers: [],
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),

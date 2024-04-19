@@ -37,16 +37,16 @@ SELECT
   "album"."id" AS "album_id"
 FROM
   "albums" "album"
-  LEFT JOIN "albums_shared_users_users" "albumSharedUsers" ON "albumSharedUsers"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumSharedUsers"."usersId"
-  AND ("sharedUsers"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_albumUsers_users" ON "album_albumUsers_users"."albumsId" = "album"."id"
+  LEFT JOIN "users" "albumUsers" ON "albumUsers"."id" = "album_albumUsers_users"."usersId"
+  AND ("albumUsers"."deletedAt" IS NULL)
 WHERE
   (
     "album"."id" IN ($1)
     AND "album"."isActivityEnabled" = true
     AND (
       "album"."ownerId" = $2
-      OR "sharedUsers"."id" = $2
+      OR "albumUsers"."id" = $2
     )
   )
   AND ("album"."deletedAt" IS NULL)
@@ -68,15 +68,15 @@ WHERE
 -- AccessRepository.album.checkSharedAlbumAccess
 SELECT
   "AlbumEntity"."id" AS "AlbumEntity_id",
-  "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" AS "AlbumEntity__AlbumEntity_sharedUsers_albumsId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."usersId" AS "AlbumEntity__AlbumEntity_sharedUsers_usersId",
-  "AlbumEntity__AlbumEntity_sharedUsers"."role" AS "AlbumEntity__AlbumEntity_sharedUsers_role"
+  "AlbumEntity__AlbumEntity_albumUsers"."albumsId" AS "AlbumEntity__AlbumEntity_albumUsers_albumsId",
+  "AlbumEntity__AlbumEntity_albumUsers"."usersId" AS "AlbumEntity__AlbumEntity_albumUsers_usersId",
+  "AlbumEntity__AlbumEntity_albumUsers"."role" AS "AlbumEntity__AlbumEntity_albumUsers_role"
 FROM
   "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_sharedUsers" ON "AlbumEntity__AlbumEntity_sharedUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a" ON "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."id" = "AlbumEntity__AlbumEntity_sharedUsers"."usersId"
+  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumUsers" ON "AlbumEntity__AlbumEntity_albumUsers"."albumsId" = "AlbumEntity"."id"
+  LEFT JOIN "users" "a641d58cf46d4a391ba060ac4dc337665c69ffea" ON "a641d58cf46d4a391ba060ac4dc337665c69ffea"."id" = "AlbumEntity__AlbumEntity_albumUsers"."usersId"
   AND (
-    "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."deletedAt" IS NULL
+    "a641d58cf46d4a391ba060ac4dc337665c69ffea"."deletedAt" IS NULL
   )
 WHERE
   (
@@ -87,12 +87,12 @@ WHERE
           (
             (
               (
-                "c20102de0f4f51a0efbaca481ef9bb2f99dd7c0a"."id" = $2
+                "a641d58cf46d4a391ba060ac4dc337665c69ffea"."id" = $2
               )
             )
           )
           AND (
-            "AlbumEntity__AlbumEntity_sharedUsers"."role" IN ($3, $4)
+            "AlbumEntity__AlbumEntity_albumUsers"."role" IN ($3, $4)
           )
         )
       )
@@ -121,15 +121,15 @@ FROM
   INNER JOIN "albums_assets_assets" "album_asset" ON "album_asset"."albumsId" = "album"."id"
   INNER JOIN "assets" "asset" ON "asset"."id" = "album_asset"."assetsId"
   AND ("asset"."deletedAt" IS NULL)
-  LEFT JOIN "albums_shared_users_users" "albumSharedUsers" ON "albumSharedUsers"."albumsId" = "album"."id"
-  LEFT JOIN "users" "sharedUsers" ON "sharedUsers"."id" = "albumSharedUsers"."usersId"
-  AND ("sharedUsers"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_albumUsers_users" ON "album_albumUsers_users"."albumsId" = "album"."id"
+  LEFT JOIN "users" "albumUsers" ON "albumUsers"."id" = "album_albumUsers_users"."usersId"
+  AND ("albumUsers"."deletedAt" IS NULL)
 WHERE
   (
     array["asset"."id", "asset"."livePhotoVideoId"] && array[$1]::uuid []
     AND (
       "album"."ownerId" = $2
-      OR "sharedUsers"."id" = $2
+      OR "albumUsers"."id" = $2
     )
   )
   AND ("album"."deletedAt" IS NULL)
