@@ -185,13 +185,13 @@ WHERE
 
 -- AccessRepository.authDevice.checkOwnerAccess
 SELECT
-  "UserTokenEntity"."id" AS "UserTokenEntity_id"
+  "SessionEntity"."id" AS "SessionEntity_id"
 FROM
-  "user_token" "UserTokenEntity"
+  "sessions" "SessionEntity"
 WHERE
   (
-    ("UserTokenEntity"."userId" = $1)
-    AND ("UserTokenEntity"."id" IN ($2))
+    ("SessionEntity"."userId" = $1)
+    AND ("SessionEntity"."id" IN ($2))
   )
 
 -- AccessRepository.library.checkOwnerAccess

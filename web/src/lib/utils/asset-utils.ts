@@ -2,6 +2,7 @@ import { goto } from '$app/navigation';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
@@ -269,43 +270,81 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds: string[]) => void) {
+export const stackAssets = async (assets: AssetResponseDto[]) => {
+  if (assets.length < 2) {
+    return false;
+  }
+
+  const parent = assets[0];
+  const children = assets.slice(1);
+  const ids = children.map(({ id }) => id);
+
   try {
-    const parent = assets.at(0);
-    if (!parent) {
-      return;
-    }
+    await updateAssets({
+      assetBulkUpdateDto: {
+        ids,
+        stackParentId: parent.id,
+      },
+    });
+  } catch (error) {
+    handleError(error, 'Failed to stack assets');
+    return false;
+  }
 
-    const children = assets.slice(1);
-    const ids = children.map(({ id }) => id);
-
-    if (children.length > 0) {
-      await updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
-    }
-
-    let childrenCount = parent.stackCount || 1;
-    for (const asset of children) {
-      asset.stackParentId = parent.id;
-      // Add grand-children's count to new parent
-      childrenCount += asset.stackCount || 1;
+  let grandChildren: AssetResponseDto[] = [];
+  for (const asset of children) {
+    asset.stackParentId = parent.id;
+    if (asset.stack) {
+      // Add grand-children to new parent
+      grandChildren = grandChildren.concat(asset.stack);
       // Reset children stack info
       asset.stackCount = null;
       asset.stack = [];
     }
-
-    parent.stackCount = childrenCount;
-
-    notificationController.show({
-      message: `Stacked ${ids.length + 1} assets`,
-      type: NotificationType.Info,
-      timeout: 1500,
-    });
-
-    onStack(ids);
-  } catch (error) {
-    handleError(error, `Unable to stack`);
   }
-}
+
+  parent.stack ??= [];
+  parent.stack = parent.stack.concat(children, grandChildren);
+  parent.stackCount = parent.stack.length + 1;
+
+  notificationController.show({
+    message: `Stacked ${parent.stackCount} assets`,
+    type: NotificationType.Info,
+    button: {
+      text: 'View Stack',
+      onClick() {
+        return assetViewingStore.setAssetId(parent.id);
+      },
+    },
+  });
+
+  return ids;
+};
+
+export const unstackAssets = async (assets: AssetResponseDto[]) => {
+  const ids = assets.map(({ id }) => id);
+  try {
+    await updateAssets({
+      assetBulkUpdateDto: {
+        ids,
+        removeParent: true,
+      },
+    });
+  } catch (error) {
+    handleError(error, 'Failed to un-stack assets');
+    return;
+  }
+  for (const asset of assets) {
+    asset.stackParentId = null;
+    asset.stackCount = null;
+    asset.stack = [];
+  }
+  notificationController.show({
+    type: NotificationType.Info,
+    message: `Un-stacked ${assets.length} assets`,
+  });
+  return assets;
+};
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
   if (get(isSelectingAllAssets)) {

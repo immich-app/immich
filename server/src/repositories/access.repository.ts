@@ -10,8 +10,8 @@ import { LibraryEntity } from 'src/entities/library.entity';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
@@ -293,7 +293,7 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(private tokenRepository: Repository<UserTokenEntity>) {}
+  constructor(private sessionRepository: Repository<SessionEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -302,7 +302,7 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
       return new Set();
     }
 
-    return this.tokenRepository
+    return this.sessionRepository
       .find({
         select: { id: true },
         where: {
@@ -464,12 +464,12 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(UserTokenEntity) tokenRepository: Repository<UserTokenEntity>,
+    @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
   ) {
     this.activity = new ActivityAccess(activityRepository, albumRepository);
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
-    this.authDevice = new AuthDeviceAccess(tokenRepository);
+    this.authDevice = new AuthDeviceAccess(sessionRepository);
     this.library = new LibraryAccess(libraryRepository);
     this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);

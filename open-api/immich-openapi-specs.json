@@ -2583,99 +2583,6 @@
         ]
       }
     },
-    "/auth/devices": {
-      "delete": {
-        "operationId": "logoutAuthDevices",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      },
-      "get": {
-        "operationId": "getAuthDevices",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AuthDeviceResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/devices/{id}": {
-      "delete": {
-        "operationId": "logoutAuthDevice",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -5234,6 +5141,99 @@
         },
         "tags": [
           "Server Info"
+        ]
+      }
+    },
+    "/sessions": {
+      "delete": {
+        "operationId": "deleteAllSessions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      },
+      "get": {
+        "operationId": "getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}": {
+      "delete": {
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
         ]
       }
     },
@@ -7976,37 +7976,6 @@
         ],
         "type": "object"
       },
-      "AuthDeviceResponseDto": {
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "current": {
-            "type": "boolean"
-          },
-          "deviceOS": {
-            "type": "string"
-          },
-          "deviceType": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "createdAt",
-          "current",
-          "deviceOS",
-          "deviceType",
-          "id",
-          "updatedAt"
-        ],
-        "type": "object"
-      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -10130,6 +10099,37 @@
           "major",
           "minor",
           "patch"
+        ],
+        "type": "object"
+      },
+      "SessionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "updatedAt"
         ],
         "type": "object"
       },

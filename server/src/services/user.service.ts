@@ -37,6 +37,11 @@ export class UserService {
     this.configCore = SystemConfigCore.create(configRepository, this.logger);
   }
 
+  async listUsers(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.getList({ withDeleted: true });
+    return users.map((user) => mapUser(user));
+  }
+
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
     return users.map((user) => mapUser(user));

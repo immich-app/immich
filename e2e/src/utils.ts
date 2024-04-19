@@ -44,7 +44,7 @@ import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
-type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
+type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
 type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
@@ -60,13 +60,15 @@ export const testAssetDirInternal = '/data/assets';
 export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
-export const immichCli = async (args: string[]) => {
-  let _resolve: (value: CliResponse) => void;
-  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
-  const _args = ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args];
-  const child = spawn('node', _args, {
-    stdio: 'pipe',
-  });
+export const immichCli = (args: string[]) =>
+  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]);
+export const immichAdmin = (args: string[]) =>
+  executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
+
+const executeCommand = (command: string, args: string[]) => {
+  let _resolve: (value: CommandResponse) => void;
+  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
   let stderr = '';
@@ -139,7 +141,7 @@ export const utils = {
         'asset_faces',
         'activity',
         'api_keys',
-        'user_token',
+        'sessions',
         'users',
         'system_metadata',
         'system_config',
