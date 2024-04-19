@@ -130,7 +130,6 @@ class AlbumAccess implements IAlbumAccess {
     return this.albumRepository
       .find({
         select: { id: true },
-        relations: { albumUsers: true },
         where: {
           id: In([...albumIds]),
           albumUsers: {
