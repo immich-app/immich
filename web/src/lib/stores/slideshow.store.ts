@@ -18,7 +18,7 @@ export enum SlideshowLook {
   Cover = 'cover',
 }
 
-export const SlideshowLookCssMapping: Record<SlideshowLook, string> = {
+export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
   [SlideshowLook.Contain]: 'object-contain',
   [SlideshowLook.Cover]: 'object-cover',
 };
