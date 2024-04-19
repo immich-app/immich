@@ -346,14 +346,6 @@ export type ChangePasswordDto = {
     newPassword: string;
     password: string;
 };
-export type AuthDeviceResponseDto = {
-    createdAt: string;
-    current: boolean;
-    deviceOS: string;
-    deviceType: string;
-    id: string;
-    updatedAt: string;
-};
 export type LoginCredentialDto = {
     email: string;
     password: string;
@@ -790,6 +782,14 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type SessionResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    id: string;
+    updatedAt: string;
 };
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
@@ -1704,28 +1704,6 @@ export function changePassword({ changePasswordDto }: {
         body: changePasswordDto
     })));
 }
-export function logoutAuthDevices(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/auth/devices", {
-        ...opts,
-        method: "DELETE"
-    }));
-}
-export function getAuthDevices(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AuthDeviceResponseDto[];
-    }>("/auth/devices", {
-        ...opts
-    }));
-}
-export function logoutAuthDevice({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/auth/devices/${encodeURIComponent(id)}`, {
-        ...opts,
-        method: "DELETE"
-    }));
-}
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2412,6 +2390,28 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         data: ServerVersionResponseDto;
     }>("/server-info/version", {
         ...opts
+    }));
+}
+export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/sessions", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getSessions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto[];
+    }>("/sessions", {
+        ...opts
+    }));
+}
+export function deleteSession({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getAllSharedLinks(opts?: Oazapfts.RequestOpts) {

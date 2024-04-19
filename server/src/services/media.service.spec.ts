@@ -225,6 +225,15 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGeneratePreview({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
     it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -349,6 +358,15 @@ describe(MediaService.name, () => {
     it('should skip thumbnail generation if asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbnail({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
       expect(mediaMock.resize).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
@@ -495,6 +513,15 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGenerateThumbhash({ id: assetStub.noResizePath.id });
       expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbhash({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should generate a thumbhash', async () => {

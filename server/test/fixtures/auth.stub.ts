@@ -1,6 +1,6 @@
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
 export const adminSignupStub = {
@@ -35,9 +35,9 @@ export const authStub = {
       email: 'immich@test.com',
       isAdmin: false,
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   user2: Object.freeze<AuthDto>({
     user: {
@@ -45,9 +45,9 @@ export const authStub = {
       email: 'user2@immich.app',
       isAdmin: false,
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   external1: Object.freeze<AuthDto>({
     user: {
@@ -55,9 +55,9 @@ export const authStub = {
       email: 'immich@test.com',
       isAdmin: false,
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   adminSharedLink: Object.freeze<AuthDto>({
     user: {

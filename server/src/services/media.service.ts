@@ -79,7 +79,7 @@ export class MediaService {
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
@@ -180,6 +180,10 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
@@ -244,6 +248,10 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
@@ -251,7 +259,15 @@ export class MediaService {
 
   async handleGenerateThumbhash({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset?.previewPath) {
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    if (!asset.previewPath) {
       return JobStatus.FAILED;
     }
 
