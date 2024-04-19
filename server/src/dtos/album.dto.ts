@@ -124,12 +124,12 @@ export class AlbumResponseDto {
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
-  const sharedUsersV2: AlbumUserResponseDto[] = [];
+  const albumUsers: AlbumUserResponseDto[] = [];
 
   if (entity.sharedUsers) {
     for (const albumUser of entity.sharedUsers) {
       sharedUsers.push(mapUser(albumUser.user));
-      sharedUsersV2.push({
+      albumUsers.push({
         user: mapUser(albumUser.user),
         role: albumUser.role,
       });
@@ -158,7 +158,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
-    albumUsers: sharedUsersV2,
+    albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,
