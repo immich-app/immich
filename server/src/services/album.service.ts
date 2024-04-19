@@ -22,6 +22,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IBaseJob, IEntityJob, IJobRepository, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -33,6 +34,7 @@ export class AlbumService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -311,5 +313,42 @@ export class AlbumService {
       throw new BadRequestException('Album not found');
     }
     return album;
+  }
+
+  async handleMatchSmartAlbums(data: IEntityJob) {
+    await this.jobRepository.waitForQueueCompletion(
+      QueueName.METADATA_EXTRACTION,
+      QueueName.SIDECAR,
+      QueueName.FACE_DETECTION,
+      QueueName.FACIAL_RECOGNITION,
+    );
+
+    const { id: assetId = '' } = data;
+    const asset = await this.assetRepository.getById(assetId);
+
+    if (!asset) {
+      return JobStatus.SKIPPED;
+    }
+
+    const assetOwnerAlbums = await this.albumRepository.getOwned(asset?.ownerId);
+    const assetPeopleIds = new Set(asset.faces.map((face) => face.personId));
+
+    await Promise.all(
+      assetOwnerAlbums
+        .filter((album) => {
+          if (!album.people?.length) {
+            return false;
+          }
+
+          if (album.peopleTogether) {
+            return album.people?.every((person) => assetPeopleIds.has(person.id));
+          }
+
+          return album.people?.some((person) => assetPeopleIds.has(person.id));
+        })
+        .map((album) => this.albumRepository.addAssetIds(album.id, [assetId])),
+    );
+
+    return JobStatus.SUCCESS;
   }
 }
