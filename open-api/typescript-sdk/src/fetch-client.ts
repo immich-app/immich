@@ -316,27 +316,6 @@ export type AuditDeletesResponseDto = {
     ids: string[];
     needsFullSync: boolean;
 };
-export type FileReportItemDto = {
-    checksum?: string;
-    entityId: string;
-    entityType: PathEntityType;
-    pathType: PathType;
-    pathValue: string;
-};
-export type FileReportDto = {
-    extras: string[];
-    orphans: FileReportItemDto[];
-};
-export type FileChecksumDto = {
-    filenames: string[];
-};
-export type FileChecksumResponseDto = {
-    checksum: string;
-    filename: string;
-};
-export type FileReportFixDto = {
-    items: FileReportItemDto[];
-};
 export type SignUpDto = {
     email: string;
     name: string;
@@ -598,6 +577,27 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type FileReportItemDto = {
+    checksum?: string;
+    entityId: string;
+    entityType: PathEntityType;
+    pathType: PathType;
+    pathValue: string;
+};
+export type FileReportDto = {
+    extras: string[];
+    orphans: FileReportItemDto[];
+};
+export type FileChecksumDto = {
+    filenames: string[];
+};
+export type FileChecksumResponseDto = {
+    checksum: string;
+    filename: string;
+};
+export type FileReportFixDto = {
+    items: FileReportItemDto[];
 };
 export type SearchFacetCountResponseDto = {
     count: number;
@@ -1651,35 +1651,6 @@ export function getAuditDeletes({ after, entityType, userId }: {
         ...opts
     }));
 }
-export function getAuditFiles(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: FileReportDto;
-    }>("/audit/file-report", {
-        ...opts
-    }));
-}
-export function getFileChecksums({ fileChecksumDto }: {
-    fileChecksumDto: FileChecksumDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: FileChecksumResponseDto[];
-    }>("/audit/file-report/checksum", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileChecksumDto
-    })));
-}
-export function fixAuditFiles({ fileReportFixDto }: {
-    fileReportFixDto: FileReportFixDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/audit/file-report/fix", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileReportFixDto
-    })));
-}
 export function signUpAdmin({ signUpDto }: {
     signUpDto: SignUpDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2205,6 +2176,35 @@ export function getPersonThumbnail({ id }: {
     }>(`/person/${encodeURIComponent(id)}/thumbnail`, {
         ...opts
     }));
+}
+export function getAuditFiles(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FileReportDto;
+    }>("/report", {
+        ...opts
+    }));
+}
+export function getFileChecksums({ fileChecksumDto }: {
+    fileChecksumDto: FileChecksumDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: FileChecksumResponseDto[];
+    }>("/report/checksum", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: fileChecksumDto
+    })));
+}
+export function fixAuditFiles({ fileReportFixDto }: {
+    fileReportFixDto: FileReportFixDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/report/fix", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: fileReportFixDto
+    })));
 }
 export function search({ clip, motion, page, q, query, recent, size, smart, $type, withArchived }: {
     clip?: boolean;
@@ -2948,20 +2948,6 @@ export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
 }
-export enum PathEntityType {
-    Asset = "asset",
-    Person = "person",
-    User = "user"
-}
-export enum PathType {
-    Original = "original",
-    Preview = "preview",
-    Thumbnail = "thumbnail",
-    EncodedVideo = "encoded_video",
-    Sidecar = "sidecar",
-    Face = "face",
-    Profile = "profile"
-}
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
@@ -2992,6 +2978,20 @@ export enum Type2 {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
+}
+export enum PathEntityType {
+    Asset = "asset",
+    Person = "person",
+    User = "user"
+}
+export enum PathType {
+    Original = "original",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
+    EncodedVideo = "encoded_video",
+    Sidecar = "sidecar",
+    Face = "face",
+    Profile = "profile"
 }
 export enum SearchSuggestionType {
     Country = "country",
