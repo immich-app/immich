@@ -207,7 +207,7 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.MATCH_SMART_ALBUMS]!: JobSettingsDto;
+  [QueueName.MATCH_PEOPLE_ALBUM]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {

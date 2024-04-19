@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import {
   AddPeopleDto,
@@ -22,7 +22,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IBaseJob, IEntityJob, IJobRepository, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { IEntityJob, IJobRepository, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -318,13 +318,15 @@ export class AlbumService {
     return album;
   }
 
-  async handleMatchSmartAlbums(data: IEntityJob) {
+  async handleMatchPeopleAlbum(data: IEntityJob) {
     await this.jobRepository.waitForQueueCompletion(
       QueueName.METADATA_EXTRACTION,
       QueueName.SIDECAR,
       QueueName.FACE_DETECTION,
       QueueName.FACIAL_RECOGNITION,
     );
+
+    Logger.verbose('Matching asset faces to people based albums', AlbumService.name);
 
     const { id: assetId = '' } = data;
     const asset = await this.assetRepository.getById(assetId, { faces: { person: true } });
@@ -347,10 +349,18 @@ export class AlbumService {
       return album.people?.some((person) => assetPeopleIds.has(person.id));
     });
 
-    await Promise.all(
-      albumsWithPeople.map(async (album) => await this.albumRepository.addAssetIds(album.id, [assetId])),
-    );
+    try {
+      await Promise.all(
+        albumsWithPeople.map(async (album) => {
+          await this.albumRepository.addAssetIds(album.id, [asset.id]);
+        }),
+      );
 
-    return JobStatus.SUCCESS;
+      Logger.verbose(`Updated albums: ${albumsWithPeople.map(({ albumName }) => albumName).join(', ')}`, AlbumService.name);
+
+      return JobStatus.SUCCESS;
+    } catch {
+      return JobStatus.FAILED;
+    }
   }
 }

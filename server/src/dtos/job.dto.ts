@@ -86,5 +86,5 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.LIBRARY]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.MATCH_SMART_ALBUMS]!: JobStatusDto;
+  [QueueName.MATCH_PEOPLE_ALBUM]!: JobStatusDto;
 }

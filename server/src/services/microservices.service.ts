@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { IDeleteFilesJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { Injectable } from '@nestjs/common';
+import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -32,7 +32,7 @@ export class MicroservicesService {
     private storageService: StorageService,
     private userService: UserService,
     private databaseService: DatabaseService,
-    private albumService: AlbumService
+    private albumService: AlbumService,
   ) {}
 
   async init() {
@@ -79,11 +79,7 @@ export class MicroservicesService {
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
-      [JobName.QUEUE_MATCH_SMART_ALBUMS]: (data) => {
-        Logger.log('running queue match smart albums');
-        return Promise.resolve(JobStatus.SUCCESS);
-      },
-      [JobName.MATCH_SMART_ALBUMS]: (data) => this.albumService.handleMatchSmartAlbums(data),
+      [JobName.MATCH_PEOPLE_ALBUM]: (data) => this.albumService.handleMatchPeopleAlbum(data),
     });
 
     await this.metadataService.init();

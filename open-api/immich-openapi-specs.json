@@ -7398,7 +7398,7 @@
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "matchSmartAlbums": {
+          "matchPeopleAlbum": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "metadataExtraction": {
@@ -7431,7 +7431,7 @@
           "faceDetection",
           "facialRecognition",
           "library",
-          "matchSmartAlbums",
+          "matchPeopleAlbum",
           "metadataExtraction",
           "migration",
           "search",
@@ -8775,7 +8775,7 @@
           "search",
           "sidecar",
           "library",
-          "matchSmartAlbums"
+          "matchPeopleAlbum"
         ],
         "type": "string"
       },
@@ -10671,7 +10671,7 @@
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "matchSmartAlbums": {
+          "matchPeopleAlbum": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "metadataExtraction": {
@@ -10700,7 +10700,7 @@
           "backgroundTask",
           "faceDetection",
           "library",
-          "matchSmartAlbums",
+          "matchPeopleAlbum",
           "metadataExtraction",
           "migration",
           "search",

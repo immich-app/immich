@@ -78,9 +78,8 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
-  // Smart albums
-  [JobName.QUEUE_MATCH_SMART_ALBUMS]: QueueName.MATCH_SMART_ALBUMS,
-  [JobName.MATCH_SMART_ALBUMS]: QueueName.MATCH_SMART_ALBUMS
+  // People based albums
+  [JobName.MATCH_PEOPLE_ALBUM]: QueueName.MATCH_PEOPLE_ALBUM,
 };
 
 @Instrumentation()
