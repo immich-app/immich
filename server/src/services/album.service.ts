@@ -261,7 +261,7 @@ export class AlbumService {
     await this.albumUserRepository.delete({ albumId: id, userId });
   }
 
-  async updateAlbumUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
+  async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });

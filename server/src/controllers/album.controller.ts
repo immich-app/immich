@@ -105,6 +105,6 @@ export class AlbumController {
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
-    return this.service.updateAlbumUser(auth, id, userId, dto);
+    return this.service.updateUser(auth, id, userId, dto);
   }
 }
