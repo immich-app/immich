@@ -10,8 +10,8 @@ import { Repository } from 'typeorm';
 export class AlbumUserRepository implements IAlbumUserRepository {
   constructor(@InjectRepository(AlbumUserEntity) private repository: Repository<AlbumUserEntity>) {}
 
-  async create(dto: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
-    const { userId, albumId } = await this.repository.save(dto);
+  async create(albumUser: Partial<AlbumUserEntity>): Promise<AlbumUserEntity> {
+    const { userId, albumId } = await this.repository.save(albumUser);
     return this.repository.findOneOrFail({ where: { userId, albumId } });
   }
 

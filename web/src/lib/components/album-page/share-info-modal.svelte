@@ -79,7 +79,7 @@
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      handleError(error, 'Unable to set permission');
+      handleError(error, 'Unable to set user role');
     } finally {
       selectedRemoveUser = null;
     }
