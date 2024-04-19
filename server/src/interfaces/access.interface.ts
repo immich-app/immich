@@ -2,8 +2,6 @@ import { AlbumUserRole } from 'src/entities/album-user.entity';
 
 export const IAccessRepository = 'IAccessRepository';
 
-export type ReadWrite = 'read' | 'write';
-
 export interface IAccessRepository {
   activity: {
     checkOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>>;
