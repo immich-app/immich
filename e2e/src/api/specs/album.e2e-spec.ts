@@ -1,12 +1,13 @@
 import {
+  addAssetsToAlbum,
   AlbumResponseDto,
+  AlbumUserRole,
   AssetFileUploadResponseDto,
   AssetOrder,
-  LoginResponseDto,
-  SharedLinkType,
-  addAssetsToAlbum,
   deleteUser,
   getAlbumInfo,
+  LoginResponseDto,
+  SharedLinkType,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -77,6 +78,12 @@ describe('/album', () => {
         sharedWithUserIds: [user1.userId],
       }),
     ]);
+
+    await utils.updateAlbumUser(user2.accessToken, {
+      id: albums[3].id,
+      userId: user1.userId,
+      updateAlbumUserDto: { role: AlbumUserRole.Editor },
+    });
 
     await addAssetsToAlbum(
       { id: albums[3].id, bulkIdsDto: { ids: [user1Asset1.id] } },

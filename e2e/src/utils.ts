@@ -26,6 +26,7 @@ import {
   searchMetadata,
   setAdminOnboarding,
   signUpAdmin,
+  updateAlbumUser,
   updateConfig,
   validate,
 } from '@immich/sdk';
@@ -280,6 +281,9 @@ export const utils = {
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
+    updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),
 
   createAsset: async (
     accessToken: string,
