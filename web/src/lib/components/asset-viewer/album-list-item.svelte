@@ -2,6 +2,7 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { ThumbnailFormat, type AlbumResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
+  import { normalizeSearchString } from '$lib/utils/string-utils.js';
 
   const dispatch = createEventDispatcher<{
     album: void;
@@ -16,7 +17,7 @@
   // It is used to highlight the search query in the album name
   $: {
     let { albumName } = album;
-    let findIndex = albumName.toLowerCase().indexOf(searchQuery.toLowerCase());
+    let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
     let findLength = searchQuery.length;
     albumNameArray = [
       albumName.slice(0, findIndex),
@@ -28,7 +29,7 @@
 
 <button
   on:click={() => dispatch('album')}
-  class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+  class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
 >
   <div class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
     {#if album.albumThumbnailAssetId}

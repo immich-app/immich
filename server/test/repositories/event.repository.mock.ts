@@ -1,10 +1,11 @@
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newEventRepositoryMock = (): jest.Mocked<IEventRepository> => {
+export const newEventRepositoryMock = (): Mocked<IEventRepository> => {
   return {
-    clientSend: jest.fn(),
-    clientBroadcast: jest.fn(),
-    serverSend: jest.fn(),
-    serverSendAsync: jest.fn(),
+    clientSend: vitest.fn(),
+    clientBroadcast: vitest.fn(),
+    serverSend: vitest.fn(),
+    serverSendAsync: vitest.fn(),
   };
 };

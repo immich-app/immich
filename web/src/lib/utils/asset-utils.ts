@@ -1,15 +1,21 @@
-import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+import { goto } from '$app/navigation';
+import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
+import { createAlbum } from '$lib/utils/album-utils';
+import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
   defaults,
   getDownloadInfo,
+  updateAssets,
+  type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
-  type BulkIdResponseDto,
   type DownloadInfoDto,
   type DownloadResponseDto,
   type UserResponseDto,
@@ -18,20 +24,57 @@ import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
-export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
-  addAssets({
+export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
+  const result = await addAssets({
     id: albumId,
-    bulkIdsDto: { ids: assetIds },
+    bulkIdsDto: {
+      ids: assetIds,
+    },
     key: getKey(),
-  }).then((results) => {
-    const count = results.filter(({ success }) => success).length;
-    notificationController.show({
-      type: NotificationType.Info,
-      message: `Added ${count} asset${count === 1 ? '' : 's'}`,
-    });
-
-    return results;
   });
+  const count = result.filter(({ success }) => success).length;
+  notificationController.show({
+    type: NotificationType.Info,
+    timeout: 5000,
+    message:
+      count > 0
+        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
+    button: {
+      text: 'View Album',
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${albumId}`);
+      },
+    },
+  });
+};
+
+export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
+  const album = await createAlbum(albumName, assetIds);
+  if (!album) {
+    return;
+  }
+  const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
+  notificationController.show({
+    type: NotificationType.Info,
+    timeout: 5000,
+    message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+    html: true,
+    button: {
+      text: 'View Album',
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${album.id}`);
+      },
+    },
+  });
+  return album;
+};
+
+export const downloadAlbum = async (album: AlbumResponseDto) => {
+  await downloadArchive(`${album.albumName}.zip`, {
+    albumId: album.id,
+  });
+};
 
 export const downloadBlob = (data: Blob, filename: string) => {
   const url = URL.createObjectURL(data);
@@ -225,6 +268,82 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
+};
+
+export const stackAssets = async (assets: AssetResponseDto[]) => {
+  if (assets.length < 2) {
+    return false;
+  }
+
+  const parent = assets[0];
+  const children = assets.slice(1);
+  const ids = children.map(({ id }) => id);
+
+  try {
+    await updateAssets({
+      assetBulkUpdateDto: {
+        ids,
+        stackParentId: parent.id,
+      },
+    });
+  } catch (error) {
+    handleError(error, 'Failed to stack assets');
+    return false;
+  }
+
+  let grandChildren: AssetResponseDto[] = [];
+  for (const asset of children) {
+    asset.stackParentId = parent.id;
+    if (asset.stack) {
+      // Add grand-children to new parent
+      grandChildren = grandChildren.concat(asset.stack);
+      // Reset children stack info
+      asset.stackCount = null;
+      asset.stack = [];
+    }
+  }
+
+  parent.stack ??= [];
+  parent.stack = parent.stack.concat(children, grandChildren);
+  parent.stackCount = parent.stack.length + 1;
+
+  notificationController.show({
+    message: `Stacked ${parent.stackCount} assets`,
+    type: NotificationType.Info,
+    button: {
+      text: 'View Stack',
+      onClick() {
+        return assetViewingStore.setAssetId(parent.id);
+      },
+    },
+  });
+
+  return ids;
+};
+
+export const unstackAssets = async (assets: AssetResponseDto[]) => {
+  const ids = assets.map(({ id }) => id);
+  try {
+    await updateAssets({
+      assetBulkUpdateDto: {
+        ids,
+        removeParent: true,
+      },
+    });
+  } catch (error) {
+    handleError(error, 'Failed to un-stack assets');
+    return;
+  }
+  for (const asset of assets) {
+    asset.stackParentId = null;
+    asset.stackCount = null;
+    asset.stack = [];
+  }
+  notificationController.show({
+    type: NotificationType.Info,
+    message: `Un-stacked ${assets.length} assets`,
+  });
+  return assets;
 };
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {

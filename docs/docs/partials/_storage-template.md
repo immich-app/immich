@@ -1,4 +1,4 @@
-Immich allows the admin user to set the uploaded filename pattern. Both at the directory and filename level.
+Immich allows the admin user to set the uploaded filename pattern at the directory and filename level as well as the [storage label for a user](/docs/administration/user-management/#set-storage-label-for-user).
 
 :::note new version
 On new machines running version 1.92.0 storage template engine is off by default, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).

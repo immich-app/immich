@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
@@ -5,10 +6,11 @@ import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
+import { MemoryEntity } from 'src/entities/memory.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
@@ -19,10 +21,12 @@ type IAssetAccess = IAccessRepository['asset'];
 type IAuthDeviceAccess = IAccessRepository['authDevice'];
 type ILibraryAccess = IAccessRepository['library'];
 type ITimelineAccess = IAccessRepository['timeline'];
+type IMemoryAccess = IAccessRepository['memory'];
 type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
 
 @Instrumentation()
+@Injectable()
 class ActivityAccess implements IActivityAccess {
   constructor(
     private activityRepository: Repository<ActivityEntity>,
@@ -282,7 +286,7 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(private tokenRepository: Repository<UserTokenEntity>) {}
+  constructor(private sessionRepository: Repository<SessionEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -291,7 +295,7 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
       return new Set();
     }
 
-    return this.tokenRepository
+    return this.sessionRepository
       .find({
         select: { id: true },
         where: {
@@ -342,6 +346,28 @@ class TimelineAccess implements ITimelineAccess {
       .andWhere('partner.sharedWithId = :userId', { userId })
       .getMany()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
+  }
+}
+
+class MemoryAccess implements IMemoryAccess {
+  constructor(private memoryRepository: Repository<MemoryEntity>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, memoryIds: Set<string>): Promise<Set<string>> {
+    if (memoryIds.size === 0) {
+      return new Set();
+    }
+
+    return this.memoryRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...memoryIds]),
+          ownerId: userId,
+        },
+      })
+      .then((memories) => new Set(memories.map((memory) => memory.id)));
   }
 }
 
@@ -416,6 +442,7 @@ export class AccessRepository implements IAccessRepository {
   asset: IAssetAccess;
   authDevice: IAuthDeviceAccess;
   library: ILibraryAccess;
+  memory: IMemoryAccess;
   person: IPersonAccess;
   partner: IPartnerAccess;
   timeline: ITimelineAccess;
@@ -425,17 +452,19 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(AssetEntity) assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) albumRepository: Repository<AlbumEntity>,
     @InjectRepository(LibraryEntity) libraryRepository: Repository<LibraryEntity>,
+    @InjectRepository(MemoryEntity) memoryRepository: Repository<MemoryEntity>,
     @InjectRepository(PartnerEntity) partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(UserTokenEntity) tokenRepository: Repository<UserTokenEntity>,
+    @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
   ) {
     this.activity = new ActivityAccess(activityRepository, albumRepository);
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
-    this.authDevice = new AuthDeviceAccess(tokenRepository);
+    this.authDevice = new AuthDeviceAccess(sessionRepository);
     this.library = new LibraryAccess(libraryRepository);
+    this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);
     this.partner = new PartnerAccess(partnerRepository);
     this.timeline = new TimelineAccess(partnerRepository);

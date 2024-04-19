@@ -5,13 +5,7 @@ import { dataSource } from 'src/database.config';
 import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import {
-  AlbumAsset,
-  AlbumAssetCount,
-  AlbumAssets,
-  AlbumInfoOptions,
-  IAlbumRepository,
-} from 'src/interfaces/album.interface';
+import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
@@ -203,7 +197,7 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
-  async removeAssets(albumId: string, assetIds: string[]): Promise<void> {
+  async removeAssetIds(albumId: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
       .delete()
@@ -260,8 +254,8 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
-  async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
       .insert()

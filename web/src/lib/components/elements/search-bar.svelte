@@ -23,14 +23,12 @@
     ? 'rounded-2xl'
     : 'rounded-t-lg'} bg-gray-200 p-2 dark:bg-immich-dark-gray gap-2 place-items-center h-full"
 >
-  <button on:click={() => dispatch('search', { force: true })}>
+  <button type="button" on:click={() => dispatch('search', { force: true })}>
     <div class="w-fit">
       <Icon path={mdiMagnify} size="24" />
     </div>
   </button>
-  <!-- svelte-ignore a11y-autofocus -->
   <input
-    autofocus
     class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
     type="text"
     {placeholder}

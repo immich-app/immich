@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -12,6 +12,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -20,12 +21,14 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const makeMockHandlers = (status: JobStatus) => {
-  const mock = jest.fn().mockResolvedValue(status);
+  const mock = vitest.fn().mockResolvedValue(status);
   return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
@@ -34,12 +37,13 @@ const makeMockHandlers = (status: JobStatus) => {
 
 describe(JobService.name, () => {
   let sut: JobService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let metricMock: jest.Mocked<IMetricRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let metricMock: Mocked<IMetricRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -48,7 +52,8 @@ describe(JobService.name, () => {
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
     metricMock = newMetricRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock, loggerMock);
   });
 
   it('should work', () => {
@@ -234,7 +239,7 @@ describe(JobService.name, () => {
     it('should subscribe to config changes', async () => {
       await sut.init(makeMockHandlers(JobStatus.FAILED));
 
-      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.SMART_SEARCH]: { concurrency: 10 },
@@ -279,7 +284,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_JPEG_THUMBNAIL],
+        jobs: [JobName.GENERATE_PREVIEW],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -290,24 +295,24 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.GENERATE_THUMBHASH_THUMBNAIL],
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
+        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
-        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
+        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.GENERATE_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
@@ -329,7 +334,7 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
             assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
@@ -360,7 +365,7 @@ describe(JobService.name, () => {
       });
     }
 
-    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKeyPaths }> = [
       {
         queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.SMART_SEARCH,

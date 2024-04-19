@@ -173,13 +173,13 @@ WHERE
 
 -- AccessRepository.authDevice.checkOwnerAccess
 SELECT
-  "UserTokenEntity"."id" AS "UserTokenEntity_id"
+  "SessionEntity"."id" AS "SessionEntity_id"
 FROM
-  "user_token" "UserTokenEntity"
+  "sessions" "SessionEntity"
 WHERE
   (
-    ("UserTokenEntity"."userId" = $1)
-    AND ("UserTokenEntity"."id" IN ($2))
+    ("SessionEntity"."userId" = $1)
+    AND ("SessionEntity"."id" IN ($2))
   )
 
 -- AccessRepository.library.checkOwnerAccess
@@ -195,6 +195,20 @@ WHERE
     )
   )
   AND ("LibraryEntity"."deletedAt" IS NULL)
+
+-- AccessRepository.memory.checkOwnerAccess
+SELECT
+  "MemoryEntity"."id" AS "MemoryEntity_id"
+FROM
+  "memories" "MemoryEntity"
+WHERE
+  (
+    (
+      ("MemoryEntity"."id" IN ($1))
+      AND ("MemoryEntity"."ownerId" = $2)
+    )
+  )
+  AND ("MemoryEntity"."deletedAt" IS NULL)
 
 -- AccessRepository.person.checkOwnerAccess
 SELECT

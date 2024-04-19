@@ -1,8 +1,7 @@
 <script lang="ts">
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from './full-screen-modal.svelte';
-  import { mdiClose, mdiInformationOutline } from '@mdi/js';
+  import { mdiInformationOutline } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
 
   interface Shortcuts {
@@ -20,11 +19,13 @@
     general: [
       { key: ['←', '→'], action: 'Previous or next photo' },
       { key: ['Esc'], action: 'Back, close, or deselect' },
-      { key: ['/'], action: 'Search your photos' },
+      { key: ['Ctrl', 'k'], action: 'Search your photos' },
+      { key: ['Ctrl', '⇧', 'k'], action: 'Open the search filters' },
     ],
     actions: [
       { key: ['f'], action: 'Favorite or unfavorite photo' },
       { key: ['i'], action: 'Show or hide info' },
+      { key: ['s'], action: 'Stack selected photos' },
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
       { key: ['Space'], action: 'Play or pause video' },
@@ -36,63 +37,51 @@
   }>();
 </script>
 
-<FullScreenModal onClose={() => dispatch('close')}>
-  <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
-    <div
-      class="w-[400px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[650px]"
-    >
-      <div class="relative px-4 pt-4">
-        <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Keyboard Shortcuts</h1>
-        <div class="absolute inset-y-0 right-0 px-4 py-4">
-          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
-        </div>
+<FullScreenModal
+  id="keyboard-shortcuts-modal"
+  title="Keyboard shortcuts"
+  width="auto"
+  onClose={() => dispatch('close')}
+>
+  <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
+    <div class="p-4">
+      <h2>General</h2>
+      <div class="text-sm">
+        {#each shortcuts.general as shortcut}
+          <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
+            <div class="flex justify-self-end">
+              {#each shortcut.key as key}
+                <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
+                  {key}
+                </p>
+              {/each}
+            </div>
+            <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+          </div>
+        {/each}
       </div>
+    </div>
 
-      <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
-        <div class="px-4 py-4">
-          <h2>General</h2>
-          <div class="text-sm">
-            {#each shortcuts.general as shortcut}
-              <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
-                <div class="flex justify-self-end">
-                  {#each shortcut.key as key}
-                    <p
-                      class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
-                    >
-                      {key}
-                    </p>
-                  {/each}
-                </div>
-                <p class="mb-1 mt-1 flex">{shortcut.action}</p>
-              </div>
-            {/each}
+    <div class="p-4">
+      <h2>Actions</h2>
+      <div class="text-sm">
+        {#each shortcuts.actions as shortcut}
+          <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
+            <div class="flex justify-self-end">
+              {#each shortcut.key as key}
+                <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
+                  {key}
+                </p>
+              {/each}
+            </div>
+            <div class="flex items-center gap-2">
+              <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+              {#if shortcut.info}
+                <Icon path={mdiInformationOutline} title={shortcut.info} />
+              {/if}
+            </div>
           </div>
-        </div>
-
-        <div class="px-4 py-4">
-          <h2>Actions</h2>
-          <div class="text-sm">
-            {#each shortcuts.actions as shortcut}
-              <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">
-                <div class="flex justify-self-end">
-                  {#each shortcut.key as key}
-                    <p
-                      class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
-                    >
-                      {key}
-                    </p>
-                  {/each}
-                </div>
-                <div class="flex items-center gap-2">
-                  <p class="mb-1 mt-1 flex">{shortcut.action}</p>
-                  {#if shortcut.info}
-                    <Icon path={mdiInformationOutline} title={shortcut.info} />
-                  {/if}
-                </div>
-              </div>
-            {/each}
-          </div>
-        </div>
+        {/each}
       </div>
     </div>
   </div>

@@ -5,7 +5,6 @@ import {
   LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
-  TimeBucketSize,
   getAllLibraries,
   getAssetInfo,
   updateAssets,
@@ -112,7 +111,7 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
     ]);
 
-    user2Assets = await Promise.all([utils.createAsset(user2.accessToken)]);
+    user2Assets = [await utils.createAsset(user2.accessToken)];
 
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
@@ -817,14 +816,14 @@ describe('/asset', () => {
     });
 
     it('should not include gps data for webp thumbnails', async () => {
-      const { status, body, type } = await request(app)
-        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
       await utils.waitForWebsocketEvent({
         event: 'assetUpload',
         id: locationAsset.id,
       });
+
+      const { status, body, type } = await request(app)
+        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();
@@ -939,146 +938,6 @@ describe('/asset', () => {
           state: 'Douglas County, Nebraska',
         },
       ]);
-    });
-  });
-
-  describe('GET /asset/time-buckets', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/asset/time-buckets').query({ size: TimeBucketSize.Month });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should get time buckets by month', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month });
-
-      expect(status).toBe(200);
-      expect(body).toEqual(
-        expect.arrayContaining([
-          { count: 3, timeBucket: '1970-02-01T00:00:00.000Z' },
-          { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
-        ]),
-      );
-    });
-
-    it('should not allow access for unrelated shared links', async () => {
-      const sharedLink = await utils.createSharedLink(user1.accessToken, {
-        type: SharedLinkType.Individual,
-        assetIds: user1Assets.map(({ id }) => id),
-      });
-
-      const { status, body } = await request(app)
-        .get('/asset/time-buckets')
-        .query({ key: sharedLink.key, size: TimeBucketSize.Month });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should get time buckets by day', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Day });
-
-      expect(status).toBe(200);
-      expect(body).toEqual([
-        { count: 2, timeBucket: '1970-02-11T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-02-10T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
-      ]);
-    });
-  });
-
-  describe('GET /asset/time-bucket', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/asset/time-bucket').query({
-        size: TimeBucketSize.Month,
-        timeBucket: '1900-01-01T00:00:00.000Z',
-      });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should handle 5 digit years', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/time-bucket')
-        .query({ size: TimeBucketSize.Month, timeBucket: '+012345-01-01T00:00:00.000Z' })
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toEqual([]);
-    });
-
-    // TODO enable date string validation while still accepting 5 digit years
-    // it('should fail if time bucket is invalid', async () => {
-    //   const { status, body } = await request(app)
-    //     .get('/asset/time-bucket')
-    //     .set('Authorization', `Bearer ${user1.accessToken}`)
-    //     .query({ size: TimeBucketSize.Month, timeBucket: 'foo' });
-
-    //   expect(status).toBe(400);
-    //   expect(body).toEqual(errorDto.badRequest);
-    // });
-
-    it('should return time bucket', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/time-bucket')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, timeBucket: '1970-02-10T00:00:00.000Z' });
-
-      expect(status).toBe(200);
-      expect(body).toEqual([]);
-    });
-
-    it('should return error if time bucket is requested with partners asset and archived', async () => {
-      const req1 = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: true });
-
-      expect(req1.status).toBe(400);
-      expect(req1.body).toEqual(errorDto.badRequest());
-
-      const req2 = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isArchived: undefined });
-
-      expect(req2.status).toBe(400);
-      expect(req2.body).toEqual(errorDto.badRequest());
-    });
-
-    it('should return error if time bucket is requested with partners asset and favorite', async () => {
-      const req1 = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: true });
-
-      expect(req1.status).toBe(400);
-      expect(req1.body).toEqual(errorDto.badRequest());
-
-      const req2 = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isFavorite: false });
-
-      expect(req2.status).toBe(400);
-      expect(req2.body).toEqual(errorDto.badRequest());
-    });
-
-    it('should return error if time bucket is requested with partners asset and trash', async () => {
-      const req = await request(app)
-        .get('/asset/time-buckets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .query({ size: TimeBucketSize.Month, withPartners: true, isTrashed: true });
-
-      expect(req.status).toBe(400);
-      expect(req.body).toEqual(errorDto.badRequest());
     });
   });
 

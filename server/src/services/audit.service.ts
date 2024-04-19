@@ -20,16 +20,15 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class AuditService {
   private access: AccessCore;
-  private logger = new ImmichLogger(AuditService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -39,8 +38,10 @@ export class AuditService {
     @Inject(IAuditRepository) private repository: IAuditRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.logger.setContext(AuditService.name);
   }
 
   async handleCleanup(): Promise<JobStatus> {
@@ -53,7 +54,7 @@ export class AuditService {
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
 
     const audits = await this.repository.getAfter(dto.after, {
-      ownerId: userId,
+      userIds: [userId],
       entityType: dto.entityType,
       action: DatabaseAction.DELETE,
     });
@@ -62,7 +63,7 @@ export class AuditService {
 
     return {
       needsFullSync: duration > AUDIT_LOG_MAX_DURATION,
-      ids: audits.map(({ entityId }) => entityId),
+      ids: audits,
     };
   }
 
@@ -95,13 +96,13 @@ export class AuditService {
           break;
         }
 
-        case AssetPathType.JPEG_THUMBNAIL: {
-          await this.assetRepository.update({ id, resizePath: pathValue });
+        case AssetPathType.PREVIEW: {
+          await this.assetRepository.update({ id, previewPath: pathValue });
           break;
         }
 
-        case AssetPathType.WEBP_THUMBNAIL: {
-          await this.assetRepository.update({ id, webpPath: pathValue });
+        case AssetPathType.THUMBNAIL: {
+          await this.assetRepository.update({ id, thumbnailPath: pathValue });
           break;
         }
 
@@ -174,8 +175,8 @@ export class AuditService {
     const orphans: FileReportItemDto[] = [];
     for await (const assets of pagination) {
       assetCount += assets.length;
-      for (const { id, originalPath, resizePath, encodedVideoPath, webpPath, isExternal, checksum } of assets) {
-        for (const file of [originalPath, resizePath, encodedVideoPath, webpPath]) {
+      for (const { id, originalPath, previewPath, encodedVideoPath, thumbnailPath, isExternal, checksum } of assets) {
+        for (const file of [originalPath, previewPath, encodedVideoPath, thumbnailPath]) {
           track(file);
         }
 
@@ -191,14 +192,14 @@ export class AuditService {
         ) {
           orphans.push({ ...entity, pathType: AssetPathType.ORIGINAL, pathValue: originalPath });
         }
-        if (resizePath && !hasFile(thumbFiles, resizePath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.JPEG_THUMBNAIL, pathValue: resizePath });
+        if (previewPath && !hasFile(thumbFiles, previewPath)) {
+          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewPath });
         }
-        if (webpPath && !hasFile(thumbFiles, webpPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.WEBP_THUMBNAIL, pathValue: webpPath });
+        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailPath });
         }
         if (encodedVideoPath && !hasFile(videoFiles, encodedVideoPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.WEBP_THUMBNAIL, pathValue: encodedVideoPath });
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: encodedVideoPath });
         }
       }
     }

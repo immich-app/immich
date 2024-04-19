@@ -1,6 +1,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
+  /**
+   * Unique identifier for the checkbox element, used to associate labels with the input element.
+   */
+  export let id: string;
+  /**
+   * Optional aria-describedby attribute to associate the checkbox with a description.
+   */
+  export let ariaDescribedBy: string | undefined = undefined;
   export let checked = false;
   export let disabled = false;
 
@@ -10,17 +18,23 @@
 
 <label class="relative inline-block h-[10px] w-[36px] flex-none">
   <input
-    class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
+    {id}
+    class="disabled::cursor-not-allowed h-0 w-0 opacity-0 peer"
     type="checkbox"
     bind:checked
     on:click={onToggle}
     {disabled}
+    aria-describedby={ariaDescribedBy}
   />
 
   {#if disabled}
-    <span class="slider slider-disabled cursor-not-allowed" />
+    <span
+      class="slider slider-disabled cursor-not-allowed border border-transparent before:border before:border-transparent"
+    />
   {:else}
-    <span class="slider slider-enabled cursor-pointer" />
+    <span
+      class="slider slider-enabled cursor-pointer border-2 border-transparent before:border-2 before:border-transparent peer-focus-visible:outline before:peer-focus-visible:outline peer-focus-visible:dark:outline-gray-200 before:peer-focus-visible:dark:outline-gray-200 peer-focus-visible:outline-gray-600 before:peer-focus-visible:outline-gray-600 peer-focus-visible:dark:border-black before:peer-focus-visible:dark:border-black peer-focus-visible:border-white before:peer-focus-visible:border-white"
+    />
   {/if}
 </label>
 
@@ -32,8 +46,8 @@
     right: 0;
     bottom: 0;
     background-color: #ccc;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: transform 0.4s;
+    transition: transform 0.4s;
     border-radius: 34px;
   }
 
@@ -46,12 +60,12 @@
     content: '';
     height: 20px;
     width: 20px;
-    left: 0px;
+    left: -2px;
     right: 0px;
-    bottom: -4px;
+    bottom: -6px;
     background-color: gray;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: transform 0.4s;
+    transition: transform 0.4s;
     border-radius: 50%;
   }
 

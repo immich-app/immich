@@ -112,7 +112,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                     TextButton.icon(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () => AutoRouter.of(context).back(),
-                      label: const Text('Back'),
+                      label: const Text('action_common_back').tr(),
                     ),
                   ],
                 ),

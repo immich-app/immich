@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets } from '@immich/sdk';
+import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -7,7 +7,6 @@ import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-
 const today = DateTime.now();
 
 describe('/search', () => {
@@ -19,7 +18,7 @@ describe('/search', () => {
   let assetCyclamen: AssetFileUploadResponseDto;
   let assetNotocactus: AssetFileUploadResponseDto;
   let assetSilver: AssetFileUploadResponseDto;
-  // let assetDensity: AssetFileUploadResponseDto;
+  let assetDensity: AssetFileUploadResponseDto;
   // let assetPhiladelphia: AssetFileUploadResponseDto;
   // let assetOrychophragmus: AssetFileUploadResponseDto;
   // let assetRidge: AssetFileUploadResponseDto;
@@ -33,6 +32,9 @@ describe('/search', () => {
   let assetGlarus: AssetFileUploadResponseDto;
   let assetSprings: AssetFileUploadResponseDto;
   let assetLast: AssetFileUploadResponseDto;
+  let cities: string[];
+  let states: string[];
+  let countries: string[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -79,6 +81,37 @@ describe('/search', () => {
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
     }
 
+    // note: the coordinates here are not the actual coordinates of the images and are random for most of them
+    const coordinates = [
+      { latitude: 48.853_41, longitude: 2.3488 }, // paris
+      { latitude: 63.0695, longitude: -151.0074 }, // denali
+      { latitude: 52.524_37, longitude: 13.410_53 }, // berlin
+      { latitude: 1.314_663_1, longitude: 103.845_409_3 }, // singapore
+      { latitude: 41.013_84, longitude: 28.949_66 }, // istanbul
+      { latitude: 5.556_02, longitude: -0.1969 }, // accra
+      { latitude: 37.544_270_6, longitude: -4.727_752_8 }, // andalusia
+      { latitude: 23.133_02, longitude: -82.383_04 }, // havana
+      { latitude: 41.694_11, longitude: 44.833_68 }, // tbilisi
+      { latitude: 31.222_22, longitude: 121.458_06 }, // shanghai
+      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
+      { latitude: 38.9711, longitude: -109.7137 }, // thompson springs
+      { latitude: 40.714_27, longitude: -74.005_97 }, // new york
+      { latitude: 32.771_52, longitude: -89.116_73 }, // philadelphia
+      { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
+      { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
+      { latitude: 59.938_63, longitude: 30.314_13 }, // st. petersburg
+      { latitude: 35.6895, longitude: 139.691_71 }, // tokyo
+    ];
+
+    const updates = assets.map((asset, i) =>
+      updateAsset({ id: asset.id, updateAssetDto: coordinates[i] }, { headers: asBearerAuth(admin.accessToken) }),
+    );
+
+    await Promise.all(updates);
+    for (const asset of assets) {
+      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
+    }
+
     [
       assetFalcon,
       assetDenali,
@@ -92,7 +125,7 @@ describe('/search', () => {
       assetOneJpg5,
       assetGlarus,
       assetSprings,
-      // assetDensity,
+      assetDensity,
       // assetPhiladelphia,
       // assetOrychophragmus,
       // assetRidge,
@@ -103,10 +136,16 @@ describe('/search', () => {
     assetLast = assets.at(-1) as AssetFileUploadResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
-  });
+
+    const mapMarkers = await getMapMarkers({}, { headers: asBearerAuth(admin.accessToken) });
+    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver.id);
+    cities = [...new Set(nonTrashed.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
+    states = [...new Set(nonTrashed.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
+    countries = [...new Set(nonTrashed.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
+  }, 30_000);
 
   afterAll(async () => {
-    await utils.disconnectWebsocket(websocket);
+    utils.disconnectWebsocket(websocket);
   });
 
   describe('POST /search/metadata', () => {
@@ -298,15 +337,15 @@ describe('/search', () => {
       },
       {
         should: 'should search by city',
-        deferred: () => ({ dto: { city: 'Ralston' }, assets: [assetHeic] }),
+        deferred: () => ({ dto: { city: 'Accra' }, assets: [assetHeic] }),
       },
       {
         should: 'should search by state',
-        deferred: () => ({ dto: { state: 'Douglas County, Nebraska' }, assets: [assetHeic] }),
+        deferred: () => ({ dto: { state: 'New York' }, assets: [assetDensity] }),
       },
       {
         should: 'should search by country',
-        deferred: () => ({ dto: { country: 'United States of America' }, assets: [assetHeic] }),
+        deferred: () => ({ dto: { country: 'France' }, assets: [assetFalcon] }),
       },
       {
         should: 'should search by make',
@@ -370,13 +409,44 @@ describe('/search', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should get places', async () => {
+    it('should get relevant places', async () => {
+      const name = 'Paris';
+
       const { status, body } = await request(app)
-        .get('/search/places?name=Paris')
+        .get(`/search/places?name=${name}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
+
       expect(status).toBe(200);
       expect(Array.isArray(body)).toBe(true);
-      expect(body.length).toBeGreaterThan(10);
+      if (Array.isArray(body)) {
+        expect(body.length).toBeGreaterThan(10);
+        expect(body[0].name).toEqual(name);
+        expect(body[0].admin2name).toEqual(name);
+      }
+    });
+  });
+
+  describe('GET /search/cities', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/search/cities');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should get all cities', async () => {
+      const { status, body } = await request(app)
+        .get('/search/cities')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      if (Array.isArray(body)) {
+        expect(body.length).toBeGreaterThan(10);
+        const assetsWithCity = body.filter((asset) => !!asset.exifInfo?.city);
+        expect(assetsWithCity.length).toEqual(body.length);
+        const cities = new Set(assetsWithCity.map((asset) => asset.exifInfo.city));
+        expect(cities.size).toEqual(body.length);
+      }
     });
   });
 
@@ -391,7 +461,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(['United States of America']);
+      expect(body).toEqual(countries);
       expect(status).toBe(200);
     });
 
@@ -399,7 +469,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=state')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(['Douglas County, Nebraska', 'Mesa County, Colorado']);
+      expect(body).toEqual(states);
       expect(status).toBe(200);
     });
 
@@ -407,7 +477,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=city')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(['Palisade', 'Ralston']);
+      expect(body).toEqual(cities);
       expect(status).toBe(200);
     });
 

@@ -19,11 +19,10 @@ import {
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
-  AuthDeviceResponseDto,
   AuthDto,
   ChangePasswordDto,
   LoginCredentialDto,
@@ -34,7 +33,6 @@ import {
   OAuthConfigDto,
   SignUpDto,
   mapLoginResponse,
-  mapUserToken,
 } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { SystemConfig } from 'src/entities/system-config.entity';
@@ -43,12 +41,12 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
-import { ImmichLogger } from 'src/utils/logger';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -76,7 +74,6 @@ interface ClaimOptions<T> {
 export class AuthService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private logger = new ImmichLogger(AuthService.name);
   private userCore: UserCore;
 
   constructor(
@@ -84,13 +81,15 @@ export class AuthService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
+    @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    this.logger.setContext(AuthService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository, logger);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
@@ -119,8 +118,8 @@ export class AuthService {
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
-    if (auth.userToken) {
-      await this.userTokenRepository.delete(auth.userToken.id);
+    if (auth.session) {
+      await this.sessionRepository.delete(auth.session.id);
     }
 
     return {
@@ -163,8 +162,9 @@ export class AuthService {
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
-    const userToken = (headers['x-immich-user-token'] ||
-      params.userToken ||
+    const session = (headers['x-immich-user-token'] ||
+      headers['x-immich-session-token'] ||
+      params.sessionKey ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
     const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
@@ -173,8 +173,8 @@ export class AuthService {
       return this.validateSharedLink(shareKey);
     }
 
-    if (userToken) {
-      return this.validateUserToken(userToken);
+    if (session) {
+      return this.validateSession(session);
     }
 
     if (apiKey) {
@@ -182,26 +182,6 @@ export class AuthService {
     }
 
     throw new UnauthorizedException('Authentication required');
-  }
-
-  async getDevices(auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
-    const userTokens = await this.userTokenRepository.getAll(auth.user.id);
-    return userTokens.map((userToken) => mapUserToken(userToken, auth.userToken?.id));
-  }
-
-  async logoutDevice(auth: AuthDto, id: string): Promise<void> {
-    await this.access.requirePermission(auth, Permission.AUTH_DEVICE_DELETE, id);
-    await this.userTokenRepository.delete(id);
-  }
-
-  async logoutDevices(auth: AuthDto): Promise<void> {
-    const devices = await this.userTokenRepository.getAll(auth.user.id);
-    for (const device of devices) {
-      if (device.id === auth.userToken?.id) {
-        continue;
-      }
-      await this.userTokenRepository.delete(device.id);
-    }
   }
 
   getMobileRedirect(url: string) {
@@ -407,19 +387,19 @@ export class AuthService {
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
-  private async validateUserToken(tokenValue: string): Promise<AuthDto> {
+  private async validateSession(tokenValue: string): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    let userToken = await this.userTokenRepository.getByToken(hashedToken);
+    let session = await this.sessionRepository.getByToken(hashedToken);
 
-    if (userToken?.user) {
+    if (session?.user) {
       const now = DateTime.now();
-      const updatedAt = DateTime.fromJSDate(userToken.updatedAt);
+      const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1) {
-        userToken = await this.userTokenRepository.save({ ...userToken, updatedAt: new Date() });
+        session = await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
       }
 
-      return { user: userToken.user, userToken };
+      return { user: session.user, session: session };
     }
 
     throw new UnauthorizedException('Invalid user token');
@@ -429,7 +409,7 @@ export class AuthService {
     const key = this.cryptoRepository.newPassword(32);
     const token = this.cryptoRepository.hashSha256(key);
 
-    await this.userTokenRepository.create({
+    await this.sessionRepository.create({
       token,
       user,
       deviceOS: loginDetails.deviceOS,

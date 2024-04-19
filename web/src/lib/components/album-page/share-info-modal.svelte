@@ -5,18 +5,18 @@
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import BaseModal from '../shared-components/base-modal.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let album: AlbumResponseDto;
+  export let onClose: () => void;
 
   const dispatch = createEventDispatcher<{
     remove: string;
-    close: void;
   }>();
 
   let currentUser: UserResponseDto;
@@ -66,13 +66,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <BaseModal on:close={() => dispatch('close')}>
-    <svelte:fragment slot="title">
-      <span class="flex place-items-center gap-2">
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
-      </span>
-    </svelte:fragment>
-
+  <FullScreenModal id="share-info-modal" title="Options" {onClose}>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -86,7 +80,7 @@
       </div>
       {#each album.sharedUsers as user}
         <div
-          class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" />
@@ -97,6 +91,7 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
+                  title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
                   backgroundColor="transparent"
@@ -121,12 +116,13 @@
         </div>
       {/each}
     </section>
-  </BaseModal>
+  </FullScreenModal>
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialogue
-    title="Leave Album?"
+    id="leave-album-modal"
+    title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
     onConfirm={handleRemoveUser}
@@ -136,8 +132,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
-    title="Remove User?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
+    id="remove-user-modal"
+    title="Remove user?"
+    prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"
     onConfirm={handleRemoveUser}
     onClose={() => (selectedRemoveUser = null)}

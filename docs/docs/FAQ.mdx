@@ -6,7 +6,7 @@
 
 The admin password can be reset by running the [reset-admin-password](/docs/administration/server-commands.md) command on the immich-server.
 
-### How can I see list of all users in Immich?
+### How can I see a list of all users in Immich?
 
 You can see the list of all users by running [list-users](/docs/administration/server-commands.md) Command on the Immich-server.
 
@@ -24,14 +24,14 @@ You can see the list of all users by running [list-users](/docs/administration/s
 
 ### I cannot log into the application after an update. What can I do?
 
-First, verify that the mobile app and server are both running the same version (major and minor).
+Verify that the mobile app and server are both running the same version (major and minor).
 
 :::note
-App store updates sometimes take longer because the stores (Google play store and Apple app store)
-need to approve the update first which may take some time.
+App store updates sometimes take longer because the stores (Google Play Store and Apple App Store)
+need to approve the update first, and it can take some time.
 :::
 
-If you still cannot login to the app, try the following:
+If you still cannot log in to the app, try the following:
 
 - Check the mobile logs
 - Make sure login credentials are correct by logging in on the web app
@@ -39,6 +39,11 @@ If you still cannot login to the app, try the following:
 ---
 
 ## Assets
+
+### Does Immich change the file?
+
+No, Immich does not touch the original file under any circumstances,  
+all edited metadata are saved in the companion sidecar file and the database.
 
 ### Can I add my existing photo library?
 
@@ -50,11 +55,11 @@ Template changes will only apply to _new_ assets. To retroactively apply the tem
 
 ### Why are only photos and not videos being uploaded to Immich?
 
-This often happens when using a reverse proxy (such as nginx or Cloudflare tunnel) in front of Immich. Make sure to set your reverse proxy to allow large `POST` requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Also check the disk space of your reverse proxy, in some cases proxies cache requests to disk before passing them on, and if disk space runs out the request fails.
+This often happens when using a reverse proxy (such as Nginx or Cloudflare tunnel) in front of Immich. Make sure to set your reverse proxy to allow large `POST` requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Also, check the disk space of your reverse proxy. In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
 
 ### Why are some photos stored in the file system with the wrong date?
 
-There are a few different scenarios that can lead to this situation. The solution is to run the storage migration job again. The job is only _automatically_ run once per asset, after upload. If metadata extraction originally failed, the jobs were cleared/cancelled, etc. the job may not have run automatically the first time.
+There are a few different scenarios that can lead to this situation. The solution is to rerun the storage migration job. The job is only automatically run once per asset after upload. If metadata extraction originally failed, the jobs were cleared/canceled, etc., the job may not have run automatically the first time.
 
 ### How can I hide photos from the timeline?
 
@@ -68,23 +73,27 @@ See [Backup and Restore](/docs/administration/backup-and-restore.md).
 
 No, it currently does not. There is an [open feature request on GitHub](https://github.com/immich-app/immich/discussions/4348).
 
-### Does Immich support filtering of NSFW images?
+### Does Immich support the filtering of NSFW images?
 
 No, it currently does not. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
 
 ### Why are there so many thumbnail generation jobs?
 
-There are three thubmanil jobs for each asset:
+There are three thumbnail jobs for each asset:
 
 - Blurred (thumbhash)
-- Small (webp)
-- Large (jpeg)
+- Preview (Webp)
+- Thumbnail (Jpeg)
 
 Also, there are additional jobs for person (face) thumbnails.
 
+### Why do files from WhatsApp not appear with the correct date?
+
+Files sent on WhatsApp are saved without metadata on the file. Therefore, Immich has no way of knowing the original date of the file when files are uploaded from WhatsApp, not the order of arrival on the device. [See #3527](https://github.com/immich-app/immich/issues/3527).
+
 ### What happens if an asset exists in more than one account?
 
-There are no requirements for assets to be unique across users. If multiple users upload the same image they are processed as if they were distinct assets and jobs run and thumbnails are generated accordingly.
+There are no requirements for assets to be unique across users. If multiple users upload the same image, it is processed as if it were a distinct asset, and jobs run and thumbnails are generated accordingly.
 
 ### Why do HDR videos appear pale in Immich player but look normal after download?
 
@@ -96,40 +105,36 @@ Immich always keeps your original files. Alongside that, it generates a transcod
 
 ### How can I delete transcoded videos without deleting the original?
 
-The transcoded version of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for a single asset with the _Refresh encoded videos_ button in the asset viewer options, or for all assets by running transcoding jobs for all assets from the administration page.
+The transcoded version of an asset can be deleted by setting a transcode policy that makes it unnecessary and then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for a single asset with the _Refresh encoded videos_ button in the asset viewer options or for all assets by running transcoding jobs for all assets from the administration page.
 
 To update the transcode policy, navigate to Administration > Video Transcoding Settings > Transcoding Policy and select a policy from the drop-down. This policy will determine whether an existing transcode will be deleted or overwritten in the transcoding job. If a video should be transcoded according to this policy, an existing transcode is overwritten. If not, then it is deleted.
 
 :::note
-For example, say you have existing transcodes with the policy "Videos higher than normal resolution or not in the desired format" and switch to a narrower policy: "Videos not in the desired format". If an asset was only transcoded due to its resolution, then running a transcoding job for it will now delete the existing transcode. This is because resolution is no longer part of the transcode policy and the transcode is unnecessary as a result. Likewise, if you set the policy to "Don't transcode any videos" and run transcoding jobs for all assets, this will delete all existing transcodes as they are all unnecessary.
+For example, say you have existing transcodes with the policy "Videos higher than normal resolution or not in the desired format" and switch to a narrower policy: "Videos not in the desired format." If an asset was only transcoded due to its resolution, running a transcoding job for it will delete the existing transcode. This is because resolution is no longer part of the transcode policy and the transcode is unnecessary. Likewise, if you set the policy to "Don't transcode any videos" and run transcoding jobs for all assets, this will delete all existing transcodes as they are unnecessary.
 :::
 
 ### Is it possible to compress images during backup?
 
-No. Our golden rule is that the original assets should always be untouched, so we don't think this feature is a good fit for Immich.
+No. Our design principle is that the original assets should always be untouched.
 
 ### How can I move all data (photos, persons, albums) from one user to another?
 
-This is not officially supported, but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the psql command), or you can add for example an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file, so that you can use a web-interface.
-
-:::warning
-This is an advanced operation. If you can't do it with the steps described here, this is not for you.
-:::
+This is not officially supported but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the `psql` command), or you can add, for example, an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file so that you can use a web interface.
 
 <details>
 <summary>Steps</summary>
 
 1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
 
-2. Find the id of both the 'source' and the 'destination' user (it's the id column in the users table)
+2. Find the ID of both the 'source' and the 'destination' user (it's the id column in the `users` table)
 
 3. Three tables need to be updated:
 
 ```sql
-// reassign albums
+// Reassign albums
 UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 
-// reassign people
+// Reassign people
 UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 
 // reassign assets
@@ -159,7 +164,7 @@ No, not yet. For updates on this planned feature, follow the [GitHub discussion]
 
 ### Can I add an external library while keeping the existing album structure?
 
-We haven't put in an official mechanism to create albums from external libraries at the moment, but there are some [workarounds from the community](https://github.com/immich-app/immich/discussions/4279) to help you achieve that.
+We haven't implemented an official mechanism for creating albums from external libraries, but there are some [workarounds from the community](https://github.com/immich-app/immich/discussions/4279) to help you achieve that.
 
 ### What happens to duplicates in external libraries?
 
@@ -171,7 +176,7 @@ Duplicate checking only exists for upload libraries, using the file hash. Furthe
 
 ### How does smart search work?
 
-Immich uses CLIP models, for more information about CLIP and its capabilities read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -189,33 +194,31 @@ However, disabling all jobs will not disable the machine learning service itself
 
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
-You can delete the model cache volume, which is where models are downloaded to. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Huggingface](https://huggingface.co/immich-app) and place them in the cache folder.
-
-### Why did Immich decide to remove object detection?
-
-The feature added keywords to images for metadata search, but wasn't used for smart search. Smart search made it unnecessary as it isn't limited to exact keywords. Combined with it causing crashes on some devices, using many dependencies and causing user confusion as to how search worked, it was better to remove the job altogether.
-For more info see [here](https://github.com/immich-app/immich/pull/5903)
+You can delete the model cache volume, where models are downloaded. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Huggingface][huggingface] and place them in the cache folder.
 
 ### Can I use a custom CLIP model?
 
-No, this is not supported. Only models listed in the [Huggingface](https://huggingface.co/immich-app) page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
+No, this is not supported. Only models listed in the [Huggingface][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
 You can change to a multilingual model listed [here](https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7) by going to Administration > Machine Learning Settings > Smart Search and replacing the name of the model. Be sure to re-run Smart Search on all assets after this change. You can then search in over 100 languages.
 
 :::note
-Feel free to make a feature request if there's a model you want to use that isn't in [Immich Huggingface list](https://huggingface.co/immich-app).
+Feel free to make a feature request if there's a model you want to use that isn't in [Immich Huggingface list][huggingface].
 :::
 
-### Does Immich support Facial Recognition for videos ?
+### Does Immich support Facial Recognition for videos?
 
-Immich's machine learning feature operate on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
+Immich's machine learning feature operates on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
 Scanning the entire video for faces may be implemented in the future.
 
 ### Does Immich have animal recognition?
 
 No.
+:::tip
+You can use [Smart Search](/docs/features/smart-search.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
+:::
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
 
@@ -248,13 +251,24 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
-  - You _must_ re-run the Face Detection job for all images after this for facial recognition on new images to work properly.
-- If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for how you can disable machine learning.
+- For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
+- If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
 
 ### Can I limit the amount of CPU and RAM usage?
 
-By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows.
-You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to limit this.
+By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
+
+```yaml
+deploy:
+  resources:
+    limits:
+      # Number of CPU threads
+      cpus: '1.00'
+      # Gigabytes of memory
+      memory: '1G'
+```
+
+For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
 ### How can I boost machine learning speed?
 
@@ -269,13 +283,17 @@ On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Beyond thi
 
 Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
 
-More detail can be found [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
+More details can be found [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
 :::
 
 ### Why is Immich using so much of my CPU?
 
-When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails.
-Once this process completes, the percentage of CPU usage will drop to around 3-5% usage
+When a large number of assets are uploaded to Immich, it makes sense that the CPU and RAM will be heavily used for machine learning work and creating image thumbnails.
+Once this process is completed, the percentage of CPU usage will drop to around 3-5% usage
+
+### My server shows Server Status Offline | Version Unknown what can I do?
+
+You need to enable Websocket on your reverse proxy.
 
 ---
 
@@ -296,11 +314,22 @@ You may need to add mount points or docker volumes for the following internal co
 
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
+For a further hardened system, you can add the following block to every container except for `immich_postgres`.
+
+```yaml
+security_opt:
+  # Prevent escalation of privileges after the container is started
+  - no-new-privileges:true
+cap_drop:
+  # Prevent access to raw network traffic
+  - NET_RAW
+```
+
 ### How can I **purge** data from Immich?
 
 Data for Immich comes in two forms:
 
-1. **Metadata** stored in a postgres database, persisted via the `pg_data` volume
+1. **Metadata** stored in a Postgres database, persisted via the `pg_data` volume
 2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
 
 To remove the **Metadata** you can stop Immich and delete the volume.
@@ -315,7 +344,7 @@ docker compose down -v
 
 :::note Portainer
 If you use portainer, bring down the stack in portainer. Go into the volumes section  
-and remove all the volumes related to immcih then restart the stack.
+and remove all the volumes related to immich then restart the stack.
 :::
 
 After removing the containers and volumes, the **Files** should be removed from the `UPLOAD_LOCATION` to provide a clean start.
@@ -337,3 +366,5 @@ If your version of Immich is below 1.92.0 and the crash occurs after logs about 
 ### Why does Immich log migration errors on startup?
 
 Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
+
+[huggingface]: https://huggingface.co/immich-app

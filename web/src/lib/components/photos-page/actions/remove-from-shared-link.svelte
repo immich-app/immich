@@ -50,7 +50,8 @@
 
 {#if removing}
   <ConfirmDialogue
-    title="Remove Assets?"
+    id="remove-assets-modal"
+    title="Remove assets?"
     prompt="Are you sure you want to remove {getAssets().size} asset(s) from this shared link?"
     confirmText="Remove"
     onConfirm={() => handleRemove()}

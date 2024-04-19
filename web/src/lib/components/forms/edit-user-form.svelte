@@ -1,19 +1,19 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUser, type UserResponseDto } from '@immich/sdk';
-  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { mdiAccountEditOutline } from '@mdi/js';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
+  export let onClose: () => void;
 
   let error: string;
   let success: string;
@@ -90,32 +90,19 @@
   }
 </script>
 
-<div
-  class="relative max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
->
-  <div class="absolute top-0 right-0 px-2 py-2 h-fit">
-    <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
-  </div>
-
-  <div
-    class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-  >
-    <Icon path={mdiAccountEditOutline} size="4em" />
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
-  </div>
-
-  <form on:submit|preventDefault={editUser} autocomplete="off">
-    <div class="m-4 flex flex-col gap-2">
+<FullScreenModal id="edit-user-modal" title="Edit user" icon={mdiAccountEditOutline} {onClose}>
+  <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
+    <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">Email</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
 
-    <div class="m-4 flex flex-col gap-2">
+    <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
-    <div class="m-4 flex flex-col gap-2">
+    <div class="my-4 flex flex-col gap-2">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
         >Quota Size (GiB) {#if quotaSizeWarning}
           <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
@@ -125,7 +112,7 @@
       <p>Note: Enter 0 for unlimited quota</p>
     </div>
 
-    <div class="m-4 flex flex-col gap-2">
+    <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="storage-label">Storage Label</label>
       <input
         class="immich-form-input"
@@ -150,20 +137,21 @@
     {#if success}
       <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
-    <div class="mt-8 flex w-full gap-4 px-4">
-      {#if canResetPassword}
-        <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
-          >Reset password</Button
-        >
-      {/if}
-      <Button type="submit" fullwidth>Confirm</Button>
-    </div>
   </form>
-</div>
+  <svelte:fragment slot="sticky-bottom">
+    {#if canResetPassword}
+      <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
+        >Reset password</Button
+      >
+    {/if}
+    <Button type="submit" fullwidth form="edit-user-form">Confirm</Button>
+  </svelte:fragment>
+</FullScreenModal>
 
 {#if isShowResetPasswordConfirmation}
   <ConfirmDialogue
-    title="Reset Password"
+    id="reset-password-modal"
+    title="Reset password"
     confirmText="Reset"
     onConfirm={resetPassword}
     onClose={() => (isShowResetPasswordConfirmation = false)}

@@ -10,6 +10,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageFormat,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -21,8 +22,8 @@ import {
   VideoCodec,
 } from 'src/entities/system-config.entity';
 import { QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -112,9 +113,11 @@ export const defaults = Object.freeze<SystemConfig>({
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-  thumbnail: {
-    webpSize: 250,
-    jpegSize: 1440,
+  image: {
+    thumbnailFormat: ImageFormat.WEBP,
+    thumbnailSize: 250,
+    previewFormat: ImageFormat.JPEG,
+    previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
   },
@@ -166,16 +169,18 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new ImmichLogger(SystemConfigCore.name);
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
   public config$ = new Subject<SystemConfig>();
 
-  private constructor(private repository: ISystemConfigRepository) {}
+  private constructor(
+    private repository: ISystemConfigRepository,
+    private logger: ILoggerRepository,
+  ) {}
 
-  static create(repository: ISystemConfigRepository) {
+  static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
     if (!instance) {
-      instance = new SystemConfigCore(repository);
+      instance = new SystemConfigCore(repository, logger);
     }
     return instance;
   }

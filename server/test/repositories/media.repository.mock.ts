@@ -1,11 +1,12 @@
 import { IMediaRepository } from 'src/interfaces/media.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newMediaRepositoryMock = (): jest.Mocked<IMediaRepository> => {
+export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {
   return {
-    generateThumbhash: jest.fn(),
-    resize: jest.fn(),
-    crop: jest.fn(),
-    probe: jest.fn(),
-    transcode: jest.fn(),
+    generateThumbhash: vitest.fn(),
+    resize: vitest.fn(),
+    crop: vitest.fn(),
+    probe: vitest.fn(),
+    transcode: vitest.fn(),
   };
 };

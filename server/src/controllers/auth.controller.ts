@@ -1,9 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, IMMICH_IS_AUTHENTICATED } from 'src/constants';
 import {
-  AuthDeviceResponseDto,
   AuthDto,
   ChangePasswordDto,
   LoginCredentialDto,
@@ -15,7 +14,6 @@ import {
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -39,23 +37,6 @@ export class AuthController {
   @Post('admin-sign-up')
   signUpAdmin(@Body() dto: SignUpDto): Promise<UserResponseDto> {
     return this.service.adminSignUp(dto);
-  }
-
-  @Get('devices')
-  getAuthDevices(@Auth() auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
-    return this.service.getDevices(auth);
-  }
-
-  @Delete('devices')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevices(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.logoutDevices(auth);
-  }
-
-  @Delete('devices/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevice(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.logoutDevice(auth, id);
   }
 
   @Post('validateToken')

@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> getMapStyle(MapTheme theme) async
+    //Future<Object> getMapStyle(MapTheme theme, { String key }) async
     test('test getMapStyle', () async {
       // TODO
     });

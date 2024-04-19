@@ -33,18 +33,17 @@ import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 /** @deprecated */
 export class AssetServiceV1 {
-  readonly logger = new ImmichLogger(AssetServiceV1.name);
   private access: AccessCore;
 
   constructor(
@@ -55,8 +54,10 @@ export class AssetServiceV1 {
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.logger.setContext(AssetServiceV1.name);
   }
 
   public async uploadFile(
@@ -247,16 +248,16 @@ export class AssetServiceV1 {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP: {
-        if (asset.webpPath) {
-          return asset.webpPath;
+        if (asset.thumbnailPath) {
+          return asset.thumbnailPath;
         }
         this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
       case GetAssetThumbnailFormatEnum.JPEG: {
-        if (!asset.resizePath) {
+        if (!asset.previewPath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
         }
-        return asset.resizePath;
+        return asset.previewPath;
       }
     }
   }
@@ -268,12 +269,12 @@ export class AssetServiceV1 {
      * Serve file viewer on the web
      */
     if (dto.isWeb && mimeType != 'image/gif') {
-      if (!asset.resizePath) {
+      if (!asset.previewPath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
       }
 
-      return asset.resizePath;
+      return asset.previewPath;
     }
 
     /**
@@ -283,15 +284,15 @@ export class AssetServiceV1 {
       return asset.originalPath;
     }
 
-    if (asset.webpPath && asset.webpPath.length > 0) {
-      return asset.webpPath;
+    if (asset.thumbnailPath && asset.thumbnailPath.length > 0) {
+      return asset.thumbnailPath;
     }
 
-    if (!asset.resizePath) {
-      throw new Error('resizePath not set');
+    if (!asset.previewPath) {
+      throw new Error('previewPath not set');
     }
 
-    return asset.resizePath;
+    return asset.previewPath;
   }
 
   private async getLibraryId(auth: AuthDto, libraryId?: string) {

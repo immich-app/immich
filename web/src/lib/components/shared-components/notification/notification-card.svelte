@@ -12,6 +12,7 @@
   export let notification: Notification;
 
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
+  $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
 
   const backgroundColor: Record<NotificationType, string> = {
     [NotificationType.Info]: '#E0E2F0',
@@ -31,6 +32,12 @@
     [NotificationType.Warning]: '#D08613',
   };
 
+  const buttonStyle: Record<NotificationType, string> = {
+    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
+    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
+    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  };
+
   onMount(() => {
     const timeoutId = setTimeout(discard, notification.timeout);
     return () => clearTimeout(timeoutId);
@@ -41,11 +48,16 @@
   };
 
   const handleClick = () => {
-    const action = notification.action;
-    if (action.type === 'discard') {
+    if (notification.action.type === 'discard') {
       discard();
-    } else if (action.type == 'link') {
-      window.open(action.target);
+    }
+  };
+
+  const handleButtonClick = () => {
+    const button = notification.button;
+    if (button) {
+      discard();
+      return notification.button?.onClick();
     }
   };
 </script>
@@ -55,7 +67,7 @@
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
-  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md hover:cursor-pointer"
+  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
   on:click={handleClick}
   on:keydown={handleClick}
 >
@@ -72,6 +84,22 @@
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
-    {notification.message}
+    {#if notification.html}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      {@html notification.message}
+    {:else}
+      {notification.message}
+    {/if}
   </p>
+
+  {#if notification.button}
+    <p class="pl-[28px] mt-2.5 text-sm">
+      <button
+        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+        on:click={handleButtonClick}
+      >
+        {notification.button.text}
+      </button>
+    </p>
+  {/if}
 </div>

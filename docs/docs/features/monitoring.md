@@ -27,8 +27,8 @@ The metrics in immich are grouped into API (endpoint calls and response times), 
 
 Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_METRICS=true` environmental variable to your `.env` file. Note that only the server and microservices containers currently use this variable.
 
-:::note
-`IMMICH_METRICS` is equivalent to enabling the following three environmental variables: `IMMICH_API_METRICS`, `IMMICH_HOST_METRICS`, and `IMMICH_IO_METRICS`. If you would like to only expose certain kinds of metrics, you can set only those environmental variables to `true`. Explicitly setting the environmental variable for a metric group overrides `IMMICH_METRICS` for that group.
+:::tip
+`IMMICH_METRICS` enables all metrics, but there are also [environmental variables](/docs/install/environment-variables.md#prometheus) to toggle specific metric groups. If you'd like to only expose certain kinds of metrics, you can set only those environmental variables to `true`. Explicitly setting the environmental variable for a metric group overrides `IMMICH_METRICS` for that group. For example, setting `IMMICH_METRICS=true` and `IMMICH_API_METRICS=false` will enable all metrics except API metrics.
 :::
 
 The next step is to configure a new or existing Prometheus instance to scrape this endpoint. The following steps assume that you do not have an existing Prometheus instance, but the steps will be similar either way.

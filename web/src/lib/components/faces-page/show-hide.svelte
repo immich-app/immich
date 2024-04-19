@@ -29,7 +29,7 @@
     class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
-      <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+      <CircleIconButton title="Close" icon={mdiClose} on:click={() => dispatch('close')} />
       <div class="flex gap-2 items-center">
         <p class="ml-2">Show & hide people</p>
         <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>

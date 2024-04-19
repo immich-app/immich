@@ -161,7 +161,7 @@ The christmas trip library will now be scanned in the background. In the meantim
 
 - Click on Create External Library.
 
-:::info Note
+:::note
 If you get an error here, please rename the other external library to something else. This is a bug that will be fixed in a future release.
 :::
 
@@ -175,3 +175,14 @@ If you get an error here, please rename the other external library to something 
 - Click on Scan Library Files
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
+
+### Set Custom Scan Interval
+
+:::note
+Only an admin can do this.
+:::
+
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can set the scanning interval using the preset or cron format. For more information you can refer to [Crontab Guru](https://crontab.guru/).
+
+<img src={require('./img/library-custom-scan-interval.png').default} width="75%" title='Set custom scan interval for external library' />

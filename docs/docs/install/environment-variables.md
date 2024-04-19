@@ -17,10 +17,10 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                            |
-| :---------------- | :-------------------- | :-------: | :-------------------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning, web, proxy |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                               |
+| Variable          | Description           |  Default  | Services                                |
+| :---------------- | :-------------------- | :-------: | :-------------------------------------- |
+| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
+| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
 
 :::tip
 
@@ -30,33 +30,31 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                        | Description                                  |       Default        | Services                                     |
-| :------------------------------ | :------------------------------------------- | :------------------: | :------------------------------------------- |
-| `TZ`                            | Timezone                                     |                      | microservices                                |
-| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning, web |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                        |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                        |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                       |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                                |
+| Variable                        | Description                                  |       Default        | Services                                |
+| :------------------------------ | :------------------------------------------- | :------------------: | :-------------------------------------- |
+| `TZ`                            | Timezone                                     |                      | microservices                           |
+| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning |
+| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices, machine learning |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                   |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                   |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                  |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                           |
 
 :::tip
+`TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 
-`TZ` is only used by the `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
-
-`exiftool` is only present in the microservices container.
-
+`TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
 ## Ports
 
-| Variable                | Description           |  Default  | Services         |
-| :---------------------- | :-------------------- | :-------: | :--------------- |
-| `PORT`                  | Web Port              |  `3000`   | web              |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server           |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices    |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
+| Variable                | Description           |  Default  | Services              |
+| :---------------------- | :-------------------- | :-------: | :-------------------- |
+| `HOST`                  | Host                  | `0.0.0.0` | server, microservices |
+| `SERVER_PORT`           | Server Port           |  `3001`   | server                |
+| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices         |
+| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning      |
+| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning      |
 
 ## Database
 
@@ -74,7 +72,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 :::info
 
-When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
+When `DB_URL` is defined, the other database (`DB_*`) variables are ignored, with the exception of `DB_VECTOR_EXTENSION`.
 
 :::
 
@@ -93,7 +91,7 @@ When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
 :::info
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
-More info can be found in the upstream [ioredis](https://ioredis.readthedocs.io/en/latest/API/) documentation.
+More info can be found in the upstream [ioredis][redis-api] documentation.
 
 - When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
 - When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
@@ -147,23 +145,42 @@ Other machine learning parameters can be tuned from the admin UI.
 
 :::
 
+## Prometheus
+
+| Variable                       | Description                                                                                   | Default | Services              |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
+
+\*1: Overridden for a metric group when its corresponding environmental variable is set.
+
 ## Docker Secrets
 
-The following variables support the use of [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) for additional security.
+The following variables support the use of [Docker secrets][docker-secrets] for additional security.
 
 To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
 the `_FILE` variable should be set to the path of a file containing the variable value.
 
-|  Regular Variable  | Equivalent Docker Secrets '\_FILE' Variable |
-| :----------------: | :-----------------------------------------: |
-|   `DB_HOSTNAME`    |      `DB_HOSTNAME_FILE`<sup>\*1</sup>       |
-| `DB_DATABASE_NAME` |    `DB_DATABASE_NAME_FILE`<sup>\*1</sup>    |
-|   `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
-|   `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
-|  `REDIS_PASSWORD`  |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
+| Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
+| :----------------- | :------------------------------------------ |
+| `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
+| `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
+| `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
+| `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
+| `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
+| `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
 
-\*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
+\*1: See the [official documentation][docker-secrets-docs] for
 details on how to use Docker Secrets in the Postgres image.
 
-\*2: See [this comment](https://github.com/docker-library/redis/issues/46#issuecomment-335326234) for an example of how
+\*2: See [this comment][docker-secrets-example] for an example of how
 to use use a Docker secret for the password in the Redis container.
+
+[tz-list]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+[docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234
+[docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
+[docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
+[redis-api]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository

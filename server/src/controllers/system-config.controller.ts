@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { MapThemeDto, SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
-import { AdminRoute, Authenticated } from 'src/middleware/auth.guard';
+import { AdminRoute, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { SystemConfigService } from 'src/services/system-config.service';
 
 @ApiTags('System Config')
 @Controller('system-config')
 @Authenticated({ admin: true })
 export class SystemConfigController {
-  constructor(private readonly service: SystemConfigService) {}
+  constructor(private service: SystemConfigService) {}
 
   @Get()
   getConfig(): Promise<SystemConfigDto> {
@@ -31,6 +31,7 @@ export class SystemConfigController {
   }
 
   @AdminRoute(false)
+  @SharedLinkRoute()
   @Get('map/style.json')
   getMapStyle(@Query() dto: MapThemeDto) {
     return this.service.getMapStyle(dto.theme);
