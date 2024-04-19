@@ -10,11 +10,14 @@ Album sharing allows you to share assets with other users or with people from ar
 When sharing shared albums, whats shared is:
 
 - The selected assets.
-- Metadata of the assets(Can be removed by sharing via link).
+- Metadata of the assets (Can be removed by sharing via link).
 
 ## Shared Album Features
 
 - Download all assets as zip file (Web only).
+  :::info Archive size limited.
+  If the size of the album exceeds 4GB, the archive files will be divided into 4GB each.
+  :::
 - Add a description to the album (Web only).
 - Slideshow view (Web only).
 - Add or remove photos to an album.
