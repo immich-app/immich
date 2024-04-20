@@ -372,8 +372,10 @@ export class AssetService {
       return JobStatus.FAILED;
     }
 
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
+    // Ignore requests that are not from external library job but is for an external read-only asset
+    const isReadOnlyLibrary = !asset.library || asset.library.isReadOnly ||
+      (asset.library.isReadOnly === null && asset.library.type === LibraryType.EXTERNAL);
+    if (!fromExternal && isReadOnlyLibrary) {
       return JobStatus.SKIPPED;
     }
 
@@ -406,7 +408,7 @@ export class AssetService {
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
+    if (!isReadOnlyLibrary) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 

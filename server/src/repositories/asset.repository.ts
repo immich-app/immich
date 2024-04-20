@@ -254,7 +254,7 @@ export class AssetRepository implements IAssetRepository {
 
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids), isExternal: false });
+    await this.repository.softDelete({ id: In(ids) });
   }
 
   @Chunked()

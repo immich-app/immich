@@ -243,6 +243,19 @@
     updateLibraryIndex = selectedLibraryIndex;
   };
 
+  const onToggleReadOnlyClicked = async () => {
+    const library = libraries[selectedLibraryIndex];
+    const prevValue = library.isReadOnly == null ? (library.type === LibraryType.External) : library.isReadOnly;
+
+    try {
+      await updateLibrary({ id: library.id, updateLibraryDto: { ...library, isReadOnly: !prevValue } });
+      closeAll();
+      await readLibraryList();
+    } catch (error) {
+      handleError(error, 'Unable to update library');
+    }
+  };
+
   const onEditImportPathClicked = () => {
     closeAll();
     editImportPaths = selectedLibraryIndex;
@@ -397,6 +410,12 @@
                     <Portal target="body">
                       <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+                        <MenuOption
+                          on:click={() => onToggleReadOnlyClicked()}
+                          text={(selectedLibrary?.isReadOnly ||
+                            (selectedLibrary?.isReadOnly == null && selectedLibrary?.type === LibraryType.External))
+                            ? 'Allow file deletion' : 'Disallow file deletion'}
+                        />
 
                         {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
                           <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />

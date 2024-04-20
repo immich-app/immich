@@ -193,7 +193,7 @@
     {/if}
 
     {#if isOwner}
-      {#if !asset.isReadOnly || !asset.isExternal}
+      {#if !asset.isReadOnly || !asset.isExternal || (true /* XXX */)}
         <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       {/if}
       <div
