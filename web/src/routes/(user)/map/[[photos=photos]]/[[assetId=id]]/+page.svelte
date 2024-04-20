@@ -108,11 +108,11 @@
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
-  <UserPageLayout title={data.meta.title}>
-    <div class="h-full w-full">
+  <UserPageLayout title={data.meta.title} noMargin>
+    <div class="h-full w-full md:p-2">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
-    </div></UserPageLayout
-  >
+    </div>
+  </UserPageLayout>
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
