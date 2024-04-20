@@ -566,7 +566,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
   }
 
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
