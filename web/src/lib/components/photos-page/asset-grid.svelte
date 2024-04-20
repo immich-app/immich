@@ -181,7 +181,8 @@
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE: {
+      case AssetAction.UNFAVORITE: 
+      case AssetAction.RESTORE:  {
         assetStore.updateAssets([asset]);
         break;
       }

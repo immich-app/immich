@@ -1,13 +1,14 @@
-export enum AssetAction {
-  ARCHIVE = 'archive',
-  UNARCHIVE = 'unarchive',
-  FAVORITE = 'favorite',
-  UNFAVORITE = 'unfavorite',
-  TRASH = 'trash',
-  DELETE = 'delete',
-  // RESTORE = 'restore',
-  ADD = 'add',
-}
+  export enum AssetAction {
+    ARCHIVE = 'archive',
+    UNARCHIVE = 'unarchive',
+    FAVORITE = 'favorite',
+    UNFAVORITE = 'unfavorite',
+    TRASH = 'trash',
+    DELETE = 'delete',
+    RESTORE = 'restore',
+    ADD = 'add',
+    
+  }
 
 export enum AppRoute {
   ADMIN_USER_MANAGEMENT = '/admin/user-management',
