@@ -112,10 +112,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
 *AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
-*AuditApi* | [**fixAuditFiles**](doc//AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
-*AuditApi* | [**getAuditFiles**](doc//AuditApi.md#getauditfiles) | **GET** /audit/file-report | 
-*AuditApi* | [**getFileChecksums**](doc//AuditApi.md#getfilechecksums) | **POST** /audit/file-report/checksum | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
@@ -126,6 +123,9 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
 *FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
+*FileReportApi* | [**fixAuditFiles**](doc//FileReportApi.md#fixauditfiles) | **POST** /report/fix | 
+*FileReportApi* | [**getAuditFiles**](doc//FileReportApi.md#getauditfiles) | **GET** /report | 
+*FileReportApi* | [**getFileChecksums**](doc//FileReportApi.md#getfilechecksums) | **POST** /report/checksum | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 

@@ -69,6 +69,7 @@ doc/FaceApi.md
 doc/FaceDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
+doc/FileReportApi.md
 doc/FileReportDto.md
 doc/FileReportFixDto.md
 doc/FileReportItemDto.md
@@ -212,6 +213,7 @@ lib/api/audit_api.dart
 lib/api/authentication_api.dart
 lib/api/download_api.dart
 lib/api/face_api.dart
+lib/api/file_report_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
 lib/api/memory_api.dart
@@ -478,6 +480,7 @@ test/face_api_test.dart
 test/face_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
+test/file_report_api_test.dart
 test/file_report_dto_test.dart
 test/file_report_fix_dto_test.dart
 test/file_report_item_dto_test.dart
