@@ -140,6 +140,9 @@ UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 // reassign assets
 UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
  AND CHECKSUM NOT IN (SELECT CHECKSUM FROM assets WHERE "ownerId" = '<destinationId>');
+
+// (optionally) reassign external libraries
+UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 ```
 
 4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
