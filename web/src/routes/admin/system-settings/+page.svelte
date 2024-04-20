@@ -62,22 +62,18 @@
     const fileSelector = document.createElement('input');
     fileSelector.type = 'file';
     fileSelector.accept = '.json';
-    fileSelector.onchange = async (e) => {
+    fileSelector.addEventListener('change', (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) {
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const newConfig = JSON.parse(reader.result as string);
-          config = newConfig;
-        } catch (e) {
-          console.log('Error parsing JSON config file', e);
-        }
+      const reader = async () => {
+        const text = await file.text();
+        const newConfig = JSON.parse(text);
+        config = newConfig;
       };
-      reader.readAsText(file);
-    };
+      reader().catch((error) => console.error('Error handling JSON config upload', error));
+    });
     fileSelector.click();
   };
 
