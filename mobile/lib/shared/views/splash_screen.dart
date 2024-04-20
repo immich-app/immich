@@ -25,7 +25,6 @@ class SplashScreenPage extends HookConsumerWidget {
     void performLoggingIn() async {
       bool isSuccess = false;
       bool deviceIsOffline = false;
-
       if (accessToken != null && serverUrl != null) {
         try {
           // Resolve API server endpoint from user provided serverUrl
@@ -51,11 +50,15 @@ class SplashScreenPage extends HookConsumerWidget {
                 offlineLogin: deviceIsOffline,
               );
         } catch (error, stackTrace) {
+          ref.read(authenticationProvider.notifier).logout();
+
           log.severe(
             'Cannot set success login info',
             error,
             stackTrace,
           );
+
+          context.pushRoute(const LoginRoute());
         }
       }
 
@@ -73,11 +76,6 @@ class SplashScreenPage extends HookConsumerWidget {
         }
         context.replaceRoute(const TabControllerRoute());
       } else {
-        log.severe(
-          'Unable to login through offline or online methods - logging out completely',
-        );
-
-        ref.read(authenticationProvider.notifier).logout();
         // User was unable to login through either offline or online methods
         context.replaceRoute(const LoginRoute());
       }
