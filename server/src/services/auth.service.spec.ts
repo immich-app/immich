@@ -143,6 +143,20 @@ describe('AuthService', () => {
       await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual(loginResponseStub.user1password);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
+
+    it('should generate the cookie headers (insecure)', async () => {
+      userMock.getByEmail.mockResolvedValue(userStub.user1);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
+      await expect(
+        sut.login(fixtures.login, {
+          clientIp: '127.0.0.1',
+          isSecure: false,
+          deviceOS: '',
+          deviceType: '',
+        }),
+      ).resolves.toEqual(loginResponseStub.user1insecure);
+      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('changePassword', () => {
