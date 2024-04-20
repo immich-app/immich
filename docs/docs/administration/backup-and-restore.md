@@ -71,6 +71,7 @@ services:
       POSTGRES_CLUSTER: 'TRUE'
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
       SCHEDULE: "@daily"
       POSTGRES_EXTRA_OPTS: '--clean --if-exists'
       BACKUP_DIR: /db_dumps
