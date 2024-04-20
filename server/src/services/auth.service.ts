@@ -381,7 +381,7 @@ export class AuthService {
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1) {
-        session = await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
+        session = await this.sessionRepository.update({ ...session, updatedAt: new Date() });
       }
 
       return { user: session.user, session: session };
