@@ -1,16 +1,16 @@
 import { authenticate } from '$lib/utils/auth';
-import { getApiKeys, getSessions } from '@immich/sdk';
+import { getApiKeys, getAuthDevices } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
 
   const keys = await getApiKeys();
-  const sessions = await getSessions();
+  const devices = await getAuthDevices();
 
   return {
     keys,
-    sessions,
+    devices,
     meta: {
       title: 'Settings',
     },

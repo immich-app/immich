@@ -140,7 +140,7 @@ export const utils = {
         'asset_faces',
         'activity',
         'api_keys',
-        'sessions',
+        'user_token',
         'users',
         'system_metadata',
         'system_config',

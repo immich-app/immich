@@ -1,8 +1,8 @@
-import { SessionEntity } from 'src/entities/session.entity';
+import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { userStub } from 'test/fixtures/user.stub';
 
-export const sessionStub = {
-  valid: Object.freeze<SessionEntity>({
+export const userTokenStub = {
+  userToken: Object.freeze<UserTokenEntity>({
     id: 'token-id',
     token: 'auth_token',
     userId: userStub.user1.id,
@@ -12,7 +12,7 @@ export const sessionStub = {
     deviceType: '',
     deviceOS: '',
   }),
-  inactive: Object.freeze<SessionEntity>({
+  inactiveToken: Object.freeze<UserTokenEntity>({
     id: 'not_active',
     token: 'auth_token',
     userId: userStub.user1.id,

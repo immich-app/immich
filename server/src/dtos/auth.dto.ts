@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
-import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
 export class AuthDto {
@@ -11,7 +11,7 @@ export class AuthDto {
 
   apiKey?: APIKeyEntity;
   sharedLink?: SharedLinkEntity;
-  session?: SessionEntity;
+  userToken?: UserTokenEntity;
 }
 
 export class LoginCredentialDto {
@@ -77,6 +77,24 @@ export class ChangePasswordDto {
 export class ValidateAccessTokenResponseDto {
   authStatus!: boolean;
 }
+
+export class AuthDeviceResponseDto {
+  id!: string;
+  createdAt!: string;
+  updatedAt!: string;
+  current!: boolean;
+  deviceType!: string;
+  deviceOS!: string;
+}
+
+export const mapUserToken = (entity: UserTokenEntity, currentId?: string): AuthDeviceResponseDto => ({
+  id: entity.id,
+  createdAt: entity.createdAt.toISOString(),
+  updatedAt: entity.updatedAt.toISOString(),
+  current: currentId === entity.id,
+  deviceOS: entity.deviceOS,
+  deviceType: entity.deviceType,
+});
 
 export class OAuthCallbackDto {
   @IsNotEmpty()

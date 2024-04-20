@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import type { SessionResponseDto } from '@immich/sdk';
+  import type { AuthDeviceResponseDto } from '@immich/sdk';
   import {
     mdiAndroid,
     mdiApple,
@@ -15,7 +15,7 @@
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
 
-  export let device: SessionResponseDto;
+  export let device: AuthDeviceResponseDto;
 
   const dispatcher = createEventDispatcher<{
     delete: void;
