@@ -439,7 +439,7 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0 && (!searchName || (searchName && searchedPeopleLocal.length > 0))}
+  {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#if searchName}
         {#each searchedPeopleLocal as person, index (person.id)}
