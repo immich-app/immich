@@ -39,7 +39,7 @@
     try {
       await emptyTrash();
 
-      const deletedAssetIds = assetStore.assets.map(a => a.id);
+      const deletedAssetIds = assetStore.assets.map((a) => a.id);
       const numberOfAssets = deletedAssetIds.length;
       assetStore.removeAssets(deletedAssetIds);
 
@@ -56,7 +56,7 @@
     try {
       await restoreTrash();
 
-      const restoredAssetIds = assetStore.assets.map(a => a.id);
+      const restoredAssetIds = assetStore.assets.map((a) => a.id);
       const numberOfAssets = restoredAssetIds.length;
       assetStore.removeAssets(restoredAssetIds);
 
