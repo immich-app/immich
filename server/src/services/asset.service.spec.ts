@@ -691,6 +691,39 @@ describe(AssetService.name, () => {
       expect(assetMock.remove).not.toHaveBeenCalled();
     });
 
+    it('should process assets from external non-read-only library without fromExternal flag', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.externalDeletable.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: { assets: true },
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.externalDeletable);
+
+      await sut.handleAssetDeletion({ id: assetStub.externalDeletable.id });
+
+      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.externalDeletable);
+      expect(jobMock.queue.mock.calls).toEqual([
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [
+                assetStub.externalDeletable.thumbnailPath,
+                assetStub.externalDeletable.previewPath,
+                assetStub.externalDeletable.encodedVideoPath,
+                assetStub.externalDeletable.sidecarPath,
+                assetStub.externalDeletable.originalPath,
+              ],
+            },
+          },
+        ],
+      ]);
+    });
+
     it('should process assets from external library with fromExternal flag', async () => {
       assetMock.getById.mockResolvedValue(assetStub.external);
 
