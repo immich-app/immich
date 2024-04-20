@@ -26,7 +26,7 @@
   on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
   on:contextmenu|preventDefault={(e) => showContextMenu({ x: e.x, y: e.y })}
 >
-  <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">
+  <td class="text-md text-ellipsis text-left w-full sm:w-6/12 md:w-[42%] xl:w-[30%] 2xl:w-[40%] items-center">
     {album.albumName}
     {#if album.shared}
       <Icon
@@ -37,14 +37,14 @@
       />
     {/if}
   </td>
-  <td class="text-md text-ellipsis text-center sm:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]">
+  <td class="text-md hidden text-ellipsis text-center md:block md:w-[18%] xl:w-[15%] 2xl:w-[12%]">
     {album.assetCount}
     {album.assetCount > 1 ? `items` : `item`}
   </td>
-  <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]">
+  <td class="text-md hidden text-ellipsis text-center sm:block sm:w-3/12 md:w-[20%] xl:w-[15%] 2xl:w-[12%]">
     {dateLocaleString(album.updatedAt)}
   </td>
-  <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]">
+  <td class="text-md hidden text-ellipsis text-center sm:block sm:w-3/12 md:w-[20%] xl:w-[15%] 2xl:w-[12%]">
     {dateLocaleString(album.createdAt)}
   </td>
   <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]">
