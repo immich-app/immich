@@ -27,6 +27,7 @@
     getActivityStatistics,
     getAllAlbums,
     runAssetJobs,
+    restoreAssets,
     updateAsset,
     updateAlbumInfo,
     type ActivityResponseDto,
@@ -403,6 +404,22 @@
     await handleGetAllAlbums();
   };
 
+  const handleRestoreAsset = async () => {
+    try {
+      await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+      asset.isTrashed = false;
+
+      dispatch('action', { type: AssetAction.RESTORE, asset });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Restored asset`,
+      });
+    } catch (error) {
+      handleError(error, 'Error restoring asset');
+    }
+  };
+
   const toggleArchive = async () => {
     try {
       const data = await updateAsset({
@@ -556,6 +573,7 @@
           on:delete={() => trashOrDelete()}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
+          on:restoreAsset={() => handleRestoreAsset()}
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
