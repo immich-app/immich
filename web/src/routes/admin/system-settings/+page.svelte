@@ -60,23 +60,18 @@
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
-  const uploadConfig = () => {
-    const fileSelector = document.createElement('input');
-    fileSelector.type = 'file';
-    fileSelector.accept = '.json';
-    fileSelector.addEventListener('change', (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) {
-        return;
-      }
-      const reader = async () => {
-        const text = await file.text();
-        const newConfig = JSON.parse(text);
-        await handleSave(newConfig);
-      };
-      reader().catch((error) => console.error('Error handling JSON config upload', error));
-    });
-    fileSelector.click();
+  let inputElement: HTMLInputElement;
+  const uploadConfig = (e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = async () => {
+      const text = await file.text();
+      const newConfig = JSON.parse(text);
+      await handleSave(newConfig);
+    };
+    reader().catch((error) => console.error('Error handling JSON config upload', error));
   };
 
   const settings: Array<{
@@ -178,6 +173,8 @@
   ];
 </script>
 
+<input bind:this={inputElement} type="file" accept=".json" style="display: none" on:change={uploadConfig} />
+
 <div class="h-svh flex flex-col overflow-hidden">
   {#if $featureFlags.configFile}
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
@@ -202,7 +199,7 @@
           Export as JSON
         </div>
       </LinkButton>
-      <LinkButton on:click={() => uploadConfig()}>
+      <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
           Import from JSON
