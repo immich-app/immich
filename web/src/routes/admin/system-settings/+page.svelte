@@ -23,7 +23,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
+  import { mdiAlert, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
   import type { PageData } from './$types';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import { QueryParameter } from '$lib/constants';
@@ -56,6 +56,29 @@
     downloadManager.update(downloadKey, blob.size);
     downloadBlob(blob, downloadKey);
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
+  };
+
+  const uploadConfig = () => {
+    const fileSelector = document.createElement('input');
+    fileSelector.type = 'file';
+    fileSelector.accept = '.json';
+    fileSelector.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const newConfig = JSON.parse(reader.result as string);
+          config = newConfig;
+        } catch (e) {
+          console.log('Error parsing JSON config file', e);
+        }
+      };
+      reader.readAsText(file);
+    };
+    fileSelector.click();
   };
 
   const settings: Array<{
@@ -179,6 +202,12 @@
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
           Export as JSON
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => uploadConfig()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiUpload} size="18" />
+          Import from JSON
         </div>
       </LinkButton>
     </div>
