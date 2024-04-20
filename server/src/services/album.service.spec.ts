@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IJobRepository } from 'src/interfaces/job.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AlbumService } from 'src/services/album.service';
 import { albumStub } from 'test/fixtures/album.stub';
@@ -12,6 +13,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(AlbumService.name, () => {
@@ -20,14 +22,16 @@ describe(AlbumService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
   let userMock: Mocked<IUserRepository>;
+  let jobMock: Mocked<IJobRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     userMock = newUserRepositoryMock();
+    jobMock = newJobRepositoryMock();
 
-    sut = new AlbumService(accessMock, albumMock, assetMock, userMock);
+    sut = new AlbumService(accessMock, albumMock, assetMock, userMock, jobMock);
   });
 
   it('should work', () => {
@@ -466,7 +470,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.admin, albumStub.oneAsset.id, {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: true, withPeople: true });
       expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([albumStub.oneAsset.id]),
@@ -487,7 +491,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.adminSharedLink, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true, withPeople: true });
       expect(accessMock.album.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
         new Set(['album-123']),
@@ -508,7 +512,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.user1, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true, withPeople: true });
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.user1.user.id,
         new Set(['album-123']),

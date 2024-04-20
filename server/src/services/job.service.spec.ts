@@ -119,6 +119,7 @@ describe(JobService.name, () => {
         [QueueName.FACIAL_RECOGNITION]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
         [QueueName.LIBRARY]: expectedJobStatus,
+        [QueueName.MATCH_PEOPLE_ALBUM]: expectedJobStatus,
       });
     });
   });
@@ -251,6 +252,7 @@ describe(JobService.name, () => {
           [QueueName.MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
+          [QueueName.MATCH_PEOPLE_ALBUM]: { concurrency: 10 }
         },
       } as SystemConfig);
 
@@ -263,6 +265,7 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MATCH_PEOPLE_ALBUM, 10);
     });
 
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
@@ -305,6 +308,7 @@ describe(JobService.name, () => {
           JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
+          JobName.MATCH_PEOPLE_ALBUM,
           JobName.VIDEO_CONVERSION,
         ],
       },
@@ -315,6 +319,7 @@ describe(JobService.name, () => {
           JobName.GENERATE_THUMBHASH,
           JobName.SMART_SEARCH,
           JobName.FACE_DETECTION,
+          JobName.MATCH_PEOPLE_ALBUM,
           JobName.VIDEO_CONVERSION,
         ],
       },
