@@ -436,7 +436,7 @@ export class AV1Config extends BaseConfig {
 
 export class NVENCConfig extends BaseHWConfig {
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseInputOptions() {
