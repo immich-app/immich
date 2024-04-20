@@ -472,7 +472,8 @@
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium">
-          No people {#if searchName}
+          No people
+          {#if searchName}
             with name "{searchName}"
           {/if}
         </p>
