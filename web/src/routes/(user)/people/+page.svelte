@@ -89,7 +89,7 @@
 
   const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    await goto($page.url);
+    await goto($page.url, { keepFocus: true });
     await handleSearchPeople(force);
   };
 
