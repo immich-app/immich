@@ -169,6 +169,7 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
+      case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();
@@ -181,8 +182,7 @@
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
-      case AssetAction.RESTORE: {
+      case AssetAction.UNFAVORITE: {
         assetStore.updateAssets([asset]);
         break;
       }

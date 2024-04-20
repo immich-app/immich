@@ -413,7 +413,7 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Restored Asset. Refresh the page to see the changes`,
+        message: `Restored asset`,
       });
     } catch (error) {
       handleError(error, 'Error restoring asset');
