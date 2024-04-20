@@ -37,7 +37,7 @@
         size="24"
         class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
       />
-      <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
+      <span class="font-bold text-2xl text-black dark:text-white">{group.name}</span>
       <span class="ml-1.5 dark:text-immich-dark-fg">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
     </p>
     <hr class="dark:border-immich-dark-gray" />
@@ -46,7 +46,7 @@
 
 <div class="mt-4">
   {#if !isCollapsed}
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-y-4" transition:slide={{ duration: 300 }}>
+    <div class="grid album-grid" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
           data-sveltekit-preload-data="hover"
@@ -67,3 +67,21 @@
     </div>
   {/if}
 </div>
+
+<style lang="postcss">
+  .album-grid {
+    @apply gap-y-1 grid-cols-[repeat(auto-fill,minmax(9rem,1fr))];
+  }
+
+  @screen sm {
+    .album-grid {
+      @apply gap-y-2 grid-cols-[repeat(auto-fill,minmax(11rem,1fr))];
+    }
+  }
+
+  @screen lg {
+    .album-grid {
+      @apply gap-y-4 grid-cols-[repeat(auto-fill,minmax(14rem,1fr))];
+    }
+  }
+</style>

@@ -24,7 +24,7 @@
 </script>
 
 <div
-  class="group relative rounded-2xl border border-transparent p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
+  class="group relative rounded-2xl border border-transparent p-3 sm:p-4 lg:p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
   {#if onShowContextMenu}
@@ -43,7 +43,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
+      class="w-full leading-5 max-sm:mb-0.5 sm:leading-6 sm:text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
       data-testid="album-name"
       title={album.albumName}
     >
@@ -51,12 +51,12 @@
     </p>
 
     {#if showDateRange && album.startDate && album.endDate}
-      <p class="flex text-sm dark:text-immich-dark-fg capitalize">
+      <p class="flex text-xs sm:text-sm dark:text-immich-dark-fg capitalize">
         {getShortDateRange(album.startDate, album.endDate)}
       </p>
     {/if}
 
-    <span class="flex gap-2 text-sm" data-testid="album-details">
+    <span class="flex gap-2 text-xs sm:text-sm" data-testid="album-details">
       {#if showItemCount}
         <p>
           {album.assetCount.toLocaleString($locale)}
