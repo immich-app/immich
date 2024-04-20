@@ -27,10 +27,12 @@
   import type { PageData } from './$types';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import { QueryParameter } from '$lib/constants';
+  import type { SystemConfigDto } from '@immich/sdk';
 
   export let data: PageData;
 
   let config = data.configs;
+  let handleSave: (update: Partial<SystemConfigDto>) => Promise<void>;
 
   type Settings =
     | typeof JobSettings
@@ -70,7 +72,7 @@
       const reader = async () => {
         const text = await file.text();
         const newConfig = JSON.parse(text);
-        config = newConfig;
+        await handleSave(newConfig);
       };
       reader().catch((error) => console.error('Error handling JSON config upload', error));
     });
@@ -208,7 +210,7 @@
       </LinkButton>
     </div>
 
-    <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
+    <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
           <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
