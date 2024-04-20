@@ -198,6 +198,8 @@ class ApiClient {
           return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
+        case 'AdminOnboardingUpdateDto':
+          return AdminOnboardingUpdateDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
@@ -392,6 +394,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
+        case 'ReverseGeocodingStateResponseDto':
+          return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'ScanLibraryDto':
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':

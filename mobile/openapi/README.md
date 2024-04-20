@@ -179,7 +179,6 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*ServerInfoApi* | [**setAdminOnboarding**](doc//ServerInfoApi.md#setadminonboarding) | **POST** /server-info/admin-onboarding | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
@@ -198,6 +197,9 @@ Class | Method | HTTP request | Description
 *SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
+*SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 
+*SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | 
+*SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | 
 *TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
 *TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
 *TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
@@ -233,6 +235,7 @@ Class | Method | HTTP request | Description
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
+ - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
@@ -330,6 +333,7 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [RecognitionConfig](doc//RecognitionConfig.md)
+ - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
