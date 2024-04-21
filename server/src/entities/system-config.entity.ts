@@ -114,6 +114,7 @@ export const SystemConfigKey = {
   IMAGE_PREVIEW_SIZE: 'image.previewSize',
   IMAGE_QUALITY: 'image.quality',
   IMAGE_COLORSPACE: 'image.colorspace',
+  IMAGE_EXTRACT_EMBEDDED: 'image.extractEmbedded',
 
   TRASH_ENABLED: 'trash.enabled',
   TRASH_DAYS: 'trash.days',
@@ -153,6 +154,7 @@ export enum VideoCodec {
   H264 = 'h264',
   HEVC = 'hevc',
   VP9 = 'vp9',
+  AV1 = 'av1',
 }
 
 export enum AudioCodec {
@@ -283,6 +285,7 @@ export interface SystemConfig {
     previewSize: number;
     quality: number;
     colorspace: Colorspace;
+    extractEmbedded: boolean;
   };
   newVersionCheck: {
     enabled: boolean;

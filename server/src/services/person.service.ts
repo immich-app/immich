@@ -38,6 +38,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { CropOptions, IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -46,7 +47,6 @@ import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
@@ -56,7 +56,6 @@ export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  readonly logger = new ImmichLogger(PersonService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -70,16 +69,19 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(PersonService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       repository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -290,7 +292,12 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
+        ? this.assetRepository.getAll(pagination, {
+            orderDirection: 'DESC',
+            withFaces: true,
+            withArchived: true,
+            isVisible: true,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -318,6 +325,10 @@ export class PersonService {
     const [asset] = await this.assetRepository.getByIds([id], relations);
     if (!asset || !asset.previewPath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
     }
 
     const faces = await this.machineLearningRepository.detectFaces(
@@ -422,7 +433,7 @@ export class PersonService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });

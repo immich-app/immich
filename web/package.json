@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.101.0",
+  "version": "1.102.3",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -25,7 +25,7 @@
     "@faker-js/faker": "^8.4.1",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
-    "@sveltejs/enhanced-img": "^0.1.8",
+    "@sveltejs/enhanced-img": "^0.2.0",
     "@sveltejs/kit": "^2.5.2",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.4.2",
@@ -41,7 +41,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.35.1",
-    "eslint-plugin-unicorn": "^51.0.1",
+    "eslint-plugin-unicorn": "^52.0.0",
     "factory.ts": "^1.4.1",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",

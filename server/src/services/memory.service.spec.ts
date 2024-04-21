@@ -7,10 +7,11 @@ import { memoryStub } from 'test/fixtures/memory.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newMemoryRepositoryMock } from 'test/repositories/memory.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MemoryService.name, () => {
   let accessMock: IAccessRepositoryMock;
-  let memoryMock: jest.Mocked<IMemoryRepository>;
+  let memoryMock: Mocked<IMemoryRepository>;
   let sut: MemoryService;
 
   beforeEach(() => {

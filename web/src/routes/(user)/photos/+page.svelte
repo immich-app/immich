@@ -30,7 +30,14 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
+  let isAllFavorite: boolean;
+  let isAssetStackSelected: boolean;
+
+  $: {
+    const selection = [...$selectedAssets];
+    isAllFavorite = selection.every((asset) => asset.isFavorite);
+    isAssetStackSelected = selection.length === 1 && !!selection[0].stack;
+  }
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -62,8 +69,12 @@
     <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
-      {#if $selectedAssets.size > 1}
-        <StackAction onStack={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $selectedAssets.size > 1 || isAssetStackSelected}
+        <StackAction
+          unstack={isAssetStackSelected}
+          onStack={(assetIds) => assetStore.removeAssets(assetIds)}
+          onUnstack={(assets) => assetStore.addAssets(assets)}
+        />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />

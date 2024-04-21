@@ -276,7 +276,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         private const val NOTIFICATION_CHANNEL_ERROR_ID = "immich/backgroundServiceError"
         private const val NOTIFICATION_DEFAULT_TITLE = "Immich"
         private const val NOTIFICATION_ID = 1
-        private const val NOTIFICATION_ERROR_ID = 2 
+        private const val NOTIFICATION_ERROR_ID = 2
         private const val NOTIFICATION_DETAIL_ID = 3
         private const val ONE_MINUTE = 60000L
 
@@ -304,7 +304,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 val workInfoList = workInfoFuture.get(1000, TimeUnit.MILLISECONDS)
                 if (workInfoList != null) {
                     for (workInfo in workInfoList) {
-                        if (workInfo.getState() == WorkInfo.State.ENQUEUED) {
+                        if (workInfo.state == WorkInfo.State.ENQUEUED) {
                             val workRequest = buildWorkRequest(requireWifi, requireCharging)
                             wm.enqueueUniqueWork(TASK_NAME_BACKUP, ExistingWorkPolicy.REPLACE, workRequest)
                             Log.d(TAG, "updateBackupWorker updated BackupWorker constraints")
@@ -346,7 +346,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
                 .setRequiresBatteryNotLow(true)
                 .setRequiresCharging(requireCharging)
                 .build();
-            
+
             val work = OneTimeWorkRequest.Builder(BackupWorker::class.java)
                 .setConstraints(constraints)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, ONE_MINUTE, TimeUnit.MILLISECONDS)

@@ -2,15 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import path from 'node:path';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import {
   AssetBuilderOptions,
   AssetCreate,
+  AssetDeltaSyncOptions,
   AssetExploreFieldOptions,
+  AssetFullSyncOptions,
   AssetPathEntity,
   AssetStats,
   AssetStatsOptions,
@@ -39,6 +42,7 @@ import {
   FindOptionsWhere,
   In,
   IsNull,
+  MoreThan,
   Not,
   Repository,
 } from 'typeorm';
@@ -61,6 +65,8 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
+    @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
+    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -160,10 +166,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
-  getLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
+  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
       select: { id: true, originalPath: true, isOffline: true },
-      where: { library: { id: libraryId } },
+      where: { library: { id: libraryId }, isExternal: true },
     });
   }
 
@@ -265,8 +271,8 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { ownerId: userId, checksum } });
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({ where: { libraryId, checksum } });
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
@@ -780,5 +786,56 @@ export class AssetRepository implements IAssetRepository {
           ...assetInfo,
         }) as AssetEntity,
     );
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        lastCreationDate: DummyValue.DATE,
+        lastId: DummyValue.STRING,
+        updatedUntil: DummyValue.DATE,
+        limit: 10,
+      },
+    ],
+  })
+  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
+    const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
+    let builder = this.repository
+      .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack')
+      .where('asset.ownerId = :ownerId', { ownerId });
+    if (lastCreationDate !== undefined && lastId !== undefined) {
+      builder = builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
+        lastCreationDate,
+        lastId,
+      });
+    }
+    return builder
+      .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
+      .andWhere('asset.isVisible = true')
+      .orderBy('asset.fileCreatedAt', 'DESC')
+      .addOrderBy('asset.id', 'DESC')
+      .limit(limit)
+      .withDeleted()
+      .getMany();
+  }
+
+  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
+  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: {
+        ownerId: In(options.userIds),
+        isVisible: true,
+        updatedAt: MoreThan(options.updatedAfter),
+      },
+      relations: {
+        exifInfo: true,
+        stack: true,
+      },
+      take: options.limit,
+      withDeleted: true,
+    });
   }
 }

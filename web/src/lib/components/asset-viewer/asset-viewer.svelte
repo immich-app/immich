@@ -12,7 +12,7 @@
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
-  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/utils/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -27,8 +27,8 @@
     getActivityStatistics,
     getAllAlbums,
     runAssetJobs,
+    restoreAssets,
     updateAsset,
-    updateAssets,
     updateAlbumInfo,
     type ActivityResponseDto,
     type AlbumResponseDto,
@@ -404,6 +404,22 @@
     await handleGetAllAlbums();
   };
 
+  const handleRestoreAsset = async () => {
+    try {
+      await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+      asset.isTrashed = false;
+
+      dispatch('action', { type: AssetAction.RESTORE, asset });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Restored asset`,
+      });
+    } catch (error) {
+      handleError(error, 'Error restoring asset');
+    }
+  };
+
   const toggleArchive = async () => {
     try {
       const data = await updateAsset({
@@ -481,20 +497,15 @@
   };
 
   const handleUnstack = async () => {
-    try {
-      const ids = $stackAssetsStore.map(({ id }) => id);
-      await updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
-      for (const child of $stackAssetsStore) {
-        child.stackParentId = null;
-        child.stackCount = 0;
-        child.stack = [];
-        dispatch('action', { type: AssetAction.ADD, asset: child });
+    const unstackedAssets = await unstackAssets($stackAssetsStore);
+    if (unstackedAssets) {
+      for (const asset of unstackedAssets) {
+        dispatch('action', {
+          type: AssetAction.ADD,
+          asset,
+        });
       }
-
       dispatch('close');
-      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
-    } catch (error) {
-      handleError(error, `Unable to unstack`);
     }
   };
 
@@ -562,6 +573,7 @@
           on:delete={() => trashOrDelete()}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
+          on:restoreAsset={() => handleRestoreAsset()}
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
@@ -649,7 +661,7 @@
             />
           {/if}
           {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
-            <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+            <div class="z-[9999] absolute bottom-0 right-0 mb-4 mr-6">
               <ActivityStatus
                 disabled={!album?.isActivityEnabled}
                 {isLiked}
@@ -756,7 +768,7 @@
         shared={addToSharedAlbum}
         on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
         on:album={({ detail }) => handleAddToAlbum(detail)}
-        on:close={() => (isShowAlbumPicker = false)}
+        onClose={() => (isShowAlbumPicker = false)}
       />
     {/if}
 
@@ -770,11 +782,11 @@
     {/if}
 
     {#if isShowProfileImageCrop}
-      <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
+      <ProfileImageCropper {asset} onClose={() => (isShowProfileImageCrop = false)} />
     {/if}
 
     {#if isShowShareModal}
-      <CreateSharedLinkModal assetIds={[asset.id]} on:close={() => (isShowShareModal = false)} />
+      <CreateSharedLinkModal assetIds={[asset.id]} onClose={() => (isShowShareModal = false)} />
     {/if}
   </section>
 </FocusTrap>

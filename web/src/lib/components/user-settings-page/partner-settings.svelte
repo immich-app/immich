@@ -182,13 +182,14 @@
 {#if createPartnerFlag}
   <PartnerSelectionModal
     {user}
-    on:close={() => (createPartnerFlag = false)}
+    onClose={() => (createPartnerFlag = false)}
     on:add-users={(event) => handleCreatePartners(event.detail)}
   />
 {/if}
 
 {#if removePartnerDto}
   <ConfirmDialogue
+    id="stop-sharing-photos-modal"
     title="Stop sharing your photos?"
     prompt="{removePartnerDto.name} will no longer be able to access your photos."
     onClose={() => (removePartnerDto = null)}

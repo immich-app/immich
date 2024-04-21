@@ -2,15 +2,16 @@
   import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let user: UserResponseDto;
+  export let onClose: () => void;
 
   let availableUsers: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
 
-  const dispatch = createEventDispatcher<{ close: void; 'add-users': UserResponseDto[] }>();
+  const dispatch = createEventDispatcher<{ 'add-users': UserResponseDto[] }>();
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
@@ -32,13 +33,13 @@
   };
 </script>
 
-<BaseModal id="partner-selection-modal" title="Add partner" showLogo on:close>
+<FullScreenModal id="partner-selection-modal" title="Add partner" showLogo {onClose}>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
         <button
           on:click={() => selectUser(user)}
-          class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+          class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
           {#if selectedUsers.includes(user)}
             <span
@@ -60,15 +61,15 @@
         </button>
       {/each}
     {:else}
-      <p class="p-5 text-sm">
+      <p class="py-5 text-sm">
         Looks like you shared your photos with all users or you don't have any user to share with.
       </p>
     {/if}
 
     {#if selectedUsers.length > 0}
-      <div class="flex place-content-end p-5">
-        <Button size="sm" rounded="lg" on:click={() => dispatch('add-users', selectedUsers)}>Add</Button>
+      <div class="pt-5">
+        <Button size="sm" fullwidth on:click={() => dispatch('add-users', selectedUsers)}>Add</Button>
       </div>
     {/if}
   </div>
-</BaseModal>
+</FullScreenModal>

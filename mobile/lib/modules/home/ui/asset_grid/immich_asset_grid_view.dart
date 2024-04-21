@@ -6,7 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
@@ -18,6 +18,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -30,7 +31,7 @@ typedef ImmichAssetGridSelectionListener = void Function(
   Set<Asset>,
 );
 
-class ImmichAssetGridView extends StatefulWidget {
+class ImmichAssetGridView extends ConsumerStatefulWidget {
   final RenderList renderList;
   final int assetsPerRow;
   final double margin;
@@ -72,12 +73,12 @@ class ImmichAssetGridView extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() {
+  createState() {
     return ImmichAssetGridViewState();
   }
 }
 
-class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
+class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ScrollOffsetController _scrollOffsetController =
       ScrollOffsetController();
@@ -379,7 +380,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         final now = Timeline.now;
         if (now > (_hapticFeedbackTS + feedbackInterval)) {
           _hapticFeedbackTS = now;
-          HapticFeedback.mediumImpact();
+          ref.read(hapticFeedbackProvider.notifier).mediumImpact();
         }
       }
     }

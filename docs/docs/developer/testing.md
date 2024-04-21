@@ -8,15 +8,24 @@ Unit are run by calling `npm run test` from the `server` directory.
 
 ### End to end tests
 
-The backend has two end-to-end test suites that can be called with the following two commands from the project root directory:
+The e2e tests can be run by first starting up a test production environment via:
 
-- `make server-e2e-api`
-- `make server-e2e-jobs`
+```bash
+make e2e
+```
 
-#### API (e2e)
+Once the test environment is running, the e2e tests can be run via:
 
-The API e2e tests spin up a test database and execute http requests against the server, validating the expected response codes and functionality for API endpoints.
+```bash
+cd e2e/
+npm test
+```
 
-#### Jobs (e2e)
+The tests check various things including:
 
-The Jobs e2e tests spin up a docker test environment where thumbnail generation, library scanning, and other _job_ workflows are validated.
+- Authentication and authorization
+- Query param, body, and url validation
+- Response codes
+- Thumbnail generation
+- Metadata extraction
+- Library scanning
