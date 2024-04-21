@@ -53,15 +53,9 @@
       dispatch('confirm', value);
     }
   };
-
-  const handleKeydown = (event: KeyboardEvent) => {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      event.stopPropagation();
-    }
-  };
 </script>
 
-<div role="presentation" on:keydown={handleKeydown}>
+<div role="presentation">
   <ConfirmDialogue
     id="edit-date-time-modal"
     confirmColor="primary"
