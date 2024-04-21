@@ -67,10 +67,7 @@ WHERE
 
 -- AccessRepository.album.checkSharedAlbumAccess
 SELECT
-  "AlbumEntity"."id" AS "AlbumEntity_id",
-  "AlbumEntity__AlbumEntity_albumUsers"."albumsId" AS "AlbumEntity__AlbumEntity_albumUsers_albumsId",
-  "AlbumEntity__AlbumEntity_albumUsers"."usersId" AS "AlbumEntity__AlbumEntity_albumUsers_usersId",
-  "AlbumEntity__AlbumEntity_albumUsers"."role" AS "AlbumEntity__AlbumEntity_albumUsers_role"
+  "AlbumEntity"."id" AS "AlbumEntity_id"
 FROM
   "albums" "AlbumEntity"
   LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumUsers" ON "AlbumEntity__AlbumEntity_albumUsers"."albumsId" = "AlbumEntity"."id"
