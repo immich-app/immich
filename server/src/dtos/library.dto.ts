@@ -35,9 +35,6 @@ export class CreateLibraryDto {
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
-
-  @ValidateBoolean({ optional: true })
-  isWatched?: boolean;
 }
 
 export class UpdateLibraryDto {

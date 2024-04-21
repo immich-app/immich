@@ -42,7 +42,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.assetsPerRow,
     this.showStorageIndicator,
     this.listener,
-    this.margin = 5.0,
+    this.margin = 2.0,
     this.selectionActive = false,
     this.preselectedAssets,
     this.canDeselect = true,

@@ -169,7 +169,7 @@
             size="sm"
             on:click={() => {
               addExclusionPattern = true;
-            }}>Add Exclusion Pattern</Button
+            }}>Add exclusion pattern</Button
           ></td
         ></tr
       >

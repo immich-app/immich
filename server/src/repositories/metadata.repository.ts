@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
 import geotz from 'geo-tz';
@@ -11,31 +11,33 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Instrumentation()
+@Injectable()
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ISystemMetadataRepository)
-    private readonly systemMetadataRepository: ISystemMetadataRepository,
+    private systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
-  ) {}
-
-  private logger = new ImmichLogger(MetadataRepository.name);
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(MetadataRepository.name);
+  }
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
+    // TODO move to metadata service init
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
-
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }

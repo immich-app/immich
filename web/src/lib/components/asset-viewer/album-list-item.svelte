@@ -29,7 +29,7 @@
 
 <button
   on:click={() => dispatch('album')}
-  class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+  class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
 >
   <div class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
     {#if album.albumThumbnailAssetId}

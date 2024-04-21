@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
-import { EventEmitter } from 'node:events';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -37,9 +36,9 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { IStorageRepository, StorageEventType } from 'src/interfaces/storage.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -48,8 +47,7 @@ import { validateCronExpression } from 'src/validation';
 const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
-export class LibraryService extends EventEmitter {
-  readonly logger = new ImmichLogger(LibraryService.name);
+export class LibraryService {
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
@@ -63,9 +61,10 @@ export class LibraryService extends EventEmitter {
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    super();
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(LibraryService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
   }
 
   async init() {
@@ -152,7 +151,6 @@ export class LibraryService extends EventEmitter {
             if (matcher(path)) {
               await this.scanAssets(library.id, [path], library.ownerId, false);
             }
-            this.emit(StorageEventType.ADD, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
@@ -163,7 +161,6 @@ export class LibraryService extends EventEmitter {
               // Note: if the changed file was not previously imported, it will be imported now.
               await this.scanAssets(library.id, [path], library.ownerId, false);
             }
-            this.emit(StorageEventType.CHANGE, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
@@ -174,13 +171,11 @@ export class LibraryService extends EventEmitter {
             if (asset && matcher(path)) {
               await this.assetRepository.update({ id: asset.id, isOffline: true });
             }
-            this.emit(StorageEventType.UNLINK, path);
           };
           return handlePromiseError(handler(), this.logger);
         },
         onError: (error) => {
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
-          this.emit(StorageEventType.ERROR, error);
         },
       },
     );
@@ -267,9 +262,6 @@ export class LibraryService extends EventEmitter {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
-        if (dto.isWatched) {
-          throw new BadRequestException('Upload libraries cannot be watched');
-        }
         dto.isReadOnly ??= false;
         if (dto.isReadOnly) {
           throw new BadRequestException('Upload libraries cannot be readonly');
@@ -289,10 +281,6 @@ export class LibraryService extends EventEmitter {
     });
 
     this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);
-
-    if (dto.type === LibraryType.EXTERNAL) {
-      await this.watch(library.id);
-    }
 
     return mapLibrary(library);
   }
@@ -377,11 +365,6 @@ export class LibraryService extends EventEmitter {
       }
     }
 
-    if (dto.importPaths || dto.exclusionPatterns) {
-      // Re-watch library to use new paths and/or exclusion patterns
-      await this.watch(id);
-    }
-
     return mapLibrary(library);
   }
 
@@ -449,6 +432,8 @@ export class LibraryService extends EventEmitter {
       doRefresh = true;
     }
 
+    const originalFileName = parse(assetPath).base;
+
     if (!existingAssetEntity) {
       // This asset is new to us, read it from disk
       this.logger.debug(`Importing new asset: ${assetPath}`);
@@ -457,6 +442,12 @@ export class LibraryService extends EventEmitter {
       // File modification time has changed since last time we checked, re-read from disk
       this.logger.debug(
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
+      );
+      doRefresh = true;
+    } else if (existingAssetEntity.originalFileName !== originalFileName) {
+      // TODO: We can likely remove this check in the second half of 2024 when all assets have likely been re-imported by all users
+      this.logger.debug(
+        `Asset is missing file extension, re-importing: ${assetPath}. Current incorrect filename: ${existingAssetEntity.originalFileName}.`,
       );
       doRefresh = true;
     } else if (!job.force && stats && !existingAssetEntity.isOffline) {
@@ -516,7 +507,7 @@ export class LibraryService extends EventEmitter {
         fileModifiedAt: stats.mtime,
         localDateTime: stats.mtime,
         type: assetType,
-        originalFileName: parse(assetPath).base,
+        originalFileName,
         sidecarPath,
         isReadOnly: library!.isReadOnly,
         isExternal: true,
@@ -527,6 +518,7 @@ export class LibraryService extends EventEmitter {
       await this.assetRepository.updateAll([existingAssetEntity.id], {
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
+        originalFileName,
       });
     } else {
       // Not importing and not refreshing, do nothing
@@ -616,7 +608,7 @@ export class LibraryService extends EventEmitter {
     const assetIdsToMarkOffline = [];
     const assetIdsToMarkOnline = [];
     const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getLibraryAssetPaths(pagination, library.id),
+      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
     );
 
     this.logger.verbose(`Crawled asset paths paginated`);

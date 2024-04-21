@@ -1,4 +1,5 @@
 import { AlbumEntity } from 'src/entities/album.entity';
+import { IBulkAsset } from 'src/utils/asset.util';
 
 export const IAlbumRepository = 'IAlbumRepository';
 
@@ -23,15 +24,14 @@ export interface AlbumAssets {
   assetIds: string[];
 }
 
-export interface IAlbumRepository {
+export interface IAlbumRepository extends IBulkAsset {
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
-  addAssets(assets: AlbumAssets): Promise<void>;
   getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>>;
   hasAsset(asset: AlbumAsset): Promise<boolean>;
   removeAsset(assetId: string): Promise<void>;
-  removeAssets(albumId: string, assetIds: string[]): Promise<void>;
+  removeAssetIds(albumId: string, assetIds: string[]): Promise<void>;
   getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]>;
   getInvalidThumbnail(): Promise<string[]>;
   getOwned(ownerId: string): Promise<AlbumEntity[]>;

@@ -4,8 +4,8 @@
   import { mdiPlus } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
-  import BaseModal from './base-modal.svelte';
   import { normalizeSearchString } from '$lib/utils/string-utils';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -16,10 +16,10 @@
   const dispatch = createEventDispatcher<{
     newAlbum: string;
     album: AlbumResponseDto;
-    close: void;
   }>();
 
   export let shared: boolean;
+  export let onClose: () => void;
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -43,17 +43,16 @@
   const handleNew = () => {
     dispatch('newAlbum', search.length > 0 ? search : '');
   };
+
+  const getTitle = () => {
+    if (shared) {
+      return 'Add to shared album';
+    }
+    return 'Add to album';
+  };
 </script>
 
-<BaseModal on:close on:escape>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <p class="font-medium">
-        Add to {shared ? 'Shared ' : ''}Album
-      </p>
-    </span>
-  </svelte:fragment>
-
+<FullScreenModal id="album-selection-modal" title={getTitle()} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
@@ -69,17 +68,15 @@
         </div>
       {/each}
     {:else}
-      <!-- svelte-ignore a11y-autofocus -->
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder="Search"
-        autofocus
         bind:value={search}
       />
       <div class="immich-scrollbar overflow-y-auto">
         <button
           on:click={handleNew}
-          class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+          class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
           <div class="flex h-12 w-12 items-center justify-center">
             <Icon path={mdiPlus} size="30" />
@@ -113,4 +110,4 @@
       </div>
     {/if}
   </div>
-</BaseModal>
+</FullScreenModal>

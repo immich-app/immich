@@ -1,14 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 import 'package:isar/isar.dart';
 
-class ThumbnailImage extends StatelessWidget {
+class ThumbnailImage extends ConsumerWidget {
   final Asset asset;
   final int index;
   final Asset Function(int index) loadAsset;
@@ -37,7 +38,7 @@ class ThumbnailImage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
         ? Colors.blueGrey
         : context.themeData.primaryColorLight;
@@ -186,7 +187,7 @@ class ThumbnailImage extends StatelessWidget {
       },
       onLongPress: () {
         onSelect?.call();
-        HapticFeedback.heavyImpact();
+        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
       },
       child: Stack(
         children: [

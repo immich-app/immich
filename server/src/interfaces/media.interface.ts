@@ -1,11 +1,11 @@
 import { Writable } from 'node:stream';
-import { TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
+import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
 
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
   size: number;
-  format: 'webp' | 'jpeg';
+  format: ImageFormat;
   colorspace: string;
   quality: number;
 }
@@ -32,6 +32,11 @@ export interface VideoFormat {
   formatLongName?: string;
   duration: number;
   bitrate: number;
+}
+
+export interface ImageDimensions {
+  width: number;
+  height: number;
 }
 
 export interface VideoInfo {
@@ -70,9 +75,11 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface IMediaRepository {
   // image
+  extract(input: string, output: string): Promise<boolean>;
   resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
   crop(input: string, options: CropOptions): Promise<Buffer>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
+  getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
   probe(input: string): Promise<VideoInfo>;

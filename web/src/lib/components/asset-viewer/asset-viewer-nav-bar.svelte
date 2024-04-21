@@ -20,6 +20,7 @@
     mdiFolderDownloadOutline,
     mdiHeart,
     mdiHeartOutline,
+    mdiHistory,
     mdiImageAlbum,
     mdiImageMinusOutline,
     mdiImageOutline,
@@ -52,6 +53,7 @@
 
   type MenuItemEvent =
     | 'addToAlbum'
+    | 'restoreAsset'
     | 'addToSharedAlbum'
     | 'asProfileImage'
     | 'setAsAlbumCover'
@@ -70,6 +72,7 @@
     delete: void;
     toggleArchive: void;
     addToAlbum: void;
+    restoreAsset: void;
     addToSharedAlbum: void;
     asProfileImage: void;
     setAsAlbumCover: void;
@@ -102,7 +105,7 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} on:click={() => dispatch('back')} />
+    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showShareButton}
@@ -161,6 +164,16 @@
         }}
       />
     {/if}
+
+    {#if !isOwner && showDownloadButton}
+      <CircleIconButton
+        isOpacity={true}
+        icon={mdiFolderDownloadOutline}
+        on:click={() => dispatch('download')}
+        title="Download"
+      />
+    {/if}
+
     {#if showDetailButton}
       <CircleIconButton
         isOpacity={true}
@@ -169,6 +182,7 @@
         title="Info"
       />
     {/if}
+
     {#if isOwner}
       <CircleIconButton
         isOpacity={true}
@@ -197,12 +211,16 @@
             {#if showDownloadButton}
               <MenuOption icon={mdiFolderDownloadOutline} on:click={() => onMenuClick('download')} text="Download" />
             {/if}
-            <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
-            <MenuOption
-              icon={mdiShareVariantOutline}
-              on:click={() => onMenuClick('addToSharedAlbum')}
-              text="Add to shared album"
-            />
+            {#if asset.isTrashed}
+              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text="Restore" />
+            {:else}
+              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
+              <MenuOption
+                icon={mdiShareVariantOutline}
+                on:click={() => onMenuClick('addToSharedAlbum')}
+                text="Add to shared album"
+              />
+            {/if}
 
             {#if isOwner}
               {#if hasStackChildren}

@@ -4,7 +4,9 @@ import {
   AssetOrder,
   LoginResponseDto,
   SharedLinkType,
+  addAssetsToAlbum,
   deleteUser,
+  getAlbumInfo,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -65,7 +67,6 @@ describe('/album', () => {
       utils.createAlbum(user2.accessToken, {
         albumName: user2SharedUser,
         sharedWithUserIds: [user1.userId],
-        assetIds: [user1Asset1.id],
       }),
       utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
       utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
@@ -76,6 +77,13 @@ describe('/album', () => {
         sharedWithUserIds: [user1.userId],
       }),
     ]);
+
+    await addAssetsToAlbum(
+      { id: albums[3].id, bulkIdsDto: { ids: [user1Asset1.id] } },
+      { headers: asBearerAuth(user1.accessToken) },
+    );
+
+    albums[3] = await getAlbumInfo({ id: albums[3].id }, { headers: asBearerAuth(user2.accessToken) });
 
     user1Albums = albums.slice(0, 3);
     user2Albums = albums.slice(3, 6);

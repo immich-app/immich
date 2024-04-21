@@ -75,10 +75,13 @@ describe('mimeTypes', () => {
     { mimetype: 'image/x-sony-srf', extension: '.srf' },
     { mimetype: 'image/x3f', extension: '.x3f' },
     { mimetype: 'video/3gpp', extension: '.3gp' },
+    { mimetype: 'video/3gpp', extension: '.3gpp' },
     { mimetype: 'video/avi', extension: '.avi' },
     { mimetype: 'video/mp2t', extension: '.m2ts' },
     { mimetype: 'video/mp2t', extension: '.mts' },
     { mimetype: 'video/mp4', extension: '.mp4' },
+    { mimetype: 'video/mpeg', extension: '.mpe' },
+    { mimetype: 'video/mpeg', extension: '.mpeg' },
     { mimetype: 'video/mpeg', extension: '.mpg' },
     { mimetype: 'video/msvideo', extension: '.avi' },
     { mimetype: 'video/quicktime', extension: '.mov' },
@@ -103,12 +106,6 @@ describe('mimeTypes', () => {
       expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
     });
 
-    it('should be a sorted list', () => {
-      const keys = Object.keys(mimeTypes.profile);
-      // TODO: use toSorted in NodeJS 20.
-      expect(keys).toEqual([...keys].sort());
-    });
-
     for (const [extension, v] of Object.entries(mimeTypes.profile)) {
       it(`should lookup ${extension}`, () => {
         expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
@@ -123,12 +120,6 @@ describe('mimeTypes', () => {
 
       const values = Object.values(mimeTypes.image).flat();
       expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
-    });
-
-    it('should be a sorted list', () => {
-      const keys = Object.keys(mimeTypes.image);
-      // TODO: use toSorted in NodeJS 20.
-      expect(keys).toEqual([...keys].sort());
     });
 
     it('should contain only image mime types', () => {
@@ -154,7 +145,6 @@ describe('mimeTypes', () => {
 
     it('should be a sorted list', () => {
       const keys = Object.keys(mimeTypes.video);
-      // TODO: use toSorted in NodeJS 20.
       expect(keys).toEqual([...keys].sort());
     });
 
@@ -181,7 +171,6 @@ describe('mimeTypes', () => {
 
     it('should be a sorted list', () => {
       const keys = Object.keys(mimeTypes.sidecar);
-      // TODO: use toSorted in NodeJS 20.
       expect(keys).toEqual([...keys].sort());
     });
 
@@ -192,6 +181,22 @@ describe('mimeTypes', () => {
     for (const [extension, v] of Object.entries(mimeTypes.sidecar)) {
       it(`should lookup ${extension}`, () => {
         expect(mimeTypes.lookup(`it.${extension}`)).toEqual(v[0]);
+      });
+    }
+  });
+
+  describe('raw', () => {
+    it('should contain only lowercase mime types', () => {
+      const keys = Object.keys(mimeTypes.raw);
+      expect(keys).toEqual(keys.map((mimeType) => mimeType.toLowerCase()));
+
+      const values = Object.values(mimeTypes.raw).flat();
+      expect(values).toEqual(values.map((mimeType) => mimeType.toLowerCase()));
+    });
+
+    for (const [extension, v] of Object.entries(mimeTypes.video)) {
+      it(`should lookup ${extension}`, () => {
+        expect(mimeTypes.lookup(`test.${extension}`)).toEqual(v[0]);
       });
     }
   });

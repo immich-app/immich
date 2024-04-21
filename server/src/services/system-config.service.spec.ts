@@ -4,6 +4,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  ImageFormat,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -15,12 +16,14 @@ import {
 } from 'src/entities/system-config.entity';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { ImmichLogger } from 'src/utils/logger';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { Mocked } from 'vitest';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
@@ -119,11 +122,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
-  thumbnail: {
-    webpSize: 250,
-    jpegSize: 1440,
+  image: {
+    thumbnailFormat: ImageFormat.WEBP,
+    thumbnailSize: 250,
+    previewFormat: ImageFormat.JPEG,
+    previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+    extractEmbedded: false,
   },
   newVersionCheck: {
     enabled: true,
@@ -151,15 +157,17 @@ const updatedConfig = Object.freeze<SystemConfig>({
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let smartInfoMock: jest.Mocked<ISearchRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let smartInfoMock: Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
-    sut = new SystemConfigService(configMock, eventMock, smartInfoMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new SystemConfigService(configMock, eventMock, loggerMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -176,16 +184,6 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('getConfig', () => {
-    let warnLog: jest.SpyInstance;
-
-    beforeEach(() => {
-      warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
-    });
-
-    afterEach(() => {
-      warnLog.mockRestore();
-    });
-
     it('should return the default config', async () => {
       configMock.load.mockResolvedValue([]);
 
@@ -263,7 +261,7 @@ describe(SystemConfigService.name, () => {
       configMock.readFile.mockResolvedValue(partialConfig);
 
       await sut.getConfig();
-      expect(warnLog).toHaveBeenCalled();
+      expect(loggerMock.warn).toHaveBeenCalled();
     });
 
     const tests = [
@@ -282,7 +280,7 @@ describe(SystemConfigService.name, () => {
 
         if (test.warn) {
           await sut.getConfig();
-          expect(warnLog).toHaveBeenCalled();
+          expect(loggerMock.warn).toHaveBeenCalled();
         } else {
           await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
         }
@@ -340,19 +338,6 @@ describe(SystemConfigService.name, () => {
       configMock.readFile.mockResolvedValue(JSON.stringify({}));
       await expect(sut.updateConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(configMock.saveAll).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('refreshConfig', () => {
-    it('should notify the subscribers', async () => {
-      const changeMock = jest.fn();
-      const subscription = sut.config$.subscribe(changeMock);
-
-      await sut.refreshConfig();
-
-      expect(changeMock).toHaveBeenCalledWith(defaults);
-
-      subscription.unsubscribe();
     });
   });
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { vectorExt } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -8,6 +8,7 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetSearchOptions,
   FaceEmbeddingSearch,
@@ -18,7 +19,6 @@ import {
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -27,7 +27,6 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
-  private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
@@ -36,8 +35,10 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
@@ -214,10 +215,10 @@ export class SearchRepository implements ISearchRepository {
       .orWhere(`f_unaccent("alternateNames") %>> f_unaccent(:placeName)`)
       .orderBy(
         `
-        COALESCE(f_unaccent(name) <->>> f_unaccent(:placeName), 0) +
-        COALESCE(f_unaccent("admin2Name") <->>> f_unaccent(:placeName), 0) +
-        COALESCE(f_unaccent("admin1Name") <->>> f_unaccent(:placeName), 0) +
-        COALESCE(f_unaccent("alternateNames") <->>> f_unaccent(:placeName), 0)
+        COALESCE(f_unaccent(name) <->>> f_unaccent(:placeName), 0.1) +
+        COALESCE(f_unaccent("admin2Name") <->>> f_unaccent(:placeName), 0.1) +
+        COALESCE(f_unaccent("admin1Name") <->>> f_unaccent(:placeName), 0.1) +
+        COALESCE(f_unaccent("alternateNames") <->>> f_unaccent(:placeName), 0.1)
         `,
       )
       .setParameters({ placeName })
@@ -225,7 +226,7 @@ export class SearchRepository implements ISearchRepository {
       .getMany();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID, DummyValue.UUID]] })
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     const parameters = [userIds, true, false, AssetType.IMAGE];
     const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
@@ -315,7 +316,7 @@ WITH RECURSIVE cte AS (
     SELECT city, "assetId"
     FROM exif
     INNER JOIN assets ON exif."assetId" = assets.id
-    WHERE "ownerId" = ANY('$1'::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    WHERE "ownerId" = ANY($1::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
     ORDER BY city
     LIMIT 1
   )
@@ -328,7 +329,7 @@ WITH RECURSIVE cte AS (
     SELECT city, "assetId"
     FROM exif
     INNER JOIN assets ON exif."assetId" = assets.id
-    WHERE city > c.city AND "ownerId" = ANY('$1'::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
+    WHERE city > c.city AND "ownerId" = ANY($1::uuid[]) AND "isVisible" = $2 AND "isArchived" = $3 AND type = $4
     ORDER BY city
     LIMIT 1
     ) l

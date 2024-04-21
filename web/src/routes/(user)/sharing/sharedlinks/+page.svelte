@@ -83,12 +83,13 @@
 </section>
 
 {#if editSharedLink}
-  <CreateSharedLinkModal editingLink={editSharedLink} on:close={handleEditDone} />
+  <CreateSharedLinkModal editingLink={editSharedLink} onClose={handleEditDone} />
 {/if}
 
 {#if deleteLinkId}
   <ConfirmDialogue
-    title="Delete Shared Link"
+    id="delete-shared-link-modal"
+    title="Delete shared link"
     prompt="Are you sure you want to delete this shared link?"
     confirmText="Delete"
     onConfirm={() => handleDeleteLink()}

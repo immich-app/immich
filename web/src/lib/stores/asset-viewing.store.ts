@@ -7,22 +7,15 @@ function createAssetViewingStore() {
   const preloadAssets = writable<AssetResponseDto[]>([]);
   const viewState = writable<boolean>(false);
 
-  const setAssetId = async (id: string, preloadIds?: string[]) => {
-    const data = await getAssetInfo({ id, key: getKey() });
-
-    if (preloadIds) {
-      const preloadList = [];
-      for (const preloadId of preloadIds) {
-        if (preloadId) {
-          const preloadAsset = await getAssetInfo({ id: preloadId, key: getKey() });
-          preloadList.push(preloadAsset);
-        }
-      }
-      preloadAssets.set(preloadList);
-    }
-
-    viewingAssetStoreState.set(data);
+  const setAsset = (asset: AssetResponseDto, assetsToPreload: AssetResponseDto[] = []) => {
+    preloadAssets.set(assetsToPreload);
+    viewingAssetStoreState.set(asset);
     viewState.set(true);
+  };
+
+  const setAssetId = async (id: string) => {
+    const asset = await getAssetInfo({ id, key: getKey() });
+    setAsset(asset);
   };
 
   const showAssetViewer = (show: boolean) => {
@@ -40,6 +33,7 @@ function createAssetViewingStore() {
       subscribe: viewState.subscribe,
       set: viewState.set,
     },
+    setAsset,
     setAssetId,
     showAssetViewer,
   };

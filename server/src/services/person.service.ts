@@ -23,6 +23,7 @@ import {
 } from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -37,6 +38,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { CropOptions, IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -45,7 +47,6 @@ import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
@@ -55,7 +56,6 @@ export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  readonly logger = new ImmichLogger(PersonService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -69,16 +69,19 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(PersonService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       repository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -289,7 +292,12 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
+        ? this.assetRepository.getAll(pagination, {
+            orderDirection: 'DESC',
+            withFaces: true,
+            withArchived: true,
+            isVisible: true,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -315,17 +323,21 @@ export class PersonService {
       },
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
+    if (!asset || !asset.previewPath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
     }
 
     const faces = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      { imagePath: asset.resizePath },
+      { imagePath: asset.previewPath },
       machineLearning.facialRecognition,
     );
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
+    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
     if (faces.length > 0) {
@@ -421,7 +433,7 @@ export class PersonService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
@@ -470,7 +482,7 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, thumbnail } = await this.configCore.getConfig();
+    const { machineLearning, image } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return JobStatus.SKIPPED;
     }
@@ -496,7 +508,7 @@ export class PersonService {
     } = face;
 
     const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset?.resizePath) {
+    if (!asset?.previewPath) {
       return JobStatus.FAILED;
     }
     this.logger.verbose(`Cropping face for person: ${person.id}`);
@@ -527,12 +539,12 @@ export class PersonService {
       height: newHalfSize * 2,
     };
 
-    const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
+    const croppedOutput = await this.mediaRepository.crop(asset.previewPath, cropOptions);
     const thumbnailOptions = {
-      format: 'jpeg',
+      format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
-      colorspace: thumbnail.colorspace,
-      quality: thumbnail.quality,
+      colorspace: image.colorspace,
+      quality: image.quality,
     } as const;
 
     await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);

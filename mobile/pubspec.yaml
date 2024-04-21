@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.100.0+130
+version: 1.102.3+134
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  # TODO: change to stable after 3.16 support
+  # TODO: upgrade to stable after 3.0.1 is released. 3.0.0 is broken
+  # https://github.com/fluttercandies/flutter_photo_manager/pull/990#issuecomment-2058066427
   photo_manager: ^3.0.0-dev.5
   photo_manager_image_provider: ^2.1.0
   flutter_hooks: ^0.20.4
@@ -104,9 +105,6 @@ flutter:
     - assets/
     - assets/i18n/
   fonts:
-    - family: SnowburstOne
-      fonts:
-        - asset: fonts/SnowburstOne.ttf
     - family: Inconsolata
       fonts:
         - asset: fonts/Inconsolata-Regular.ttf

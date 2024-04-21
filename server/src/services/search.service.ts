@@ -18,6 +18,7 @@ import {
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -37,8 +38,10 @@ export class SearchService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(SearchService.name);
+    this.configCore = SystemConfigCore.create(configRepository, logger);
   }
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
@@ -75,6 +78,9 @@ export class SearchService {
       const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
       checksum = Buffer.from(dto.checksum, encoding);
     }
+
+    dto.previewPath ??= dto.resizePath;
+    dto.thumbnailPath ??= dto.webpPath;
 
     const page = dto.page ?? 1;
     const size = dto.size || 250;

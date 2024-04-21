@@ -1,6 +1,6 @@
 import { serverVersion } from 'src/constants';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
@@ -8,20 +8,23 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
-  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let configMock: Mocked<ISystemConfigRepository>;
+  let serverInfoMock: Mocked<IServerInfoRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
+  let systemMetadataMock: Mocked<ISystemMetadataRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -30,8 +33,17 @@ describe(ServerInfoService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     systemMetadataMock = newSystemMetadataRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
 
-    sut = new ServerInfoService(eventMock, configMock, userMock, serverInfoMock, storageMock, systemMetadataMock);
+    sut = new ServerInfoService(
+      eventMock,
+      configMock,
+      userMock,
+      serverInfoMock,
+      storageMock,
+      systemMetadataMock,
+      loggerMock,
+    );
   });
 
   it('should work', () => {
@@ -191,13 +203,6 @@ describe(ServerInfoService.name, () => {
         externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
-    });
-  });
-
-  describe('setAdminOnboarding', () => {
-    it('should set admin onboarding to true', async () => {
-      await sut.setAdminOnboarding();
-      expect(systemMetadataMock.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
     });
   });
 

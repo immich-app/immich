@@ -1,4 +1,3 @@
-import { when } from 'jest-when';
 import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-v1-response.dto';
 import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -7,6 +6,7 @@ import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
@@ -17,9 +17,11 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
+import { Mocked, vitest } from 'vitest';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -44,13 +46,13 @@ const _getAsset_1 = () => {
   asset_1.deviceId = 'device_id_1';
   asset_1.type = AssetType.VIDEO;
   asset_1.originalPath = 'fake_path/asset_1.jpeg';
-  asset_1.resizePath = '';
+  asset_1.previewPath = '';
   asset_1.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
   asset_1.isArchived = false;
-  asset_1.webpPath = '';
+  asset_1.thumbnailPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
   asset_1.exifInfo = new ExifEntity();
@@ -62,40 +64,50 @@ const _getAsset_1 = () => {
 describe('AssetService', () => {
   let sut: AssetServiceV1;
   let accessMock: IAccessRepositoryMock;
-  let assetRepositoryMockV1: jest.Mocked<IAssetRepositoryV1>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let libraryMock: jest.Mocked<ILibraryRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
+  let assetRepositoryMockV1: Mocked<IAssetRepositoryV1>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let libraryMock: Mocked<ILibraryRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
     assetRepositoryMockV1 = {
-      get: jest.fn(),
-      getAllByUserId: jest.fn(),
-      getDetectedObjectsByUserId: jest.fn(),
-      getLocationsByUserId: jest.fn(),
-      getSearchPropertiesByUserId: jest.fn(),
-      getAssetsByChecksums: jest.fn(),
-      getExistingAssets: jest.fn(),
-      getByOriginalPath: jest.fn(),
+      get: vitest.fn(),
+      getAllByUserId: vitest.fn(),
+      getDetectedObjectsByUserId: vitest.fn(),
+      getLocationsByUserId: vitest.fn(),
+      getSearchPropertiesByUserId: vitest.fn(),
+      getAssetsByChecksums: vitest.fn(),
+      getExistingAssets: vitest.fn(),
+      getByOriginalPath: vitest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AssetServiceV1(accessMock, assetRepositoryMockV1, assetMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new AssetServiceV1(
+      accessMock,
+      assetRepositoryMockV1,
+      assetMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      userMock,
+      loggerMock,
+    );
 
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoStillAsset.id)
-      .mockResolvedValue(assetStub.livePhotoStillAsset);
-    when(assetRepositoryMockV1.get)
-      .calledWith(assetStub.livePhotoMotionAsset.id)
-      .mockResolvedValue(assetStub.livePhotoMotionAsset);
+    assetRepositoryMockV1.get.mockImplementation((assetId) =>
+      Promise.resolve(
+        [assetStub.livePhotoMotionAsset, assetStub.livePhotoMotionAsset].find((asset) => asset.id === assetId) ?? null,
+      ),
+    );
   });
 
   describe('uploadFile', () => {
