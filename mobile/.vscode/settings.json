@@ -1,9 +1,10 @@
 {
-  "dart.flutterSdkPath": ".fvm\\versions\\3.16.9",
+  "dart.flutterSdkPath": "C:\\Sdk\\flutter",
   "search.exclude": {
     "**/.fvm": true
   },
   "files.watcherExclude": {
     "**/.fvm": true
-  }
+  },
+  "java.compile.nullAnalysis.mode": "disabled"
 }
