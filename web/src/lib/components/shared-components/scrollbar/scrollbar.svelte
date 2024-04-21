@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AssetStore, AssetBucket } from '$lib/stores/assets.store';
-  import { DateTime } from 'luxon';
+  import type { DateTime } from 'luxon';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
   import { clamp } from 'lodash-es';
