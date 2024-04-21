@@ -194,7 +194,7 @@ describe(AlbumService.name, () => {
         ownerId: authStub.admin.user.id,
         albumName: albumStub.empty.albumName,
         description: albumStub.empty.description,
-        sharedUsers: [{ user: { id: 'user-id' } }],
+        albumUsers: [{ user: { id: 'user-id' } }],
         assets: [{ id: '123' }],
         albumThumbnailAssetId: '123',
       });
@@ -230,7 +230,7 @@ describe(AlbumService.name, () => {
         ownerId: authStub.admin.user.id,
         albumName: 'Test album',
         description: '',
-        sharedUsers: [],
+        albumUsers: [],
         assets: [{ id: 'asset-1' }],
         albumThumbnailAssetId: 'asset-1',
       });
@@ -366,7 +366,7 @@ describe(AlbumService.name, () => {
         user: userStub.user2,
         albumId: albumStub.sharedWithAdmin.id,
         album: albumStub.sharedWithAdmin,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.VIEWER,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.user.id] });
       expect(albumUserMock.create).toHaveBeenCalledWith({
@@ -730,7 +730,7 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
-    it('should skip assets without user permission to remove', async () => {
+    it('should skip assets when user has remove permission on album but not on asset', async () => {
       accessMock.album.checkSharedAlbumAccess.mockResolvedValue(new Set(['album-123']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValue(new Set(['asset-id']));

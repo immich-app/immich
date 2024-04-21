@@ -264,7 +264,13 @@ export class AccessCore {
       }
 
       case Permission.ALBUM_REMOVE_ASSET: {
-        return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          AlbumUserRole.EDITOR,
+        );
+        return setUnion(isOwner, isShared);
       }
 
       case Permission.ASSET_UPLOAD: {
