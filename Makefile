@@ -20,6 +20,14 @@ pull-stage:
 e2e:
 	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
+e2e-down:
+	docker compose -f ./e2e/docker-compose.yml down --volumes --remove-orphans
+
+e2e-updown:
+	trap 'make e2e-down' INT TERM; \
+	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans; \
+	make e2e-down
+
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
