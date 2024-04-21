@@ -8,7 +8,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { setUnion } from 'src/utils/set';
-import { DataSource, Equal, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
