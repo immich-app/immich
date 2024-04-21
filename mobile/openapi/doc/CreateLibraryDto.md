@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **exclusionPatterns** | **List<String>** |  | [optional] [default to const []]
 **importPaths** | **List<String>** |  | [optional] [default to const []]
+**isReadOnly** | **bool** |  | [optional] 
 **isVisible** | **bool** |  | [optional] 
 **name** | **String** |  | [optional] 
 **ownerId** | **String** |  | 

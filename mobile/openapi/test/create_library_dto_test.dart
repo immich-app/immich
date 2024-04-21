@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool isReadOnly
+    test('to test the property `isReadOnly`', () async {
+      // TODO
+    });
+
     // bool isVisible
     test('to test the property `isVisible`', () async {
       // TODO

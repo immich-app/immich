@@ -422,6 +422,7 @@ export type LibraryResponseDto = {
     exclusionPatterns: string[];
     id: string;
     importPaths: string[];
+    isReadOnly: boolean;
     name: string;
     ownerId: string;
     refreshedAt: string | null;
@@ -431,6 +432,7 @@ export type LibraryResponseDto = {
 export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
+    isReadOnly?: boolean;
     isVisible?: boolean;
     name?: string;
     ownerId: string;
@@ -439,6 +441,7 @@ export type CreateLibraryDto = {
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
+    isReadOnly?: boolean;
     isVisible?: boolean;
     name?: string;
 };

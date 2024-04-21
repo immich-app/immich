@@ -363,6 +363,7 @@ export class AssetService {
       faces: {
         person: true,
       },
+      library: true,
       stack: { assets: true },
       exifInfo: true,
     });
@@ -403,10 +404,7 @@ export class AssetService {
       });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
-      files.push(asset.sidecarPath, asset.originalPath);
-    }
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath];
 
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 

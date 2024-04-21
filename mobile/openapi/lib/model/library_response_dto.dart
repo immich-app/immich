@@ -18,6 +18,7 @@ class LibraryResponseDto {
     this.exclusionPatterns = const [],
     required this.id,
     this.importPaths = const [],
+    required this.isReadOnly,
     required this.name,
     required this.ownerId,
     required this.refreshedAt,
@@ -34,6 +35,8 @@ class LibraryResponseDto {
   String id;
 
   List<String> importPaths;
+
+  bool isReadOnly;
 
   String name;
 
@@ -52,6 +55,7 @@ class LibraryResponseDto {
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     other.id == id &&
     _deepEquality.equals(other.importPaths, importPaths) &&
+    other.isReadOnly == isReadOnly &&
     other.name == name &&
     other.ownerId == ownerId &&
     other.refreshedAt == refreshedAt &&
@@ -66,6 +70,7 @@ class LibraryResponseDto {
     (exclusionPatterns.hashCode) +
     (id.hashCode) +
     (importPaths.hashCode) +
+    (isReadOnly.hashCode) +
     (name.hashCode) +
     (ownerId.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
@@ -73,7 +78,7 @@ class LibraryResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, isReadOnly=$isReadOnly, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -82,6 +87,7 @@ class LibraryResponseDto {
       json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'id'] = this.id;
       json[r'importPaths'] = this.importPaths;
+      json[r'isReadOnly'] = this.isReadOnly;
       json[r'name'] = this.name;
       json[r'ownerId'] = this.ownerId;
     if (this.refreshedAt != null) {
@@ -111,6 +117,7 @@ class LibraryResponseDto {
         importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly')!,
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
@@ -168,6 +175,7 @@ class LibraryResponseDto {
     'exclusionPatterns',
     'id',
     'importPaths',
+    'isReadOnly',
     'name',
     'ownerId',
     'refreshedAt',
