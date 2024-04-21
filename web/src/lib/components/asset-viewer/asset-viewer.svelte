@@ -50,7 +50,7 @@
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
-  import VideoViewer from './video-viewer.svelte';
+  import VideoViewer from './video-wrapper-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -622,6 +622,7 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              projectionType={previewStackedAsset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -642,6 +643,7 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                projectionType={asset.exifInfo?.projectionType}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -655,6 +657,7 @@
           {:else}
             <VideoViewer
               assetId={asset.id}
+              projectionType={asset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
