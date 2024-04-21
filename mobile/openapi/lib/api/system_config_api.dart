@@ -198,13 +198,13 @@ class SystemConfigApi {
   /// Performs an HTTP 'PUT /system-config' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [SystemConfigDto] systemConfigDto (required):
-  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
+  /// * [PartialSystemConfigDto] partialSystemConfigDto (required):
+  Future<Response> updateConfigWithHttpInfo(PartialSystemConfigDto partialSystemConfigDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/system-config';
 
     // ignore: prefer_final_locals
-    Object? postBody = systemConfigDto;
+    Object? postBody = partialSystemConfigDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -226,9 +226,9 @@ class SystemConfigApi {
 
   /// Parameters:
   ///
-  /// * [SystemConfigDto] systemConfigDto (required):
-  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
-    final response = await updateConfigWithHttpInfo(systemConfigDto,);
+  /// * [PartialSystemConfigDto] partialSystemConfigDto (required):
+  Future<SystemConfigDto?> updateConfig(PartialSystemConfigDto partialSystemConfigDto,) async {
+    final response = await updateConfigWithHttpInfo(partialSystemConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -362,6 +362,8 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OnThisDayDto':
           return OnThisDayDto.fromJson(value);
+        case 'PartialSystemConfigDto':
+          return PartialSystemConfigDto.fromJson(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
         case 'PathEntityType':

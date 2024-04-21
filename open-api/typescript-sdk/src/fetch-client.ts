@@ -988,6 +988,24 @@ export type SystemConfigDto = {
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
 };
+export type PartialSystemConfigDto = {
+    ffmpeg?: SystemConfigFFmpegDto;
+    image?: SystemConfigImageDto;
+    job?: SystemConfigJobDto;
+    library?: SystemConfigLibraryDto;
+    logging?: SystemConfigLoggingDto;
+    machineLearning?: SystemConfigMachineLearningDto;
+    map?: SystemConfigMapDto;
+    newVersionCheck?: SystemConfigNewVersionCheckDto;
+    oauth?: SystemConfigOAuthDto;
+    passwordLogin?: SystemConfigPasswordLoginDto;
+    reverseGeocoding?: SystemConfigReverseGeocodingDto;
+    server?: SystemConfigServerDto;
+    storageTemplate?: SystemConfigStorageTemplateDto;
+    theme?: SystemConfigThemeDto;
+    trash?: SystemConfigTrashDto;
+    user?: SystemConfigUserDto;
+};
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
     hourOptions: string[];
@@ -2556,8 +2574,8 @@ export function getConfig(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function updateConfig({ systemConfigDto }: {
-    systemConfigDto: SystemConfigDto;
+export function updateConfig({ partialSystemConfigDto }: {
+    partialSystemConfigDto: PartialSystemConfigDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2565,7 +2583,7 @@ export function updateConfig({ systemConfigDto }: {
     }>("/system-config", oazapfts.json({
         ...opts,
         method: "PUT",
-        body: systemConfigDto
+        body: partialSystemConfigDto
     })));
 }
 export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
