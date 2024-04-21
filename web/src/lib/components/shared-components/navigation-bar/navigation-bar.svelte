@@ -20,6 +20,7 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { isUserUsingMouse } from '$lib/stores/input-device.store';
 
   export let showUploadButton = true;
 
@@ -131,9 +132,7 @@
         >
           <button
             class="flex ml-2"
-            on:mouseover={() => (shouldShowAccountInfo = true)}
-            on:focus={() => (shouldShowAccountInfo = true)}
-            on:blur={() => (shouldShowAccountInfo = false)}
+            on:mouseenter={() => (shouldShowAccountInfo = true)}
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
@@ -142,7 +141,7 @@
             {/key}
           </button>
 
-          {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
+          {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel && $isUserUsingMouse}
             <div
               in:fade={{ delay: 500, duration: 150 }}
               out:fade={{ delay: 200, duration: 150 }}
