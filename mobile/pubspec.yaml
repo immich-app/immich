@@ -35,7 +35,7 @@ dependencies:
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.9
-  package_info_plus: ^5.0.1
+  package_info_plus: ^7.0.0
   url_launcher: ^6.2.4
   http: ^0.13.6
   cancellation_token_http: ^2.0.0
