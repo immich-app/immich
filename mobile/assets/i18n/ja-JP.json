@@ -509,5 +509,7 @@
   "version_announcement_overlay_title": "サーバーの新バージョンリリース\uD83C\uDF89",
   "viewer_remove_from_stack": "スタックから外す",
   "viewer_stack_use_as_main_asset": "メインの画像として使用する",
-  "viewer_unstack": "スタックを解除"
+  "viewer_unstack": "スタックを解除",
+  "haptic_feedback_title": "触覚フィードバック",
+  "haptic_feedback_switch": "触覚フィードバックを有効にする"
 }
