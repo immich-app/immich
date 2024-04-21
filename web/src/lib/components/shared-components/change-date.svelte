@@ -55,7 +55,9 @@
   };
 
   const handleKeydown = (event: KeyboardEvent) => {
-    event.stopPropagation();
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.stopPropagation();
+    }
   };
 </script>
 
