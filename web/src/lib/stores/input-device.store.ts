@@ -12,25 +12,28 @@ const isUsingCoarsePointer = () => {
 }
 
 export const isUserUsingTouchDevice = readable(isUsingCoarsePointer(), (set) => {
-  let isTouching = false;
+  let touchCount = 0;
   let lastTouchEvent = 0;
 
-  const onTouchStart = () => {
-    isTouching = true;
+  const onTouchStart = (event: TouchEvent) => {
+    touchCount = event.touches.length;
     set(true);
   };
 
-  const onTouchEnd = () => {
-    isTouching = false;
-    lastTouchEvent = Date.now();
+  const onTouchEnd = (event: TouchEvent) => {
+    touchCount = event.touches.length;
+    if (touchCount == 0) {
+      lastTouchEvent = Date.now();
+    }
     set(true);
   };
 
   const onMouseMove = () => {
-    if (!isTouching && (lastTouchEvent === 0 || Date.now() - lastTouchEvent >= 1000)) {
+    if (touchCount === 0 && (lastTouchEvent === 0 || Date.now() - lastTouchEvent >= 1000)) {
       // We make sure the last touch event has been made at least 1s before.
       // Otherwise, it may indicate the browser has emitted a 'mousevent'
       // despite being touch-only.
+      lastTouchEvent = 0;
       set(false);
     }
   };
@@ -40,11 +43,13 @@ export const isUserUsingTouchDevice = readable(isUsingCoarsePointer(), (set) => 
   window.addEventListener('touchstart', onTouchStart);
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('touchend', onTouchEnd);
+  window.addEventListener('touchcancel', onTouchEnd);
 
   return () => {
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('touchend', onTouchEnd);
+    window.removeEventListener('touchcancel', onTouchEnd);
   };
 });
 
