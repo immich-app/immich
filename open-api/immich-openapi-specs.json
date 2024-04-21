@@ -2398,118 +2398,6 @@
         ]
       }
     },
-    "/audit/file-report": {
-      "get": {
-        "operationId": "getAuditFiles",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileReportDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/checksum": {
-      "post": {
-        "operationId": "getFileChecksums",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileChecksumDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FileChecksumResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/fix": {
-      "post": {
-        "operationId": "fixAuditFiles",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileReportFixDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -4482,6 +4370,118 @@
         ]
       }
     },
+    "/report": {
+      "get": {
+        "operationId": "getAuditFiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileReportDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/checksum": {
+      "post": {
+        "operationId": "getFileChecksums",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileChecksumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FileChecksumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/fix": {
+      "post": {
+        "operationId": "fixAuditFiles",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileReportFixDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
     "/search": {
       "get": {
         "deprecated": true,
@@ -4942,31 +4942,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/admin-onboarding": {
-      "post": {
-        "operationId": "setAdminOnboarding",
-        "parameters": [],
-        "responses": {
-          "204": {
             "description": ""
           }
         },
@@ -5935,6 +5910,103 @@
         ],
         "tags": [
           "System Config"
+        ]
+      }
+    },
+    "/system-metadata/admin-onboarding": {
+      "get": {
+        "operationId": "getAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      },
+      "post": {
+        "operationId": "updateAdminOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      }
+    },
+    "/system-metadata/reverse-geocoding-state": {
+      "get": {
+        "operationId": "getReverseGeocodingState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseGeocodingStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
         ]
       }
     },
@@ -7059,7 +7131,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.101.0",
+    "version": "1.102.3",
     "contact": {}
   },
   "tags": [],
@@ -7230,6 +7302,17 @@
         },
         "required": [
           "sharedUserIds"
+        ],
+        "type": "object"
+      },
+      "AdminOnboardingUpdateDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -9702,6 +9785,23 @@
         ],
         "type": "object"
       },
+      "ReverseGeocodingStateResponseDto": {
+        "properties": {
+          "lastImportFileName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lastUpdate": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "lastImportFileName",
+          "lastUpdate"
+        ],
+        "type": "object"
+      },
       "ScanLibraryDto": {
         "properties": {
           "refreshAllFiles": {
@@ -10615,6 +10715,9 @@
           "colorspace": {
             "$ref": "#/components/schemas/Colorspace"
           },
+          "extractEmbedded": {
+            "type": "boolean"
+          },
           "previewFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
@@ -10633,6 +10736,7 @@
         },
         "required": [
           "colorspace",
+          "extractEmbedded",
           "previewFormat",
           "previewSize",
           "quality",

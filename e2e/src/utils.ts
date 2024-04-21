@@ -24,8 +24,8 @@ import {
   getConfigDefaults,
   login,
   searchMetadata,
-  setAdminOnboarding,
   signUpAdmin,
+  updateAdminOnboarding,
   updateAlbumUser,
   updateConfig,
   validate,
@@ -265,7 +265,10 @@ export const utils = {
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
     if (options.onboarding) {
-      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+      await updateAdminOnboarding(
+        { adminOnboardingUpdateDto: { isOnboarded: true } },
+        { headers: asBearerAuth(response.accessToken) },
+      );
     }
     return response;
   },

@@ -16,11 +16,13 @@ export enum SlideshowNavigation {
 export enum SlideshowLook {
   Contain = 'contain',
   Cover = 'cover',
+  BlurredBackground = 'blurred-background',
 }
 
 export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
   [SlideshowLook.Contain]: 'object-contain',
   [SlideshowLook.Cover]: 'object-cover',
+  [SlideshowLook.BlurredBackground]: 'object-contain',
 };
 
 function createSlideshowStore() {

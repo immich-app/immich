@@ -27,6 +27,7 @@
     getActivityStatistics,
     getAllAlbums,
     runAssetJobs,
+    restoreAssets,
     updateAsset,
     updateAlbumInfo,
     type ActivityResponseDto,
@@ -49,7 +50,7 @@
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
-  import VideoViewer from './video-viewer.svelte';
+  import VideoViewer from './video-wrapper-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -403,6 +404,22 @@
     await handleGetAllAlbums();
   };
 
+  const handleRestoreAsset = async () => {
+    try {
+      await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+      asset.isTrashed = false;
+
+      dispatch('action', { type: AssetAction.RESTORE, asset });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Restored asset`,
+      });
+    } catch (error) {
+      handleError(error, 'Error restoring asset');
+    }
+  };
+
   const toggleArchive = async () => {
     try {
       const data = await updateAsset({
@@ -556,6 +573,7 @@
           on:delete={() => trashOrDelete()}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
+          on:restoreAsset={() => handleRestoreAsset()}
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
@@ -604,6 +622,7 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              projectionType={previewStackedAsset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -624,6 +643,7 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                projectionType={asset.exifInfo?.projectionType}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -637,6 +657,7 @@
           {:else}
             <VideoViewer
               assetId={asset.id}
+              projectionType={asset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
