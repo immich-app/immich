@@ -99,15 +99,7 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.albumUsers.toSorted((a, b) => {
-        if (a.role === AlbumUserRole.Viewer && b.role === AlbumUserRole.Editor) {
-          return 1;
-        }
-        if (a.role === AlbumUserRole.Editor && b.role === AlbumUserRole.Viewer) {
-          return -1;
-        }
-        return a.user.name.localeCompare(b.user.name);
-      }) as { user, role }}
+      {#each album.albumUsers as { user, role }}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >

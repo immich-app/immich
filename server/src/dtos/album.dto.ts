@@ -136,6 +136,16 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     }
   }
 
+  albumUsers.sort((a, b) => {
+    if (a.role === AlbumUserRole.VIEWER && b.role === AlbumUserRole.EDITOR) {
+      return 1;
+    }
+    if (a.role === AlbumUserRole.EDITOR && b.role === AlbumUserRole.VIEWER) {
+      return -1;
+    }
+    return a.user.name.localeCompare(b.user.name);
+  });
+
   const assets = entity.assets || [];
 
   const hasSharedLink = entity.sharedLinks?.length > 0;
