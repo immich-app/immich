@@ -169,7 +169,7 @@ export class AlbumService {
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
-    await this.access.requirePermission(auth, Permission.ALBUM_WRITE, id);
+    await this.access.requirePermission(auth, Permission.ALBUM_ADD_ASSET, id);
 
     const results = await addAssets(
       auth,
@@ -192,7 +192,7 @@ export class AlbumService {
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
 
-    await this.access.requirePermission(auth, Permission.ALBUM_WRITE, id);
+    await this.access.requirePermission(auth, Permission.ALBUM_REMOVE_ASSET, id);
 
     const results = await removeAssets(
       auth,

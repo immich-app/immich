@@ -21,9 +21,9 @@ export enum Permission {
 
   // ALBUM_CREATE = 'album.create',
   ALBUM_READ = 'album.read',
-  ALBUM_WRITE = 'album.write',
   ALBUM_UPDATE = 'album.update',
   ALBUM_DELETE = 'album.delete',
+  ALBUM_ADD_ASSET = 'album.addAsset',
   ALBUM_REMOVE_ASSET = 'album.removeAsset',
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
@@ -144,7 +144,7 @@ export class AccessCore {
           : new Set();
       }
 
-      case Permission.ALBUM_WRITE: {
+      case Permission.ALBUM_ADD_ASSET: {
         return sharedLink.allowUpload
           ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
           : new Set();
@@ -231,7 +231,7 @@ export class AccessCore {
         return setUnion(isOwner, isShared);
       }
 
-      case Permission.ALBUM_WRITE: {
+      case Permission.ALBUM_ADD_ASSET: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
         const isShared = await this.repository.album.checkSharedAlbumAccess(
           auth.user.id,
