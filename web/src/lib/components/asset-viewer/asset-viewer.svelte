@@ -589,7 +589,7 @@
     {/if}
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 justify-self-start">
         <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
@@ -677,48 +677,10 @@
           {/if}
         {/key}
       {/if}
-
-      {#if $stackAssetsStore.length > 0 && withStacked}
-        <div
-          id="stack-slideshow"
-          class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
-        >
-          <div class="relative w-full whitespace-nowrap transition-all">
-            {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
-              <div
-                class="{stackedAsset.id == asset.id
-                  ? '-translate-y-[1px]'
-                  : '-translate-y-0'} inline-block px-1 transition-transform"
-              >
-                <Thumbnail
-                  class="{stackedAsset.id == asset.id
-                    ? 'bg-transparent border-2 border-white'
-                    : 'bg-gray-700/40'} inline-block hover:bg-transparent"
-                  asset={stackedAsset}
-                  onClick={() => {
-                    asset = stackedAsset;
-                    preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
-                  }}
-                  on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
-                  readonly
-                  thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
-                  showStackedIcon={false}
-                />
-
-                {#if stackedAsset.id == asset.id}
-                  <div class="w-full flex place-items-center place-content-center">
-                    <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
-                  </div>
-                {/if}
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
     </div>
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 justify-self-end">
         <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
@@ -739,6 +701,44 @@
           on:close={() => ($isShowDetail = false)}
           on:closeViewer={handleCloseViewer}
         />
+      </div>
+    {/if}
+
+    {#if $stackAssetsStore.length > 0 && withStacked}
+      <div
+        id="stack-slideshow"
+        class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative w-full whitespace-nowrap transition-all">
+          {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
+            <div
+              class="{stackedAsset.id == asset.id
+                ? '-translate-y-[1px]'
+                : '-translate-y-0'} inline-block px-1 transition-transform"
+            >
+              <Thumbnail
+                class="{stackedAsset.id == asset.id
+                  ? 'bg-transparent border-2 border-white'
+                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+                asset={stackedAsset}
+                onClick={() => {
+                  asset = stackedAsset;
+                  preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                }}
+                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+                showStackedIcon={false}
+              />
+
+              {#if stackedAsset.id == asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
       </div>
     {/if}
 
