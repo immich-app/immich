@@ -8,6 +8,7 @@
   import { getShortDateRange } from '$lib/utils/date-time';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import { isUserUsingMouse } from '$lib/stores/input-device.store';
 
   export let album: AlbumResponseDto;
   export let showOwner = false;
@@ -27,7 +28,7 @@
   class="group relative rounded-2xl border border-transparent p-3 sm:p-4 lg:p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
-  {#if onShowContextMenu}
+  {#if onShowContextMenu && $isUserUsingMouse}
     <div
       id="icon-{album.id}"
       class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
