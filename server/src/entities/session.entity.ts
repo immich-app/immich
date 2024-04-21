@@ -1,8 +1,8 @@
 import { UserEntity } from 'src/entities/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('user_token')
-export class UserTokenEntity {
+@Entity('sessions')
+export class SessionEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

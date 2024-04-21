@@ -12,16 +12,17 @@ import { newAccessRepositoryMock } from 'test/repositories/access.repository.moc
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { Mocked } from 'vitest';
 
 const untilDate = new Date(2024);
 const mapAssetOpts = { auth: authStub.user1, stripMetadata: false, withStack: true };
 
 describe(SyncService.name, () => {
   let sut: SyncService;
-  let accessMock: jest.Mocked<IAccessRepository>;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let auditMock: jest.Mocked<IAuditRepository>;
+  let accessMock: Mocked<IAccessRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let auditMock: Mocked<IAuditRepository>;
 
   beforeEach(() => {
     partnerMock = newPartnerRepositoryMock();

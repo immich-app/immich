@@ -13,6 +13,18 @@ export enum SlideshowNavigation {
   DescendingOrder = 'descending-order',
 }
 
+export enum SlideshowLook {
+  Contain = 'contain',
+  Cover = 'cover',
+  BlurredBackground = 'blurred-background',
+}
+
+export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
+  [SlideshowLook.Contain]: 'object-contain',
+  [SlideshowLook.Cover]: 'object-cover',
+  [SlideshowLook.BlurredBackground]: 'object-contain',
+};
+
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);
   const stopState = writable<boolean>(false);
@@ -21,6 +33,7 @@ function createSlideshowStore() {
     'slideshow-navigation',
     SlideshowNavigation.DescendingOrder,
   );
+  const slideshowLook = persisted<SlideshowLook>('slideshow-look', SlideshowLook.Contain);
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
 
   const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
@@ -50,6 +63,7 @@ function createSlideshowStore() {
       },
     },
     slideshowNavigation,
+    slideshowLook,
     slideshowState,
     slideshowDelay,
     showProgressBar,

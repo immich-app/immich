@@ -36,9 +36,9 @@ export class SystemConfigService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
   ) {
-    this.core = SystemConfigCore.create(repository);
-    this.core.config$.subscribe((config) => this.setLogLevel(config));
     this.logger.setContext(SystemConfigService.name);
+    this.core = SystemConfigCore.create(repository, this.logger);
+    this.core.config$.subscribe((config) => this.setLogLevel(config));
   }
 
   async init() {

@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.101.0",
+  "version": "1.102.3",
   "description": "",
   "author": "",
   "private": true,
@@ -18,11 +18,9 @@
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
     "check:all": "npm run check:code && npm run test:cov",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "e2e:jobs": "jest --config e2e/jobs/jest-e2e.json --runInBand",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:cov": "vitest --coverage",
     "typeorm": "typeorm",
     "typeorm:migrations:create": "typeorm migration:create",
     "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/database.config.js",
@@ -33,7 +31,6 @@
     "sql:generate": "node ./dist/utils/sql.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.22.11",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",
@@ -49,7 +46,6 @@
     "@opentelemetry/exporter-prometheus": "^0.50.0",
     "@opentelemetry/sdk-node": "^0.50.0",
     "@socket.io/postgres-adapter": "^0.3.1",
-    "@types/picomatch": "^2.3.3",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^5.1.1",
@@ -90,6 +86,7 @@
     "@nestjs/cli": "^10.1.16",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
+    "@swc/core": "^1.4.14",
     "@testcontainers/postgresql": "^10.2.1",
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
@@ -98,73 +95,34 @@
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/imagemin": "^8.0.1",
-    "@types/jest": "29.5.12",
-    "@types/jest-when": "^3.5.2",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.5.7",
+    "@types/picomatch": "^2.3.3",
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.5.0",
     "dotenv": "^16.3.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-unicorn": "^52.0.0",
-    "jest": "^29.6.4",
-    "jest-when": "^3.6.0",
     "mock-fs": "^5.2.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^3.2.3",
     "rimraf": "^5.0.1",
     "source-map-support": "^0.5.21",
     "sql-formatter": "^15.0.0",
-    "ts-jest": "^29.1.1",
-    "ts-loader": "^9.4.4",
-    "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3",
-    "utimes": "^5.2.1"
-  },
-  "jest": {
-    "clearMocks": true,
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "<rootDir>/src/cores/*.(t|j)s",
-      "<rootDir>/src/dtos/*.(t|j)s",
-      "<rootDir>/src/interfaces/*.(t|j)s",
-      "<rootDir>/src/services/*.(t|j)s",
-      "<rootDir>/src/utils/*.(t|j)s",
-      "<rootDir>/src/*.t|j)s"
-    ],
-    "coverageDirectory": "./coverage",
-    "coverageThreshold": {
-      "./src/": {
-        "branches": 70,
-        "functions": 75,
-        "lines": 80,
-        "statements": 80
-      }
-    },
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "^test(|/.*)$": "<rootDir>/test/$1",
-      "^src(|/.*)$": "<rootDir>/src/$1"
-    },
-    "globalSetup": "<rootDir>/test/global-setup.js"
+    "unplugin-swc": "^1.4.5",
+    "utimes": "^5.2.1",
+    "vitest": "^1.5.0"
   },
   "volta": {
-    "node": "20.12.1"
+    "node": "20.12.2"
   }
 }

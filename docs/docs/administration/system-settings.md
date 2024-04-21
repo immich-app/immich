@@ -37,9 +37,7 @@ You can set the scanning interval using the preset or cron format. For more info
 
 ## Logging
 
-By default logs are set to record at the log level, the network administrator can choose a deeper or lower level of logs according to his decision or according to the needs required by the Immich support team.
-
-Here you can [learn about the different error levels](https://sematext.com/blog/logging-levels/).
+The default Immich log level is `Log` (commonly known as `Info`). The Immich administrator can choose a higher or lower log level according to personal preference or as requested by the Immich support team.
 
 ## Machine Learning Settings
 

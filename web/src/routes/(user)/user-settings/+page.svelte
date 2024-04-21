@@ -19,7 +19,7 @@
   </svelte:fragment>
   <section class="mx-4 flex place-content-center">
     <div class="w-full max-w-3xl">
-      <UserSettingsList keys={data.keys} devices={data.devices} />
+      <UserSettingsList keys={data.keys} sessions={data.sessions} />
     </div>
   </section>
 </UserPageLayout>

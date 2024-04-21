@@ -1,20 +1,45 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import type { OnStack } from '$lib/utils/actions';
-  import { stackAssets } from '$lib/utils/asset-utils';
-  import { mdiImageMultipleOutline } from '@mdi/js';
+  import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
+  import { stackAssets, unstackAssets } from '$lib/utils/asset-utils';
+  import type { OnStack, OnUnstack } from '$lib/utils/actions';
 
+  export let unstack = false;
   export let onStack: OnStack | undefined;
+  export let onUnstack: OnUnstack | undefined;
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleStack = async () => {
-    await stackAssets([...getOwnedAssets()], (ids) => {
+    const selectedAssets = [...getOwnedAssets()];
+    const ids = await stackAssets(selectedAssets);
+    if (ids) {
       onStack?.(ids);
       clearSelect();
-    });
+    }
+  };
+
+  const handleUnstack = async () => {
+    const selectedAssets = [...getOwnedAssets()];
+    if (selectedAssets.length !== 1) {
+      return;
+    }
+    const { stack } = selectedAssets[0];
+    if (!stack) {
+      return;
+    }
+    const assets = [selectedAssets[0], ...stack];
+    const unstackedAssets = await unstackAssets(assets);
+    if (unstackedAssets) {
+      onUnstack?.(unstackedAssets);
+    }
+    clearSelect();
   };
 </script>
 
-<MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />
+{#if unstack}
+  <MenuOption text="Un-stack" icon={mdiImageMinusOutline} on:click={handleUnstack} />
+{:else}
+  <MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />
+{/if}

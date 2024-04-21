@@ -36,9 +36,9 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -48,7 +48,6 @@ const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
 export class LibraryService {
-  readonly logger = new ImmichLogger(LibraryService.name);
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
@@ -62,8 +61,10 @@ export class LibraryService {
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(LibraryService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
   }
 
   async init() {

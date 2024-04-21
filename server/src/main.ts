@@ -20,7 +20,7 @@ async function bootstrapMicroservices() {
   const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.MICROSERVICES_PORT) || 3002;
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
-  const logger = app.get(ILoggerRepository);
+  const logger = await app.resolve(ILoggerRepository);
   logger.setContext('ImmichMicroservice');
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
@@ -36,7 +36,7 @@ async function bootstrapApi() {
   const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.SERVER_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  const logger = app.get(ILoggerRepository);
+  const logger = await app.resolve(ILoggerRepository);
 
   logger.setContext('ImmichServer');
   app.useLogger(logger);

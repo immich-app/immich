@@ -1,15 +1,16 @@
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newLoggerRepositoryMock = (): jest.Mocked<ILoggerRepository> => {
+export const newLoggerRepositoryMock = (): Mocked<ILoggerRepository> => {
   return {
-    setLogLevel: jest.fn(),
-    setContext: jest.fn(),
+    setLogLevel: vitest.fn(),
+    setContext: vitest.fn(),
 
-    verbose: jest.fn(),
-    debug: jest.fn(),
-    log: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    fatal: jest.fn(),
+    verbose: vitest.fn(),
+    debug: vitest.fn(),
+    log: vitest.fn(),
+    warn: vitest.fn(),
+    error: vitest.fn(),
+    fatal: vitest.fn(),
   };
 };

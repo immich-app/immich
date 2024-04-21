@@ -1,25 +1,26 @@
 import { UserCore } from 'src/cores/user.core';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newUserRepositoryMock = (reset = true): jest.Mocked<IUserRepository> => {
+export const newUserRepositoryMock = (reset = true): Mocked<IUserRepository> => {
   if (reset) {
     UserCore.reset();
   }
 
   return {
-    get: jest.fn(),
-    getAdmin: jest.fn(),
-    getByEmail: jest.fn(),
-    getByStorageLabel: jest.fn(),
-    getByOAuthId: jest.fn(),
-    getUserStats: jest.fn(),
-    getList: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getDeletedUsers: jest.fn(),
-    hasAdmin: jest.fn(),
-    updateUsage: jest.fn(),
-    syncUsage: jest.fn(),
+    get: vitest.fn(),
+    getAdmin: vitest.fn(),
+    getByEmail: vitest.fn(),
+    getByStorageLabel: vitest.fn(),
+    getByOAuthId: vitest.fn(),
+    getUserStats: vitest.fn(),
+    getList: vitest.fn(),
+    create: vitest.fn(),
+    update: vitest.fn(),
+    delete: vitest.fn(),
+    getDeletedUsers: vitest.fn(),
+    hasAdmin: vitest.fn(),
+    updateUsage: vitest.fn(),
+    syncUsage: vitest.fn(),
   };
 };

@@ -10,7 +10,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
-import { IMMICH_API_KEY_NAME } from 'src/constants';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
@@ -21,6 +20,7 @@ export enum Metadata {
   ADMIN_ROUTE = 'admin_route',
   SHARED_ROUTE = 'shared_route',
   PUBLIC_SECURITY = 'public_security',
+  API_KEY_SECURITY = 'api_key',
 }
 
 export interface AuthenticatedOptions {
@@ -32,7 +32,7 @@ export const Authenticated = (options: AuthenticatedOptions = {}) => {
   const decorators: MethodDecorator[] = [
     ApiBearerAuth(),
     ApiCookieAuth(),
-    ApiSecurity(IMMICH_API_KEY_NAME),
+    ApiSecurity(Metadata.API_KEY_SECURITY),
     SetMetadata(Metadata.AUTH_ROUTE, true),
   ];
 
