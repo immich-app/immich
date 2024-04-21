@@ -127,8 +127,7 @@
   class={searchBarClasses}
   bind:this={searchBar}
   transition:animate={{
-    x: '50%',
-    duration: 350,
+    duration: 200,
   }}
   use:clickOutside={{ onOutclick: onFocusOut }}
   use:focusOutside={{ onFocusOut }}
