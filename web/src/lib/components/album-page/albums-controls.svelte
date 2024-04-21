@@ -12,10 +12,12 @@
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
+    mdiFilterOutline,
     mdiFolderArrowDownOutline,
     mdiFolderArrowUpOutline,
     mdiFolderRemoveOutline,
     mdiFormatListBulletedSquare,
+    mdiMagnify,
     mdiPlusBoxOutline,
     mdiUnfoldLessHorizontal,
     mdiUnfoldMoreHorizontal,
@@ -24,6 +26,9 @@
   import {
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
+    collapseAllAlbumGroups,
+    createAlbumAndRedirect,
+    expandAllAlbumGroups,
     findGroupOptionMetadata,
     findSortOptionMetadata,
     getSelectedAlbumGroupOption,
@@ -32,8 +37,8 @@
   } from '$lib/utils/album-utils';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
-  import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
   import { fly } from 'svelte/transition';
+  import { currentMediaBreakpoint, MediaBreakpoint } from '$lib/stores/media-breakpoint.store';
 
   export let albumGroups: string[];
   export let searchQuery: string;
@@ -65,8 +70,13 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
+  const closeSearchBar = () => {
+    isSearchBarOpen = false;
+  };
+
   let selectedGroupOption: AlbumGroupOptionMetadata;
   let groupIcon: string;
+  let isSearchBarOpen = false;
 
   $: {
     selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
@@ -74,6 +84,8 @@
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   }
+
+  $: showSearchBar = isSearchBarOpen || searchQuery || $currentMediaBreakpoint >= MediaBreakpoint.XL;
 
   $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
@@ -89,8 +101,8 @@
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
 </script>
 
-<!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
-<div class="hidden xl:block h-10">
+<!-- VERY LARGE SCREENS: Filter Albums by Sharing Status (All, Owned, Shared) -->
+<div class="hidden 2xl:block h-10">
   <GroupTab
     filters={Object.keys(AlbumFilter)}
     selected={$albumViewSettings.filter}
@@ -99,8 +111,48 @@
 </div>
 
 <!-- Search Albums -->
-<div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
-  <SearchBar placeholder="Search albums" bind:name={searchQuery} isSearching={false} />
+{#if $currentMediaBreakpoint >= MediaBreakpoint.XL}
+  <div class="h-10 w-48 2xl:w-60">
+    <SearchBar placeholder="Search albums" bind:name={searchQuery} isSearching={false} />
+  </div>
+{:else if showSearchBar}
+  <div class="absolute left-0 right-0 z-10">
+    <div
+      class="ml-auto max-w-[700px]"
+      transition:fly={{
+        duration: 200,
+      }}
+    >
+      <SearchBar
+        placeholder="Search albums"
+        bind:name={searchQuery}
+        isSearching={false}
+        focus
+        on:blur={closeSearchBar}
+        on:submit={closeSearchBar}
+      />
+    </div>
+  </div>
+{:else}
+  <LinkButton on:click={() => (isSearchBarOpen = true)}>
+    <div class="flex">
+      <Icon path={mdiMagnify} size="18" />
+    </div>
+  </LinkButton>
+{/if}
+
+<!-- SMALL TO LARGE SCREENS: Filter Albums by Sharing Status -->
+<div class="block 2xl:hidden">
+  <Dropdown
+    title="Filter albums"
+    options={Object.keys(AlbumFilter)}
+    selectedOption={$albumViewSettings.filter}
+    on:select={({ detail }) => ($albumViewSettings.filter = detail)}
+    render={(text) => ({
+      title: text,
+      icon: mdiFilterOutline,
+    })}
+  />
 </div>
 
 <!-- Create Album -->
@@ -137,27 +189,25 @@
 />
 
 {#if getSelectedAlbumGroupOption($albumViewSettings) !== AlbumGroupBy.None}
-  <span in:fly={{ x: -50, duration: 250 }}>
-    <!-- Expand Album Groups -->
-    <div class="hidden xl:flex gap-0">
-      <div class="block">
-        <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldMoreHorizontal} size="18" />
-          </div>
-        </LinkButton>
-      </div>
-
-      <!-- Collapse Album Groups -->
-      <div class="block">
-        <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldLessHorizontal} size="18" />
-          </div>
-        </LinkButton>
-      </div>
+  <!-- Expand Album Groups -->
+  <div class="hidden xl:flex gap-0">
+    <div class="block">
+      <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiUnfoldMoreHorizontal} size="18" />
+        </div>
+      </LinkButton>
     </div>
-  </span>
+
+    <!-- Collapse Album Groups -->
+    <div class="block">
+      <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiUnfoldLessHorizontal} size="18" />
+        </div>
+      </LinkButton>
+    </div>
+  </div>
 {/if}
 
 <!-- Cover/List Display Toggle -->

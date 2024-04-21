@@ -18,7 +18,7 @@
     if (scrollbar) {
       scrollbarClass = 'immich-scrollbar';
       if (!noMargin) {
-        scrollbarClass += ' px-4 md:px-2 pt-2 pb-8';
+        scrollbarClass += ' px-2 pt-2 pb-8';
       }
     } else {
       scrollbarClass = 'scrollbar-hidden';
@@ -53,13 +53,17 @@
       <div
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 mr-4 items-center">
           <div class="font-medium">{title}</div>
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}
         </div>
-        <slot name="buttons" />
+        <div class="relative w-full">
+          <div class="ml-auto w-fit">
+            <slot name="buttons" />
+          </div>
+        </div>
       </div>
     {/if}
 
