@@ -5713,7 +5713,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SystemConfigDto"
+                "$ref": "#/components/schemas/PartialSystemConfigDto"
               }
             }
           },
@@ -9327,6 +9327,59 @@
         "required": [
           "year"
         ],
+        "type": "object"
+      },
+      "PartialSystemConfigDto": {
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+          },
+          "image": {
+            "$ref": "#/components/schemas/SystemConfigImageDto"
+          },
+          "job": {
+            "$ref": "#/components/schemas/SystemConfigJobDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/SystemConfigLibraryDto"
+          },
+          "logging": {
+            "$ref": "#/components/schemas/SystemConfigLoggingDto"
+          },
+          "machineLearning": {
+            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/SystemConfigMapDto"
+          },
+          "newVersionCheck": {
+            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/SystemConfigOAuthDto"
+          },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+          },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+          },
+          "server": {
+            "$ref": "#/components/schemas/SystemConfigServerDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          },
+          "trash": {
+            "$ref": "#/components/schemas/SystemConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SystemConfigUserDto"
+          }
+        },
         "type": "object"
       },
       "PartnerResponseDto": {

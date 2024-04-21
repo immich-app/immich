@@ -1,8 +1,14 @@
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { MapThemeDto, SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import {
+  MapThemeDto,
+  PartialSystemConfigDto,
+  SystemConfigDto,
+  SystemConfigTemplateStorageOptionDto,
+} from 'src/dtos/system-config.dto';
 import { AdminRoute, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { DeepPartial } from 'typeorm';
 
 @ApiTags('System Config')
 @Controller('system-config')
@@ -21,7 +27,7 @@ export class SystemConfigController {
   }
 
   @Put()
-  updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
+  updateConfig(@Body() dto: PartialSystemConfigDto): Promise<SystemConfigDto> {
     return this.service.updateConfig(dto);
   }
 

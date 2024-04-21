@@ -25,6 +25,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { DeepPartial } from 'typeorm';
 
 @Injectable()
 export class SystemConfigService {
@@ -67,12 +68,13 @@ export class SystemConfigService {
     }
   }
 
-  async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+  async updateConfig(dto: DeepPartial<SystemConfigDto>): Promise<SystemConfigDto> {
     const oldConfig = await this.core.getConfig();
+    const completeDto = _.merge(oldConfig, dto);
 
     try {
       await this.eventRepository.serverSendAsync(ServerAsyncEvent.CONFIG_VALIDATE, {
-        newConfig: dto,
+        newConfig: completeDto,
         oldConfig,
       });
     } catch (error) {
@@ -80,7 +82,7 @@ export class SystemConfigService {
       throw new BadRequestException(error instanceof Error ? error.message : error);
     }
 
-    const newConfig = await this.core.updateConfig(dto);
+    const newConfig = await this.core.updateConfig(completeDto);
 
     this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
     this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);

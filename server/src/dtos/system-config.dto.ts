@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -522,6 +522,8 @@ export class SystemConfigDto implements SystemConfig {
   @IsObject()
   user!: SystemConfigUserDto;
 }
+
+export class PartialSystemConfigDto extends PartialType(SystemConfigDto) {}
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
   return config;
