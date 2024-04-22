@@ -27,7 +27,8 @@
       "matchFileNames": ["mobile/**"],
       "groupName": "mobile",
       "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on tuesday"
+      "schedule": "on tuesday",
+      "addLabels": ["📱mobile"]
     },
     {
       "groupName": "exiftool",
