@@ -76,8 +76,8 @@
       <ImmichLogo class="w-[72%] md:w-[92%]" noText={!showLogoText} />
     </a>
 
-    <div class="flex justify-between gap-6 pr-6">
-      <div class="{isSearchBarFullWidth ? 'flex' : 'hidden'} sm:flex sm:w-full max-w-5xl pl-4 lg:pl-24">
+    <div class="flex justify-between xs:gap-6 pr-6">
+      <div class="{isSearchBarFullWidth ? 'flex' : 'hidden'} sm:flex sm:w-full max-w-5xl sm:pl-4 lg:pl-24">
         {#if $featureFlags.search && (!isSearchBarFullWidth || showSearchBar)}
           <SearchBar grayTheme fullWidth={isSearchBarFullWidth} bind:isOpen={showSearchBar} />
         {/if}

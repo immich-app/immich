@@ -30,16 +30,20 @@
 {#if group}
   <div class="grid">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <p on:click={() => toggleAlbumGroupCollapsing(group.id)} class="w-fit mt-2 pt-2 pr-2 mb-2 hover:cursor-pointer">
-      <Icon
-        path={mdiChevronRight}
-        size="24"
-        class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
-      />
-      <span class="font-bold text-2xl text-black dark:text-white">{group.name}</span>
-      <span class="ml-1.5 dark:text-immich-dark-fg">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
-    </p>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div on:click={() => toggleAlbumGroupCollapsing(group.id)} class="flex w-fit mt-2 pt-2 pr-2 mb-2 hover:cursor-pointer">
+      <div class="mt-2.5 mr-1">
+        <Icon
+          path={mdiChevronRight}
+          size="24"
+          class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
+        />
+      </div>
+      <div>
+        <span class="font-bold text-2xl text-black dark:text-white mr-1.5">{group.name}</span>
+        <span class="dark:text-immich-dark-fg">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
+      </div>
+    </div>
     <hr class="dark:border-immich-dark-gray" />
   </div>
 {/if}
@@ -70,7 +74,13 @@
 
 <style lang="postcss">
   .album-grid {
-    @apply gap-y-1 grid-cols-[repeat(auto-fill,minmax(9rem,1fr))];
+    @apply gap-y-1 grid-cols-[repeat(auto-fill,minmax(7rem,1fr))];
+  }
+
+  @screen 2xs {
+    .album-grid {
+      @apply gap-y-1 grid-cols-[repeat(auto-fill,minmax(9rem,1fr))];
+    }
   }
 
   @screen sm {

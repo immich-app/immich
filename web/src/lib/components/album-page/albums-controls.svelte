@@ -142,7 +142,7 @@
 {/if}
 
 <!-- SMALL TO LARGE SCREENS: Filter Albums by Sharing Status -->
-<div class="block 2xl:hidden">
+<div class="hidden 2xs:block 2xl:hidden">
   <Dropdown
     title="Filter albums"
     options={Object.keys(AlbumFilter)}

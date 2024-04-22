@@ -153,11 +153,12 @@
         name="q"
         class="w-full {grayTheme
           ? 'dark:bg-immich-dark-gray'
-          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
+          : 'dark:bg-immich-dark-bg'} px-14 py-4 pr-[6.25rem] text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
           $savedSearchTerms.length > 0) ||
         showFilter
           ? 'rounded-t-3xl border border-gray-200 bg-white opacity-100 dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
+        style:padding-right="{showClearIcon ? 6.25 : 4}rem"
         placeholder="Search your photos"
         required
         pattern="^(?!m:$).*$"

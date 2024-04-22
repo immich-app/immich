@@ -39,8 +39,10 @@
           class="relative flex w-full cursor-pointer gap-3 py-3 pl-5"
           on:click={() => dispatch('selectSearchTerm', savedSearchTerm)}
         >
-          <Icon path={mdiMagnify} size="1.5em" />
-          {savedSearchTerm}
+          <p class="mt-[0.1875rem]">
+            <Icon path={mdiMagnify} size="1em" />
+          </p>
+          <p class="text-left pr-12 truncate">{savedSearchTerm}</p>
         </button>
         <div class="absolute right-5 top-0 items-center justify-center py-3">
           <button type="button" on:click={() => dispatch('clearSearchTerm', savedSearchTerm)}

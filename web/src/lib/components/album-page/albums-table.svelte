@@ -48,13 +48,19 @@
       >
         <tr class="flex w-full place-items-center p-2 md:pl-5 md:pr-5 md:pt-3 md:pb-3">
           <td class="text-md text-left -mb-1">
-            <Icon
-              path={mdiChevronRight}
-              size="20"
-              class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
-            />
-            <span class="font-bold text-2xl">{albumGroup.name}</span>
-            <span class="ml-1.5">({albumGroup.albums.length} {albumGroup.albums.length > 1 ? 'albums' : 'album'})</span>
+            <div class="flex">
+              <div class="mt-[0.45rem] mr-1">
+                <Icon
+                  path={mdiChevronRight}
+                  size="20"
+                  class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
+                />
+              </div>
+              <div>
+                <span class="font-bold text-2xl mr-1.5">{albumGroup.name}</span>
+                <span>({albumGroup.albums.length} {albumGroup.albums.length > 1 ? 'albums' : 'album'})</span>
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
