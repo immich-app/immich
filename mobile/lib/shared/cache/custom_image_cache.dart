@@ -8,7 +8,7 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote
 /// so that a single large image does not evict all small iamges
 final class CustomImageCache implements ImageCache {
   final _small = ImageCache();
-  final _large = ImageCache();
+  final _large = ImageCache()..maximumSize = 12; // Maximum 12 images
 
   @override
   int get maximumSize => _small.maximumSize + _large.maximumSize;
