@@ -3,6 +3,7 @@ import {
   AssetFileUploadResponseDto,
   AssetOrder,
   LoginResponseDto,
+  PersonResponseDto,
   SharedLinkType,
   addAssetsToAlbum,
   deleteUser,
@@ -12,7 +13,7 @@ import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const user1SharedUser = 'user1SharedUser';
 const user1SharedLink = 'user1SharedLink';
@@ -26,25 +27,31 @@ describe('/album', () => {
   let user1: LoginResponseDto;
   let user1Asset1: AssetFileUploadResponseDto;
   let user1Asset2: AssetFileUploadResponseDto;
+  let user4Asset1: AssetFileUploadResponseDto;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
   let user3: LoginResponseDto; // deleted
+  let user4: LoginResponseDto;
+  let user4Albums: AlbumResponseDto[];
+  let person1: PersonResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
 
     admin = await utils.adminSetup();
 
-    [user1, user2, user3] = await Promise.all([
+    [user1, user2, user3, user4] = await Promise.all([
       utils.userSetup(admin.accessToken, createUserDto.user1),
       utils.userSetup(admin.accessToken, createUserDto.user2),
       utils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.user4),
     ]);
 
-    [user1Asset1, user1Asset2] = await Promise.all([
+    [user1Asset1, user1Asset2, user4Asset1 ] = await Promise.all([
       utils.createAsset(user1.accessToken, { isFavorite: true }),
       utils.createAsset(user1.accessToken),
+      utils.createAsset(user4.accessToken),
     ]);
 
     const albums = await Promise.all([
@@ -76,6 +83,12 @@ describe('/album', () => {
         albumName: 'Deleted',
         sharedWithUserIds: [user1.userId],
       }),
+
+      //user 4
+      utils.createAlbum(user4.accessToken, {
+        albumName: '',
+        assetIds: [],
+      })
     ]);
 
     await addAssetsToAlbum(
@@ -87,6 +100,7 @@ describe('/album', () => {
 
     user1Albums = albums.slice(0, 3);
     user2Albums = albums.slice(3, 6);
+    user4Albums = [albums.at(-1) as AlbumResponseDto];
 
     await Promise.all([
       // add shared link to user1SharedLink album
@@ -102,6 +116,13 @@ describe('/album', () => {
     ]);
 
     await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+
+    person1 = await utils.createPerson(admin.accessToken, {
+      name: 'John Doe',
+    });
+    
+    await utils.createFace({ assetId: user4Asset1.id, personId: person1.id });
+
   });
 
   describe('GET /album', () => {
@@ -313,6 +334,43 @@ describe('/album', () => {
         ...user1Albums[0],
         assets: [],
         assetCount: 1,
+      });
+    });
+
+    describe('', () => {
+      beforeAll(async () => {
+        await utils.addPeopleToAlbum(user4.accessToken, user4Albums[0].id, { ids: [person1.id] });
+      });
+
+      it('should return album info without people when withoutPeople is true', async () => {
+        const { status, body } = await request(app)
+          .get(`/album/${user4Albums[0].id}?withoutPeople=true`)
+          .set('Authorization', `Bearer ${user4.accessToken}`);
+
+        expect(status).toBe(200);
+        
+        expect(body).toEqual(expect.objectContaining({ albumName: 'John Doe' }));
+        expect(body).toEqual(expect.not.objectContaining({people:[], peopleTogether: false }));
+      });
+
+      it('should return album info with people when withoutPeople is false', async () => {
+        const { status, body } = await request(app)
+          .get(`/album/${user4Albums[0].id}?withoutPeople=false`)
+          .set('Authorization', `Bearer ${user4.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual(expect.objectContaining({ albumName: 'John Doe' }));
+        expect(body).toEqual(expect.not.objectContaining({people:[person1], peopleTogether: false }));
+      });
+
+      it('should return album info with people when withoutPeople is undefined', async () => {
+        const { status, body } = await request(app)
+          .get(`/album/${user4Albums[0].id}`)
+          .set('Authorization', `Bearer ${user4.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toEqual(expect.objectContaining({ albumName: 'John Doe' }));
+        expect(body).toEqual(expect.not.objectContaining({people:[person1], peopleTogether: false }));
       });
     });
   });
@@ -543,6 +601,108 @@ describe('/album', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('User already added'));
+    });
+  });
+
+  describe('PUT :id/people', async () => {
+    let album: AlbumResponseDto;
+    let endpoint: string;
+    let jamesAsset: AssetFileUploadResponseDto;
+    let robertAsset: AssetFileUploadResponseDto;
+    let allAsset: AssetFileUploadResponseDto;
+    let james: PersonResponseDto;
+    let robert: PersonResponseDto;
+    let john: PersonResponseDto;
+
+    beforeAll(async () => {
+      [jamesAsset, robertAsset, allAsset] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
+
+      [james, robert, john] = await Promise.all([
+        utils.createPerson(admin.accessToken, {
+          name: 'james',
+        }),
+        utils.createPerson(admin.accessToken, {
+          name: 'robert',
+        }),
+        utils.createPerson(admin.accessToken, {
+          name: 'jhon',
+        }),
+      ]);
+
+      await Promise.all([
+        utils.createFace({ assetId: jamesAsset.id, personId: james.id }),
+
+        utils.createFace({ assetId: robertAsset.id, personId: robert.id }),
+
+        utils.createFace({ assetId: allAsset.id, personId: james.id }),
+        utils.createFace({ assetId: allAsset.id, personId: robert.id }),
+        utils.createFace({ assetId: allAsset.id, personId: john.id }),
+      ]);
+    });
+
+    beforeEach(async () => {
+      album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbum',
+      });
+
+      endpoint = `/album/${album.id}/people`;
+    });
+
+    afterEach(async () => {
+      await utils.deleteAlbum(user1.accessToken, album.id);
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put(endpoint);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    describe('should be able to add people to own album', () => {
+      it('one person', async () => {
+        const { status, body } = await request(app)
+          .put(endpoint)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ ids: [james.id] });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: jamesAsset.id, success: true }),
+            expect.objectContaining({ id: allAsset.id, success: true }),
+          ]),
+        );
+      });
+
+      it('anyone of two or more people', async () => {
+        const { status, body } = await request(app)
+          .put(endpoint)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ ids: [james.id, robert.id] });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: jamesAsset.id, success: true }),
+            expect.objectContaining({ id: robertAsset.id, success: true }),
+            expect.objectContaining({ id: allAsset.id, success: true }),
+          ]),
+        );
+      });
+
+      it('two or more people together', async () => {
+        const { status, body } = await request(app)
+          .put(endpoint)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ ids: [james.id, robert.id, john.id], together: true });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(expect.arrayContaining([expect.objectContaining({ id: allAsset.id, success: true })]));
+      });
     });
   });
 });

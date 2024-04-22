@@ -1,4 +1,5 @@
 import {
+  AddPeopleDto,
   AllJobStatusResponseDto,
   AssetFileUploadResponseDto,
   AssetResponseDto,
@@ -10,6 +11,7 @@ import {
   PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
+  addPeopleToAlbum,
   createAlbum,
   createApiKey,
   createLibrary,
@@ -17,6 +19,7 @@ import {
   createSharedLink,
   createUser,
   defaults,
+  deleteAlbum,
   deleteAssets,
   getAllAssets,
   getAllJobsStatus,
@@ -282,6 +285,11 @@ export const utils = {
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  deleteAlbum: (accessToken: string, id: string) => deleteAlbum({ id }, { headers: asBearerAuth(accessToken) }),
+
+  addPeopleToAlbum: (accessToken: string, id: string, dto: AddPeopleDto) => 
+    addPeopleToAlbum({ id, addPeopleDto:dto },  { headers: asBearerAuth(accessToken) }),
 
   createAsset: async (
     accessToken: string,
