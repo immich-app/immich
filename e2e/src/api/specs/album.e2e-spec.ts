@@ -570,4 +570,43 @@ describe('/album', () => {
       expect(body).toEqual(errorDto.badRequest('User already added'));
     });
   });
+
+  describe('PUT :id/user/:userId', () => {
+    it('should allow the album owner to change the role of a shared user', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbum',
+        sharedWithUserIds: [user2.userId],
+      });
+
+      const { status } = await request(app)
+        .put(`/album/${album.id}/user/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ role: AlbumUserRole.Editor });
+
+      expect(status).toBe(200);
+
+      // Get album to verify the role change
+      const { body } = await request(app).get(`/album/${album.id}`).set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(body).toEqual(
+        expect.objectContaining({
+          albumUsers: [expect.objectContaining({ role: AlbumUserRole.Editor })],
+        }),
+      );
+    });
+
+    it('should not allow a shared user to change the role of another shared user', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbum',
+        sharedWithUserIds: [user2.userId],
+      });
+
+      const { status, body } = await request(app)
+        .put(`/album/${album.id}/user/${user2.userId}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ role: AlbumUserRole.Editor });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.share access'));
+    });
+  });
 });
