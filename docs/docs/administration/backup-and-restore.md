@@ -30,7 +30,9 @@ docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres    # Restore Backup
+gunzip < "/path/to/backup/dump.sql.gz" \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --username=postgres    # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
@@ -83,7 +85,9 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
-gunzip < db_dumps/last/immich-latest.sql.gz | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres
+gunzip < db_dumps/last/immich-latest.sql.gz \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --username=postgres
 ```
 
 :::note
