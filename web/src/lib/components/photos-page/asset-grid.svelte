@@ -45,7 +45,9 @@
   let showShortcuts = false;
   let showSkeleton = true;
 
-  $: timelineY = element?.scrollTop || 0;
+  $: timelineHeight = element ? getTimelineHeight() : 0;
+  $: timelineY = element ? getCurrentScrollY() : 0;
+
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
 
@@ -59,6 +61,7 @@
     showSkeleton = false;
     assetStore.connect();
     await assetStore.init(viewport);
+    updateViewportSize();
   });
 
   onDestroy(() => {
@@ -68,6 +71,27 @@
 
     assetStore.disconnect();
   });
+
+  const getCurrentScrollY = () => {
+    if (!element) {
+      return 0;
+    }
+    const progress = element.scrollTop / (element.scrollHeight - viewport.height);
+    return element.scrollTop + viewport.height * progress;
+  };
+
+  const getTimelineHeight = () => {
+    return element?.scrollHeight ?? 0;
+  };
+
+  const getViewportHeight = () => {
+    return element?.getBoundingClientRect().height ?? 0;
+  };
+
+  const updateViewportSize = () => {
+    timelineHeight = getTimelineHeight();
+    viewport.height = getViewportHeight();
+  };
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
@@ -111,8 +135,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
-      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = viewport.height) },
+      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop -= viewport.height) },
+      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop += viewport.height) },
     ];
 
     if ($isMultiSelectState) {
@@ -210,7 +234,8 @@
 
     animationTick = true;
     window.requestAnimationFrame(() => {
-      timelineY = element?.scrollTop || 0;
+      updateViewportSize();
+      timelineY = getCurrentScrollY();
       animationTick = false;
     });
   };
@@ -382,7 +407,13 @@
   };
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:window
+  on:resize={updateViewportSize}
+  on:keydown={onKeyDown}
+  on:keyup={onKeyUp}
+  on:selectstart={onSelectStart}
+  use:shortcuts={shortcutList}
+/>
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -400,14 +431,14 @@
   {assetStore}
   height={viewport.height}
   {timelineY}
-  on:scrollTimeline={({ detail }) => (element.scrollTop = detail)}
+  {timelineHeight}
+  onScroll={(position) => (element.scrollTop = position)}
 />
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 lg:ml-0 mr-[60px]'}"
-  bind:clientHeight={viewport.height}
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'mx-4 lg:ml-0 md:mr-[60px]'}"
   bind:clientWidth={viewport.width}
   bind:this={element}
   on:scroll={handleTimelineScroll}
