@@ -169,7 +169,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ),
         if (hasRemote && onDeleteServer != null)
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 85),
+            constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
               iconData: Icons.cloud_off_outlined,
               label: trashEnabled
@@ -192,7 +192,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ),
         if (hasLocal && onDeleteLocal != null)
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 85),
+            constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
               iconData: Icons.no_cell_rounded,
               label: "control_bottom_app_bar_delete_from_local".tr(),
@@ -216,7 +216,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ),
         if (hasRemote && onEditTime != null)
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 95),
+            constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
               iconData: Icons.edit_calendar_outlined,
               label: "control_bottom_app_bar_edit_time".tr(),
@@ -299,9 +299,9 @@ class ControlBottomAppBar extends HookConsumerWidget {
                   children: <Widget>[
                     const SizedBox(height: 12),
                     const CustomDraggingHandle(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     SizedBox(
-                      height: 100,
+                      height: 120,
                       child: ListView(
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,

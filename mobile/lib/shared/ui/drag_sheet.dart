@@ -44,11 +44,10 @@ class ControlBoxButton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(iconData, size: 24),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           Text(
             label,
             style: const TextStyle(fontSize: 12.0),
-            maxLines: 2,
             textAlign: TextAlign.center,
           ),
         ],
