@@ -135,7 +135,6 @@ class LibraryPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 8.0,
-                      bottom: 16,
                     ),
                     child: Text(
                       'library_page_new_album',
