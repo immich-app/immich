@@ -1209,17 +1209,6 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
-    id: string;
-    userId: string;
-    updateAlbumUserDto: UpdateAlbumUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/permission/${encodeURIComponent(userId)}`, oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateAlbumUserDto
-    })));
-}
 export function removeUserFromAlbum({ id, userId }: {
     id: string;
     userId: string;
@@ -1228,6 +1217,17 @@ export function removeUserFromAlbum({ id, userId }: {
         ...opts,
         method: "DELETE"
     }));
+}
+export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
+    id: string;
+    userId: string;
+    updateAlbumUserDto: UpdateAlbumUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/user/${encodeURIComponent(userId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumUserDto
+    })));
 }
 export function addUsersToAlbum({ id, addUsersDto }: {
     id: string;

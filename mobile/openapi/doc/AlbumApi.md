@@ -19,7 +19,7 @@ Method | HTTP request | Description
 [**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 [**removeUserFromAlbum**](AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 [**updateAlbumInfo**](AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
-[**updateAlbumUser**](AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/permission/{userId} | 
+[**updateAlbumUser**](AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/user/{userId} | 
 
 
 # **addAssetsToAlbum**

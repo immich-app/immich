@@ -537,7 +537,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /album/{id}/permission/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /album/{id}/user/{userId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -547,7 +547,7 @@ class AlbumApi {
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
   Future<Response> updateAlbumUserWithHttpInfo(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/permission/{userId}'
+    final path = r'/album/{id}/user/{userId}'
       .replaceAll('{id}', id)
       .replaceAll('{userId}', userId);
 

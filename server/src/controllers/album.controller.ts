@@ -98,7 +98,7 @@ export class AlbumController {
     return this.service.removeUser(auth, id, userId);
   }
 
-  @Put(':id/permission/:userId')
+  @Put(':id/user/:userId')
   updateAlbumUser(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
