@@ -32,6 +32,10 @@ const handleBreakpoint = (
   };
 };
 
+export const xxs = <T extends HTMLElement>(_: T, callbacks: MediaBreakpointCallbacks) => {
+  return handleBreakpoint(MediaBreakpoint.XXS, callbacks);
+};
+
 export const xs = <T extends HTMLElement>(_: T, callbacks: MediaBreakpointCallbacks) => {
   return handleBreakpoint(MediaBreakpoint.XS, callbacks);
 };

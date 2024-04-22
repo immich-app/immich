@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -6,6 +8,11 @@ module.exports = {
     hoverOnlyWhenSupported: true,
   },
   theme: {
+    screens: {
+      ...defaultTheme.screens,
+      'xs': '504px',
+      '2xs': '368px',
+    },
     extend: {
       colors: {
         // Light Theme

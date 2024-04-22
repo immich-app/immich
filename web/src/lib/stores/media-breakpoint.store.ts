@@ -6,7 +6,9 @@ export enum MediaBreakpoint {
   LG = 1024,
   MD = 768,
   SM = 640,
-  XS = 0,
+  XS = 504,
+  XXS = 368,
+  Default = 0,
 }
 
 const mediaBreakpoints: MediaBreakpoint[] = [
@@ -16,6 +18,8 @@ const mediaBreakpoints: MediaBreakpoint[] = [
   MediaBreakpoint.MD,
   MediaBreakpoint.SM,
   MediaBreakpoint.XS,
+  MediaBreakpoint.XXS,
+  MediaBreakpoint.Default,
 ];
 
 const getCurrentBreakpointIndex = () => {
