@@ -240,8 +240,8 @@ If you installed several models and chose not to use some of them, it might be w
 ```bash
 docker run -it --rm -v immich_model-cache:/mnt-models alpine sh
 cd /mnt-models
-ls
-# delete unused models with 'rm -r <model_name>'
+ls clip/ facial-recognition/
+# rm -r clip/ABC facial-recognition/DEF # delete unused models
 ```
 
 </details>
