@@ -267,6 +267,9 @@ The initial backup is the most intensive due to the number of jobs running. The 
 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
 
+<details>
+<summary>docker-compose.yml</summary>
+
 ```yaml
 deploy:
   resources:
@@ -276,7 +279,7 @@ deploy:
       # Gigabytes of memory
       memory: '1G'
 ```
-
+</summary>
 For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
 ### How can I boost machine learning speed?
