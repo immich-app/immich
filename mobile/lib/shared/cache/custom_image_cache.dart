@@ -1,6 +1,8 @@
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_thumbnail_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small iamges
@@ -33,6 +35,8 @@ final class CustomImageCache implements ImageCache {
   }
 
   /// Gets the cache for the given key
+  /// [_large] is used for [ImmichLocalImageProvider] and [ImmichRemoteImageProvider]
+  /// [_small] is used for [ImmichLocalThumbnailProvider] and [ImmichRemoteThumbnailProvider]
   ImageCache _cacheForKey(Object key) =>
       (key is ImmichLocalImageProvider || key is ImmichRemoteImageProvider)
           ? _large
