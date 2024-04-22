@@ -387,7 +387,6 @@
   "setting_image_viewer_original_title": "Last originalbildet",
   "setting_image_viewer_preview_subtitle": "Aktiver for å laste et bilde av medium oppløsning. Deaktiver for å enten direkte laste inn originalen eller kun benytte miniatyrbilde.",
   "setting_image_viewer_preview_title": "Last forhåndsvisningsbilde",
-  "setting_languages_apply": "Apply",
   "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "Varsle om sikkerhetskopieringsfeil i bakgrunnen: {}",
   "setting_notifications_notify_hours": "{} timer",

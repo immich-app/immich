@@ -141,7 +141,7 @@ class BottomGalleryBar extends ConsumerWidget {
             ImmichToast.show(
               durationInSecond: 1,
               context: context,
-              msg: 'Asset trashed',
+              msg: 'toast_asset_trashed'.tr(),
               gravity: ToastGravity.BOTTOM,
             );
           }

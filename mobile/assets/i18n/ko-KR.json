@@ -387,7 +387,6 @@
   "setting_image_viewer_original_title": "원본 이미지 불러오기",
   "setting_image_viewer_preview_subtitle": "중간 해상도 이미지를 로드하려면 활성화합니다. 원본을 직접 로드하거나 썸네일만 사용하려면 비활성화 하세요.",
   "setting_image_viewer_preview_title": "미리보기 이미지 불러오기",
-  "setting_languages_apply": "Apply",
   "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "백그라운드 백업 실패 알림: {}",
   "setting_notifications_notify_hours": "{}시간 뒤",

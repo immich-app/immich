@@ -387,7 +387,6 @@
   "setting_image_viewer_original_title": "Indlæs originalbillede",
   "setting_image_viewer_preview_subtitle": "Slå indlæsning af et mediumstørrelse billede til. Slå fra for enten direkte at indlæse originalen eller kun at bruge miniaturebilledet.",
   "setting_image_viewer_preview_title": "Indlæs forhåndsvisning af billedet",
-  "setting_languages_apply": "Apply",
   "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "Giv besked om fejl med sikkerhedskopiering i baggrunden: {}",
   "setting_notifications_notify_hours": "{} timer",

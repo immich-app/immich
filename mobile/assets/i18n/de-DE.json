@@ -387,7 +387,6 @@
   "setting_image_viewer_original_title": "Original laden",
   "setting_image_viewer_preview_subtitle": "Aktivieren, um ein Bild mit mittlerer Auflösung zu laden. Deaktivieren, um entweder das Original direkt zu laden oder nur die Miniaturansicht zu verwenden.",
   "setting_image_viewer_preview_title": "Vorschaubild laden",
-  "setting_languages_apply": "Apply",
   "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "Benachrichtigung über Fehler bei der Hintergrundsicherung: {}",
   "setting_notifications_notify_hours": "{} Stunden",

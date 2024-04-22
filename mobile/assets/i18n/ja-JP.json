@@ -387,7 +387,6 @@
   "setting_image_viewer_original_title": "オリジナル画像を読み込む",
   "setting_image_viewer_preview_subtitle": "中画質の写真をロードしたい時にオンにしてください。直接最大画質の写真を表示したい場合はオフにしてください(ロード中はサムネイルが代わりに表示されます)",
   "setting_image_viewer_preview_title": "プレビュー画像をロードする",
-  "setting_languages_apply": "Apply",
   "setting_languages_title": "Languages",
   "setting_notifications_notify_failures_grace_period": "バックアップ失敗の通知: {}",
   "setting_notifications_notify_hours": "{}時間後",

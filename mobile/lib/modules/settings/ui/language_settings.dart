@@ -46,8 +46,8 @@ class LanguageSettings extends HookConsumerWidget {
                 ),
               ),
               menuHeight: context.height * 0.5,
-              hintText: "Languages",
-              label: const Text('Languages'),
+              hintText: "settings_languages_languages".tr(),
+              label: const Text('settings_languages_languages').tr(),
               dropdownMenuEntries: locales.keys
                   .map(
                     (countryName) => DropdownMenuEntry(
@@ -73,7 +73,7 @@ class LanguageSettings extends HookConsumerWidget {
                   context.setLocale(selectedLocale.value);
                   loadTranslations();
                 },
-          child: const Text('setting_languages_apply').tr(),
+          child: const Text('action_common_apply').tr(),
         ),
       ],
     );

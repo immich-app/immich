@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -134,7 +135,7 @@ class SearchInputPage extends HookConsumerWidget {
         child: FractionallySizedBox(
           heightFactor: 0.8,
           child: FilterBottomSheetScaffold(
-            title: 'Select people',
+            title: 'search_filter_select_people'.tr(),
             expanded: true,
             onSearch: search,
             onClear: handleClear,
@@ -190,7 +191,7 @@ class SearchInputPage extends HookConsumerWidget {
         isScrollControlled: true,
         isDismissible: false,
         child: FilterBottomSheetScaffold(
-          title: 'Select location',
+          title: 'search_filter_select_location'.tr(),
           onSearch: search,
           onClear: handleClear,
           child: Padding(
@@ -238,7 +239,7 @@ class SearchInputPage extends HookConsumerWidget {
         isScrollControlled: true,
         isDismissible: false,
         child: FilterBottomSheetScaffold(
-          title: 'Select camera type',
+          title: 'search_filter_select_camera_type'.tr(),
           onSearch: search,
           onClear: handleClear,
           child: Padding(
@@ -265,14 +266,14 @@ class SearchInputPage extends HookConsumerWidget {
           start: filter.value.date.takenAfter ?? lastDate,
           end: filter.value.date.takenBefore ?? lastDate,
         ),
-        helpText: 'Select a date range',
-        cancelText: 'Cancel',
-        confirmText: 'Select',
-        saveText: 'Save',
-        errorFormatText: 'Invalid date format',
-        errorInvalidText: 'Invalid date',
-        fieldStartHintText: 'Start date',
-        fieldEndHintText: 'End date',
+        helpText: 'search_filter_select_date_range'.tr(),
+        cancelText: 'action_common_cancel'.tr(),
+        confirmText: 'action_common_confirm'.tr(),
+        saveText: 'action_common_save'.tr(),
+        errorFormatText: 'search_filter_select_date_invalid_date_format'.tr(),
+        errorInvalidText: 'search_filter_select_date_invalid_date'.tr(),
+        fieldStartHintText: 'search_filter_select_date_start_at'.tr(),
+        fieldEndHintText: 'search_filter_select_date_end_at'.tr(),
         initialEntryMode: DatePickerEntryMode.input,
       );
 
@@ -340,7 +341,7 @@ class SearchInputPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'Select media type',
+          title: 'search_filter_select_media_type'.tr(),
           onSearch: search,
           onClear: handleClear,
           child: MediaTypePicker(
@@ -364,7 +365,7 @@ class SearchInputPage extends HookConsumerWidget {
                   isNotInAlbum: value,
                 ),
               );
-              if (value) filterText.add('Not in album');
+              if (value) filterText.add('search_filter_display_option_not_in_album'.tr());
               break;
             case DisplayOption.archive:
               filter.value = filter.value.copyWith(
@@ -372,7 +373,7 @@ class SearchInputPage extends HookConsumerWidget {
                   isArchive: value,
                 ),
               );
-              if (value) filterText.add('Archive');
+              if (value) filterText.add('search_filter_display_option_archive'.tr());
               break;
             case DisplayOption.favorite:
               filter.value = filter.value.copyWith(
@@ -380,7 +381,7 @@ class SearchInputPage extends HookConsumerWidget {
                   isFavorite: value,
                 ),
               );
-              if (value) filterText.add('Favorite');
+              if (value) filterText.add('search_filter_display_option_favorite'.tr());
               break;
           }
         });
@@ -407,7 +408,7 @@ class SearchInputPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'Display options',
+          title: 'search_filter_select_display_options'.tr(),
           onSearch: search,
           onClear: handleClear,
           child: DisplayOptionPicker(
@@ -488,8 +489,8 @@ class SearchInputPage extends HookConsumerWidget {
           controller: textSearchController,
           decoration: InputDecoration(
             hintText: isContextualSearch.value
-                ? 'Sunrise on the beach'
-                : 'File name or extension',
+                ? 'search_searchbar_hint_sunrise'.tr()
+                : 'search_searchbar_hint_filename_extension'.tr(),
             hintStyle: context.textTheme.bodyLarge?.copyWith(
               color: context.themeData.colorScheme.onSurface.withOpacity(0.75),
               fontWeight: FontWeight.w500,
@@ -518,37 +519,37 @@ class SearchInputPage extends HookConsumerWidget {
                   SearchFilterChip(
                     icon: Icons.people_alt_rounded,
                     onTap: showPeoplePicker,
-                    label: 'People',
+                    label: 'search_chip_people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.location_pin,
                     onTap: showLocationPicker,
-                    label: 'Location',
+                    label: 'search_chip_location'.tr(),
                     currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.camera_alt_rounded,
                     onTap: showCameraPicker,
-                    label: 'Camera',
+                    label: 'search_chip_camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.date_range_rounded,
                     onTap: showDatePicker,
-                    label: 'Date',
+                    label: 'search_chip_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.video_collection_outlined,
                     onTap: showMediaTypePicker,
-                    label: 'Media Type',
+                    label: 'search_chip_media_type'.tr(),
                     currentFilter: mediaTypeCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
                     icon: Icons.display_settings_outlined,
                     onTap: showDisplayOptionPicker,
-                    label: 'Display Options',
+                    label: 'search_chip_display_options'.tr(),
                     currentFilter: displayOptionCurrentFilterWidget.value,
                   ),
                 ],
