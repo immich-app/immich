@@ -16,6 +16,7 @@ class SystemConfigUserDto {
     required this.deleteDelay,
   });
 
+  /// Minimum value: 1
   int deleteDelay;
 
   @override

@@ -28,12 +28,16 @@ class SystemConfigImageDto {
 
   ImageFormat previewFormat;
 
+  /// Minimum value: 1
   int previewSize;
 
+  /// Minimum value: 1
+  /// Maximum value: 100
   int quality;
 
   ImageFormat thumbnailFormat;
 
+  /// Minimum value: 1
   int thumbnailSize;
 
   @override
