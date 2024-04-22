@@ -339,9 +339,9 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
+      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error deleting share users');
+      handleError(error, 'Error deleting shared user');
     }
   };
 
