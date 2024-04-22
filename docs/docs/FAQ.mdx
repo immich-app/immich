@@ -137,11 +137,11 @@ UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 // Reassign people
 UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 
-// reassign assets
+-- reassign assets
 UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
  AND CHECKSUM NOT IN (SELECT CHECKSUM FROM assets WHERE "ownerId" = '<destinationId>');
 
-// (optionally) reassign external libraries
+-- (optionally) reassign external libraries
 UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 ```
 
