@@ -344,14 +344,12 @@ cap_drop:
 
 </details>
 
-### How can I **purge** data from Immich?
+### How can I purge data from Immich?
 
 Data for Immich comes in two forms:
 
-1. **Metadata** stored in a Postgres database, persisted via the `pg_data` volume
+1. **Metadata** stored in a Postgres database, stored in the `DB_DATA_LOCATION` folder (previously `pg_data` Docker volume).
 2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
-
-To remove the **Metadata** you can stop Immich and delete the volume.
 
 :::warning
 This will destroy your database and reset your instance, meaning that you start from scratch.
@@ -361,12 +359,15 @@ This will destroy your database and reset your instance, meaning that you start 
 docker compose down -v
 ```
 
+After removing the containers and volumes, there are a few directories that need to be deleted to reset Immich to a new installation. Once they are deleted, Immich can be started back up and will be a fresh installation.
+
+- `DB_DATA_LOCATION` contains the database, media info, and settings.
+- `UPLOAD_LOCATION` contains all the media uploaded to Immich.
+
 :::note Portainer
 If you use portainer, bring down the stack in portainer. Go into the volumes section  
 and remove all the volumes related to immich then restart the stack.
 :::
-
-After removing the containers and volumes, the **Files** should be removed from the `UPLOAD_LOCATION` to provide a clean start.
 
 ### Why does the machine learning service report workers crashing?
 
