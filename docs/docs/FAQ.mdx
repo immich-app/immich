@@ -131,6 +131,7 @@ This is not officially supported but can be accomplished with some database upda
 3. Four tables need to be updated:
 
 ```sql
+BEGIN;
 -- reassign albums
 UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 
@@ -143,6 +144,7 @@ UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
 
 -- reassign external libraries
 UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
+COMMIT;
 ```
 
 4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
