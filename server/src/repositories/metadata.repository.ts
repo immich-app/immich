@@ -36,8 +36,8 @@ export class MetadataRepository implements IMetadataRepository {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
+    // TODO move to metadata service init
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
-
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }

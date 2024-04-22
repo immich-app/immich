@@ -60,7 +60,7 @@ export class SmartInfoService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.SMART_SEARCH);
     });
 
@@ -82,6 +82,10 @@ export class SmartInfoService {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
     }
 
     if (!asset.previewPath) {

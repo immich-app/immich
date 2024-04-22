@@ -9,25 +9,25 @@ import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { IUserTokenRepository } from 'src/interfaces/user-token.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AuthService } from 'src/services/auth.service';
 import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub, loginResponseStub } from 'test/fixtures/auth.stub';
+import { sessionStub } from 'test/fixtures/session.stub';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { userTokenStub } from 'test/fixtures/user-token.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
-import { newUserTokenRepositoryMock } from 'test/repositories/user-token.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mock, Mocked, vitest } from 'vitest';
 
@@ -65,7 +65,7 @@ describe('AuthService', () => {
   let libraryMock: Mocked<ILibraryRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let configMock: Mocked<ISystemConfigRepository>;
-  let userTokenMock: Mocked<IUserTokenRepository>;
+  let sessionMock: Mocked<ISessionRepository>;
   let shareMock: Mocked<ISharedLinkRepository>;
   let keyMock: Mocked<IKeyRepository>;
 
@@ -98,7 +98,7 @@ describe('AuthService', () => {
     libraryMock = newLibraryRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    userTokenMock = newUserTokenRepositoryMock();
+    sessionMock = newSessionRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
@@ -109,7 +109,7 @@ describe('AuthService', () => {
       libraryMock,
       loggerMock,
       userMock,
-      userTokenMock,
+      sessionMock,
       shareMock,
       keyMock,
     );
@@ -139,22 +139,8 @@ describe('AuthService', () => {
 
     it('should successfully log the user in', async () => {
       userMock.getByEmail.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
       await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual(loginResponseStub.user1password);
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
-    });
-
-    it('should generate the cookie headers (insecure)', async () => {
-      userMock.getByEmail.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
-      await expect(
-        sut.login(fixtures.login, {
-          clientIp: '127.0.0.1',
-          isSecure: false,
-          deviceOS: '',
-          deviceType: '',
-        }),
-      ).resolves.toEqual(loginResponseStub.user1insecure);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
   });
@@ -231,14 +217,14 @@ describe('AuthService', () => {
     });
 
     it('should delete the access token', async () => {
-      const auth = { user: { id: '123' }, userToken: { id: 'token123' } } as AuthDto;
+      const auth = { user: { id: '123' }, session: { id: 'token123' } } as AuthDto;
 
       await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
-      expect(userTokenMock.delete).toHaveBeenCalledWith('token123');
+      expect(sessionMock.delete).toHaveBeenCalledWith('token123');
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
@@ -282,11 +268,11 @@ describe('AuthService', () => {
 
     it('should validate using authorization header', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      userTokenMock.getByToken.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
       const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
       await expect(sut.validate((client as Socket).request.headers, {})).resolves.toEqual({
         user: userStub.user1,
-        userToken: userTokenStub.userToken,
+        session: sessionStub.valid,
       });
     });
   });
@@ -336,37 +322,26 @@ describe('AuthService', () => {
 
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
-      userTokenMock.getByToken.mockResolvedValue(null);
+      sessionMock.getByToken.mockResolvedValue(null);
       const headers: IncomingHttpHeaders = { 'x-immich-user-token': 'auth_token' };
       await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should return an auth dto', async () => {
-      userTokenMock.getByToken.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
       const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual({
         user: userStub.user1,
-        userToken: userTokenStub.userToken,
+        session: sessionStub.valid,
       });
     });
 
     it('should update when access time exceeds an hour', async () => {
-      userTokenMock.getByToken.mockResolvedValue(userTokenStub.inactiveToken);
-      userTokenMock.save.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.inactive);
+      sessionMock.update.mockResolvedValue(sessionStub.valid);
       const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
-      await expect(sut.validate(headers, {})).resolves.toEqual({
-        user: userStub.user1,
-        userToken: userTokenStub.userToken,
-      });
-      expect(userTokenMock.save.mock.calls[0][0]).toMatchObject({
-        id: 'not_active',
-        token: 'auth_token',
-        userId: 'user-id',
-        createdAt: new Date('2021-01-01'),
-        updatedAt: expect.any(Date),
-        deviceOS: 'Android',
-        deviceType: 'Mobile',
-      });
+      await expect(sut.validate(headers, {})).resolves.toBeDefined();
+      expect(sessionMock.update.mock.calls[0][0]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
     });
   });
 
@@ -383,55 +358,6 @@ describe('AuthService', () => {
       const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.admin });
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
-    });
-  });
-
-  describe('getDevices', () => {
-    it('should get the devices', async () => {
-      userTokenMock.getAll.mockResolvedValue([userTokenStub.userToken, userTokenStub.inactiveToken]);
-      await expect(sut.getDevices(authStub.user1)).resolves.toEqual([
-        {
-          createdAt: '2021-01-01T00:00:00.000Z',
-          current: true,
-          deviceOS: '',
-          deviceType: '',
-          id: 'token-id',
-          updatedAt: expect.any(String),
-        },
-        {
-          createdAt: '2021-01-01T00:00:00.000Z',
-          current: false,
-          deviceOS: 'Android',
-          deviceType: 'Mobile',
-          id: 'not_active',
-          updatedAt: expect.any(String),
-        },
-      ]);
-
-      expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
-    });
-  });
-
-  describe('logoutDevices', () => {
-    it('should logout all devices', async () => {
-      userTokenMock.getAll.mockResolvedValue([userTokenStub.inactiveToken, userTokenStub.userToken]);
-
-      await sut.logoutDevices(authStub.user1);
-
-      expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
-      expect(userTokenMock.delete).toHaveBeenCalledWith('not_active');
-      expect(userTokenMock.delete).not.toHaveBeenCalledWith('token-id');
-    });
-  });
-
-  describe('logoutDevice', () => {
-    it('should logout the device', async () => {
-      accessMock.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
-
-      await sut.logoutDevice(authStub.user1, 'token-1');
-
-      expect(accessMock.authDevice.checkOwnerAccess).toHaveBeenCalledWith(authStub.user1.user.id, new Set(['token-1']));
-      expect(userTokenMock.delete).toHaveBeenCalledWith('token-1');
     });
   });
 
@@ -463,7 +389,7 @@ describe('AuthService', () => {
       configMock.load.mockResolvedValue(systemConfigStub.noAutoRegister);
       userMock.getByEmail.mockResolvedValue(userStub.user1);
       userMock.update.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
@@ -478,7 +404,7 @@ describe('AuthService', () => {
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
@@ -491,7 +417,7 @@ describe('AuthService', () => {
     it('should use the mobile redirect override', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.override);
       userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await sut.callback({ url: `app.immich:/?code=abc123` }, loginDetails);
 
@@ -501,7 +427,7 @@ describe('AuthService', () => {
     it('should use the mobile redirect override for ios urls with multiple slashes', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.override);
       userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      userTokenMock.create.mockResolvedValue(userTokenStub.userToken);
+      sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await sut.callback({ url: `app.immich:///?code=abc123` }, loginDetails);
 

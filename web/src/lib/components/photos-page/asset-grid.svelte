@@ -89,11 +89,10 @@
   };
 
   const onStackAssets = async () => {
-    if ($selectedAssets.size > 1) {
-      await stackAssets(Array.from($selectedAssets), (ids) => {
-        assetStore.removeAssets(ids);
-        dispatch('escape');
-      });
+    const ids = await stackAssets(Array.from($selectedAssets));
+    if (ids) {
+      assetStore.removeAssets(ids);
+      dispatch('escape');
     }
   };
 
@@ -107,6 +106,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
+      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
+      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = viewport.height) },
     ];
 
     if ($isMultiSelectState) {
@@ -168,6 +169,7 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
+      case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();

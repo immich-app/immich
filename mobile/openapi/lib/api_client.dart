@@ -198,6 +198,8 @@ class ApiClient {
           return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
+        case 'AdminOnboardingUpdateDto':
+          return AdminOnboardingUpdateDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
@@ -248,8 +250,6 @@ class ApiClient {
           return AudioCodecTypeTransformer().decode(value);
         case 'AuditDeletesResponseDto':
           return AuditDeletesResponseDto.fromJson(value);
-        case 'AuthDeviceResponseDto':
-          return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -394,6 +394,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
+        case 'ReverseGeocodingStateResponseDto':
+          return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'ScanLibraryDto':
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
@@ -428,6 +430,8 @@ class ApiClient {
           return ServerThemeDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
+        case 'SessionResponseDto':
+          return SessionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
