@@ -15,7 +15,7 @@ Immich saves [file paths in the database](https://github.com/immich-app/immich/d
 Refer to the official [postgres documentation](https://www.postgresql.org/docs/current/backup.html) for details about backing up and restoring a postgres database.
 :::
 
-The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if exists) to reset the database.
+The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if it exists) to reset the database.
 
 <Tabs>
   <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
