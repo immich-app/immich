@@ -18,40 +18,54 @@
   }
 </script>
 
-<div class="flex gap-5">
-  <label class="immich-form-label" for="context">
-    <input type="radio" name="context" id="context" bind:group={selectedOption} value={TextSearchOptions.Context} />
-    <span>CONTEXT</span>
-  </label>
-
-  <label class="immich-form-label" for="file-name">
+<fieldset class="flex flex-wrap gap-x-5 gap-y-2">
+  <legend>Search type</legend>
+  <label class="immich-form-label text-sm">
     <input
       type="radio"
-      name="file-name"
-      id="file-name"
+      name="query-type"
+      bind:group={selectedOption}
+      value={TextSearchOptions.Context}
+      class="focus-visible:ring-2"
+    />
+    Context
+  </label>
+  <label class="immich-form-label text-sm mb-2">
+    <input
+      type="radio"
+      name="query-type"
       bind:group={selectedOption}
       value={TextSearchOptions.Filename}
+      class="focus-visible:ring-2"
     />
-    <span>FILE NAME</span>
+    File name or extension
   </label>
-</div>
+</fieldset>
 
 {#if selectedOption === TextSearchOptions.Context}
-  <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
-    type="text"
-    id="context"
-    name="context"
-    placeholder="Sunrise on the beach"
-    bind:value={context}
-  />
+  <label>
+    Search by context
+    <input
+      class="immich-form-input hover:cursor-text w-full !mt-1"
+      type="text"
+      id="context"
+      name="context"
+      placeholder="Sunrise on the beach"
+      bind:value={context}
+      aria-labelledby="context-label"
+    />
+  </label>
 {:else}
-  <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
-    type="text"
-    id="file-name"
-    name="file-name"
-    placeholder="File name or extension i.e. IMG_1234.JPG or PNG"
-    bind:value={filename}
-  />
+  <label>
+    Search by file name or extension
+    <input
+      class="immich-form-input hover:cursor-text w-full !mt-1"
+      type="text"
+      id="file-name"
+      name="file-name"
+      placeholder="i.e. IMG_1234.JPG or PNG"
+      bind:value={filename}
+      aria-labelledby="file-name-label"
+    />
+  </label>
 {/if}

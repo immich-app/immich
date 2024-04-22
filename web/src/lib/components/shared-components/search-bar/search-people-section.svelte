@@ -91,10 +91,10 @@
             on:click={() => (showAllPeople = !showAllPeople)}
           >
             {#if showAllPeople}
-              <span><Icon path={mdiClose} /></span>
+              <span><Icon path={mdiClose} ariaHidden /></span>
               Collapse
             {:else}
-              <span><Icon path={mdiArrowRight} /></span>
+              <span><Icon path={mdiArrowRight} ariaHidden /></span>
               See all people
             {/if}
           </Button>
