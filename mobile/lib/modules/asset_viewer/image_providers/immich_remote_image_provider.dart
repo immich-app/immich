@@ -21,7 +21,7 @@ class ImmichRemoteImageProvider
   final String assetId;
 
   /// The image cache manager
-  final ImageCacheManager? cacheManager;
+  final CacheManager? cacheManager;
 
   ImmichRemoteImageProvider({
     required this.assetId,
@@ -66,7 +66,7 @@ class ImmichRemoteImageProvider
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
     ImmichRemoteImageProvider key,
-    ImageCacheManager cache,
+    CacheManager cache,
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
