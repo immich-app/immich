@@ -99,7 +99,7 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: const ImmichAppBar(), // ref.watch(multiselectProvider) ? null : const ImmichAppBar()
+      appBar: const ImmichAppBar(),
       body: MultiselectGrid(
         topWidget: (currentUser != null && currentUser.memoryEnabled)
             ? const MemoryLane()
