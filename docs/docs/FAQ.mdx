@@ -243,6 +243,7 @@ cd /mnt-models
 ls
 # delete unused models with 'rm -r <model_name>'
 ```
+
 </details>
 
 ---
@@ -279,6 +280,7 @@ deploy:
       # Gigabytes of memory
       memory: '1G'
 ```
+
 </details>
 For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
@@ -327,6 +329,7 @@ You may need to add mount points or docker volumes for the following internal co
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
+
 <details>
 <summary>docker-compose.yml</summary>
 
@@ -338,6 +341,7 @@ cap_drop:
   # Prevent access to raw network traffic
   - NET_RAW
 ```
+
 </details>
 
 ### How can I **purge** data from Immich?
