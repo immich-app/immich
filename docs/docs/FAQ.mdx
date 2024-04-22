@@ -327,6 +327,8 @@ You may need to add mount points or docker volumes for the following internal co
 The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
+<details>
+<summary>docker-compose.yml</summary>
 
 ```yaml
 security_opt:
@@ -336,6 +338,7 @@ cap_drop:
   # Prevent access to raw network traffic
   - NET_RAW
 ```
+</details>
 
 ### How can I **purge** data from Immich?
 
