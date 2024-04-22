@@ -79,11 +79,28 @@ describe('/album', () => {
       }),
     ]);
 
-    await utils.updateAlbumUser(user2.accessToken, {
-      id: albums[3].id,
-      userId: user1.userId,
-      updateAlbumUserDto: { role: AlbumUserRole.Editor },
-    });
+    // Make editor
+    await Promise.all([
+      utils.updateAlbumUser(user1.accessToken, {
+        id: albums[0].id,
+        userId: user2.userId,
+        updateAlbumUserDto: { role: AlbumUserRole.Editor },
+      }),
+      utils.updateAlbumUser(user2.accessToken, {
+        id: albums[3].id,
+        userId: user1.userId,
+        updateAlbumUserDto: { role: AlbumUserRole.Editor },
+      }),
+      utils.updateAlbumUser(user3.accessToken, {
+        id: albums[6].id,
+        userId: user1.userId,
+        updateAlbumUserDto: { role: AlbumUserRole.Editor },
+      }),
+    ]);
+
+    albums[0].albumUsers[0].role = AlbumUserRole.Editor;
+    albums[3].albumUsers[0].role = AlbumUserRole.Editor;
+    albums[6].albumUsers[0].role = AlbumUserRole.Editor;
 
     await addAssetsToAlbum(
       { id: albums[3].id, bulkIdsDto: { ids: [user1Asset1.id] } },
@@ -364,6 +381,7 @@ describe('/album', () => {
         albumThumbnailAssetId: null,
         shared: false,
         sharedUsers: [],
+        albumUsers: [],
         hasSharedLink: false,
         assets: [],
         assetCount: 0,

@@ -214,7 +214,7 @@ export class AlbumService {
   async addUsers(auth: AuthDto, id: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
-    const album = await this.findOrFail(id, { withAssets: true });
+    const album = await this.findOrFail(id, { withAssets: false });
 
     for (const userId of dto.sharedUserIds) {
       if (album.ownerId === userId) {
@@ -234,7 +234,7 @@ export class AlbumService {
       album.albumUsers.push(await this.albumUserRepository.create({ userId: userId, albumId: id }));
     }
 
-    return mapAlbumWithoutAssets(album);
+    return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -263,13 +263,6 @@ export class AlbumService {
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
-
-    const album = await this.findOrFail(id, { withAssets: false });
-
-    const permission = album.albumUsers.find(({ user: { id } }) => id === userId);
-    if (!permission) {
-      throw new BadRequestException('Album not shared with user');
-    }
 
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
