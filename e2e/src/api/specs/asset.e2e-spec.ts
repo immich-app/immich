@@ -573,6 +573,22 @@ describe('/asset', () => {
 
     const tests = [
       {
+        input: 'formats/avif/8bit-sRGB.avif',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '8bit-sRGB.avif',
+          resized: true,
+          exifInfo: {
+            description: '',
+            exifImageHeight: 1080,
+            exifImageWidth: 1617,
+            fileSizeInByte: 862_424,
+            latitude: null,
+            longitude: null,
+          },
+        },
+      },
+      {
         input: 'formats/jpg/el_torcal_rocks.jpg',
         expected: {
           type: AssetTypeEnum.Image,
@@ -593,6 +609,22 @@ describe('/asset', () => {
             model: 'DSLR-A550',
             orientation: null,
             description: 'SONY DSC',
+          },
+        },
+      },
+      {
+        input: 'formats/jxl/8bit-sRGB.jxl',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '8bit-sRGB.jxl',
+          resized: true,
+          exifInfo: {
+            description: '',
+            exifImageHeight: 1080,
+            exifImageWidth: 1440,
+            fileSizeInByte: 1_780_777,
+            latitude: null,
+            longitude: null,
           },
         },
       },
@@ -678,6 +710,80 @@ describe('/asset', () => {
             longitude: null,
             orientation: '1',
             timeZone: 'UTC-5',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Panasonic/DMC-GH4/4_3.rw2',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '4_3.rw2',
+          resized: true,
+          fileCreatedAt: '2018-05-10T08:42:37.842Z',
+          exifInfo: {
+            make: 'Panasonic',
+            model: 'DMC-GH4',
+            exifImageHeight: 3456,
+            exifImageWidth: 4608,
+            exposureTime: '1/100',
+            fNumber: 3.2,
+            focalLength: 35,
+            iso: 400,
+            fileSizeInByte: 19_587_072,
+            dateTimeOriginal: '2018-05-10T08:42:37.842Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Sony/ILCE-6300/12bit-compressed-(3_2).arw',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '12bit-compressed-(3_2).arw',
+          resized: true,
+          fileCreatedAt: '2016-09-27T10:51:44.000Z',
+          exifInfo: {
+            make: 'SONY',
+            model: 'ILCE-6300',
+            exifImageHeight: 4024,
+            exifImageWidth: 6048,
+            exposureTime: '1/320',
+            fNumber: 8,
+            focalLength: 97,
+            iso: 100,
+            lensModel: 'E PZ 18-105mm F4 G OSS',
+            fileSizeInByte: 25_001_984,
+            dateTimeOriginal: '2016-09-27T10:51:44.000Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Sony/ILCE-7M2/14bit-uncompressed-(3_2).arw',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '14bit-uncompressed-(3_2).arw',
+          resized: true,
+          fileCreatedAt: '2016-01-08T15:08:01.000Z',
+          exifInfo: {
+            make: 'SONY',
+            model: 'ILCE-7M2',
+            exifImageHeight: 4024,
+            exifImageWidth: 6048,
+            exposureTime: '1.3',
+            fNumber: 22,
+            focalLength: 25,
+            iso: 100,
+            lensModel: 'E 25mm F2',
+            fileSizeInByte: 49_512_448,
+            dateTimeOriginal: '2016-01-08T15:08:01.000Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
           },
         },
       },
@@ -816,14 +922,14 @@ describe('/asset', () => {
     });
 
     it('should not include gps data for webp thumbnails', async () => {
-      const { status, body, type } = await request(app)
-        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
       await utils.waitForWebsocketEvent({
         event: 'assetUpload',
         id: locationAsset.id,
       });
+
+      const { status, body, type } = await request(app)
+        .get(`/asset/thumbnail/${locationAsset.id}?format=WEBP`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toBeDefined();

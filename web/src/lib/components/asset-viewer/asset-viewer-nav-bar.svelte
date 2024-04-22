@@ -20,6 +20,7 @@
     mdiFolderDownloadOutline,
     mdiHeart,
     mdiHeartOutline,
+    mdiHistory,
     mdiImageAlbum,
     mdiImageMinusOutline,
     mdiImageOutline,
@@ -52,6 +53,7 @@
 
   type MenuItemEvent =
     | 'addToAlbum'
+    | 'restoreAsset'
     | 'addToSharedAlbum'
     | 'asProfileImage'
     | 'setAsAlbumCover'
@@ -70,6 +72,7 @@
     delete: void;
     toggleArchive: void;
     addToAlbum: void;
+    restoreAsset: void;
     addToSharedAlbum: void;
     asProfileImage: void;
     setAsAlbumCover: void;
@@ -208,12 +211,16 @@
             {#if showDownloadButton}
               <MenuOption icon={mdiFolderDownloadOutline} on:click={() => onMenuClick('download')} text="Download" />
             {/if}
-            <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
-            <MenuOption
-              icon={mdiShareVariantOutline}
-              on:click={() => onMenuClick('addToSharedAlbum')}
-              text="Add to shared album"
-            />
+            {#if asset.isTrashed}
+              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text="Restore" />
+            {:else}
+              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
+              <MenuOption
+                icon={mdiShareVariantOutline}
+                on:click={() => onMenuClick('addToSharedAlbum')}
+                text="Add to shared album"
+              />
+            {/if}
 
             {#if isOwner}
               {#if hasStackChildren}

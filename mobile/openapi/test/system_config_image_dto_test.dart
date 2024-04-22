@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool extractEmbedded
+    test('to test the property `extractEmbedded`', () async {
+      // TODO
+    });
+
     // ImageFormat previewFormat
     test('to test the property `previewFormat`', () async {
       // TODO

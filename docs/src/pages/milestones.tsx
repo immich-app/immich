@@ -51,12 +51,22 @@ import {
   mdiVideo,
   mdiWeb,
   mdiScaleBalance,
+  mdiMagnifyScan,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiMagnifyScan,
+    description: 'Advanced search with filters by date, location and more',
+    title: 'Search enhancement with advanced filters',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiScaleBalance,
     description: 'Immich switches to AGPLv3 license',

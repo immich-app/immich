@@ -54,7 +54,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:3fcb624d83a9c478357f16dc173c58ded325ccc5fd2a4375f3916c04cc579f70
+    image: redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
     restart: always
 
   database:
@@ -88,7 +88,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:10.4.1-ubuntu@sha256:65e0e7d0f0b001cb0478bce5093bff917677dc308dd27a0aa4b3ac38e4fd877c
+    image: grafana/grafana:10.4.2-ubuntu@sha256:4f55071b556fb03f12b41423c98a185ed6695ed9ff2558e35805f0dd765fd958
     volumes:
       - grafana-data:/var/lib/grafana
 

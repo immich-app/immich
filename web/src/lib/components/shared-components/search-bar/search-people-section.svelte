@@ -43,21 +43,20 @@
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
     const nameLower = name.toLowerCase();
-    return name ? list.filter((p) => p.name.toLowerCase().startsWith(nameLower)) : list;
+    return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
   };
 </script>
 
 {#await peoplePromise then people}
   {#if people && people.length > 0}
-    {@const peopleList = showAllPeople ? filterPeople(people, name) : people.slice(0, numberOfPeople)}
+    {@const peopleList = showAllPeople
+      ? filterPeople(people, name)
+      : filterPeople(people, name).slice(0, numberOfPeople)}
 
     <div id="people-selection" class="-mb-4">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label py-3">PEOPLE</p>
-
-        {#if showAllPeople}
-          <SearchBar bind:name placeholder="Filter people" isSearching={false} />
-        {/if}
+        <SearchBar bind:name placeholder="Filter people" isSearching={false} />
       </div>
 
       <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">

@@ -2345,118 +2345,6 @@
         ]
       }
     },
-    "/audit/file-report": {
-      "get": {
-        "operationId": "getAuditFiles",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileReportDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/checksum": {
-      "post": {
-        "operationId": "getFileChecksums",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileChecksumDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FileChecksumResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/fix": {
-      "post": {
-        "operationId": "fixAuditFiles",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileReportFixDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -2511,99 +2399,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/devices": {
-      "delete": {
-        "operationId": "logoutAuthDevices",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      },
-      "get": {
-        "operationId": "getAuthDevices",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AuthDeviceResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/devices/{id}": {
-      "delete": {
-        "operationId": "logoutAuthDevice",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
             "description": ""
           }
         },
@@ -4522,6 +4317,118 @@
         ]
       }
     },
+    "/report": {
+      "get": {
+        "operationId": "getAuditFiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileReportDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/checksum": {
+      "post": {
+        "operationId": "getFileChecksums",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileChecksumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FileChecksumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/fix": {
+      "post": {
+        "operationId": "fixAuditFiles",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileReportFixDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
     "/search": {
       "get": {
         "deprecated": true,
@@ -5001,31 +4908,6 @@
         ]
       }
     },
-    "/server-info/admin-onboarding": {
-      "post": {
-        "operationId": "setAdminOnboarding",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -5181,6 +5063,99 @@
         },
         "tags": [
           "Server Info"
+        ]
+      }
+    },
+    "/sessions": {
+      "delete": {
+        "operationId": "deleteAllSessions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      },
+      "get": {
+        "operationId": "getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}": {
+      "delete": {
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
         ]
       }
     },
@@ -5566,6 +5541,140 @@
         ]
       }
     },
+    "/sync/delta-sync": {
+      "get": {
+        "operationId": "getDeltaSync",
+        "parameters": [
+          {
+            "name": "updatedAfter",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userIds",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDeltaSyncResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/sync/full-sync": {
+      "get": {
+        "operationId": "getAllForUserFullSync",
+        "parameters": [
+          {
+            "name": "lastCreationDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "updatedUntil",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/system-config": {
       "get": {
         "operationId": "getConfig",
@@ -5748,6 +5857,103 @@
         ],
         "tags": [
           "System Config"
+        ]
+      }
+    },
+    "/system-metadata/admin-onboarding": {
+      "get": {
+        "operationId": "getAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      },
+      "post": {
+        "operationId": "updateAdminOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      }
+    },
+    "/system-metadata/reverse-geocoding-state": {
+      "get": {
+        "operationId": "getReverseGeocodingState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseGeocodingStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
         ]
       }
     },
@@ -6872,7 +7078,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.101.0",
+    "version": "1.102.3",
     "contact": {}
   },
   "tags": [],
@@ -7043,6 +7249,17 @@
         },
         "required": [
           "sharedUserIds"
+        ],
+        "type": "object"
+      },
+      "AdminOnboardingUpdateDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -7332,6 +7549,31 @@
         "required": [
           "action",
           "id"
+        ],
+        "type": "object"
+      },
+      "AssetDeltaSyncResponseDto": {
+        "properties": {
+          "deleted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          },
+          "upserted": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "deleted",
+          "needsFullSync",
+          "upserted"
         ],
         "type": "object"
       },
@@ -7730,37 +7972,6 @@
         "required": [
           "ids",
           "needsFullSync"
-        ],
-        "type": "object"
-      },
-      "AuthDeviceResponseDto": {
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "current": {
-            "type": "boolean"
-          },
-          "deviceOS": {
-            "type": "string"
-          },
-          "deviceType": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "createdAt",
-          "current",
-          "deviceOS",
-          "deviceType",
-          "id",
-          "updatedAt"
         ],
         "type": "object"
       },
@@ -9490,6 +9701,23 @@
         ],
         "type": "object"
       },
+      "ReverseGeocodingStateResponseDto": {
+        "properties": {
+          "lastImportFileName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lastUpdate": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "lastImportFileName",
+          "lastUpdate"
+        ],
+        "type": "object"
+      },
       "ScanLibraryDto": {
         "properties": {
           "refreshAllFiles": {
@@ -9887,6 +10115,37 @@
           "major",
           "minor",
           "patch"
+        ],
+        "type": "object"
+      },
+      "SessionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -10372,6 +10631,9 @@
           "colorspace": {
             "$ref": "#/components/schemas/Colorspace"
           },
+          "extractEmbedded": {
+            "type": "boolean"
+          },
           "previewFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
@@ -10390,6 +10652,7 @@
         },
         "required": [
           "colorspace",
+          "extractEmbedded",
           "previewFormat",
           "previewSize",
           "quality",

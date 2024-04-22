@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **colorspace** | [**Colorspace**](Colorspace.md) |  | 
+**extractEmbedded** | **bool** |  | 
 **previewFormat** | [**ImageFormat**](ImageFormat.md) |  | 
 **previewSize** | **int** |  | 
 **quality** | **int** |  | 

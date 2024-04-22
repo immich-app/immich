@@ -296,6 +296,7 @@
   "motion_photos_page_title": "Motion Photos",
   "multiselect_grid_edit_date_time_err_read_only": "Cannot edit date of read only asset(s), skipping",
   "multiselect_grid_edit_gps_err_read_only": "Cannot edit location of read only asset(s), skipping",
+  "no_assets_to_show" : "No assets to show",
   "notification_permission_dialog_cancel": "Cancel",
   "notification_permission_dialog_content": "To enable notifications, go to Settings and select allow.",
   "notification_permission_dialog_settings": "Settings",
@@ -511,5 +512,7 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack"
+  "viewer_unstack": "Un-Stack",
+  "haptic_feedback_title": "Haptic Feedback",
+  "haptic_feedback_switch": "Enable haptic feedback"
 }

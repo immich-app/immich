@@ -14,6 +14,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+
+  const { slideshowState, slideshowLook } = slideshowStore;
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | null = null;
@@ -147,18 +150,29 @@
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="flex h-full select-none place-content-center place-items-center"
+  class="relative h-full select-none"
 >
   {#if !imageLoaded}
-    <LoadingSpinner />
+    <div class="flex h-full items-center justify-center">
+      <LoadingSpinner />
+    </div>
   {:else}
-    <div bind:this={imgElement} class="h-full w-full">
+    <div bind:this={imgElement} class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+        <img
+          src={assetData}
+          alt={getAltText(asset)}
+          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          draggable="false"
+        />
+      {/if}
       <img
         bind:this={$photoViewer}
-        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
         alt={getAltText(asset)}
-        class="h-full w-full object-contain"
+        class="h-full w-full {$slideshowState === SlideshowState.None
+          ? 'object-contain'
+          : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}

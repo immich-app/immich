@@ -39,8 +39,12 @@
     try {
       await emptyTrash();
 
+      const deletedAssetIds = assetStore.assets.map((a) => a.id);
+      const numberOfAssets = deletedAssetIds.length;
+      assetStore.removeAssets(deletedAssetIds);
+
       notificationController.show({
-        message: `Empty trash initiated. Refresh the page to see the changes`,
+        message: `Permanently deleted ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -52,8 +56,12 @@
     try {
       await restoreTrash();
 
+      const restoredAssetIds = assetStore.assets.map((a) => a.id);
+      const numberOfAssets = restoredAssetIds.length;
+      assetStore.removeAssets(restoredAssetIds);
+
       notificationController.show({
-        message: `Restore trash initiated. Refresh the page to see the changes`,
+        message: `Restored ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
         type: NotificationType.Info,
       });
     } catch (error) {
