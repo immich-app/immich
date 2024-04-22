@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Lokalnih sredstev ni mogoče deliti prek povezave, preskakujem",
   "home_page_upload_err_limit": "Hkrati lahko naložite največ 30 sredstev, preskakujem",
   "image_viewer_page_state_provider_download_error": "Napaka pri prenosu",
+  "image_viewer_page_state_provider_download_started": "Prenos sa začal",
   "image_viewer_page_state_provider_download_success": "Prenos je uspel",
   "image_viewer_page_state_provider_share_error": "Napaka skupne rabe",
   "library_page_albums": "Albumi",

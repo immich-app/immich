@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Lokale Inhalte können nicht per Link geteilt werden, überspringe",
   "home_page_upload_err_limit": "Max. 30 Elemente können gleichzeitig hochgeladen werden, überspringe",
   "image_viewer_page_state_provider_download_error": "Fehler beim Herunterladen",
+  "image_viewer_page_state_provider_download_started": "Gestartet heruntergeladen",
   "image_viewer_page_state_provider_download_success": "Erfolgreich heruntergeladen",
   "image_viewer_page_state_provider_share_error": "Fehler beim Teilen",
   "library_page_albums": "Alben",

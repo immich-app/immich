@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Nie można udostępniać zasobów lokalnych za pośrednictwem linku, pomijajam",
   "home_page_upload_err_limit": "Można przesłać maksymalnie 30 zasobów jednocześnie, pomijanie",
   "image_viewer_page_state_provider_download_error": "Błąd pobierania",
+  "image_viewer_page_state_provider_download_started": "Pobieranie rozpoczęte",
   "image_viewer_page_state_provider_download_success": "Pobieranie zakończone",
   "image_viewer_page_state_provider_share_error": "Udostępnij błąd",
   "library_page_albums": "Albumy",

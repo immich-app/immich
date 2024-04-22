@@ -216,6 +216,7 @@
   "home_page_share_err_local": "לא ניתן לשתף נכסים מקומיים על ידי קישור, מדלג",
   "home_page_upload_err_limit": "יכול רק להעלות מקסימום של 30 נכסים בכל פעם, מדלג",
   "image_viewer_page_state_provider_download_error": "שגיאת הורדה",
+  "image_viewer_page_state_provider_download_started": "Download Started",
   "image_viewer_page_state_provider_download_success": "הצלחת הורדה",
   "image_viewer_page_state_provider_share_error": "שיתוף שגיאה",
   "library_page_albums": "אלבומים",

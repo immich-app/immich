@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Can not share local assets via link, skipping",
   "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
   "image_viewer_page_state_provider_download_error": "Lejupielādes Kļūda",
+  "image_viewer_page_state_provider_download_started": "Lejupielāde sākta",
   "image_viewer_page_state_provider_download_success": "Lejupielāde Izdevās",
   "image_viewer_page_state_provider_share_error": "Share Error",
   "library_page_albums": "Albums",

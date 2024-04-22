@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Can not share local assets via link, skipping",
   "home_page_upload_err_limit": "Csak 30 elemet tudsz egyszerre feltölteni, átugrás",
   "image_viewer_page_state_provider_download_error": "Letöltési Hiba",
+  "image_viewer_page_state_provider_download_started": "Letöltés elindult",
   "image_viewer_page_state_provider_download_success": "Letöltés Sikeres",
   "image_viewer_page_state_provider_share_error": "Share Error",
   "library_page_albums": "Albumok",

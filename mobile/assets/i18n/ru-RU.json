@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Невозможно поделиться локальными данными по ссылке, пропуск...",
   "home_page_upload_err_limit": "Вы можете выгрузить максимум 30 файлов за раз",
   "image_viewer_page_state_provider_download_error": "Ошибка загрузки",
+  "image_viewer_page_state_provider_download_started": "Начата загрузки",
   "image_viewer_page_state_provider_download_success": "Успешно загружено",
   "image_viewer_page_state_provider_share_error": "Ошибка общего доступа",
   "library_page_albums": "Альбомы",

@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Kan ikke dele lokale elementer via link, springer over",
   "home_page_upload_err_limit": "Det er kun muligt at lave sikkerhedskopi af 30 elementer ad gangen. Springer over",
   "image_viewer_page_state_provider_download_error": "Fejl ved download",
+  "image_viewer_page_state_provider_download_started": "Download startede",
   "image_viewer_page_state_provider_download_success": "Download succesfuld",
   "image_viewer_page_state_provider_share_error": "Delingsfejl",
   "library_page_albums": "Albummer",

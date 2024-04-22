@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Paikallisia kohteita ei voitu jakaa linkkien avulla. Hypätään yli",
   "home_page_upload_err_limit": "Voit lähettää palvelimelle enintään 30 kohdetta kerrallaan, ohitetaan",
   "image_viewer_page_state_provider_download_error": "Lataus epäonnistui",
+  "image_viewer_page_state_provider_download_started": "Lataus aloitettu",
   "image_viewer_page_state_provider_download_success": "Lataus onnistui",
   "image_viewer_page_state_provider_share_error": "Jakovirhe",
   "library_page_albums": "Albumit",

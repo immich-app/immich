@@ -216,6 +216,7 @@
   "home_page_share_err_local": "No se pueden compartir activos locales a través de un enlace, omitiendo",
   "home_page_upload_err_limit": "Solo se pueden subir 30 elementos simultáneamente, omitiendo",
   "image_viewer_page_state_provider_download_error": "Error de descarga",
+  "image_viewer_page_state_provider_download_started": "Descarga iniciada",
   "image_viewer_page_state_provider_download_success": "Descarga exitosa",
   "image_viewer_page_state_provider_share_error": "Error al compartir",
   "library_page_albums": "Álbumes",
