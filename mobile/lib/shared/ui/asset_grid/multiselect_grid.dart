@@ -196,10 +196,10 @@ class MultiselectGrid extends HookConsumerWidget {
 
         if (isDeleted) {
           final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
+          final trashOrRemoved = force ? 'deleted_permanently' : 'trashed';
           ImmichToast.show(
             context: context,
-            msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
+            msg: 'toast_${assetOrAssets}_$trashOrRemoved'.tr(args: [selection.value.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -222,7 +222,7 @@ class MultiselectGrid extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg:
-                '${localIds.length} $assetOrAssets removed permanently from your device',
+                'toast_${assetOrAssets}_removed_permanently_from_device'.tr(args: [localIds.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -251,11 +251,11 @@ class MultiselectGrid extends HookConsumerWidget {
             .deleteRemoteOnlyAssets(toDelete, force: force);
         if (isDeleted) {
           final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
+          final trashOrRemoved = force ? 'deleted_permanently' : 'trashed';
           ImmichToast.show(
             context: context,
             msg:
-                '${toDelete.length} $assetOrAssets $trashOrRemoved from the Immich server',
+                'toast_${assetOrAssets}_${trashOrRemoved}_from_immich_server'.tr(args: [toDelete.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
         }
