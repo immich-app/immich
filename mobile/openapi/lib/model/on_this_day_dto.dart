@@ -16,6 +16,7 @@ class OnThisDayDto {
     required this.year,
   });
 
+  /// Minimum value: 1
   num year;
 
   @override

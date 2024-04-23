@@ -63,7 +63,7 @@ class MultiselectGrid extends HookConsumerWidget {
       const Center(child: ImmichLoadingIndicator());
 
   Widget buildEmptyIndicator() =>
-      emptyIndicator ?? const Center(child: Text("No assets to show"));
+      emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr());
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

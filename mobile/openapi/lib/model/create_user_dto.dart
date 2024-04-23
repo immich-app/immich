@@ -36,6 +36,7 @@ class CreateUserDto {
 
   String password;
 
+  /// Minimum value: 1
   int? quotaSizeInBytes;
 
   ///
