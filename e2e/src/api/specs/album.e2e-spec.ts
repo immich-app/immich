@@ -15,7 +15,8 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-const user1SharedUser = 'user1SharedUser';
+const user1SharedEditorUser = 'user1SharedEditorUser';
+const user1SharedViewerUser = 'user1SharedViewerUser';
 const user1SharedLink = 'user1SharedLink';
 const user1NotShared = 'user1NotShared';
 const user2SharedUser = 'user2SharedUser';
@@ -50,32 +51,47 @@ describe('/album', () => {
 
     const albums = await Promise.all([
       // user 1
+      /* 0 */
       utils.createAlbum(user1.accessToken, {
-        albumName: user1SharedUser,
+        albumName: user1SharedEditorUser,
         sharedWithUserIds: [user2.userId],
         assetIds: [user1Asset1.id],
       }),
+      /* 1 */
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedLink,
         assetIds: [user1Asset1.id],
       }),
+      /* 2 */
       utils.createAlbum(user1.accessToken, {
         albumName: user1NotShared,
         assetIds: [user1Asset1.id, user1Asset2.id],
       }),
 
       // user 2
+      /* 3 */
       utils.createAlbum(user2.accessToken, {
         albumName: user2SharedUser,
         sharedWithUserIds: [user1.userId],
       }),
+      /* 4 */
       utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
+      /* 5 */
       utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
 
       // user 3
+      /* 6 */
       utils.createAlbum(user3.accessToken, {
         albumName: 'Deleted',
         sharedWithUserIds: [user1.userId],
+      }),
+
+      // user1 shared with an editor
+      /* 7 */
+      utils.createAlbum(user1.accessToken, {
+        albumName: user1SharedViewerUser,
+        sharedWithUserIds: [user2.userId],
+        assetIds: [user1Asset1.id],
       }),
     ]);
 
@@ -109,7 +125,7 @@ describe('/album', () => {
 
     albums[3] = await getAlbumInfo({ id: albums[3].id }, { headers: asBearerAuth(user2.accessToken) });
 
-    user1Albums = albums.slice(0, 3);
+    user1Albums = [...albums.slice(0, 3), albums[7]];
     user2Albums = albums.slice(3, 6);
 
     await Promise.all([
@@ -168,7 +184,7 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(3);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -178,7 +194,12 @@ describe('/album', () => {
           }),
           expect.objectContaining({
             ownerId: user1.userId,
-            albumName: user1SharedUser,
+            albumName: user1SharedEditorUser,
+            shared: true,
+          }),
+          expect.objectContaining({
+            ownerId: user1.userId,
+            albumName: user1SharedViewerUser,
             shared: true,
           }),
           expect.objectContaining({
@@ -193,12 +214,17 @@ describe('/album', () => {
     it('should return the album collection including owned and shared', async () => {
       const { status, body } = await request(app).get('/album').set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(3);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             ownerId: user1.userId,
-            albumName: user1SharedUser,
+            albumName: user1SharedEditorUser,
+            shared: true,
+          }),
+          expect.objectContaining({
+            ownerId: user1.userId,
+            albumName: user1SharedViewerUser,
             shared: true,
           }),
           expect.objectContaining({
@@ -220,12 +246,17 @@ describe('/album', () => {
         .get('/album?shared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(3);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             ownerId: user1.userId,
-            albumName: user1SharedUser,
+            albumName: user1SharedEditorUser,
+            shared: true,
+          }),
+          expect.objectContaining({
+            ownerId: user1.userId,
+            albumName: user1SharedViewerUser,
             shared: true,
           }),
           expect.objectContaining({
@@ -272,7 +303,7 @@ describe('/album', () => {
         .get(`/album?shared=true&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(4);
+      expect(body).toHaveLength(5);
     });
 
     it('should return the album collection filtered by assetId and ignores shared=false', async () => {
@@ -280,7 +311,7 @@ describe('/album', () => {
         .get(`/album?shared=false&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(4);
+      expect(body).toHaveLength(5);
     });
   });
 
@@ -354,7 +385,7 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({ owned: 3, shared: 3, notShared: 1 });
+      expect(body).toEqual({ owned: 4, shared: 4, notShared: 1 });
     });
   });
 
