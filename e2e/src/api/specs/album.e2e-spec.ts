@@ -72,7 +72,7 @@ describe('/album', () => {
       /* 3 */
       utils.createAlbum(user2.accessToken, {
         albumName: user2SharedUser,
-        sharedWithUserIds: [user1.userId],
+        sharedWithUserIds: [user1.userId, user3.userId],
       }),
       /* 4 */
       utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
