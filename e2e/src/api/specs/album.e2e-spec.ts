@@ -113,7 +113,6 @@ describe('/album', () => {
         updateAlbumUserDto: { role: AlbumUserRole.Editor },
       }),
     ]);
-
     albums[0].albumUsers[0].role = AlbumUserRole.Editor;
     albums[3].albumUsers[0].role = AlbumUserRole.Editor;
     albums[6].albumUsers[0].role = AlbumUserRole.Editor;
@@ -334,7 +333,7 @@ describe('/album', () => {
       });
     });
 
-    it('should return album info for shared album', async () => {
+    it('should return album info for shared album (editor)', async () => {
       const { status, body } = await request(app)
         .get(`/album/${user2Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
@@ -342,6 +341,19 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user2Albums[0],
+        assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
+      });
+    });
+
+    it('should return album info for shared album (viewer)', async () => {
+      const { status, body } = await request(app)
+        .get(`/album/${user1Albums[3].id}?withoutAssets=false`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(200);
+      console.log(body);
+      expect(body).toEqual({
+        ...user1Albums[3],
         assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
       });
     });
