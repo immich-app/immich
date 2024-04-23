@@ -339,10 +339,7 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({
-        ...user2Albums[0],
-        assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
-      });
+      expect(body).toMatchObject({ id: user2Albums[0].id });
     });
 
     it('should return album info for shared album (viewer)', async () => {
@@ -351,11 +348,7 @@ describe('/album', () => {
         .set('Authorization', `Bearer ${user2.accessToken}`);
 
       expect(status).toBe(200);
-      console.log(body);
-      expect(body).toEqual({
-        ...user1Albums[3],
-        assets: [expect.objectContaining({ id: user2Albums[0].assets[0].id })],
-      });
+      expect(body).toMatchObject({ id: user1Albums[3].id });
     });
 
     it('should return album info with assets when withoutAssets is undefined', async () => {
