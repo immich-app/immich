@@ -181,10 +181,21 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       UserResponseDto? userResponseDto;
       try {
         userResponseDto = await _apiService.userApi.getMyUserInfo();
-      } on ApiException catch (e) {
-        if (e.innerException is SocketException) {
+      } on ApiException catch (error, stackTrace) {
+        _log.severe(
+          "Error getting user information from the server [API EXCEPTIOON]",
+          error,
+          stackTrace,
+        );
+        if (error.innerException is SocketException) {
           state = state.copyWith(isAuthenticated: true);
         }
+      } catch (error, stackTrace) {
+        _log.severe(
+          "Error getting user information from the server [CATCH ALL]",
+          error,
+          stackTrace,
+        );
       }
 
       if (userResponseDto != null) {
