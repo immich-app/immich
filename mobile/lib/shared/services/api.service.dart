@@ -99,12 +99,10 @@ class ApiService {
 
     try {
       final response = await client
-          .get(
-            Uri.parse(serverUrl),
-          )
+          .get(Uri.parse("$serverUrl/server-info/ping"))
           .timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 502) {
+      if (response.statusCode != 200) {
         _log.severe(
           "Server Gateway Error: ${response.body} - Cannot communicate to the server",
         );

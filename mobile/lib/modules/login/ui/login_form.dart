@@ -87,6 +87,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: e.message ?? 'login_form_api_exception'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -97,6 +98,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: 'login_form_handshake_exception'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -107,6 +109,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: 'login_form_server_error'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -175,6 +178,7 @@ class LoginForm extends HookConsumerWidget {
             context: context,
             msg: "login_form_failed_login".tr(),
             toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
           );
         }
       } finally {
@@ -198,6 +202,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: "login_form_failed_get_oauth_server_config".tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isLoading.value = false;
         return;
@@ -226,6 +231,7 @@ class LoginForm extends HookConsumerWidget {
               context: context,
               msg: "login_form_failed_login".tr(),
               toastType: ToastType.error,
+              gravity: ToastGravity.TOP,
             );
           }
         }
