@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import _ from 'lodash';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -137,15 +138,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     }
   }
 
-  albumUsers.sort((a, b) => {
-    if (a.role === AlbumUserRole.VIEWER && b.role === AlbumUserRole.EDITOR) {
-      return 1;
-    }
-    if (a.role === AlbumUserRole.EDITOR && b.role === AlbumUserRole.VIEWER) {
-      return -1;
-    }
-    return a.user.name.localeCompare(b.user.name);
-  });
+  const albumUsersSorted = _.orderBy(albumUsers, ['role', 'user.name']);
 
   const assets = entity.assets || [];
 
@@ -169,7 +162,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
-    albumUsers,
+    albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,
