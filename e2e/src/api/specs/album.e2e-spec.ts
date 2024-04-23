@@ -463,6 +463,17 @@ describe('/album', () => {
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: asset.id, success: true })]);
     });
+
+    it('should not be able to add assets to album as a viewer', async () => {
+      const asset = await utils.createAsset(user2.accessToken);
+      const { status, body } = await request(app)
+        .put(`/album/${user1Albums[3].id}/assets`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ ids: [asset.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
+    });
   });
 
   describe('PATCH /album/:id', () => {
@@ -492,6 +503,26 @@ describe('/album', () => {
         albumName: 'New album name',
         description: 'An album description',
       });
+    });
+
+    it('should not be able to update as a viewer', async () => {
+      const { status, body } = await request(app)
+        .patch(`/album/${user1Albums[3].id}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ albumName: 'New album name' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.update access'));
+    });
+
+    it('should not be able to update as an editor', async () => {
+      const { status, body } = await request(app)
+        .patch(`/album/${user1Albums[0].id}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ albumName: 'New album name' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.update access'));
     });
   });
 
@@ -555,6 +586,16 @@ describe('/album', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
+    });
+
+    it('should not be able to remove assets from album as a viewer', async () => {
+      const { status, body } = await request(app)
+        .delete(`/album/${user1Albums[3].id}/assets`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ ids: [user1Asset1.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.removeAsset access'));
     });
   });
 
