@@ -317,9 +317,8 @@ class ControlBottomAppBar extends HookConsumerWidget {
                             ),
                           ),
                         ],
-                      )
+                      ),
                     ),
-                   
                     if (hasRemote)
                       const Divider(
                         indent: 16,
