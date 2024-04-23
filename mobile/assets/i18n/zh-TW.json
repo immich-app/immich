@@ -22,7 +22,7 @@
   "album_thumbnail_card_shared": " · 已共享",
   "album_thumbnail_owned": "擁有",
   "album_thumbnail_shared_by": "由 {} 共享",
-  "album_viewer_appbar_delete_confirm": "Are you sure you want to delete this album from your account?",
+  "album_viewer_appbar_delete_confirm": "確定要將此相冊從您的帳號中移除?",
   "album_viewer_appbar_share_delete": "刪除相冊",
   "album_viewer_appbar_share_err_delete": "刪除相冊失敗",
   "album_viewer_appbar_share_err_leave": "退出共享失敗",
