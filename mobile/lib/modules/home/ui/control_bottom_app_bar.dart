@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -297,17 +299,29 @@ class ControlBottomAppBar extends HookConsumerWidget {
               SliverToBoxAdapter(
                 child: Column(
                   children: <Widget>[
-                    const SizedBox(height: 12),
-                    const CustomDraggingHandle(),
-                    const SizedBox(height: 16),
                     SizedBox(
-                      height: 120,
-                      child: ListView(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        children: renderActionButtons(),
-                      ),
+                      height: 140,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const SizedBox(height: 8),
+                          const CustomDraggingHandle(),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 112,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: ListView(
+                                shrinkWrap: true,                       
+                                scrollDirection: Axis.horizontal,
+                                children: renderActionButtons(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
                     ),
+                   
                     if (hasRemote)
                       const Divider(
                         indent: 16,
