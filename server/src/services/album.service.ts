@@ -231,7 +231,7 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      album.albumUsers.push(await this.albumUserRepository.create({ userId: userId, albumId: id }));
+      await this.albumUserRepository.create({ userId: userId, albumId: id });
     }
 
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
