@@ -190,7 +190,7 @@ export class AssetService {
       .map((yearsAgo) => ({
         yearsAgo,
         // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
         assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
       }));
   }
