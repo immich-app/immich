@@ -272,7 +272,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
     return DraggableScrollableSheet(
       controller: scrollController,
-      initialChildSize: hasRemote ? 0.35 : bottomPadding,
+      initialChildSize: hasRemote ? 0.40 : bottomPadding,
       minChildSize: bottomPadding,
       maxChildSize: hasRemote ? 0.65 : bottomPadding,
       snap: true,
