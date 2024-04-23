@@ -183,7 +183,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         userResponseDto = await _apiService.userApi.getMyUserInfo();
       } on ApiException catch (error, stackTrace) {
         _log.severe(
-          "Error getting user information from the server [API EXCEPTIOON]",
+          "Error getting user information from the server [API EXCEPTION]",
           error,
           stackTrace,
         );
