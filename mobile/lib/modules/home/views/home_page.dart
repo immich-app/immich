@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_lane.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -98,19 +99,37 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: const ImmichAppBar(),
-      body: MultiselectGrid(
-        topWidget: (currentUser != null && currentUser.memoryEnabled)
-            ? const MemoryLane()
-            : const SizedBox(),
-        renderListProvider: timelineUsers.length > 1
-            ? multiUserAssetsProvider(timelineUsers)
-            : assetsProvider(currentUser?.isarId),
-        buildLoadingIndicator: buildLoadingIndicator,
-        onRefresh: refreshAssets,
-        stackEnabled: true,
-        archiveEnabled: true,
-        editEnabled: true,
+      body: Stack(
+        children: [
+          MultiselectGrid(
+            topWidget: (currentUser != null && currentUser.memoryEnabled)
+                ? const MemoryLane()
+                : const SizedBox(),
+            renderListProvider: timelineUsers.length > 1
+                ? multiUserAssetsProvider(timelineUsers)
+                : assetsProvider(currentUser?.isarId),
+            buildLoadingIndicator: buildLoadingIndicator,
+            onRefresh: refreshAssets,
+            stackEnabled: true,
+            archiveEnabled: true,
+            editEnabled: true,
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            top: ref.watch(multiselectProvider)
+                ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+                : 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: kToolbarHeight + MediaQuery.of(context).padding.top,
+              color: context.themeData.appBarTheme.backgroundColor,
+              child: const SafeArea(
+                child: ImmichAppBar(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

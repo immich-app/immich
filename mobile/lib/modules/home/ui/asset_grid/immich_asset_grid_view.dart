@@ -14,8 +14,10 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_drag_region.dart'
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/shared/providers/tab.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -215,8 +217,13 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       }
     }
 
+    bool appBarOffset() {
+      return ref.watch(tabProvider).index == 0 && ModalRoute.of(context)?.settings.name == TabControllerRoute.name;
+    }
+
     final listWidget = ScrollablePositionedList.builder(
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
+        top: appBarOffset() ? 60 : 0,
         bottom: 220,
       ),
       itemBuilder: _itemBuilder,
@@ -236,6 +243,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             controller: _itemScrollController,
             backgroundColor: context.themeData.hintColor,
             labelTextBuilder: _labelBuilder,
+            padding: appBarOffset() ? const EdgeInsets.only(top:60) : const EdgeInsets.only(),
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
             scrollbarTimeToFade: const Duration(milliseconds: 1000),
@@ -244,7 +252,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         : listWidget;
     return widget.onRefresh == null
         ? child
-        : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+        : appBarOffset() ? RefreshIndicator(onRefresh: widget.onRefresh!, child: child, edgeOffset: 30,) : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
   @override
