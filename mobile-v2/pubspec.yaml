@@ -1,0 +1,70 @@
+name: immich_mobile
+description: Immich - selfhosted backup media file on mobile phone
+
+publish_to: 'none'
+version: 1.102.0+132
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # OS specific path
+  path_provider: ^2.0.0
+  path: ^1.9.0
+  # Database
+  drift: ^2.17.0
+  sqlite3: ^2.4.2
+  sqlite3_flutter_libs: ^0.5.0
+  # Route handling
+  auto_route: ^8.1.0
+  # Logging
+  logging: ^1.2.0
+  # Hooks
+  flutter_hooks: ^0.20.5
+  # Collection Utils
+  collection: ^1.18.0
+  # BLOC
+  flutter_bloc: ^8.1.5
+  # get_it
+  get_it: ^7.7.0
+  injectable: ^2.4.1
+
+dependency_overrides:
+  # TODO: Remove the drift related overrides once the manager PR change version is released to pub
+  drift:
+    git:
+      url: https://github.com/simolus3/drift.git
+      ref: develop
+      path: drift
+  drift_dev:
+    git:
+      url: https://github.com/simolus3/drift.git
+      ref: develop
+      path: drift_dev
+  sqlparser:
+    git:
+      url: https://github.com/simolus3/drift.git
+      ref: develop
+      path: sqlparser
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Recommended lints
+  flutter_lints: ^3.0.0
+  # Code generator
+  build_runner: ^2.4.9
+  source_gen: ^1.5.0
+  # Database helper
+  drift_dev: ^2.17.0
+  # Route helper
+  auto_route_generator: ^8.0.0
+  # @injectable
+  injectable_generator: ^2.6.1
+
+flutter:
+  uses-material-design: true

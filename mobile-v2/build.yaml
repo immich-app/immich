@@ -1,0 +1,26 @@
+targets:
+  $default:
+    builders:
+      #drift @DriftDatabase()
+      drift_dev:
+        # Disable default builder to use modular builder instead
+        enabled: false
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          store_date_time_values_as_text: true
+          named_parameters: true
+          write_from_json_string_constructor: false
+          data_class_to_companions: false
+          skip_verification_code: true
+      drift_dev:modular:
+        enabled: true
+        options: *options
+      #autoroute @RoutePage()
+      auto_route_generator:auto_route_generator:
+        generate_for:
+          - lib/**.page.dart
+      #autoroute @AutoRouterConfig()
+      auto_route_generator:auto_router_generator:
+        generate_for:
+          - lib/presentation/router.dart

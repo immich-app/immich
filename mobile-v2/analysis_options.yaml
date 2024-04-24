@@ -1,0 +1,18 @@
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    avoid_single_cascade_in_expression_statements: false
+
+analyzer:
+  exclude:
+    - openapi/**
+
+dart_code_metrics:
+  extends:
+    - recommended
+  rules:
+    - prefer-match-file-name: false
+    - avoid-passing-self-as-argument: false
