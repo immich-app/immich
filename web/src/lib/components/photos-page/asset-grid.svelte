@@ -22,6 +22,7 @@
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
+  import { navigate } from '$lib/utils/navigation';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -47,6 +48,10 @@
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
+
+  $: {
+    void assetStore.updateViewport(viewport);
+  }
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
@@ -142,22 +147,24 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAsset($viewingAsset.id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
 
     if (previousAsset) {
-      const preloadAsset = await assetStore.getPreviousAsset(previousAsset.id);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAsset($viewingAsset.id);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset);
 
     if (nextAsset) {
-      const preloadAsset = await assetStore.getNextAsset(nextAsset.id);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
     return !!nextAsset;
@@ -169,6 +176,7 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
+      case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();
@@ -461,8 +469,8 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    {#await import('../asset-viewer/asset-viewer.svelte') then AssetViewer}
-      <AssetViewer.default
+    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
         {withStacked}
         {assetStore}
         asset={$viewingAsset}

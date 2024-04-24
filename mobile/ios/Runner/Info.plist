@@ -58,11 +58,11 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.101.0</string>
+    <string>1.102.2</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>147</string>
+    <string>150</string>
     <key>FLTEnableImpeller</key>
     <true />
     <key>ITSAppUsesNonExemptEncryption</key>

@@ -8,6 +8,7 @@ import { AuditController } from 'src/controllers/audit.controller';
 import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { FaceController } from 'src/controllers/face.controller';
+import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
@@ -20,19 +21,20 @@ import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
+import { SystemMetadataController } from 'src/controllers/system-metadata.controller';
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserController } from 'src/controllers/user.controller';
 
 export const controllers = [
-  ActivityController,
-  AssetsController,
-  AssetControllerV1,
-  AssetController,
-  AppController,
-  AlbumController,
   APIKeyController,
+  ActivityController,
+  AlbumController,
+  AppController,
+  AssetController,
+  AssetControllerV1,
+  AssetsController,
   AuditController,
   AuthController,
   DownloadController,
@@ -42,15 +44,17 @@ export const controllers = [
   MemoryController,
   OAuthController,
   PartnerController,
+  PersonController,
+  ReportController,
   SearchController,
   ServerInfoController,
   SessionController,
   SharedLinkController,
   SyncController,
   SystemConfigController,
+  SystemMetadataController,
   TagController,
   TimelineController,
   TrashController,
   UserController,
-  PersonController,
 ];

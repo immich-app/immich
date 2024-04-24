@@ -4,7 +4,14 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiFitToPageOutline, mdiFitToScreenOutline, mdiShuffle } from '@mdi/js';
+  import {
+    mdiArrowDownThin,
+    mdiArrowUpThin,
+    mdiFitToPageOutline,
+    mdiFitToScreenOutline,
+    mdiPanorama,
+    mdiShuffle,
+  } from '@mdi/js';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
   import type { RenderedOption } from './elements/dropdown.svelte';
@@ -23,6 +30,7 @@
   const lookOptions: Record<SlideshowLook, RenderedOption> = {
     [SlideshowLook.Contain]: { icon: mdiFitToScreenOutline, title: 'Contain' },
     [SlideshowLook.Cover]: { icon: mdiFitToPageOutline, title: 'Cover' },
+    [SlideshowLook.BlurredBackground]: { icon: mdiPanorama, title: 'Blurred background' },
   };
 
   const handleToggle = <Type extends SlideshowNavigation | SlideshowLook>(
