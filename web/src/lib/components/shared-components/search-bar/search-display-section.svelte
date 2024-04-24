@@ -7,40 +7,18 @@
 </script>
 
 <script lang="ts">
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
+
   export let filters: SearchDisplayFilters;
 </script>
 
 <div id="display-options-selection">
-  <fieldset class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
-    <legend>DISPLAY OPTIONS</legend>
-    <label class="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        name="display-options"
-        class="size-5 flex-shrink-0 focus-visible:ring-2"
-        bind:checked={filters.isNotInAlbum}
-      />
-      <span class="pt-1">Not in any album</span>
-    </label>
-
-    <label class="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        name="display-options"
-        class="size-5 flex-shrink-0 focus-visible:ring-2"
-        bind:checked={filters.isArchive}
-      />
-      <span class="pt-1">Archive</span>
-    </label>
-
-    <label class="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        name="display-options"
-        class="size-5 flex-shrink-0 focus-visible:ring-2"
-        bind:checked={filters.isFavorite}
-      />
-      <span class="pt-1">Favorite</span>
-    </label>
+  <fieldset>
+    <legend class="immich-form-label">DISPLAY OPTIONS</legend>
+    <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
+      <Checkbox id="not-in-album-checkbox" label="Not in any album" bind:checked={filters.isNotInAlbum} />
+      <Checkbox id="archive-checkbox" label="Archive" bind:checked={filters.isArchive} />
+      <Checkbox id="favorite-checkbox" label="Favorite" bind:checked={filters.isFavorite} />
+    </div>
   </fieldset>
 </div>

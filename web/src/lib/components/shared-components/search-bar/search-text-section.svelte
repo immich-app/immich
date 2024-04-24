@@ -1,4 +1,6 @@
 <script lang="ts">
+  import RadioButton from '$lib/components/elements/radio-button.svelte';
+
   export let filename: string | undefined;
   export let context: string | undefined;
 
@@ -18,54 +20,45 @@
   }
 </script>
 
-<fieldset class="flex flex-wrap gap-x-5 gap-y-2">
-  <legend>Search type</legend>
-  <label class="immich-form-label text-sm">
-    <input
-      type="radio"
+<fieldset>
+  <legend class="immich-form-label">Search type</legend>
+  <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1 mb-2">
+    <RadioButton
       name="query-type"
+      id="context-radio"
       bind:group={selectedOption}
+      label="Context"
       value={TextSearchOptions.Context}
-      class="focus-visible:ring-2"
     />
-    Context
-  </label>
-  <label class="immich-form-label text-sm mb-2">
-    <input
-      type="radio"
+    <RadioButton
       name="query-type"
+      id="file-name-radio"
       bind:group={selectedOption}
+      label="File name or extension"
       value={TextSearchOptions.Filename}
-      class="focus-visible:ring-2"
     />
-    File name or extension
-  </label>
+  </div>
 </fieldset>
 
 {#if selectedOption === TextSearchOptions.Context}
-  <label>
-    Search by context
-    <input
-      class="immich-form-input hover:cursor-text w-full !mt-1"
-      type="text"
-      id="context"
-      name="context"
-      placeholder="Sunrise on the beach"
-      bind:value={context}
-      aria-labelledby="context-label"
-    />
-  </label>
+  <label for="context-input" class="immich-form-label">Search by context</label>
+  <input
+    class="immich-form-input hover:cursor-text w-full !mt-1"
+    type="text"
+    id="context-input"
+    name="context"
+    placeholder="Sunrise on the beach"
+    bind:value={context}
+  />
 {:else}
-  <label>
-    Search by file name or extension
-    <input
-      class="immich-form-input hover:cursor-text w-full !mt-1"
-      type="text"
-      id="file-name"
-      name="file-name"
-      placeholder="i.e. IMG_1234.JPG or PNG"
-      bind:value={filename}
-      aria-labelledby="file-name-label"
-    />
-  </label>
+  <label for="file-name-input" class="immich-form-label">Search by file name or extension</label>
+  <input
+    class="immich-form-input hover:cursor-text w-full !mt-1"
+    type="text"
+    id="file-name-input"
+    name="file-name"
+    placeholder="i.e. IMG_1234.JPG or PNG"
+    bind:value={filename}
+    aria-labelledby="file-name-label"
+  />
 {/if}

@@ -4,6 +4,7 @@
   import { deleteUser, type UserResponseDto } from '@immich/sdk';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { createEventDispatcher } from 'svelte';
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
 
   export let user: UserResponseDto;
 
@@ -63,14 +64,10 @@
       {/if}
 
       <div class="flex justify-center m-4 gap-2">
-        <label class="text-sm dark:text-immich-dark-fg" for="forceDelete">
-          Queue user and assets for immediate deletion
-        </label>
-
-        <input
-          id="forceDelete"
-          type="checkbox"
-          class="form-checkbox h-5 w-5"
+        <Checkbox
+          id="queue-user-deletion-checkbox"
+          label="Queue user and assets for immediate deletion"
+          labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
           on:change={() => {
             deleteButtonDisabled = forceDelete;

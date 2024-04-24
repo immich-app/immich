@@ -125,7 +125,7 @@
     on:reset|preventDefault={resetForm}
   >
     <div
-      class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-15rem)] sm:max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar"
+      class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-14rem)] sm:max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar"
       tabindex="-1"
     >
       <!-- PEOPLE -->
