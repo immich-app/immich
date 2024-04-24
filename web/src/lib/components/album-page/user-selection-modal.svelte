@@ -1,30 +1,36 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import {
+    AlbumUserRole,
     getAllSharedLinks,
     getAllUsers,
     type AlbumResponseDto,
+    type AlbumUserAddDto,
     type SharedLinkResponseDto,
     type UserResponseDto,
-    AlbumUserRole,
-    type AddUserDto,
   } from '@immich/sdk';
-  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
+  import { mdiCheck, mdiEye, mdiLink, mdiPencil, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
   let users: UserResponseDto[] = [];
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
+  const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
+    { title: 'Editor', value: AlbumUserRole.Editor, icon: mdiPencil },
+    { title: 'Viewer', value: AlbumUserRole.Viewer, icon: mdiEye },
+    { title: 'Remove', value: 'none' },
+  ];
+
   const dispatch = createEventDispatcher<{
-    select: AddUserDto[];
+    select: AlbumUserAddDto[];
     share: void;
   }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
@@ -55,80 +61,82 @@
     }
   };
 
-  const handleChangeRole = (user: UserResponseDto, role: AlbumUserRole) => {
-    selectedUsers[user.id].role = role;
+  const handleChangeRole = (user: UserResponseDto, role: AlbumUserRole | 'none') => {
+    if (role === 'none') {
+      delete selectedUsers[user.id];
+      selectedUsers = selectedUsers;
+    } else {
+      selectedUsers[user.id].role = role;
+    }
   };
 </script>
 
 <FullScreenModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
   {#if Object.keys(selectedUsers).length > 0}
-    <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
-      <p class="font-medium">To</p>
-
-      {#each Object.values(selectedUsers) as { user }}
-        {#key user.id}
-          <button
-            on:click={() => handleToggle(user)}
-            class="flex place-items-center gap-1 rounded-full border border-gray-500 p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            <UserAvatar {user} size="sm" />
-            <p class="text-xs font-medium">{user.name}</p>
-          </button>
-        {/key}
-      {/each}
-    </div>
-  {/if}
-
-  <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
-    {#if users.length > 0}
-      <p class="text-xs font-medium">SUGGESTIONS</p>
-
-      <div class="my-4">
-        {#each users as user}
-          <button
-            on:click={() => handleToggle(user)}
-            class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
-          >
-            {#if Object.keys(selectedUsers).includes(user.id)}
+    <div class="mb-2 py-2 sticky">
+      <p class="text-xs font-medium">SELECTED</p>
+      <div class="my-2">
+        {#each Object.values(selectedUsers) as { user }}
+          {#key user.id}
+            <div class="flex place-items-center gap-4 p-4">
               <div
-                class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
+                class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-dark-success text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-success"
               >
                 <Icon path={mdiCheck} size={24} />
               </div>
-            {:else}
-              <UserAvatar {user} size="md" />
-            {/if}
 
-            <div class="text-left flex-grow">
-              <p class="text-immich-fg dark:text-immich-dark-fg">
-                {user.name}
-              </p>
-              <p class="text-xs">
-                {user.email}
-              </p>
-            </div>
-
-            {#if Object.keys(selectedUsers).includes(user.id)}
-              <div on:click={(e) => e.stopPropagation()}>
-                <Dropdown
-                  title="Role"
-                  options={[
-                    { title: 'Editor', value: AlbumUserRole.Editor },
-                    { title: 'Viewer', value: AlbumUserRole.Viewer },
-                  ]}
-                  selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
-                  render={({ title }) => title}
-                  on:select={({ detail: { value } }) => handleChangeRole(user, value)}
-                />
+              <!-- <UserAvatar {user} size="md" /> -->
+              <div class="text-left flex-grow">
+                <p class="text-immich-fg dark:text-immich-dark-fg">
+                  {user.name}
+                </p>
+                <p class="text-xs">
+                  {user.email}
+                </p>
               </div>
-            {/if}
-          </button>
+
+              <Dropdown
+                title="Role"
+                options={roleOptions}
+                render={({ title, icon }) => ({ title, icon })}
+                on:select={({ detail: { value } }) => handleChangeRole(user, value)}
+              />
+            </div>
+          {/key}
         {/each}
       </div>
-    {:else}
-      <p class="p-5 text-sm">
-        Looks like you have shared this album with all users or you don't have any user to share with.
-      </p>
+    </div>
+  {/if}
+
+  {#if users.length + Object.keys(selectedUsers).length === 0}
+    <p class="p-5 text-sm">
+      Looks like you have shared this album with all users or you don't have any user to share with.
+    </p>
+  {/if}
+
+  <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
+    {#if users.length > 0 && users.length !== Object.keys(selectedUsers).length}
+      <p class="text-xs font-medium">SUGGESTIONS</p>
+
+      <div class="my-2">
+        {#each users as user}
+          {#if !Object.keys(selectedUsers).includes(user.id)}
+            <div class="flex place-items-center transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl">
+              <button on:click={() => handleToggle(user)} class="flex w-full place-items-center gap-4 p-4">
+                <UserAvatar {user} size="md" />
+                <div class="text-left flex-grow">
+                  <p class="text-immich-fg dark:text-immich-dark-fg">
+                    {user.name}
+                  </p>
+                  <p class="text-xs">
+                    {user.email}
+                  </p>
+                </div>
+              </button>
+            </div>
+          {/if}
+        {/each}
+      </div>
     {/if}
   </div>
 

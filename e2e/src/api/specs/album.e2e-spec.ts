@@ -95,24 +95,13 @@ describe('/album', () => {
       }),
     ]);
 
-    // Make editor
-    await Promise.all([
-      utils.updateAlbumUser(user1.accessToken, {
-        id: albums[0].id,
-        userId: user2.userId,
-        updateAlbumUserDto: { role: AlbumUserRole.Editor },
-      }),
-      utils.updateAlbumUser(user2.accessToken, {
-        id: albums[3].id,
-        userId: user1.userId,
-        updateAlbumUserDto: { role: AlbumUserRole.Editor },
-      }),
-      utils.updateAlbumUser(user3.accessToken, {
-        id: albums[6].id,
-        userId: user1.userId,
-        updateAlbumUserDto: { role: AlbumUserRole.Editor },
-      }),
-    ]);
+    // Make viewer
+    await utils.updateAlbumUser(user1.accessToken, {
+      id: albums[7].id,
+      userId: user2.userId,
+      updateAlbumUserDto: { role: AlbumUserRole.Viewer },
+    });
+
     albums[0].albumUsers[0].role = AlbumUserRole.Editor;
     albums[3].albumUsers[0].role = AlbumUserRole.Editor;
     albums[6].albumUsers[0].role = AlbumUserRole.Editor;
@@ -612,7 +601,7 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .put(`/album/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ sharedUserIds: [user2.userId] });
+        .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
       expect(status).toBe(200);
       expect(body).toEqual(
@@ -626,7 +615,7 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .put(`/album/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ sharedUserIds: [user1.userId] });
+        .send({ albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Cannot be shared with owner'));
@@ -636,12 +625,12 @@ describe('/album', () => {
       await request(app)
         .put(`/album/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ sharedUserIds: [user2.userId] });
+        .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
       const { status, body } = await request(app)
         .put(`/album/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ sharedUserIds: [user2.userId] });
+        .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('User already added'));

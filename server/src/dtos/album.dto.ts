@@ -13,7 +13,7 @@ export class AlbumInfoDto {
   withoutAssets?: boolean;
 }
 
-export class AddUserDto {
+export class AlbumUserAddDto {
   @ValidateUUID()
   userId!: string;
 
@@ -29,7 +29,7 @@ export class AddUsersDto {
   sharedUserIds?: string[];
 
   @ArrayNotEmpty()
-  albumUsers!: AddUserDto[];
+  albumUsers!: AlbumUserAddDto[];
 }
 
 export class CreateAlbumDto {

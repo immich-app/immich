@@ -7300,26 +7300,11 @@
         ],
         "type": "object"
       },
-      "AddUserDto": {
-        "properties": {
-          "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
-          },
-          "userId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId"
-        ],
-        "type": "object"
-      },
       "AddUsersDto": {
         "properties": {
           "albumUsers": {
             "items": {
-              "$ref": "#/components/schemas/AddUserDto"
+              "$ref": "#/components/schemas/AlbumUserAddDto"
             },
             "type": "array"
           },
@@ -7461,6 +7446,21 @@
           "shared",
           "sharedUsers",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumUserAddDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
         ],
         "type": "object"
       },

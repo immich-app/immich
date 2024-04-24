@@ -89,15 +89,6 @@ export class AlbumController {
     return this.service.addUsers(auth, id, dto);
   }
 
-  @Delete(':id/user/:userId')
-  removeUserFromAlbum(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ) {
-    return this.service.removeUser(auth, id, userId);
-  }
-
   @Put(':id/user/:userId')
   updateAlbumUser(
     @Auth() auth: AuthDto,
@@ -106,5 +97,14 @@ export class AlbumController {
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
     return this.service.updateUser(auth, id, userId, dto);
+  }
+
+  @Delete(':id/user/:userId')
+  removeUserFromAlbum(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+  ) {
+    return this.service.removeUser(auth, id, userId);
   }
 }

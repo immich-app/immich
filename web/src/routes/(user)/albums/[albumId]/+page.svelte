@@ -63,7 +63,7 @@
     ReactionLevel,
     ReactionType,
     updateAlbumInfo,
-    type AddUserDto,
+    type AlbumUserAddDto,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -316,7 +316,7 @@
     viewMode = ViewMode.VIEW;
   };
 
-  const handleAddUsers = async (albumUsers: AddUserDto[]) => {
+  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
     try {
       album = await addUsersToAlbum({
         id: album.id,
