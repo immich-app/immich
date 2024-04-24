@@ -21,6 +21,10 @@ class GroupSettings extends HookConsumerWidget {
     void changeGroupValue(GroupAssetsBy? value) {
       if (value != null) {
         groupByIndex.value = value.index;
+        ref.watch(appSettingsServiceProvider).setSetting(
+              AppSettingsEnum.groupAssetsBy,
+              value.index,
+            );
         ref.invalidate(appSettingsServiceProvider);
       }
     }
