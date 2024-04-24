@@ -26,7 +26,7 @@ const projects: CommunityProjectProps[] = [
   {
     title: 'Remove offline files',
     description: 'A simple way to remove orphaned offline assets from the Immich database',
-    url: 'https://github.com/Thoroslives/immich_remove_offline_files/tree/main',
+    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
     title: 'Create albums from folders',
