@@ -4,10 +4,10 @@
   import { AppRoute } from '$lib/constants';
   import {
     getAllSharedLinks,
-    getAllUsers,
     type AlbumResponseDto,
     type SharedLinkResponseDto,
-    type UserResponseDto,
+    getAllPublicUsers,
+    type UserDto,
   } from '@immich/sdk';
   import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -17,20 +17,20 @@
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
-  let users: UserResponseDto[] = [];
-  let selectedUsers: UserResponseDto[] = [];
+  let users: UserDto[] = [];
+  let selectedUsers: UserDto[] = [];
 
   const dispatch = createEventDispatcher<{
-    select: UserResponseDto[];
+    select: UserDto[];
     share: void;
   }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
-    const data = await getAllUsers({ isAll: false });
+    const data = await getAllPublicUsers();
 
     // remove invalid users
-    users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
+    users = data.filter((user) => !(user.id === album.ownerId));
 
     // Remove the existed shared users from the album
     for (const sharedUser of album.sharedUsers) {
@@ -43,13 +43,13 @@
     sharedLinks = data.filter((link) => link.album?.id === album.id);
   };
 
-  const handleSelect = (user: UserResponseDto) => {
+  const handleSelect = (user: UserDto) => {
     selectedUsers = selectedUsers.includes(user)
       ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
       : [...selectedUsers, user];
   };
 
-  const handleUnselect = (user: UserResponseDto) => {
+  const handleUnselect = (user: UserDto) => {
     selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
   };
 </script>

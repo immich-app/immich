@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
+  import { UserAvatarColor, type UserDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from '../full-screen-modal.svelte';
   import UserAvatar from '../user-avatar.svelte';
 
-  export let user: UserResponseDto;
+  export let user: UserDto;
 
   const dispatch = createEventDispatcher<{
     close: void;

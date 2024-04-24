@@ -37,6 +37,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<UserDto>> getAllPublicUsers() async
+    test('test getAllPublicUsers', () async {
+      // TODO
+    });
+
     //Future<List<UserResponseDto>> getAllUsers(bool isAll) async
     test('test getAllUsers', () async {
       // TODO
@@ -52,7 +57,7 @@ void main() {
       // TODO
     });
 
-    //Future<UserResponseDto> getUserById(String id) async
+    //Future<UserDto> getUserById(String id) async
     test('test getUserById', () async {
       // TODO
     });

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { UserDto, mapSimpleUser } from 'src/dtos/user.dto';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -92,10 +92,10 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  sharedUsers!: UserResponseDto[];
+  sharedUsers!: UserDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
-  owner!: UserResponseDto;
+  owner!: UserDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
   lastModifiedAssetTimestamp?: Date;
@@ -108,11 +108,11 @@ export class AlbumResponseDto {
 }
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
-  const sharedUsers: UserResponseDto[] = [];
+  const sharedUsers: UserDto[] = [];
 
   if (entity.sharedUsers) {
     for (const user of entity.sharedUsers) {
-      sharedUsers.push(mapUser(user));
+      sharedUsers.push(mapSimpleUser(user));
     }
   }
 
@@ -136,7 +136,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
-    owner: mapUser(entity.owner),
+    owner: mapSimpleUser(entity.owner),
     sharedUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,

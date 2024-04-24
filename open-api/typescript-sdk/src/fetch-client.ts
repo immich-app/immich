@@ -61,24 +61,6 @@ export type ExifResponseDto = {
     state?: string | null;
     timeZone?: string | null;
 };
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
-};
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
     boundingBoxX2: number;
@@ -128,7 +110,7 @@ export type AssetResponseDto = {
     localDateTime: string;
     originalFileName: string;
     originalPath: string;
-    owner?: UserResponseDto;
+    owner?: UserDto;
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
     resized: boolean;
@@ -154,10 +136,10 @@ export type AlbumResponseDto = {
     isActivityEnabled: boolean;
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
-    owner: UserResponseDto;
+    owner: UserDto;
     ownerId: string;
     shared: boolean;
-    sharedUsers: UserResponseDto[];
+    sharedUsers: UserDto[];
     startDate?: string;
     updatedAt: string;
 };
@@ -320,6 +302,24 @@ export type SignUpDto = {
     email: string;
     name: string;
     password: string;
+};
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
 };
 export type ChangePasswordDto = {
     newPassword: string;
@@ -504,22 +504,11 @@ export type OAuthCallbackDto = {
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
     email: string;
     id: string;
     inTimeline?: boolean;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
     name: string;
-    oauthId: string;
     profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type UpdatePartnerDto = {
     inTimeline: boolean;
@@ -2797,15 +2786,11 @@ export function restoreAssets({ bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getAllUsers({ isAll }: {
-    isAll: boolean;
-}, opts?: Oazapfts.RequestOpts) {
+export function getAllPublicUsers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto[];
-    }>(`/user${QS.query(QS.explode({
-        isAll
-    }))}`, {
+        data: UserDto[];
+    }>("/user", {
         ...opts
     }));
 }
@@ -2833,12 +2818,24 @@ export function updateUser({ updateUserDto }: {
         body: updateUserDto
     })));
 }
+export function getAllUsers({ isAll }: {
+    isAll: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto[];
+    }>(`/user/admin${QS.query(QS.explode({
+        isAll
+    }))}`, {
+        ...opts
+    }));
+}
 export function getUserById({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto;
+        data: UserDto;
     }>(`/user/info/${encodeURIComponent(id)}`, {
         ...opts
     }));
@@ -2927,11 +2924,6 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
-export enum UserStatus {
-    Active = "active",
-    Removing = "removing",
-    Deleted = "deleted"
-}
 export enum TagTypeEnum {
     Object = "OBJECT",
     Face = "FACE",
@@ -2973,6 +2965,11 @@ export enum ThumbnailFormat {
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
+}
+export enum UserStatus {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

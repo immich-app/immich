@@ -117,7 +117,7 @@ void main() {
       // TODO
     });
 
-    // UserResponseDto owner
+    // UserDto owner
     test('to test the property `owner`', () async {
       // TODO
     });

@@ -15,7 +15,7 @@
     getActivities,
     type ActivityResponseDto,
     type AssetTypeEnum,
-    type UserResponseDto,
+    type UserDto,
   } from '@immich/sdk';
   import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
@@ -47,7 +47,7 @@
   };
 
   export let reactions: ActivityResponseDto[];
-  export let user: UserResponseDto;
+  export let user: UserDto;
   export let assetId: string | undefined = undefined;
   export let albumId: string;
   export let assetType: AssetTypeEnum | undefined = undefined;

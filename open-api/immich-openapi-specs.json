@@ -6687,24 +6687,15 @@
     },
     "/user": {
       "get": {
-        "operationId": "getAllUsers",
-        "parameters": [
-          {
-            "name": "isAll",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
+        "operationId": "getAllPublicUsers",
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/UserResponseDto"
+                    "$ref": "#/components/schemas/UserDto"
                   },
                   "type": "array"
                 }
@@ -6809,6 +6800,50 @@
         ]
       }
     },
+    "/user/admin": {
+      "get": {
+        "operationId": "getAllUsers",
+        "parameters": [
+          {
+            "name": "isAll",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/info/{id}": {
       "get": {
         "operationId": "getUserById",
@@ -6828,7 +6863,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserDto"
                 }
               }
             },
@@ -7340,7 +7375,7 @@
             "$ref": "#/components/schemas/AssetOrder"
           },
           "owner": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "$ref": "#/components/schemas/UserDto"
           },
           "ownerId": {
             "type": "string"
@@ -7350,7 +7385,7 @@
           },
           "sharedUsers": {
             "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
+              "$ref": "#/components/schemas/UserDto"
             },
             "type": "array"
           },
@@ -7856,7 +7891,7 @@
             "type": "string"
           },
           "owner": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "$ref": "#/components/schemas/UserDto"
           },
           "ownerId": {
             "type": "string"
@@ -9354,15 +9389,6 @@
           "avatarColor": {
             "$ref": "#/components/schemas/UserAvatarColor"
           },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "nullable": true,
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
@@ -9372,62 +9398,19 @@
           "inTimeline": {
             "type": "boolean"
           },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
-          "oauthId": {
-            "type": "string"
-          },
           "profileImagePath": {
-            "type": "string"
-          },
-          "quotaSizeInBytes": {
-            "format": "int64",
-            "nullable": true,
-            "type": "integer"
-          },
-          "quotaUsageInBytes": {
-            "format": "int64",
-            "nullable": true,
-            "type": "integer"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "status": {
-            "$ref": "#/components/schemas/UserStatus"
-          },
-          "storageLabel": {
-            "nullable": true,
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
             "type": "string"
           }
         },
         "required": [
           "avatarColor",
-          "createdAt",
-          "deletedAt",
           "email",
           "id",
-          "isAdmin",
           "name",
-          "oauthId",
-          "profileImagePath",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "shouldChangePassword",
-          "status",
-          "storageLabel",
-          "updatedAt"
+          "profileImagePath"
         ],
         "type": "object"
       },

@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
+  import { getAllPublicUsers, getPartners, type UserDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
-  export let user: UserResponseDto;
+  export let user: UserDto;
   export let onClose: () => void;
 
-  let availableUsers: UserResponseDto[] = [];
-  let selectedUsers: UserResponseDto[] = [];
+  let availableUsers: UserDto[] = [];
+  let selectedUsers: UserDto[] = [];
 
-  const dispatch = createEventDispatcher<{ 'add-users': UserResponseDto[] }>();
+  const dispatch = createEventDispatcher<{ 'add-users': UserDto[] }>();
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
-    let users = await getAllUsers({ isAll: false });
+    let users = await getAllPublicUsers();
 
     // remove invalid users
-    users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
+    users = users.filter((_user) => !(_user.id === user.id));
 
     // exclude partners from the list of users available for selection
     const partners = await getPartners({ direction: 'shared-by' });
@@ -26,7 +26,7 @@
     availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });
 
-  const selectUser = (user: UserResponseDto) => {
+  const selectUser = (user: UserDto) => {
     selectedUsers = selectedUsers.includes(user)
       ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
       : [...selectedUsers, user];

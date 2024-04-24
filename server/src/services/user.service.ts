@@ -5,7 +5,15 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import {
+  CreateUserDto,
+  DeleteUserDto,
+  UpdateUserDto,
+  UserDto,
+  UserResponseDto,
+  mapSimpleUser,
+  mapUser,
+} from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -45,6 +53,11 @@ export class UserService {
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
     return users.map((user) => mapUser(user));
+  }
+
+  async getAllPublic(auth: AuthDto): Promise<UserDto[] | UserResponseDto[]> {
+    const users = await this.userRepository.getList({ withDeleted: false });
+    return users.map((user) => mapSimpleUser(user));
   }
 
   async get(userId: string): Promise<UserResponseDto> {

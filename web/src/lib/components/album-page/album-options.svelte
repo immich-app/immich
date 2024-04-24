@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto, AssetOrder } from '@immich/sdk';
+  import { updateAlbumInfo, type AlbumResponseDto, type UserDto, AssetOrder } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -13,7 +13,7 @@
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
-  export let user: UserResponseDto;
+  export let user: UserDto;
   export let onChangeOrder: (order: AssetOrder) => void;
 
   const options: Record<AssetOrder, RenderedOption> = {

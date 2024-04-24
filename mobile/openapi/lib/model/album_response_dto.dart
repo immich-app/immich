@@ -75,13 +75,13 @@ class AlbumResponseDto {
   ///
   AssetOrder? order;
 
-  UserResponseDto owner;
+  UserDto owner;
 
   String ownerId;
 
   bool shared;
 
-  List<UserResponseDto> sharedUsers;
+  List<UserDto> sharedUsers;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -202,10 +202,10 @@ class AlbumResponseDto {
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
         order: AssetOrder.fromJson(json[r'order']),
-        owner: UserResponseDto.fromJson(json[r'owner'])!,
+        owner: UserDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
-        sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
+        sharedUsers: UserDto.listFromJson(json[r'sharedUsers']),
         startDate: mapDateTime(json, r'startDate', r''),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );

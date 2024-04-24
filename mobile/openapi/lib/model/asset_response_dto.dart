@@ -100,7 +100,7 @@ class AssetResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  UserResponseDto? owner;
+  UserDto? owner;
 
   String ownerId;
 
@@ -297,7 +297,7 @@ class AssetResponseDto {
         localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
-        owner: UserResponseDto.fromJson(json[r'owner']),
+        owner: UserDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized')!,

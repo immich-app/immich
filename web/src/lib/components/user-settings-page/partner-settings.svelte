@@ -5,7 +5,7 @@
     removePartner,
     updatePartner,
     type PartnerResponseDto,
-    type UserResponseDto,
+    type UserDto,
   } from '@immich/sdk';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -19,13 +19,13 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface PartnerSharing {
-    user: UserResponseDto;
+    user: UserDto;
     sharedByMe: boolean;
     sharedWithMe: boolean;
     inTimeline: boolean;
   }
 
-  export let user: UserResponseDto;
+  export let user: UserDto;
 
   let createPartnerFlag = false;
   let removePartnerDto: PartnerResponseDto | null = null;
@@ -89,7 +89,7 @@
     }
   };
 
-  const handleCreatePartners = async (users: UserResponseDto[]) => {
+  const handleCreatePartners = async (users: UserDto[]) => {
     try {
       for (const user of users) {
         await createPartner({ id: user.id });

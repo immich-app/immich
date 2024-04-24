@@ -3,7 +3,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
+  import type { AlbumResponseDto, SharedLinkResponseDto, UserDto } from '@immich/sdk';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
   import { downloadAlbum } from '../../utils/asset-utils';
@@ -20,7 +20,7 @@
   import AlbumSummary from './album-summary.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined = undefined;
+  export let user: UserDto | undefined = undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
 

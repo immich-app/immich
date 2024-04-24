@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -19,10 +19,10 @@
     remove: string;
   }>();
 
-  let currentUser: UserResponseDto;
+  let currentUser: UserDto;
   let position = { x: 0, y: 0 };
-  let selectedMenuUser: UserResponseDto | null = null;
-  let selectedRemoveUser: UserResponseDto | null = null;
+  let selectedMenuUser: UserDto | null = null;
+  let selectedRemoveUser: UserDto | null = null;
 
   $: isOwned = currentUser?.id == album.ownerId;
 
@@ -34,7 +34,7 @@
     }
   });
 
-  const showContextMenu = (event: MouseEvent, user: UserResponseDto) => {
+  const showContextMenu = (event: MouseEvent, user: UserDto) => {
     position = getContextMenuPosition(event);
     selectedMenuUser = user;
     selectedRemoveUser = null;

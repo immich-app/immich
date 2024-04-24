@@ -28,7 +28,7 @@ Name | Type | Description | Notes
 **localDateTime** | [**DateTime**](DateTime.md) |  | 
 **originalFileName** | **String** |  | 
 **originalPath** | **String** |  | 
-**owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
+**owner** | [**UserDto**](UserDto.md) |  | [optional] 
 **ownerId** | **String** |  | 
 **people** | [**List<PersonWithFacesResponseDto>**](PersonWithFacesResponseDto.md) |  | [optional] [default to const []]
 **resized** | **bool** |  | 

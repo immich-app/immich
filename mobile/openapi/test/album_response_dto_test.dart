@@ -76,7 +76,7 @@ void main() {
       // TODO
     });
 
-    // UserResponseDto owner
+    // UserDto owner
     test('to test the property `owner`', () async {
       // TODO
     });
@@ -91,7 +91,7 @@ void main() {
       // TODO
     });
 
-    // List<UserResponseDto> sharedUsers (default value: const [])
+    // List<UserDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO
     });

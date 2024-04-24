@@ -18,7 +18,7 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserDto, UserResponseDto } from 'src/dtos/user.dto';
 import { AdminRoute, Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
 import { UserService } from 'src/services/user.service';
@@ -32,12 +32,18 @@ export class UserController {
   constructor(private service: UserService) {}
 
   @Get()
+  getAllPublicUsers(@Auth() auth: AuthDto): Promise<UserDto[]> {
+    return this.service.getAllPublic(auth);
+  }
+
+  @AdminRoute()
+  @Get('admin')
   getAllUsers(@Auth() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAll(auth, isAll);
   }
 
   @Get('info/:id')
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  getUserById(@Param() { id }: UUIDParamDto): Promise<UserDto> {
     return this.service.get(id);
   }
 

@@ -57,8 +57,8 @@
     getAlbumInfo,
     updateAlbumInfo,
     type ActivityResponseDto,
-    type UserResponseDto,
     AssetOrder,
+    type UserDto,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -312,7 +312,7 @@
     viewMode = ViewMode.VIEW;
   };
 
-  const handleAddUsers = async (users: UserResponseDto[]) => {
+  const handleAddUsers = async (users: UserDto[]) => {
     try {
       album = await addUsersToAlbum({
         id: album.id,

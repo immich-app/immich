@@ -206,12 +206,56 @@ class UserApi {
   }
 
   /// Performs an HTTP 'GET /user' operation and returns the [Response].
+  Future<Response> getAllPublicUsersWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/user';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<List<UserDto>?> getAllPublicUsers() async {
+    final response = await getAllPublicUsersWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<UserDto>') as List)
+        .cast<UserDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /user/admin' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [bool] isAll (required):
   Future<Response> getAllUsersWithHttpInfo(bool isAll,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user';
+    final path = r'/user/admin';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -379,7 +423,7 @@ class UserApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserResponseDto?> getUserById(String id,) async {
+  Future<UserDto?> getUserById(String id,) async {
     final response = await getUserByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -388,7 +432,7 @@ class UserApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserDto',) as UserDto;
     
     }
     return null;

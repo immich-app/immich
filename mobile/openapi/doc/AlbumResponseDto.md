@@ -20,10 +20,10 @@ Name | Type | Description | Notes
 **isActivityEnabled** | **bool** |  | 
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
 **order** | [**AssetOrder**](AssetOrder.md) |  | [optional] 
-**owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
+**owner** | [**UserDto**](UserDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 
-**sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]
+**sharedUsers** | [**List<UserDto>**](UserDto.md) |  | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 
