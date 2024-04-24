@@ -269,7 +269,7 @@
     await closeViewer();
   };
 
-  const closeViewer = () => {
+  const closeViewer = async () => {
     $slideshowState = SlideshowState.StopSlideshow;
     document.body.style.cursor = '';
     dispatch('close');

@@ -61,7 +61,6 @@
     if (asset.id !== previousId) {
       showEditFaces = false;
       previousId = asset.id;
-      handlePromiseError(handleNewAsset(asset));
     }
   }
 
@@ -75,13 +74,12 @@
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
 
-      if (!asset.exifInfo) {
-        asset.exifInfo = data.exifInfo;
-      }
       description = data.exifInfo?.description || '';
     }
     originalDescription = description;
   };
+
+  $: handlePromiseError(handleNewAsset(asset));
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
