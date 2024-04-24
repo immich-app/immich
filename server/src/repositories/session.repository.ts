@@ -31,12 +31,12 @@ export class SessionRepository implements ISessionRepository {
     });
   }
 
-  create(session: Partial<SessionEntity>): Promise<SessionEntity> {
-    return this.repository.save(session);
+  create<T extends Partial<SessionEntity>>(dto: T): Promise<T & { id: string }> {
+    return this.repository.save(dto);
   }
 
-  update(session: Partial<SessionEntity>): Promise<SessionEntity> {
-    return this.repository.save(session);
+  update<T extends Partial<SessionEntity>>(dto: T): Promise<T> {
+    return this.repository.save(dto);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

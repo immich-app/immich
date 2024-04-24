@@ -296,6 +296,7 @@
   "motion_photos_page_title": "Photos avec mouvement",
   "multiselect_grid_edit_date_time_err_read_only": "Impossible de modifier la date d'un élément d'actif en lecture seule.",
   "multiselect_grid_edit_gps_err_read_only": "Impossible de modifier l'emplacement d'un élément en lecture seule.",
+  "no_assets_to_show" : "Aucun élément à afficher",
   "notification_permission_dialog_cancel": "Annuler",
   "notification_permission_dialog_content": "Pour activer les notifications, allez dans Paramètres et sélectionnez Autoriser.",
   "notification_permission_dialog_settings": "Paramètres",
@@ -509,5 +510,7 @@
   "version_announcement_overlay_title": "Nouvelle version serveur disponible \uD83C\uDF89",
   "viewer_remove_from_stack": "Retirer de la pile",
   "viewer_stack_use_as_main_asset": "Utiliser comme élément principal",
-  "viewer_unstack": "Désempiler"
+  "viewer_unstack": "Désempiler",
+  "haptic_feedback_title": "Retour haptique",
+  "haptic_feedback_switch": "Activer le retour haptique"
 }

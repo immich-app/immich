@@ -4,9 +4,10 @@
   import { page } from '$app/stores';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
+  import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
 
-  $: albumId = ($page.route?.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
-  $: isShare = $page.route?.id === '/(user)/share/[key]' || undefined;
+  $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
+  $: isShare = isSharedLinkRoute($page.route?.id);
 
   let dragStartTarget: EventTarget | null = null;
 
