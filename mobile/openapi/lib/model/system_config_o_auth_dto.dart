@@ -39,6 +39,7 @@ class SystemConfigOAuthDto {
 
   String clientSecret;
 
+  /// Minimum value: 0
   num defaultStorageQuota;
 
   bool enabled;
