@@ -30,7 +30,7 @@
           bind:value={config.image.thumbnailFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
-            { value: ImageFormat.Jxl, text: 'JPEG XL (not supported by Google Chrome)' },
+            { value: ImageFormat.Jxl, text: 'JPEG XL (only supported by Safari)' },
             { value: ImageFormat.Webp, text: 'WebP' },
           ]}
           name="format"
@@ -61,7 +61,7 @@
           bind:value={config.image.previewFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
-            { value: ImageFormat.Jxl, text: 'JPEG XL (not supported by Google Chrome)' },
+            { value: ImageFormat.Jxl, text: 'JPEG XL (only supported by Safari)' },
             { value: ImageFormat.Webp, text: 'WebP' },
           ]}
           name="format"
