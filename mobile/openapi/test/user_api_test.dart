@@ -57,7 +57,12 @@ void main() {
       // TODO
     });
 
-    //Future<UserDto> getUserById(String id) async
+    //Future<UserDto> getPublicUserById(String id) async
+    test('test getPublicUserById', () async {
+      // TODO
+    });
+
+    //Future<UserResponseDto> getUserById(String id) async
     test('test getUserById', () async {
       // TODO
     });

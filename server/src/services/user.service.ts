@@ -50,14 +50,23 @@ export class UserService {
     return users.map((user) => mapUser(user));
   }
 
-  async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
+  async getAll(isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
     return users.map((user) => mapUser(user));
   }
 
-  async getAllPublic(auth: AuthDto): Promise<UserDto[] | UserResponseDto[]> {
+  async getAllPublic(): Promise<UserDto[] | UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: false });
     return users.map((user) => mapSimpleUser(user));
+  }
+
+  async getPublic(userId: string): Promise<UserDto> {
+    const user = await this.userRepository.get(userId, { withDeleted: false });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return mapSimpleUser(user);
   }
 
   async get(userId: string): Promise<UserResponseDto> {

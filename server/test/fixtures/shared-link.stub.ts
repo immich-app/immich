@@ -2,7 +2,7 @@ import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
-import { mapUser } from 'src/dtos/user.dto';
+import { mapSimpleUser } from 'src/dtos/user.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetType } from 'src/entities/asset.entity';
 import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
@@ -101,7 +101,7 @@ const albumResponse: AlbumResponseDto = {
   updatedAt: today,
   id: 'album-123',
   ownerId: 'admin_id',
-  owner: mapUser(userStub.admin),
+  owner: mapSimpleUser(userStub.admin),
   sharedUsers: [],
   shared: false,
   hasSharedLink: false,

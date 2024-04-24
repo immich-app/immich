@@ -42,7 +42,9 @@ describe('/user', () => {
     });
 
     it('should get users', async () => {
-      const { status, body } = await request(app).get('/user').set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app)
+        .get('/user/admin')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toHaveLength(5);
       expect(body).toEqual(
@@ -75,7 +77,7 @@ describe('/user', () => {
 
     it('should include deleted users', async () => {
       const { status, body } = await request(app)
-        .get(`/user`)
+        .get(`/user/admin`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 

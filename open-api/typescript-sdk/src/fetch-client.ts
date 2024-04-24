@@ -2835,6 +2835,16 @@ export function getUserById({ id }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
+        data: UserResponseDto;
+    }>(`/user/admin/info/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function getPublicUserById({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
         data: UserDto;
     }>(`/user/info/${encodeURIComponent(id)}`, {
         ...opts

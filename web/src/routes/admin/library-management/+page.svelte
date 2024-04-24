@@ -23,14 +23,14 @@
     deleteLibrary,
     getAllLibraries,
     getLibraryStatistics,
-    getUserById,
     LibraryType,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
-    type UserResponseDto,
+    type UserDto,
+    getPublicUserById,
   } from '@immich/sdk';
   import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -43,7 +43,7 @@
   let libraries: LibraryResponseDto[] = [];
 
   let stats: LibraryStatsResponseDto[] = [];
-  let owner: UserResponseDto[] = [];
+  let owner: UserDto[] = [];
   let photos: number[] = [];
   let videos: number[] = [];
   let totalCount: number[] = [];
@@ -99,7 +99,7 @@
 
   const refreshStats = async (listIndex: number) => {
     stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    owner[listIndex] = await getUserById({ id: libraries[listIndex].ownerId });
+    owner[listIndex] = await getPublicUserById({ id: libraries[listIndex].ownerId });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;

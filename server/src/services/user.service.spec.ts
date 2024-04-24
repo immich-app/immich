@@ -76,7 +76,7 @@ describe(UserService.name, () => {
   describe('getAll', () => {
     it('should get all users', async () => {
       userMock.getList.mockResolvedValue([userStub.admin]);
-      await expect(sut.getAll(authStub.admin, false)).resolves.toEqual([
+      await expect(sut.getAll(false)).resolves.toEqual([
         expect.objectContaining({
           id: authStub.admin.user.id,
           email: authStub.admin.user.email,

@@ -17,7 +17,8 @@ Method | HTTP request | Description
 [**getAllUsers**](UserApi.md#getallusers) | **GET** /user/admin | 
 [**getMyUserInfo**](UserApi.md#getmyuserinfo) | **GET** /user/me | 
 [**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
-[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
+[**getPublicUserById**](UserApi.md#getpublicuserbyid) | **GET** /user/info/{id} | 
+[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/admin/info/{id} | 
 [**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 [**updateUser**](UserApi.md#updateuser) | **PUT** /user | 
 
@@ -451,8 +452,63 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getPublicUserById**
+> UserDto getPublicUserById(id)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = UserApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+
+try {
+    final result = api_instance.getPublicUserById(id);
+    print(result);
+} catch (e) {
+    print('Exception when calling UserApi->getPublicUserById: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+
+### Return type
+
+[**UserDto**](UserDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getUserById**
-> UserDto getUserById(id)
+> UserResponseDto getUserById(id)
 
 
 
@@ -493,7 +549,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserDto**](UserDto.md)
+[**UserResponseDto**](UserResponseDto.md)
 
 ### Authorization
 

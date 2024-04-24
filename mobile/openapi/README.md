@@ -221,7 +221,8 @@ Class | Method | HTTP request | Description
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user/admin | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
+*UserApi* | [**getPublicUserById**](doc//UserApi.md#getpublicuserbyid) | **GET** /user/info/{id} | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/admin/info/{id} | 
 *UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 

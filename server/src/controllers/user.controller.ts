@@ -32,18 +32,24 @@ export class UserController {
   constructor(private service: UserService) {}
 
   @Get()
-  getAllPublicUsers(@Auth() auth: AuthDto): Promise<UserDto[]> {
-    return this.service.getAllPublic(auth);
+  getAllPublicUsers(): Promise<UserDto[]> {
+    return this.service.getAllPublic();
   }
 
   @AdminRoute()
   @Get('admin')
-  getAllUsers(@Auth() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
-    return this.service.getAll(auth, isAll);
+  getAllUsers(@Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+    return this.service.getAll(isAll);
   }
 
   @Get('info/:id')
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserDto> {
+  getPublicUserById(@Param() { id }: UUIDParamDto): Promise<UserDto> {
+    return this.service.getPublic(id);
+  }
+
+  @AdminRoute()
+  @Get('admin/info/:id')
+  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.get(id);
   }
 
