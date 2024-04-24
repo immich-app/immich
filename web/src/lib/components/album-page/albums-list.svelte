@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { groupBy, orderBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type UserResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { addUsersToAlbum, deleteAlbum, type AddUserDto, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
@@ -328,7 +328,7 @@
     updateAlbumInfo(album);
   };
 
-  const handleAddUsers = async (users: UserResponseDto[]) => {
+  const handleAddUsers = async (users: AddUserDto[]) => {
     if (!albumToShare) {
       return;
     }

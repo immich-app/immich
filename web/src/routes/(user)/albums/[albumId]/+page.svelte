@@ -63,7 +63,7 @@
     ReactionLevel,
     ReactionType,
     updateAlbumInfo,
-    type UserResponseDto,
+    type AddUserDto,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
@@ -316,12 +316,12 @@
     viewMode = ViewMode.VIEW;
   };
 
-  const handleAddUsers = async (users: UserResponseDto[]) => {
+  const handleAddUsers = async (albumUsers: AddUserDto[]) => {
     try {
       album = await addUsersToAlbum({
         id: album.id,
         addUsersDto: {
-          sharedUserIds: [...users].map(({ id }) => id),
+          albumUsers,
         },
       });
 
