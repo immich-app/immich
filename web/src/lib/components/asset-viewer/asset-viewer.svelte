@@ -51,6 +51,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
+  import { navigate } from '$lib/utils/navigation';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -191,6 +192,7 @@
   }
 
   onMount(async () => {
+    await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -263,11 +265,14 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = () => {
-    closeViewer();
+  const handleCloseViewer = async () => {
+    await closeViewer();
   };
 
-  const closeViewer = () => dispatch('close');
+  const closeViewer = async () => {
+    dispatch('close');
+    await navigate({ targetRoute: 'current', assetId: null });
+  };
 
   const navigateAssetRandom = async () => {
     if (!assetStore) {
@@ -300,7 +305,7 @@
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext =
-        order === 'previous' ? await assetStore.getPreviousAsset(asset.id) : await assetStore.getNextAsset(asset.id);
+        order === 'previous' ? await assetStore.getPreviousAsset(asset) : await assetStore.getNextAsset(asset);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {

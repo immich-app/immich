@@ -1,4 +1,5 @@
 import { getKey } from '$lib/utils';
+import { fromLocalDateTime } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -188,31 +189,39 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const buckets = await getTimeBuckets({
+    const timebuckets = await getTimeBuckets({
       ...this.options,
       key: getKey(),
     });
 
     this.initialized = true;
 
-    this.buckets = buckets.map((bucket) => {
-      const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
+    this.buckets = timebuckets.map((bucket) => ({
+      bucketDate: bucket.timeBucket,
+      bucketHeight: 0,
+      bucketCount: bucket.count,
+      assets: [],
+      cancelToken: null,
+      position: BucketPosition.Unknown,
+    }));
+
+    // if loading an asset, the grid-view may be hidden, which means
+    // it has 0 width and height. No need to update bucket or timeline
+    // heights in this case. Later, updateViewport will be called to
+    // update the heights.
+    if (viewport.height !== 0 && viewport.width !== 0) {
+      await this.updateViewport(viewport);
+    }
+  }
+
+  async updateViewport(viewport: Viewport) {
+    for (const bucket of this.buckets) {
+      const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewport.width);
       const height = rows * THUMBNAIL_HEIGHT;
-
-      return {
-        bucketDate: bucket.timeBucket,
-        bucketHeight: height,
-        bucketCount: bucket.count,
-        assets: [],
-        cancelToken: null,
-        position: BucketPosition.Unknown,
-      };
-    });
-
+      bucket.bucketHeight = height;
+    }
     this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
-
-    this.emit(false);
 
     let height = 0;
     const loaders = [];
@@ -222,10 +231,10 @@ export class AssetStore {
         loaders.push(this.loadBucket(bucket.bucketDate, BucketPosition.Visible));
         continue;
       }
-
       break;
     }
     await Promise.all(loaders);
+    this.emit(false);
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
@@ -380,8 +389,19 @@ export class AssetStore {
     return this.buckets.find((bucket) => bucket.bucketDate === bucketDate) || null;
   }
 
-  getBucketInfoForAssetId(assetId: string) {
-    return this.assetToBucket[assetId] || null;
+  async getBucketInfoForAssetId({ id, localDateTime }: Pick<AssetResponseDto, 'id' | 'localDateTime'>) {
+    const bucketInfo = this.assetToBucket[id];
+    if (bucketInfo) {
+      return bucketInfo;
+    }
+    let date = fromLocalDateTime(localDateTime);
+    if (this.options.size == TimeBucketSize.Month) {
+      date = date.set({ day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 });
+    } else if (this.options.size == TimeBucketSize.Day) {
+      date = date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    }
+    await this.loadBucket(date.toISO()!, BucketPosition.Unknown);
+    return this.assetToBucket[id] || null;
   }
 
   getBucketIndexByAssetId(assetId: string) {
@@ -451,8 +471,8 @@ export class AssetStore {
     this.emit(true);
   }
 
-  async getPreviousAsset(assetId: string): Promise<AssetResponseDto | null> {
-    const info = this.getBucketInfoForAssetId(assetId);
+  async getPreviousAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
+    const info = await this.getBucketInfoForAssetId(asset);
     if (!info) {
       return null;
     }
@@ -472,8 +492,8 @@ export class AssetStore {
     return previousBucket.assets.at(-1) || null;
   }
 
-  async getNextAsset(assetId: string): Promise<AssetResponseDto | null> {
-    const info = this.getBucketInfoForAssetId(assetId);
+  async getNextAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
+    const info = await this.getBucketInfoForAssetId(asset);
     if (!info) {
       return null;
     }
