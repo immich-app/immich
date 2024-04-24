@@ -1,5 +1,4 @@
 import { serverVersion } from 'src/constants';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -204,13 +203,6 @@ describe(ServerInfoService.name, () => {
         externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
-    });
-  });
-
-  describe('setAdminOnboarding', () => {
-    it('should set admin onboarding to true', async () => {
-      await sut.setAdminOnboarding();
-      expect(systemMetadataMock.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
     });
   });
 

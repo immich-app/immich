@@ -5,7 +5,7 @@ export enum AssetAction {
   UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
   DELETE = 'delete',
-  // RESTORE = 'restore',
+  RESTORE = 'restore',
   ADD = 'add',
 }
 

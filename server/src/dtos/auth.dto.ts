@@ -6,6 +6,25 @@ import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
+export enum ImmichCookie {
+  ACCESS_TOKEN = 'immich_access_token',
+  AUTH_TYPE = 'immich_auth_type',
+  IS_AUTHENTICATED = 'immich_is_authenticated',
+  SHARED_LINK_TOKEN = 'immich_shared_link_token',
+}
+
+export enum ImmichHeader {
+  API_KEY = 'x-api-key',
+  USER_TOKEN = 'x-immich-user-token',
+  SESSION_TOKEN = 'x-immich-session-token',
+  SHARED_LINK_TOKEN = 'x-immich-share-key',
+}
+
+export type CookieResponse = {
+  isSecure: boolean;
+  values: Array<{ key: ImmichCookie; value: string }>;
+};
+
 export class AuthDto {
   user!: UserEntity;
 
@@ -39,7 +58,7 @@ export class LoginResponseDto {
 
 export function mapLoginResponse(entity: UserEntity, accessToken: string): LoginResponseDto {
   return {
-    accessToken: accessToken,
+    accessToken,
     userId: entity.id,
     userEmail: entity.email,
     name: entity.name,

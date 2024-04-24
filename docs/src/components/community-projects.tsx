@@ -25,13 +25,8 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Remove offline files',
-    description: 'A Python script to remove offline files.',
-    url: 'https://github.com/Thoroslives/immich_remove_offline_files/tree/main',
-  },
-  {
-    title: 'Move untracked files',
-    description: 'Script to move untracked files from within Immich directories.',
-    url: 'https://github.com/clumsyCoder00/Immich-Tools/tree/main?tab=readme-ov-file#move_untracked_filessh',
+    description: 'A simple way to remove orphaned offline assets from the Immich database',
+    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
     title: 'Create albums from folders',

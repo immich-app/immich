@@ -1,10 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE, IMMICH_IS_AUTHENTICATED } from 'src/constants';
+import { AuthType } from 'src/constants';
 import {
   AuthDto,
   ChangePasswordDto,
+  ImmichCookie,
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
@@ -14,6 +15,7 @@ import {
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
+import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -28,9 +30,15 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.service.login(loginCredential, loginDetails);
-    res.header('Set-Cookie', cookie);
-    return response;
+    const body = await this.service.login(loginCredential, loginDetails);
+    return respondWithCookie(res, body, {
+      isSecure: loginDetails.isSecure,
+      values: [
+        { key: ImmichCookie.ACCESS_TOKEN, value: body.accessToken },
+        { key: ImmichCookie.AUTH_TYPE, value: AuthType.PASSWORD },
+        { key: ImmichCookie.IS_AUTHENTICATED, value: 'true' },
+      ],
+    });
   }
 
   @PublicRoute()
@@ -53,15 +61,18 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(
+  async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
-    res.clearCookie(IMMICH_ACCESS_COOKIE);
-    res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
-    res.clearCookie(IMMICH_IS_AUTHENTICATED);
+    const authType = (request.cookies || {})[ImmichCookie.AUTH_TYPE];
 
-    return this.service.logout(auth, (request.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
+    const body = await this.service.logout(auth, authType);
+    return respondWithoutCookie(res, body, [
+      ImmichCookie.ACCESS_TOKEN,
+      ImmichCookie.AUTH_TYPE,
+      ImmichCookie.IS_AUTHENTICATED,
+    ]);
   }
 }

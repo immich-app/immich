@@ -15,7 +15,7 @@ Immich saves [file paths in the database](https://github.com/immich-app/immich/d
 Refer to the official [postgres documentation](https://www.postgresql.org/docs/current/backup.html) for details about backing up and restoring a postgres database.
 :::
 
-The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command.
+The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if it exists) to reset the database.
 
 <Tabs>
   <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
@@ -26,11 +26,14 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 
 ```bash title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
+# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
 docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gunzip < "/path/to/backup/dump.sql.gz" | docker exec -i immich_postgres psql --username=postgres --dbname=immich    # Restore Backup
+gunzip < "/path/to/backup/dump.sql.gz" \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --username=postgres --dbname=immich    # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
@@ -43,6 +46,7 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 
 ```powershell title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
+# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
 docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
@@ -83,7 +87,9 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
-gunzip < db_dumps/last/immich-latest.sql.gz | docker exec -i immich_postgres psql --username=postgres
+gunzip < db_dumps/last/immich-latest.sql.gz \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --username=postgres
 ```
 
 :::note
