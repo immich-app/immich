@@ -332,7 +332,7 @@ describe(AlbumService.name, () => {
   describe('addUsers', () => {
     it('should throw an error if the auth user is not the owner', async () => {
       await expect(
-        sut.addUsers(authStub.admin, albumStub.sharedWithAdmin.id, { sharedUserIds: ['user-1'] }),
+        sut.addUsers(authStub.admin, albumStub.sharedWithAdmin.id, { albumUsers: [{ userId: 'user-1' }] }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
@@ -341,7 +341,9 @@ describe(AlbumService.name, () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
       albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
       await expect(
-        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.admin.user.id] }),
+        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
+          albumUsers: [{ userId: authStub.admin.user.id }],
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
@@ -351,7 +353,7 @@ describe(AlbumService.name, () => {
       albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
       userMock.get.mockResolvedValue(null);
       await expect(
-        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: ['user-3'] }),
+        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { albumUsers: [{ userId: 'user-3' }] }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
@@ -366,9 +368,11 @@ describe(AlbumService.name, () => {
         user: userStub.user2,
         albumId: albumStub.sharedWithAdmin.id,
         album: albumStub.sharedWithAdmin,
-        role: AlbumUserRole.VIEWER,
+        role: AlbumUserRole.EDITOR,
       });
-      await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.user.id] });
+      await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
+        albumUsers: [{ userId: authStub.user2.user.id }],
+      });
       expect(albumUserMock.create).toHaveBeenCalledWith({
         userId: authStub.user2.user.id,
         albumId: albumStub.sharedWithAdmin.id,
