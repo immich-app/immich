@@ -24,11 +24,13 @@ class ThumbnailFormat {
   String toJson() => value;
 
   static const JPEG = ThumbnailFormat._(r'JPEG');
+  static const JXL = ThumbnailFormat._(r'JXL');
   static const WEBP = ThumbnailFormat._(r'WEBP');
 
   /// List of all possible values in this [enum][ThumbnailFormat].
   static const values = <ThumbnailFormat>[
     JPEG,
+    JXL,
     WEBP,
   ];
 
@@ -69,6 +71,7 @@ class ThumbnailFormatTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'JPEG': return ThumbnailFormat.JPEG;
+        case r'JXL': return ThumbnailFormat.JXL;
         case r'WEBP': return ThumbnailFormat.WEBP;
         default:
           if (!allowNull) {

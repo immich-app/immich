@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from numpy.typing import NDArray
 from PIL import Image
+from jxlpy import JXLImagePlugin
 
 from .main import app
 

@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 
 import cv2
+from jxlpy import JXLImagePlugin
 import numpy as np
 from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop

@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image
+from jxlpy import JXLImagePlugin
 
 _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in Image.Resampling}
 

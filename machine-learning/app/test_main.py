@@ -13,6 +13,7 @@ import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from jxlpy import JXLImagePlugin
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 

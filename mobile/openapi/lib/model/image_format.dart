@@ -24,11 +24,13 @@ class ImageFormat {
   String toJson() => value;
 
   static const jpeg = ImageFormat._(r'jpeg');
+  static const jxl = ImageFormat._(r'jxl');
   static const webp = ImageFormat._(r'webp');
 
   /// List of all possible values in this [enum][ImageFormat].
   static const values = <ImageFormat>[
     jpeg,
+    jxl,
     webp,
   ];
 
@@ -69,6 +71,7 @@ class ImageFormatTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'jpeg': return ImageFormat.jpeg;
+        case r'jxl': return ImageFormat.jxl;
         case r'webp': return ImageFormat.webp;
         default:
           if (!allowNull) {

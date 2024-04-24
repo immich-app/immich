@@ -6,6 +6,7 @@ from typing import Any
 from locust import HttpUser, events, task
 from locust.env import Environment
 from PIL import Image
+from jxlpy import JXLImagePlugin
 
 byte_image = BytesIO()
 

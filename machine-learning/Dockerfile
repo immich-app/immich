@@ -26,7 +26,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     VIRTUAL_ENV="/opt/venv" \
     PATH="/opt/venv/bin:${PATH}"
 
-RUN apt-get update && apt-get install -y --no-install-recommends g++
+RUN apt-get update && apt-get install -y --no-install-recommends g++ cmake pkg-config libbrotli-dev clang
+
+# jxlpy requires latest libxl version, debian bookworm has outdated version (compiltation error)
+RUN git clone --depth 1 --branch v0.10.2 https://github.com/libjxl/libjxl.git --recursive --shallow-submodules &&\
+    cd libjxl && mkdir build && cd build && export CC=clang CXX=clang++ && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF .. && cmake --build . -- -j$(nproc) && \
+    cmake --install . --prefix /opt/libjxl && cd ../..
 
 RUN pip install --upgrade pip && pip install poetry
 RUN poetry config installer.max-workers 10 && \
@@ -34,7 +39,9 @@ RUN poetry config installer.max-workers 10 && \
 RUN python3 -m venv /opt/venv
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
+RUN export LIBRARY_PATH=$LIBRARY_PATH:/opt/libjxl/lib && \
+    export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/opt/libjxl/include &&\
+    poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
 FROM python:3.11-slim-bookworm@sha256:dad770592ab3582ab2dabcf0e18a863df9d86bd9d23efcfa614110ce49ac20e4 as prod-cpu
 
@@ -88,6 +95,11 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
 COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/libjxl /opt/libjxl
+# LIBRARY_PATH is used by gcc before compilation to search directories containing static and shared libraries that need to be linked to your program (so, we use it for builder).
+# LD_LIBRARY_PATH is used by your program to search directories containing shared libraries after it has been successfully compiled and linked (so, we use it for produciton image).
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/libjxl/lib
+
 COPY ann/ann.py /usr/src/ann/ann.py
 COPY start.sh log_conf.json ./
 COPY app .

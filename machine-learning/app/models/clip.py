@@ -8,6 +8,7 @@ from typing import Any, Literal
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image
+from jxlpy import JXLImagePlugin
 from tokenizers import Encoding, Tokenizer
 
 from app.config import clean_name, log

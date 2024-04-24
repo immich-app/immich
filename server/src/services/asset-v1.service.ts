@@ -245,13 +245,14 @@ export class AssetServiceV1 {
     };
   }
 
+  // the current usage of this API is somewhat unusual - WEBP is requested when we want a small thumbnail, and JPEG when we want a large thumbnail
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP: {
         if (asset.thumbnailPath) {
           return asset.thumbnailPath;
         }
-        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
+        this.logger.warn(`${format} thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
       }
       case GetAssetThumbnailFormatEnum.JPEG: {
         if (!asset.previewPath) {

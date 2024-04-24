@@ -189,8 +189,10 @@ export enum Colorspace {
   P3 = 'p3',
 }
 
+// name to a file extension
 export enum ImageFormat {
   JPEG = 'jpeg',
+  JPEG_XL = 'jxl',
   WEBP = 'webp',
 }
 
