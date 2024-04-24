@@ -34,6 +34,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
+    title: 'Immich-Tools',
+    description: 'Provides scripts for handling problems on the repair page.',
+    url: 'https://github.com/clumsyCoder00/Immich-Tools',
+  },
+  {
     title: 'Lightroom Publisher: mi.Immich.Publisher',
     description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
     url: 'https://github.com/midzelis/mi.Immich.Publisher',

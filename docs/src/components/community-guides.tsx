@@ -36,7 +36,7 @@ const guides: CommunityGuidesProps[] = [
   {
     title: 'gphotos import + albums',
     description: 'Import your G photos files into Immich and add your albums',
-    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+    url: 'https://github.com/immich-app/immich/discussions/1340',
   },
 ];
 
