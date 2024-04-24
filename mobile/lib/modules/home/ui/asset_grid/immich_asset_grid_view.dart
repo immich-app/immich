@@ -252,7 +252,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         : listWidget;
     return widget.onRefresh == null
         ? child
-        : appBarOffset() ? RefreshIndicator(onRefresh: widget.onRefresh!, child: child, edgeOffset: 30,) : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+        : appBarOffset() ? RefreshIndicator(onRefresh: widget.onRefresh!, edgeOffset: 30, child: child, ) : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
   @override
