@@ -17,7 +17,7 @@ class AddUsersDto {
     this.sharedUserIds = const [],
   });
 
-  List<AddUserDto> albumUsers;
+  List<AlbumUserAddDto> albumUsers;
 
   /// Deprecated in favor of albumUsers
   List<String> sharedUserIds;
@@ -51,7 +51,7 @@ class AddUsersDto {
       final json = value.cast<String, dynamic>();
 
       return AddUsersDto(
-        albumUsers: AddUserDto.listFromJson(json[r'albumUsers']),
+        albumUsers: AlbumUserAddDto.listFromJson(json[r'albumUsers']),
         sharedUserIds: json[r'sharedUserIds'] is Iterable
             ? (json[r'sharedUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

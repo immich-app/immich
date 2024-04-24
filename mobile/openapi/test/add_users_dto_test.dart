@@ -16,7 +16,7 @@ void main() {
   // final instance = AddUsersDto();
 
   group('test AddUsersDto', () {
-    // List<AddUserDto> albumUsers (default value: const [])
+    // List<AlbumUserAddDto> albumUsers (default value: const [])
     test('to test the property `albumUsers`', () async {
       // TODO
     });
