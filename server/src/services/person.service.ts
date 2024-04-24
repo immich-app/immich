@@ -292,7 +292,12 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true, withArchived: true })
+        ? this.assetRepository.getAll(pagination, {
+            orderDirection: 'DESC',
+            withFaces: true,
+            withArchived: true,
+            isVisible: true,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -320,6 +325,10 @@ export class PersonService {
     const [asset] = await this.assetRepository.getByIds([id], relations);
     if (!asset || !asset.previewPath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
     }
 
     const faces = await this.machineLearningRepository.detectFaces(

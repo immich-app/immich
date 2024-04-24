@@ -24,8 +24,8 @@ import {
   getConfigDefaults,
   login,
   searchMetadata,
-  setAdminOnboarding,
   signUpAdmin,
+  updateAdminOnboarding,
   updateConfig,
   validate,
 } from '@immich/sdk';
@@ -140,7 +140,7 @@ export const utils = {
         'asset_faces',
         'activity',
         'api_keys',
-        'user_token',
+        'sessions',
         'users',
         'system_metadata',
         'system_config',
@@ -264,7 +264,10 @@ export const utils = {
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
     if (options.onboarding) {
-      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+      await updateAdminOnboarding(
+        { adminOnboardingUpdateDto: { isOnboarded: true } },
+        { headers: asBearerAuth(response.accessToken) },
+      );
     }
     return response;
   },

@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/shared/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/shared/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
+import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfo> {
@@ -47,6 +48,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
         );
 
   final ServerInfoService _serverInfoService;
+  final _log = Logger("ServerInfoNotifier");
 
   Future<void> getServerInfo() async {
     await getServerVersion();
@@ -55,17 +57,25 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   }
 
   getServerVersion() async {
-    final serverVersion = await _serverInfoService.getServerVersion();
+    try {
+      final serverVersion = await _serverInfoService.getServerVersion();
 
-    if (serverVersion == null) {
+      if (serverVersion == null) {
+        state = state.copyWith(
+          isVersionMismatch: true,
+          versionMismatchErrorMessage: "common_server_error".tr(),
+        );
+        return;
+      }
+
+      await _checkServerVersionMismatch(serverVersion);
+    } catch (e, stackTrace) {
+      _log.severe("Failed to get server version", e, stackTrace);
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "common_server_error".tr(),
       );
       return;
     }
-
-    await _checkServerVersionMismatch(serverVersion);
   }
 
   _checkServerVersionMismatch(ServerVersion serverVersion) async {

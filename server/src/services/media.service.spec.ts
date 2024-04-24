@@ -225,6 +225,15 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGeneratePreview({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
     it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -353,6 +362,15 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbnail({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.resize).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+    });
+
     it.each(Object.values(ImageFormat))(
       'should generate a %s thumbnail for an image when specified',
       async (format) => {
@@ -375,14 +393,12 @@ describe(MediaService.name, () => {
   });
 
   it('should generate a P3 thumbnail for a wide gamut image', async () => {
-    assetMock.getByIds.mockResolvedValue([
-      { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
-    ]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
     await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
     expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
     expect(mediaMock.resize).toHaveBeenCalledWith(
-      '/original/path.jpg',
+      assetStub.imageDng.originalPath,
       'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
       {
         format: ImageFormat.WEBP,
@@ -397,7 +413,96 @@ describe(MediaService.name, () => {
     });
   });
 
-  describe('handleGenerateThumbhashThumbnail', () => {
+  it('should extract embedded image if enabled and available', async () => {
+    mediaMock.extract.mockResolvedValue(true);
+    mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+    expect(mediaMock.resize.mock.calls).toEqual([
+      [
+        extractedPath,
+        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        {
+          format: ImageFormat.WEBP,
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+        },
+      ],
+    ]);
+    expect(extractedPath?.endsWith('.tmp')).toBe(true);
+    expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
+  });
+
+  it('should resize original image if embedded image is too small', async () => {
+    mediaMock.extract.mockResolvedValue(true);
+    mediaMock.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.resize.mock.calls).toEqual([
+      [
+        assetStub.imageDng.originalPath,
+        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        {
+          format: ImageFormat.WEBP,
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+        },
+      ],
+    ]);
+    const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+    expect(extractedPath?.endsWith('.tmp')).toBe(true);
+    expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
+  });
+
+  it('should resize original image if embedded image not found', async () => {
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: true }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.resize).toHaveBeenCalledWith(
+      assetStub.imageDng.originalPath,
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      {
+        format: ImageFormat.WEBP,
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+      },
+    );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+  });
+
+  it('should resize original image if embedded image extraction is not enabled', async () => {
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_EXTRACT_EMBEDDED, value: false }]);
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.extract).not.toHaveBeenCalled();
+    expect(mediaMock.resize).toHaveBeenCalledWith(
+      assetStub.imageDng.originalPath,
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      {
+        format: ImageFormat.WEBP,
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+      },
+    );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+  });
+
+  describe('handleGenerateThumbhash', () => {
     it('should skip thumbhash generation if asset not found', async () => {
       assetMock.getByIds.mockResolvedValue([]);
       await sut.handleGenerateThumbhash({ id: assetStub.image.id });
@@ -408,6 +513,15 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGenerateThumbhash({ id: assetStub.noResizePath.id });
       expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('should skip invisible assets', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+
+      expect(await sut.handleGenerateThumbhash({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
+
+      expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
     it('should generate a thumbhash', async () => {

@@ -14,6 +14,7 @@ class SystemConfigImageDto {
   /// Returns a new [SystemConfigImageDto] instance.
   SystemConfigImageDto({
     required this.colorspace,
+    required this.extractEmbedded,
     required this.previewFormat,
     required this.previewSize,
     required this.quality,
@@ -23,19 +24,26 @@ class SystemConfigImageDto {
 
   Colorspace colorspace;
 
+  bool extractEmbedded;
+
   ImageFormat previewFormat;
 
+  /// Minimum value: 1
   int previewSize;
 
+  /// Minimum value: 1
+  /// Maximum value: 100
   int quality;
 
   ImageFormat thumbnailFormat;
 
+  /// Minimum value: 1
   int thumbnailSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigImageDto &&
     other.colorspace == colorspace &&
+    other.extractEmbedded == extractEmbedded &&
     other.previewFormat == previewFormat &&
     other.previewSize == previewSize &&
     other.quality == quality &&
@@ -46,6 +54,7 @@ class SystemConfigImageDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (colorspace.hashCode) +
+    (extractEmbedded.hashCode) +
     (previewFormat.hashCode) +
     (previewSize.hashCode) +
     (quality.hashCode) +
@@ -53,11 +62,12 @@ class SystemConfigImageDto {
     (thumbnailSize.hashCode);
 
   @override
-  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, previewFormat=$previewFormat, previewSize=$previewSize, quality=$quality, thumbnailFormat=$thumbnailFormat, thumbnailSize=$thumbnailSize]';
+  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, previewFormat=$previewFormat, previewSize=$previewSize, quality=$quality, thumbnailFormat=$thumbnailFormat, thumbnailSize=$thumbnailSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'colorspace'] = this.colorspace;
+      json[r'extractEmbedded'] = this.extractEmbedded;
       json[r'previewFormat'] = this.previewFormat;
       json[r'previewSize'] = this.previewSize;
       json[r'quality'] = this.quality;
@@ -75,6 +85,7 @@ class SystemConfigImageDto {
 
       return SystemConfigImageDto(
         colorspace: Colorspace.fromJson(json[r'colorspace'])!,
+        extractEmbedded: mapValueOfType<bool>(json, r'extractEmbedded')!,
         previewFormat: ImageFormat.fromJson(json[r'previewFormat'])!,
         previewSize: mapValueOfType<int>(json, r'previewSize')!,
         quality: mapValueOfType<int>(json, r'quality')!,
@@ -128,6 +139,7 @@ class SystemConfigImageDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'colorspace',
+    'extractEmbedded',
     'previewFormat',
     'previewSize',
     'quality',
