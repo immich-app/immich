@@ -22,7 +22,7 @@
   export let onClose: () => void;
   let users: UserResponseDto[] = [];
   let selectedUsers: UserResponseDto[] = [];
-  let role = AlbumUserRole.Editor;
+  let role = AlbumUserRole.Editor
 
   const dispatch = createEventDispatcher<{
     select: AddUserDto[];
@@ -116,33 +116,32 @@
   </div>
 
   {#if users.length > 0}
-    <div class="flex items-baseline gap-2 py-3">
-      <p>Add users as:</p>
-      <div class="flex-grow">
-        <Dropdown
-          title="Role"
-          options={[
-            { title: 'Editor', value: AlbumUserRole.Editor },
-            { title: 'Viewer', value: AlbumUserRole.Viewer },
-          ]}
-          selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
-          render={({ title }) => title}
-          on:select={({ detail: { value } }) => (role = value)}
-        />
-      </div>
-      <div class="w-[50%]">
-        <Button
-          size="sm"
-          fullwidth
-          rounded="full"
-          disabled={selectedUsers.length === 0}
-          on:click={() =>
-            dispatch(
-              'select',
-              Object.values(selectedUsers).map((user) => ({ userId: user.id, role })),
-            )}>Add</Button
-        >
-      </div>
+    <div class="flex items-center gap-2 py-3">
+      Add users as:
+    <Dropdown
+      class="flex-grow"
+      title="Role"
+      options={[
+                    { title: 'Editor', value: AlbumUserRole.Editor },
+                    { title: 'Viewer', value: AlbumUserRole.Viewer },
+                  ]}
+      selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
+      render={({ title }) => title}
+      on:select={({ detail: { value } }) => role = value}
+    />
+    <div class="flex-grow">
+      <Button
+        size="sm"
+        fullwidth
+        rounded="full"
+        disabled={selectedUsers.length === 0}
+        on:click={() =>
+          dispatch(
+            'select',
+            Object.values(selectedUsers).map((user) => ({ userId: user.id, role })),
+          )}>Add</Button
+      >
+    </div>
     </div>
   {/if}
 
