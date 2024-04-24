@@ -5,7 +5,6 @@ export class AddAlbumUserRole1713337511945 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "albums_shared_users_users" ADD "role" character varying NOT NULL DEFAULT 'editor'`);
-        await queryRunner.query(`ALTER TABLE "albums_shared_users_users" ALTER COLUMN "role" SET DEFAULT 'viewer'`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

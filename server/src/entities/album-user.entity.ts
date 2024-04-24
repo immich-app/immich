@@ -26,6 +26,6 @@ export class AlbumUserEntity {
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   user!: UserEntity;
 
-  @Column({ type: 'varchar', default: 'viewer' })
+  @Column({ type: 'varchar', default: AlbumUserRole.EDITOR })
   role!: AlbumUserRole;
 }
