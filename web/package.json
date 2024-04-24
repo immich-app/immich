@@ -29,7 +29,7 @@
     "@sveltejs/kit": "^2.5.2",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/svelte": "^4.1.0",
+    "@testing-library/svelte": "^5.0.0",
     "@types/dom-to-image": "^2.6.7",
     "@types/justified-layout": "^4.1.4",
     "@types/lodash-es": "^4.17.12",

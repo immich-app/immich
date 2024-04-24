@@ -260,6 +260,7 @@ class MetadataSearchDto {
   ///
   String? originalPath;
 
+  /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -286,6 +287,8 @@ class MetadataSearchDto {
   ///
   String? resizePath;
 
+  /// Minimum value: 1
+  /// Maximum value: 1000
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
