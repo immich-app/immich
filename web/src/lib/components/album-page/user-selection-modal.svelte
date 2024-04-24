@@ -8,7 +8,8 @@
     type AlbumResponseDto,
     type SharedLinkResponseDto,
     type UserResponseDto,
-    AlbumUserRole, type AddUserDto,
+    AlbumUserRole,
+    type AddUserDto,
   } from '@immich/sdk';
   import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -20,7 +21,7 @@
   export let album: AlbumResponseDto;
   export let onClose: () => void;
   let users: UserResponseDto[] = [];
-  let selectedUsers: Record<string, { user: UserResponseDto, role: AlbumUserRole }> = {}
+  let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
   const dispatch = createEventDispatcher<{
     select: AddUserDto[];
@@ -48,7 +49,7 @@
   const handleToggle = (user: UserResponseDto) => {
     if (Object.keys(selectedUsers).includes(user.id)) {
       delete selectedUsers[user.id];
-      selectedUsers = selectedUsers
+      selectedUsers = selectedUsers;
     } else {
       selectedUsers[user.id] = { user, role: AlbumUserRole.Editor };
     }
@@ -117,7 +118,7 @@
                   ]}
                   selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
                   render={({ title }) => title}
-                  on:select={({detail: {value}}) => handleChangeRole(user, value)}
+                  on:select={({ detail: { value } }) => handleChangeRole(user, value)}
                 />
               </div>
             {/if}
@@ -138,7 +139,11 @@
         fullwidth
         rounded="full"
         disabled={Object.keys(selectedUsers).length === 0}
-        on:click={() => dispatch('select', Object.values(selectedUsers).map(({user, ...rest}) => ({userId: user.id, ...rest})))}>Add</Button
+        on:click={() =>
+          dispatch(
+            'select',
+            Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
+          )}>Add</Button
       >
     </div>
   {/if}
