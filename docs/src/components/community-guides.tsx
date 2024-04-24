@@ -33,6 +33,11 @@ const guides: CommunityGuidesProps[] = [
     description: 'Documentation for simple podman setup using quadlets.',
     url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
   },
+  {
+    title: 'gphotos import + albums',
+    description: 'Import your G photos files into Immich and add your albums',
+    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
+  },
 ];
 
 function CommunityGuide({ title, description, url }: CommunityGuidesProps): JSX.Element {
