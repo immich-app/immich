@@ -328,7 +328,7 @@
     updateAlbumInfo(album);
   };
 
-  const handleAddUsers = async (users: AddUserDto[]) => {
+  const handleAddUsers = async (albumUsers: AddUserDto[]) => {
     if (!albumToShare) {
       return;
     }
@@ -336,7 +336,7 @@
       const album = await addUsersToAlbum({
         id: albumToShare.id,
         addUsersDto: {
-          sharedUserIds: [...users].map(({ id }) => id),
+          albumUsers,
         },
       });
       updateAlbumInfo(album);
