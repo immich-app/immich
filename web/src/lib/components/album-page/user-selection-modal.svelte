@@ -21,8 +21,7 @@
   export let album: AlbumResponseDto;
   export let onClose: () => void;
   let users: UserResponseDto[] = [];
-  let selectedUsers: UserResponseDto[] = [];
-  let role = AlbumUserRole.Editor
+  let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
   const dispatch = createEventDispatcher<{
     select: AddUserDto[];
@@ -47,26 +46,29 @@
     sharedLinks = data.filter((link) => link.album?.id === album.id);
   };
 
-  const handleSelect = (user: UserResponseDto) => {
-    selectedUsers = selectedUsers.includes(user)
-      ? selectedUsers.filter((selectedUser) => selectedUser.id !== user.id)
-      : [...selectedUsers, user];
+  const handleToggle = (user: UserResponseDto) => {
+    if (Object.keys(selectedUsers).includes(user.id)) {
+      delete selectedUsers[user.id];
+      selectedUsers = selectedUsers;
+    } else {
+      selectedUsers[user.id] = { user, role: AlbumUserRole.Editor };
+    }
   };
 
-  const handleUnselect = (user: UserResponseDto) => {
-    selectedUsers = selectedUsers.filter((selectedUser) => selectedUser.id !== user.id);
+  const handleChangeRole = (user: UserResponseDto, role: AlbumUserRole) => {
+    selectedUsers[user.id].role = role;
   };
 </script>
 
 <FullScreenModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
-  {#if selectedUsers.length > 0}
+  {#if Object.keys(selectedUsers).length > 0}
     <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
       <p class="font-medium">To</p>
 
-      {#each selectedUsers as user}
+      {#each Object.values(selectedUsers) as { user }}
         {#key user.id}
           <button
-            on:click={() => handleUnselect(user)}
+            on:click={() => handleToggle(user)}
             class="flex place-items-center gap-1 rounded-full border border-gray-500 p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             <UserAvatar {user} size="sm" />
@@ -84,10 +86,10 @@
       <div class="my-4">
         {#each users as user}
           <button
-            on:click={() => handleSelect(user)}
+            on:click={() => handleToggle(user)}
             class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
           >
-            {#if selectedUsers.includes(user)}
+            {#if Object.keys(selectedUsers).includes(user.id)}
               <div
                 class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
               >
@@ -97,7 +99,7 @@
               <UserAvatar {user} size="md" />
             {/if}
 
-            <div class="text-left">
+            <div class="text-left flex-grow">
               <p class="text-immich-fg dark:text-immich-dark-fg">
                 {user.name}
               </p>
@@ -105,6 +107,21 @@
                 {user.email}
               </p>
             </div>
+
+            {#if Object.keys(selectedUsers).includes(user.id)}
+              <div on:click={(e) => e.stopPropagation()}>
+                <Dropdown
+                  title="Role"
+                  options={[
+                    { title: 'Editor', value: AlbumUserRole.Editor },
+                    { title: 'Viewer', value: AlbumUserRole.Viewer },
+                  ]}
+                  selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
+                  render={({ title }) => title}
+                  on:select={({ detail: { value } }) => handleChangeRole(user, value)}
+                />
+              </div>
+            {/if}
           </button>
         {/each}
       </div>
@@ -116,32 +133,18 @@
   </div>
 
   {#if users.length > 0}
-    <div class="flex items-center gap-2 py-3">
-      Add users as:
-    <Dropdown
-      class="flex-grow"
-      title="Role"
-      options={[
-                    { title: 'Editor', value: AlbumUserRole.Editor },
-                    { title: 'Viewer', value: AlbumUserRole.Viewer },
-                  ]}
-      selectedOption={{ title: 'Editor', value: AlbumUserRole.Editor }}
-      render={({ title }) => title}
-      on:select={({ detail: { value } }) => role = value}
-    />
-    <div class="flex-grow">
+    <div class="py-3">
       <Button
         size="sm"
         fullwidth
         rounded="full"
-        disabled={selectedUsers.length === 0}
+        disabled={Object.keys(selectedUsers).length === 0}
         on:click={() =>
           dispatch(
             'select',
-            Object.values(selectedUsers).map((user) => ({ userId: user.id, role })),
+            Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
           )}>Add</Button
       >
-    </div>
     </div>
   {/if}
 
