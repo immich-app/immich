@@ -63,6 +63,7 @@ part 'model/api_key_update_dto.dart';
 part 'model/activity_create_dto.dart';
 part 'model/activity_response_dto.dart';
 part 'model/activity_statistics_response_dto.dart';
+part 'model/add_user_dto.dart';
 part 'model/add_users_dto.dart';
 part 'model/admin_onboarding_update_dto.dart';
 part 'model/album_count_response_dto.dart';

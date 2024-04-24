@@ -196,8 +196,14 @@ export type BulkIdResponseDto = {
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
 };
+export type AddUserDto = {
+    role?: AlbumUserRole;
+    userId: string;
+};
 export type AddUsersDto = {
-    sharedUserIds: string[];
+    albumUsers: AddUserDto[];
+    /** Deprecated in favor of albumUsers */
+    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;

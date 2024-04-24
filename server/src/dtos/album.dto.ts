@@ -13,10 +13,23 @@ export class AlbumInfoDto {
   withoutAssets?: boolean;
 }
 
+export class AddUserDto {
+  @ValidateUUID()
+  userId!: string;
+
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole', default: AlbumUserRole.EDITOR })
+  role?: AlbumUserRole;
+}
+
 export class AddUsersDto {
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, optional: true })
   @ArrayNotEmpty()
-  sharedUserIds!: string[];
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
+  sharedUserIds?: string[];
+
+  @ArrayNotEmpty()
+  albumUsers!: AddUserDto[];
 }
 
 export class CreateAlbumDto {

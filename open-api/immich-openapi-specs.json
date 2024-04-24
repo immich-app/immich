@@ -7300,9 +7300,32 @@
         ],
         "type": "object"
       },
+      "AddUserDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
       "AddUsersDto": {
         "properties": {
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AddUserDto"
+            },
+            "type": "array"
+          },
           "sharedUserIds": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -7311,7 +7334,7 @@
           }
         },
         "required": [
-          "sharedUserIds"
+          "albumUsers"
         ],
         "type": "object"
       },

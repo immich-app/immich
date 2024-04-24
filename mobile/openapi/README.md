@@ -235,6 +235,7 @@ Class | Method | HTTP request | Description
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
+ - [AddUserDto](doc//AddUserDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
