@@ -259,4 +259,48 @@ describe(`immich upload`, () => {
       expect(exitCode).not.toBe(0);
     });
   });
+
+  describe('immich upload --ignore <pattern>', () => {
+    it('should work', async () => {
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `${testAssetDir}/albums/nature/`,
+        '--ignore',
+        'silver_fir.jpg',
+      ]);
+
+      expect(stderr).toBe('');
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          'Found 8 new files and 0 duplicates',
+          expect.stringContaining('Successfully uploaded 8 new assets'),
+        ]),
+      );
+      expect(exitCode).toBe(0);
+
+      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
+      expect(assets.length).toBe(8);
+    });
+
+    it('should ignore assets matching glob pattern', async () => {
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `${testAssetDir}/albums/nature/`,
+        '--ignore',
+        '!(*_*_*).jpg',
+      ]);
+
+      expect(stderr).toBe('');
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          'Found 1 new files and 0 duplicates',
+          expect.stringContaining('Successfully uploaded 1 new asset'),
+        ]),
+      );
+      expect(exitCode).toBe(0);
+
+      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
+      expect(assets.length).toBe(1);
+    });
+  });
 });

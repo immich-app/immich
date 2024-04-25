@@ -270,6 +270,8 @@
   };
 
   const closeViewer = async () => {
+    $slideshowState = SlideshowState.StopSlideshow;
+    document.body.style.cursor = '';
     dispatch('close');
     await navigate({ targetRoute: 'current', assetId: null });
   };
