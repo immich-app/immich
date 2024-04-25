@@ -1,5 +1,4 @@
-import { CuratedLocationsResponseDto, CuratedObjectsResponseDto } from 'src/dtos/asset-v1-response.dto';
-import { AssetSearchDto, CheckExistingAssetsDto, SearchPropertiesDto } from 'src/dtos/asset-v1.dto';
+import { AssetSearchDto, CheckExistingAssetsDto } from 'src/dtos/asset-v1.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 
 export interface AssetCheck {

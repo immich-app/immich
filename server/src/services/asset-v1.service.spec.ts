@@ -76,9 +76,6 @@ describe('AssetService', () => {
     assetRepositoryMockV1 = {
       get: vitest.fn(),
       getAllByUserId: vitest.fn(),
-      getDetectedObjectsByUserId: vitest.fn(),
-      getLocationsByUserId: vitest.fn(),
-      getSearchPropertiesByUserId: vitest.fn(),
       getAssetsByChecksums: vitest.fn(),
       getExistingAssets: vitest.fn(),
       getByOriginalPath: vitest.fn(),

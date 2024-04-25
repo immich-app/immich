@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CuratedLocationsResponseDto, CuratedObjectsResponseDto } from 'src/dtos/asset-v1-response.dto';
-import { AssetSearchDto, CheckExistingAssetsDto, SearchPropertiesDto } from 'src/dtos/asset-v1.dto';
+import { AssetSearchDto, CheckExistingAssetsDto } from 'src/dtos/asset-v1.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetCheck, AssetOwnerCheck, IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { OptionalBetween } from 'src/utils/database';
