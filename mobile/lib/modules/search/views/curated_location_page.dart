@@ -6,7 +6,6 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
-import 'package:openapi/api.dart';
 
 @RoutePage()
 class CuratedLocationPage extends HookConsumerWidget {
@@ -14,8 +13,7 @@ class CuratedLocationPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<CuratedLocationsResponseDto>> curatedLocation =
-        ref.watch(getCuratedLocationProvider);
+    AsyncValue<List<CuratedContent>> places = ref.watch(getPlacesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -27,16 +25,9 @@ class CuratedLocationPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
-      body: curatedLocation.widgetWhen(
-        onData: (curatedLocations) => ExploreGrid(
-          curatedContent: curatedLocations
-              .map(
-                (l) => CuratedContent(
-                  label: l.city,
-                  id: l.id,
-                ),
-              )
-              .toList(),
+      body: places.widgetWhen(
+        onData: (data) => ExploreGrid(
+          curatedContent: data,
         ),
       ),
     );
