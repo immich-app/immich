@@ -31,7 +31,10 @@
   <div class="grid">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div on:click={() => toggleAlbumGroupCollapsing(group.id)} class="flex w-fit mt-2 pt-2 pr-2 mb-2 hover:cursor-pointer">
+    <div
+      on:click={() => toggleAlbumGroupCollapsing(group.id)}
+      class="flex w-fit mt-2 pt-2 pr-2 mb-2 hover:cursor-pointer"
+    >
       <div class="mt-2.5 mr-1">
         <Icon
           path={mdiChevronRight}

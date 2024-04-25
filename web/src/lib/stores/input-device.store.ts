@@ -9,7 +9,7 @@ const isUsingCoarsePointer = () => {
     return false;
   }
   return true;
-}
+};
 
 export const isUserUsingTouchDevice = readable(isUsingCoarsePointer(), (set) => {
   let touchCount = 0;

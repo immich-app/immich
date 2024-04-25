@@ -201,7 +201,7 @@
       return event.touches[0];
     }
     return null;
-  }
+  };
 
   const onTouchStart = (event: TouchEvent) => {
     const touch = getTouch(event);
@@ -303,7 +303,7 @@
       on:mouseleave={() => setIsMouseHover(false)}
     >
       {#if isHover || isDragging}
-        {@const positionTop = clamp(hoverY - HOVER_DATE_HEIGHT, 0, height - HOVER_DATE_HEIGHT - 2) }
+        {@const positionTop = clamp(hoverY - HOVER_DATE_HEIGHT, 0, height - HOVER_DATE_HEIGHT - 2)}
         <div
           id="time-label"
           in:fade={{ duration: 100 }}
@@ -318,7 +318,7 @@
 
       <!-- Scroll Position Indicator Line -->
       {#if !isDragging}
-        {@const positionTop = Math.min(scrollY, height - 2) }
+        {@const positionTop = Math.min(scrollY, height - 2)}
         <div
           class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
           style:top="{positionTop}px"
@@ -327,12 +327,7 @@
       <!-- Time Segment -->
       {#each segments as segment}
         {@const ariaLabel = `${segment.timeGroup} ${segment.count}`}
-        <div
-          id="time-segment"
-          class="relative"
-          style:height="{segment.height}px"
-          aria-label={ariaLabel}
-        >
+        <div id="time-segment" class="relative" style:height="{segment.height}px" aria-label={ariaLabel}>
           {#if segment.hasLabel}
             <div
               aria-label={ariaLabel}
@@ -341,10 +336,7 @@
               {segment.date.year}
             </div>
           {:else if segment.height > 5}
-            <div
-              aria-label={ariaLabel}
-              class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"
-            />
+            <div aria-label={ariaLabel} class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300" />
           {/if}
         </div>
       {/each}

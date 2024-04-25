@@ -4,11 +4,7 @@
 
 <slot name="header" />
 
-<main
-  tabindex="-1"
-  id="immich-main-layout"
-  class={className}
->
+<main tabindex="-1" id="immich-main-layout" class={className}>
   <slot />
 </main>
 
