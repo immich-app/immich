@@ -218,7 +218,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     }
 
     bool appBarOffset() {
-      return ref.watch(tabProvider).index == 0 && ModalRoute.of(context)?.settings.name == TabControllerRoute.name;
+      return ref.watch(tabProvider).index == 0 &&
+          ModalRoute.of(context)?.settings.name == TabControllerRoute.name;
     }
 
     final listWidget = ScrollablePositionedList.builder(
@@ -243,7 +244,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             controller: _itemScrollController,
             backgroundColor: context.themeData.hintColor,
             labelTextBuilder: _labelBuilder,
-            padding: appBarOffset() ? const EdgeInsets.only(top:60) : const EdgeInsets.only(),
+            padding: appBarOffset()
+                ? const EdgeInsets.only(top: 60)
+                : const EdgeInsets.only(),
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
             scrollbarTimeToFade: const Duration(milliseconds: 1000),
@@ -252,7 +255,13 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         : listWidget;
     return widget.onRefresh == null
         ? child
-        : appBarOffset() ? RefreshIndicator(onRefresh: widget.onRefresh!, edgeOffset: 30, child: child, ) : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+        : appBarOffset()
+            ? RefreshIndicator(
+                onRefresh: widget.onRefresh!,
+                edgeOffset: 30,
+                child: child,
+              )
+            : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
   @override
