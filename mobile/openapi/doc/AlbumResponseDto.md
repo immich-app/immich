@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumName** | **String** |  | 
 **albumThumbnailAssetId** | **String** |  | 
+**albumUsers** | [**List<AlbumUserResponseDto>**](AlbumUserResponseDto.md) |  | [default to const []]
 **assetCount** | **int** |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
@@ -23,7 +24,7 @@ Name | Type | Description | Notes
 **owner** | [**UserDto**](UserDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 
-**sharedUsers** | [**List<UserDto>**](UserDto.md) |  | [default to const []]
+**sharedUsers** | [**List<UserDto>**](UserDto.md) | Deprecated in favor of albumUsers | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

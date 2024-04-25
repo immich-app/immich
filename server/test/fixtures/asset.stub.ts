@@ -467,6 +467,7 @@ export const assetStub = {
     library: libraryStub.uploadLibrary1,
     exifInfo: {
       fileSizeInByte: 100_000,
+      timeZone: `America/New_York`,
     },
   } as AssetEntity),
 
@@ -483,6 +484,7 @@ export const assetStub = {
     library: libraryStub.uploadLibrary1,
     exifInfo: {
       fileSizeInByte: 25_000,
+      timeZone: `America/New_York`,
     },
   } as AssetEntity),
 

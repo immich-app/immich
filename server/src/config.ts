@@ -28,6 +28,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_DATABASE_NAME: WHEN_DB_URL_SET,
     DB_URL: Joi.string().optional(),
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
+    DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),

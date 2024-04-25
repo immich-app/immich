@@ -38,6 +38,10 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type AlbumUserResponseDto = {
+    role: AlbumUserRole;
+    user: UserDto;
+};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -126,6 +130,7 @@ export type AssetResponseDto = {
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -139,6 +144,7 @@ export type AlbumResponseDto = {
     owner: UserDto;
     ownerId: string;
     shared: boolean;
+    /** Deprecated in favor of albumUsers */
     sharedUsers: UserDto[];
     startDate?: string;
     updatedAt: string;
@@ -169,8 +175,17 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
+export type UpdateAlbumUserDto = {
+    role: AlbumUserRole;
+};
+export type AlbumUserAddDto = {
+    role?: AlbumUserRole;
+    userId: string;
+};
 export type AddUsersDto = {
-    sharedUserIds: string[];
+    albumUsers: AlbumUserAddDto[];
+    /** Deprecated in favor of albumUsers */
+    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
@@ -1197,6 +1212,17 @@ export function removeUserFromAlbum({ id, userId }: {
         ...opts,
         method: "DELETE"
     }));
+}
+export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
+    id: string;
+    userId: string;
+    updateAlbumUserDto: UpdateAlbumUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/user/${encodeURIComponent(userId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumUserDto
+    })));
 }
 export function addUsersToAlbum({ id, addUsersDto }: {
     id: string;
@@ -2933,6 +2959,10 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",

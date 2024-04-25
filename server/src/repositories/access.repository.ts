@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -81,12 +82,13 @@ class ActivityAccess implements IActivityAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .select('album.id')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumUsers', 'album_albumUsers_users')
+      .leftJoin('album_albumUsers_users.user', 'albumUsers')
       .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
       .andWhere('album.isActivityEnabled = true')
       .andWhere(
         new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
         }),
       )
       .getMany()
@@ -120,7 +122,7 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
@@ -130,8 +132,11 @@ class AlbumAccess implements IAlbumAccess {
         select: { id: true },
         where: {
           id: In([...albumIds]),
-          sharedUsers: {
-            id: userId,
+          albumUsers: {
+            user: { id: userId },
+            // If editor access is needed we check for it, otherwise both are accepted
+            role:
+              access === AlbumUserRole.EDITOR ? AlbumUserRole.EDITOR : In([AlbumUserRole.EDITOR, AlbumUserRole.VIEWER]),
           },
         },
       })
@@ -177,7 +182,8 @@ class AssetAccess implements IAssetAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .innerJoin('album.assets', 'asset')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumUsers', 'album_albumUsers_users')
+      .leftJoin('album_albumUsers_users.user', 'albumUsers')
       .select('asset.id', 'assetId')
       .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
       .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
@@ -185,7 +191,7 @@ class AssetAccess implements IAssetAccess {
       })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
         }),
       )
       .getRawMany()
