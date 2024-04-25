@@ -260,7 +260,7 @@ describe(`immich upload`, () => {
     });
   });
 
-  describe('immich upload --ignore [paths...]', () => {
+  describe('immich upload --ignore <pattern>', () => {
     it('should work', async () => {
       const { stderr, stdout, exitCode } = await immichCli([
         'upload',
