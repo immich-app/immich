@@ -10,7 +10,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
-/// Only viable
 class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
   final Asset asset;
 
@@ -94,9 +93,12 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
 
   @override
   bool operator ==(Object other) {
-    if (other is! ImmichLocalImageProvider) return false;
     if (identical(this, other)) return true;
-    return asset == other.asset;
+    if (other is ImmichLocalImageProvider) {
+      return asset == other.asset;
+    }
+
+    return false;
   }
 
   @override

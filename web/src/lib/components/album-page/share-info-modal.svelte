@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import {
+    getMyUserInfo,
+    removeUserFromAlbum,
+    type AlbumResponseDto,
+    type UserResponseDto,
+    updateAlbumUser,
+    AlbumUserRole,
+  } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
@@ -17,6 +24,7 @@
 
   const dispatch = createEventDispatcher<{
     remove: string;
+    refreshAlbum: void;
   }>();
 
   let currentUser: UserResponseDto;
@@ -63,6 +71,19 @@
       selectedRemoveUser = null;
     }
   };
+
+  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
+    try {
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      const message = `Set ${user.name} as ${role}`;
+      dispatch('refreshAlbum');
+      notificationController.show({ type: NotificationType.Info, message });
+    } catch (error) {
+      handleError(error, 'Unable to set user role');
+    } finally {
+      selectedRemoveUser = null;
+    }
+  };
 </script>
 
 {#if !selectedRemoveUser}
@@ -78,7 +99,7 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.sharedUsers as user}
+      {#each album.albumUsers as { user, role }}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
@@ -87,7 +108,14 @@
             <p class="text-sm font-medium">{user.name}</p>
           </div>
 
-          <div id="icon-{user.id}" class="flex place-items-center">
+          <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
+            <div>
+              {#if role === AlbumUserRole.Viewer}
+                Viewer
+              {:else}
+                Editor
+              {/if}
+            </div>
             {#if isOwned}
               <div>
                 <CircleIconButton
@@ -101,6 +129,14 @@
 
                 {#if selectedMenuUser === user}
                   <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                    {#if role === AlbumUserRole.Viewer}
+                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
+                    {:else}
+                      <MenuOption
+                        on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                        text="Disallow edits"
+                      />
+                    {/if}
                     <MenuOption on:click={handleMenuRemove} text="Remove" />
                   </ContextMenu>
                 {/if}

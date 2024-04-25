@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import _ from 'lodash';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -11,10 +13,23 @@ export class AlbumInfoDto {
   withoutAssets?: boolean;
 }
 
+export class AlbumUserAddDto {
+  @ValidateUUID()
+  userId!: string;
+
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole', default: AlbumUserRole.EDITOR })
+  role?: AlbumUserRole;
+}
+
 export class AddUsersDto {
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, optional: true })
   @ArrayNotEmpty()
-  sharedUserIds!: string[];
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
+  sharedUserIds?: string[];
+
+  @ArrayNotEmpty()
+  albumUsers!: AlbumUserAddDto[];
 }
 
 export class CreateAlbumDto {
@@ -83,6 +98,18 @@ export class AlbumCountResponseDto {
   notShared!: number;
 }
 
+export class UpdateAlbumUserDto {
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
+}
+
+export class AlbumUserResponseDto {
+  user!: UserResponseDto;
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
+}
+
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -92,7 +119,9 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
+  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
   sharedUsers!: UserResponseDto[];
+  albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
   owner!: UserResponseDto;
@@ -109,12 +138,20 @@ export class AlbumResponseDto {
 
 export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
   const sharedUsers: UserResponseDto[] = [];
+  const albumUsers: AlbumUserResponseDto[] = [];
 
-  if (entity.sharedUsers) {
-    for (const user of entity.sharedUsers) {
-      sharedUsers.push(mapUser(user));
+  if (entity.albumUsers) {
+    for (const albumUser of entity.albumUsers) {
+      const user = mapUser(albumUser.user);
+      sharedUsers.push(user);
+      albumUsers.push({
+        user,
+        role: albumUser.role,
+      });
     }
   }
+
+  const albumUsersSorted = _.orderBy(albumUsers, ['role', 'user.name']);
 
   const assets = entity.assets || [];
 
@@ -138,6 +175,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     sharedUsers,
+    albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate,

@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // List<AlbumUserResponseDto> albumUsers (default value: const [])
+    test('to test the property `albumUsers`', () async {
+      // TODO
+    });
+
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO
@@ -91,6 +96,7 @@ void main() {
       // TODO
     });
 
+    // Deprecated in favor of albumUsers
     // List<UserResponseDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO
