@@ -69,11 +69,11 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices |
 
-\*1: This setting cannot be changed after the server has successfully started up
+\*1: This setting cannot be changed after the server has successfully started up.
 
 :::info
 
-When `DB_URL` is defined, the other database (`DB_*`) variables are ignored, with the exception of `DB_VECTOR_EXTENSION`.
+When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE_NAME` database variables are ignored.
 
 :::
 
