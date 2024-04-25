@@ -365,9 +365,10 @@ class SearchInputPage extends HookConsumerWidget {
                   isNotInAlbum: value,
                 ),
               );
-              if (value)
+              if (value) {
                 filterText
                     .add('search_filter_display_option_not_in_album'.tr());
+              }
               break;
             case DisplayOption.archive:
               filter.value = filter.value.copyWith(
@@ -375,8 +376,9 @@ class SearchInputPage extends HookConsumerWidget {
                   isArchive: value,
                 ),
               );
-              if (value)
+              if (value) {
                 filterText.add('search_filter_display_option_archive'.tr());
+              }
               break;
             case DisplayOption.favorite:
               filter.value = filter.value.copyWith(
@@ -384,8 +386,9 @@ class SearchInputPage extends HookConsumerWidget {
                   isFavorite: value,
                 ),
               );
-              if (value)
+              if (value) {
                 filterText.add('search_filter_display_option_favorite'.tr());
+              }
               break;
           }
         });
