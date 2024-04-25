@@ -10,15 +10,14 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 ## Supported Backends
 
 - ARM NN (Mali)
-- CUDA (NVIDIA) Note: It is supported with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher
-- OpenVINO (Intel)
+- CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
+- OpenVINO (Intel discrete GPUs such as Iris Xe and Arc)
 
 ## Limitations
 
 - The instructions and configurations here are specific to Docker Compose. Other container engines may require different configuration.
 - Only Linux and Windows (through WSL2) servers are supported.
 - ARM NN is only supported on devices with Mali GPUs. Other Arm devices are not supported.
-- There is currently an upstream issue with OpenVINO, so whether it will work is device-dependent.
 - Some models may not be compatible with certain backends. CUDA is the most reliable.
 
 ## Prerequisites
@@ -36,8 +35,15 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### CUDA
 
-- You must have the official NVIDIA driver installed on the server.
+- The GPU must have compute capability 5.2 or greater.
+- The server must have the official NVIDIA driver installed.
+- The installed driver must be >= 535 (it must support CUDA 12.2).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+
+#### OpenVINO
+
+- The server must have a discrete GPU, i.e. Iris Xe or Arc. Expect issues when attempting to use integrated graphics.
+- Ensure the server's kernel version is new enough to use the device for hardware accceleration.
 
 ## Setup
 

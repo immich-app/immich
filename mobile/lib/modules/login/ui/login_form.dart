@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
@@ -86,6 +87,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: e.message ?? 'login_form_api_exception'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -96,6 +98,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: 'login_form_handshake_exception'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -106,6 +109,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: 'login_form_server_error'.tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
@@ -174,6 +178,7 @@ class LoginForm extends HookConsumerWidget {
             context: context,
             msg: "login_form_failed_login".tr(),
             toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
           );
         }
       } finally {
@@ -197,6 +202,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: "login_form_failed_get_oauth_server_config".tr(),
           toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
         );
         isLoading.value = false;
         return;
@@ -225,6 +231,7 @@ class LoginForm extends HookConsumerWidget {
               context: context,
               msg: "login_form_failed_login".tr(),
               toastType: ToastType.error,
+              gravity: ToastGravity.TOP,
             );
           }
         }
@@ -235,6 +242,7 @@ class LoginForm extends HookConsumerWidget {
           context: context,
           msg: "login_form_failed_get_oauth_server_disable".tr(),
           toastType: ToastType.info,
+          gravity: ToastGravity.TOP,
         );
         isLoading.value = false;
         return;

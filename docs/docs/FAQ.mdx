@@ -131,6 +131,7 @@ This is not officially supported but can be accomplished with some database upda
 3. Four tables need to be updated:
 
 ```sql
+BEGIN;
 -- reassign albums
 UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
 
@@ -143,6 +144,7 @@ UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
 
 -- reassign external libraries
 UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
+COMMIT;
 ```
 
 4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
@@ -230,14 +232,19 @@ to increase the bar for what the algorithm considers a "core face" for that pers
 
 ### The immich_model-cache volume takes up a lot of space, what could be the problem?
 
-If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache.
+If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache. To do this you can mount the model cache and remove the undesired models.
 
-To do this you can run:
+<details>
+<summary>Steps</summary>
 
-- `docker run -it --rm -v immich_model-cache:/mnt ubuntu bash`
-- `cd mnt`
-- `ls`
-- and delete unused models with `rm -r <model_name>`.
+```bash
+docker run -it --rm -v immich_model-cache:/mnt-models alpine sh
+cd /mnt-models
+ls clip/ facial-recognition/
+# rm -r clip/ABC facial-recognition/DEF # delete unused models
+```
+
+</details>
 
 ---
 
@@ -261,6 +268,9 @@ The initial backup is the most intensive due to the number of jobs running. The 
 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
 
+<details>
+<summary>docker-compose.yml</summary>
+
 ```yaml
 deploy:
   resources:
@@ -271,6 +281,7 @@ deploy:
       memory: '1G'
 ```
 
+</details>
 For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
 ### How can I boost machine learning speed?
@@ -319,6 +330,9 @@ The non-root user/group needs read/write access to the volume mounts, including 
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
 
+<details>
+<summary>docker-compose.yml</summary>
+
 ```yaml
 security_opt:
   # Prevent escalation of privileges after the container is started
@@ -328,14 +342,14 @@ cap_drop:
   - NET_RAW
 ```
 
-### How can I **purge** data from Immich?
+</details>
+
+### How can I purge data from Immich?
 
 Data for Immich comes in two forms:
 
-1. **Metadata** stored in a Postgres database, persisted via the `pg_data` volume
+1. **Metadata** stored in a Postgres database, stored in the `DB_DATA_LOCATION` folder (previously `pg_data` Docker volume).
 2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
-
-To remove the **Metadata** you can stop Immich and delete the volume.
 
 :::warning
 This will destroy your database and reset your instance, meaning that you start from scratch.
@@ -345,12 +359,15 @@ This will destroy your database and reset your instance, meaning that you start 
 docker compose down -v
 ```
 
+After removing the containers and volumes, there are a few directories that need to be deleted to reset Immich to a new installation. Once they are deleted, Immich can be started back up and will be a fresh installation.
+
+- `DB_DATA_LOCATION` contains the database, media info, and settings.
+- `UPLOAD_LOCATION` contains all the media uploaded to Immich.
+
 :::note Portainer
 If you use portainer, bring down the stack in portainer. Go into the volumes section  
 and remove all the volumes related to immich then restart the stack.
 :::
-
-After removing the containers and volumes, the **Files** should be removed from the `UPLOAD_LOCATION` to provide a clean start.
 
 ### Why does the machine learning service report workers crashing?
 

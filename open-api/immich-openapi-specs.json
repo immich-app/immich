@@ -630,6 +630,57 @@
         "tags": [
           "Album"
         ]
+      },
+      "put": {
+        "operationId": "updateAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
       }
     },
     "/album/{id}/users": {
@@ -1447,6 +1498,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 31,
               "type": "integer"
             }
           },
@@ -1455,6 +1508,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 12,
               "type": "integer"
             }
           }
@@ -1499,6 +1554,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           }
@@ -2086,6 +2142,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           },
@@ -2123,6 +2180,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 1000,
               "type": "number"
             }
           },
@@ -4456,6 +4515,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           },
@@ -4488,6 +4548,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 1000,
               "type": "number"
             }
           },
@@ -5622,6 +5684,7 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "integer"
             }
           },
@@ -7239,7 +7302,15 @@
       },
       "AddUsersDto": {
         "properties": {
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserAddDto"
+            },
+            "type": "array"
+          },
           "sharedUserIds": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -7248,7 +7319,7 @@
           }
         },
         "required": [
-          "sharedUserIds"
+          "albumUsers"
         ],
         "type": "object"
       },
@@ -7290,6 +7361,12 @@
           "albumThumbnailAssetId": {
             "nullable": true,
             "type": "string"
+          },
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
+            },
+            "type": "array"
           },
           "assetCount": {
             "type": "integer"
@@ -7337,6 +7414,8 @@
             "type": "boolean"
           },
           "sharedUsers": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7354,6 +7433,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumUsers",
           "assetCount",
           "assets",
           "createdAt",
@@ -7368,6 +7448,43 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "AlbumUserAddDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "AlbumUserResponseDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "role",
+          "user"
+        ],
+        "type": "object"
+      },
+      "AlbumUserRole": {
+        "enum": [
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
       },
       "AllJobStatusResponseDto": {
         "properties": {
@@ -8054,6 +8171,7 @@
         "properties": {
           "newPassword": {
             "example": "password",
+            "minLength": 8,
             "type": "string"
           },
           "password": {
@@ -8286,6 +8404,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -8391,6 +8510,7 @@
             "type": "string"
           },
           "archiveSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "assetIds": {
@@ -8731,6 +8851,7 @@
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -9203,6 +9324,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -9220,6 +9342,8 @@
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -9321,6 +9445,7 @@
       "OnThisDayDto": {
         "properties": {
           "year": {
+            "minimum": 1,
             "type": "number"
           }
         },
@@ -9676,13 +9801,18 @@
           },
           "maxDistance": {
             "format": "float",
+            "maximum": 2,
+            "minimum": 0,
             "type": "number"
           },
           "minFaces": {
+            "minimum": 1,
             "type": "integer"
           },
           "minScore": {
             "format": "float",
+            "maximum": 1,
+            "minimum": 0,
             "type": "number"
           },
           "modelName": {
@@ -10401,6 +10531,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -10414,6 +10545,8 @@
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -10551,21 +10684,27 @@
             "type": "array"
           },
           "bframes": {
+            "maximum": 16,
+            "minimum": -1,
             "type": "integer"
           },
           "cqMode": {
             "$ref": "#/components/schemas/CQMode"
           },
           "crf": {
+            "maximum": 51,
+            "minimum": 0,
             "type": "integer"
           },
           "gopSize": {
+            "minimum": 0,
             "type": "integer"
           },
           "maxBitrate": {
             "type": "string"
           },
           "npl": {
+            "minimum": 0,
             "type": "integer"
           },
           "preferredHwDevice": {
@@ -10575,6 +10714,8 @@
             "type": "string"
           },
           "refs": {
+            "maximum": 6,
+            "minimum": 0,
             "type": "integer"
           },
           "targetAudioCodec": {
@@ -10590,6 +10731,7 @@
             "type": "boolean"
           },
           "threads": {
+            "minimum": 0,
             "type": "integer"
           },
           "tonemap": {
@@ -10638,15 +10780,19 @@
             "$ref": "#/components/schemas/ImageFormat"
           },
           "previewSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "quality": {
+            "maximum": 100,
+            "minimum": 1,
             "type": "integer"
           },
           "thumbnailFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
           "thumbnailSize": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -10835,6 +10981,7 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "minimum": 0,
             "type": "number"
           },
           "enabled": {
@@ -11013,6 +11160,7 @@
       "SystemConfigTrashDto": {
         "properties": {
           "days": {
+            "minimum": 0,
             "type": "integer"
           },
           "enabled": {
@@ -11028,6 +11176,7 @@
       "SystemConfigUserDto": {
         "properties": {
           "deleteDelay": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -11146,6 +11295,17 @@
         },
         "type": "object"
       },
+      "UpdateAlbumUserDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
       "UpdateAssetDto": {
         "properties": {
           "dateTimeOriginal": {
@@ -11254,6 +11414,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
