@@ -29,7 +29,6 @@ export interface AuthenticatedOptions {
 }
 
 export const Authenticated = (options: AuthenticatedOptions = {}) => {
-  console.log('authenticate');
   const decorators: MethodDecorator[] = [
     ApiBearerAuth(),
     ApiCookieAuth(),
