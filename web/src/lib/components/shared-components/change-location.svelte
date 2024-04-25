@@ -66,7 +66,7 @@
     return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
   };
 
-  const handleSearchPlaces = async () => {
+  const handleSearchPlaces = () => {
     if (searchWord === '') {
       return;
     }
@@ -75,7 +75,7 @@
       clearTimeout(latestSearchTimeout);
     }
     showSpinner = true;
-    const searchTimeout = setTimeout(async () => {
+    const searchTimeout = window.setTimeout(async () => {
       try {
         const searchResult = await searchPlaces({ name: searchWord });
 
@@ -92,6 +92,7 @@
           showSpinner = false;
         }
       }
+      return 0;
     }, timeDebounceOnSearch);
     latestSearchTimeout = searchTimeout;
   };
