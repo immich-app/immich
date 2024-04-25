@@ -34,10 +34,6 @@ module.exports = {
     NodeJS: true,
   },
   rules: {
-    '@typescript-eslint/no-misused-promises': [
-      'error',
-      { checksVoidReturn: false }, // https://github.com/typescript-eslint/typescript-eslint/issues/4619
-    ],
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
