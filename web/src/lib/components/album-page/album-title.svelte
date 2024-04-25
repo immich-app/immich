@@ -1,7 +1,7 @@
 <script lang="ts">
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcut } from '$lib/utils/shortcut';
+  import ContentEditableDiv from '$lib/components/elements/content-editable-div.svelte';
 
   export let id: string;
   export let albumName: string;
@@ -13,7 +13,6 @@
     if (newAlbumName === albumName) {
       return;
     }
-
     try {
       await updateAlbumInfo({
         id,
@@ -21,23 +20,23 @@
           albumName: newAlbumName,
         },
       });
+      albumName = newAlbumName;
     } catch (error) {
-      handleError(error, 'Unable to update album name');
-      return;
+      handleError(error, 'Failed to update album name');
     }
-    albumName = newAlbumName;
   };
 </script>
 
-<input
-  use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
+<ContentEditableDiv
+  className="w-full mt-2.5 mb-4 pb-2.5 text-4xl md:text-6xl border-b-2 border-transparent break-words
+  outline-none focus:outline-none transition-all text-immich-primary dark:text-immich-dark-primary
+  {isOwned ? 'hover:border-gray-400' : ''} focus:border-b-2 focus:border-immich-primary
+  dark:focus:border-immich-dark-primary"
   on:blur={handleUpdateName}
-  class="w-[99%] mb-2 border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
-    ? 'hover:border-gray-400'
-    : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
-  type="text"
-  bind:value={newAlbumName}
+  bind:textContent={newAlbumName}
+  title="Edit album title"
+  spellcheck={false}
+  placeholder={isOwned ? 'Add a Title' : 'Untitled Album'}
   disabled={!isOwned}
-  title="Edit Title"
-  placeholder="Add a title"
+  nowrap
 />
