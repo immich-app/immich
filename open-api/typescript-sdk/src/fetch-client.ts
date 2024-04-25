@@ -38,6 +38,28 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
+};
+export type AlbumUserResponseDto = {
+    role: AlbumUserRole;
+    user: UserResponseDto;
+};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -60,24 +82,6 @@ export type ExifResponseDto = {
     projectionType?: string | null;
     state?: string | null;
     timeZone?: string | null;
-};
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
@@ -144,6 +148,7 @@ export type AssetResponseDto = {
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -157,6 +162,7 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
+    /** Deprecated in favor of albumUsers */
     sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
@@ -187,8 +193,17 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
+export type UpdateAlbumUserDto = {
+    role: AlbumUserRole;
+};
+export type AlbumUserAddDto = {
+    role?: AlbumUserRole;
+    userId: string;
+};
 export type AddUsersDto = {
-    sharedUserIds: string[];
+    albumUsers: AlbumUserAddDto[];
+    /** Deprecated in favor of albumUsers */
+    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
@@ -1208,6 +1223,17 @@ export function removeUserFromAlbum({ id, userId }: {
         ...opts,
         method: "DELETE"
     }));
+}
+export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
+    id: string;
+    userId: string;
+    updateAlbumUserDto: UpdateAlbumUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/user/${encodeURIComponent(userId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumUserDto
+    })));
 }
 export function addUsersToAlbum({ id, addUsersDto }: {
     id: string;
@@ -2926,6 +2952,10 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum UserStatus {
     Active = "active",

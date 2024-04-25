@@ -1,4 +1,5 @@
 import { ActivityEntity } from 'src/entities/activity.entity';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -25,6 +26,7 @@ import { UserEntity } from 'src/entities/user.entity';
 export const entities = [
   ActivityEntity,
   AlbumEntity,
+  AlbumUserEntity,
   APIKeyEntity,
   AssetEntity,
   AssetStackEntity,

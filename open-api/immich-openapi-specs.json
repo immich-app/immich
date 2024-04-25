@@ -630,6 +630,57 @@
         "tags": [
           "Album"
         ]
+      },
+      "put": {
+        "operationId": "updateAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
       }
     },
     "/album/{id}/users": {
@@ -7251,7 +7302,15 @@
       },
       "AddUsersDto": {
         "properties": {
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserAddDto"
+            },
+            "type": "array"
+          },
           "sharedUserIds": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -7260,7 +7319,7 @@
           }
         },
         "required": [
-          "sharedUserIds"
+          "albumUsers"
         ],
         "type": "object"
       },
@@ -7302,6 +7361,12 @@
           "albumThumbnailAssetId": {
             "nullable": true,
             "type": "string"
+          },
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
+            },
+            "type": "array"
           },
           "assetCount": {
             "type": "integer"
@@ -7349,6 +7414,8 @@
             "type": "boolean"
           },
           "sharedUsers": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7366,6 +7433,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumUsers",
           "assetCount",
           "assets",
           "createdAt",
@@ -7380,6 +7448,43 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "AlbumUserAddDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "AlbumUserResponseDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "role",
+          "user"
+        ],
+        "type": "object"
+      },
+      "AlbumUserRole": {
+        "enum": [
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
       },
       "AllJobStatusResponseDto": {
         "properties": {
@@ -11188,6 +11293,17 @@
             "$ref": "#/components/schemas/AssetOrder"
           }
         },
+        "type": "object"
+      },
+      "UpdateAlbumUserDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          }
+        },
+        "required": [
+          "role"
+        ],
         "type": "object"
       },
       "UpdateAssetDto": {

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
+  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
+  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
+  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
@@ -39,12 +42,16 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
+  import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
+  import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
   import {
+    AlbumUserRole,
+    AssetOrder,
     ReactionLevel,
     ReactionType,
     addAssetsToAlbum,
@@ -57,29 +64,23 @@
     getAlbumInfo,
     updateAlbumInfo,
     type ActivityResponseDto,
-    type UserResponseDto,
-    AssetOrder,
+    type AlbumUserAddDto,
   } from '@immich/sdk';
   import {
     mdiArrowLeft,
+    mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
     mdiFolderDownloadOutline,
-    mdiLink,
-    mdiPlus,
-    mdiShareVariantOutline,
-    mdiPresentationPlay,
-    mdiCogOutline,
     mdiImageOutline,
     mdiImagePlusOutline,
+    mdiLink,
+    mdiPlus,
+    mdiPresentationPlay,
+    mdiShareVariantOutline,
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
-  import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
 
   export let data: PageData;
 
@@ -136,6 +137,9 @@
   }
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+
+  $: isEditor = album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor;
+  $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -312,12 +316,12 @@
     viewMode = ViewMode.VIEW;
   };
 
-  const handleAddUsers = async (users: UserResponseDto[]) => {
+  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
     try {
       album = await addUsersToAlbum({
         id: album.id,
         addUsersDto: {
-          sharedUserIds: [...users].map(({ id }) => id),
+          albumUsers,
         },
       });
 
@@ -335,9 +339,9 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 1 ? ViewMode.SELECT_USERS : ViewMode.VIEW;
+      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error deleting share users');
+      handleError(error, 'Error deleting shared user');
     }
   };
 
@@ -433,11 +437,13 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
-            <CircleIconButton
-              title="Add photos"
-              on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              icon={mdiImagePlusOutline}
-            />
+            {#if isEditor}
+              <CircleIconButton
+                title="Add photos"
+                on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                icon={mdiImagePlusOutline}
+              />
+            {/if}
 
             {#if isOwned}
               <CircleIconButton
@@ -578,12 +584,24 @@
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
-                    <!-- users -->
-                    {#each album.sharedUsers as user (user.id)}
+                    <!-- users with write access (collaborators) -->
+                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
                       <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
+
+                    <!-- display ellipsis if there are readonly users too -->
+                    {#if albumHasViewers}
+                      <CircleIconButton
+                        title="View all users"
+                        backgroundColor="#d3d3d3"
+                        forceDark
+                        size="20"
+                        icon={mdiDotsVertical}
+                        on:click={() => (viewMode = ViewMode.VIEW_USERS)}
+                      />
+                    {/if}
 
                     {#if isOwned}
                       <CircleIconButton
@@ -678,6 +696,7 @@
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
+    on:refreshAlbum={refreshAlbum}
   />
 {/if}
 
