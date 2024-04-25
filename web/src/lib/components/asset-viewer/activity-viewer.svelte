@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
@@ -184,13 +184,13 @@
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <div class="aspect-square w-[75px] h-[75px]">
+                <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
-                </div>
+                </a>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
@@ -230,13 +230,16 @@
                   {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
-                  <div class="aspect-square w-[75px] h-[75px]">
+                  <a
+                    class="aspect-square w-[75px] h-[75px]"
+                    href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}"
+                  >
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
                       src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
-                  </div>
+                  </a>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
