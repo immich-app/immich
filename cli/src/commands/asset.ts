@@ -26,7 +26,7 @@ type Asset = { id: string; filepath: string };
 
 interface UploadOptionsDto {
   recursive?: boolean;
-  ignore?: string[];
+  ignore?: string;
   dryRun?: boolean;
   skipHash?: boolean;
   delete?: boolean;
@@ -75,7 +75,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   const files = await crawl({
     pathsToCrawl,
     recursive: options.recursive,
-    exclusionPatterns: options.ignore,
+    exclusionPattern: options.ignore,
     includeHidden: options.includeHidden,
     extensions: [...image, ...video],
   });

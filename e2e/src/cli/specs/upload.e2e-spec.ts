@@ -293,37 +293,14 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(stdout.split('\n')).toEqual(
         expect.arrayContaining([
-          'Found 8 new files and 0 duplicates',
-          expect.stringContaining('Successfully uploaded 8 new assets'),
+          'Found 1 new files and 0 duplicates',
+          expect.stringContaining('Successfully uploaded 1 new asset'),
         ]),
       );
       expect(exitCode).toBe(0);
 
       const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(8);
-    });
-
-    it('should ignore each pattern when --ignore is repeated', async () => {
-      const { stderr, stdout, exitCode } = await immichCli([
-        'upload',
-        `${testAssetDir}/albums/nature/`,
-        '--ignore',
-        '!(*_*_*).jpg',
-        '--ignore',
-        'silver_fir.jpg',
-      ]);
-
-      expect(stderr).toBe('');
-      expect(stdout.split('\n')).toEqual(
-        expect.arrayContaining([
-          'Found 7 new files and 0 duplicates',
-          expect.stringContaining('Successfully uploaded 7 new assets'),
-        ]),
-      );
-      expect(exitCode).toBe(0);
-
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(7);
+      expect(assets.length).toBe(1);
     });
   });
 });
