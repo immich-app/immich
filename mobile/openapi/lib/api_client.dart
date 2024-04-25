@@ -284,10 +284,6 @@ class ApiClient {
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
           return CreateUserDto.fromJson(value);
-        case 'CuratedLocationsResponseDto':
-          return CuratedLocationsResponseDto.fromJson(value);
-        case 'CuratedObjectsResponseDto':
-          return CuratedObjectsResponseDto.fromJson(value);
         case 'DeleteUserDto':
           return DeleteUserDto.fromJson(value);
         case 'DownloadArchiveInfo':
