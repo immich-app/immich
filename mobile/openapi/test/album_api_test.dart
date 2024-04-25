@@ -67,5 +67,10 @@ void main() {
       // TODO
     });
 
+    //Future updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto) async
+    test('test updateAlbumUser', () async {
+      // TODO
+    });
+
   });
 }

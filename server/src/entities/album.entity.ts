@@ -1,3 +1,4 @@
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -52,9 +53,8 @@ export class AlbumEntity {
   @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
-  @ManyToMany(() => UserEntity)
-  @JoinTable()
-  sharedUsers!: UserEntity[];
+  @OneToMany(() => AlbumUserEntity, ({ album }) => album, { cascade: true, onDelete: 'CASCADE' })
+  albumUsers!: AlbumUserEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
   @JoinTable()

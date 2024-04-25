@@ -1,5 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { setDifference, setIsEqual, setUnion } from 'src/utils/set';
@@ -22,6 +23,7 @@ export enum Permission {
   ALBUM_READ = 'album.read',
   ALBUM_UPDATE = 'album.update',
   ALBUM_DELETE = 'album.delete',
+  ALBUM_ADD_ASSET = 'album.addAsset',
   ALBUM_REMOVE_ASSET = 'album.removeAsset',
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
@@ -142,6 +144,12 @@ export class AccessCore {
           : new Set();
       }
 
+      case Permission.ALBUM_ADD_ASSET: {
+        return sharedLink.allowUpload
+          ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
+          : new Set();
+      }
+
       default: {
         return new Set();
       }
@@ -215,7 +223,21 @@ export class AccessCore {
 
       case Permission.ALBUM_READ: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          AlbumUserRole.VIEWER,
+        );
+        return setUnion(isOwner, isShared);
+      }
+
+      case Permission.ALBUM_ADD_ASSET: {
+        const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          AlbumUserRole.EDITOR,
+        );
         return setUnion(isOwner, isShared);
       }
 
@@ -233,12 +255,22 @@ export class AccessCore {
 
       case Permission.ALBUM_DOWNLOAD: {
         const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(auth.user.id, setDifference(ids, isOwner));
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          AlbumUserRole.VIEWER,
+        );
         return setUnion(isOwner, isShared);
       }
 
       case Permission.ALBUM_REMOVE_ASSET: {
-        return await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isOwner = await this.repository.album.checkOwnerAccess(auth.user.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+          AlbumUserRole.EDITOR,
+        );
+        return setUnion(isOwner, isShared);
       }
 
       case Permission.ASSET_UPLOAD: {

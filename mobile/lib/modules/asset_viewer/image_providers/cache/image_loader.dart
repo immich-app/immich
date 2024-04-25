@@ -13,7 +13,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 class ImageLoader {
   static Future<ui.Codec> loadImageFromCache(
     String uri, {
-    required ImageCacheManager cache,
+    required CacheManager cache,
     required ImageDecoderCallback decode,
     StreamController<ImageChunkEvent>? chunkEvents,
   }) async {
@@ -21,7 +21,7 @@ class ImageLoader {
       'x-immich-user-token': Store.get(StoreKey.accessToken),
     };
 
-    final stream = cache.getImageFile(
+    final stream = cache.getFileStream(
       uri,
       withProgress: chunkEvents != null,
       headers: headers,
