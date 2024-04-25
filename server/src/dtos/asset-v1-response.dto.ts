@@ -27,19 +27,3 @@ export class AssetFileUploadResponseDto {
 export class CheckExistingAssetsResponseDto {
   existingIds!: string[];
 }
-
-export class CuratedLocationsResponseDto {
-  id!: string;
-  city!: string;
-  resizePath!: string;
-  deviceAssetId!: string;
-  deviceId!: string;
-}
-
-export class CuratedObjectsResponseDto {
-  id!: string;
-  object!: string;
-  resizePath!: string;
-  deviceAssetId!: string;
-  deviceId!: string;
-}

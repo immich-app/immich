@@ -13,10 +13,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 
 export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
-  getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
   getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;

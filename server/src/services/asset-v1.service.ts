@@ -13,8 +13,6 @@ import {
   AssetRejectReason,
   AssetUploadAction,
   CheckExistingAssetsResponseDto,
-  CuratedLocationsResponseDto,
-  CuratedObjectsResponseDto,
 } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkUploadCheckDto,
@@ -154,48 +152,6 @@ export class AssetServiceV1 {
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PRIVATE_WITH_CACHE,
     });
-  }
-
-  async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
-    const possibleSearchTerm = new Set<string>();
-
-    const rows = await this.assetRepositoryV1.getSearchPropertiesByUserId(auth.user.id);
-
-    for (const row of rows) {
-      // tags
-      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
-
-      // objects
-      row.objects?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
-
-      // asset's tyoe
-      possibleSearchTerm.add(row.assetType?.toLowerCase() || '');
-
-      // image orientation
-      possibleSearchTerm.add(row.orientation?.toLowerCase() || '');
-
-      // Lens model
-      possibleSearchTerm.add(row.lensModel?.toLowerCase() || '');
-
-      // Make and model
-      possibleSearchTerm.add(row.make?.toLowerCase() || '');
-      possibleSearchTerm.add(row.model?.toLowerCase() || '');
-
-      // Location
-      possibleSearchTerm.add(row.city?.toLowerCase() || '');
-      possibleSearchTerm.add(row.state?.toLowerCase() || '');
-      possibleSearchTerm.add(row.country?.toLowerCase() || '');
-    }
-
-    return [...possibleSearchTerm].filter((x) => x != null && x != '');
-  }
-
-  async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.assetRepositoryV1.getLocationsByUserId(auth.user.id);
-  }
-
-  async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.assetRepositoryV1.getDetectedObjectsByUserId(auth.user.id);
   }
 
   async checkExistingAssets(
