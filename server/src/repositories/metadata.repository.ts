@@ -81,7 +81,7 @@ export class MetadataRepository implements IMetadataRepository {
     filePath: string,
     options?: { entityFilter?: (linesplit: string[]) => boolean },
   ) {
-    const _entityFilter = options?.entityFilter ?? ((_) => true);
+    const _entityFilter = options?.entityFilter ?? (() => true);
     if (!existsSync(filePath)) {
       this.logger.error(`Geodata file ${filePath} not found`);
       throw new Error(`Geodata file ${filePath} not found`);
