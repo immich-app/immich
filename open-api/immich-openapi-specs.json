@@ -7549,7 +7549,7 @@
             "$ref": "#/components/schemas/AlbumUserRole"
           },
           "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "$ref": "#/components/schemas/UserDto"
           }
         },
         "required": [

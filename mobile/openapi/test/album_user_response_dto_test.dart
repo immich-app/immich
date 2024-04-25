@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // UserResponseDto user
+    // UserDto user
     test('to test the property `user`', () async {
       // TODO
     });

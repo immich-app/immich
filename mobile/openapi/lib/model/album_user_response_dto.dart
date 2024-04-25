@@ -19,7 +19,7 @@ class AlbumUserResponseDto {
 
   AlbumUserRole role;
 
-  UserResponseDto user;
+  UserDto user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumUserResponseDto &&
@@ -51,7 +51,7 @@ class AlbumUserResponseDto {
 
       return AlbumUserResponseDto(
         role: AlbumUserRole.fromJson(json[r'role'])!,
-        user: UserResponseDto.fromJson(json[r'user'])!,
+        user: UserDto.fromJson(json[r'user'])!,
       );
     }
     return null;
