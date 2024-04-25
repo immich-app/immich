@@ -92,7 +92,6 @@
           showSpinner = false;
         }
       }
-      return 0;
     }, timeDebounceOnSearch);
     latestSearchTimeout = searchTimeout;
   };
