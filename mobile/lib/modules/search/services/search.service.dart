@@ -23,15 +23,6 @@ class SearchService {
   final _log = Logger("SearchService");
   SearchService(this._apiService, this._db);
 
-  Future<List<String>?> getUserSuggestedSearchTerms() async {
-    try {
-      return await _apiService.assetApi.getAssetSearchTerms();
-    } catch (e) {
-      debugPrint("[ERROR] [getUserSuggestedSearchTerms] ${e.toString()}");
-      return [];
-    }
-  }
-
   Future<List<String>?> getSearchSuggestions(
     SearchSuggestionType type, {
     String? country,
