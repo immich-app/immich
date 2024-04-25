@@ -44,6 +44,7 @@ part 'api/memory_api.dart';
 part 'api/o_auth_api.dart';
 part 'api/partner_api.dart';
 part 'api/person_api.dart';
+part 'api/public_users_api.dart';
 part 'api/search_api.dart';
 part 'api/server_info_api.dart';
 part 'api/sessions_api.dart';

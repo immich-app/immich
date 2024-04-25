@@ -22,6 +22,11 @@ void main() {
       // TODO
     });
 
+    //Future<UserResponseDto> getMyUserInfo() async
+    test('test getMyUserInfo', () async {
+      // TODO
+    });
+
     //Future<LoginResponseDto> login(LoginCredentialDto loginCredentialDto) async
     test('test login', () async {
       // TODO

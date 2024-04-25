@@ -14,6 +14,7 @@ import { AssetService, UploadFile } from 'src/services/asset.service';
 export enum Route {
   ASSET = 'asset',
   USER = 'user',
+  PUBLICUSERS = 'public-users',
 }
 
 export interface ImmichFile extends Express.Multer.File {

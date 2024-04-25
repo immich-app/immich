@@ -120,6 +120,7 @@ doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/PersonWithFacesResponseDto.md
 doc/PlacesResponseDto.md
+doc/PublicUsersApi.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -223,6 +224,7 @@ lib/api/memory_api.dart
 lib/api/o_auth_api.dart
 lib/api/partner_api.dart
 lib/api/person_api.dart
+lib/api/public_users_api.dart
 lib/api/search_api.dart
 lib/api/server_info_api.dart
 lib/api/sessions_api.dart
@@ -537,6 +539,7 @@ test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/person_with_faces_response_dto_test.dart
 test/places_response_dto_test.dart
+test/public_users_api_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart

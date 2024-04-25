@@ -15,6 +15,7 @@ import { MemoryController } from 'src/controllers/memory.controller';
 import { OAuthController } from 'src/controllers/oauth.controller';
 import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
+import { PublicUsersController } from 'src/controllers/public-users.controller';
 import { SearchController } from 'src/controllers/search.controller';
 import { ServerInfoController } from 'src/controllers/server-info.controller';
 import { SessionController } from 'src/controllers/session.controller';
@@ -45,6 +46,7 @@ export const controllers = [
   OAuthController,
   PartnerController,
   PersonController,
+  PublicUsersController,
   ReportController,
   SearchController,
   ServerInfoController,

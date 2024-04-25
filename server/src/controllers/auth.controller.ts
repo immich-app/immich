@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthType } from 'src/constants';
@@ -15,13 +15,17 @@ import {
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
+import { UserService } from 'src/services/user.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
 
 @ApiTags('Authentication')
 @Controller('auth')
 @Authenticated()
 export class AuthController {
-  constructor(private service: AuthService) {}
+  constructor(
+    private service: AuthService,
+    private userService: UserService,
+  ) {}
 
   @PublicRoute()
   @Post('login')
@@ -74,5 +78,10 @@ export class AuthController {
       ImmichCookie.AUTH_TYPE,
       ImmichCookie.IS_AUTHENTICATED,
     ]);
+  }
+
+  @Get('me')
+  getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
+    return this.userService.getMe(auth);
   }
 }
