@@ -115,13 +115,13 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/admin' operation and returns the [Response].
+  /// Performs an HTTP 'GET /user' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [bool] isAll (required):
   Future<Response> getAllUsersWithHttpInfo(bool isAll,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/admin';
+    final path = r'/user';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -167,13 +167,13 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/admin/info/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /user/info/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getUserByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/user/admin/info/{id}'
+    final path = r'/user/info/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

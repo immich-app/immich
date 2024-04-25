@@ -42,9 +42,7 @@ describe('/user', () => {
     });
 
     it('should get users', async () => {
-      const { status, body } = await request(app)
-        .get('/user/admin')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get('/user').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toHaveLength(5);
       expect(body).toEqual(
@@ -77,7 +75,7 @@ describe('/user', () => {
 
     it('should include deleted users', async () => {
       const { status, body } = await request(app)
-        .get(`/user/admin`)
+        .get(`/user`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -113,15 +111,15 @@ describe('/user', () => {
     });
   });
 
-  describe('GET /user/me', () => {
+  describe('GET /auth/user', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/user/me`);
+      const { status, body } = await request(app).get(`/auth/user`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get my info', async () => {
-      const { status, body } = await request(app).get(`/user/me`).set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get(`/auth/user`).set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({
         id: admin.userId,
@@ -223,7 +221,7 @@ describe('/user', () => {
 
   describe('PUT /user', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/user`);
+      const { status, body } = await request(app).put(`/public-users`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -231,7 +229,7 @@ describe('/user', () => {
     for (const key of Object.keys(userDto.admin)) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
-          .put(`/user`)
+          .put(`/public-users`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ ...userDto.admin, [key]: null });
         expect(status).toBe(400);
@@ -241,7 +239,7 @@ describe('/user', () => {
 
     it('should not allow a non-admin to become an admin', async () => {
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/public-users`)
         .send({ isAdmin: true, id: nonAdmin.userId })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -251,7 +249,7 @@ describe('/user', () => {
 
     it('ignores updates to profileImagePath', async () => {
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/public-users`)
         .send({ id: admin.userId, profileImagePath: 'invalid.jpg' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -263,7 +261,7 @@ describe('/user', () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/public-users`)
         .send({
           id: admin.userId,
           createdAt: '2023-01-01T00:00:00.000Z',
@@ -280,7 +278,7 @@ describe('/user', () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/public-users`)
         .send({
           id: admin.userId,
           name: 'Name',
@@ -299,7 +297,7 @@ describe('/user', () => {
     it('should update memories enabled', async () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/public-users`)
         .send({
           id: admin.userId,
           memoriesEnabled: false,

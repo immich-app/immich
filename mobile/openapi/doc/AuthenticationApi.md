@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**changePassword**](AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
-[**getMyUserInfo**](AuthenticationApi.md#getmyuserinfo) | **GET** /auth/me | 
+[**getMyUserInfo**](AuthenticationApi.md#getmyuserinfo) | **GET** /auth/user | 
 [**login**](AuthenticationApi.md#login) | **POST** /auth/login | 
 [**logout**](AuthenticationApi.md#logout) | **POST** /auth/logout | 
 [**signUpAdmin**](AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 

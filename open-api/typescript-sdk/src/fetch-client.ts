@@ -1722,7 +1722,7 @@ export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>("/auth/me", {
+    }>("/auth/user", {
         ...opts
     }));
 }
@@ -2878,6 +2878,18 @@ export function restoreAssets({ bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
+export function getAllUsers({ isAll }: {
+    isAll: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto[];
+    }>(`/user${QS.query(QS.explode({
+        isAll
+    }))}`, {
+        ...opts
+    }));
+}
 export function createUser({ createUserDto }: {
     createUserDto: CreateUserDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2890,25 +2902,13 @@ export function createUser({ createUserDto }: {
         body: createUserDto
     })));
 }
-export function getAllUsers({ isAll }: {
-    isAll: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto[];
-    }>(`/user/admin${QS.query(QS.explode({
-        isAll
-    }))}`, {
-        ...opts
-    }));
-}
 export function getUserById({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/admin/info/${encodeURIComponent(id)}`, {
+    }>(`/user/info/${encodeURIComponent(id)}`, {
         ...opts
     }));
 }

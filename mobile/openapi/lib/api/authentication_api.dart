@@ -63,10 +63,10 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /auth/me' operation and returns the [Response].
+  /// Performs an HTTP 'GET /auth/user' operation and returns the [Response].
   Future<Response> getMyUserInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/me';
+    final path = r'/auth/user';
 
     // ignore: prefer_final_locals
     Object? postBody;

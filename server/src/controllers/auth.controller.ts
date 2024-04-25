@@ -80,7 +80,7 @@ export class AuthController {
     ]);
   }
 
-  @Get('me')
+  @Get('user')
   getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
     return this.userService.getMe(auth);
   }

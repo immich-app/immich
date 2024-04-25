@@ -2540,7 +2540,7 @@
         ]
       }
     },
-    "/auth/me": {
+    "/auth/user": {
       "get": {
         "operationId": "getMyUserInfo",
         "parameters": [],
@@ -6995,48 +6995,6 @@
       }
     },
     "/user": {
-      "post": {
-        "operationId": "createUser",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/admin": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -7078,9 +7036,49 @@
         "tags": [
           "User"
         ]
+      },
+      "post": {
+        "operationId": "createUser",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
       }
     },
-    "/user/admin/info/{id}": {
+    "/user/info/{id}": {
       "get": {
         "operationId": "getUserById",
         "parameters": [

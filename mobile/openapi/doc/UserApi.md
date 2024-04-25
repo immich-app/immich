@@ -11,8 +11,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createUser**](UserApi.md#createuser) | **POST** /user | 
 [**deleteUser**](UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-[**getAllUsers**](UserApi.md#getallusers) | **GET** /user/admin | 
-[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/admin/info/{id} | 
+[**getAllUsers**](UserApi.md#getallusers) | **GET** /user | 
+[**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
 [**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 
 

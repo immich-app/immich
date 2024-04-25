@@ -115,7 +115,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
-*AuthenticationApi* | [**getMyUserInfo**](doc//AuthenticationApi.md#getmyuserinfo) | **GET** /auth/me | 
+*AuthenticationApi* | [**getMyUserInfo**](doc//AuthenticationApi.md#getmyuserinfo) | **GET** /auth/user | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
@@ -223,8 +223,8 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user/admin | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/admin/info/{id} | 
+*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
 *UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 
 

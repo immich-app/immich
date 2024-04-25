@@ -852,7 +852,9 @@ describe('/asset', () => {
       expect(body).toEqual({ id: expect.any(String), duplicate: false });
       expect(status).toBe(201);
 
-      const { body: user } = await request(app).get('/user/me').set('Authorization', `Bearer ${quotaUser.accessToken}`);
+      const { body: user } = await request(app)
+        .get('/auth/user')
+        .set('Authorization', `Bearer ${quotaUser.accessToken}`);
 
       expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
     });

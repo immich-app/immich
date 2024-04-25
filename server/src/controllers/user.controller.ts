@@ -13,12 +13,12 @@ import { UUIDParamDto } from 'src/validation';
 export class UserController {
   constructor(private service: UserService) {}
 
-  @Get('admin')
+  @Get()
   getAllUsers(@Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAll(isAll);
   }
 
-  @Get('admin/info/:id')
+  @Get('info/:id')
   getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.get(id);
   }
