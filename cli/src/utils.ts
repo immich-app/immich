@@ -155,7 +155,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
     nocase: true,
     nodir: true,
     dot: includeHidden,
-    ignore: exclusionPatterns,
+    ignore: exclusionPatterns?.map((pattern) => `**/${pattern}`),
   });
 
   return [...crawledFiles, ...globbedFiles].sort();

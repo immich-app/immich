@@ -266,7 +266,7 @@ describe(`immich upload`, () => {
         'upload',
         `${testAssetDir}/albums/nature/`,
         '--ignore',
-        '**/silver_fir.jpg',
+        'silver_fir.jpg',
       ]);
 
       expect(stderr).toBe('');
@@ -287,7 +287,7 @@ describe(`immich upload`, () => {
         'upload',
         `${testAssetDir}/albums/nature/`,
         '--ignore',
-        '**/!(*_*_*).jpg',
+        '!(*_*_*).jpg',
       ]);
 
       expect(stderr).toBe('');
@@ -308,9 +308,9 @@ describe(`immich upload`, () => {
         'upload',
         `${testAssetDir}/albums/nature/`,
         '--ignore',
-        '**/!(*_*_*).jpg',
+        '!(*_*_*).jpg',
         '--ignore',
-        '**/silver_fir.jpg',
+        'silver_fir.jpg',
       ]);
 
       expect(stderr).toBe('');
