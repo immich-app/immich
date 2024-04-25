@@ -108,7 +108,7 @@
             <p class="text-sm font-medium">{user.name}</p>
           </div>
 
-          <div id="icon-{user.id}" class="flex place-items-center gap-2">
+          <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
             <div>
               {#if role === AlbumUserRole.Viewer}
                 Viewer
