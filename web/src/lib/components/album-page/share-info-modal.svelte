@@ -3,7 +3,6 @@
     getMyUserInfo,
     removeUserFromAlbum,
     type AlbumResponseDto,
-    type UserResponseDto,
     updateAlbumUser,
     AlbumUserRole,
     type UserDto,
