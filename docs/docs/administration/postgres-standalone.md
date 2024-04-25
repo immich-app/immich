@@ -33,7 +33,7 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 ```
 
 :::info
-When `DB_URL` is defined, the other database (`DB_*`) variables are ignored, with the exception of `DB_VECTOR_EXTENSION`.
+When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE_NAME` database variables are ignored.
 :::
 
 ## With superuser permission
