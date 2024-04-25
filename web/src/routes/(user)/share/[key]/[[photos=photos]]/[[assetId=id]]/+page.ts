@@ -10,7 +10,6 @@ export const load = (async ({ params }) => {
   const asset = await getAssetInfoFromParam(params, key);
 
   try {
-    console.log('get shared link');
     const sharedLink = await getMySharedLink({ key });
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
