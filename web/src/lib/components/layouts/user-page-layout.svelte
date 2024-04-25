@@ -1,5 +1,6 @@
 <script lang="ts">
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import RootLayout from '$lib/components/layouts/root-layout.svelte';
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
@@ -28,18 +29,18 @@
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
 </script>
 
-<header>
-  {#if !hideNavbar}
-    <NavigationBar {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
-  {/if}
-
-  <slot name="header" />
-</header>
-<main
-  tabindex="-1"
-  id="immich-main-layout"
-  class="relative grid grid-cols-[0_auto] md:grid-cols-[theme(spacing.18)_auto] lg:grid-cols-[theme(spacing.64)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+<RootLayout
+  className="relative grid grid-cols-[0_auto] md:grid-cols-[theme(spacing.18)_auto] lg:grid-cols-[theme(spacing.64)_auto]
+  overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
 >
+  <header slot="header">
+    {#if !hideNavbar}
+      <NavigationBar {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    {/if}
+
+    <slot name="header" />
+  </header>
+
   <slot name="sidebar">
     {#if admin}
       <AdminSideBar />
@@ -71,25 +72,4 @@
       <slot />
     </div>
   </section>
-</main>
-
-<style>
-  :root {
-    /* On touch devices, prevent the page from bouncing when overscrolling */
-    overscroll-behavior: none;
-  }
-
-  #immich-main-layout {
-    height: 100vh;
-  }
-
-  @supports (height: 100dvh) {
-    /*
-     * On mobile browsers, like iOS Safari, prevent the page height to be greater
-     * than the viewport height when the browser's navbar is visible
-     */
-    #immich-main-layout {
-      height: 100dvh;
-    }
-  }
-</style>
+</RootLayout>
