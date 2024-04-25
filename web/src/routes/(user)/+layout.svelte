@@ -20,9 +20,3 @@
   <slot />
 </div>
 <UploadCover />
-
-<style>
-  .display-none {
-    display: none;
-  }
-</style>
