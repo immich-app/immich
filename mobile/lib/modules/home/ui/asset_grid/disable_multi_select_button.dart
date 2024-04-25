@@ -17,7 +17,7 @@ class DisableMultiSelectButton extends ConsumerWidget {
     return Align(
       alignment: Alignment.topLeft,
       child: Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+        padding: const EdgeInsets.only(left: 16.0, top: 8.0),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ElevatedButton.icon(
