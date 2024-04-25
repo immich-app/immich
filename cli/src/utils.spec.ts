@@ -66,7 +66,7 @@ const tests: Test[] = [
     test: 'should exclude by file extension',
     options: {
       pathsToCrawl: ['/photos/'],
-      exclusionPatterns: ['**/*.tif'],
+      exclusionPattern: '**/*.tif',
     },
     files: {
       '/photos/image.jpg': true,
@@ -77,7 +77,7 @@ const tests: Test[] = [
     test: 'should exclude by file extension without case sensitivity',
     options: {
       pathsToCrawl: ['/photos/'],
-      exclusionPatterns: ['**/*.TIF'],
+      exclusionPattern: '**/*.TIF',
     },
     files: {
       '/photos/image.jpg': true,
@@ -88,7 +88,7 @@ const tests: Test[] = [
     test: 'should exclude by folder',
     options: {
       pathsToCrawl: ['/photos/'],
-      exclusionPatterns: ['**/raw/**'],
+      exclusionPattern: '**/raw/**',
       recursive: true,
     },
     files: {
@@ -218,7 +218,7 @@ const tests: Test[] = [
     test: 'should support ignoring full filename',
     options: {
       pathsToCrawl: ['/photos'],
-      exclusionPatterns: ['**/image2.jpg'],
+      exclusionPattern: '**/image2.jpg',
     },
     files: {
       '/photos/image1.jpg': true,
@@ -230,7 +230,7 @@ const tests: Test[] = [
     test: 'should support ignoring file extensions',
     options: {
       pathsToCrawl: ['/photos'],
-      exclusionPatterns: ['**/*.png'],
+      exclusionPattern: '**/*.png',
     },
     files: {
       '/photos/image1.jpg': true,
@@ -243,7 +243,7 @@ const tests: Test[] = [
     options: {
       pathsToCrawl: ['/photos'],
       recursive: true,
-      exclusionPatterns: ['**/raw/**'],
+      exclusionPattern: '**/raw/**',
     },
     files: {
       '/photos/image1.jpg': true,
@@ -258,7 +258,7 @@ const tests: Test[] = [
     options: {
       pathsToCrawl: ['/'],
       recursive: true,
-      exclusionPatterns: ['/images/**'],
+      exclusionPattern: '/images/**',
     },
     files: {
       '/photos/image1.jpg': true,
