@@ -7,7 +7,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params }) => {
   const { key } = params;
   await authenticate({ public: true });
-  const asset = await getAssetInfoFromParam(params, key);
+  const asset = await getAssetInfoFromParam(params);
 
   try {
     const sharedLink = await getMySharedLink({ key });
