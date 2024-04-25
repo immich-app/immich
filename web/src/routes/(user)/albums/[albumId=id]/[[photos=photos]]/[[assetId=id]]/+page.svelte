@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
+  import RootLayout from '$lib/components/layouts/root-layout.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -398,8 +399,8 @@
   };
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
-  <div class="relative w-full shrink">
+<RootLayout className="flex overflow-hidden">
+  <div class="relative w-full shrink" bind:clientWidth={globalWidth}>
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
@@ -526,8 +527,8 @@
       {/if}
     {/if}
 
-    <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+    <section
+      class="relative h-dvh overflow-hidden bg-immich-bg sm:px-3 md:px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
@@ -644,7 +645,7 @@
           </div>
         {/if}
       {/key}
-    </main>
+    </section>
   </div>
   {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
@@ -669,7 +670,8 @@
       </div>
     </div>
   {/if}
-</div>
+</RootLayout>
+
 {#if viewMode === ViewMode.SELECT_USERS}
   <UserSelectionModal
     {album}
