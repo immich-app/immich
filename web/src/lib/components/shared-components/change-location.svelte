@@ -75,7 +75,7 @@
       clearTimeout(latestSearchTimeout);
     }
     showSpinner = true;
-    // eslint-disable-next-line eslint complains about setTimeout requires void return
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     const searchTimeout = window.setTimeout(async () => {
       try {
         const searchResult = await searchPlaces({ name: searchWord });
