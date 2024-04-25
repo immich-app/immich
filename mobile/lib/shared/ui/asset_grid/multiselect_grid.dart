@@ -199,7 +199,8 @@ class MultiselectGrid extends HookConsumerWidget {
           final trashOrRemoved = force ? 'deleted_permanently' : 'trashed';
           ImmichToast.show(
             context: context,
-            msg: 'toast_${assetOrAssets}_$trashOrRemoved'.tr(args: [selection.value.length.toString()]),
+            msg: 'toast_${assetOrAssets}_$trashOrRemoved'
+                .tr(args: [selection.value.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -221,8 +222,8 @@ class MultiselectGrid extends HookConsumerWidget {
           final assetOrAssets = localIds.length > 1 ? 'assets' : 'asset';
           ImmichToast.show(
             context: context,
-            msg:
-                'toast_${assetOrAssets}_removed_permanently_from_device'.tr(args: [localIds.length.toString()]),
+            msg: 'toast_${assetOrAssets}_removed_permanently_from_device'
+                .tr(args: [localIds.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -254,8 +255,8 @@ class MultiselectGrid extends HookConsumerWidget {
           final trashOrRemoved = force ? 'deleted_permanently' : 'trashed';
           ImmichToast.show(
             context: context,
-            msg:
-                'toast_${assetOrAssets}_${trashOrRemoved}_from_immich_server'.tr(args: [toDelete.length.toString()]),
+            msg: 'toast_${assetOrAssets}_${trashOrRemoved}_from_immich_server'
+                .tr(args: [toDelete.length.toString()]),
             gravity: ToastGravity.BOTTOM,
           );
         }

@@ -310,7 +310,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
                             child: Align(
                               alignment: Alignment.center,
                               child: ListView(
-                                shrinkWrap: true,                       
+                                shrinkWrap: true,
                                 scrollDirection: Axis.horizontal,
                                 children: renderActionButtons(),
                               ),

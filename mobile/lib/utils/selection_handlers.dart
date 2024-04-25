@@ -58,7 +58,10 @@ Future<void> handleArchiveAssets(
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: selection.length > 1 ? 'toast_move_assets_to_$archiveOrLibrary'.tr(args: [selection.length.toString()]) : 'toast_move_asset_to_$archiveOrLibrary'.tr(),
+        msg: selection.length > 1
+            ? 'toast_move_assets_to_$archiveOrLibrary'
+                .tr(args: [selection.length.toString()])
+            : 'toast_move_asset_to_$archiveOrLibrary'.tr(),
         gravity: toastGravity,
       );
     }
