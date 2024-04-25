@@ -85,9 +85,9 @@ class TrashNotifier extends StateNotifier<bool> {
         asset.isTrashed = false;
 
         if (remoteAsset) {
-        await _db.writeTxn(() async {
-          await _db.assets.put(asset);
-        });
+          await _db.writeTxn(() async {
+            await _db.assets.put(asset);
+          });
         }
         return true;
       }
