@@ -91,6 +91,8 @@ export const timeToLoadTheMap: number = 100;
 
 export const timeBeforeShowLoadingSpinner: number = 100;
 
+export const timeDebounceOnSearch: number = 300;
+
 // should be the same values as the ones in the app.html
 export enum Theme {
   LIGHT = 'light',

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
   import { clickOutside } from '$lib/utils/click-outside';
@@ -22,7 +22,7 @@
   let places: PlacesResponseDto[] = [];
   let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
-  let isSearching = false;
+  let latestSearchTimeout: number;
   let showSpinner = false;
   let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
@@ -67,23 +67,33 @@
   };
 
   const handleSearchPlaces = async () => {
-    if (searchWord === '' || isSearching) {
+    if (searchWord === '') {
       return;
     }
 
-    // TODO: refactor setTimeout/clearTimeout logic - there are no less than 12 places that duplicate this code
-    isSearching = true;
-    const timeout = setTimeout(() => (showSpinner = true), timeBeforeShowLoadingSpinner);
-    try {
-      places = await searchPlaces({ name: searchWord });
-    } catch (error) {
-      places = [];
-      handleError(error, "Can't search places");
-    } finally {
-      clearTimeout(timeout);
-      isSearching = false;
-      showSpinner = false;
+    if (latestSearchTimeout) {
+      clearTimeout(latestSearchTimeout);
     }
+    showSpinner = true;
+    const searchTimeout = setTimeout(async () => {
+      try {
+        const searchResult = await searchPlaces({ name: searchWord });
+
+        // skip result when a newer search is happening
+        if (latestSearchTimeout === searchTimeout) {
+          places = searchResult;
+          showSpinner = false;
+        }
+      } catch (error) {
+        // skip error when a newer search is happening
+        if (latestSearchTimeout === searchTimeout) {
+          places = [];
+          handleError(error, "Can't search places");
+          showSpinner = false;
+        }
+      }
+    }, timeDebounceOnSearch);
+    latestSearchTimeout = searchTimeout;
   };
 
   const handleUseSuggested = (latitude: number, longitude: number) => {
