@@ -89,7 +89,7 @@
           if (latestSearchTimeout === searchTimeout) {
             places = [];
             handleError(error, "Can't search places");
-            showSpinner = false;
+            showLoadingSpinner = false;
           }
         });
     }, timeDebounceOnSearch);
