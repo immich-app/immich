@@ -17,33 +17,18 @@ void main() {
   // final instance = PublicUsersApi();
 
   group('tests for PublicUsersApi', () {
-    //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
-    test('test createProfileImage', () async {
-      // TODO
-    });
-
-    //Future deleteProfileImage() async
-    test('test deleteProfileImage', () async {
-      // TODO
-    });
-
-    //Future<List<UserDto>> getAllPublicUsers() async
-    test('test getAllPublicUsers', () async {
-      // TODO
-    });
-
     //Future<MultipartFile> getProfileImage(String id) async
     test('test getProfileImage', () async {
       // TODO
     });
 
-    //Future<UserDto> getPublicUserById(String id) async
-    test('test getPublicUserById', () async {
+    //Future<UserDto> getPublicUser(String id) async
+    test('test getPublicUser', () async {
       // TODO
     });
 
-    //Future<UserResponseDto> updateUser(UpdateUserDto updateUserDto) async
-    test('test updateUser', () async {
+    //Future<List<UserDto>> getPublicUsers() async
+    test('test getPublicUsers', () async {
       // TODO
     });
 

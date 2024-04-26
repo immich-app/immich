@@ -10,7 +10,7 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { AuthType, LOGIN_URL, MOBILE_REDIRECT } from 'src/constants';
+import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
@@ -128,7 +128,11 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    return this.userCore.updateUser(auth.user, auth.user.id, { password: newPassword });
+    const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
+    return this.userRepository.update(auth.user.id, {
+      password: hashedPassword,
+      shouldChangePassword: false,
+    });
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {

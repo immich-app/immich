@@ -10,7 +10,7 @@
     type AlbumResponseDto,
     type AlbumUserAddDto,
     type SharedLinkResponseDto,
-    getAllPublicUsers,
+    getPublicUsers,
     type UserDto,
   } from '@immich/sdk';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil, mdiShareCircle } from '@mdi/js';
@@ -36,7 +36,7 @@
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
-    const data = await getAllPublicUsers();
+    const data = await getPublicUsers();
 
     // remove invalid users
     users = data.filter((user) => !(user.id === album.ownerId));

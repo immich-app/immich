@@ -1,17 +1,17 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateUser, type UserAvatarColor } from '@immich/sdk';
+  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { notificationController, NotificationType } from '../notification/notification';
+  import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
-  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
 
   let isShowSelectAvatar = false;
 
@@ -26,9 +26,8 @@
         await deleteProfileImage();
       }
 
-      $user = await updateUser({
-        updateUserDto: {
-          id: $user.id,
+      $user = await updateMyUser({
+        updateMyUserDto: {
           email: $user.email,
           name: $user.name,
           avatarColor: color,

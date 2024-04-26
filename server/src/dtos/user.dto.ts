@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { getRandomAvatarColor } from 'src/dtos/user-profile.dto';
 import { UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
@@ -67,37 +67,16 @@ export class DeleteUserDto {
   force?: boolean;
 }
 
-export class UpdateUserDto {
+export class UpdateMyUserDto {
   @Optional()
   @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email?: string;
 
   @Optional()
-  @IsNotEmpty()
-  @IsString()
-  password?: string;
-
-  @Optional()
   @IsString()
   @IsNotEmpty()
   name?: string;
-
-  @Optional()
-  @IsString()
-  @Transform(toSanitized)
-  storageLabel?: string;
-
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-
-  @ValidateBoolean({ optional: true })
-  isAdmin?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  shouldChangePassword?: boolean;
 
   @ValidateBoolean({ optional: true })
   memoriesEnabled?: boolean;
@@ -106,6 +85,21 @@ export class UpdateUserDto {
   @IsEnum(UserAvatarColor)
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor?: UserAvatarColor;
+}
+
+export class UpdateUserDto extends UpdateMyUserDto {
+  @Optional()
+  @IsNotEmpty()
+  @IsString()
+  password?: string;
+
+  @Optional({ nullable: true })
+  @IsString()
+  @Transform(toSanitized)
+  storageLabel?: string | null;
+
+  @ValidateBoolean({ optional: true })
+  shouldChangePassword?: boolean;
 
   @Optional({ nullable: true })
   @IsNumber()
@@ -141,7 +135,7 @@ export class UserResponseDto extends UserDto {
   status!: string;
 }
 
-export const mapSimpleUser = (entity: UserEntity): UserDto => {
+export const mapPublicUser = (entity: UserEntity): UserDto => {
   return {
     id: entity.id,
     email: entity.email,
@@ -153,7 +147,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
 
 export function mapUser(entity: UserEntity): UserResponseDto {
   return {
-    ...mapSimpleUser(entity),
+    ...mapPublicUser(entity),
     storageLabel: entity.storageLabel,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,

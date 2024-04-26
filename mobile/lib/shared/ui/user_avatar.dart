@@ -6,7 +6,7 @@ import 'package:immich_mobile/shared/models/user.dart';
 
 Widget userAvatar(BuildContext context, User u, {double? radius}) {
   final url =
-      "${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${u.id}";
+      "${Store.get(StoreKey.serverEndpoint)}/public-users/${u.id}/profile-image";
   final nameFirstLetter = u.name.isNotEmpty ? u.name[0] : "";
   return CircleAvatar(
     radius: radius,

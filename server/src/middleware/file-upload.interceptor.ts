@@ -13,8 +13,7 @@ import { AssetService, UploadFile } from 'src/services/asset.service';
 
 export enum Route {
   ASSET = 'asset',
-  USER = 'user',
-  PUBLICUSERS = 'public-users',
+  AUTH = 'auth',
 }
 
 export interface ImmichFile extends Express.Multer.File {
@@ -168,7 +167,7 @@ export class FileUploadInterceptor implements NestInterceptor {
         return this.handlers.assetUpload;
       }
 
-      case Route.USER: {
+      case Route.AUTH: {
         return this.handlers.userProfile;
       }
 

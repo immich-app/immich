@@ -3,7 +3,7 @@ import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import _ from 'lodash';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { UserDto, mapSimpleUser } from 'src/dtos/user.dto';
+import { UserDto, mapPublicUser } from 'src/dtos/user.dto';
 import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
@@ -142,7 +142,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
 
   if (entity.albumUsers) {
     for (const albumUser of entity.albumUsers) {
-      const user = mapSimpleUser(albumUser.user);
+      const user = mapPublicUser(albumUser.user);
       sharedUsers.push(user);
       albumUsers.push({
         user,
@@ -173,7 +173,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
-    owner: mapSimpleUser(entity.owner),
+    owner: mapPublicUser(entity.owner),
     sharedUsers,
     albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,

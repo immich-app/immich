@@ -66,6 +66,7 @@ test.describe('Registration', () => {
     // change password
     await expect(page.getByRole('heading')).toHaveText('Change Password');
     await expect(page).toHaveURL('/auth/change-password');
+    await page.getByLabel('Current Password').fill('password');
     await page.getByLabel('New Password').fill('new-password');
     await page.getByLabel('Confirm Password').fill('new-password');
     await page.getByRole('button', { name: 'Change password' }).click();

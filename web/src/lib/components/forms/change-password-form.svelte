@@ -1,20 +1,21 @@
 <script lang="ts">
+  import { changePassword } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
 
-  export let user: UserResponseDto;
   let errorMessage: string;
   let success: string;
 
   let password = '';
-  let passwordConfirm = '';
+  let newPassword = '';
+  let confirmPassword = '';
 
   let valid = false;
 
   $: {
-    if (password !== passwordConfirm && passwordConfirm.length > 0) {
+    if (newPassword !== confirmPassword && confirmPassword.length > 0) {
       errorMessage = 'Password does not match';
       valid = false;
     } else {
@@ -27,32 +28,34 @@
     success: void;
   }>();
 
-  async function changePassword() {
+  async function handleChangePassword() {
     if (valid) {
       errorMessage = '';
+      try {
+        await changePassword({ changePasswordDto: { password, newPassword } });
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
-          password: String(password),
-          shouldChangePassword: false,
-        },
-      });
-
-      dispatch('success');
+        dispatch('success');
+      } catch (error) {
+        handleError(error, 'Unable to change password');
+      }
     }
   }
 </script>
 
-<form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
+<form on:submit|preventDefault={handleChangePassword} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
-    <label class="immich-form-label" for="password">New Password</label>
-    <PasswordField id="password" bind:password autocomplete="new-password" />
+    <label class="immich-form-label" for="password">Current Password</label>
+    <PasswordField id="password" bind:password autocomplete="password" />
   </div>
 
   <div class="flex flex-col gap-2">
-    <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
-    <PasswordField id="confirmPassword" bind:password={passwordConfirm} autocomplete="new-password" />
+    <label class="immich-form-label" for="password-new">New Password</label>
+    <PasswordField id="password-new" bind:password={newPassword} autocomplete="new-password" />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label class="immich-form-label" for="password-confirm">Confirm Password</label>
+    <PasswordField id="password-confirm" bind:password={confirmPassword} autocomplete="new-password" />
   </div>
 
   {#if errorMessage}

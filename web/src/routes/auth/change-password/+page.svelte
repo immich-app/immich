@@ -21,9 +21,8 @@
     Hi {$user.name} ({$user.email}),
     <br />
     <br />
-    This is either the first time you are signing into the system or a request has been made to change your password. Please
-    enter the new password below.
+    Please change your password.
   </p>
 
-  <ChangePasswordForm user={$user} on:success={onSuccess} />
+  <ChangePasswordForm on:success={onSuccess} />
 </FullscreenContainer>

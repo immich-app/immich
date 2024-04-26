@@ -1,5 +1,18 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthType } from 'src/constants';
 import {
@@ -12,14 +25,16 @@ import {
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
+import { UpdateMyUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
+import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UserService } from 'src/services/user.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
 
 @ApiTags('Authentication')
-@Controller('auth')
+@Controller(Route.AUTH)
 @Authenticated()
 export class AuthController {
   constructor(
@@ -81,7 +96,29 @@ export class AuthController {
   }
 
   @Get('user')
-  getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
-    return this.userService.getMe(auth);
+  getMyUserInfo(@Auth() auth: AuthDto): UserResponseDto {
+    return mapUser(auth.user);
+  }
+
+  @Put('user')
+  updateMyUser(@Auth() auth: AuthDto, @Body() dto: UpdateMyUserDto): Promise<UserResponseDto> {
+    return this.userService.updateMe(auth, dto);
+  }
+
+  @UseInterceptors(FileUploadInterceptor)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
+  @Post('user/profile-image')
+  createProfileImage(
+    @Auth() auth: AuthDto,
+    @UploadedFile() fileInfo: Express.Multer.File,
+  ): Promise<CreateProfileImageResponseDto> {
+    return this.userService.createProfileImage(auth, fileInfo);
+  }
+
+  @Delete('user/profile-image')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
+    return this.userService.deleteProfileImage(auth);
   }
 }

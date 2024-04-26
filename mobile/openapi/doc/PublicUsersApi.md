@@ -9,169 +9,10 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createProfileImage**](PublicUsersApi.md#createprofileimage) | **POST** /public-users/profile-image | 
-[**deleteProfileImage**](PublicUsersApi.md#deleteprofileimage) | **DELETE** /public-users/profile-image | 
-[**getAllPublicUsers**](PublicUsersApi.md#getallpublicusers) | **GET** /public-users | 
-[**getProfileImage**](PublicUsersApi.md#getprofileimage) | **GET** /public-users/profile-image/{id} | 
-[**getPublicUserById**](PublicUsersApi.md#getpublicuserbyid) | **GET** /public-users/info/{id} | 
-[**updateUser**](PublicUsersApi.md#updateuser) | **PUT** /public-users | 
+[**getProfileImage**](PublicUsersApi.md#getprofileimage) | **GET** /public-users/{id}/profile-image | 
+[**getPublicUser**](PublicUsersApi.md#getpublicuser) | **GET** /public-users/{id} | 
+[**getPublicUsers**](PublicUsersApi.md#getpublicusers) | **GET** /public-users | 
 
-
-# **createProfileImage**
-> CreateProfileImageResponseDto createProfileImage(file)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = PublicUsersApi();
-final file = BINARY_DATA_HERE; // MultipartFile | 
-
-try {
-    final result = api_instance.createProfileImage(file);
-    print(result);
-} catch (e) {
-    print('Exception when calling PublicUsersApi->createProfileImage: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **file** | **MultipartFile**|  | 
-
-### Return type
-
-[**CreateProfileImageResponseDto**](CreateProfileImageResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **deleteProfileImage**
-> deleteProfileImage()
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = PublicUsersApi();
-
-try {
-    api_instance.deleteProfileImage();
-} catch (e) {
-    print('Exception when calling PublicUsersApi->deleteProfileImage: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getAllPublicUsers**
-> List<UserDto> getAllPublicUsers()
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = PublicUsersApi();
-
-try {
-    final result = api_instance.getAllPublicUsers();
-    print(result);
-} catch (e) {
-    print('Exception when calling PublicUsersApi->getAllPublicUsers: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**List<UserDto>**](UserDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getProfileImage**
 > MultipartFile getProfileImage(id)
@@ -228,8 +69,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getPublicUserById**
-> UserDto getPublicUserById(id)
+# **getPublicUser**
+> UserDto getPublicUser(id)
 
 
 
@@ -255,10 +96,10 @@ final api_instance = PublicUsersApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getPublicUserById(id);
+    final result = api_instance.getPublicUser(id);
     print(result);
 } catch (e) {
-    print('Exception when calling PublicUsersApi->getPublicUserById: $e\n');
+    print('Exception when calling PublicUsersApi->getPublicUser: $e\n');
 }
 ```
 
@@ -283,8 +124,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateUser**
-> UserResponseDto updateUser(updateUserDto)
+# **getPublicUsers**
+> List<UserDto> getPublicUsers()
 
 
 
@@ -307,25 +148,21 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PublicUsersApi();
-final updateUserDto = UpdateUserDto(); // UpdateUserDto | 
 
 try {
-    final result = api_instance.updateUser(updateUserDto);
+    final result = api_instance.getPublicUsers();
     print(result);
 } catch (e) {
-    print('Exception when calling PublicUsersApi->updateUser: $e\n');
+    print('Exception when calling PublicUsersApi->getPublicUsers: $e\n');
 }
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **updateUserDto** | [**UpdateUserDto**](UpdateUserDto.md)|  | 
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**UserResponseDto**](UserResponseDto.md)
+[**List<UserDto>**](UserDto.md)
 
 ### Authorization
 
@@ -333,7 +170,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

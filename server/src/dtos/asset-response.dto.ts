@@ -3,7 +3,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
-import { UserDto, mapSimpleUser } from 'src/dtos/user.dto';
+import { UserDto, mapPublicUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
@@ -94,7 +94,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
-    owner: entity.owner ? mapSimpleUser(entity.owner) : undefined,
+    owner: entity.owner ? mapPublicUser(entity.owner) : undefined,
     deviceId: entity.deviceId,
     libraryId: entity.libraryId,
     type: entity.type,

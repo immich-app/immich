@@ -1,16 +1,15 @@
 <script lang="ts">
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { changePassword } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import type { HttpError } from '@sveltejs/kit';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import { changePassword } from '@immich/sdk';
+  import { fade } from 'svelte/transition';
 
   let password = '';
   let newPassword = '';
@@ -29,11 +28,7 @@
       newPassword = '';
       confirmPassword = '';
     } catch (error) {
-      console.error('Error [user-profile] [changePassword]', error);
-      notificationController.show({
-        message: (error as HttpError)?.body?.message || 'Unable to change password',
-        type: NotificationType.Error,
-      });
+      handleError(error, 'Unable to update password');
     }
   };
 </script>
@@ -71,7 +66,7 @@
             type="submit"
             size="sm"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
-            on:click={() => handleChangePassword()}>Save</Button
+            on:click={() => handleChangePassword()}>Change Password</Button
           >
         </div>
       </div>

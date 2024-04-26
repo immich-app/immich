@@ -1,14 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { CreateUserDto, DeleteUserDto, UserResponseDto } from 'src/dtos/user.dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { Route } from 'src/middleware/file-upload.interceptor';
 import { UserService } from 'src/services/user.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('User')
-@Controller(Route.USER)
+@ApiTags('Users')
+@Controller('users')
 @Authenticated({ admin: true })
 export class UserController {
   constructor(private service: UserService) {}
@@ -18,14 +17,19 @@ export class UserController {
     return this.service.getAll(isAll);
   }
 
-  @Get('info/:id')
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.get(id);
-  }
-
   @Post()
   createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.service.create(createUserDto);
+  }
+
+  @Get(':id')
+  getUser(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.get(id);
+  }
+
+  @Put(':id')
+  updateUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateUserDto) {
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')

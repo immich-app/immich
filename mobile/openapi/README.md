@@ -115,10 +115,13 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
+*AuthenticationApi* | [**createProfileImage**](doc//AuthenticationApi.md#createprofileimage) | **POST** /auth/user/profile-image | 
+*AuthenticationApi* | [**deleteProfileImage**](doc//AuthenticationApi.md#deleteprofileimage) | **DELETE** /auth/user/profile-image | 
 *AuthenticationApi* | [**getMyUserInfo**](doc//AuthenticationApi.md#getmyuserinfo) | **GET** /auth/user | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
+*AuthenticationApi* | [**updateMyUser**](doc//AuthenticationApi.md#updatemyuser) | **PUT** /auth/user | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
@@ -165,12 +168,9 @@ Class | Method | HTTP request | Description
 *PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
-*PublicUsersApi* | [**createProfileImage**](doc//PublicUsersApi.md#createprofileimage) | **POST** /public-users/profile-image | 
-*PublicUsersApi* | [**deleteProfileImage**](doc//PublicUsersApi.md#deleteprofileimage) | **DELETE** /public-users/profile-image | 
-*PublicUsersApi* | [**getAllPublicUsers**](doc//PublicUsersApi.md#getallpublicusers) | **GET** /public-users | 
-*PublicUsersApi* | [**getProfileImage**](doc//PublicUsersApi.md#getprofileimage) | **GET** /public-users/profile-image/{id} | 
-*PublicUsersApi* | [**getPublicUserById**](doc//PublicUsersApi.md#getpublicuserbyid) | **GET** /public-users/info/{id} | 
-*PublicUsersApi* | [**updateUser**](doc//PublicUsersApi.md#updateuser) | **PUT** /public-users | 
+*PublicUsersApi* | [**getProfileImage**](doc//PublicUsersApi.md#getprofileimage) | **GET** /public-users/{id}/profile-image | 
+*PublicUsersApi* | [**getPublicUser**](doc//PublicUsersApi.md#getpublicuser) | **GET** /public-users/{id} | 
+*PublicUsersApi* | [**getPublicUsers**](doc//PublicUsersApi.md#getpublicusers) | **GET** /public-users | 
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
@@ -221,11 +221,12 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
+*UsersApi* | [**createUser**](doc//UsersApi.md#createuser) | **POST** /users | 
+*UsersApi* | [**deleteUser**](doc//UsersApi.md#deleteuser) | **DELETE** /users/{id} | 
+*UsersApi* | [**getAllUsers**](doc//UsersApi.md#getallusers) | **GET** /users | 
+*UsersApi* | [**getUser**](doc//UsersApi.md#getuser) | **GET** /users/{id} | 
+*UsersApi* | [**restoreUser**](doc//UsersApi.md#restoreuser) | **POST** /users/{id}/restore | 
+*UsersApi* | [**updateUser**](doc//UsersApi.md#updateuser) | **PUT** /users/{id} | 
 
 
 ## Documentation For Models
@@ -397,6 +398,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
+ - [UpdateMyUserDto](doc//UpdateMyUserDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
  - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)

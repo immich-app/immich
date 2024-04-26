@@ -16,6 +16,7 @@ import { MetadataService } from 'src/services/metadata.service';
 import { MicroservicesService } from 'src/services/microservices.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
+import { PublicUserService } from 'src/services/public-user.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerInfoService } from 'src/services/server-info.service';
 import { SessionService } from 'src/services/session.service';
@@ -50,6 +51,7 @@ export const services = [
   MetadataService,
   PartnerService,
   PersonService,
+  PublicUserService,
   SearchService,
   ServerInfoService,
   SessionService,

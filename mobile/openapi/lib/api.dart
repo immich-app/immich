@@ -55,7 +55,7 @@ part 'api/system_metadata_api.dart';
 part 'api/tag_api.dart';
 part 'api/timeline_api.dart';
 part 'api/trash_api.dart';
-part 'api/user_api.dart';
+part 'api/users_api.dart';
 
 part 'model/api_key_create_dto.dart';
 part 'model/api_key_create_response_dto.dart';
@@ -224,6 +224,7 @@ part 'model/update_album_dto.dart';
 part 'model/update_album_user_dto.dart';
 part 'model/update_asset_dto.dart';
 part 'model/update_library_dto.dart';
+part 'model/update_my_user_dto.dart';
 part 'model/update_partner_dto.dart';
 part 'model/update_stack_parent_dto.dart';
 part 'model/update_tag_dto.dart';

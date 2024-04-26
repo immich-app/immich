@@ -22,6 +22,16 @@ void main() {
       // TODO
     });
 
+    //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
+    test('test createProfileImage', () async {
+      // TODO
+    });
+
+    //Future deleteProfileImage() async
+    test('test deleteProfileImage', () async {
+      // TODO
+    });
+
     //Future<UserResponseDto> getMyUserInfo() async
     test('test getMyUserInfo', () async {
       // TODO
@@ -39,6 +49,11 @@ void main() {
 
     //Future<UserResponseDto> signUpAdmin(SignUpDto signUpDto) async
     test('test signUpAdmin', () async {
+      // TODO
+    });
+
+    //Future<UserResponseDto> updateMyUser(UpdateMyUserDto updateMyUserDto) async
+    test('test updateMyUser', () async {
       // TODO
     });
 

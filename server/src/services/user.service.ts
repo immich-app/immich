@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
@@ -8,10 +9,9 @@ import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'sr
 import {
   CreateUserDto,
   DeleteUserDto,
+  UpdateMyUserDto,
   UpdateUserDto,
-  UserDto,
   UserResponseDto,
-  mapSimpleUser,
   mapUser,
 } from 'src/dtos/user.dto';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
@@ -23,7 +23,6 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 
 @Injectable()
 export class UserService {
@@ -55,20 +54,6 @@ export class UserService {
     return users.map((user) => mapUser(user));
   }
 
-  async getAllPublic(): Promise<UserDto[] | UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: false });
-    return users.map((user) => mapSimpleUser(user));
-  }
-
-  async getPublic(userId: string): Promise<UserDto> {
-    const user = await this.userRepository.get(userId, { withDeleted: false });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return mapSimpleUser(user);
-  }
-
   async get(userId: string): Promise<UserResponseDto> {
     const user = await this.userRepository.get(userId, { withDeleted: false });
     if (!user) {
@@ -78,33 +63,66 @@ export class UserService {
     return mapUser(user);
   }
 
-  getMe(auth: AuthDto): Promise<UserResponseDto> {
-    return this.findOrFail(auth.user.id, {}).then(mapUser);
-  }
-
   create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.userCore.createUser(createUserDto).then(mapUser);
   }
 
-  async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.findOrFail(dto.id, {});
+  async updateMe(auth: AuthDto, dto: UpdateMyUserDto): Promise<UserResponseDto> {
+    const user = await this.findOrFail(auth.user.id, {});
 
-    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
-      await this.userRepository.syncUsage(dto.id);
+    if (dto.email) {
+      const duplicate = await this.userRepository.getByEmail(dto.email);
+      if (duplicate && duplicate.id !== auth.user.id) {
+        throw new BadRequestException('Email already in use by another account');
+      }
     }
 
-    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
+    const updatedUser = await this.userRepository.update(user.id, dto);
+    return mapUser(updatedUser);
+  }
+
+  async update(auth: AuthDto, id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.findOrFail(id, {});
+
+    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
+      await this.userRepository.syncUsage(id);
+    }
+
+    if (dto.email) {
+      const duplicate = await this.userRepository.getByEmail(dto.email);
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException('Email already in use by another account');
+      }
+    }
+
+    if (dto.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(dto.storageLabel);
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException('Storage label already in use by another account');
+      }
+    }
+
+    if (dto.password) {
+      dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
+    }
+
+    if (dto.storageLabel === '') {
+      dto.storageLabel = null;
+    }
+
+    const updatedUser = await this.userRepository.update(id, dto);
+    return mapUser(updatedUser);
   }
 
   async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
-    const { force } = dto;
-    const { isAdmin } = await this.findOrFail(id, {});
+    const { isAdmin } = await this.findOrFail(id, { withDeleted: false });
     if (isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
     }
 
     await this.albumRepository.softDeleteAll(id);
 
+    const { force } = dto;
     const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
@@ -139,19 +157,6 @@ export class UserService {
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
-  async getProfileImage(id: string): Promise<ImmichFileResponse> {
-    const user = await this.findOrFail(id, {});
-    if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
-    }
-
-    return new ImmichFileResponse({
-      path: user.profileImagePath,
-      contentType: 'image/jpeg',
-      cacheControl: CacheControl.NONE,
-    });
-  }
-
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
@@ -161,7 +166,8 @@ export class UserService {
     const providedPassword = await ask(mapUser(admin));
     const password = providedPassword || this.cryptoRepository.newPassword(24);
 
-    await this.userCore.updateUser(admin, admin.id, { password });
+    const hashedPassword = await this.cryptoRepository.hashBcrypt(password, SALT_ROUNDS);
+    await this.userRepository.update(admin.id, { password: hashedPassword });
 
     return { admin, password, provided: !!providedPassword };
   }

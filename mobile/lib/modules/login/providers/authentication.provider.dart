@@ -138,6 +138,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> changePassword(String newPassword) async {
     try {
+      // TODO: use authApi to change password
       await _apiService.userApi.updateUser(
         UpdateUserDto(
           id: state.userId,

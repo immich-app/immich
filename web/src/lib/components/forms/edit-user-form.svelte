@@ -37,8 +37,8 @@
     try {
       const { id, email, name, storageLabel } = user;
       await updateUser({
+        id,
         updateUserDto: {
-          id,
           email,
           name,
           storageLabel: storageLabel || '',
@@ -57,8 +57,8 @@
       newPassword = generatePassword();
 
       await updateUser({
+        id: user.id,
         updateUserDto: {
-          id: user.id,
           password: newPassword,
           shouldChangePassword: true,
         },

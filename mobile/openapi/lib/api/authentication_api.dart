@@ -63,6 +63,96 @@ class AuthenticationApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /auth/user/profile-image' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [MultipartFile] file (required):
+  Future<Response> createProfileImageWithHttpInfo(MultipartFile file,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/user/profile-image';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['multipart/form-data'];
+
+    bool hasFields = false;
+    final mp = MultipartRequest('POST', Uri.parse(path));
+    if (file != null) {
+      hasFields = true;
+      mp.fields[r'file'] = file.field;
+      mp.files.add(file);
+    }
+    if (hasFields) {
+      postBody = mp;
+    }
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [MultipartFile] file (required):
+  Future<CreateProfileImageResponseDto?> createProfileImage(MultipartFile file,) async {
+    final response = await createProfileImageWithHttpInfo(file,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CreateProfileImageResponseDto',) as CreateProfileImageResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'DELETE /auth/user/profile-image' operation and returns the [Response].
+  Future<Response> deleteProfileImageWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/user/profile-image';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> deleteProfileImage() async {
+    final response = await deleteProfileImageWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /auth/user' operation and returns the [Response].
   Future<Response> getMyUserInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -226,6 +316,53 @@ class AuthenticationApi {
   /// * [SignUpDto] signUpDto (required):
   Future<UserResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
     final response = await signUpAdminWithHttpInfo(signUpDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /auth/user' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [UpdateMyUserDto] updateMyUserDto (required):
+  Future<Response> updateMyUserWithHttpInfo(UpdateMyUserDto updateMyUserDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/user';
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateMyUserDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [UpdateMyUserDto] updateMyUserDto (required):
+  Future<UserResponseDto?> updateMyUser(UpdateMyUserDto updateMyUserDto,) async {
+    final response = await updateMyUserWithHttpInfo(updateMyUserDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -2570,6 +2570,112 @@
         "tags": [
           "Authentication"
         ]
+      },
+      "put": {
+        "operationId": "updateMyUser",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMyUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/user/profile-image": {
+      "delete": {
+        "operationId": "deleteProfileImage",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "post": {
+        "operationId": "createProfileImage",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProfileImageDto"
+              }
+            }
+          },
+          "description": "A new avatar for the user",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateProfileImageResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/validateToken": {
@@ -4410,7 +4516,7 @@
     },
     "/public-users": {
       "get": {
-        "operationId": "getAllPublicUsers",
+        "operationId": "getPublicUsers",
         "parameters": [],
         "responses": {
           "200": {
@@ -4441,51 +4547,11 @@
         "tags": [
           "Public Users"
         ]
-      },
-      "put": {
-        "operationId": "updateUser",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Public Users"
-        ]
       }
     },
-    "/public-users/info/{id}": {
+    "/public-users/{id}": {
       "get": {
-        "operationId": "getPublicUserById",
+        "operationId": "getPublicUser",
         "parameters": [
           {
             "name": "id",
@@ -4525,73 +4591,7 @@
         ]
       }
     },
-    "/public-users/profile-image": {
-      "delete": {
-        "operationId": "deleteProfileImage",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Public Users"
-        ]
-      },
-      "post": {
-        "operationId": "createProfileImage",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProfileImageDto"
-              }
-            }
-          },
-          "description": "A new avatar for the user",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateProfileImageResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Public Users"
-        ]
-      }
-    },
-    "/public-users/profile-image/{id}": {
+    "/public-users/{id}/profile-image": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
@@ -6994,7 +6994,7 @@
         ]
       }
     },
-    "/user": {
+    "/users": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -7034,7 +7034,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "post": {
@@ -7074,53 +7074,11 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
-    "/user/info/{id}": {
-      "get": {
-        "operationId": "getUserById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/{id}": {
+    "/users/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
@@ -7168,11 +7126,101 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
         ]
       }
     },
-    "/user/{id}/restore": {
+    "/users/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [
@@ -7210,7 +7258,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     }
@@ -11377,6 +11425,23 @@
         },
         "type": "object"
       },
+      "UpdateMyUserDto": {
+        "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
+          "email": {
+            "type": "string"
+          },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "UpdatePartnerDto": {
         "properties": {
           "inTimeline": {
@@ -11421,13 +11486,6 @@
           "email": {
             "type": "string"
           },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -11447,12 +11505,10 @@
             "type": "boolean"
           },
           "storageLabel": {
+            "nullable": true,
             "type": "string"
           }
         },
-        "required": [
-          "id"
-        ],
         "type": "object"
       },
       "UsageByUserDto": {

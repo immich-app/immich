@@ -15,8 +15,6 @@ class UpdateUserDto {
   UpdateUserDto({
     this.avatarColor,
     this.email,
-    required this.id,
-    this.isAdmin,
     this.memoriesEnabled,
     this.name,
     this.password,
@@ -40,16 +38,6 @@ class UpdateUserDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? email;
-
-  String id;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isAdmin;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,20 +74,12 @@ class UpdateUserDto {
   ///
   bool? shouldChangePassword;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
     other.avatarColor == avatarColor &&
     other.email == email &&
-    other.id == id &&
-    other.isAdmin == isAdmin &&
     other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.password == password &&
@@ -112,8 +92,6 @@ class UpdateUserDto {
     // ignore: unnecessary_parenthesis
     (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
-    (id.hashCode) +
-    (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
@@ -122,7 +100,7 @@ class UpdateUserDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -135,12 +113,6 @@ class UpdateUserDto {
       json[r'email'] = this.email;
     } else {
     //  json[r'email'] = null;
-    }
-      json[r'id'] = this.id;
-    if (this.isAdmin != null) {
-      json[r'isAdmin'] = this.isAdmin;
-    } else {
-    //  json[r'isAdmin'] = null;
     }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
@@ -185,8 +157,6 @@ class UpdateUserDto {
       return UpdateUserDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
@@ -240,7 +210,6 @@ class UpdateUserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
   };
 }
 

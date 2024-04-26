@@ -15,7 +15,6 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserService } from 'src/services/user.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -100,24 +99,9 @@ describe(UserService.name, () => {
     });
   });
 
-  describe('getMe', () => {
-    it("should get the auth user's info", async () => {
-      userMock.get.mockResolvedValue(userStub.admin);
-      await sut.getMe(authStub.admin);
-      expect(userMock.get).toHaveBeenCalledWith(authStub.admin.user.id, {});
-    });
-
-    it('should throw an error if a user is not found', async () => {
-      userMock.get.mockResolvedValue(null);
-      await expect(sut.getMe(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
-      expect(userMock.get).toHaveBeenCalledWith(authStub.admin.user.id, {});
-    });
-  });
-
   describe('update', () => {
     it('should update user', async () => {
       const update: UpdateUserDto = {
-        id: userStub.user1.id,
         shouldChangePassword: true,
         email: 'immich@test.com',
         storageLabel: 'storage_label',
@@ -126,7 +110,7 @@ describe(UserService.name, () => {
       userMock.getByStorageLabel.mockResolvedValue(null);
       userMock.update.mockResolvedValue(userStub.user1);
 
-      await sut.update({ user: { ...authStub.user1.user, isAdmin: true } }, update);
+      await sut.update(authStub.admin, userStub.user1.id, update);
 
       expect(userMock.getByEmail).toHaveBeenCalledWith(update.email);
       expect(userMock.getByStorageLabel).toHaveBeenCalledWith(update.storageLabel);
@@ -134,112 +118,51 @@ describe(UserService.name, () => {
 
     it('should not set an empty string for storage label', async () => {
       userMock.update.mockResolvedValue(userStub.user1);
-      await sut.update(authStub.admin, { id: userStub.user1.id, storageLabel: '' });
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
-        id: userStub.user1.id,
-        storageLabel: null,
-      });
+      await sut.update(authStub.admin, userStub.user1.id, { storageLabel: '' });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { storageLabel: null });
     });
 
-    it('should omit a storage label set by non-admin users', async () => {
-      userMock.update.mockResolvedValue(userStub.user1);
-      await sut.update({ user: userStub.user1 }, { id: userStub.user1.id, storageLabel: 'admin' });
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { id: userStub.user1.id });
-    });
-
-    it('user can only update its information', async () => {
-      userMock.get.mockResolvedValueOnce({
-        ...userStub.user1,
-        id: 'not_immich_auth_user_id',
-      });
-
-      const result = sut.update(
-        { user: userStub.user1 },
-        {
-          id: 'not_immich_auth_user_id',
-          password: 'I take over your account now',
-        },
-      );
-      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
-    });
-
-    it('should let a user change their email', async () => {
-      const dto = { id: userStub.user1.id, email: 'updated@test.com' };
-
+    it('should change the email', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       userMock.update.mockResolvedValue(userStub.user1);
 
-      await sut.update({ user: userStub.user1 }, dto);
+      await sut.update({ user: userStub.user1 }, userStub.user1.id, { email: 'updated@test.com' });
 
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
-        id: 'user-id',
-        email: 'updated@test.com',
-      });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { email: 'updated@test.com' });
     });
 
-    it('should not let a user change their email to one already in use', async () => {
-      const dto = { id: userStub.user1.id, email: 'updated@test.com' };
-
+    it('should change an email to one already in use', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       userMock.getByEmail.mockResolvedValue(userStub.admin);
 
-      await expect(sut.update({ user: userStub.user1 }, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        sut.update({ user: userStub.user1 }, userStub.user1.id, { email: 'updated@test.com' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userMock.update).not.toHaveBeenCalled();
     });
 
-    it('should not let the admin change the storage label to one already in use', async () => {
-      const dto = { id: userStub.user1.id, storageLabel: 'admin' };
-
+    it('should change the storage label to one already in use', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       userMock.getByStorageLabel.mockResolvedValue(userStub.admin);
 
-      await expect(sut.update(authStub.admin, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(authStub.admin, userStub.user1.id, { storageLabel: 'admin' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(userMock.update).not.toHaveBeenCalled();
     });
 
-    it('admin can update any user information', async () => {
-      const update: UpdateUserDto = {
-        id: userStub.user1.id,
-        shouldChangePassword: true,
-      };
-
+    it('should update should change password', async () => {
       userMock.update.mockResolvedValueOnce(userStub.user1);
-      await sut.update(authStub.admin, update);
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
-        id: 'user-id',
-        shouldChangePassword: true,
-      });
+      await sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { shouldChangePassword: true });
     });
 
-    it('update user information should throw error if user not found', async () => {
+    it('should throw when user is not found', async () => {
       userMock.get.mockResolvedValueOnce(null);
-
-      const result = sut.update(authStub.admin, {
-        id: userStub.user1.id,
-        shouldChangePassword: true,
-      });
-
+      const result = sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true });
       await expect(result).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should let the admin update himself', async () => {
-      const dto = { id: userStub.admin.id, shouldChangePassword: true, isAdmin: true };
-
-      userMock.update.mockResolvedValueOnce(userStub.admin);
-
-      await sut.update(authStub.admin, dto);
-
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, dto);
-    });
-
-    it('should not let the another user become an admin', async () => {
-      const dto = { id: userStub.user1.id, shouldChangePassword: true, isAdmin: true };
-
-      userMock.get.mockResolvedValueOnce(userStub.user1);
-
-      await expect(sut.update(authStub.admin, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
@@ -260,20 +183,12 @@ describe(UserService.name, () => {
 
   describe('delete', () => {
     it('should throw error if user could not be found', async () => {
-      userMock.get.mockResolvedValue(null);
-
-      await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toThrowError(BadRequestException);
+      await expect(sut.delete(authStub.admin, 'not-found', {})).rejects.toThrowError(BadRequestException);
       expect(userMock.delete).not.toHaveBeenCalled();
     });
 
-    it('cannot delete admin user', async () => {
+    it('should not let the admin be deleted', async () => {
       await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toBeInstanceOf(ForbiddenException);
-    });
-
-    it('should require the auth user be an admin', async () => {
-      await expect(sut.delete(authStub.user1, authStub.admin.user.id, {})).rejects.toBeInstanceOf(ForbiddenException);
-
-      expect(userMock.delete).not.toHaveBeenCalled();
     });
 
     it('should delete user', async () => {
@@ -395,38 +310,6 @@ describe(UserService.name, () => {
 
       await sut.deleteProfileImage(authStub.admin);
       expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
-    });
-  });
-
-  describe('getUserProfileImage', () => {
-    it('should throw an error if the user does not exist', async () => {
-      userMock.get.mockResolvedValue(null);
-
-      await expect(sut.getProfileImage(userStub.admin.id)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(userMock.get).toHaveBeenCalledWith(userStub.admin.id, {});
-    });
-
-    it('should throw an error if the user does not have a picture', async () => {
-      userMock.get.mockResolvedValue(userStub.admin);
-
-      await expect(sut.getProfileImage(userStub.admin.id)).rejects.toBeInstanceOf(NotFoundException);
-
-      expect(userMock.get).toHaveBeenCalledWith(userStub.admin.id, {});
-    });
-
-    it('should return the profile picture', async () => {
-      userMock.get.mockResolvedValue(userStub.profilePath);
-
-      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual(
-        new ImmichFileResponse({
-          path: '/path/to/profile.jpg',
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.NONE,
-        }),
-      );
-
-      expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
     });
   });
 

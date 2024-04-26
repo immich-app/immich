@@ -26,16 +26,6 @@ void main() {
       // TODO
     });
 
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // bool isAdmin
-    test('to test the property `isAdmin`', () async {
-      // TODO
-    });
-
     // bool memoriesEnabled
     test('to test the property `memoriesEnabled`', () async {
       // TODO

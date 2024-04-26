@@ -357,6 +357,19 @@ export type LogoutResponseDto = {
     redirectUri: string;
     successful: boolean;
 };
+export type UpdateMyUserDto = {
+    avatarColor?: UserAvatarColor;
+    email?: string;
+    memoriesEnabled?: boolean;
+    name?: string;
+};
+export type CreateProfileImageDto = {
+    file: Blob;
+};
+export type CreateProfileImageResponseDto = {
+    profileImagePath: string;
+    userId: string;
+};
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
 };
@@ -581,25 +594,6 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
-};
-export type UpdateUserDto = {
-    avatarColor?: UserAvatarColor;
-    email?: string;
-    id: string;
-    isAdmin?: boolean;
-    memoriesEnabled?: boolean;
-    name?: string;
-    password?: string;
-    quotaSizeInBytes?: number | null;
-    shouldChangePassword?: boolean;
-    storageLabel?: string;
-};
-export type CreateProfileImageDto = {
-    file: Blob;
-};
-export type CreateProfileImageResponseDto = {
-    profileImagePath: string;
-    userId: string;
 };
 export type FileReportItemDto = {
     checksum?: string;
@@ -1050,6 +1044,16 @@ export type CreateUserDto = {
 };
 export type DeleteUserDto = {
     force?: boolean;
+};
+export type UpdateUserDto = {
+    avatarColor?: UserAvatarColor;
+    email?: string;
+    memoriesEnabled?: boolean;
+    name?: string;
+    password?: string;
+    quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
+    storageLabel?: string | null;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -1726,6 +1730,36 @@ export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function updateMyUser({ updateMyUserDto }: {
+    updateMyUserDto: UpdateMyUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto;
+    }>("/auth/user", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateMyUserDto
+    })));
+}
+export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/auth/user/profile-image", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function createProfileImage({ createProfileImageDto }: {
+    createProfileImageDto: CreateProfileImageDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: CreateProfileImageResponseDto;
+    }>("/auth/user/profile-image", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: createProfileImageDto
+    })));
+}
 export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2207,7 +2241,7 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
-export function getAllPublicUsers(opts?: Oazapfts.RequestOpts) {
+export function getPublicUsers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserDto[];
@@ -2215,45 +2249,15 @@ export function getAllPublicUsers(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function updateUser({ updateUserDto }: {
-    updateUserDto: UpdateUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
-    }>("/public-users", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateUserDto
-    })));
-}
-export function getPublicUserById({ id }: {
+export function getPublicUser({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserDto;
-    }>(`/public-users/info/${encodeURIComponent(id)}`, {
+    }>(`/public-users/${encodeURIComponent(id)}`, {
         ...opts
     }));
-}
-export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/public-users/profile-image", {
-        ...opts,
-        method: "DELETE"
-    }));
-}
-export function createProfileImage({ createProfileImageDto }: {
-    createProfileImageDto: CreateProfileImageDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: CreateProfileImageResponseDto;
-    }>("/public-users/profile-image", oazapfts.multipart({
-        ...opts,
-        method: "POST",
-        body: createProfileImageDto
-    })));
 }
 export function getProfileImage({ id }: {
     id: string;
@@ -2261,7 +2265,7 @@ export function getProfileImage({ id }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/public-users/profile-image/${encodeURIComponent(id)}`, {
+    }>(`/public-users/${encodeURIComponent(id)}/profile-image`, {
         ...opts
     }));
 }
@@ -2884,7 +2888,7 @@ export function getAllUsers({ isAll }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>(`/user${QS.query(QS.explode({
+    }>(`/users${QS.query(QS.explode({
         isAll
     }))}`, {
         ...opts
@@ -2896,21 +2900,11 @@ export function createUser({ createUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>("/user", oazapfts.json({
+    }>("/users", oazapfts.json({
         ...opts,
         method: "POST",
         body: createUserDto
     })));
-}
-export function getUserById({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
-    }>(`/user/info/${encodeURIComponent(id)}`, {
-        ...opts
-    }));
 }
 export function deleteUser({ id, deleteUserDto }: {
     id: string;
@@ -2919,10 +2913,33 @@ export function deleteUser({ id, deleteUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
+    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: deleteUserDto
+    })));
+}
+export function getUser({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto;
+    }>(`/users/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateUser({ id, updateUserDto }: {
+    id: string;
+    updateUserDto: UpdateUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto;
+    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateUserDto
     })));
 }
 export function restoreUser({ id }: {
@@ -2931,7 +2948,7 @@ export function restoreUser({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}/restore`, {
+    }>(`/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
     }));

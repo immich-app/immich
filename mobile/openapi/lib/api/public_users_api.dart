@@ -16,147 +16,13 @@ class PublicUsersApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /public-users/profile-image' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [MultipartFile] file (required):
-  Future<Response> createProfileImageWithHttpInfo(MultipartFile file,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/public-users/profile-image';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['multipart/form-data'];
-
-    bool hasFields = false;
-    final mp = MultipartRequest('POST', Uri.parse(path));
-    if (file != null) {
-      hasFields = true;
-      mp.fields[r'file'] = file.field;
-      mp.files.add(file);
-    }
-    if (hasFields) {
-      postBody = mp;
-    }
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [MultipartFile] file (required):
-  Future<CreateProfileImageResponseDto?> createProfileImage(MultipartFile file,) async {
-    final response = await createProfileImageWithHttpInfo(file,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CreateProfileImageResponseDto',) as CreateProfileImageResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'DELETE /public-users/profile-image' operation and returns the [Response].
-  Future<Response> deleteProfileImageWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/public-users/profile-image';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<void> deleteProfileImage() async {
-    final response = await deleteProfileImageWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Performs an HTTP 'GET /public-users' operation and returns the [Response].
-  Future<Response> getAllPublicUsersWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/public-users';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<List<UserDto>?> getAllPublicUsers() async {
-    final response = await getAllPublicUsersWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<UserDto>') as List)
-        .cast<UserDto>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'GET /public-users/profile-image/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /public-users/{id}/profile-image' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/public-users/profile-image/{id}'
+    final path = r'/public-users/{id}/profile-image'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -198,13 +64,13 @@ class PublicUsersApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /public-users/info/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /public-users/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getPublicUserByIdWithHttpInfo(String id,) async {
+  Future<Response> getPublicUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/public-users/info/{id}'
+    final path = r'/public-users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -231,8 +97,8 @@ class PublicUsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserDto?> getPublicUserById(String id,) async {
-    final response = await getPublicUserByIdWithHttpInfo(id,);
+  Future<UserDto?> getPublicUser(String id,) async {
+    final response = await getPublicUserWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -246,27 +112,24 @@ class PublicUsersApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /public-users' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [UpdateUserDto] updateUserDto (required):
-  Future<Response> updateUserWithHttpInfo(UpdateUserDto updateUserDto,) async {
+  /// Performs an HTTP 'GET /public-users' operation and returns the [Response].
+  Future<Response> getPublicUsersWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/public-users';
 
     // ignore: prefer_final_locals
-    Object? postBody = updateUserDto;
+    Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
+    const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'GET',
       queryParams,
       postBody,
       headerParams,
@@ -275,11 +138,8 @@ class PublicUsersApi {
     );
   }
 
-  /// Parameters:
-  ///
-  /// * [UpdateUserDto] updateUserDto (required):
-  Future<UserResponseDto?> updateUser(UpdateUserDto updateUserDto,) async {
-    final response = await updateUserWithHttpInfo(updateUserDto,);
+  Future<List<UserDto>?> getPublicUsers() async {
+    final response = await getPublicUsersWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -287,8 +147,11 @@ class PublicUsersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<UserDto>') as List)
+        .cast<UserDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

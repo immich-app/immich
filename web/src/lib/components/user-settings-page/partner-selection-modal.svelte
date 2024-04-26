@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAllPublicUsers, getPartners, type UserDto } from '@immich/sdk';
+  import { getPublicUsers, getPartners, type UserDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -15,7 +15,7 @@
 
   onMount(async () => {
     // TODO: update endpoint to have a query param for deleted users
-    let users = await getAllPublicUsers();
+    let users = await getPublicUsers();
 
     // remove invalid users
     users = users.filter((_user) => !(_user.id === user.id));
