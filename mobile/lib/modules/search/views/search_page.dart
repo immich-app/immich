@@ -27,7 +27,7 @@ class SearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final curatedLocation = ref.watch(getCuratedLocationProvider);
+    final places = ref.watch(getPlacesProvider);
     final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
@@ -87,18 +87,11 @@ class SearchPage extends HookConsumerWidget {
     buildPlaces() {
       return SizedBox(
         height: imageSize,
-        child: curatedLocation.widgetWhen(
+        child: places.widgetWhen(
           onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
-          onData: (locations) => CuratedPlacesRow(
+          onData: (data) => CuratedPlacesRow(
             isMapEnabled: isMapEnabled,
-            content: locations
-                .map(
-                  (o) => CuratedContent(
-                    id: o.id,
-                    label: o.city,
-                  ),
-                )
-                .toList(),
+            content: data,
             imageSize: imageSize,
             onTap: (content, index) {
               context.pushRoute(
