@@ -100,6 +100,20 @@ immich-microservices:
 
 Once this is done, you can continue to step 3 of "Basic Setup".
 
+#### Immich Docker for Intel QuickSync - Unraid Setup 
+
+1. Unraid > Docker > (Stop) Immich container > Edit
+2. Scroll down and select "Add another path..etc..device"
+3. In the popup drop down menu select Device
+
+    Name - dev/dri (you are free to put whatever you want) 
+    Value - /dev/dri/
+
+4. In the Immich web interface : Administration > Settings (left side panel) > Video Transcoding > Hardware Acceleration
+5.  Select - Acceleration Api (QuickSync) then in the "PREFERRED HARDWARE DEVICE FOR TRANSCODING" field you can leave that auto
+
+
+
 #### All-In-One - Unraid Setup
 
 ##### NVENC - NVIDIA GPUs
