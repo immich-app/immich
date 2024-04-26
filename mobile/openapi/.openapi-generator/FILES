@@ -60,8 +60,6 @@ doc/CreateLibraryDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
-doc/CuratedLocationsResponseDto.md
-doc/CuratedObjectsResponseDto.md
 doc/DeleteUserDto.md
 doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
@@ -297,8 +295,6 @@ lib/model/create_library_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
-lib/model/curated_locations_response_dto.dart
-lib/model/curated_objects_response_dto.dart
 lib/model/delete_user_dto.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
@@ -485,8 +481,6 @@ test/create_library_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
-test/curated_locations_response_dto_test.dart
-test/curated_objects_response_dto_test.dart
 test/delete_user_dto_test.dart
 test/download_api_test.dart
 test/download_archive_info_test.dart
