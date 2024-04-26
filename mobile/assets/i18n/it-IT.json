@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Non puoi condividere una risorsa locale tramite link, azione ignorata",
   "home_page_upload_err_limit": "Puoi caricare al massimo 30 file per volta, ignora quelli in eccesso",
   "image_viewer_page_state_provider_download_error": "Errore nel Download",
+  "image_viewer_page_state_provider_download_started": "Download avviato",
   "image_viewer_page_state_provider_download_success": "Download con successo",
   "image_viewer_page_state_provider_share_error": "Errore di condivisione",
   "library_page_albums": "Album",
