@@ -19,6 +19,7 @@
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
   let abortController: AbortController | null = null;
+  let timeout: NodeJS.Timeout | null = null;
 
   const search = () => {
     searchedPeopleLocal = searchNameLocal(searchName, searchedPeople, numberPeopleToSearch);
@@ -42,8 +43,11 @@
     if (abortController) {
       abortController.abort();
     }
+    if (timeout) {
+      clearTimeout(timeout);
+    }
     abortController = new AbortController();
-    const timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
+    timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
       const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
       abortController = null;
