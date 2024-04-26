@@ -23,6 +23,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { isUserUsingMouse } from '$lib/stores/input-device.store';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -438,7 +439,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'mx-4 lg:ml-0 md:mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'mx-4 lg:ml-0'}
+  {!isEmpty && $isUserUsingMouse ? 'md:mr-[60px]' : ''}"
   bind:clientWidth={viewport.width}
   bind:this={element}
   on:scroll={handleTimelineScroll}

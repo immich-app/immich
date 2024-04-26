@@ -5,7 +5,7 @@
   import { onDestroy } from 'svelte';
   import { clamp } from 'lodash-es';
   import { locale } from '$lib/stores/preferences.store';
-  import { isUserUsingMouse } from '$lib/stores/input-device.store.js';
+  import { isUserUsingMouse, isUserUsingTouchDevice } from '$lib/stores/input-device.store.js';
   import { fade } from 'svelte/transition';
   import { currentMediaBreakpoint, MediaBreakpoint } from '$lib/stores/media-breakpoint.store';
   import { mdiPlay } from '@mdi/js';
@@ -32,7 +32,7 @@
   let clientY = 0;
   let windowHeight = 0;
 
-  $: useSmallScrollbar = $currentMediaBreakpoint <= MediaBreakpoint.SM;
+  $: useSmallScrollbar = $currentMediaBreakpoint <= MediaBreakpoint.SM || $isUserUsingTouchDevice;
   $: scrollY = toScrollBarPosY(timelineY);
   $: segments = calculateSegments($assetStore.buckets);
 
