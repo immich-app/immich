@@ -60,7 +60,8 @@ program
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
       .env('IMMICH_DRY_RUN')
-      .default(false),
+      .default(false)
+      .conflicts('skipHash'),
   )
   .addOption(
     new Option('-c, --concurrency <number>', 'Number of assets to upload at the same time')
