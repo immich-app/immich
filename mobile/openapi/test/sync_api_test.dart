@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetDeltaSyncResponseDto> getDeltaSync(DateTime updatedAfter, List<String> userIds) async
+    //Future<AssetDeltaSyncResponseDto> getDeltaSync(DateTime updatedAfter, List<String> userIdsLeftSquareBracketRightSquareBracket) async
     test('test getDeltaSync', () async {
       // TODO
     });

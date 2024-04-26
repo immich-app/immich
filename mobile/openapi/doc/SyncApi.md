@@ -77,7 +77,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getDeltaSync**
-> AssetDeltaSyncResponseDto getDeltaSync(updatedAfter, userIds)
+> AssetDeltaSyncResponseDto getDeltaSync(updatedAfter, userIdsLeftSquareBracketRightSquareBracket)
 
 
 
@@ -101,10 +101,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = SyncApi();
 final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
-final userIds = []; // List<String> | 
+final userIdsLeftSquareBracketRightSquareBracket = []; // List<String> | 
 
 try {
-    final result = api_instance.getDeltaSync(updatedAfter, userIds);
+    final result = api_instance.getDeltaSync(updatedAfter, userIdsLeftSquareBracketRightSquareBracket);
     print(result);
 } catch (e) {
     print('Exception when calling SyncApi->getDeltaSync: $e\n');
@@ -116,7 +116,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **updatedAfter** | **DateTime**|  | 
- **userIds** | [**List<String>**](String.md)|  | [default to const []]
+ **userIdsLeftSquareBracketRightSquareBracket** | [**List<String>**](String.md)|  | [default to const []]
 
 ### Return type
 

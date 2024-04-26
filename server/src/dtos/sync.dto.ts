@@ -27,7 +27,9 @@ export class AssetFullSyncDto {
 export class AssetDeltaSyncDto {
   @ValidateDate()
   updatedAfter!: Date;
+
   @ValidateUUID({ each: true })
+  @ApiProperty({ name: 'userIds[]' })
   userIds!: string[];
 }
 

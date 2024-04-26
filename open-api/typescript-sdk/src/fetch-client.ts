@@ -2511,7 +2511,7 @@ export function getDeltaSync({ updatedAfter, userIds }: {
         data: AssetDeltaSyncResponseDto;
     }>(`/sync/delta-sync${QS.query(QS.explode({
         updatedAfter,
-        userIds
+        "userIds[]": userIds
     }))}`, {
         ...opts
     }));

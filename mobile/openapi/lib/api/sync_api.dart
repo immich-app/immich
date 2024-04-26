@@ -99,8 +99,8 @@ class SyncApi {
   ///
   /// * [DateTime] updatedAfter (required):
   ///
-  /// * [List<String>] userIds (required):
-  Future<Response> getDeltaSyncWithHttpInfo(DateTime updatedAfter, List<String> userIds,) async {
+  /// * [List<String>] userIdsLeftSquareBracketRightSquareBracket (required):
+  Future<Response> getDeltaSyncWithHttpInfo(DateTime updatedAfter, List<String> userIdsLeftSquareBracketRightSquareBracket,) async {
     // ignore: prefer_const_declarations
     final path = r'/sync/delta-sync';
 
@@ -112,7 +112,7 @@ class SyncApi {
     final formParams = <String, String>{};
 
       queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
-      queryParams.addAll(_queryParams('multi', 'userIds', userIds));
+      queryParams.addAll(_queryParams('multi', 'userIds[]', userIdsLeftSquareBracketRightSquareBracket));
 
     const contentTypes = <String>[];
 
@@ -132,9 +132,9 @@ class SyncApi {
   ///
   /// * [DateTime] updatedAfter (required):
   ///
-  /// * [List<String>] userIds (required):
-  Future<AssetDeltaSyncResponseDto?> getDeltaSync(DateTime updatedAfter, List<String> userIds,) async {
-    final response = await getDeltaSyncWithHttpInfo(updatedAfter, userIds,);
+  /// * [List<String>] userIdsLeftSquareBracketRightSquareBracket (required):
+  Future<AssetDeltaSyncResponseDto?> getDeltaSync(DateTime updatedAfter, List<String> userIdsLeftSquareBracketRightSquareBracket,) async {
+    final response = await getDeltaSyncWithHttpInfo(updatedAfter, userIdsLeftSquareBracketRightSquareBracket,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

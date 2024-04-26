@@ -5512,7 +5512,7 @@
             }
           },
           {
-            "name": "userIds",
+            "name": "userIds[]",
             "required": true,
             "in": "query",
             "schema": {

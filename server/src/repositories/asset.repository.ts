@@ -805,6 +805,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .leftJoinAndSelect('asset.stack', 'stack')
+      .leftJoinAndSelect('stack.assets', 'stackedAssets')
       .where('asset.ownerId = :ownerId', { ownerId });
     if (lastCreationDate !== undefined && lastId !== undefined) {
       builder = builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
