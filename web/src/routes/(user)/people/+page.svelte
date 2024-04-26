@@ -7,7 +7,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import ShowHide from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -16,16 +15,9 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import {
-    ActionQueryParameterValue,
-    AppRoute,
-    maximumLengthSearchPeople,
-    QueryParameter,
-    timeBeforeShowLoadingSpinner,
-  } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { searchNameLocal } from '$lib/utils/person';
   import { shortcut } from '$lib/utils/shortcut';
   import {
     getPerson,
@@ -41,6 +33,7 @@
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
 
   export let data: PageData;
 
@@ -52,9 +45,7 @@
   let initialHiddenValues: Record<string, boolean> = {};
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
-  let searchedPeople: PersonResponseDto[] = [];
   let searchName = '';
-  let searchWord: string;
   let isSearchingPeople = false;
 
   let showLoadingSpinner = false;
@@ -68,29 +59,31 @@
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
+  let searchedPeopleLocal: PersonResponseDto[] = [];
+  let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
 
   let innerHeight: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
-
-  $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
-
+  $: showPeople = searchName ? searchedPeopleLocal : people.filter((person) => !person.isHidden);
   $: countVisiblePeople = countTotalPeople - countHiddenPeople;
 
   onMount(async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      await handleSearchPeople(true);
+      await handleSearchPeople(true, searchName);
     }
   });
 
-  const handleSearch = async (force: boolean) => {
-    $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    await goto($page.url, { keepFocus: true });
-    await handleSearchPeople(force);
+  const handleSearch = async () => {
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    if (getSearchedPeople !== searchName) {
+      $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+      await goto($page.url, { keepFocus: true });
+    }
   };
 
   const handleCloseClick = () => {
@@ -278,28 +271,6 @@
     );
   };
 
-  const handleSearchPeople = async (force: boolean) => {
-    if (searchName === '') {
-      await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
-      return;
-    }
-    if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
-      return;
-    }
-
-    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
-    try {
-      searchedPeople = await searchPerson({ name: searchName, withHidden: false });
-      searchWord = searchName;
-    } catch (error) {
-      handleError(error, "Can't search people");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    isSearchingPeople = false;
-  };
-
   const submitNameChange = async () => {
     potentialMergePeople = [];
     showChangeNameModal = false;
@@ -393,7 +364,6 @@
   };
 
   const onResetSearchBar = async () => {
-    searchedPeople = [];
     await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
   };
 </script>
@@ -420,12 +390,15 @@
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
           <div class="w-40 lg:w-80 h-10">
-            <SearchBar
-              bind:name={searchName}
-              isSearching={isSearchingPeople}
+            <SearchPeople
+              type="searchBar"
               placeholder="Search people"
-              on:reset={onResetSearchBar}
-              on:search={({ detail }) => handleSearch(detail.force ?? false)}
+              onReset={onResetSearchBar}
+              onSearch={handleSearch}
+              bind:searchName
+              bind:searchedPeopleLocal
+              bind:isSearching={isSearchingPeople}
+              bind:handleSearch={handleSearchPeople}
             />
           </div>
         </div>
@@ -441,33 +414,18 @@
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#if searchName}
-        {#each searchedPeopleLocal as person, index (person.id)}
-          <PeopleCard
-            {person}
-            preload={index < 20}
-            on:change-name={() => handleChangeName(person)}
-            on:set-birth-date={() => handleSetBirthDate(person)}
-            on:merge-people={() => handleMergePeople(person)}
-            on:hide-person={() => handleHidePerson(person)}
-          />
-        {/each}
-      {:else}
-        {#each people as person, index (person.id)}
-          {#if !person.isHidden}
-            <PeopleCard
-              {person}
-              preload={index < 20}
-              on:change-name={() => handleChangeName(person)}
-              on:set-birth-date={() => handleSetBirthDate(person)}
-              on:merge-people={() => handleMergePeople(person)}
-              on:hide-person={() => handleHidePerson(person)}
-            />
-          {/if}
-        {/each}
-      {/if}
+      {#each showPeople as person, index (person.id)}
+        <PeopleCard
+          {person}
+          preload={index < 20}
+          on:change-name={() => handleChangeName(person)}
+          on:set-birth-date={() => handleSetBirthDate(person)}
+          on:merge-people={() => handleMergePeople(person)}
+          on:hide-person={() => handleHidePerson(person)}
+        />
+      {/each}
     </div>
-  {:else}
+  {:else if !isSearchingPeople}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />

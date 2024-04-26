@@ -7,7 +7,7 @@
 
   export let name: string;
   export let roundedBottom = true;
-  export let isSearching: boolean;
+  export let showLoadingSpinner: boolean;
   export let placeholder: string;
 
   const dispatch = createEventDispatcher<{ search: SearchOptions; reset: void }>();
@@ -35,7 +35,7 @@
     bind:value={name}
     on:input={() => dispatch('search', { force: false })}
   />
-  {#if isSearching}
+  {#if showLoadingSpinner}
     <div class="flex place-items-center">
       <LoadingSpinner />
     </div>

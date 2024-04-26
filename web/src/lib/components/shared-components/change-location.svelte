@@ -23,7 +23,7 @@
   let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
   let isSearching = false;
-  let showSpinner = false;
+  let showLoadingSpinner = false;
   let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
@@ -73,7 +73,7 @@
 
     // TODO: refactor setTimeout/clearTimeout logic - there are no less than 12 places that duplicate this code
     isSearching = true;
-    const timeout = setTimeout(() => (showSpinner = true), timeBeforeShowLoadingSpinner);
+    const timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
       places = await searchPlaces({ name: searchWord });
     } catch (error) {
@@ -82,7 +82,7 @@
     } finally {
       clearTimeout(timeout);
       isSearching = false;
-      showSpinner = false;
+      showLoadingSpinner = false;
     }
   };
 
@@ -111,7 +111,7 @@
         <SearchBar
           placeholder="Search places"
           bind:name={searchWord}
-          isSearching={showSpinner}
+          {showLoadingSpinner}
           on:reset={() => {
             suggestedPlaces = [];
           }}

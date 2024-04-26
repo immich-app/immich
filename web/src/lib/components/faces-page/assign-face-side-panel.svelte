@@ -1,16 +1,9 @@
 <script lang="ts">
-  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { photoViewer } from '$lib/stores/assets.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getPersonNameWithHiddenValue, searchNameLocal } from '$lib/utils/person';
-  import {
-    AssetTypeEnum,
-    ThumbnailFormat,
-    searchPerson,
-    type AssetFaceResponseDto,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import { AssetTypeEnum, ThumbnailFormat, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
@@ -18,6 +11,7 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Icon from '../elements/icon.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
@@ -31,8 +25,6 @@
 
   // search people
   let searchedPeople: PersonResponseDto[] = [];
-  let searchedPeopleCopy: PersonResponseDto[] = [];
-  let searchWord: string;
   let searchFaces = false;
   let searchName = '';
 
@@ -116,33 +108,6 @@
     isShowLoadingNewPerson = false;
     dispatch('createPerson', newFeaturePhoto);
   };
-
-  const searchPeople = async () => {
-    if ((searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) || searchName === '') {
-      return;
-    }
-    const timeout = setTimeout(() => (isShowLoadingSearch = true), timeBeforeShowLoadingSpinner);
-    try {
-      const data = await searchPerson({ name: searchName });
-      searchedPeople = data;
-      searchedPeopleCopy = data;
-      searchWord = searchName;
-    } catch (error) {
-      handleError(error, "Can't search people");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    isShowLoadingSearch = false;
-  };
-
-  $: {
-    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 20);
-  }
-
-  const initInput = (element: HTMLInputElement) => {
-    element.focus();
-  };
 </script>
 
 <section
@@ -200,13 +165,11 @@
         </div>
       </button>
       <div class="w-full flex">
-        <input
-          class="w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg"
-          type="text"
-          placeholder="Name or nickname"
-          bind:value={searchName}
-          on:input={searchPeople}
-          use:initInput
+        <SearchPeople
+          type="input"
+          bind:searchName
+          bind:isSearching={isShowLoadingSearch}
+          bind:searchedPeopleLocal={searchedPeople}
         />
         {#if isShowLoadingSearch}
           <div>
