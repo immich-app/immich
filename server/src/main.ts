@@ -14,10 +14,11 @@ import { ApiService } from 'src/services/api.service';
 import { otelSDK } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
+const host = process.env.HOST;
+
 async function bootstrapMicroservices() {
   otelSDK.start();
 
-  const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.MICROSERVICES_PORT) || 3002;
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
@@ -25,7 +26,7 @@ async function bootstrapMicroservices() {
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
-  await app.listen(port, host);
+  await (host ? app.listen(port, host) : app.listen(port));
 
   logger.log(`Immich Microservices is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
 }
@@ -33,7 +34,6 @@ async function bootstrapMicroservices() {
 async function bootstrapApi() {
   otelSDK.start();
 
-  const host = String(process.env.HOST || '0.0.0.0');
   const port = Number(process.env.SERVER_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
@@ -69,7 +69,7 @@ async function bootstrapApi() {
   }
   app.use(app.get(ApiService).ssr(excludePaths));
 
-  const server = await app.listen(port, host);
+  const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 30 * 60 * 1000;
 
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
