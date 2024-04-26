@@ -141,7 +141,7 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
 
   if (dryRun) {
     console.log(`Would have uploaded ${files.length} asset${s(files.length)} (${byteSize(totalSize)})`);
-    return [];
+    return files.map((filepath) => ({ id: '', filepath }));
   }
 
   const uploadProgress = new SingleBar(
@@ -244,7 +244,7 @@ const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<
   }
 
   if (options.dryRun) {
-    console.log(`Would now have deleted assets, but skipped due to dry run`);
+    console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
     return;
   }
 
@@ -285,7 +285,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   if (dryRun) {
     // TODO print asset counts for new albums
     console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}`);
-    console.log(`Would have updated ${assets.length} asset${s(assets.length)}`);
+    console.log(`Would have updated albums of ${assets.length} asset${s(assets.length)}`);
     return;
   }
 

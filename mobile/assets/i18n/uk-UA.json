@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Неможливо поділитися локальними елементами через посилання, пропущено",
   "home_page_upload_err_limit": "Можна вантажити не більше 30 елементів водночас, пропущено",
   "image_viewer_page_state_provider_download_error": "Помилка завантаження",
+  "image_viewer_page_state_provider_download_started": "Розпочато завантаження",
   "image_viewer_page_state_provider_download_success": "Усіпшно завантажено",
   "image_viewer_page_state_provider_share_error": "Помилка спільного доступу",
   "library_page_albums": "Альбоми",

@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Não é possível partilhar recursos locais via link, ignorando",
   "home_page_upload_err_limit": "Só é possível carregar 30 recursos de cada vez, a ignorar",
   "image_viewer_page_state_provider_download_error": "Erro ao descarregar",
+  "image_viewer_page_state_provider_download_started": "Download iniciada",
   "image_viewer_page_state_provider_download_success": "Descarregado",
   "image_viewer_page_state_provider_share_error": "Erro ao partilhar",
   "library_page_albums": "Álbuns",

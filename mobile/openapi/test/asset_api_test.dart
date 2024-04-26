@@ -55,11 +55,6 @@ void main() {
       // TODO
     });
 
-    //Future<List<String>> getAssetSearchTerms() async
-    test('test getAssetSearchTerms', () async {
-      // TODO
-    });
-
     //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStatistics', () async {
       // TODO
@@ -67,16 +62,6 @@ void main() {
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
-      // TODO
-    });
-
-    //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
-    test('test getCuratedLocations', () async {
-      // TODO
-    });
-
-    //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
-    test('test getCuratedObjects', () async {
       // TODO
     });
 

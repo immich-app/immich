@@ -252,20 +252,6 @@ export type AssetBulkUploadCheckResult = {
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
-export type CuratedLocationsResponseDto = {
-    city: string;
-    deviceAssetId: string;
-    deviceId: string;
-    id: string;
-    resizePath: string;
-};
-export type CuratedObjectsResponseDto = {
-    deviceAssetId: string;
-    deviceId: string;
-    id: string;
-    "object": string;
-    resizePath: string;
-};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -1363,22 +1349,6 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
         body: assetBulkUploadCheckDto
     })));
 }
-export function getCuratedLocations(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CuratedLocationsResponseDto[];
-    }>("/asset/curated-locations", {
-        ...opts
-    }));
-}
-export function getCuratedObjects(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CuratedObjectsResponseDto[];
-    }>("/asset/curated-objects", {
-        ...opts
-    }));
-}
 /**
  * Get all asset of a device that are in the database, ID only.
  */
@@ -1476,14 +1446,6 @@ export function getRandom({ count }: {
     }>(`/asset/random${QS.query(QS.explode({
         count
     }))}`, {
-        ...opts
-    }));
-}
-export function getAssetSearchTerms(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: string[];
-    }>("/asset/search-terms", {
         ...opts
     }));
 }
