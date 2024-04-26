@@ -177,6 +177,23 @@ class AssetService {
         (a) => _apiService.assetApi.updateAsset(a.remoteId!, updateAssetDto),
       ),
     );
+    debugPrint("Before update: ${assets.length}");
+
+    final assetIds = assets.map((e) => e.remoteId!).toList();
+
+    debugPrint("AssetIds: $assetIds");
+
+    _apiService.assetApi.updateAssets(
+      AssetBulkUpdateDto(
+        ids: assetIds,
+        dateTimeOriginal: updateAssetDto.dateTimeOriginal,
+        isFavorite: updateAssetDto.isFavorite,
+        isArchived: updateAssetDto.isArchived,
+        latitude: updateAssetDto.latitude,
+        longitude: updateAssetDto.longitude,
+      ),
+    );
+
     bool allInDb = true;
     for (int i = 0; i < assets.length; i++) {
       final dto = dtos[i], old = assets[i];
