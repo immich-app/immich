@@ -75,24 +75,23 @@
       clearTimeout(latestSearchTimeout);
     }
     showSpinner = true;
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const searchTimeout = window.setTimeout(async () => {
-      try {
-        const searchResult = await searchPlaces({ name: searchWord });
-
-        // skip result when a newer search is happening
-        if (latestSearchTimeout === searchTimeout) {
-          places = searchResult;
-          showSpinner = false;
-        }
-      } catch (error) {
-        // skip error when a newer search is happening
-        if (latestSearchTimeout === searchTimeout) {
-          places = [];
-          handleError(error, "Can't search places");
-          showSpinner = false;
-        }
-      }
+    const searchTimeout = window.setTimeout(() => {
+      searchPlaces({ name: searchWord })
+        .then((searchResult) => {
+          // skip result when a newer search is happening
+          if (latestSearchTimeout === searchTimeout) {
+            places = searchResult;
+            showSpinner = false;
+          }
+        })
+        .catch((error) => {
+          // skip error when a newer search is happening
+          if (latestSearchTimeout === searchTimeout) {
+            places = [];
+            handleError(error, "Can't search places");
+            showSpinner = false;
+          }
+        });
     }, timeDebounceOnSearch);
     latestSearchTimeout = searchTimeout;
   };
