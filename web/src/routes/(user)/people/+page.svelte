@@ -46,7 +46,6 @@
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let searchName = '';
-  let isSearchingPeople = false;
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
@@ -397,7 +396,6 @@
               onSearch={handleSearch}
               bind:searchName
               bind:searchedPeopleLocal
-              bind:isSearching={isSearchingPeople}
               bind:handleSearch={handleSearchPeople}
             />
           </div>
@@ -425,7 +423,7 @@
         />
       {/each}
     </div>
-  {:else if !isSearchingPeople}
+  {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />

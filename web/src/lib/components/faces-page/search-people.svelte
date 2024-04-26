@@ -11,7 +11,6 @@
   export let numberPeopleToSearch: number = maximumLengthSearchPeople;
   export let inputClass: string = 'w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg';
   export let showLoadingSpinner: boolean = false;
-  export let isSearching: boolean = false;
   export let placeholder: string = 'Name or nickname';
   export let onReset = () => {};
   export let onSearch = () => {};
@@ -25,46 +24,59 @@
     searchedPeopleLocal = searchNameLocal(searchName, searchedPeople, numberPeopleToSearch);
   };
 
+  const reset = () => {
+    searchedPeopleLocal = [];
+    cancelPreviousRequest();
+    onReset();
+  };
+
+  const cancelPreviousRequest = () => {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
   export let handleSearch = async (force?: boolean, name?: string) => {
-    isSearching = true;
     searchName = name ?? searchName;
     onSearch();
     if (searchName === '') {
-      searchedPeopleLocal = [];
-      isSearching = false;
-      onReset();
+      reset();
       return;
     }
     if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
       search();
-      isSearching = false;
       return;
     }
-    if (abortController) {
-      abortController.abort();
-    }
-    if (timeout) {
-      clearTimeout(timeout);
-    }
+    cancelPreviousRequest();
     abortController = new AbortController();
     timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
       const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
-      abortController = null;
       searchedPeople = data;
       searchWord = searchName;
     } catch (error) {
       handleError(error, "Can't search people");
     } finally {
       clearTimeout(timeout);
+      timeout = null;
+      abortController = null;
+      showLoadingSpinner = false;
+      search();
     }
-    isSearching = false;
-    showLoadingSpinner = false;
-    search();
   };
 
   const initInput = (element: HTMLInputElement) => {
     element.focus();
+  };
+
+  const handleReset = () => {
+    reset();
+    onReset();
   };
 </script>
 
@@ -73,7 +85,7 @@
     bind:name={searchName}
     {showLoadingSpinner}
     {placeholder}
-    on:reset={onReset}
+    on:reset={handleReset}
     on:search={({ detail }) => handleSearch(detail.force ?? false)}
   />
 {:else}

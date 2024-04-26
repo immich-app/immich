@@ -170,7 +170,7 @@
         <SearchPeople
           type="input"
           bind:searchName
-          bind:isSearching={isShowLoadingSearch}
+          bind:showLoadingSpinner={isShowLoadingSearch}
           bind:searchedPeopleLocal={searchedPeople}
         />
         {#if isShowLoadingSearch}

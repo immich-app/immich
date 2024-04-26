@@ -11,7 +11,6 @@
 
   let name = '';
   let showPeople: PersonResponseDto[];
-  let isSearchingPeople = false;
 
   let dispatch = createEventDispatcher<{
     select: PersonResponseDto;
@@ -30,7 +29,6 @@
     placeholder="Search people"
     bind:searchName={name}
     bind:searchedPeopleLocal={people}
-    bind:isSearching={isSearchingPeople}
     onReset={() => (people = peopleCopy)}
   />
 </div>

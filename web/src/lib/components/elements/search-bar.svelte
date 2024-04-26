@@ -16,6 +16,12 @@
     name = '';
     dispatch('reset');
   };
+
+  const handleSearch = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      dispatch('search', { force: true });
+    }
+  };
 </script>
 
 <div
@@ -33,6 +39,7 @@
     type="text"
     {placeholder}
     bind:value={name}
+    on:keydown={handleSearch}
     on:input={() => dispatch('search', { force: false })}
   />
   {#if showLoadingSpinner}
