@@ -28,6 +28,8 @@
   let searchFaces = false;
   let searchName = '';
 
+  $: showPeople = searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden);
+
   const dispatch = createEventDispatcher<{
     close: void;
     createPerson: string | null;
@@ -190,56 +192,31 @@
   <div class="px-4 py-4 text-sm">
     <h2 class="mb-8 mt-4 uppercase">All people</h2>
     <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
-      {#if searchName == ''}
-        {#each allPeople as person (person.id)}
-          {#if person.id !== editedPerson.id}
-            <div class="w-fit">
-              <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person.id)}
-                    altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
+      {#each showPeople as person (person.id)}
+        {#if person.id !== editedPerson.id}
+          <div class="w-fit">
+            <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={getPeopleThumbnailUrl(person.id)}
+                  altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
 
-                <p class="mt-1 truncate font-medium" title={getPersonNameWithHiddenValue(person.name, person.isHidden)}>
-                  {person.name}
-                </p>
-              </button>
-            </div>
-          {/if}
-        {/each}
-      {:else}
-        {#each searchedPeople as person (person.id)}
-          {#if person.id !== editedPerson.id}
-            <div class="w-fit">
-              <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person.id)}
-                    altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-              </button>
-            </div>
-          {/if}
-        {/each}
-      {/if}
+              <p class="mt-1 truncate font-medium" title={getPersonNameWithHiddenValue(person.name, person.isHidden)}>
+                {person.name}
+              </p>
+            </button>
+          </div>
+        {/if}
+      {/each}
     </div>
   </div>
 </section>
