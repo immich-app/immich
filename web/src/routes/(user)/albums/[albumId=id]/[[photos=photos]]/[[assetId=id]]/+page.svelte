@@ -570,9 +570,8 @@
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
                       <CircleIconButton
-                        title="Create link to share "
-                        backgroundColor="#d3d3d3"
-                        forceDark
+                        title="Create link to share"
+                        color="gray"
                         size="20"
                         icon={mdiLink}
                         on:click={() => (viewMode = ViewMode.LINK_SHARING)}
@@ -595,8 +594,7 @@
                     {#if albumHasViewers}
                       <CircleIconButton
                         title="View all users"
-                        backgroundColor="#d3d3d3"
-                        forceDark
+                        color="gray"
                         size="20"
                         icon={mdiDotsVertical}
                         on:click={() => (viewMode = ViewMode.VIEW_USERS)}
@@ -605,8 +603,7 @@
 
                     {#if isOwned}
                       <CircleIconButton
-                        backgroundColor="#d3d3d3"
-                        forceDark
+                        color="gray"
                         size="20"
                         icon={mdiPlus}
                         on:click={() => (viewMode = ViewMode.SELECT_USERS)}

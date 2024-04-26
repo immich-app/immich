@@ -111,8 +111,8 @@
           <CircleIconButton
             title={paused ? 'Play memories' : 'Pause memories'}
             icon={paused ? mdiPlay : mdiPause}
-            forceDark
             on:click={() => (paused = !paused)}
+            class="hover:text-black"
           />
 
           {#each currentMemory.assets as _, index}
@@ -149,7 +149,7 @@
         class:opacity-100={galleryInView}
       >
         <button on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })} disabled={!galleryInView}>
-          <CircleIconButton title="Hide gallery" icon={mdiChevronUp} backgroundColor="white" forceDark />
+          <CircleIconButton title="Hide gallery" icon={mdiChevronUp} color="light" />
         </button>
       </div>
     {/if}
@@ -209,23 +209,13 @@
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">
-                <CircleIconButton
-                  title="Previous memory"
-                  icon={mdiChevronLeft}
-                  backgroundColor="#202123"
-                  on:click={toPrevious}
-                />
+                <CircleIconButton title="Previous memory" icon={mdiChevronLeft} color="dark" on:click={toPrevious} />
               </div>
             {/if}
 
             {#if canGoForward}
               <div class="absolute top-1/2 right-0 mr-4">
-                <CircleIconButton
-                  title="Next memory"
-                  icon={mdiChevronRight}
-                  backgroundColor="#202123"
-                  on:click={toNext}
-                />
+                <CircleIconButton title="Next memory" icon={mdiChevronRight} color="dark" on:click={toNext} />
               </div>
             {/if}
 
@@ -286,7 +276,7 @@
         class:opacity-100={!galleryInView}
       >
         <button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-          <CircleIconButton title="Show gallery" icon={mdiChevronDown} backgroundColor="white" forceDark />
+          <CircleIconButton title="Show gallery" icon={mdiChevronDown} color="light" />
         </button>
       </div>
 

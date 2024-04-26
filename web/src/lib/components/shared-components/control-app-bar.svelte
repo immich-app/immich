@@ -57,15 +57,7 @@
   >
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton
-          title="Close"
-          on:click={handleClose}
-          icon={backIcon}
-          backgroundColor={'transparent'}
-          hoverColor={'#e2e7e9'}
-          size={'24'}
-          forceDark
-        />
+        <CircleIconButton title="Close" on:click={handleClose} icon={backIcon} size={'24'} />
       {/if}
       <slot name="leading" />
     </div>
