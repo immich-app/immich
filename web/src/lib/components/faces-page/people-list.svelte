@@ -18,9 +18,6 @@
   }>();
 
   $: {
-    if (!name) {
-      people = peopleCopy;
-    }
     showPeople = people.filter(
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
@@ -34,6 +31,7 @@
     bind:searchName={name}
     bind:searchedPeopleLocal={people}
     bind:isSearching={isSearchingPeople}
+    onReset={() => (people = peopleCopy)}
   />
 </div>
 

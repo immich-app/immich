@@ -30,9 +30,9 @@
     searchName = name ?? searchName;
     onSearch();
     if (searchName === '') {
-      onReset();
       searchedPeopleLocal = [];
       isSearching = false;
+      onReset();
       return;
     }
     if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
@@ -58,9 +58,9 @@
     } finally {
       clearTimeout(timeout);
     }
-    search();
     isSearching = false;
     showLoadingSpinner = false;
+    search();
   };
 
   const initInput = (element: HTMLInputElement) => {
