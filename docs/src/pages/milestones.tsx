@@ -52,6 +52,9 @@ import {
   mdiWeb,
   mdiScaleBalance,
   mdiMagnifyScan,
+  mdiChartBoxMultipleOutline,
+  mdiAccountGroupOutline,
+  mdiFlowerPoppy,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
@@ -64,7 +67,25 @@ const items: Item[] = [
     title: '30,000 Stars',
     release: 'v1.102.0',
     tag: 'v1.102.0',
-    date: new Date(2023, 4, 15),
+    date: new Date(2023, 3, 15),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiChartBoxMultipleOutline,
+    description: 'OpenTelemetry metrics for local evaluation and advanced debugging',
+    title: 'OpenTelemetry metrics',
+    release: 'v1.99.0',
+    tag: 'v1.99.0',
+    date: new Date(2024, 2, 20),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiFlowerPoppy,
+    description: 'Immich got its new logo',
+    title: 'New logo',
+    release: 'v1.98.0',
+    tag: 'v1.98.0',
+    date: new Date(2024, 2, 7),
     dateType: DateType.RELEASE,
   },
   {
@@ -101,6 +122,15 @@ const items: Item[] = [
     release: 'v1.94.0',
     tag: 'v1.94.0',
     date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiAccountGroupOutline,
+    description: '250 amazing people contributed to Immich',
+    title: '250 unique contributors',
+    release: 'v1.93.0',
+    tag: 'v1.93.0',
+    date: new Date(2024, 0, 19),
     dateType: DateType.RELEASE,
   },
   {
