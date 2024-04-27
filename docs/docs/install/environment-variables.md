@@ -61,7 +61,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | Variable                            | Description                                                              |   Default    | Services              |
 | :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------- |
 | `DB_URL`                            | Database URL                                                             |              | server, microservices |
-| `DB_HOSTNAME`                       | Database Host                                                            | `localhost`  | server, microservices |
+| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices |
 | `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices |
 | `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices |
 | `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices |
