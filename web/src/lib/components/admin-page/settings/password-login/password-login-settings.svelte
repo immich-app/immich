@@ -49,6 +49,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col">
         <SettingSwitch
+          id="enable-password-login"
           title="ENABLED"
           {disabled}
           subtitle="Login with email and password"

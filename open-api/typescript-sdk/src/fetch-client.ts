@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.101.0
+ * 1.102.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -38,6 +38,28 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type UserResponseDto = {
+    avatarColor: UserAvatarColor;
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    memoriesEnabled?: boolean;
+    name: string;
+    oauthId: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number | null;
+    shouldChangePassword: boolean;
+    status: UserStatus;
+    storageLabel: string | null;
+    updatedAt: string;
+};
+export type AlbumUserResponseDto = {
+    role: AlbumUserRole;
+    user: UserResponseDto;
+};
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
@@ -60,24 +82,6 @@ export type ExifResponseDto = {
     projectionType?: string | null;
     state?: string | null;
     timeZone?: string | null;
-};
-export type UserResponseDto = {
-    avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
-    email: string;
-    id: string;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
-    name: string;
-    oauthId: string;
-    profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type AssetFaceWithoutPersonResponseDto = {
     boundingBoxX1: number;
@@ -144,6 +148,7 @@ export type AssetResponseDto = {
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -157,6 +162,7 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
+    /** Deprecated in favor of albumUsers */
     sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
@@ -187,8 +193,17 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
+export type UpdateAlbumUserDto = {
+    role: AlbumUserRole;
+};
+export type AlbumUserAddDto = {
+    role?: AlbumUserRole;
+    userId: string;
+};
 export type AddUsersDto = {
-    sharedUserIds: string[];
+    albumUsers: AlbumUserAddDto[];
+    /** Deprecated in favor of albumUsers */
+    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
@@ -236,20 +251,6 @@ export type AssetBulkUploadCheckResult = {
 };
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
-};
-export type CuratedLocationsResponseDto = {
-    city: string;
-    deviceAssetId: string;
-    deviceId: string;
-    id: string;
-    resizePath: string;
-};
-export type CuratedObjectsResponseDto = {
-    deviceAssetId: string;
-    deviceId: string;
-    id: string;
-    "object": string;
-    resizePath: string;
 };
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
@@ -316,27 +317,6 @@ export type AuditDeletesResponseDto = {
     ids: string[];
     needsFullSync: boolean;
 };
-export type FileReportItemDto = {
-    checksum?: string;
-    entityId: string;
-    entityType: PathEntityType;
-    pathType: PathType;
-    pathValue: string;
-};
-export type FileReportDto = {
-    extras: string[];
-    orphans: FileReportItemDto[];
-};
-export type FileChecksumDto = {
-    filenames: string[];
-};
-export type FileChecksumResponseDto = {
-    checksum: string;
-    filename: string;
-};
-export type FileReportFixDto = {
-    items: FileReportItemDto[];
-};
 export type SignUpDto = {
     email: string;
     name: string;
@@ -345,14 +325,6 @@ export type SignUpDto = {
 export type ChangePasswordDto = {
     newPassword: string;
     password: string;
-};
-export type AuthDeviceResponseDto = {
-    createdAt: string;
-    current: boolean;
-    deviceOS: string;
-    deviceType: string;
-    id: string;
-    updatedAt: string;
 };
 export type LoginCredentialDto = {
     email: string;
@@ -461,7 +433,6 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     isVisible?: boolean;
-    isWatched?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -607,6 +578,27 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type FileReportItemDto = {
+    checksum?: string;
+    entityId: string;
+    entityType: PathEntityType;
+    pathType: PathType;
+    pathValue: string;
+};
+export type FileReportDto = {
+    extras: string[];
+    orphans: FileReportItemDto[];
+};
+export type FileChecksumDto = {
+    filenames: string[];
+};
+export type FileChecksumResponseDto = {
+    checksum: string;
+    filename: string;
+};
+export type FileReportFixDto = {
+    items: FileReportItemDto[];
 };
 export type SearchFacetCountResponseDto = {
     count: number;
@@ -792,6 +784,14 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
+export type SessionResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    id: string;
+    updatedAt: string;
+};
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
     allowDownload: boolean;
@@ -836,6 +836,11 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     success: boolean;
 };
+export type AssetDeltaSyncResponseDto = {
+    deleted: string[];
+    needsFullSync: boolean;
+    upserted: AssetResponseDto[];
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     acceptedAudioCodecs: AudioCodec[];
@@ -860,6 +865,7 @@ export type SystemConfigFFmpegDto = {
 };
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
+    extractEmbedded: boolean;
     previewFormat: ImageFormat;
     previewSize: number;
     quality: number;
@@ -992,6 +998,13 @@ export type SystemConfigTemplateStorageOptionDto = {
     secondOptions: string[];
     weekOptions: string[];
     yearOptions: string[];
+};
+export type AdminOnboardingUpdateDto = {
+    isOnboarded: boolean;
+};
+export type ReverseGeocodingStateResponseDto = {
+    lastImportFileName: string | null;
+    lastUpdate: string | null;
 };
 export type CreateTagDto = {
     name: string;
@@ -1197,6 +1210,17 @@ export function removeUserFromAlbum({ id, userId }: {
         method: "DELETE"
     }));
 }
+export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
+    id: string;
+    userId: string;
+    updateAlbumUserDto: UpdateAlbumUserDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/album/${encodeURIComponent(id)}/user/${encodeURIComponent(userId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumUserDto
+    })));
+}
 export function addUsersToAlbum({ id, addUsersDto }: {
     id: string;
     addUsersDto: AddUsersDto;
@@ -1325,22 +1349,6 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
         body: assetBulkUploadCheckDto
     })));
 }
-export function getCuratedLocations(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CuratedLocationsResponseDto[];
-    }>("/asset/curated-locations", {
-        ...opts
-    }));
-}
-export function getCuratedObjects(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CuratedObjectsResponseDto[];
-    }>("/asset/curated-objects", {
-        ...opts
-    }));
-}
 /**
  * Get all asset of a device that are in the database, ID only.
  */
@@ -1438,14 +1446,6 @@ export function getRandom({ count }: {
     }>(`/asset/random${QS.query(QS.explode({
         count
     }))}`, {
-        ...opts
-    }));
-}
-export function getAssetSearchTerms(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: string[];
-    }>("/asset/search-terms", {
         ...opts
     }));
 }
@@ -1646,35 +1646,6 @@ export function getAuditDeletes({ after, entityType, userId }: {
         ...opts
     }));
 }
-export function getAuditFiles(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: FileReportDto;
-    }>("/audit/file-report", {
-        ...opts
-    }));
-}
-export function getFileChecksums({ fileChecksumDto }: {
-    fileChecksumDto: FileChecksumDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: FileChecksumResponseDto[];
-    }>("/audit/file-report/checksum", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileChecksumDto
-    })));
-}
-export function fixAuditFiles({ fileReportFixDto }: {
-    fileReportFixDto: FileReportFixDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/audit/file-report/fix", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: fileReportFixDto
-    })));
-}
 export function signUpAdmin({ signUpDto }: {
     signUpDto: SignUpDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1698,28 +1669,6 @@ export function changePassword({ changePasswordDto }: {
         method: "POST",
         body: changePasswordDto
     })));
-}
-export function logoutAuthDevices(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/auth/devices", {
-        ...opts,
-        method: "DELETE"
-    }));
-}
-export function getAuthDevices(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AuthDeviceResponseDto[];
-    }>("/auth/devices", {
-        ...opts
-    }));
-}
-export function logoutAuthDevice({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/auth/devices/${encodeURIComponent(id)}`, {
-        ...opts,
-        method: "DELETE"
-    }));
 }
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;
@@ -2223,6 +2172,35 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
+export function getAuditFiles(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FileReportDto;
+    }>("/report", {
+        ...opts
+    }));
+}
+export function getFileChecksums({ fileChecksumDto }: {
+    fileChecksumDto: FileChecksumDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: FileChecksumResponseDto[];
+    }>("/report/checksum", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: fileChecksumDto
+    })));
+}
+export function fixAuditFiles({ fileReportFixDto }: {
+    fileReportFixDto: FileReportFixDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/report/fix", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: fileReportFixDto
+    })));
+}
 export function search({ clip, motion, page, q, query, recent, size, smart, $type, withArchived }: {
     clip?: boolean;
     motion?: boolean;
@@ -2347,12 +2325,6 @@ export function getServerInfo(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function setAdminOnboarding(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/server-info/admin-onboarding", {
-        ...opts,
-        method: "POST"
-    }));
-}
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2407,6 +2379,28 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         data: ServerVersionResponseDto;
     }>("/server-info/version", {
         ...opts
+    }));
+}
+export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/sessions", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getSessions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto[];
+    }>("/sessions", {
+        ...opts
+    }));
+}
+export function deleteSession({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/sessions/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getAllSharedLinks(opts?: Oazapfts.RequestOpts) {
@@ -2508,6 +2502,40 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+export function getDeltaSync({ updatedAfter, userIds }: {
+    updatedAfter: string;
+    userIds: string[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetDeltaSyncResponseDto;
+    }>(`/sync/delta-sync${QS.query(QS.explode({
+        updatedAfter,
+        userIds
+    }))}`, {
+        ...opts
+    }));
+}
+export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
+    lastCreationDate?: string;
+    lastId?: string;
+    limit: number;
+    updatedUntil: string;
+    userId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/sync/full-sync${QS.query(QS.explode({
+        lastCreationDate,
+        lastId,
+        limit,
+        updatedUntil,
+        userId
+    }))}`, {
+        ...opts
+    }));
+}
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2555,6 +2583,31 @@ export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: SystemConfigTemplateStorageOptionDto;
     }>("/system-config/storage-template-options", {
+        ...opts
+    }));
+}
+export function getAdminOnboarding(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AdminOnboardingUpdateDto;
+    }>("/system-metadata/admin-onboarding", {
+        ...opts
+    }));
+}
+export function updateAdminOnboarding({ adminOnboardingUpdateDto }: {
+    adminOnboardingUpdateDto: AdminOnboardingUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/system-metadata/admin-onboarding", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: adminOnboardingUpdateDto
+    })));
+}
+export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ReverseGeocodingStateResponseDto;
+    }>("/system-metadata/reverse-geocoding-state", {
         ...opts
     }));
 }
@@ -2862,6 +2915,10 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
+}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
@@ -2909,20 +2966,6 @@ export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
 }
-export enum PathEntityType {
-    Asset = "asset",
-    Person = "person",
-    User = "user"
-}
-export enum PathType {
-    Original = "original",
-    Preview = "preview",
-    Thumbnail = "thumbnail",
-    EncodedVideo = "encoded_video",
-    Sidecar = "sidecar",
-    Face = "face",
-    Profile = "profile"
-}
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
@@ -2953,6 +2996,20 @@ export enum Type2 {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
+}
+export enum PathEntityType {
+    Asset = "asset",
+    Person = "person",
+    User = "user"
+}
+export enum PathType {
+    Original = "original",
+    Preview = "preview",
+    Thumbnail = "thumbnail",
+    EncodedVideo = "encoded_video",
+    Sidecar = "sidecar",
+    Face = "face",
+    Profile = "profile"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -2985,7 +3042,8 @@ export enum AudioCodec {
 export enum VideoCodec {
     H264 = "h264",
     Hevc = "hevc",
-    Vp9 = "vp9"
+    Vp9 = "vp9",
+    Av1 = "av1"
 }
 export enum CQMode {
     Auto = "auto",

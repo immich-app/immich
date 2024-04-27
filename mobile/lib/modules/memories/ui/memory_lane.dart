@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class MemoryLane extends HookConsumerWidget {
@@ -33,7 +33,9 @@ class MemoryLane extends HookConsumerWidget {
 
                       return GestureDetector(
                         onTap: () {
-                          HapticFeedback.heavyImpact();
+                          ref
+                              .read(hapticFeedbackProvider.notifier)
+                              .heavyImpact();
                           context.pushRoute(
                             MemoryRoute(
                               memories: memories,

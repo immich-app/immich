@@ -57,6 +57,7 @@
 
 {#if isShowConfirmation}
   <ConfirmDialogue
+    id="remove-from-album-modal"
     title="Remove from {album.albumName}"
     confirmText="Remove"
     onConfirm={removeFromAlbum}

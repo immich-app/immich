@@ -6,11 +6,12 @@ import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
-  let keyMock: jest.Mocked<IKeyRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let keyMock: Mocked<IKeyRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
 
   beforeEach(() => {
     cryptoMock = newCryptoRepositoryMock();

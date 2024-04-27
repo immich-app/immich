@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets, updateAsset } from '@immich/sdk';
+import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -32,6 +32,9 @@ describe('/search', () => {
   let assetGlarus: AssetFileUploadResponseDto;
   let assetSprings: AssetFileUploadResponseDto;
   let assetLast: AssetFileUploadResponseDto;
+  let cities: string[];
+  let states: string[];
+  let countries: string[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -79,7 +82,7 @@ describe('/search', () => {
     }
 
     // note: the coordinates here are not the actual coordinates of the images and are random for most of them
-    const cities = [
+    const coordinates = [
       { latitude: 48.853_41, longitude: 2.3488 }, // paris
       { latitude: 63.0695, longitude: -151.0074 }, // denali
       { latitude: 52.524_37, longitude: 13.410_53 }, // berlin
@@ -101,7 +104,7 @@ describe('/search', () => {
     ];
 
     const updates = assets.map((asset, i) =>
-      updateAsset({ id: asset.id, updateAssetDto: cities[i] }, { headers: asBearerAuth(admin.accessToken) }),
+      updateAsset({ id: asset.id, updateAssetDto: coordinates[i] }, { headers: asBearerAuth(admin.accessToken) }),
     );
 
     await Promise.all(updates);
@@ -133,6 +136,12 @@ describe('/search', () => {
     assetLast = assets.at(-1) as AssetFileUploadResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
+
+    const mapMarkers = await getMapMarkers({}, { headers: asBearerAuth(admin.accessToken) });
+    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver.id);
+    cities = [...new Set(nonTrashed.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
+    states = [...new Set(nonTrashed.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
+    countries = [...new Set(nonTrashed.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
   }, 30_000);
 
   afterAll(async () => {
@@ -452,21 +461,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual([
-        'Cuba',
-        'France',
-        'Georgia',
-        'Germany',
-        'Ghana',
-        'Japan',
-        'Morocco',
-        "People's Republic of China",
-        'Russian Federation',
-        'Singapore',
-        'Spain',
-        'Switzerland',
-        'United States of America',
-      ]);
+      expect(body).toEqual(countries);
       expect(status).toBe(200);
     });
 
@@ -474,23 +469,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=state')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual([
-        'Accra, Greater Accra',
-        'Berlin',
-        'Glarus, Glarus',
-        'Havana',
-        'Marrakech, Marrakesh-Safi',
-        'Mesa County, Colorado',
-        'Neshoba County, Mississippi',
-        'New York',
-        'Page County, Virginia',
-        'Paris, Île-de-France',
-        'Province of Córdoba, Andalusia',
-        'Shanghai Municipality, Shanghai',
-        'St.-Petersburg',
-        'Tbilisi',
-        'Tokyo',
-      ]);
+      expect(body).toEqual(states);
       expect(status).toBe(200);
     });
 
@@ -498,24 +477,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=city')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual([
-        'Accra',
-        'Berlin',
-        'Glarus',
-        'Havana',
-        'Marrakesh',
-        'Montalbán de Córdoba',
-        'New York City',
-        'Palisade',
-        'Paris',
-        'Philadelphia',
-        'Saint Petersburg',
-        'Shanghai',
-        'Singapore',
-        'Stanley',
-        'Tbilisi',
-        'Tokyo',
-      ]);
+      expect(body).toEqual(cities);
       expect(status).toBe(200);
     });
 

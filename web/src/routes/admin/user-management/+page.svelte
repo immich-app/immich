@@ -1,15 +1,14 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
+  import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
+  import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -116,22 +115,22 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal onClose={() => (shouldShowCreateUserForm = false)}>
-          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
-        </FullScreenModal>
+        <CreateUserForm
+          on:submit={onUserCreated}
+          on:cancel={() => (shouldShowCreateUserForm = false)}
+          onClose={() => (shouldShowCreateUserForm = false)}
+        />
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal onClose={() => (shouldShowEditUserForm = false)}>
-          <EditUserForm
-            user={selectedUser}
-            bind:newPassword
-            canResetPassword={selectedUser?.id !== $user.id}
-            on:editSuccess={onEditUserSuccess}
-            on:resetPasswordSuccess={onEditPasswordSuccess}
-            on:close={() => (shouldShowEditUserForm = false)}
-          />
-        </FullScreenModal>
+        <EditUserForm
+          user={selectedUser}
+          bind:newPassword
+          canResetPassword={selectedUser?.id !== $user.id}
+          on:editSuccess={onEditUserSuccess}
+          on:resetPasswordSuccess={onEditPasswordSuccess}
+          onClose={() => (shouldShowEditUserForm = false)}
+        />
       {/if}
 
       {#if shouldShowDeleteConfirmDialog}
@@ -153,40 +152,39 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <FullScreenModal onClose={() => (shouldShowPasswordResetSuccess = false)}>
-          <ConfirmDialogue
-            title="Password Reset Success"
-            confirmText="Done"
-            onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-            onClose={() => (shouldShowPasswordResetSuccess = false)}
-            hideCancelButton={true}
-            confirmColor="green"
-          >
-            <svelte:fragment slot="prompt">
-              <div class="flex flex-col gap-4">
-                <p>The user's password has been reset:</p>
+        <ConfirmDialogue
+          id="password-reset-success-modal"
+          title="Password reset success"
+          confirmText="Done"
+          onConfirm={() => (shouldShowPasswordResetSuccess = false)}
+          onClose={() => (shouldShowPasswordResetSuccess = false)}
+          hideCancelButton={true}
+          confirmColor="green"
+        >
+          <svelte:fragment slot="prompt">
+            <div class="flex flex-col gap-4">
+              <p>The user's password has been reset:</p>
 
-                <div class="flex justify-center gap-2">
-                  <code
-                    class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
-                  >
-                    {newPassword}
-                  </code>
-                  <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
-                    <div class="flex place-items-center gap-2 text-sm">
-                      <Icon path={mdiContentCopy} size="18" />
-                    </div>
-                  </LinkButton>
-                </div>
-
-                <p>
-                  Please provide the temporary password to the user and inform them they will need to change the
-                  password at their next login.
-                </p>
+              <div class="flex justify-center gap-2">
+                <code
+                  class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >
+                  {newPassword}
+                </code>
+                <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
+                  <div class="flex place-items-center gap-2 text-sm">
+                    <Icon path={mdiContentCopy} size="18" />
+                  </div>
+                </LinkButton>
               </div>
-            </svelte:fragment>
-          </ConfirmDialogue>
-        </FullScreenModal>
+
+              <p>
+                Please provide the temporary password to the user and inform them they will need to change the password
+                at their next login.
+              </p>
+            </div>
+          </svelte:fragment>
+        </ConfirmDialogue>
       {/if}
 
       <table class="my-5 w-full text-left">
@@ -200,7 +198,7 @@
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
         </thead>
-        <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
             {#each allUsers as immichUser, index}
               <tr

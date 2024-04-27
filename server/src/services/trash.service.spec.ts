@@ -9,13 +9,14 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(TrashService.name, () => {
   let sut: TrashService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let eventMock: Mocked<IEventRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();

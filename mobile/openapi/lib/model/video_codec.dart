@@ -26,12 +26,14 @@ class VideoCodec {
   static const h264 = VideoCodec._(r'h264');
   static const hevc = VideoCodec._(r'hevc');
   static const vp9 = VideoCodec._(r'vp9');
+  static const av1 = VideoCodec._(r'av1');
 
   /// List of all possible values in this [enum][VideoCodec].
   static const values = <VideoCodec>[
     h264,
     hevc,
     vp9,
+    av1,
   ];
 
   static VideoCodec? fromJson(dynamic value) => VideoCodecTypeTransformer().decode(value);
@@ -73,6 +75,7 @@ class VideoCodecTypeTransformer {
         case r'h264': return VideoCodec.h264;
         case r'hevc': return VideoCodec.hevc;
         case r'vp9': return VideoCodec.vp9;
+        case r'av1': return VideoCodec.av1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

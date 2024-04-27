@@ -12,6 +12,7 @@ import { format } from 'sql-formatter';
 import { databaseConfig } from 'src/database.config';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AuthService } from 'src/services/auth.service';
@@ -58,6 +59,9 @@ class SqlGenerator {
     try {
       await this.setup();
       for (const repository of repositories) {
+        if (repository.provide === ILoggerRepository) {
+          continue;
+        }
         await this.process(repository);
       }
       await this.write();

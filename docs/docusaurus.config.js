@@ -144,6 +144,10 @@ const config = {
                 label: 'Discord',
                 href: 'https://discord.com/invite/D8JsnBEuKb',
               },
+              {
+                label: 'Reddit',
+                href: 'https://www.reddit.com/r/immich/',
+              },
             ],
           },
           {
@@ -156,6 +160,10 @@ const config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
+              },
+              {
+                label: 'YouTube',
+                href: 'https://www.youtube.com/@immich-app',
               },
             ],
           },

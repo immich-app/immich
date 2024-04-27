@@ -2,17 +2,20 @@ import {
   CallHandler,
   ExecutionContext,
   HttpException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
-import { ImmichLogger } from 'src/utils/logger';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { isConnectionAborted, routeToErrorMessage } from 'src/utils/misc';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {
-  private logger = new ImmichLogger(ErrorInterceptor.name);
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+    this.logger.setContext(ErrorInterceptor.name);
+  }
 
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
     return next.handle().pipe(

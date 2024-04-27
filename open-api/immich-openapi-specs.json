@@ -630,6 +630,57 @@
         "tags": [
           "Album"
         ]
+      },
+      "put": {
+        "operationId": "updateAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
       }
     },
     "/album/{id}/users": {
@@ -1098,76 +1149,6 @@
         ]
       }
     },
-    "/asset/curated-locations": {
-      "get": {
-        "operationId": "getCuratedLocations",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CuratedLocationsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/curated-objects": {
-      "get": {
-        "operationId": "getCuratedObjects",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CuratedObjectsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
@@ -1447,6 +1428,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 31,
               "type": "integer"
             }
           },
@@ -1455,6 +1438,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 12,
               "type": "integer"
             }
           }
@@ -1499,6 +1484,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           }
@@ -1510,41 +1496,6 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/search-terms": {
-      "get": {
-        "operationId": "getAssetSearchTerms",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
                   },
                   "type": "array"
                 }
@@ -2086,6 +2037,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           },
@@ -2123,6 +2075,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 1000,
               "type": "number"
             }
           },
@@ -2345,118 +2299,6 @@
         ]
       }
     },
-    "/audit/file-report": {
-      "get": {
-        "operationId": "getAuditFiles",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileReportDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/checksum": {
-      "post": {
-        "operationId": "getFileChecksums",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileChecksumDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FileChecksumResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
-    "/audit/file-report/fix": {
-      "post": {
-        "operationId": "fixAuditFiles",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileReportFixDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -2511,99 +2353,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/devices": {
-      "delete": {
-        "operationId": "logoutAuthDevices",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      },
-      "get": {
-        "operationId": "getAuthDevices",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AuthDeviceResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Authentication"
-        ]
-      }
-    },
-    "/auth/devices/{id}": {
-      "delete": {
-        "operationId": "logoutAuthDevice",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
             "description": ""
           }
         },
@@ -4522,6 +4271,118 @@
         ]
       }
     },
+    "/report": {
+      "get": {
+        "operationId": "getAuditFiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileReportDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/checksum": {
+      "post": {
+        "operationId": "getFileChecksums",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileChecksumDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FileChecksumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
+    "/report/fix": {
+      "post": {
+        "operationId": "fixAuditFiles",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileReportFixDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "File Report"
+        ]
+      }
+    },
     "/search": {
       "get": {
         "deprecated": true,
@@ -4549,6 +4410,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           },
@@ -4581,6 +4443,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 1000,
               "type": "number"
             }
           },
@@ -5001,31 +4865,6 @@
         ]
       }
     },
-    "/server-info/admin-onboarding": {
-      "post": {
-        "operationId": "setAdminOnboarding",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -5181,6 +5020,99 @@
         },
         "tags": [
           "Server Info"
+        ]
+      }
+    },
+    "/sessions": {
+      "delete": {
+        "operationId": "deleteAllSessions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      },
+      "get": {
+        "operationId": "getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
+      }
+    },
+    "/sessions/{id}": {
+      "delete": {
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
         ]
       }
     },
@@ -5566,6 +5498,141 @@
         ]
       }
     },
+    "/sync/delta-sync": {
+      "get": {
+        "operationId": "getDeltaSync",
+        "parameters": [
+          {
+            "name": "updatedAfter",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userIds",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDeltaSyncResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/sync/full-sync": {
+      "get": {
+        "operationId": "getAllForUserFullSync",
+        "parameters": [
+          {
+            "name": "lastCreationDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "updatedUntil",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/system-config": {
       "get": {
         "operationId": "getConfig",
@@ -5748,6 +5815,103 @@
         ],
         "tags": [
           "System Config"
+        ]
+      }
+    },
+    "/system-metadata/admin-onboarding": {
+      "get": {
+        "operationId": "getAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      },
+      "post": {
+        "operationId": "updateAdminOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOnboardingUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
+        ]
+      }
+    },
+    "/system-metadata/reverse-geocoding-state": {
+      "get": {
+        "operationId": "getReverseGeocodingState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseGeocodingStateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Metadata"
         ]
       }
     },
@@ -6872,7 +7036,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.101.0",
+    "version": "1.102.3",
     "contact": {}
   },
   "tags": [],
@@ -7033,7 +7197,15 @@
       },
       "AddUsersDto": {
         "properties": {
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserAddDto"
+            },
+            "type": "array"
+          },
           "sharedUserIds": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -7042,7 +7214,18 @@
           }
         },
         "required": [
-          "sharedUserIds"
+          "albumUsers"
+        ],
+        "type": "object"
+      },
+      "AdminOnboardingUpdateDto": {
+        "properties": {
+          "isOnboarded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOnboarded"
         ],
         "type": "object"
       },
@@ -7073,6 +7256,12 @@
           "albumThumbnailAssetId": {
             "nullable": true,
             "type": "string"
+          },
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
+            },
+            "type": "array"
           },
           "assetCount": {
             "type": "integer"
@@ -7120,6 +7309,8 @@
             "type": "boolean"
           },
           "sharedUsers": {
+            "deprecated": true,
+            "description": "Deprecated in favor of albumUsers",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7137,6 +7328,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumUsers",
           "assetCount",
           "assets",
           "createdAt",
@@ -7151,6 +7343,43 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "AlbumUserAddDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "AlbumUserResponseDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "role",
+          "user"
+        ],
+        "type": "object"
+      },
+      "AlbumUserRole": {
+        "enum": [
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
       },
       "AllJobStatusResponseDto": {
         "properties": {
@@ -7332,6 +7561,31 @@
         "required": [
           "action",
           "id"
+        ],
+        "type": "object"
+      },
+      "AssetDeltaSyncResponseDto": {
+        "properties": {
+          "deleted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "needsFullSync": {
+            "type": "boolean"
+          },
+          "upserted": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "deleted",
+          "needsFullSync",
+          "upserted"
         ],
         "type": "object"
       },
@@ -7733,37 +7987,6 @@
         ],
         "type": "object"
       },
-      "AuthDeviceResponseDto": {
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "current": {
-            "type": "boolean"
-          },
-          "deviceOS": {
-            "type": "string"
-          },
-          "deviceType": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "createdAt",
-          "current",
-          "deviceOS",
-          "deviceType",
-          "id",
-          "updatedAt"
-        ],
-        "type": "object"
-      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -7843,6 +8066,7 @@
         "properties": {
           "newPassword": {
             "example": "password",
+            "minLength": 8,
             "type": "string"
           },
           "password": {
@@ -8000,9 +8224,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "isWatched": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -8078,6 +8299,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -8093,60 +8315,6 @@
           "email",
           "name",
           "password"
-        ],
-        "type": "object"
-      },
-      "CuratedLocationsResponseDto": {
-        "properties": {
-          "city": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "city",
-          "deviceAssetId",
-          "deviceId",
-          "id",
-          "resizePath"
-        ],
-        "type": "object"
-      },
-      "CuratedObjectsResponseDto": {
-        "properties": {
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetId",
-          "deviceId",
-          "id",
-          "object",
-          "resizePath"
         ],
         "type": "object"
       },
@@ -8183,6 +8351,7 @@
             "type": "string"
           },
           "archiveSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "assetIds": {
@@ -8523,6 +8692,7 @@
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -8995,6 +9165,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -9012,6 +9183,8 @@
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -9113,6 +9286,7 @@
       "OnThisDayDto": {
         "properties": {
           "year": {
+            "minimum": 1,
             "type": "number"
           }
         },
@@ -9468,13 +9642,18 @@
           },
           "maxDistance": {
             "format": "float",
+            "maximum": 2,
+            "minimum": 0,
             "type": "number"
           },
           "minFaces": {
+            "minimum": 1,
             "type": "integer"
           },
           "minScore": {
             "format": "float",
+            "maximum": 1,
+            "minimum": 0,
             "type": "number"
           },
           "modelName": {
@@ -9490,6 +9669,23 @@
           "minFaces",
           "minScore",
           "modelName"
+        ],
+        "type": "object"
+      },
+      "ReverseGeocodingStateResponseDto": {
+        "properties": {
+          "lastImportFileName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lastUpdate": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "lastImportFileName",
+          "lastUpdate"
         ],
         "type": "object"
       },
@@ -9893,6 +10089,37 @@
         ],
         "type": "object"
       },
+      "SessionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "current",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SharedLinkCreateDto": {
         "properties": {
           "albumId": {
@@ -10145,6 +10372,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -10158,6 +10386,8 @@
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -10295,21 +10525,27 @@
             "type": "array"
           },
           "bframes": {
+            "maximum": 16,
+            "minimum": -1,
             "type": "integer"
           },
           "cqMode": {
             "$ref": "#/components/schemas/CQMode"
           },
           "crf": {
+            "maximum": 51,
+            "minimum": 0,
             "type": "integer"
           },
           "gopSize": {
+            "minimum": 0,
             "type": "integer"
           },
           "maxBitrate": {
             "type": "string"
           },
           "npl": {
+            "minimum": 0,
             "type": "integer"
           },
           "preferredHwDevice": {
@@ -10319,6 +10555,8 @@
             "type": "string"
           },
           "refs": {
+            "maximum": 6,
+            "minimum": 0,
             "type": "integer"
           },
           "targetAudioCodec": {
@@ -10334,6 +10572,7 @@
             "type": "boolean"
           },
           "threads": {
+            "minimum": 0,
             "type": "integer"
           },
           "tonemap": {
@@ -10375,24 +10614,32 @@
           "colorspace": {
             "$ref": "#/components/schemas/Colorspace"
           },
+          "extractEmbedded": {
+            "type": "boolean"
+          },
           "previewFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
           "previewSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "quality": {
+            "maximum": 100,
+            "minimum": 1,
             "type": "integer"
           },
           "thumbnailFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
           "thumbnailSize": {
+            "minimum": 1,
             "type": "integer"
           }
         },
         "required": [
           "colorspace",
+          "extractEmbedded",
           "previewFormat",
           "previewSize",
           "quality",
@@ -10575,6 +10822,7 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "minimum": 0,
             "type": "number"
           },
           "enabled": {
@@ -10753,6 +11001,7 @@
       "SystemConfigTrashDto": {
         "properties": {
           "days": {
+            "minimum": 0,
             "type": "integer"
           },
           "enabled": {
@@ -10768,6 +11017,7 @@
       "SystemConfigUserDto": {
         "properties": {
           "deleteDelay": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -10886,6 +11136,17 @@
         },
         "type": "object"
       },
+      "UpdateAlbumUserDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
       "UpdateAssetDto": {
         "properties": {
           "dateTimeOriginal": {
@@ -10994,6 +11255,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -11234,7 +11496,8 @@
         "enum": [
           "h264",
           "hevc",
-          "vp9"
+          "vp9",
+          "av1"
         ],
         "type": "string"
       }

@@ -30,7 +30,7 @@
 
 <UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job">
+    <a href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
       <LinkButton>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCog} size="18" />

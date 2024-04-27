@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ONE_HOUR, WEB_ROOT } from 'src/constants';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
 import { DatabaseService } from 'src/services/database.service';
 import { JobService } from 'src/services/job.service';
@@ -11,7 +12,6 @@ import { ServerInfoService } from 'src/services/server-info.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { ImmichLogger } from 'src/utils/logger';
 import { OpenGraphTags } from 'src/utils/misc';
 
 const render = (index: string, meta: OpenGraphTags) => {
@@ -36,8 +36,6 @@ const render = (index: string, meta: OpenGraphTags) => {
 
 @Injectable()
 export class ApiService {
-  private logger = new ImmichLogger(ApiService.name);
-
   constructor(
     private authService: AuthService,
     private configService: SystemConfigService,
@@ -46,7 +44,10 @@ export class ApiService {
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
     private databaseService: DatabaseService,
-  ) {}
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(ApiService.name);
+  }
 
   @Interval(ONE_HOUR.as('milliseconds'))
   async onVersionCheck() {

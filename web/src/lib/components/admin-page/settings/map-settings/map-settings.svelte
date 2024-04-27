@@ -26,6 +26,7 @@
         <SettingAccordion key="map" title="Map Settings" subtitle="Manage map settings">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
+              id="enable-map-features"
               title="ENABLED"
               {disabled}
               subtitle="Enable map features"
@@ -66,6 +67,7 @@
           </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
+              id="enable-reverse-geocoding"
               title="ENABLED"
               {disabled}
               subtitle="Enable reverse geocoding"

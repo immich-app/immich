@@ -71,7 +71,13 @@
         >.
       </p>
 
-      <SettingSwitch {disabled} title="ENABLE" subtitle="Login with OAuth" bind:checked={config.oauth.enabled} />
+      <SettingSwitch
+        id="login-with-oauth"
+        {disabled}
+        title="ENABLE"
+        subtitle="Login with OAuth"
+        bind:checked={config.oauth.enabled}
+      />
 
       {#if config.oauth.enabled}
         <hr />
@@ -160,6 +166,7 @@
         />
 
         <SettingSwitch
+          id="auto-register-new-users"
           title="AUTO REGISTER"
           subtitle="Automatically register new users after signing in with OAuth"
           bind:checked={config.oauth.autoRegister}
@@ -167,6 +174,7 @@
         />
 
         <SettingSwitch
+          id="auto-launch-oauth"
           title="AUTO LAUNCH"
           subtitle="Start the OAuth login flow automatically upon navigating to the login page"
           disabled={disabled || !config.oauth.enabled}
@@ -174,6 +182,7 @@
         />
 
         <SettingSwitch
+          id="mobile-redirect-uri-override"
           title="MOBILE REDIRECT URI OVERRIDE"
           subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
           disabled={disabled || !config.oauth.enabled}

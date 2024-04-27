@@ -37,9 +37,12 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+    const videoCodec = [TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy';
+
     const options = [
-      `-c:v ${[TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy'}`,
-      `-c:a ${[TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy'}`,
+      `-c:v ${videoCodec}`,
+      `-c:a ${audioCodec}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -61,7 +64,10 @@ class BaseConfig implements VideoCodecSWConfig {
       options.push(`-g ${this.getGopSize()}`);
     }
 
-    if (this.config.targetVideoCodec === VideoCodec.HEVC) {
+    if (
+      this.config.targetVideoCodec === VideoCodec.HEVC &&
+      (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
+    ) {
       options.push('-tag:v hvc1');
     }
 
@@ -118,7 +124,7 @@ class BaseConfig implements VideoCodecSWConfig {
       return false;
     }
 
-    return this.isBitrateConstrained() || this.config.targetVideoCodec === VideoCodec.VP9;
+    return this.isBitrateConstrained();
   }
 
   getBitrateDistribution() {
@@ -259,7 +265,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC];
   }
 
   validateDevices(devices: string[]) {
@@ -343,27 +349,23 @@ export class ThumbnailConfig extends BaseConfig {
 
 export class H264Config extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x264-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x264-params "pools=none"',
-      `-x264-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 
 export class HEVCConfig extends BaseConfig {
   getThreadOptions() {
-    if (this.config.threads <= 0) {
-      return [];
+    const options = super.getThreadOptions();
+    if (this.config.threads === 1) {
+      options.push('-x265-params frame-threads=1:pools=none');
     }
-    return [
-      ...super.getThreadOptions(),
-      '-x265-params "pools=none"',
-      `-x265-params "frame-threads=${this.config.threads}"`,
-    ];
+
+    return options;
   }
 }
 
@@ -392,11 +394,49 @@ export class VP9Config extends BaseConfig {
   getThreadOptions() {
     return ['-row-mt 1', ...super.getThreadOptions()];
   }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
+  }
+}
+
+export class AV1Config extends BaseConfig {
+  getPresetOptions() {
+    const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
+    if (speed >= 0) {
+      return [`-preset ${speed}`];
+    }
+    return [];
+  }
+
+  getBitrateOptions() {
+    const options = [`-crf ${this.config.crf}`];
+    const bitrates = this.getBitrateDistribution();
+    const svtparams = [];
+    if (this.config.threads > 0) {
+      svtparams.push(`lp=${this.config.threads}`);
+    }
+    if (bitrates.max > 0) {
+      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`);
+    }
+    if (svtparams.length > 0) {
+      options.push(`-svtav1-params ${svtparams.join(':')}`);
+    }
+    return options;
+  }
+
+  getThreadOptions() {
+    return []; // Already set above with svtav1-params
+  }
+
+  eligibleForTwoPass() {
+    return this.config.twoPass;
+  }
 }
 
 export class NVENCConfig extends BaseHWConfig {
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseInputOptions() {
@@ -525,6 +565,10 @@ export class QSVConfig extends BaseHWConfig {
     return options;
   }
 
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
+  }
+
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
   getBFrames() {
     if (this.config.bframes < 0) {
@@ -601,6 +645,10 @@ export class VAAPIConfig extends BaseHWConfig {
     }
 
     return options;
+  }
+
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
   }
 
   useCQP() {

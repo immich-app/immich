@@ -1,37 +1,44 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import empty2Url from '$lib/assets/empty-2.svg';
-  import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { createAlbum } from '@immich/sdk';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import { flip } from 'svelte/animate';
-  import { handleError } from '../../../lib/utils/handle-error';
   import type { PageData } from './$types';
+  import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+  import {
+    AlbumFilter,
+    AlbumGroupBy,
+    AlbumSortBy,
+    AlbumViewMode,
+    SortOrder,
+    type AlbumViewSettings,
+  } from '$lib/stores/preferences.store';
+  import Albums from '$lib/components/album-page/albums-list.svelte';
 
   export let data: PageData;
 
-  const createSharedAlbum = async () => {
-    try {
-      const newAlbum = await createAlbum({ createAlbumDto: { albumName: '' } });
-      await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
-    } catch (error) {
-      handleError(error, 'Unable to create album');
-    }
+  const settings: AlbumViewSettings = {
+    view: AlbumViewMode.Cover,
+    filter: AlbumFilter.Shared,
+    groupBy: AlbumGroupBy.None,
+    groupOrder: SortOrder.Desc,
+    sortBy: AlbumSortBy.MostRecentPhoto,
+    sortOrder: SortOrder.Desc,
+    collapsedGroups: {},
   };
 </script>
 
 <UserPageLayout title={data.meta.title}>
   <div class="flex" slot="buttons">
-    <LinkButton on:click={createSharedAlbum}>
+    <LinkButton on:click={() => createAlbumAndRedirect()}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Create shared album</span>
+        <span class="leading-none max-sm:text-xs">Create album</span>
       </div>
     </LinkButton>
 
@@ -79,22 +86,15 @@
       </div>
 
       <div>
-        <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] mt-4 gap-y-4">
-          {#each data.sharedAlbums as album, index (album.id)}
-            <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard preload={index < 20} {album} isSharingView />
-            </a>
-          {/each}
-        </div>
-
-        <!-- Empty List -->
-        {#if data.sharedAlbums.length === 0}
+        <!-- Shared Album List -->
+        <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
+          <!-- Empty List -->
           <EmptyPlaceholder
-            text="Create a shared album to share photos and videos with people in your network"
+            slot="empty"
+            text="Create an album to share photos and videos with people in your network"
             src={empty2Url}
           />
-        {/if}
+        </Albums>
       </div>
     </div>
   </div>

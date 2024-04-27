@@ -28,9 +28,7 @@
       <Icon path={mdiMagnify} size="24" />
     </div>
   </button>
-  <!-- svelte-ignore a11y-autofocus -->
   <input
-    autofocus
     class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
     type="text"
     {placeholder}

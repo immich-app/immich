@@ -5,7 +5,7 @@
   export let onConfirm: () => void;
 </script>
 
-<ConfirmDialogue title="Disable Login" onClose={onCancel} {onConfirm}>
+<ConfirmDialogue id="disable-login-modal" title="Disable login" onClose={onCancel} {onConfirm}>
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>

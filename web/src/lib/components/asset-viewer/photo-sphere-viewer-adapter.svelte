@@ -1,19 +1,32 @@
 <script lang="ts">
-  import { Viewer } from '@photo-sphere-viewer/core';
+  import {
+    Viewer,
+    EquirectangularAdapter,
+    type PluginConstructor,
+    type AdapterConstructor,
+  } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
 
-  export let panorama: string;
+  export let panorama: string | { source: string };
+  export let adapter: AdapterConstructor | [AdapterConstructor, unknown] = EquirectangularAdapter;
+  export let plugins: (PluginConstructor | [PluginConstructor, unknown])[] = [];
+  export let navbar = false;
+
   let container: HTMLDivElement;
   let viewer: Viewer;
 
   onMount(() => {
     viewer = new Viewer({
+      adapter,
+      plugins,
       container,
       panorama,
       touchmoveTwoFingers: true,
       mousewheelCtrlKey: false,
-      navbar: false,
+      navbar,
+      maxFov: 180,
+      fisheye: true,
     });
   });
 

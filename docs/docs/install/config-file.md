@@ -120,7 +120,8 @@ The default configuration looks like this:
     "previewFormat": "jpeg",
     "previewSize": 1440,
     "quality": 80,
-    "colorspace": "p3"
+    "colorspace": "p3",
+    "extractEmbedded": false
   },
   "newVersionCheck": {
     "enabled": true

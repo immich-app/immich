@@ -1,6 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
+import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -8,8 +10,8 @@ import { LibraryEntity } from 'src/entities/library.entity';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
@@ -25,6 +27,7 @@ type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
 
 @Instrumentation()
+@Injectable()
 class ActivityAccess implements IActivityAccess {
   constructor(
     private activityRepository: Repository<ActivityEntity>,
@@ -79,12 +82,13 @@ class ActivityAccess implements IActivityAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .select('album.id')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumUsers', 'album_albumUsers_users')
+      .leftJoin('album_albumUsers_users.user', 'albumUsers')
       .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
       .andWhere('album.isActivityEnabled = true')
       .andWhere(
         new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
         }),
       )
       .getMany()
@@ -118,7 +122,7 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole): Promise<Set<string>> {
     if (albumIds.size === 0) {
       return new Set();
     }
@@ -128,8 +132,11 @@ class AlbumAccess implements IAlbumAccess {
         select: { id: true },
         where: {
           id: In([...albumIds]),
-          sharedUsers: {
-            id: userId,
+          albumUsers: {
+            user: { id: userId },
+            // If editor access is needed we check for it, otherwise both are accepted
+            role:
+              access === AlbumUserRole.EDITOR ? AlbumUserRole.EDITOR : In([AlbumUserRole.EDITOR, AlbumUserRole.VIEWER]),
           },
         },
       })
@@ -175,7 +182,8 @@ class AssetAccess implements IAssetAccess {
     return this.albumRepository
       .createQueryBuilder('album')
       .innerJoin('album.assets', 'asset')
-      .leftJoin('album.sharedUsers', 'sharedUsers')
+      .leftJoin('album.albumUsers', 'album_albumUsers_users')
+      .leftJoin('album_albumUsers_users.user', 'albumUsers')
       .select('asset.id', 'assetId')
       .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
       .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
@@ -183,7 +191,7 @@ class AssetAccess implements IAssetAccess {
       })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
         }),
       )
       .getRawMany()
@@ -284,7 +292,7 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(private tokenRepository: Repository<UserTokenEntity>) {}
+  constructor(private sessionRepository: Repository<SessionEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -293,7 +301,7 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
       return new Set();
     }
 
-    return this.tokenRepository
+    return this.sessionRepository
       .find({
         select: { id: true },
         where: {
@@ -455,12 +463,12 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(UserTokenEntity) tokenRepository: Repository<UserTokenEntity>,
+    @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
   ) {
     this.activity = new ActivityAccess(activityRepository, albumRepository);
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
-    this.authDevice = new AuthDeviceAccess(tokenRepository);
+    this.authDevice = new AuthDeviceAccess(sessionRepository);
     this.library = new LibraryAccess(libraryRepository);
     this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);

@@ -40,6 +40,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
+  import { clearQueryParam } from '$lib/utils/navigation';
 
   export let data: PageData;
 
@@ -88,7 +89,7 @@
 
   const handleSearch = async (force: boolean) => {
     $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    await goto($page.url);
+    await goto($page.url, { keepFocus: true });
     await handleSearchPeople(force);
   };
 
@@ -279,10 +280,7 @@
 
   const handleSearchPeople = async (force: boolean) => {
     if (searchName === '') {
-      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
-        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        await goto($page.url);
-      }
+      await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
       return;
     }
     if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
@@ -393,6 +391,11 @@
       handleError(error, 'Unable to save name');
     }
   };
+
+  const onResetSearchBar = async () => {
+    searchedPeople = [];
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+  };
 </script>
 
 <svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
@@ -421,9 +424,7 @@
               bind:name={searchName}
               isSearching={isSearchingPeople}
               placeholder="Search people"
-              on:reset={() => {
-                searchedPeople = [];
-              }}
+              on:reset={onResetSearchBar}
               on:search={({ detail }) => handleSearch(detail.force ?? false)}
             />
           </div>
@@ -438,10 +439,10 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0}
+  {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, index (person.id)}
-        {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
+      {#if searchName}
+        {#each searchedPeopleLocal as person, index (person.id)}
           <PeopleCard
             {person}
             preload={index < 20}
@@ -450,48 +451,51 @@
             on:merge-people={() => handleMergePeople(person)}
             on:hide-person={() => handleHidePerson(person)}
           />
-        {/if}
-      {/each}
+        {/each}
+      {:else}
+        {#each people as person, index (person.id)}
+          {#if !person.isHidden}
+            <PeopleCard
+              {person}
+              preload={index < 20}
+              on:change-name={() => handleChangeName(person)}
+              on:set-birth-date={() => handleSetBirthDate(person)}
+              on:merge-people={() => handleMergePeople(person)}
+              on:hide-person={() => handleHidePerson(person)}
+            />
+          {/if}
+        {/each}
+      {/if}
     </div>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium">No people</p>
+        <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
+          {`No people${searchName ? ` named "${searchName}"` : ''}`}
+        </p>
       </div>
     </div>
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal onClose={() => (showChangeNameModal = false)}>
-      <div
-        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
-      >
-        <div
-          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-        >
-          <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Change name</h1>
+    <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
+      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
+        <div class="flex flex-col gap-2">
+          <label class="immich-form-label" for="name">Name</label>
+          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
         </div>
-
-        <form on:submit|preventDefault={submitNameChange} autocomplete="off">
-          <div class="m-4 flex flex-col gap-2">
-            <label class="immich-form-label" for="name">Name</label>
-            <!-- svelte-ignore a11y-autofocus -->
-            <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
-          </div>
-
-          <div class="mt-8 flex w-full gap-4 px-4">
-            <Button
-              color="gray"
-              fullwidth
-              on:click={() => {
-                showChangeNameModal = false;
-              }}>Cancel</Button
-            >
-            <Button type="submit" fullwidth>Ok</Button>
-          </div>
-        </form>
-      </div>
+      </form>
+      <svelte:fragment slot="sticky-bottom">
+        <Button
+          color="gray"
+          fullwidth
+          on:click={() => {
+            showChangeNameModal = false;
+          }}>Cancel</Button
+        >
+        <Button type="submit" fullwidth form="change-name-form">Ok</Button>
+      </svelte:fragment>
     </FullScreenModal>
   {/if}
 

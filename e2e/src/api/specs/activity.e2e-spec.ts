@@ -148,7 +148,7 @@ describe('/activity', () => {
     });
 
     it('should filter by userId', async () => {
-      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
+      const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
 
       const response1 = await request(app)
         .get('/activity')
@@ -250,8 +250,7 @@ describe('/activity', () => {
     });
 
     it('should return a 200 for a duplicate like on the album', async () => {
-      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
-
+      const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -261,13 +260,11 @@ describe('/activity', () => {
     });
 
     it('should not confuse an album like with an asset like', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({
-          albumId: album.id,
-          assetId: asset.id,
-          type: ReactionType.Like,
-        }),
-      ]);
+      const reaction = await createActivity({
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.Like,
+      });
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -314,13 +311,11 @@ describe('/activity', () => {
     });
 
     it('should return a 200 for a duplicate like on an asset', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({
-          albumId: album.id,
-          assetId: asset.id,
-          type: ReactionType.Like,
-        }),
-      ]);
+      const reaction = await createActivity({
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.Like,
+      });
 
       const { status, body } = await request(app)
         .post('/activity')

@@ -1,7 +1,7 @@
 import { exec, spawn } from 'node:child_process';
 import { setTimeout } from 'node:timers';
 
-export default async () => {
+const setup = async () => {
   let _resolve: () => unknown;
   let _reject: (error: Error) => unknown;
 
@@ -31,3 +31,5 @@ export default async () => {
     await new Promise<void>((resolve) => exec('docker compose down', () => resolve()));
   };
 };
+
+export default setup;

@@ -6,7 +6,7 @@
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
-  import { downloadArchive } from '../../utils/asset-utils';
+  import { downloadAlbum } from '../../utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
@@ -36,10 +36,6 @@
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
-
-  const downloadAlbum = async () => {
-    await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
-  };
 </script>
 
 <svelte:window
@@ -83,7 +79,7 @@
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum()} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title="Download" on:click={() => downloadAlbum(album)} icon={mdiFolderDownloadOutline} />
         {/if}
 
         <ThemeButton />

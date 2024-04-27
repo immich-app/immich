@@ -17,14 +17,13 @@ import {
   QueueCleanType,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class JobService {
-  private logger = new ImmichLogger(JobService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -34,8 +33,10 @@ export class JobService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IMetricRepository) private metricRepository: IMetricRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(JobService.name);
+    this.configCore = SystemConfigCore.create(configRepository, logger);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

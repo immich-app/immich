@@ -417,6 +417,9 @@ class SystemConfigImageDto {
   @IsEnum(Colorspace)
   @ApiProperty({ enumName: 'Colorspace', enum: Colorspace })
   colorspace!: Colorspace;
+
+  @ValidateBoolean()
+  extractEmbedded!: boolean;
 }
 
 class SystemConfigTrashDto {

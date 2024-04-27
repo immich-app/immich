@@ -20,10 +20,6 @@ In any other situation, there are 3 different options that can appear:
 
 - OFFLINE PATHS - These files are the result of manually deleting files in the upload library or a failed file move in the past (losing track of a file).
 
-:::tip
-To get rid of Offline paths you can follow this [guide](/docs/guides/remove-offline-files.md)
-:::
-
 - UNTRACKED FILES - These files are not tracked by the application. They can be the result of failed moves, interrupted uploads, or left behind due to a bug.
 
 In addition, you can download the information from a page, mark everything (in order to check hashing) and correct the problem if a match is found in the hashing.

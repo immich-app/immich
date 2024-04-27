@@ -6,15 +6,21 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/shared/providers/tab.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -27,7 +33,7 @@ typedef ImmichAssetGridSelectionListener = void Function(
   Set<Asset>,
 );
 
-class ImmichAssetGridView extends StatefulWidget {
+class ImmichAssetGridView extends ConsumerStatefulWidget {
   final RenderList renderList;
   final int assetsPerRow;
   final double margin;
@@ -69,12 +75,12 @@ class ImmichAssetGridView extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() {
+  createState() {
     return ImmichAssetGridViewState();
   }
 }
 
-class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
+class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ScrollOffsetController _scrollOffsetController =
       ScrollOffsetController();
@@ -149,6 +155,23 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
+  Future<void> _scrollToIndex(int index) async {
+    // if the index is so far down, that the end of the list is reached on the screen
+    // the scroll_position widget crashes. This is a workaround to prevent this.
+    // If the index is within the last 10 elements, we jump instead of scrolling.
+    if (widget.renderList.elements.length <= index + 10) {
+      _itemScrollController.jumpTo(
+        index: index,
+      );
+      return;
+    }
+    await _itemScrollController.scrollTo(
+      index: index,
+      alignment: 0,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
   Widget _itemBuilder(BuildContext c, int position) {
     int index = position;
     if (widget.topWidget != null) {
@@ -214,8 +237,14 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       }
     }
 
+    bool appBarOffset() {
+      return ref.watch(tabProvider).index == 0 &&
+          ModalRoute.of(context)?.settings.name == TabControllerRoute.name;
+    }
+
     final listWidget = ScrollablePositionedList.builder(
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
+        top: appBarOffset() ? 60 : 0,
         bottom: 220,
       ),
       itemBuilder: _itemBuilder,
@@ -235,6 +264,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             controller: _itemScrollController,
             backgroundColor: context.themeData.hintColor,
             labelTextBuilder: _labelBuilder,
+            padding: appBarOffset()
+                ? const EdgeInsets.only(top: 60)
+                : const EdgeInsets.only(),
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
             scrollbarTimeToFade: const Duration(milliseconds: 1000),
@@ -243,7 +275,55 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         : listWidget;
     return widget.onRefresh == null
         ? child
-        : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+        : appBarOffset()
+            ? RefreshIndicator(
+                onRefresh: widget.onRefresh!,
+                edgeOffset: 30,
+                child: child,
+              )
+            : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+  }
+
+  void _scrollToDate() {
+    final date = scrollToDateNotifierProvider.value;
+    if (date == null) {
+      ImmichToast.show(
+        context: context,
+        msg: "Scroll To Date failed, date is null.",
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
+      return;
+    }
+
+    // Search for the index of the exact date in the list
+    var index = widget.renderList.elements.indexWhere(
+      (e) =>
+          e.date.year == date.year &&
+          e.date.month == date.month &&
+          e.date.day == date.day,
+    );
+
+    // If the exact date is not found, the timeline is grouped by month,
+    // thus we search for the month
+    if (index == -1) {
+      index = widget.renderList.elements.indexWhere(
+        (e) => e.date.year == date.year && e.date.month == date.month,
+      );
+    }
+
+    if (index != -1 && index < widget.renderList.elements.length) {
+      // Not sure why the index is shifted, but it works. :3
+      _scrollToIndex(index + 1);
+    } else {
+      ImmichToast.show(
+        context: context,
+        msg:
+            "The date (${DateFormat.yMd().format(date)}) could not be found in the timeline.",
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
+    }
   }
 
   @override
@@ -260,6 +340,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void initState() {
     super.initState();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
+    scrollToDateNotifierProvider.addListener(_scrollToDate);
+
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.addListener(_positionListener);
     }
@@ -273,6 +355,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   @override
   void dispose() {
     scrollToTopNotifierProvider.removeListener(_scrollToTop);
+    scrollToDateNotifierProvider.removeListener(_scrollToDate);
     if (widget.visibleItemsListener != null) {
       _itemPositionsListener.itemPositions.removeListener(_positionListener);
     }
@@ -314,7 +397,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         final now = Timeline.now;
         if (now > (_hapticFeedbackTS + feedbackInterval)) {
           _hapticFeedbackTS = now;
-          HapticFeedback.mediumImpact();
+          ref.read(hapticFeedbackProvider.notifier).mediumImpact();
         }
       }
     }
