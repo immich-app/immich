@@ -1,3 +1,5 @@
+// ignore_for_file: null_argument_to_non_null_type
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -168,24 +170,13 @@ class AssetService {
     return a;
   }
 
-  Future<List<Asset?>> updateAssets(
+  Future<void> updateAssets(
     List<Asset> assets,
     UpdateAssetDto updateAssetDto,
   ) async {
-    final List<AssetResponseDto?> dtos = await Future.wait(
-      assets.map(
-        (a) => _apiService.assetApi.updateAsset(a.remoteId!, updateAssetDto),
-      ),
-    );
-    debugPrint("Before update: ${assets.length}");
-
-    final assetIds = assets.map((e) => e.remoteId!).toList();
-
-    debugPrint("AssetIds: $assetIds");
-
-    _apiService.assetApi.updateAssets(
+    return await _apiService.assetApi.updateAssets(
       AssetBulkUpdateDto(
-        ids: assetIds,
+        ids: assets.map((e) => e.remoteId!).toList(),
         dateTimeOriginal: updateAssetDto.dateTimeOriginal,
         isFavorite: updateAssetDto.isFavorite,
         isArchived: updateAssetDto.isArchived,
@@ -193,54 +184,96 @@ class AssetService {
         longitude: updateAssetDto.longitude,
       ),
     );
-
-    bool allInDb = true;
-    for (int i = 0; i < assets.length; i++) {
-      final dto = dtos[i], old = assets[i];
-      if (dto != null) {
-        final remote = Asset.remote(dto);
-        if (old.canUpdate(remote)) {
-          assets[i] = old.updatedCopy(remote);
-        }
-        allInDb &= assets[i].isInDb;
-      }
-    }
-    final toUpdate = allInDb ? assets : assets.where((e) => e.isInDb).toList();
-    await _syncService.upsertAssetsWithExif(toUpdate);
-    return assets;
   }
 
   Future<List<Asset?>> changeFavoriteStatus(
     List<Asset> assets,
     bool isFavorite,
-  ) {
-    return updateAssets(assets, UpdateAssetDto(isFavorite: isFavorite));
+  ) async {
+    try {
+      await updateAssets(assets, UpdateAssetDto(isFavorite: isFavorite));
+
+      for (var element in assets) {
+        element.isFavorite = isFavorite;
+      }
+
+      await _syncService.upsertAssetsWithExif(assets);
+
+      return assets;
+    } catch (error, stack) {
+      log.severe("Error while changing favorite status", error, stack);
+      return Future.value(null);
+    }
   }
 
-  Future<List<Asset?>> changeArchiveStatus(List<Asset> assets, bool isArchive) {
-    return updateAssets(assets, UpdateAssetDto(isArchived: isArchive));
+  Future<List<Asset?>> changeArchiveStatus(
+    List<Asset> assets,
+    bool isArchived,
+  ) async {
+    try {
+      await updateAssets(assets, UpdateAssetDto(isArchived: isArchived));
+
+      for (var element in assets) {
+        element.isArchived = isArchived;
+      }
+
+      await _syncService.upsertAssetsWithExif(assets);
+
+      return assets;
+    } catch (error, stack) {
+      log.severe("Error while changing archive status", error, stack);
+      return Future.value(null);
+    }
   }
 
   Future<List<Asset?>> changeDateTime(
     List<Asset> assets,
     String updatedDt,
-  ) {
-    return updateAssets(
-      assets,
-      UpdateAssetDto(dateTimeOriginal: updatedDt),
-    );
+  ) async {
+    try {
+      await updateAssets(
+        assets,
+        UpdateAssetDto(dateTimeOriginal: updatedDt),
+      );
+
+      for (var element in assets) {
+        element.fileCreatedAt = DateTime.parse(updatedDt);
+        element.exifInfo?.dateTimeOriginal = DateTime.parse(updatedDt);
+      }
+
+      await _syncService.upsertAssetsWithExif(assets);
+
+      return assets;
+    } catch (error, stack) {
+      log.severe("Error while changing date/time status", error, stack);
+      return Future.value(null);
+    }
   }
 
   Future<List<Asset?>> changeLocation(
     List<Asset> assets,
     LatLng location,
-  ) {
-    return updateAssets(
-      assets,
-      UpdateAssetDto(
-        latitude: location.latitude,
-        longitude: location.longitude,
-      ),
-    );
+  ) async {
+    try {
+      await updateAssets(
+        assets,
+        UpdateAssetDto(
+          latitude: location.latitude,
+          longitude: location.longitude,
+        ),
+      );
+
+      for (var element in assets) {
+        element.exifInfo?.lat = location.latitude;
+        element.exifInfo?.long = location.longitude;
+      }
+
+      await _syncService.upsertAssetsWithExif(assets);
+
+      return assets;
+    } catch (error, stack) {
+      log.severe("Error while changing location status", error, stack);
+      return Future.value(null);
+    }
   }
 }
