@@ -215,8 +215,8 @@ export class SearchService {
         `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
       );
 
-      const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean) as string[];
-      const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
+      const duplicateId =
+        duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId ?? this.cryptoRepository.randomUUID();
 
       assetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
       await this.assetRepository.updateAll(assetIds, { duplicateId });
