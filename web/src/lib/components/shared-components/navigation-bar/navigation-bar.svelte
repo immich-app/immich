@@ -84,7 +84,7 @@
       </div>
 
       <section class="flex place-items-center justify-end gap-2 max-sm:w-full">
-        <div class="pl-4 md:hidden">
+        <div class="md:hidden">
           <IconButton title="Search" on:click={() => (showSearchBar = true)}>
             <div class="flex gap-2">
               <Icon path={mdiMagnify} size="1.5em" />
