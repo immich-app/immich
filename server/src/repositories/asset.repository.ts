@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import path from 'node:path';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
@@ -23,7 +22,6 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
-  MetadataSearchOptions,
   MonthDay,
   TimeBucketItem,
   TimeBucketOptions,
@@ -698,94 +696,6 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return builder;
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
-  async searchMetadata(
-    query: string,
-    userIds: string[],
-    { numResults }: MetadataSearchOptions,
-  ): Promise<AssetEntity[]> {
-    const rows = await this.getBuilder({
-      userIds: userIds,
-      exifInfo: false,
-      isArchived: false,
-    })
-      .select('asset.*')
-      .addSelect('e.*')
-      .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
-      .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
-      .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where(
-            `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
-          @@ PLAINTO_TSQUERY('english', :query)`,
-            { query },
-          ).orWhere('asset."originalFileName" = :path', { path: path.parse(query).name });
-        }),
-      )
-      .addOrderBy('asset.fileCreatedAt', 'DESC')
-      .limit(numResults)
-      .getRawMany();
-
-    return rows.map(
-      ({
-        tags,
-        objects,
-        country,
-        state,
-        city,
-        description,
-        model,
-        make,
-        dateTimeOriginal,
-        exifImageHeight,
-        exifImageWidth,
-        exposureTime,
-        fNumber,
-        fileSizeInByte,
-        focalLength,
-        iso,
-        latitude,
-        lensModel,
-        longitude,
-        modifyDate,
-        projectionType,
-        timeZone,
-        ...assetInfo
-      }) =>
-        ({
-          exifInfo: {
-            city,
-            country,
-            dateTimeOriginal,
-            description,
-            exifImageHeight,
-            exifImageWidth,
-            exposureTime,
-            fNumber,
-            fileSizeInByte,
-            focalLength,
-            iso,
-            latitude,
-            lensModel,
-            longitude,
-            make,
-            model,
-            modifyDate,
-            projectionType,
-            state,
-            timeZone,
-          },
-          smartInfo: {
-            tags,
-            objects,
-          },
-          ...assetInfo,
-        }) as AssetEntity,
-    );
   }
 
   @GenerateSql({

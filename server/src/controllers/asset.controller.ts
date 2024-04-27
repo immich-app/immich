@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -12,29 +12,12 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto, MetadataSearchDto } from 'src/dtos/search.dto';
+import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
-import { SearchService } from 'src/services/search.service';
 import { UUIDParamDto } from 'src/validation';
-
-@ApiTags('Asset')
-@Controller('assets')
-@Authenticated()
-export class AssetsController {
-  constructor(private searchService: SearchService) {}
-
-  @Get()
-  @ApiOperation({ deprecated: true })
-  async searchAssets(@Auth() auth: AuthDto, @Query() dto: MetadataSearchDto): Promise<AssetResponseDto[]> {
-    const {
-      assets: { items },
-    } = await this.searchService.searchMetadata(auth, dto);
-    return items;
-  }
-}
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)
