@@ -67,7 +67,7 @@ const items: Item[] = [
     title: '30,000 Stars',
     release: 'v1.102.0',
     tag: 'v1.102.0',
-    date: new Date(2023, 3, 15),
+    date: new Date(2024, 3, 15),
     dateType: DateType.RELEASE,
   },
   {
