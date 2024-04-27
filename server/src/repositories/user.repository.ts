@@ -36,15 +36,15 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
-    return this.userRepository.exist({ where: { isAdmin: true } });
+    return this.userRepository.exists({ where: { isAdmin: true } });
   }
 
   @GenerateSql({ params: [DummyValue.EMAIL] })
   async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
-    let builder = this.userRepository.createQueryBuilder('user').where({ email });
+    const builder = this.userRepository.createQueryBuilder('user').where({ email });
 
     if (withPassword) {
-      builder = builder.addSelect('user.password');
+      builder.addSelect('user.password');
     }
 
     return builder.getOne();

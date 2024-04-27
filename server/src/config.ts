@@ -52,7 +52,7 @@ function parseRedisConfig(): RedisOptions {
     }
   }
   return {
-    host: process.env.REDIS_HOSTNAME || 'immich_redis',
+    host: process.env.REDIS_HOSTNAME || 'redis',
     port: Number.parseInt(process.env.REDIS_PORT || '6379'),
     db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
     username: process.env.REDIS_USERNAME || undefined,

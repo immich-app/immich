@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { dataSource } from 'src/database.config';
 import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -328,7 +327,7 @@ export class AlbumRepository implements IAlbumRepository {
       .limit(1);
 
     // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = dataSource
+    const albumHasAssets = this.dataSource
       .createQueryBuilder()
       .select('1')
       .from('albums_assets_assets', 'albums_assets')
