@@ -308,13 +308,7 @@
             </div>
           {:else if message}
             <div class="flex items-end w-fit ml-0">
-              <CircleIconButton
-                title="Send message"
-                size="15"
-                icon={mdiSend}
-                iconColor={'dark'}
-                hoverColor={'rgb(173,203,250)'}
-              />
+              <CircleIconButton title="Send message" size="15" icon={mdiSend} class="dark:text-immich-dark-gray" />
             </div>
           {/if}
         </form>
