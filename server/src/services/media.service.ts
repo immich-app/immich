@@ -181,11 +181,6 @@ export class MediaService {
     }
 
     if (!asset.isVisible) {
-      if (asset.previewPath) {
-        this.logger.debug(`Asset ${asset.id} is not visible, deleting preview`);
-        await this.storageRepository.unlink(asset.previewPath);
-        await this.assetRepository.update({ id: asset.id, previewPath: null });
-      }
       return JobStatus.SKIPPED;
     }
 
@@ -258,11 +253,6 @@ export class MediaService {
     }
 
     if (!asset.isVisible) {
-      if (asset.thumbnailPath) {
-        this.logger.debug(`Asset ${asset.id} is not visible, deleting thumbnail`);
-        await this.storageRepository.unlink(asset.thumbnailPath);
-        await this.assetRepository.update({ id: asset.id, thumbnailPath: null });
-      }
       return JobStatus.SKIPPED;
     }
 

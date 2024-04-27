@@ -234,16 +234,6 @@ describe(MediaService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
 
-    it('should delete existing preview if invisible asset', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.liveMotionWithThumb]);
-
-      expect(await sut.handleGeneratePreview({ id: assetStub.liveMotionWithThumb.id })).toEqual(JobStatus.SKIPPED);
-
-      expect(storageMock.unlink).toHaveBeenCalledWith(assetStub.liveMotionWithThumb.previewPath);
-      expect(mediaMock.resize).not.toHaveBeenCalled();
-      expect(assetMock.update).not.toHaveBeenCalledWith();
-    });
-
     it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_PREVIEW_FORMAT, value: format }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -388,16 +378,6 @@ describe(MediaService.name, () => {
 
       expect(await sut.handleGenerateThumbnail({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.SKIPPED);
 
-      expect(mediaMock.resize).not.toHaveBeenCalled();
-      expect(assetMock.update).not.toHaveBeenCalledWith();
-    });
-
-    it('should delete existing thumbnail if invisible asset', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.liveMotionWithThumb]);
-
-      expect(await sut.handleGenerateThumbnail({ id: assetStub.liveMotionWithThumb.id })).toEqual(JobStatus.SKIPPED);
-
-      expect(storageMock.unlink).toHaveBeenCalledWith(assetStub.liveMotionWithThumb.thumbnailPath);
       expect(mediaMock.resize).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith();
     });
