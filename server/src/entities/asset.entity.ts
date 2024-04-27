@@ -1,5 +1,4 @@
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetDuplicateEntity } from 'src/entities/asset-duplicate.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetStackEntity } from 'src/entities/asset-stack.entity';
@@ -168,11 +167,7 @@ export class AssetEntity {
   jobStatus?: AssetJobStatusEntity;
 
   @Column({ nullable: true })
-  duplicateId?: string | null;
-
-  @ManyToOne(() => AssetDuplicateEntity, { nullable: true })
-  @JoinColumn({ name: 'duplicateId' })
-  duplicates?: AssetDuplicateEntity | null;
+  duplicateId!: string | null;
 }
 
 export enum AssetType {
