@@ -600,31 +600,6 @@ export type FileChecksumResponseDto = {
 export type FileReportFixDto = {
     items: FileReportItemDto[];
 };
-export type SearchFacetCountResponseDto = {
-    count: number;
-    value: string;
-};
-export type SearchFacetResponseDto = {
-    counts: SearchFacetCountResponseDto[];
-    fieldName: string;
-};
-export type SearchAlbumResponseDto = {
-    count: number;
-    facets: SearchFacetResponseDto[];
-    items: AlbumResponseDto[];
-    total: number;
-};
-export type SearchAssetResponseDto = {
-    count: number;
-    facets: SearchFacetResponseDto[];
-    items: AssetResponseDto[];
-    nextPage: string | null;
-    total: number;
-};
-export type SearchResponseDto = {
-    albums: SearchAlbumResponseDto;
-    assets: SearchAssetResponseDto;
-};
 export type SearchExploreItem = {
     data: AssetResponseDto;
     value: string;
@@ -679,6 +654,31 @@ export type MetadataSearchDto = {
     withExif?: boolean;
     withPeople?: boolean;
     withStacked?: boolean;
+};
+export type SearchFacetCountResponseDto = {
+    count: number;
+    value: string;
+};
+export type SearchFacetResponseDto = {
+    counts: SearchFacetCountResponseDto[];
+    fieldName: string;
+};
+export type SearchAlbumResponseDto = {
+    count: number;
+    facets: SearchFacetResponseDto[];
+    items: AlbumResponseDto[];
+    total: number;
+};
+export type SearchAssetResponseDto = {
+    count: number;
+    facets: SearchFacetResponseDto[];
+    items: AssetResponseDto[];
+    nextPage: string | null;
+    total: number;
+};
+export type SearchResponseDto = {
+    albums: SearchAlbumResponseDto;
+    assets: SearchAssetResponseDto;
 };
 export type PlacesResponseDto = {
     admin1name?: string;
@@ -2100,36 +2100,6 @@ export function fixAuditFiles({ fileReportFixDto }: {
         method: "POST",
         body: fileReportFixDto
     })));
-}
-export function search({ clip, motion, page, q, query, recent, size, smart, $type, withArchived }: {
-    clip?: boolean;
-    motion?: boolean;
-    page?: number;
-    q?: string;
-    query?: string;
-    recent?: boolean;
-    size?: number;
-    smart?: boolean;
-    $type?: "IMAGE" | "VIDEO" | "AUDIO" | "OTHER";
-    withArchived?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: SearchResponseDto;
-    }>(`/search${QS.query(QS.explode({
-        clip,
-        motion,
-        page,
-        q,
-        query,
-        recent,
-        size,
-        smart,
-        "type": $type,
-        withArchived
-    }))}`, {
-        ...opts
-    }));
 }
 export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
