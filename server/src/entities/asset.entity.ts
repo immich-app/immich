@@ -166,7 +166,7 @@ export class AssetEntity {
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
 }
 

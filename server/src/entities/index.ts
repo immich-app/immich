@@ -21,7 +21,6 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetDuplicateEntity } from 'src/entities/asset-duplicate.entity';
 
 export const entities = [
   ActivityEntity,
@@ -29,7 +28,6 @@ export const entities = [
   AlbumUserEntity,
   APIKeyEntity,
   AssetEntity,
-  AssetDuplicateEntity,
   AssetStackEntity,
   AssetFaceEntity,
   AssetJobStatusEntity,

@@ -78,7 +78,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
-      duplicateThreshold: 0.03,
+      duplicateThreshold: 0.02,
     },
     facialRecognition: {
       enabled: true,
