@@ -98,7 +98,7 @@
     <div
       bind:this={dropdownElement}
       transition:fly={{ y: -30, duration: 250 }}
-      class="text-sm font-medium fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
+      class="text-sm font-medium fixed z-50 flex min-w-[min(250px,100vw)] max-w-[100vw] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
       style:left="{left}px"
     >
       {#each options as option (option)}
