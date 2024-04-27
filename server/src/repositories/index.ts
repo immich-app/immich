@@ -3,7 +3,6 @@ import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
-import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -65,14 +64,12 @@ import { SystemConfigRepository } from 'src/repositories/system-config.repositor
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { UserRepository } from 'src/repositories/user.repository';
-import { AssetDuplicateRepository } from 'src/repositories/asset-duplicate.repository';
 
 export const repositories = [
   { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
-  { provide: IAssetDuplicateRepository, useClass: AssetDuplicateRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },

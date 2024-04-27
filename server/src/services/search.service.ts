@@ -191,11 +191,6 @@ export class SearchService {
       return JobStatus.SKIPPED;
     }
 
-    if (asset.duplicateId) {
-      this.logger.debug(`Asset ${id} already has a duplicateId, skipping`);
-      return JobStatus.SKIPPED;
-    }
-
     if (!asset.previewPath) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
@@ -225,6 +220,9 @@ export class SearchService {
 
       assetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
       await this.assetRepository.updateAll(assetIds, { duplicateId });
+    } else if (asset.duplicateId) {
+      this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
+      await this.assetRepository.updateAll(assetIds, { duplicateId: null });
     }
 
     const duplicatesDetectedAt = new Date();

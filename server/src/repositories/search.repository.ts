@@ -173,7 +173,7 @@ export class SearchRepository implements ISearchRepository {
       .andWhere('asset.isVisible = :isVisible')
       .orderBy('search.embedding <=> :embedding')
       .limit(64)
-      .setParameters({ assetId, embedding, isVisible: true, userIds });
+      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, userIds });
 
     const builder = this.assetRepository.manager
       .createQueryBuilder()
