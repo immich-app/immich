@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { IsInt, IsPositive } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ValidateDate, ValidateUUID } from 'src/validation';
@@ -16,7 +15,6 @@ export class AssetFullSyncDto {
 
   @IsInt()
   @IsPositive()
-  @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   limit!: number;
 
@@ -29,7 +27,6 @@ export class AssetDeltaSyncDto {
   updatedAfter!: Date;
 
   @ValidateUUID({ each: true })
-  @ApiProperty({ name: 'userIds[]' })
   userIds!: string[];
 }
 

@@ -836,10 +836,21 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     success: boolean;
 };
+export type AssetDeltaSyncDto = {
+    updatedAfter: string;
+    userIds: string[];
+};
 export type AssetDeltaSyncResponseDto = {
     deleted: string[];
     needsFullSync: boolean;
     upserted: AssetResponseDto[];
+};
+export type AssetFullSyncDto = {
+    lastCreationDate?: string;
+    lastId?: string;
+    limit: number;
+    updatedUntil: string;
+    userId?: string;
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2502,39 +2513,29 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
-export function getDeltaSync({ updatedAfter, userIds }: {
-    updatedAfter: string;
-    userIds: string[];
+export function getDeltaSync({ assetDeltaSyncDto }: {
+    assetDeltaSyncDto: AssetDeltaSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetDeltaSyncResponseDto;
-    }>(`/sync/delta-sync${QS.query(QS.explode({
-        updatedAfter,
-        "userIds[]": userIds
-    }))}`, {
-        ...opts
-    }));
+    }>("/sync/delta-sync", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetDeltaSyncDto
+    })));
 }
-export function getAllForUserFullSync({ lastCreationDate, lastId, limit, updatedUntil, userId }: {
-    lastCreationDate?: string;
-    lastId?: string;
-    limit: number;
-    updatedUntil: string;
-    userId?: string;
+export function getFullSyncForUser({ assetFullSyncDto }: {
+    assetFullSyncDto: AssetFullSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto[];
-    }>(`/sync/full-sync${QS.query(QS.explode({
-        lastCreationDate,
-        lastId,
-        limit,
-        updatedUntil,
-        userId
-    }))}`, {
-        ...opts
-    }));
+    }>("/sync/full-sync", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetFullSyncDto
+    })));
 }
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
