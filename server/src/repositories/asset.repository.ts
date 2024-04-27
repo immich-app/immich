@@ -510,7 +510,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = this.repository
+    const builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
@@ -520,15 +520,15 @@ export class AssetRepository implements IAssetRepository {
 
     const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
-      builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
+      builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
-      builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+      builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
     }
 
     if (isTrashed !== undefined) {
-      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
+      builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -644,43 +644,43 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: AssetBuilderOptions) {
     const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
 
-    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
+    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
     if (assetType !== undefined) {
-      builder = builder.andWhere('asset.type = :assetType', { assetType });
+      builder.andWhere('asset.type = :assetType', { assetType });
     }
 
     let stackJoined = false;
 
     if (exifInfo !== false) {
       stackJoined = true;
-      builder = builder
+      builder
         .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
         .leftJoinAndSelect('asset.stack', 'stack')
         .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
     if (albumId) {
-      builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
     }
 
     if (userIds) {
-      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
+      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
     }
 
     if (isArchived !== undefined) {
-      builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+      builder.andWhere('asset.isArchived = :isArchived', { isArchived });
     }
 
     if (isFavorite !== undefined) {
-      builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
     }
 
     if (isTrashed !== undefined) {
-      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+      builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {
-      builder = builder
+      builder
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
@@ -688,9 +688,9 @@ export class AssetRepository implements IAssetRepository {
 
     if (withStacked) {
       if (!stackJoined) {
-        builder = builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
+        builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
       }
-      builder = builder.andWhere(
+      builder.andWhere(
         new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
       );
     }
@@ -711,13 +711,13 @@ export class AssetRepository implements IAssetRepository {
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
     const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
-    let builder = this.repository
+    const builder = this.repository
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .leftJoinAndSelect('asset.stack', 'stack')
       .where('asset.ownerId = :ownerId', { ownerId });
     if (lastCreationDate !== undefined && lastId !== undefined) {
-      builder = builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
+      builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
         lastCreationDate,
         lastId,
       });
