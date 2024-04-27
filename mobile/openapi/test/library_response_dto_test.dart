@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // bool isReadOnly
+    test('to test the property `isReadOnly`', () async {
+      // TODO
+    });
+
     // String name
     test('to test the property `name`', () async {
       // TODO

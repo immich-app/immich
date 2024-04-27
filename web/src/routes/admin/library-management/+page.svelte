@@ -245,10 +245,10 @@
 
   const onToggleReadOnlyClicked = async () => {
     const library = libraries[selectedLibraryIndex];
-    const prevValue = library.isReadOnly == null ? (library.type === LibraryType.External) : library.isReadOnly;
+    const prevValue = library.isReadOnly == null ? library.type === LibraryType.External : library.isReadOnly;
 
     try {
-      await updateLibrary({ id: library.id, updateLibraryDto: { ...library, isReadOnly: !prevValue } });
+      await updateLibrary({ id: library.id, updateLibraryDto: { isReadOnly: !prevValue } });
       closeAll();
       await readLibraryList();
     } catch (error) {
@@ -406,18 +406,19 @@
                     <Icon path={mdiDotsVertical} size="16" />
                   </button>
 
-                  {#if showContextMenu}
+                  {#if showContextMenu && selectedLibrary}
                     <Portal target="body">
                       <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
                         <MenuOption
                           on:click={() => onToggleReadOnlyClicked()}
-                          text={(selectedLibrary?.isReadOnly ||
-                            (selectedLibrary?.isReadOnly == null && selectedLibrary?.type === LibraryType.External))
-                            ? 'Allow file deletion' : 'Disallow file deletion'}
+                          text={selectedLibrary.isReadOnly ||
+                          (selectedLibrary.isReadOnly == null && selectedLibrary.type === LibraryType.External)
+                            ? 'Allow file deletion'
+                            : 'Disallow file deletion'}
                         />
 
-                        {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
+                        {#if selectedLibrary.type === LibraryType.External}
                           <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />

@@ -54,8 +54,8 @@ export class LibraryEntity {
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
 
-  @Column({ type: 'boolean', nullable: true })
-  isReadOnly!: boolean | null;
+  @Column({ type: 'boolean' })
+  isReadOnly!: boolean;
 }
 
 export enum LibraryType {

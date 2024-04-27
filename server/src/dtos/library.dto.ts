@@ -132,7 +132,7 @@ export class LibraryResponseDto {
   updatedAt!: Date;
   refreshedAt!: Date | null;
 
-  isReadOnly!: boolean | null;
+  isReadOnly!: boolean;
 }
 
 export class LibraryStatsResponseDto {

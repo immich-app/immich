@@ -8779,7 +8779,6 @@
             "type": "array"
           },
           "isReadOnly": {
-            "nullable": true,
             "type": "boolean"
           },
           "name": {

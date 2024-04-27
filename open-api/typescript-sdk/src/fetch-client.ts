@@ -422,6 +422,7 @@ export type LibraryResponseDto = {
     exclusionPatterns: string[];
     id: string;
     importPaths: string[];
+    isReadOnly: boolean;
     name: string;
     ownerId: string;
     refreshedAt: string | null;
