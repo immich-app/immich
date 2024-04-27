@@ -31,6 +31,9 @@ dependencies:
   # get_it
   get_it: ^7.7.0
   injectable: ^2.4.1
+  # Photo Manager
+  photo_manager: ^3.0.0-dev.5
+  photo_manager_image_provider: ^2.1.0
 
 dependency_overrides:
   # TODO: Remove the drift related overrides once the manager PR change version is released to pub
