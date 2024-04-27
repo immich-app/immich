@@ -553,7 +553,7 @@
           >
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
-              <section class="pt-24">
+              <section class="pt-12 md:pt-24">
                 <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
 
                 {#if album.assetCount > 0}
