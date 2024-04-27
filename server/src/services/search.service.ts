@@ -16,7 +16,6 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetDuplicateRepository } from 'src/interfaces/asset-duplicate.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -34,12 +33,10 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SearchService {
-  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -52,7 +49,6 @@ export class SearchService {
     @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IAssetDuplicateRepository) private assetDuplicateRepository: IAssetDuplicateRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.logger.setContext(SearchService.name);
@@ -224,12 +220,11 @@ export class SearchService {
         `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
       );
 
-      const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean);
+      const duplicateIds = duplicateAssets.map((duplicate) => duplicate.duplicateId).filter(Boolean) as string[];
       const duplicateId = duplicateIds[0] || this.cryptoRepository.randomUUID();
 
       assetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
-
-      await this.assetDuplicateRepository.upsert(duplicateId, assetIds, duplicateIds);
+      await this.assetRepository.updateAll(assetIds, { duplicateId });
     }
 
     const duplicatesDetectedAt = new Date();

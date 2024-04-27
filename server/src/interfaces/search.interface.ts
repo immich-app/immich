@@ -166,7 +166,7 @@ export interface FaceSearchResult {
 
 export interface AssetDuplicateResult {
   assetId: string;
-  duplicateId: string;
+  duplicateId: string | null;
   distance: number;
 }
 

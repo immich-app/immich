@@ -1,5 +1,7 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
@@ -12,6 +14,8 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
@@ -33,6 +37,8 @@ describe(SearchService.name, () => {
   let partnerMock: Mocked<IPartnerRepository>;
   let metadataMock: Mocked<IMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let jobMock: Mocked<IJobRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -43,6 +49,8 @@ describe(SearchService.name, () => {
     partnerMock = newPartnerRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
 
     sut = new SearchService(
       configMock,
@@ -53,6 +61,8 @@ describe(SearchService.name, () => {
       partnerMock,
       metadataMock,
       loggerMock,
+      cryptoMock,
+      jobMock,
     );
   });
 

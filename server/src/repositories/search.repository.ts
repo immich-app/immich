@@ -156,19 +156,24 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  searchDuplicates({ assetId, maxDistance, userIds }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
+  searchDuplicates({
+    assetId,
+    embedding,
+    maxDistance,
+    userIds,
+  }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
     const cte = this.assetRepository.createQueryBuilder('asset');
     cte
       .select('search.assetId', 'assetId')
       .addSelect('asset.duplicateId', 'duplicateId')
-      .addSelect(`(SELECT embedding FROM smart_search WHERE "assetId" = :assetId) <=> search.embedding`, 'distance')
+      .addSelect(`search.embedding <=> :embedding`, 'distance')
       .innerJoin('asset.smartSearch', 'search')
       .where('asset.ownerId IN (:...userIds )')
       .andWhere('asset.id != :assetId')
       .andWhere('asset.isVisible = :isVisible')
-      .orderBy('search.embedding <=> (SELECT embedding FROM smart_search WHERE "assetId" = :assetId)')
+      .orderBy('search.embedding <=> :embedding')
       .limit(64)
-      .setParameters({ assetId, isVisible: true, userIds });
+      .setParameters({ assetId, embedding, isVisible: true, userIds });
 
     const builder = this.assetRepository.manager
       .createQueryBuilder()
