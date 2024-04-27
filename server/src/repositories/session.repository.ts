@@ -2,14 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SessionEntity } from 'src/entities/session.entity';
-import { ISessionRepository } from 'src/interfaces/session.interface';
+import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class SessionRepository implements ISessionRepository {
   constructor(@InjectRepository(SessionEntity) private repository: Repository<SessionEntity>) {}
+
+  @GenerateSql({ params: [DummyValue.DATE] })
+  search(options: SessionSearchOptions): Promise<SessionEntity[]> {
+    return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
+  }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string): Promise<SessionEntity | null> {

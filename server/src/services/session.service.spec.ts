@@ -1,3 +1,5 @@
+import { UserEntity } from 'src/entities/user.entity';
+import { JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { SessionService } from 'src/services/session.service';
@@ -24,6 +26,32 @@ describe('SessionService', () => {
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('handleCleanup', () => {
+    it('should return skipped if nothing is to be deleted', async () => {
+      sessionMock.search.mockResolvedValue([]);
+      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SKIPPED);
+      expect(sessionMock.search).toHaveBeenCalled();
+    });
+
+    it('should delete sessions', async () => {
+      sessionMock.search.mockResolvedValue([
+        {
+          createdAt: new Date('1970-01-01T00:00:00.00Z'),
+          updatedAt: new Date('1970-01-02T00:00:00.00Z'),
+          deviceOS: '',
+          deviceType: '',
+          id: '123',
+          token: '420',
+          user: {} as UserEntity,
+          userId: '42',
+        },
+      ]);
+
+      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SUCCESS);
+      expect(sessionMock.delete).toHaveBeenCalledWith('123');
+    });
   });
 
   describe('getAll', () => {
