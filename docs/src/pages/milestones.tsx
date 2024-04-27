@@ -59,6 +59,15 @@ import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
   {
+    icon: mdiStar,
+    description: 'Reached 30K Stars on GitHub!',
+    title: '30,000 Stars',
+    release: 'v1.102.0',
+    tag: 'v1.102.0',
+    date: new Date(2023, 4, 15),
+    dateType: DateType.RELEASE,
+  },
+  {
     icon: mdiMagnifyScan,
     description: 'Advanced search with filters by date, location and more',
     title: 'Search enhancement with advanced filters',
@@ -142,7 +151,7 @@ const items: Item[] = [
   },
   {
     icon: mdiStar,
-    description: 'Reach 20K Stars on GitHub!',
+    description: 'Reached 20K Stars on GitHub!',
     title: '20,000 Stars',
     release: 'v1.83.0',
     tag: 'v1.83.0',
@@ -403,7 +412,7 @@ const items: Item[] = [
   },
   {
     icon: mdiStar,
-    description: 'Reach 10K Stars on GitHub!',
+    description: 'Reached 10K Stars on GitHub!',
     title: '10,000 Stars',
     release: 'v1.54.0',
     tag: 'v1.54.0',
