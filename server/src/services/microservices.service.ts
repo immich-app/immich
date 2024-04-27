@@ -8,6 +8,7 @@ import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { PersonService } from 'src/services/person.service';
+import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
@@ -27,6 +28,7 @@ export class MicroservicesService {
     private metadataService: MetadataService,
     private personService: PersonService,
     private smartInfoService: SmartInfoService,
+    private sessionService: SessionService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
@@ -42,6 +44,7 @@ export class MicroservicesService {
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
+      [JobName.CLEAN_OLD_SESSION_TOKENS]: () => this.sessionService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),

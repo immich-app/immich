@@ -1,3 +1,4 @@
+import { JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { SessionService } from 'src/services/session.service';
@@ -24,6 +25,14 @@ describe('SessionService', () => {
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('search', () => {
+    it('should return skipped if nothing is deleted', async () => {
+      sessionMock.search.mockResolvedValue([]);
+      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SKIPPED);
+      expect(sessionMock.search).toHaveBeenCalled();
+    });
   });
 
   describe('getAll', () => {
