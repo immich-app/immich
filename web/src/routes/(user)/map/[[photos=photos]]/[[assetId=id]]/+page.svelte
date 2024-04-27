@@ -16,6 +16,7 @@
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
   import { navigate } from '$lib/utils/navigation';
+  import { currentMediaBreakpoint, MediaBreakpoint } from '$lib/stores/media-breakpoint.store.js';
 
   export let data: PageData;
 
@@ -108,7 +109,7 @@
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
-  <UserPageLayout title={data.meta.title} noMargin>
+  <UserPageLayout title={$currentMediaBreakpoint >= MediaBreakpoint.MD ? data.meta.title : undefined} noMargin>
     <div class="h-full w-full md:p-2">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div>
