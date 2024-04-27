@@ -10,6 +10,9 @@
   export let hideMobile = false;
   export let buttonSize: string | undefined = undefined;
 
+  /**
+   * Override the default styling of the button for specific use cases, such as the icon color.
+   */
   let className = '';
   export { className as class };
 
