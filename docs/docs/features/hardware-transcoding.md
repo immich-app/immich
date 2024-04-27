@@ -100,9 +100,9 @@ immich-microservices:
 
 Once this is done, you can continue to step 3 of "Basic Setup".
 
-### All-In-One - Unraid Setup
+#### All-In-One - Unraid Setup
 
-#### QSV
+##### QSV
 
 1. Unraid > Docker > (Stop) Immich container > Edit
 2. Scroll down and select `Add another Path, Port, Variable, Label or Device`
