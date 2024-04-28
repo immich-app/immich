@@ -18,6 +18,7 @@ class StoreKeyNotFoundException implements Exception {
 /// Can be used concurrently from multiple isolates
 class StoreManager with LogContext {
   late final IStoreRepository _db;
+  // This cannot be final or else dart would bite when we access the field in the factory method
   StreamSubscription? _subscription;
   final Map<int, dynamic> _cache = {};
 

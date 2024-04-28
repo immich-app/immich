@@ -30,9 +30,8 @@ dependencies:
   flutter_bloc: ^8.1.5
   # get_it
   get_it: ^7.7.0
-  injectable: ^2.4.1
   # Photo Manager
-  photo_manager: ^3.0.0-dev.5
+  photo_manager: ^3.0.0
   photo_manager_image_provider: ^2.1.0
 
 dependency_overrides:
@@ -66,8 +65,6 @@ dev_dependencies:
   drift_dev: ^2.17.0
   # Route helper
   auto_route_generator: ^8.0.0
-  # @injectable
-  injectable_generator: ^2.6.1
 
 flutter:
   uses-material-design: true

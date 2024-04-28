@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: auto_route
-      sha256: "3cc59d11a477506c593237572ecff94338dc83d9ce1b0bbb4953eae9e5a4f13f"
+      sha256: "6cad3f408863ffff2b5757967c802b18415dac4acb1b40c5cdd45d0a26e5080f"
       url: "https://pub.dev"
     source: hosted
-    version: "8.1.0"
+    version: "8.1.3"
   auto_route_generator:
     dependency: "direct dev"
     description:
@@ -222,7 +222,7 @@ packages:
     description:
       path: drift
       ref: develop
-      resolved-ref: "9c28a060206ffb991e30009a8e4fb9137d572051"
+      resolved-ref: a1af6f6114960caaee6a9d7699e27f92cc8c93dc
       url: "https://github.com/simolus3/drift.git"
     source: git
     version: "2.18.0-dev"
@@ -231,7 +231,7 @@ packages:
     description:
       path: drift_dev
       ref: develop
-      resolved-ref: "9c28a060206ffb991e30009a8e4fb9137d572051"
+      resolved-ref: a1af6f6114960caaee6a9d7699e27f92cc8c93dc
       url: "https://github.com/simolus3/drift.git"
     source: git
     version: "2.18.0-dev"
@@ -349,22 +349,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
-  injectable:
-    dependency: "direct main"
-    description:
-      name: injectable
-      sha256: "3d98967224a5fdd4094a61bf53ed9616c3fbcf3e090bf83e7cb7d436d0c20041"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.1"
-  injectable_generator:
-    dependency: "direct dev"
-    description:
-      name: injectable_generator
-      sha256: "2ca3ada337eac0ef6b82f8049c970ddb63947738fdf32ac6cbef8d1567d7ba05"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.6.1"
   io:
     dependency: transitive
     description:
@@ -385,10 +369,10 @@ packages:
     dependency: transitive
     description:
       name: json_annotation
-      sha256: b10a7b2ff83d83c777edba3c6a0f97045ddadd56c944e1a23a3fdf43a1bf4467
+      sha256: "1ce844379ca14835a50d2f019a3099f419082cfdd231cd86a142af94dd5c6bb1"
       url: "https://pub.dev"
     source: hosted
-    version: "4.8.1"
+    version: "4.9.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -662,16 +646,16 @@ packages:
     dependency: "direct main"
     description:
       name: sqlite3_flutter_libs
-      sha256: d6c31c8511c441d1f12f20b607343df1afe4eddf24a1cf85021677c8eea26060
+      sha256: fb2a106a2ea6042fe57de2c47074cc31539a941819c91e105b864744605da3f5
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.20"
+    version: "0.5.21"
   sqlparser:
     dependency: "direct overridden"
     description:
       path: sqlparser
       ref: develop
-      resolved-ref: "9c28a060206ffb991e30009a8e4fb9137d572051"
+      resolved-ref: a1af6f6114960caaee6a9d7699e27f92cc8c93dc
       url: "https://github.com/simolus3/drift.git"
     source: git
     version: "0.36.0-dev"
@@ -783,10 +767,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: "0a989dc7ca2bb51eac91e8fd00851297cfffd641aa7538b165c62637ca0eaa4a"
+      sha256: "0eaf06e3446824099858367950a813472af675116bf63f008a4c2a75ae13e9cb"
       url: "https://pub.dev"
     source: hosted
-    version: "5.4.0"
+    version: "5.5.0"
   xdg_directories:
     dependency: transitive
     description:

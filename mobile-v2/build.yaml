@@ -7,15 +7,19 @@ targets:
         enabled: false
       drift_dev:analyzer:
         enabled: true
-        options: &options
+        options: &drift_options
           store_date_time_values_as_text: true
           named_parameters: true
           write_from_json_string_constructor: false
           data_class_to_companions: false
           skip_verification_code: true
+        generate_for: &drift_generate_for
+          - lib/domain/entities/*.dart
+          - lib/domain/repositories/database.repository.dart
       drift_dev:modular:
         enabled: true
-        options: *options
+        options: *drift_options
+        generate_for: *drift_generate_for
       #autoroute @RoutePage()
       auto_route_generator:auto_route_generator:
         generate_for:
