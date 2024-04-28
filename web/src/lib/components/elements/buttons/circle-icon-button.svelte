@@ -43,5 +43,5 @@
   class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
   on:click
 >
-  <Icon path={icon} {size} ariaLabel={title} color="currentColor" />
+  <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
 </button>
