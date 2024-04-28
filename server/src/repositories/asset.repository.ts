@@ -73,7 +73,7 @@ export class AssetRepository implements IAssetRepository {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
-  async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity> | Partial<AssetJobStatusEntity>[]): Promise<void> {
+  async upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 

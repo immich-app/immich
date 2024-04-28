@@ -161,7 +161,7 @@ describe(SearchService.name, () => {
       const result = await sut.handleSearchDuplicates({ id: assetStub.image.id });
 
       expect(result).toBe(JobStatus.FAILED);
-      // expect(loggerMock.error).toHaveBeenCalledWith(`Asset ${assetStub.image.id} not found`);
+      expect(loggerMock.error).toHaveBeenCalledWith(`Asset ${assetStub.image.id} not found`);
     });
 
     it('should skip if asset is not visible', async () => {
@@ -171,7 +171,7 @@ describe(SearchService.name, () => {
       const result = await sut.handleSearchDuplicates({ id });
 
       expect(result).toBe(JobStatus.SKIPPED);
-      // expect(loggerMock.debug).toHaveBeenCalledWith(`Asset ${id} is not visible, skipping`);
+      expect(loggerMock.debug).toHaveBeenCalledWith(`Asset ${id} is not visible, skipping`);
     });
 
     it('should fail if asset is missing preview image', async () => {
@@ -180,7 +180,7 @@ describe(SearchService.name, () => {
       const result = await sut.handleSearchDuplicates({ id: assetStub.noResizePath.id });
 
       expect(result).toBe(JobStatus.FAILED);
-      // expect(loggerMock.warn).toHaveBeenCalledWith(`Asset ${assetStub.noResizePath.id} is missing preview image`);
+      expect(loggerMock.warn).toHaveBeenCalledWith(`Asset ${assetStub.noResizePath.id} is missing preview image`);
     });
 
     it('should fail if asset is missing embedding', async () => {
@@ -189,7 +189,7 @@ describe(SearchService.name, () => {
       const result = await sut.handleSearchDuplicates({ id: assetStub.image.id });
 
       expect(result).toBe(JobStatus.FAILED);
-      // expect(loggerMock.debug).toHaveBeenCalledWith(`Asset ${assetStub.image.id} is missing embedding`);
+      expect(loggerMock.debug).toHaveBeenCalledWith(`Asset ${assetStub.image.id} is missing embedding`);
     });
 
     it('should search for duplicates and update asset with duplicateId', async () => {
@@ -210,7 +210,7 @@ describe(SearchService.name, () => {
       });
       expect(assetMock.updateAll).toHaveBeenCalledWith(expectedAssetIds, { duplicateId: expect.any(String) });
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith(
-        expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
+        ...expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
       );
     });
 
@@ -233,7 +233,7 @@ describe(SearchService.name, () => {
         duplicateId: assetStub.hasDupe.duplicateId,
       });
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith(
-        expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
+        ...expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
       );
     });
 
@@ -245,9 +245,10 @@ describe(SearchService.name, () => {
 
       expect(result).toBe(JobStatus.SUCCESS);
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasDupe.id], { duplicateId: null });
-      expect(assetMock.upsertJobStatus).toHaveBeenCalledWith([
-        { assetId: assetStub.hasDupe.id, duplicatesDetectedAt: expect.any(Date) },
-      ]);
+      expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: assetStub.hasDupe.id,
+        duplicatesDetectedAt: expect.any(Date),
+      });
     });
   });
 });
