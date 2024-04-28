@@ -104,5 +104,5 @@ SELECT "key", "value" FROM "system_config";
 ## Persons
 
 ```sql title="Delete person and unset it for the faces it was associated with"
-DELETE FROM person WHERE name = 'PersonNameHere';
+DELETE FROM "person" WHERE "name" = 'PersonNameHere';
 ```
