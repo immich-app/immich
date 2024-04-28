@@ -47,6 +47,7 @@ export const currentMediaBreakpoint = readable(mediaBreakpoints[currentIndex], (
     }
   };
 
+  updateBreakpoint();
   window.addEventListener('resize', updateBreakpoint);
 
   return () => {
