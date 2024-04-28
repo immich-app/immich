@@ -3,7 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
 
   export let person: PersonResponseDto;
   export let name: string;

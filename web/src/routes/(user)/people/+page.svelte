@@ -33,7 +33,7 @@
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
   import { clearQueryParam } from '$lib/utils/navigation';
-  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
 
   export let data: PageData;
 

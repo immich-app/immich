@@ -11,7 +11,7 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Icon from '../elements/icon.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];

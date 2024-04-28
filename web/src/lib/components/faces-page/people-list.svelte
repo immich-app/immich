@@ -2,7 +2,7 @@
   import { type PersonResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
-  import SearchPeople from '$lib/components/faces-page/search-people.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
