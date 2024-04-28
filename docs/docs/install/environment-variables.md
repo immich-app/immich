@@ -17,11 +17,11 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                |
-| :---------------- | :-------------------- | :-------: | :-------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
-| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                   |
+| Variable           | Description                     |  Default  | Services                                |
+| :----------------- | :------------------------------ | :-------: | :-------------------------------------- |
+| `IMMICH_VERSION`   | Image tags                      | `release` | server, microservices, machine learning |
+| `UPLOAD_LOCATION`  | Host Path for uploads           |           | server, microservices                   |
+| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                                |
 
 :::tip
 
@@ -59,16 +59,16 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Database
 
-| Variable                            | Description                                                              |   Default    | Services              |
-| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------- |
-| `DB_URL`                            | Database URL                                                             |              | server, microservices |
-| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices |
-| `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices |
+| Variable                            | Description                                                              |   Default    | Services                                      |
+| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------------------------------- |
+| `DB_URL`                            | Database URL                                                             |              | server, microservices                         |
+| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices                         |
+| `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices                         |
 | `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices, database<sup>\*1</sup> |
 | `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices, database<sup>\*1</sup> |
 | `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices, database<sup>\*1</sup> |
-| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices |
-| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices                         |
+| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices                         |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
@@ -126,6 +126,7 @@ Redis (Sentinel) URL example JSON before encoding:
   "name": "redis-sentinel"
 }
 ```
+
 </details>
 
 ## Machine Learning
