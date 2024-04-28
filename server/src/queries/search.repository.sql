@@ -195,33 +195,19 @@ WITH
     SELECT
       "asset"."duplicateId" AS "duplicateId",
       "search"."assetId" AS "assetId",
-      (
-        SELECT
-          embedding
-        FROM
-          smart_search
-        WHERE
-          "assetId" = $1
-      ) <= > "search"."embedding" AS "distance"
+      "search"."embedding" <= > $1 AS "distance"
     FROM
       "assets" "asset"
       INNER JOIN "smart_search" "search" ON "search"."assetId" = "asset"."id"
     WHERE
       (
         "asset"."ownerId" IN ($2)
-        AND "asset"."id" != $1
-        AND "asset"."isVisible" = $3
+        AND "asset"."id" != $3
+        AND "asset"."isVisible" = $4
       )
       AND ("asset"."deletedAt" IS NULL)
     ORDER BY
-      "search"."embedding" <= > (
-        SELECT
-          embedding
-        FROM
-          smart_search
-        WHERE
-          "assetId" = $1
-      ) ASC
+      "search"."embedding" <= > $1 ASC
     LIMIT
       64
   )
@@ -230,7 +216,7 @@ SELECT
 FROM
   "cte" "res"
 WHERE
-  res.distance <= $4
+  res.distance <= $5
 
 -- SearchRepository.searchFaces
 START TRANSACTION
