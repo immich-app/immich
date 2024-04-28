@@ -47,7 +47,7 @@ SELECT "assets".*, "exif"."description" FROM "exif"
   WHERE TRIM("exif"."description") <> ''; -- all files with a description
 SELECT "assets".*, "exif"."description" FROM "exif"
   LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
-  WHERE "description" ILIKE '%string to match%'; -- search by string
+  WHERE "exif"."description" ILIKE '%string to match%'; -- search by string
 ```
 
 ```sql title="Without metadata"
