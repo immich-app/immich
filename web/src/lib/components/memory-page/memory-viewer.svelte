@@ -3,16 +3,36 @@
   import { page } from '$app/stores';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import { type Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { shortcuts } from '$lib/utils/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
-  import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
+  import { ThumbnailFormat, getMemoryLane, type AssetResponseDto } from '@immich/sdk';
+  import {
+    mdiChevronDown,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiChevronUp,
+    mdiDotsVertical,
+    mdiPause,
+    mdiPlay,
+    mdiPlus,
+    mdiSelectAll,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
@@ -74,6 +94,21 @@
   // Progress should be reset when the current memory or asset changes.
   $: memoryIndex, assetIndex, handlePromiseError(reset());
 
+  let selectedAssets: Set<AssetResponseDto> = new Set();
+  $: isMultiSelectionMode = selectedAssets.size > 0;
+
+  let memoryGallery: HTMLElement;
+  let memoryWrapper: HTMLElement;
+  let galleryInView = false;
+
+  $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
+  $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
+  $: {
+    if (!galleryInView) {
+      selectedAssets = new Set();
+    }
+  }
+
   onMount(async () => {
     if (!$memoryStore) {
       const localTime = new Date();
@@ -84,9 +119,16 @@
     }
   });
 
-  let memoryGallery: HTMLElement;
-  let memoryWrapper: HTMLElement;
-  let galleryInView = false;
+  const triggerAssetUpdate = () => (currentMemory.assets = currentMemory.assets);
+
+  const onAssetDelete = (assetIds: string[]) => {
+    const assetIdSet = new Set(assetIds);
+    currentMemory.assets = currentMemory.assets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+  };
+
+  const handleSelectAll = () => {
+    selectedAssets = new Set(currentMemory.assets);
+  };
 </script>
 
 <svelte:window
@@ -96,6 +138,30 @@
     { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
   ]}
 />
+
+{#if isMultiSelectionMode}
+  <div class="sticky top-0 z-[90]">
+    <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+      <CreateSharedLink />
+      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+
+      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+        <AddToAlbum />
+        <AddToAlbum shared />
+      </AssetSelectContextMenu>
+
+      <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
+
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+        <DownloadAction menuItem />
+        <ChangeDate menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
+        <DeleteAssets menuItem {onAssetDelete} />
+      </AssetSelectContextMenu>
+    </AssetSelectControlBar>
+  </div>
+{/if}
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
@@ -268,7 +334,6 @@
     </section>
 
     <!-- GALLERY VIEWER -->
-
     <section class="bg-immich-dark-gray m-4">
       <div
         class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
@@ -292,7 +357,7 @@
           bind:clientHeight={viewport.height}
           bind:clientWidth={viewport.width}
         >
-          <GalleryViewer assets={currentMemory.assets} {viewport} />
+          <GalleryViewer assets={currentMemory.assets} {viewport} bind:selectedAssets />
         </div>
       </IntersectionObserver>
     </section>
