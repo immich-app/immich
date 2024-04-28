@@ -9,6 +9,7 @@ import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PersonService } from 'src/services/person.service';
+import { SearchService } from 'src/services/search.service';
 import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
@@ -16,7 +17,6 @@ import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
 import { otelSDK } from 'src/utils/instrumentation';
-import { SearchService } from 'src/services/search.service';
 
 @Injectable()
 export class MicroservicesService {
