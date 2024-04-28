@@ -252,11 +252,19 @@ export class AssetService {
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 
+    let asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+    if (asset.isReadOnly) {
+      throw new BadRequestException('Asset is read-only');
+    }
+
     const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
     await this.assetRepository.update({ id, ...rest });
-    const asset = await this.assetRepository.getById(id, {
+    asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
       smartInfo: true,
@@ -265,10 +273,7 @@ export class AssetService {
         person: true,
       },
     });
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-    return mapAsset(asset, { auth });
+    return mapAsset(asset!, { auth });
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
@@ -322,8 +327,11 @@ export class AssetService {
       (options as Partial<AssetEntity>).updatedAt = new Date();
     }
 
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+    const assets = await this.assetRepository.getByIds(ids);
+    for (const asset of assets) {
+      if (!asset.isReadOnly) {
+        await this.updateMetadata({ id: asset.id, dateTimeOriginal, latitude, longitude });
+      }
     }
 
     await this.assetRepository.updateAll(ids, options);
