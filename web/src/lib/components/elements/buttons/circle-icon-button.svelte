@@ -38,5 +38,4 @@
   on:click
 >
   <Icon path={icon} {size} ariaLabel={title} color="currentColor" />
-  <slot />
 </button>
