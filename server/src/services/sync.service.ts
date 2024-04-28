@@ -45,8 +45,6 @@ export class SyncService {
   }
 
   async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, dto.userIds);
-
     // app has not synced in the last 100 days
     const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
     if (duration > AUDIT_LOG_MAX_DURATION) {
@@ -61,6 +59,8 @@ export class SyncService {
     if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
       return FULL_SYNC;
     }
+
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, dto.userIds);
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
