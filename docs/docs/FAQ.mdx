@@ -397,7 +397,7 @@ The behaviors differ depending on your phone's manufacturer; most are under batt
 
 ### Why is background backup on iOS not working?
 
-iPhone determines if a particular app can invoke background tasks by multiple factors, most of which we don't know and don't have control over. To increase the likelihood that background backup can run, follow the steps below:
+On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
 
 - Make sure you enable Background App Refresh in the phone's settings. `Settings > General > Background App Refresh`.
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
