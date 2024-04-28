@@ -34,10 +34,16 @@ You can calculate the checksum for a particular file by using the command `sha1s
 ```sql title="Find by checksum (SHA-1)"
 SELECT encode("checksum", 'hex') FROM "assets";
 SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
+SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
 ```
 
 ```sql title="Live photos"
 SELECT * FROM "assets" WHERE "livePhotoVideoId" IS NOT NULL;
+```
+
+```sql title="By description"
+SELECT * FROM "exif" WHERE TRIM("description") <> ''; -- all files with a description
+SELECT * FROM "exif" WHERE "description" ILIKE '%string to match%'; -- search by string
 ```
 
 ```sql title="Without metadata"
