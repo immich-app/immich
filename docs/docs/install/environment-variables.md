@@ -64,13 +64,15 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `DB_URL`                            | Database URL                                                             |              | server, microservices |
 | `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices |
 | `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices |
-| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices |
-| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices |
-| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices |
-| `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices |
+| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices, database<sup>\*1</sup> |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices |
 
-\*1: This setting cannot be changed after the server has successfully started up.
+\*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
+
+\*2: This setting cannot be changed after the server has successfully started up.
 
 :::info
 
@@ -102,6 +104,9 @@ More info can be found in the upstream [ioredis][redis-api] documentation.
 
 Redis (Sentinel) URL example JSON before encoding:
 
+<details>
+<summary>JSON</summary>
+
 ```json
 {
   "sentinels": [
@@ -121,6 +126,7 @@ Redis (Sentinel) URL example JSON before encoding:
   "name": "redis-sentinel"
 }
 ```
+</details>
 
 ## Machine Learning
 
