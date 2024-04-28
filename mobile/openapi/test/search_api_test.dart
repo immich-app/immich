@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<SearchResponseDto> search({ bool clip, bool motion, num page, String q, String query, bool recent, num size, bool smart, String type, bool withArchived }) async
-    test('test search', () async {
-      // TODO
-    });
-
     //Future<SearchResponseDto> searchMetadata(MetadataSearchDto metadataSearchDto) async
     test('test searchMetadata', () async {
       // TODO

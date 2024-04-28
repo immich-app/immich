@@ -738,37 +738,6 @@ WHERE
 LIMIT
   12
 
--- AssetRepository.searchMetadata
-SELECT
-  asset.*,
-  e.*,
-  COALESCE("si"."tags", array[]::text[]) AS "tags",
-  COALESCE("si"."objects", array[]::text[]) AS "objects"
-FROM
-  "assets" "asset"
-  INNER JOIN "exif" "e" ON asset."id" = e."assetId"
-  LEFT JOIN "smart_info" "si" ON si."assetId" = asset."id"
-WHERE
-  (
-    "asset"."isVisible" = true
-    AND "asset"."ownerId" IN ($1)
-    AND "asset"."isArchived" = $2
-    AND (
-      (
-        e."exifTextSearchableColumn" || COALESCE(
-          si."smartInfoTextSearchableColumn",
-          to_tsvector('english', '')
-        )
-      ) @@ PLAINTO_TSQUERY('english', $3)
-      OR asset."originalFileName" = $4
-    )
-  )
-  AND ("asset"."deletedAt" IS NULL)
-ORDER BY
-  "asset"."fileCreatedAt" DESC
-LIMIT
-  250
-
 -- AssetRepository.getAllForUserFullSync
 SELECT
   "asset"."id" AS "asset_id",

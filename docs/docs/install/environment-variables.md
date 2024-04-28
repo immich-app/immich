@@ -61,7 +61,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | Variable                            | Description                                                              |   Default    | Services              |
 | :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------- |
 | `DB_URL`                            | Database URL                                                             |              | server, microservices |
-| `DB_HOSTNAME`                       | Database Host                                                            | `localhost`  | server, microservices |
+| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices |
 | `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices |
 | `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices |
 | `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices |
@@ -79,15 +79,15 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 
 ## Redis
 
-| Variable         | Description    |    Default     | Services              |
-| :--------------- | :------------- | :------------: | :-------------------- |
-| `REDIS_URL`      | Redis URL      |                | server, microservices |
-| `REDIS_HOSTNAME` | Redis Host     | `immich_redis` | server, microservices |
-| `REDIS_PORT`     | Redis Port     |     `6379`     | server, microservices |
-| `REDIS_DBINDEX`  | Redis DB Index |      `0`       | server, microservices |
-| `REDIS_USERNAME` | Redis Username |                | server, microservices |
-| `REDIS_PASSWORD` | Redis Password |                | server, microservices |
-| `REDIS_SOCKET`   | Redis Socket   |                | server, microservices |
+| Variable         | Description    | Default | Services              |
+| :--------------- | :------------- | :-----: | :-------------------- |
+| `REDIS_URL`      | Redis URL      |         | server, microservices |
+| `REDIS_HOSTNAME` | Redis Host     | `redis` | server, microservices |
+| `REDIS_PORT`     | Redis Port     | `6379`  | server, microservices |
+| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server, microservices |
+| `REDIS_USERNAME` | Redis Username |         | server, microservices |
+| `REDIS_PASSWORD` | Redis Password |         | server, microservices |
+| `REDIS_SOCKET`   | Redis Socket   |         | server, microservices |
 
 :::info
 
