@@ -24,8 +24,9 @@
 
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import { windowViewport } from '$lib/stores/viewport.store';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
@@ -38,6 +39,28 @@
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
   export let searchBar: HTMLElement;
+
+  $: if (searchBar) {
+    const searchBarRect = searchBar.getBoundingClientRect();
+    const minMargin = 50;
+    const minWidth = 750;
+
+    filterBoxLeft = 0;
+    filterBoxMinWidth = 0;
+
+    if (searchBarRect.width < minWidth) {
+      // Larger than the search bar.
+      const maxWidth = Math.max($windowViewport.width - minMargin, 0);
+      filterBoxMinWidth = Math.min(maxWidth, minWidth);
+
+      if ($windowViewport.width < 2 * searchBarRect.left + filterBoxMinWidth) {
+        // Window-centered
+        const marginLeft = searchBarRect.left;
+        const marginRight = $windowViewport.width - (searchBarRect.left + filterBoxMinWidth);
+        filterBoxLeft = (marginLeft + marginRight) / 2 - marginLeft;
+      }
+    }
+  }
 
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
@@ -115,35 +138,7 @@
 
     dispatch('search', payload);
   };
-
-  const computeWidthAndPosition = () => {
-    const searchBarRect = searchBar.getBoundingClientRect();
-    const minMargin = 50;
-    const minWidth = 750;
-
-    filterBoxLeft = 0;
-    filterBoxMinWidth = 0;
-
-    if (searchBarRect.width < minWidth) {
-      // Larger than the search bar.
-      const maxWidth = Math.max(window.innerWidth - minMargin, 0);
-      filterBoxMinWidth = Math.min(maxWidth, minWidth);
-
-      if (window.innerWidth < 2 * searchBarRect.left + filterBoxMinWidth) {
-        // Window-centered
-        const marginLeft = searchBarRect.left;
-        const marginRight = window.innerWidth - (searchBarRect.left + filterBoxMinWidth);
-        filterBoxLeft = (marginLeft + marginRight) / 2 - marginLeft;
-      }
-    }
-  };
-
-  onMount(() => {
-    computeWidthAndPosition();
-  });
 </script>
-
-<svelte:window on:resize={computeWidthAndPosition} />
 
 <div
   bind:clientWidth={filterBoxWidth}
