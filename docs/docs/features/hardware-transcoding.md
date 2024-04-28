@@ -102,7 +102,14 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 
 #### All-In-One - Unraid Setup
 
-##### NVENC - NVIDIA GPUs
+##### QSV
+
+1. Unraid > Docker > (Stop) Immich container > Edit
+2. Scroll down and select `Add another Path, Port, Variable, Label or Device`
+3. In the drop-down menu, select `Device` and an entry with any name and the value `/dev/dri`.
+4. Continue to step 4 of "Basic Setup".
+
+##### NVENC
 
 1. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`all`
 2. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`

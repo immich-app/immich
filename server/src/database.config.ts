@@ -6,7 +6,7 @@ const url = process.env.DB_URL;
 const urlOrParts = url
   ? { url }
   : {
-      host: process.env.DB_HOSTNAME || 'localhost',
+      host: process.env.DB_HOSTNAME || 'database',
       port: Number.parseInt(process.env.DB_PORT || '5432'),
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
@@ -26,8 +26,12 @@ export const databaseConfig: PostgresConnectionOptions = {
   ...urlOrParts,
 };
 
-// this export is used by TypeORM commands in package.json#scripts
-export const dataSource = new DataSource(databaseConfig);
+/**
+ * @deprecated - DO NOT USE THIS
+ *
+ * this export is ONLY to be used for TypeORM commands in package.json#scripts
+ */
+export const dataSource = new DataSource({ ...databaseConfig, host: 'localhost' });
 
 export const vectorExt =
   process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

@@ -251,6 +251,17 @@ describe(MediaService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
 
+    it('should delete previous preview if different path', async () => {
+      const previousPreviewPath = assetStub.image.previewPath;
+
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_THUMBNAIL_FORMAT, value: ImageFormat.WEBP }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+
+      await sut.handleGeneratePreview({ id: assetStub.image.id });
+
+      expect(storageMock.unlink).toHaveBeenCalledWith(previousPreviewPath);
+    });
+
     it('should generate a P3 thumbnail for a wide gamut image', async () => {
       assetMock.getByIds.mockResolvedValue([
         { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
@@ -390,6 +401,17 @@ describe(MediaService.name, () => {
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
       },
     );
+
+    it('should delete previous thumbnail if different path', async () => {
+      const previousThumbnailPath = assetStub.image.thumbnailPath;
+
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.IMAGE_THUMBNAIL_FORMAT, value: ImageFormat.WEBP }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+
+      await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+      expect(storageMock.unlink).toHaveBeenCalledWith(previousThumbnailPath);
+    });
   });
 
   it('should generate a P3 thumbnail for a wide gamut image', async () => {

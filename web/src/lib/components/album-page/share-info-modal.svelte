@@ -122,8 +122,6 @@
                   title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
-                  backgroundColor="transparent"
-                  hoverColor="#e2e7e9"
                   size="20"
                 />
 

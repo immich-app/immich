@@ -79,6 +79,7 @@ class SqlGenerator {
       imports: [
         TypeOrmModule.forRoot({
           ...databaseConfig,
+          host: 'localhost',
           entities,
           logging: ['query'],
           logger: this.sqlLogger,
