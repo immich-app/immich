@@ -16,7 +16,7 @@ import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
 import { otelSDK } from 'src/utils/instrumentation';
-import { SearchService } from './search.service';
+import { SearchService } from 'src/services/search.service';
 
 @Injectable()
 export class MicroservicesService {
