@@ -79,7 +79,9 @@ export class MetadataRepository implements IMetadataRepository {
     queryRunner: QueryRunner,
     lineToEntityMapper: (lineSplit: string[]) => GeodataPlacesEntity,
     filePath: string,
+    options?: { entityFilter?: (linesplit: string[]) => boolean },
   ) {
+    const _entityFilter = options?.entityFilter ?? (() => true);
     if (!existsSync(filePath)) {
       this.logger.error(`Geodata file ${filePath} not found`);
       throw new Error(`Geodata file ${filePath} not found`);
@@ -91,6 +93,9 @@ export class MetadataRepository implements IMetadataRepository {
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
+      if (!_entityFilter(lineSplit)) {
+        continue;
+      }
       const geoData = lineToEntityMapper(lineSplit);
       bufferGeodata.push(geoData);
       if (bufferGeodata.length > 1000) {
@@ -123,6 +128,7 @@ export class MetadataRepository implements IMetadataRepository {
           admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
       geodataCities500Path,
+      { entityFilter: (lineSplit) => lineSplit[7] != 'PPLX' },
     );
   }
 
@@ -167,10 +173,9 @@ export class MetadataRepository implements IMetadataRepository {
 
     this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
 
-    const { countryCode, name: city, admin1Name, admin2Name } = response;
+    const { countryCode, name: city, admin1Name } = response;
     const country = getName(countryCode, 'en') ?? null;
-    const stateParts = [admin2Name, admin1Name].filter((name) => !!name);
-    const state = stateParts.length > 0 ? stateParts.join(', ') : null;
+    const state = admin1Name;
 
     return { country, state, city };
   }
