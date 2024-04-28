@@ -113,7 +113,8 @@ class SyncService {
       both: (User a, User b) {
         if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||
-            a.isPartnerSharedWith != b.isPartnerSharedWith) {
+            a.isPartnerSharedWith != b.isPartnerSharedWith ||
+            a.inTimeline != b.inTimeline) {
           toUpsert.add(a);
           return true;
         }
@@ -163,7 +164,10 @@ class SyncService {
     if (since == null) return null;
     final DateTime now = DateTime.now();
     final (toUpsert, toDelete) = await getChangedAssets(users, since);
-    if (toUpsert == null || toDelete == null) return null;
+    if (toUpsert == null || toDelete == null) {
+      await _clearUserAssetsETag(users);
+      return null;
+    }
     try {
       if (toDelete.isNotEmpty) {
         await handleRemoteAssetRemoval(toDelete);
@@ -173,7 +177,7 @@ class SyncService {
         await upsertAssetsWithExif(updated);
       }
       if (toUpsert.isNotEmpty || toDelete.isNotEmpty) {
-        await _updateUserAssetsETag(currentUser, now);
+        await _updateUserAssetsETag(users, now);
         return true;
       }
       return false;
@@ -252,7 +256,7 @@ class SyncService {
 
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
-      await _updateUserAssetsETag(user, now);
+      await _updateUserAssetsETag([user], now);
       return false;
     }
     final idsToDelete = toRemove.map((e) => e.id).toList();
@@ -262,12 +266,19 @@ class SyncService {
     } on IsarError catch (e) {
       _log.severe("Failed to sync remote assets to db", e);
     }
-    await _updateUserAssetsETag(user, now);
+    await _updateUserAssetsETag([user], now);
     return true;
   }
 
-  Future<void> _updateUserAssetsETag(User user, DateTime time) =>
-      _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, time: time)));
+  Future<void> _updateUserAssetsETag(List<User> users, DateTime time) {
+    final etags = users.map((u) => ETag(id: u.id, time: time)).toList();
+    return _db.writeTxn(() => _db.eTags.putAll(etags));
+  }
+
+  Future<void> _clearUserAssetsETag(List<User> users) {
+    final ids = users.map((u) => u.id).toList();
+    return _db.writeTxn(() => _db.eTags.deleteAllById(ids));
+  }
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes

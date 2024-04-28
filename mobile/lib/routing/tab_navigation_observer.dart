@@ -43,7 +43,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'SharingRoute') {
       ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-      ref.read(assetProvider.notifier).getPartnerAssets();
+      Future(() => ref.read(assetProvider.notifier).getAllAsset());
     }
 
     if (route.name == 'LibraryRoute') {

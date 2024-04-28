@@ -5,8 +5,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -44,15 +44,16 @@ class AssetService {
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
-    final List<User> users = await _db.users
-        .filter()
-        .isPartnerSharedWithEqualTo(true)
-        .or()
-        .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .findAll();
+    final syncedUserIds = await _db.eTags.where().idProperty().findAll();
+    final List<User> syncedUsers = syncedUserIds.isEmpty
+        ? []
+        : await _db.users
+            .where()
+            .anyOf(syncedUserIds, (q, id) => q.idEqualTo(id))
+            .findAll();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
-      users: users,
+      users: syncedUsers,
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
       refreshUsers: _userService.getUsersFromServer,
@@ -64,8 +65,11 @@ class AssetService {
   /// Returns `(null, null)` if changes are invalid -> requires full sync
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
       _getRemoteAssetChanges(List<User> users, DateTime since) async {
-    final changes = await _apiService.syncApi
-        .getDeltaSync(since, users.map((e) => e.id).toList());
+    final dto = AssetDeltaSyncDto(
+      updatedAfter: since,
+      userIds: users.map((e) => e.id).toList(),
+    );
+    final changes = await _apiService.syncApi.getDeltaSync(dto);
     return changes == null || changes.needsFullSync
         ? (null, null)
         : (changes.upserted.map(Asset.remote).toList(), changes.deleted);
@@ -101,14 +105,15 @@ class AssetService {
       String? lastId;
       // will break on error or once all assets are loaded
       while (true) {
-        final List<AssetResponseDto>? assets =
-            await _apiService.syncApi.getAllForUserFullSync(
-          chunkSize,
-          until,
-          userId: user.id,
-          lastCreationDate: lastCreationDate,
+        final dto = AssetFullSyncDto(
+          limit: chunkSize,
+          updatedUntil: until,
           lastId: lastId,
+          lastCreationDate: lastCreationDate,
+          userId: user.id,
         );
+        final List<AssetResponseDto>? assets =
+            await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length < chunkSize) break;

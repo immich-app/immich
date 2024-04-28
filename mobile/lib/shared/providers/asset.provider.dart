@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
@@ -26,7 +25,6 @@ class AssetNotifier extends StateNotifier<bool> {
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
-  bool _getPartnerAssetsInProgress = false;
 
   AssetNotifier(
     this._assetService,
@@ -49,27 +47,16 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
+      final bool changedUsers = await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
-      debugPrint("newRemote: $newRemote, newLocal: $newLocal");
+      debugPrint(
+          "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal");
 
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
       state = false;
-    }
-  }
-
-  Future<void> getPartnerAssets([User? partner]) async {
-    if (_getPartnerAssetsInProgress) return;
-    try {
-      final stopwatch = Stopwatch()..start();
-      _getPartnerAssetsInProgress = true;
-      await _userService.refreshUsers();
-      await _assetService.refreshRemoteAssets();
-      log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
-    } finally {
-      _getPartnerAssetsInProgress = false;
     }
   }
 
