@@ -12,6 +12,7 @@ describe(DatabaseService.name, () => {
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
+    delete process.env.DB_SKIP_MIGRATIONS;
     databaseMock = newDatabaseRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     sut = new DatabaseService(databaseMock, loggerMock);
@@ -210,5 +211,13 @@ describe(DatabaseService.name, () => {
         expect(loggerMock.fatal).not.toHaveBeenCalled();
       },
     );
+
+    it('should skip migrations if DB_SKIP_MIGRATIONS=true', async () => {
+      process.env.DB_SKIP_MIGRATIONS = 'true';
+
+      await expect(sut.init()).resolves.toBeUndefined();
+
+      expect(databaseMock.runMigrations).not.toHaveBeenCalled();
+    });
   });
 });

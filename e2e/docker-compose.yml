@@ -12,7 +12,6 @@ x-server-build: &server-common
     - DB_USERNAME=postgres
     - DB_PASSWORD=postgres
     - DB_DATABASE_NAME=immich
-    - REDIS_HOSTNAME=redis
     - IMMICH_MACHINE_LEARNING_ENABLED=false
     - IMMICH_METRICS=true
   volumes:

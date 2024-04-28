@@ -91,22 +91,19 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
+*AlbumApi* | [**updateAlbumUser**](doc//AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/user/{userId} | 
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
-*AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
-*AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
-*AssetApi* | [**searchAssets**](doc//AssetApi.md#searchassets) | **GET** /assets | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
@@ -166,7 +163,6 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
-*SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
 *SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **POST** /search/metadata | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
@@ -238,6 +234,9 @@ Class | Method | HTTP request | Description
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
+ - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
+ - [AlbumUserRole](doc//AlbumUserRole.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
@@ -275,8 +274,6 @@ Class | Method | HTTP request | Description
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
- - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
- - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
  - [DeleteUserDto](doc//DeleteUserDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
@@ -388,6 +385,7 @@ Class | Method | HTTP request | Description
  - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
+ - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)

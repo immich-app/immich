@@ -23,7 +23,7 @@
     await (detail.default ? resetToDefault(detail.configKeys) : reset(detail.configKeys));
   };
 
-  const handleSave = async (update: Partial<SystemConfigDto>) => {
+  export const handleSave = async (update: Partial<SystemConfigDto>) => {
     try {
       const newConfig = await updateConfig({
         systemConfigDto: {

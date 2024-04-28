@@ -35,7 +35,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     softDeleteAll: vitest.fn(),
     getAssetIdByCity: vitest.fn(),
     getAssetIdByTag: vitest.fn(),
-    searchMetadata: vitest.fn(),
     getAllForUserFullSync: vitest.fn(),
     getChangedDeltaSync: vitest.fn(),
   };

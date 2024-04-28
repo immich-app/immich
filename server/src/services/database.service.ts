@@ -49,7 +49,9 @@ export class DatabaseService {
         throw error;
       }
 
-      await this.databaseRepository.runMigrations();
+      if (process.env.DB_SKIP_MIGRATIONS !== 'true') {
+        await this.databaseRepository.runMigrations();
+      }
     });
   }
 

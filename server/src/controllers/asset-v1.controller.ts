@@ -20,8 +20,6 @@ import {
   AssetBulkUploadCheckResponseDto,
   AssetFileUploadResponseDto,
   CheckExistingAssetsResponseDto,
-  CuratedLocationsResponseDto,
-  CuratedObjectsResponseDto,
 } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkUploadCheckDto,
@@ -109,21 +107,6 @@ export class AssetControllerV1 {
     @Query() dto: GetAssetThumbnailDto,
   ) {
     await sendFile(res, next, () => this.service.serveThumbnail(auth, id, dto));
-  }
-
-  @Get('/curated-objects')
-  getCuratedObjects(@Auth() auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.service.getCuratedObject(auth);
-  }
-
-  @Get('/curated-locations')
-  getCuratedLocations(@Auth() auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.service.getCuratedLocation(auth);
-  }
-
-  @Get('/search-terms')
-  getAssetSearchTerms(@Auth() auth: AuthDto): Promise<string[]> {
-    return this.service.getAssetSearchTerm(auth);
   }
 
   /**

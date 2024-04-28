@@ -292,6 +292,8 @@
                   >
                     {#if ageInMonths <= 11}
                       Age {ageInMonths} months
+                    {:else if ageInMonths > 12 && ageInMonths <= 23}
+                      Age 1 year, {ageInMonths - 12} months
                     {:else}
                       Age {age}
                     {/if}

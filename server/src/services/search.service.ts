@@ -6,7 +6,6 @@ import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
-  SearchDto,
   SearchPeopleDto,
   SearchPlacesDto,
   SearchResponseDto,
@@ -23,7 +22,7 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISearchRepository, SearchExploreItem, SearchStrategy } from 'src/interfaces/search.interface';
+import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 
 @Injectable()
@@ -143,60 +142,6 @@ export class SearchService {
         return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
       }
     }
-  }
-
-  // TODO: remove after implementing new search filters
-  /** @deprecated */
-  async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
-    await this.configCore.requireFeature(FeatureFlag.SEARCH);
-    const { machineLearning } = await this.configCore.getConfig();
-    const query = dto.q || dto.query;
-    if (!query) {
-      throw new Error('Missing query');
-    }
-
-    let strategy = SearchStrategy.TEXT;
-    if (dto.smart || dto.clip) {
-      await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
-      strategy = SearchStrategy.SMART;
-    }
-
-    const userIds = await this.getUserIdsToSearch(auth);
-    const page = dto.page ?? 1;
-
-    let nextPage: string | null = null;
-    let assets: AssetEntity[] = [];
-    switch (strategy) {
-      case SearchStrategy.SMART: {
-        const embedding = await this.machineLearning.encodeText(
-          machineLearning.url,
-          { text: query },
-          machineLearning.clip,
-        );
-
-        const { hasNextPage, items } = await this.searchRepository.searchSmart(
-          { page, size: dto.size || 100 },
-          {
-            userIds,
-            embedding,
-            withArchived: !!dto.withArchived,
-          },
-        );
-        if (hasNextPage) {
-          nextPage = (page + 1).toString();
-        }
-        assets = items;
-        break;
-      }
-      case SearchStrategy.TEXT: {
-        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: dto.size || 250 });
-      }
-      default: {
-        break;
-      }
-    }
-
-    return this.mapResponse(assets, nextPage);
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {

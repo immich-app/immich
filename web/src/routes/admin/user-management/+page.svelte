@@ -24,6 +24,7 @@
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let data: PageData;
 
@@ -221,31 +222,35 @@
                     {/if}
                   </div>
                 </td>
-                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
+                <td
+                  class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
+                >
                   {#if !immichUser.deletedAt}
-                    <button
+                    <CircleIconButton
+                      icon={mdiPencilOutline}
+                      title="Edit user"
+                      color="primary"
+                      size="16"
                       on:click={() => editUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1"
-                    >
-                      <Icon path={mdiPencilOutline} size="16" />
-                    </button>
+                    />
                     {#if immichUser.id !== $user.id}
-                      <button
+                      <CircleIconButton
+                        icon={mdiTrashCanOutline}
+                        title="Delete user"
+                        color="primary"
+                        size="16"
                         on:click={() => deleteUserHandler(immichUser)}
-                        class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      >
-                        <Icon path={mdiTrashCanOutline} size="16" />
-                      </button>
+                      />
                     {/if}
                   {/if}
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
-                    <button
+                    <CircleIconButton
+                      icon={mdiDeleteRestore}
+                      title="Restore user - scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
+                      color="primary"
+                      size="16"
                       on:click={() => restoreUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      title="scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
-                    >
-                      <Icon path={mdiDeleteRestore} size="16" />
-                    </button>
+                    />
                   {/if}
                 </td>
               </tr>

@@ -35,7 +35,7 @@ platform :android do
       task: 'bundle', 
       build_type: 'Release',
       properties: {
-        "android.injected.version.code" => 134,
+        "android.injected.version.code" => 136,
         "android.injected.version.name" => "1.102.3",
       }
     )

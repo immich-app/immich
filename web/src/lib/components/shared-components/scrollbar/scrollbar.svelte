@@ -83,6 +83,7 @@
     hoverLabel = new Date(attr).toLocaleString($locale, {
       month: 'short',
       year: 'numeric',
+      timeZone: 'UTC',
     });
   };
 

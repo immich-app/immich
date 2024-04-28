@@ -96,7 +96,7 @@ export class TagRepository implements ITagRepository {
   }
 
   hasAsset(userId: string, tagId: string, assetId: string): Promise<boolean> {
-    return this.repository.exist({
+    return this.repository.exists({
       where: {
         id: tagId,
         userId,
@@ -111,7 +111,7 @@ export class TagRepository implements ITagRepository {
   }
 
   hasName(userId: string, name: string): Promise<boolean> {
-    return this.repository.exist({
+    return this.repository.exists({
       where: {
         name,
         userId,

@@ -26,6 +26,7 @@ import {
   searchMetadata,
   signUpAdmin,
   updateAdminOnboarding,
+  updateAlbumUser,
   updateConfig,
   validate,
 } from '@immich/sdk';
@@ -52,6 +53,7 @@ type AssetData = { bytes?: Buffer; filename: string };
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
 const baseUrl = 'http://127.0.0.1:2283';
 
+export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
@@ -285,6 +287,9 @@ export const utils = {
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
+    updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),
 
   createAsset: async (
     accessToken: string,

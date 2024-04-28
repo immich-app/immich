@@ -216,6 +216,7 @@
   "home_page_share_err_local": "暂无法通过链接共享本地项目，跳过",
   "home_page_upload_err_limit": "一次最多只能上传 30 个项目，跳过",
   "image_viewer_page_state_provider_download_error": "下载出现错误",
+  "image_viewer_page_state_provider_download_started": "下载开始",
   "image_viewer_page_state_provider_download_success": "下载成功",
   "image_viewer_page_state_provider_share_error": "共享出错",
   "library_page_albums": "相册",

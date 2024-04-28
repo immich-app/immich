@@ -25,20 +25,30 @@ class SplashScreenPage extends HookConsumerWidget {
     void performLoggingIn() async {
       bool isSuccess = false;
       bool deviceIsOffline = false;
+
       if (accessToken != null && serverUrl != null) {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(serverUrl);
-        } on ApiException catch (e) {
+        } on ApiException catch (error, stackTrace) {
+          log.severe(
+            "Failed to resolve endpoint [ApiException]",
+            error,
+            stackTrace,
+          );
           // okay, try to continue anyway if offline
-          if (e.code == 503) {
+          if (error.code == 503) {
             deviceIsOffline = true;
-            log.fine("Device seems to be offline upon launch");
+            log.warning("Device seems to be offline upon launch");
           } else {
-            log.severe("Failed to resolve endpoint", e);
+            log.severe("Failed to resolve endpoint", error);
           }
-        } catch (e) {
-          log.severe("Failed to resolve endpoint", e);
+        } catch (error, stackTrace) {
+          log.severe(
+            "Failed to resolve endpoint [Catch All]",
+            error,
+            stackTrace,
+          );
         }
 
         try {
@@ -50,15 +60,11 @@ class SplashScreenPage extends HookConsumerWidget {
                 offlineLogin: deviceIsOffline,
               );
         } catch (error, stackTrace) {
-          ref.read(authenticationProvider.notifier).logout();
-
           log.severe(
             'Cannot set success login info',
             error,
             stackTrace,
           );
-
-          context.pushRoute(const LoginRoute());
         }
       }
 
@@ -76,6 +82,11 @@ class SplashScreenPage extends HookConsumerWidget {
         }
         context.replaceRoute(const TabControllerRoute());
       } else {
+        log.severe(
+          'Unable to login through offline or online methods - logging out completely',
+        );
+
+        ref.read(authenticationProvider.notifier).logout();
         // User was unable to login through either offline or online methods
         context.replaceRoute(const LoginRoute());
       }
