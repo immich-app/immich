@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Lokale assets kunnen niet via een link gedeeld worden, overslaan",
   "home_page_upload_err_limit": "Kan maximaal 30 assets tegelijk uploaden, overslaan",
   "image_viewer_page_state_provider_download_error": "Download mislukt",
+  "image_viewer_page_state_provider_download_started": "Download gestart",
   "image_viewer_page_state_provider_download_success": "Download succesvol",
   "image_viewer_page_state_provider_share_error": "Deel Error",
   "library_page_albums": "Albums",

@@ -55,11 +55,6 @@ void main() {
       // TODO
     });
 
-    //Future<List<String>> getAssetSearchTerms() async
-    test('test getAssetSearchTerms', () async {
-      // TODO
-    });
-
     //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStatistics', () async {
       // TODO
@@ -67,16 +62,6 @@ void main() {
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
-      // TODO
-    });
-
-    //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
-    test('test getCuratedLocations', () async {
-      // TODO
-    });
-
-    //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
-    test('test getCuratedObjects', () async {
       // TODO
     });
 
@@ -97,11 +82,6 @@ void main() {
 
     //Future runAssetJobs(AssetJobsDto assetJobsDto) async
     test('test runAssetJobs', () async {
-      // TODO
-    });
-
-    //Future<List<AssetResponseDto>> searchAssets({ String checksum, String city, String country, DateTime createdAfter, DateTime createdBefore, String deviceAssetId, String deviceId, String encodedVideoPath, String id, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isNotInAlbum, bool isOffline, bool isReadOnly, bool isVisible, String lensModel, String libraryId, String make, String model, AssetOrder order, String originalFileName, String originalPath, num page, List<String> personIds, String previewPath, String resizePath, num size, String state, DateTime takenAfter, DateTime takenBefore, String thumbnailPath, DateTime trashedAfter, DateTime trashedBefore, AssetTypeEnum type, DateTime updatedAfter, DateTime updatedBefore, String webpPath, bool withArchived, bool withDeleted, bool withExif, bool withPeople, bool withStacked }) async
-    test('test searchAssets', () async {
       // TODO
     });
 

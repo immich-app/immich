@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
     "build": "vite build",
+    "build:stats": "BUILD_STATS=true vite build",
     "package": "svelte-kit package",
     "preview": "vite preview",
     "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings",

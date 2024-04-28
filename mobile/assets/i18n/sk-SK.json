@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Nemožno zdieľať lokálne médiá pomocou odkazu",
   "home_page_upload_err_limit": "Naraz môžete nahrať len 30 médií, preskakujem...",
   "image_viewer_page_state_provider_download_error": "Chyba sťahovania",
+  "image_viewer_page_state_provider_download_started": "Sťahovanie sa začalo",
   "image_viewer_page_state_provider_download_success": "Sťahovanie bolo úspešné",
   "image_viewer_page_state_provider_share_error": "Chyba zdieľania",
   "library_page_albums": "Albumy",
