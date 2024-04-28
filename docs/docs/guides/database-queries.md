@@ -42,8 +42,12 @@ SELECT * FROM "assets" WHERE "livePhotoVideoId" IS NOT NULL;
 ```
 
 ```sql title="By description"
-SELECT * FROM "exif" WHERE TRIM("description") <> ''; -- all files with a description
-SELECT * FROM "exif" WHERE "description" ILIKE '%string to match%'; -- search by string
+SELECT "assets".*, "exif"."description" FROM "exif"
+  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
+  WHERE TRIM("exif"."description") <> ''; -- all files with a description
+SELECT "assets".*, "exif"."description" FROM "exif"
+  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
+  WHERE "description" ILIKE '%string to match%'; -- search by string
 ```
 
 ```sql title="Without metadata"
