@@ -32,7 +32,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
+  import { mdiDatabase, mdiDatabasePlus, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
@@ -361,7 +361,15 @@
               >
                 <td class=" px-10 text-sm">
                   {#if library.type === LibraryType.External}
-                    <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
+                    {#if library.isReadOnly}
+                      <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
+                    {:else}
+                      <Icon
+                        path={mdiDatabasePlus}
+                        size="40"
+                        title="External read-write library (created on {library.createdAt})"
+                      />
+                    {/if}
                   {:else if library.type === LibraryType.Upload}
                     <Icon path={mdiUpload} size="40" title="Upload library (created on {library.createdAt})" />
                   {/if}</td
