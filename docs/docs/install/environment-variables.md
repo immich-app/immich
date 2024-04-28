@@ -21,6 +21,7 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 | :---------------- | :-------------------- | :-------: | :-------------------------------------- |
 | `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
 | `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
+| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                   |
 
 :::tip
 
