@@ -17,6 +17,7 @@ import {
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -26,7 +27,6 @@ import {
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -226,7 +226,7 @@ export class SearchService {
     }
 
     const duplicatesDetectedAt = new Date();
-    await this.assetRepository.upsertJobStatus(assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
+    await this.assetRepository.upsertJobStatus(...assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
 
     return JobStatus.SUCCESS;
   }

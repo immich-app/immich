@@ -263,6 +263,7 @@ export const sharedLinkStub = {
           faces: [],
           sidecarPath: null,
           deletedAt: null,
+          duplicateId: null,
         },
       ],
     },
