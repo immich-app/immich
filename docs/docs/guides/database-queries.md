@@ -52,7 +52,7 @@ SELECT "assets".*, "exif"."description" FROM "exif"
 
 ```sql title="Without metadata"
 SELECT "assets".* FROM "exif"
-  JOIN "assets" ON "assets"."id" = "exif"."assetId"
+  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
   WHERE "exif"."assetId" IS NULL;
 ```
 
