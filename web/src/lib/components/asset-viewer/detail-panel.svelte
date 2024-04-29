@@ -148,7 +148,7 @@
   async function handleConfirmChangeDate(dateTimeOriginal: string, keepTimeUnchanged: boolean) {
     isShowChangeDate = false;
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal, keepTimeUnchanged } });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
