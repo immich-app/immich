@@ -17,7 +17,7 @@ If you prefer not to move all the folders, such as `encoded-video/`, you can lea
 
 ## Setup
 
-### Add this line to your .env file'
+### Add this line to your .env file
 ```title='.env'
 FASTSTORAGE_LOCATION='/path/to/ssd/storage/for/immich'
 ```
