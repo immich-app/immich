@@ -14,6 +14,11 @@
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingDropdown from '$lib/components/shared-components/settings/setting-dropdown.svelte';
+  import { navigationOptions } from '$lib/utils/asset-utils';
+  import { user } from '$lib/stores/user.store';
+  import { QueryParameter } from '$lib/constants';
+  import { handleToggle } from '$lib/utils/actions';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -29,6 +34,9 @@
   let password = '';
   let shouldChangeExpirationTime = false;
   let enablePassword = false;
+  let queryparams: Record<string, string> = {
+    [QueryParameter.ORDER]: $user.preferedAlbumOrder,
+  };
 
   const dispatch = createEventDispatcher<{
     created: void;
@@ -77,7 +85,7 @@
           showMetadata,
         },
       });
-      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key, queryparams);
       dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
@@ -222,6 +230,19 @@
         <div class="my-3">
           <SettingSwitch id="allow-public-upload" bind:checked={allowUpload} title={'Allow public user to upload'} />
         </div>
+        {#if shareType === SharedLinkType.Album}
+          <SettingDropdown
+            title="Direction"
+            options={Object.values(navigationOptions)}
+            selectedOption={navigationOptions[$user.preferedAlbumOrder]}
+            onToggle={(option) => {
+              const selectedOption = handleToggle(option, navigationOptions);
+              if (selectedOption) {
+                queryparams[QueryParameter.ORDER] = selectedOption;
+              }
+            }}
+          />
+        {/if}
 
         <div class="text-sm">
           {#if editingLink}

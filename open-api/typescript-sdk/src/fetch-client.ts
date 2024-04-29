@@ -48,6 +48,7 @@ export type UserResponseDto = {
     memoriesEnabled?: boolean;
     name: string;
     oauthId: string;
+    preferedAlbumOrder: AssetOrderPreference;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -192,6 +193,9 @@ export type BulkIdResponseDto = {
     error?: Error;
     id: string;
     success: boolean;
+};
+export type UpdateAlbumOrderDto = {
+    order: AssetOrder;
 };
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
@@ -514,6 +518,7 @@ export type PartnerResponseDto = {
     memoriesEnabled?: boolean;
     name: string;
     oauthId: string;
+    preferedAlbumOrder: AssetOrderPreference;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -1034,6 +1039,7 @@ export type UpdateUserDto = {
     memoriesEnabled?: boolean;
     name?: string;
     password?: string;
+    preferedAlbumOrder?: AssetOrderPreference;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string;
@@ -1199,6 +1205,19 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
+    })));
+}
+export function updateAlbumOrder({ id, updateAlbumOrderDto }: {
+    id: string;
+    updateAlbumOrderDto: UpdateAlbumOrderDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UpdateAlbumDto;
+    }>(`/album/${encodeURIComponent(id)}/order`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: updateAlbumOrderDto
     })));
 }
 export function removeUserFromAlbum({ id, userId }: {
@@ -2789,6 +2808,10 @@ export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
 }
+export enum AssetOrderPreference {
+    Asc = "asc",
+    Desc = "desc"
+}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
@@ -2807,7 +2830,8 @@ export enum AssetTypeEnum {
 }
 export enum AssetOrder {
     Asc = "asc",
-    Desc = "desc"
+    Desc = "desc",
+    Preference = "preference"
 }
 export enum Error {
     Duplicate = "duplicate",

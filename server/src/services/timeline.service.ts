@@ -3,6 +3,7 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
+import { AssetOrder } from 'src/entities/album.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -40,7 +41,9 @@ export class TimelineService {
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
     let userIds: string[] | undefined = undefined;
-
+    if (dto?.order === AssetOrder.PREFERENCE) {
+      options.order = auth.user.preferedAlbumOrder as unknown as AssetOrder;
+    }
     if (userId) {
       userIds = [userId];
 

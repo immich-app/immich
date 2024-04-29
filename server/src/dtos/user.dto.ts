@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
 import { getRandomAvatarColor } from 'src/dtos/user-profile.dto';
-import { UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
+import { AssetOrderPreference, UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
 export class CreateUserDto {
@@ -112,6 +112,11 @@ export class UpdateUserDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional()
+  @IsEnum(AssetOrderPreference)
+  @ApiProperty({ enumName: 'AssetOrderPreference', enum: AssetOrderPreference })
+  preferedAlbumOrder?: AssetOrderPreference;
 }
 
 export class UserDto {
@@ -139,6 +144,8 @@ export class UserResponseDto extends UserDto {
   quotaUsageInBytes!: number | null;
   @ApiProperty({ enumName: 'UserStatus', enum: UserStatus })
   status!: string;
+  @ApiProperty({ enumName: 'AssetOrderPreference', enum: AssetOrderPreference })
+  preferedAlbumOrder!: string;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -165,5 +172,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
+    preferedAlbumOrder: entity.preferedAlbumOrder,
   };
 }

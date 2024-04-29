@@ -91,6 +91,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
+*AlbumApi* | [**updateAlbumOrder**](doc//AlbumApi.md#updatealbumorder) | **PATCH** /album/{id}/order | 
 *AlbumApi* | [**updateAlbumUser**](doc//AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/user/{userId} | 
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
@@ -255,6 +256,7 @@ Class | Method | HTTP request | Description
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
  - [AssetOrder](doc//AssetOrder.md)
+ - [AssetOrderPreference](doc//AssetOrderPreference.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
@@ -385,6 +387,7 @@ Class | Method | HTTP request | Description
  - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
  - [TranscodePolicy](doc//TranscodePolicy.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
+ - [UpdateAlbumOrderDto](doc//UpdateAlbumOrderDto.md)
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)

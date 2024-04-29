@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { UserAvatarColor, UserStatus, type UserResponseDto } from '@immich/sdk';
+import { AssetOrderPreference, UserAvatarColor, UserStatus, type UserResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const userFactory = Sync.makeFactory<UserResponseDto>({
@@ -19,4 +19,5 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   quotaUsageInBytes: 0,
   quotaSizeInBytes: null,
   status: UserStatus.Active,
+  preferedAlbumOrder: AssetOrderPreference.Asc,
 });

@@ -589,6 +589,58 @@
         ]
       }
     },
+    "/album/{id}/order": {
+      "patch": {
+        "operationId": "updateAlbumOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumOrderDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAlbumDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -7243,6 +7295,14 @@
       "AssetOrder": {
         "enum": [
           "asc",
+          "desc",
+          "preference"
+        ],
+        "type": "string"
+      },
+      "AssetOrderPreference": {
+        "enum": [
+          "asc",
           "desc"
         ],
         "type": "string"
@@ -8789,6 +8849,9 @@
           "oauthId": {
             "type": "string"
           },
+          "preferedAlbumOrder": {
+            "$ref": "#/components/schemas/AssetOrderPreference"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -8826,6 +8889,7 @@
           "isAdmin",
           "name",
           "oauthId",
+          "preferedAlbumOrder",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",
@@ -10595,6 +10659,17 @@
         },
         "type": "object"
       },
+      "UpdateAlbumOrderDto": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          }
+        },
+        "required": [
+          "order"
+        ],
+        "type": "object"
+      },
       "UpdateAlbumUserDto": {
         "properties": {
           "role": {
@@ -10711,6 +10786,9 @@
           },
           "password": {
             "type": "string"
+          },
+          "preferedAlbumOrder": {
+            "$ref": "#/components/schemas/AssetOrderPreference"
           },
           "quotaSizeInBytes": {
             "format": "int64",
@@ -10838,6 +10916,9 @@
           "oauthId": {
             "type": "string"
           },
+          "preferedAlbumOrder": {
+            "$ref": "#/components/schemas/AssetOrderPreference"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -10875,6 +10956,7 @@
           "isAdmin",
           "name",
           "oauthId",
+          "preferedAlbumOrder",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",

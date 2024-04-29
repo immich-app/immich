@@ -51,6 +51,11 @@ void main() {
       // TODO
     });
 
+    // AssetOrderPreference preferedAlbumOrder
+    test('to test the property `preferedAlbumOrder`', () async {
+      // TODO
+    });
+
     // int quotaSizeInBytes
     test('to test the property `quotaSizeInBytes`', () async {
       // TODO

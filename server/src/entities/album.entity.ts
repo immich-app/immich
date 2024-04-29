@@ -19,6 +19,7 @@ import {
 export enum AssetOrder {
   ASC = 'asc',
   DESC = 'desc',
+  PREFERENCE = 'preference',
 }
 
 @Entity('albums')
@@ -66,6 +67,6 @@ export class AlbumEntity {
   @Column({ default: true })
   isActivityEnabled!: boolean;
 
-  @Column({ type: 'varchar', default: AssetOrder.DESC })
+  @Column({ type: 'varchar', default: AssetOrder.PREFERENCE })
   order!: AssetOrder;
 }

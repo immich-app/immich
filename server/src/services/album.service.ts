@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import {
   AddUsersDto,
@@ -8,6 +8,7 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
+  UpdateAlbumOrderDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
@@ -15,7 +16,7 @@ import {
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserEntity, AlbumUserRole } from 'src/entities/album-user.entity';
-import { AlbumEntity } from 'src/entities/album.entity';
+import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -133,7 +134,33 @@ export class AlbumService {
       albumThumbnailAssetId: assets[0]?.id || null,
     });
 
-    return mapAlbumWithAssets(album);
+    return mapAlbumWithAssets(album, auth);
+  }
+
+  async updateAlbumOrder(auth: AuthDto, id: string, dto: UpdateAlbumOrderDto): Promise<UpdateAlbumOrderDto> {
+    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
+
+    if (auth.sharedLink) {
+      throw new ForbiddenException("You can't update the album order if you're not an authenticated user");
+    }
+
+    const album = await this.findOrFail(id, { withAssets: false });
+    let order: AssetOrder | undefined = undefined;
+    if (album.ownerId === auth.user.id) {
+      const updatedAlbum = await this.albumRepository.update({
+        id: album.id,
+        order: dto.order,
+      });
+      order = updatedAlbum.order;
+    } else {
+      const updatedAlbum = await this.albumUserRepository.update(
+        { userId: auth.user.id, albumId: id },
+        { order: dto.order },
+      );
+      order = updatedAlbum.order;
+    }
+
+    return { order };
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
@@ -156,7 +183,7 @@ export class AlbumService {
       order: dto.order,
     });
 
-    return mapAlbumWithoutAssets(updatedAlbum);
+    return mapAlbumWithoutAssets(updatedAlbum, auth);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

@@ -29,6 +29,11 @@ export enum UserStatus {
   DELETED = 'deleted',
 }
 
+export enum AssetOrderPreference {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -87,4 +92,7 @@ export class UserEntity {
 
   @Column({ type: 'bigint', default: 0 })
   quotaUsageInBytes!: number;
+
+  @Column({ type: 'varchar', default: AssetOrderPreference.DESC })
+  preferedAlbumOrder!: AssetOrderPreference;
 }

@@ -40,7 +40,8 @@ FROM
       "SessionEntity__SessionEntity_user"."updatedAt" AS "SessionEntity__SessionEntity_user_updatedAt",
       "SessionEntity__SessionEntity_user"."memoriesEnabled" AS "SessionEntity__SessionEntity_user_memoriesEnabled",
       "SessionEntity__SessionEntity_user"."quotaSizeInBytes" AS "SessionEntity__SessionEntity_user_quotaSizeInBytes",
-      "SessionEntity__SessionEntity_user"."quotaUsageInBytes" AS "SessionEntity__SessionEntity_user_quotaUsageInBytes"
+      "SessionEntity__SessionEntity_user"."quotaUsageInBytes" AS "SessionEntity__SessionEntity_user_quotaUsageInBytes",
+      "SessionEntity__SessionEntity_user"."preferedAlbumOrder" AS "SessionEntity__SessionEntity_user_preferedAlbumOrder"
     FROM
       "sessions" "SessionEntity"
       LEFT JOIN "users" "SessionEntity__SessionEntity_user" ON "SessionEntity__SessionEntity_user"."id" = "SessionEntity"."userId"

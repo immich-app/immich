@@ -32,7 +32,8 @@ FROM
       "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
       "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
       "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
-      "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
+      "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes",
+      "LibraryEntity__LibraryEntity_owner"."preferedAlbumOrder" AS "LibraryEntity__LibraryEntity_owner_preferedAlbumOrder"
     FROM
       "libraries" "LibraryEntity"
       LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
@@ -148,7 +149,8 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
   "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
-  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
+  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes",
+  "LibraryEntity__LibraryEntity_owner"."preferedAlbumOrder" AS "LibraryEntity__LibraryEntity_owner_preferedAlbumOrder"
 FROM
   "libraries" "LibraryEntity"
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
@@ -194,7 +196,8 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
   "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
-  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
+  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes",
+  "LibraryEntity__LibraryEntity_owner"."preferedAlbumOrder" AS "LibraryEntity__LibraryEntity_owner_preferedAlbumOrder"
 FROM
   "libraries" "LibraryEntity"
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
@@ -234,7 +237,8 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
   "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
-  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
+  "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes",
+  "LibraryEntity__LibraryEntity_owner"."preferedAlbumOrder" AS "LibraryEntity__LibraryEntity_owner_preferedAlbumOrder"
 FROM
   "libraries" "LibraryEntity"
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"

@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | 
 **oauthId** | **String** |  | 
+**preferedAlbumOrder** | [**AssetOrderPreference**](AssetOrderPreference.md) |  | 
 **profileImagePath** | **String** |  | 
 **quotaSizeInBytes** | **int** |  | 
 **quotaUsageInBytes** | **int** |  | 

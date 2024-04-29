@@ -25,7 +25,8 @@ SELECT
   "ActivityEntity__ActivityEntity_user"."updatedAt" AS "ActivityEntity__ActivityEntity_user_updatedAt",
   "ActivityEntity__ActivityEntity_user"."memoriesEnabled" AS "ActivityEntity__ActivityEntity_user_memoriesEnabled",
   "ActivityEntity__ActivityEntity_user"."quotaSizeInBytes" AS "ActivityEntity__ActivityEntity_user_quotaSizeInBytes",
-  "ActivityEntity__ActivityEntity_user"."quotaUsageInBytes" AS "ActivityEntity__ActivityEntity_user_quotaUsageInBytes"
+  "ActivityEntity__ActivityEntity_user"."quotaUsageInBytes" AS "ActivityEntity__ActivityEntity_user_quotaUsageInBytes",
+  "ActivityEntity__ActivityEntity_user"."preferedAlbumOrder" AS "ActivityEntity__ActivityEntity_user_preferedAlbumOrder"
 FROM
   "activity" "ActivityEntity"
   LEFT JOIN "users" "ActivityEntity__ActivityEntity_user" ON "ActivityEntity__ActivityEntity_user"."id" = "ActivityEntity"."userId"

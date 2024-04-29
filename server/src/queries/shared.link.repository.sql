@@ -160,7 +160,8 @@ FROM
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
-      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes",
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."preferedAlbumOrder" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_preferedAlbumOrder"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -265,7 +266,8 @@ SELECT
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."memoriesEnabled" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_memoriesEnabled",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
-  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."preferedAlbumOrder" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_preferedAlbumOrder"
 FROM
   "shared_links" "SharedLinkEntity"
   LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -319,7 +321,8 @@ FROM
       "SharedLinkEntity__SharedLinkEntity_user"."updatedAt" AS "SharedLinkEntity__SharedLinkEntity_user_updatedAt",
       "SharedLinkEntity__SharedLinkEntity_user"."memoriesEnabled" AS "SharedLinkEntity__SharedLinkEntity_user_memoriesEnabled",
       "SharedLinkEntity__SharedLinkEntity_user"."quotaSizeInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaSizeInBytes",
-      "SharedLinkEntity__SharedLinkEntity_user"."quotaUsageInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaUsageInBytes"
+      "SharedLinkEntity__SharedLinkEntity_user"."quotaUsageInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaUsageInBytes",
+      "SharedLinkEntity__SharedLinkEntity_user"."preferedAlbumOrder" AS "SharedLinkEntity__SharedLinkEntity_user_preferedAlbumOrder"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "users" "SharedLinkEntity__SharedLinkEntity_user" ON "SharedLinkEntity__SharedLinkEntity_user"."id" = "SharedLinkEntity"."userId"

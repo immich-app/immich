@@ -23,6 +23,7 @@ class PartnerResponseDto {
     this.memoriesEnabled,
     required this.name,
     required this.oauthId,
+    required this.preferedAlbumOrder,
     required this.profileImagePath,
     required this.quotaSizeInBytes,
     required this.quotaUsageInBytes,
@@ -64,6 +65,8 @@ class PartnerResponseDto {
 
   String oauthId;
 
+  AssetOrderPreference preferedAlbumOrder;
+
   String profileImagePath;
 
   int? quotaSizeInBytes;
@@ -90,6 +93,7 @@ class PartnerResponseDto {
     other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.oauthId == oauthId &&
+    other.preferedAlbumOrder == preferedAlbumOrder &&
     other.profileImagePath == profileImagePath &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.quotaUsageInBytes == quotaUsageInBytes &&
@@ -111,6 +115,7 @@ class PartnerResponseDto {
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
+    (preferedAlbumOrder.hashCode) +
     (profileImagePath.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
@@ -120,7 +125,7 @@ class PartnerResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, preferedAlbumOrder=$preferedAlbumOrder, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -146,6 +151,7 @@ class PartnerResponseDto {
     }
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
+      json[r'preferedAlbumOrder'] = this.preferedAlbumOrder;
       json[r'profileImagePath'] = this.profileImagePath;
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
@@ -186,6 +192,7 @@ class PartnerResponseDto {
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        preferedAlbumOrder: AssetOrderPreference.fromJson(json[r'preferedAlbumOrder'])!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
@@ -248,6 +255,7 @@ class PartnerResponseDto {
     'isAdmin',
     'name',
     'oauthId',
+    'preferedAlbumOrder',
     'profileImagePath',
     'quotaSizeInBytes',
     'quotaUsageInBytes',

@@ -6,9 +6,11 @@ import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { downloadRequest, getKey } from '$lib/utils';
+import type { RenderedOption } from '$lib/utils/actions';
 import { createAlbum } from '$lib/utils/album-utils';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
+  AssetOrderPreference,
   addAssetsToAlbum as addAssets,
   defaults,
   getDownloadInfo,
@@ -20,6 +22,7 @@ import {
   type DownloadResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { mdiArrowDownThin, mdiArrowUpThin } from '@mdi/js';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
@@ -377,4 +380,9 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
 
 export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const navigationOptions: Record<AssetOrderPreference, RenderedOption> = {
+  [AssetOrderPreference.Asc]: { icon: mdiArrowUpThin, title: 'Backward' },
+  [AssetOrderPreference.Desc]: { icon: mdiArrowDownThin, title: 'Forward' },
 };

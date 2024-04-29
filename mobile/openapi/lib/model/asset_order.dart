@@ -25,11 +25,13 @@ class AssetOrder {
 
   static const asc = AssetOrder._(r'asc');
   static const desc = AssetOrder._(r'desc');
+  static const preference = AssetOrder._(r'preference');
 
   /// List of all possible values in this [enum][AssetOrder].
   static const values = <AssetOrder>[
     asc,
     desc,
+    preference,
   ];
 
   static AssetOrder? fromJson(dynamic value) => AssetOrderTypeTransformer().decode(value);
@@ -70,6 +72,7 @@ class AssetOrderTypeTransformer {
       switch (data) {
         case r'asc': return AssetOrder.asc;
         case r'desc': return AssetOrder.desc;
+        case r'preference': return AssetOrder.preference;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

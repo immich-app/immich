@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // AssetOrderPreference preferedAlbumOrder
+    test('to test the property `preferedAlbumOrder`', () async {
+      // TODO
+    });
+
     // String profileImagePath
     test('to test the property `profileImagePath`', () async {
       // TODO

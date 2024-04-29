@@ -73,6 +73,7 @@ export const signupResponseDto = {
     updatedAt: expect.any(String),
     deletedAt: null,
     oauthId: '',
+    preferedAlbumOrder: 'desc',
     memoriesEnabled: true,
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,

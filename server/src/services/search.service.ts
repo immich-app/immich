@@ -16,6 +16,7 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { AssetOrderPreference } from 'src/entities/user.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
@@ -83,14 +84,27 @@ export class SearchService {
 
     const page = dto.page ?? 1;
     const size = dto.size || 250;
-    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
+
+    const enumToOrder = { [AssetOrderPreference.ASC]: 'ASC', [AssetOrderPreference.DESC]: 'DESC' } as const;
+
+    const mapOrder = (order?: AssetOrder) => {
+      if (order) {
+        if (order === AssetOrder.PREFERENCE) {
+          return enumToOrder[auth.user.preferedAlbumOrder];
+        }
+        return enumToOrder[order];
+      }
+      return enumToOrder[AssetOrderPreference.DESC];
+    };
+
+    const order = mapOrder(dto.order);
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
         checksum,
         userIds,
-        orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
+        orderDirection: order,
       },
     );
 

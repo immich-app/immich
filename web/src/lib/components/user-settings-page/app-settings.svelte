@@ -1,12 +1,18 @@
 <script lang="ts">
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
+  import SettingDropdown from '$lib/components/shared-components/settings/setting-dropdown.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
   import { sidebarSettings } from '$lib/stores/preferences.store';
   import { alwaysLoadOriginalFile, playVideoThumbnailOnHover, showDeleteModal } from '$lib/stores/preferences.store';
   import { colorTheme, locale } from '$lib/stores/preferences.store';
-  import { findLocale } from '$lib/utils';
+  import { user } from '$lib/stores/user.store';
+  import { findLocale, handlePromiseError } from '$lib/utils';
+  import { handleToggle } from '$lib/utils/actions';
+  import { navigationOptions } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { AssetOrderPreference, updateUser } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
@@ -58,6 +64,20 @@
 
   const handleLocaleChange = (newLocale: string | undefined) => {
     $locale = newLocale;
+  };
+
+  const handleUpdateAlbumOrder = async (order: AssetOrderPreference) => {
+    try {
+      const { preferedAlbumOrder } = await updateUser({
+        updateUserDto: {
+          preferedAlbumOrder: order,
+          id: $user.id,
+        },
+      });
+      $user.preferedAlbumOrder = preferedAlbumOrder;
+    } catch (error) {
+      handleError(error, 'Unable to change album order');
+    }
   };
 </script>
 
@@ -141,6 +161,20 @@
           title="Sharing"
           subtitle="Display a link to Sharing in the sidebar"
           bind:checked={$sidebarSettings.sharing}
+        />
+      </div>
+      <div class="ml-4">
+        <SettingDropdown
+          title="Direction"
+          subtitle="Choose the default album oder"
+          options={Object.values(navigationOptions)}
+          selectedOption={navigationOptions[$user.preferedAlbumOrder]}
+          onToggle={(option) => {
+            const selectedOption = handleToggle(option, navigationOptions);
+            if (selectedOption && selectedOption !== $user.preferedAlbumOrder) {
+              handlePromiseError(handleUpdateAlbumOrder(selectedOption));
+            }
+          }}
         />
       </div>
     </div>

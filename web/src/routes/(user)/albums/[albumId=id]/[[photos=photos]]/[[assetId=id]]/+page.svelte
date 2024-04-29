@@ -63,11 +63,15 @@
     getActivityStatistics,
     getAlbumInfo,
     updateAlbumInfo,
+    updateAlbumOrder,
     type ActivityResponseDto,
     type AlbumUserAddDto,
   } from '@immich/sdk';
   import {
+    mdiArrowDownThin,
     mdiArrowLeft,
+    mdiArrowUpThin,
+    mdiCog,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
@@ -81,6 +85,9 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { findKey } from 'lodash-es';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
+  import type { RenderedOption } from '$lib/utils/actions';
 
   export let data: PageData;
 
@@ -396,6 +403,34 @@
       handleError(error, 'Unable to update album cover');
     }
   };
+
+  $: selectedOption = albumOrder ? options[albumOrder] : options[AssetOrder.Desc];
+
+  const options: Record<AssetOrder, RenderedOption> = {
+    [AssetOrder.Preference]: { icon: mdiCog, title: 'Default' },
+    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Oldest first' },
+    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
+  };
+
+  const handleToggle = async (returnedOption: RenderedOption) => {
+    if (selectedOption === returnedOption) {
+      return;
+    }
+    let order = AssetOrder.Desc;
+    order = findKey(options, (option) => option === returnedOption) as AssetOrder;
+
+    try {
+      await updateAlbumOrder({
+        id: album.id,
+        updateAlbumOrderDto: {
+          order,
+        },
+      });
+      albumOrder = order;
+    } catch (error) {
+      handleError(error, 'Error updating album order');
+    }
+  };
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -437,6 +472,20 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
+            {#if album.assetCount > 1 && albumOrder}
+              <Dropdown
+                options={Object.values(options)}
+                hideText={true}
+                bind:selectedOption
+                render={(option) => {
+                  return {
+                    title: option.title,
+                    icon: option.icon,
+                  };
+                }}
+                on:select={({ detail }) => handleToggle(detail)}
+              />
+            {/if}
             {#if isEditor}
               <CircleIconButton
                 title="Add photos"
@@ -715,9 +764,7 @@
 {#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
-    order={albumOrder}
     user={$user}
-    onChangeOrder={(order) => (albumOrder = order)}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

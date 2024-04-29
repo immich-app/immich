@@ -412,7 +412,7 @@ describe('/album', () => {
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
-        order: AssetOrder.Desc,
+        order: AssetOrder.Preference,
       });
     });
   });

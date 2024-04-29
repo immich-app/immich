@@ -215,12 +215,19 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
-export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  let url = externalDomain || window.location.origin;
-  if (!url.endsWith('/')) {
-    url += '/';
+export const makeSharedLinkUrl = (externalDomain: string, key: string, queryParameters?: Record<string, string>) => {
+  let domain = externalDomain || window.location.origin;
+  if (!domain.endsWith('/')) {
+    domain += '/';
   }
-  return `${url}share/${key}`;
+  const url = new URL(`${domain}share/${key}`);
+  if (queryParameters) {
+    for (const [key, value] of Object.entries(queryParameters)) {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  return url.toString();
 };
 
 export const oauth = {

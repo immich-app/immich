@@ -14,8 +14,8 @@
   } from '@mdi/js';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
   import Button from './elements/buttons/button.svelte';
-  import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
+  import { handleToggle, type RenderedOption } from '$lib/utils/actions';
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook } = slideshowStore;
 
@@ -31,17 +31,6 @@
     [SlideshowLook.Contain]: { icon: mdiFitToScreenOutline, title: 'Contain' },
     [SlideshowLook.Cover]: { icon: mdiFitToPageOutline, title: 'Cover' },
     [SlideshowLook.BlurredBackground]: { icon: mdiPanorama, title: 'Blurred background' },
-  };
-
-  const handleToggle = <Type extends SlideshowNavigation | SlideshowLook>(
-    record: RenderedOption,
-    options: Record<Type, RenderedOption>,
-  ): undefined | Type => {
-    for (const [key, option] of Object.entries(options)) {
-      if (option === record) {
-        return key as Type;
-      }
-    }
   };
 </script>
 

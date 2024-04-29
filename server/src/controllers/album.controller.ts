@@ -8,6 +8,7 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
+  UpdateAlbumOrderDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -59,6 +60,15 @@ export class AlbumController {
   @Delete(':id')
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
+  }
+
+  @Patch(':id/order')
+  updateAlbumOrder(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateAlbumOrderDto,
+  ): Promise<UpdateAlbumDto> {
+    return this.service.updateAlbumOrder(auth, id, dto);
   }
 
   @SharedLinkRoute()

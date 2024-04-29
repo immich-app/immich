@@ -39,6 +39,7 @@ doc/AssetIdsResponseDto.md
 doc/AssetJobName.md
 doc/AssetJobsDto.md
 doc/AssetOrder.md
+doc/AssetOrderPreference.md
 doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
 doc/AssetTypeEnum.md
@@ -190,6 +191,7 @@ doc/TranscodeHWAccel.md
 doc/TranscodePolicy.md
 doc/TrashApi.md
 doc/UpdateAlbumDto.md
+doc/UpdateAlbumOrderDto.md
 doc/UpdateAlbumUserDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
@@ -276,6 +278,7 @@ lib/model/asset_ids_response_dto.dart
 lib/model/asset_job_name.dart
 lib/model/asset_jobs_dto.dart
 lib/model/asset_order.dart
+lib/model/asset_order_preference.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
 lib/model/asset_type_enum.dart
@@ -406,6 +409,7 @@ lib/model/tone_mapping.dart
 lib/model/transcode_hw_accel.dart
 lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
+lib/model/update_album_order_dto.dart
 lib/model/update_album_user_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
@@ -459,6 +463,7 @@ test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_job_name_test.dart
 test/asset_jobs_dto_test.dart
+test/asset_order_preference_test.dart
 test/asset_order_test.dart
 test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
@@ -611,6 +616,7 @@ test/transcode_hw_accel_test.dart
 test/transcode_policy_test.dart
 test/trash_api_test.dart
 test/update_album_dto_test.dart
+test/update_album_order_dto_test.dart
 test/update_album_user_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart

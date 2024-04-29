@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserRole, AssetOrder } from 'src/entities/album-user.entity';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -369,6 +369,7 @@ describe(AlbumService.name, () => {
         albumId: albumStub.sharedWithAdmin.id,
         album: albumStub.sharedWithAdmin,
         role: AlbumUserRole.EDITOR,
+        order: AssetOrder.PREFERENCE,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
         albumUsers: [{ userId: authStub.user2.user.id }],

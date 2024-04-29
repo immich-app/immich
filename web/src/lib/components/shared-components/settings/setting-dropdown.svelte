@@ -1,7 +1,8 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
+  import type { RenderedOption } from '$lib/utils/actions';
 
   export let title: string;
   export let subtitle = '';

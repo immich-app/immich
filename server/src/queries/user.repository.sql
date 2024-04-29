@@ -17,7 +17,8 @@ SELECT
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."preferedAlbumOrder" AS "UserEntity_preferedAlbumOrder"
 FROM
   "users" "UserEntity"
 WHERE
@@ -64,7 +65,8 @@ SELECT
   "user"."updatedAt" AS "user_updatedAt",
   "user"."memoriesEnabled" AS "user_memoriesEnabled",
   "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
-  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes"
+  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes",
+  "user"."preferedAlbumOrder" AS "user_preferedAlbumOrder"
 FROM
   "users" "user"
 WHERE
@@ -88,7 +90,8 @@ SELECT
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."preferedAlbumOrder" AS "UserEntity_preferedAlbumOrder"
 FROM
   "users" "UserEntity"
 WHERE
@@ -114,7 +117,8 @@ SELECT
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."preferedAlbumOrder" AS "UserEntity_preferedAlbumOrder"
 FROM
   "users" "UserEntity"
 WHERE

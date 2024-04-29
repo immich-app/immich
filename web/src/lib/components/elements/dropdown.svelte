@@ -2,15 +2,11 @@
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
-
-  export type RenderedOption = {
-    title: string;
-    icon?: string;
-    disabled?: boolean;
-  };
 </script>
 
 <script lang="ts" generics="T">
+  import type { RenderedOption } from '$lib/utils/actions';
+
   import Icon from './icon.svelte';
 
   import { mdiCheck } from '@mdi/js';
@@ -34,6 +30,7 @@
   export let showMenu = false;
   export let controlable = false;
   export let hideTextOnSmallScreen = true;
+  export let hideText = false;
   export let title: string | undefined = undefined;
 
   export let render: (item: T) => string | RenderedOption = String;
@@ -79,7 +76,9 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
+      {#if !hideText}
+        <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
+      {/if}
     </div>
   </LinkButton>
 
