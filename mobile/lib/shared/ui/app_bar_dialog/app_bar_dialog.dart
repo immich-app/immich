@@ -35,7 +35,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },
-      [user],
+      [],
     );
 
     buildTopRow() {
@@ -115,12 +115,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 content: "app_bar_signout_dialog_content",
                 ok: "app_bar_signout_dialog_ok",
                 onOk: () async {
-                  await ref.watch(authenticationProvider.notifier).logout();
+                  await ref.read(authenticationProvider.notifier).logout();
 
                   ref.read(manualUploadProvider.notifier).cancelBackup();
-                  ref.watch(backupProvider.notifier).cancelBackup();
-                  ref.watch(assetProvider.notifier).clearAllAsset();
-                  ref.watch(websocketProvider.notifier).disconnect();
+                  ref.read(backupProvider.notifier).cancelBackup();
+                  ref.read(assetProvider.notifier).clearAllAsset();
+                  ref.read(websocketProvider.notifier).disconnect();
                   context.replaceRoute(const LoginRoute());
                 },
               );

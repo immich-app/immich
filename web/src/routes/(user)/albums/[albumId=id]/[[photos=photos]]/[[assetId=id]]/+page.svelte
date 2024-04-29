@@ -459,27 +459,22 @@
 
               {#if isOwned}
                 <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                  <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
-                    {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                      <ContextMenu {...contextMenuPosition}>
-                        <MenuOption
-                          icon={mdiImageOutline}
-                          text="Select album cover"
-                          on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
-                        />
-                        <MenuOption
-                          icon={mdiCogOutline}
-                          text="Options"
-                          on:click={() => (viewMode = ViewMode.OPTIONS)}
-                        />
-                        <MenuOption
-                          icon={mdiDeleteOutline}
-                          text="Delete album"
-                          on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                        />
-                      </ContextMenu>
-                    {/if}
-                  </CircleIconButton>
+                  <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical} />
+                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
+                    <ContextMenu {...contextMenuPosition}>
+                      <MenuOption
+                        icon={mdiImageOutline}
+                        text="Select album cover"
+                        on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                      />
+                      <MenuOption icon={mdiCogOutline} text="Options" on:click={() => (viewMode = ViewMode.OPTIONS)} />
+                      <MenuOption
+                        icon={mdiDeleteOutline}
+                        text="Delete album"
+                        on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                      />
+                    </ContextMenu>
+                  {/if}
                 </div>
               {/if}
             {/if}

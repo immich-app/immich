@@ -710,21 +710,23 @@ export class AssetRepository implements IAssetRepository {
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
-    const builder = this.repository
-      .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
-      .leftJoinAndSelect('asset.stack', 'stack')
-      .where('asset.ownerId = :ownerId', { ownerId });
+    const { ownerId, isArchived, withStacked, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const builder = this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: true,
+      withStacked,
+      isArchived,
+    });
+
     if (lastCreationDate !== undefined && lastId !== undefined) {
       builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
         lastCreationDate,
         lastId,
       });
     }
+
     return builder
       .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
-      .andWhere('asset.isVisible = true')
       .orderBy('asset.fileCreatedAt', 'DESC')
       .addOrderBy('asset.id', 'DESC')
       .limit(limit)
@@ -734,18 +736,11 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: {
-        ownerId: In(options.userIds),
-        isVisible: true,
-        updatedAt: MoreThan(options.updatedAfter),
-      },
-      relations: {
-        exifInfo: true,
-        stack: true,
-      },
-      take: options.limit,
-      withDeleted: true,
-    });
+    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: true })
+      .andWhere({ updatedAt: MoreThan(options.updatedAfter) })
+      .take(options.limit)
+      .withDeleted();
+
+    return builder.getMany();
   }
 }

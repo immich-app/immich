@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // Deprecated in favor of albumUsers
+    // This property was deprecated in v1.102.0
     // List<String> sharedUserIds (default value: const [])
     test('to test the property `sharedUserIds`', () async {
       // TODO

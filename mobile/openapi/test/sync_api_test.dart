@@ -17,13 +17,13 @@ void main() {
   // final instance = SyncApi();
 
   group('tests for SyncApi', () {
-    //Future<List<AssetResponseDto>> getAllForUserFullSync(int limit, DateTime updatedUntil, { DateTime lastCreationDate, String lastId, String userId }) async
-    test('test getAllForUserFullSync', () async {
+    //Future<AssetDeltaSyncResponseDto> getDeltaSync(AssetDeltaSyncDto assetDeltaSyncDto) async
+    test('test getDeltaSync', () async {
       // TODO
     });
 
-    //Future<AssetDeltaSyncResponseDto> getDeltaSync(DateTime updatedAfter, List<String> userIds) async
-    test('test getDeltaSync', () async {
+    //Future<List<AssetResponseDto>> getFullSyncForUser(AssetFullSyncDto assetFullSyncDto) async
+    test('test getFullSyncForUser', () async {
       // TODO
     });
 

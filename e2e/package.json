@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.102.3",
+  "version": "1.103.1",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -41,7 +41,7 @@
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
     "socket.io-client": "^4.7.4",
-    "supertest": "^6.3.4",
+    "supertest": "^7.0.0",
     "typescript": "^5.3.3",
     "utimes": "^5.2.1",
     "vitest": "^1.3.0"

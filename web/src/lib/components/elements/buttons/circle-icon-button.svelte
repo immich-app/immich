@@ -2,6 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque';
 
+  export let type: 'button' | 'submit' | 'reset' = 'button';
   export let icon: string;
   export let color: Color = 'transparent';
   export let title: string;
@@ -9,6 +10,10 @@
   export let size = '24';
   export let hideMobile = false;
   export let buttonSize: string | undefined = undefined;
+  /**
+   * viewBox attribute for the SVG icon.
+   */
+  export let viewBox: string | undefined = undefined;
 
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
@@ -32,11 +37,11 @@
 
 <button
   {title}
+  {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
   class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
   on:click
 >
-  <Icon path={icon} {size} ariaLabel={title} color="currentColor" />
-  <slot />
+  <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
 </button>

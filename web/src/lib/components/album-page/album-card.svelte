@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { getContextMenuPosition, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let album: AlbumResponseDto;
   export let showOwner = false;
@@ -33,9 +32,15 @@
       class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
-      <IconButton color="transparent-primary" title="Show album options" on:click={showAlbumContextMenu}>
-        <Icon path={mdiDotsVertical} size="20" class="icon-white-drop-shadow text-white" />
-      </IconButton>
+      <CircleIconButton
+        color="light"
+        title="Show album options"
+        icon={mdiDotsVertical}
+        size="20"
+        padding="2"
+        class="icon-white-drop-shadow"
+        on:click={showAlbumContextMenu}
+      />
     </div>
   {/if}
 

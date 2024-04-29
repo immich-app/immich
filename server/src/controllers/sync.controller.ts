@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -12,13 +12,15 @@ import { SyncService } from 'src/services/sync.service';
 export class SyncController {
   constructor(private service: SyncService) {}
 
-  @Get('full-sync')
-  getAllForUserFullSync(@Auth() auth: AuthDto, @Query() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    return this.service.getAllAssetsForUserFullSync(auth, dto);
+  @Post('full-sync')
+  @HttpCode(HttpStatus.OK)
+  getFullSyncForUser(@Auth() auth: AuthDto, @Body() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
+    return this.service.getFullSync(auth, dto);
   }
 
-  @Get('delta-sync')
-  getDeltaSync(@Auth() auth: AuthDto, @Query() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    return this.service.getChangesForDeltaSync(auth, dto);
+  @Post('delta-sync')
+  @HttpCode(HttpStatus.OK)
+  getDeltaSync(@Auth() auth: AuthDto, @Body() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
+    return this.service.getDeltaSync(auth, dto);
   }
 }

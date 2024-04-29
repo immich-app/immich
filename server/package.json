@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.102.3",
+  "version": "1.103.1",
   "description": "",
   "author": "",
   "private": true,
@@ -22,6 +22,7 @@
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage",
     "typeorm": "typeorm",
+    "lifecycle": "node ./dist/utils/lifecycle.js",
     "typeorm:migrations:create": "typeorm migration:create",
     "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/database.config.js",
     "typeorm:migrations:run": "typeorm migration:run -d ./dist/database.config.js",

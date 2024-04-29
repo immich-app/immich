@@ -61,4 +61,12 @@ export class Version implements IVersion {
     const [bool, type] = this.compare(version);
     return bool > 0 ? type : VersionType.EQUAL;
   }
+
+  compareTo(other: Version) {
+    if (this.isEqual(other)) {
+      return 0;
+    }
+
+    return this.isNewerThan(other) ? 1 : -1;
+  }
 }

@@ -17,10 +17,11 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                |
-| :---------------- | :-------------------- | :-------: | :-------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                   |
+| Variable           | Description                     |  Default  | Services                                |
+| :----------------- | :------------------------------ | :-------: | :-------------------------------------- |
+| `IMMICH_VERSION`   | Image tags                      | `release` | server, microservices, machine learning |
+| `UPLOAD_LOCATION`  | Host Path for uploads           |           | server, microservices                   |
+| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                                |
 
 :::tip
 
@@ -30,15 +31,18 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                        | Description                                  |       Default        | Services                                |
-| :------------------------------ | :------------------------------------------- | :------------------: | :-------------------------------------- |
-| `TZ`                            | Timezone                                     |                      | microservices                           |
-| `NODE_ENV`                      | Environment (production, development)        |     `production`     | server, microservices, machine learning |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |        `log`         | server, microservices, machine learning |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               |      `./upload`      | server, microservices                   |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                      | server, microservices                   |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |  `/usr/src/app/www`  | server                                  |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     | `/usr/src/resources` | microservices                           |
+| Variable                        | Description                                  |         Default          | Services                                |
+| :------------------------------ | :------------------------------------------- | :----------------------: | :-------------------------------------- |
+| `TZ`                            | Timezone                                     |                          | microservices                           |
+| `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, microservices, machine learning |
+| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |          `log`           | server, microservices, machine learning |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server, microservices                   |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server, microservices                   |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |    `/usr/src/app/www`    | server                                  |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     |   `/usr/src/resources`   | microservices                           |
+
+\*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
+It only need to be set if the Immich deployment method is changing.
 
 :::tip
 `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
@@ -58,18 +62,20 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## Database
 
-| Variable                            | Description                                                              |   Default    | Services              |
-| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------- |
-| `DB_URL`                            | Database URL                                                             |              | server, microservices |
-| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices |
-| `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices |
-| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices |
-| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices |
-| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices |
-| `DB_VECTOR_EXTENSION`<sup>\*1</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices |
-| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices |
+| Variable                            | Description                                                              |   Default    | Services                                      |
+| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------------------------------- |
+| `DB_URL`                            | Database URL                                                             |              | server, microservices                         |
+| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices                         |
+| `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices                         |
+| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices, database<sup>\*1</sup> |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices                         |
+| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices                         |
 
-\*1: This setting cannot be changed after the server has successfully started up.
+\*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
+
+\*2: This setting cannot be changed after the server has successfully started up.
 
 :::info
 
@@ -101,6 +107,9 @@ More info can be found in the upstream [ioredis][redis-api] documentation.
 
 Redis (Sentinel) URL example JSON before encoding:
 
+<details>
+<summary>JSON</summary>
+
 ```json
 {
   "sentinels": [
@@ -120,6 +129,8 @@ Redis (Sentinel) URL example JSON before encoding:
   "name": "redis-sentinel"
 }
 ```
+
+</details>
 
 ## Machine Learning
 

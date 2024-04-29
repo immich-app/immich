@@ -19,7 +19,7 @@ class AddUsersDto {
 
   List<AlbumUserAddDto> albumUsers;
 
-  /// Deprecated in favor of albumUsers
+  /// This property was deprecated in v1.102.0
   List<String> sharedUserIds;
 
   @override

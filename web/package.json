@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.102.3",
+  "version": "1.103.1",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",

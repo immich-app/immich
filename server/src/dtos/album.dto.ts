@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import _ from 'lodash';
+import { PropertyLifecycle } from 'src/decorators';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -25,7 +26,7 @@ export class AlbumUserAddDto {
 export class AddUsersDto {
   @ValidateUUID({ each: true, optional: true })
   @ArrayNotEmpty()
-  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
+  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
   sharedUserIds?: string[];
 
   @ArrayNotEmpty()
@@ -119,7 +120,7 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @ApiProperty({ deprecated: true, description: 'Deprecated in favor of albumUsers' })
+  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
   sharedUsers!: UserResponseDto[];
   albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;

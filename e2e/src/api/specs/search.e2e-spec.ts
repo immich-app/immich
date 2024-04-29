@@ -469,7 +469,8 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=state')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(states);
+      expect(body).toHaveLength(states.length);
+      expect(body).toEqual(expect.arrayContaining(states));
       expect(status).toBe(200);
     });
 
