@@ -134,6 +134,8 @@ export interface AssetFullSyncOptions {
   lastCreationDate?: Date;
   lastId?: string;
   updatedUntil: Date;
+  isArchived?: false;
+  withStacked?: true;
   limit: number;
 }
 

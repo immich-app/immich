@@ -798,16 +798,47 @@ SELECT
   "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
   "exifInfo"."fps" AS "exifInfo_fps",
   "stack"."id" AS "stack_id",
-  "stack"."primaryAssetId" AS "stack_primaryAssetId"
+  "stack"."primaryAssetId" AS "stack_primaryAssetId",
+  "stackedAssets"."id" AS "stackedAssets_id",
+  "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
+  "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
+  "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
+  "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
+  "stackedAssets"."type" AS "stackedAssets_type",
+  "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
+  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
+  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
+  "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
+  "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
+  "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
+  "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
+  "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
+  "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
+  "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
+  "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
+  "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
+  "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
+  "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
+  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
+  "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
+  "stackedAssets"."checksum" AS "stackedAssets_checksum",
+  "stackedAssets"."duration" AS "stackedAssets_duration",
+  "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
+  "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
+  "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
+  "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
+  "stackedAssets"."stackId" AS "stackedAssets_stackId"
 FROM
   "assets" "asset"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
+  LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
+  AND ("stackedAssets"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."isVisible" = true
+  AND "asset"."ownerId" IN ($1)
   AND ("asset"."fileCreatedAt", "asset"."id") < ($2, $3)
   AND "asset"."updatedAt" <= $4
-  AND "asset"."isVisible" = true
 ORDER BY
   "asset"."fileCreatedAt" DESC,
   "asset"."id" DESC
@@ -816,72 +847,105 @@ LIMIT
 
 -- AssetRepository.getChangedDeltaSync
 SELECT
-  "AssetEntity"."id" AS "AssetEntity_id",
-  "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
-  "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
-  "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
-  "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
-  "AssetEntity"."type" AS "AssetEntity_type",
-  "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
-  "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
-  "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
-  "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
-  "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
-  "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
-  "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
-  "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
-  "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
-  "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
-  "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
-  "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
-  "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
-  "AssetEntity"."checksum" AS "AssetEntity_checksum",
-  "AssetEntity"."duration" AS "AssetEntity_duration",
-  "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
-  "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
-  "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
-  "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-  "AssetEntity"."stackId" AS "AssetEntity_stackId",
-  "AssetEntity__AssetEntity_exifInfo"."assetId" AS "AssetEntity__AssetEntity_exifInfo_assetId",
-  "AssetEntity__AssetEntity_exifInfo"."description" AS "AssetEntity__AssetEntity_exifInfo_description",
-  "AssetEntity__AssetEntity_exifInfo"."exifImageWidth" AS "AssetEntity__AssetEntity_exifInfo_exifImageWidth",
-  "AssetEntity__AssetEntity_exifInfo"."exifImageHeight" AS "AssetEntity__AssetEntity_exifInfo_exifImageHeight",
-  "AssetEntity__AssetEntity_exifInfo"."fileSizeInByte" AS "AssetEntity__AssetEntity_exifInfo_fileSizeInByte",
-  "AssetEntity__AssetEntity_exifInfo"."orientation" AS "AssetEntity__AssetEntity_exifInfo_orientation",
-  "AssetEntity__AssetEntity_exifInfo"."dateTimeOriginal" AS "AssetEntity__AssetEntity_exifInfo_dateTimeOriginal",
-  "AssetEntity__AssetEntity_exifInfo"."modifyDate" AS "AssetEntity__AssetEntity_exifInfo_modifyDate",
-  "AssetEntity__AssetEntity_exifInfo"."timeZone" AS "AssetEntity__AssetEntity_exifInfo_timeZone",
-  "AssetEntity__AssetEntity_exifInfo"."latitude" AS "AssetEntity__AssetEntity_exifInfo_latitude",
-  "AssetEntity__AssetEntity_exifInfo"."longitude" AS "AssetEntity__AssetEntity_exifInfo_longitude",
-  "AssetEntity__AssetEntity_exifInfo"."projectionType" AS "AssetEntity__AssetEntity_exifInfo_projectionType",
-  "AssetEntity__AssetEntity_exifInfo"."city" AS "AssetEntity__AssetEntity_exifInfo_city",
-  "AssetEntity__AssetEntity_exifInfo"."livePhotoCID" AS "AssetEntity__AssetEntity_exifInfo_livePhotoCID",
-  "AssetEntity__AssetEntity_exifInfo"."autoStackId" AS "AssetEntity__AssetEntity_exifInfo_autoStackId",
-  "AssetEntity__AssetEntity_exifInfo"."state" AS "AssetEntity__AssetEntity_exifInfo_state",
-  "AssetEntity__AssetEntity_exifInfo"."country" AS "AssetEntity__AssetEntity_exifInfo_country",
-  "AssetEntity__AssetEntity_exifInfo"."make" AS "AssetEntity__AssetEntity_exifInfo_make",
-  "AssetEntity__AssetEntity_exifInfo"."model" AS "AssetEntity__AssetEntity_exifInfo_model",
-  "AssetEntity__AssetEntity_exifInfo"."lensModel" AS "AssetEntity__AssetEntity_exifInfo_lensModel",
-  "AssetEntity__AssetEntity_exifInfo"."fNumber" AS "AssetEntity__AssetEntity_exifInfo_fNumber",
-  "AssetEntity__AssetEntity_exifInfo"."focalLength" AS "AssetEntity__AssetEntity_exifInfo_focalLength",
-  "AssetEntity__AssetEntity_exifInfo"."iso" AS "AssetEntity__AssetEntity_exifInfo_iso",
-  "AssetEntity__AssetEntity_exifInfo"."exposureTime" AS "AssetEntity__AssetEntity_exifInfo_exposureTime",
-  "AssetEntity__AssetEntity_exifInfo"."profileDescription" AS "AssetEntity__AssetEntity_exifInfo_profileDescription",
-  "AssetEntity__AssetEntity_exifInfo"."colorspace" AS "AssetEntity__AssetEntity_exifInfo_colorspace",
-  "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
-  "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps",
-  "AssetEntity__AssetEntity_stack"."id" AS "AssetEntity__AssetEntity_stack_id",
-  "AssetEntity__AssetEntity_stack"."primaryAssetId" AS "AssetEntity__AssetEntity_stack_primaryAssetId"
+  "asset"."id" AS "asset_id",
+  "asset"."deviceAssetId" AS "asset_deviceAssetId",
+  "asset"."ownerId" AS "asset_ownerId",
+  "asset"."libraryId" AS "asset_libraryId",
+  "asset"."deviceId" AS "asset_deviceId",
+  "asset"."type" AS "asset_type",
+  "asset"."originalPath" AS "asset_originalPath",
+  "asset"."previewPath" AS "asset_previewPath",
+  "asset"."thumbnailPath" AS "asset_thumbnailPath",
+  "asset"."thumbhash" AS "asset_thumbhash",
+  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+  "asset"."createdAt" AS "asset_createdAt",
+  "asset"."updatedAt" AS "asset_updatedAt",
+  "asset"."deletedAt" AS "asset_deletedAt",
+  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+  "asset"."localDateTime" AS "asset_localDateTime",
+  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+  "asset"."isFavorite" AS "asset_isFavorite",
+  "asset"."isArchived" AS "asset_isArchived",
+  "asset"."isExternal" AS "asset_isExternal",
+  "asset"."isReadOnly" AS "asset_isReadOnly",
+  "asset"."isOffline" AS "asset_isOffline",
+  "asset"."checksum" AS "asset_checksum",
+  "asset"."duration" AS "asset_duration",
+  "asset"."isVisible" AS "asset_isVisible",
+  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+  "asset"."originalFileName" AS "asset_originalFileName",
+  "asset"."sidecarPath" AS "asset_sidecarPath",
+  "asset"."stackId" AS "asset_stackId",
+  "exifInfo"."assetId" AS "exifInfo_assetId",
+  "exifInfo"."description" AS "exifInfo_description",
+  "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
+  "exifInfo"."exifImageHeight" AS "exifInfo_exifImageHeight",
+  "exifInfo"."fileSizeInByte" AS "exifInfo_fileSizeInByte",
+  "exifInfo"."orientation" AS "exifInfo_orientation",
+  "exifInfo"."dateTimeOriginal" AS "exifInfo_dateTimeOriginal",
+  "exifInfo"."modifyDate" AS "exifInfo_modifyDate",
+  "exifInfo"."timeZone" AS "exifInfo_timeZone",
+  "exifInfo"."latitude" AS "exifInfo_latitude",
+  "exifInfo"."longitude" AS "exifInfo_longitude",
+  "exifInfo"."projectionType" AS "exifInfo_projectionType",
+  "exifInfo"."city" AS "exifInfo_city",
+  "exifInfo"."livePhotoCID" AS "exifInfo_livePhotoCID",
+  "exifInfo"."autoStackId" AS "exifInfo_autoStackId",
+  "exifInfo"."state" AS "exifInfo_state",
+  "exifInfo"."country" AS "exifInfo_country",
+  "exifInfo"."make" AS "exifInfo_make",
+  "exifInfo"."model" AS "exifInfo_model",
+  "exifInfo"."lensModel" AS "exifInfo_lensModel",
+  "exifInfo"."fNumber" AS "exifInfo_fNumber",
+  "exifInfo"."focalLength" AS "exifInfo_focalLength",
+  "exifInfo"."iso" AS "exifInfo_iso",
+  "exifInfo"."exposureTime" AS "exifInfo_exposureTime",
+  "exifInfo"."profileDescription" AS "exifInfo_profileDescription",
+  "exifInfo"."colorspace" AS "exifInfo_colorspace",
+  "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
+  "exifInfo"."fps" AS "exifInfo_fps",
+  "stack"."id" AS "stack_id",
+  "stack"."primaryAssetId" AS "stack_primaryAssetId",
+  "stackedAssets"."id" AS "stackedAssets_id",
+  "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
+  "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
+  "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
+  "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
+  "stackedAssets"."type" AS "stackedAssets_type",
+  "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
+  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
+  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
+  "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
+  "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
+  "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
+  "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
+  "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
+  "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
+  "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
+  "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
+  "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
+  "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
+  "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
+  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
+  "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
+  "stackedAssets"."checksum" AS "stackedAssets_checksum",
+  "stackedAssets"."duration" AS "stackedAssets_duration",
+  "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
+  "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
+  "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
+  "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
+  "stackedAssets"."stackId" AS "stackedAssets_stackId"
 FROM
-  "assets" "AssetEntity"
-  LEFT JOIN "exif" "AssetEntity__AssetEntity_exifInfo" ON "AssetEntity__AssetEntity_exifInfo"."assetId" = "AssetEntity"."id"
-  LEFT JOIN "asset_stack" "AssetEntity__AssetEntity_stack" ON "AssetEntity__AssetEntity_stack"."id" = "AssetEntity"."stackId"
+  "assets" "asset"
+  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+  LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
+  LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
+  AND ("stackedAssets"."deletedAt" IS NULL)
 WHERE
-  (
-    ("AssetEntity"."ownerId" IN ($1))
-    AND ("AssetEntity"."isVisible" = $2)
-    AND ("AssetEntity"."updatedAt" > $3)
+  "asset"."isVisible" = true
+  AND "asset"."ownerId" IN ($1)
+  AND (
+    "stack"."primaryAssetId" = "asset"."id"
+    OR "asset"."stackId" IS NULL
   )
+  AND "asset"."updatedAt" > $2

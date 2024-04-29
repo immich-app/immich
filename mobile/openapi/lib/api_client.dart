@@ -224,6 +224,8 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
+        case 'AssetDeltaSyncDto':
+          return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
         case 'AssetFaceResponseDto':
@@ -236,6 +238,8 @@ class ApiClient {
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
+        case 'AssetFullSyncDto':
+          return AssetFullSyncDto.fromJson(value);
         case 'AssetIdsDto':
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
