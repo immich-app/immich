@@ -2,11 +2,11 @@
   import { fly } from 'svelte/transition';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { quintOut } from 'svelte/easing';
-  import IconButton from '../elements/buttons/icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
   import { locale } from '$lib/stores/preferences.store';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -45,7 +45,7 @@
         />
       </div>
       {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('done')}>Done</IconButton>
+        <Button on:click={() => dispatch('done')} size="sm" rounded="lg">Done</Button>
       {:else}
         <LoadingSpinner />
       {/if}

@@ -3,7 +3,6 @@
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
@@ -41,6 +40,7 @@
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 
   export let data: PageData;
 
@@ -429,12 +429,12 @@
             />
           </div>
         </div>
-        <IconButton on:click={() => (selectHidden = !selectHidden)}>
+        <LinkButton on:click={() => (selectHidden = !selectHidden)}>
           <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
             <Icon path={mdiEyeOutline} size="18" />
             <p class="ml-2">Show & hide people</p>
           </div>
-        </IconButton>
+        </LinkButton>
       </div>
     {/if}
   </svelte:fragment>
