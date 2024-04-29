@@ -134,13 +134,13 @@ Some storage locations are impacted by the Storage Template. See below for more 
   - Stored in `/library/upload/<userID>`.
 - **Avatar Images:**
   - User profile images.
-  - Stored in `/library/profile/<userID>`.
+  - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
-  - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `/library/thumbs/<userID>`.
+  - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
+  - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
-  - By default, unless otherwise specified re-encoded video assets for wider compatibility.
-  - Stored in `/library/encoded-video/<userID>`.
+  - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
+  - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -155,27 +155,28 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 **1. User-Specific Folders:**
 
 - Each user has a unique string representing them.
-  - The main user is "Admin" (but only for `UPLOAD_LOCATION/library`)
+  - The main user is "admin" (but only for `UPLOAD_LOCATION/library`)
   - Other users have different string identifiers.
+  - The administrator can set a Storage Label for a user, which will be used instead of `<userID>`.
 - You can find your user ID in Account Account Settings -> Account -> User ID.
 
 **2. Asset Types and Storage Locations:**
 
 - **Source Assets:**
-  - Original assets uploaded through the browser interface & mobile & CLI.
+  - Original assets uploaded through the browser interface, mobile, and CLI.
   - Stored in `UPLOAD_LOCATION/library/<userID>`.
 - **Avatar Images:**
   - User profile images.
-  - Stored in `/library/profile/<userID>`.
+  - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `/library/thumbs/<userID>`.
+  - Stored in `UPLOCAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
-  - By default, unless otherwise specified re-encoded video assets for wider compatibility .
-  - Stored in `/library/encoded-video/<userID>`.
+  - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
+  - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
 - **Files in Upload Queue (Mobile):**
   - Files uploaded through mobile apps.
-  - Temporarily located in `/library/upload/<userID>`.
+  - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
 
 </TabItem>
