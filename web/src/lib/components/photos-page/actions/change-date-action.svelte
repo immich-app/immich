@@ -4,21 +4,21 @@
   import { getSelectedAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
+  import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiCalendarEditOutline } from '@mdi/js';
   export let menuItem = false;
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   let isShowChangeDate = false;
 
-  const handleConfirm = async (dateTimeOriginal: string) => {
+  const handleConfirm = async (dateTimeOriginal: string, keepTimeUnchanged: boolean) => {
     isShowChangeDate = false;
     const ids = getSelectedAssets(getOwnedAssets(), $user);
 
     try {
-      await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal } });
+      await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal, keepTimeUnchanged } });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
@@ -38,7 +38,7 @@
 {#if isShowChangeDate}
   <ChangeDate
     initialDate={getInitialDate()}
-    on:confirm={({ detail: date }) => handleConfirm(date)}
+    on:confirm={({ detail: date }) => handleConfirm(date.newDateValue, date.keepTimeUnchanged)}
     on:cancel={() => (isShowChangeDate = false)}
   />
 {/if}

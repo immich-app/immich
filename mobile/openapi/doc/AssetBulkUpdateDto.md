@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **ids** | **List<String>** |  | [default to const []]
 **isArchived** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | [optional] 
+**keepTimeUnchanged** | **bool** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **longitude** | **num** |  | [optional] 
 **removeParent** | **bool** |  | [optional] 

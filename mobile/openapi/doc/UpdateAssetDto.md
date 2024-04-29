@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **description** | **String** |  | [optional] 
 **isArchived** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | [optional] 
+**keepTimeUnchanged** | **bool** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **longitude** | **num** |  | [optional] 
 

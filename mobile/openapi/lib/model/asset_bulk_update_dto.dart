@@ -17,6 +17,7 @@ class AssetBulkUpdateDto {
     this.ids = const [],
     this.isArchived,
     this.isFavorite,
+    this.keepTimeUnchanged,
     this.latitude,
     this.longitude,
     this.removeParent,
@@ -48,6 +49,14 @@ class AssetBulkUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isFavorite;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? keepTimeUnchanged;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -87,6 +96,7 @@ class AssetBulkUpdateDto {
     _deepEquality.equals(other.ids, ids) &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
+    other.keepTimeUnchanged == keepTimeUnchanged &&
     other.latitude == latitude &&
     other.longitude == longitude &&
     other.removeParent == removeParent &&
@@ -99,13 +109,14 @@ class AssetBulkUpdateDto {
     (ids.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (keepTimeUnchanged == null ? 0 : keepTimeUnchanged!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
     (removeParent == null ? 0 : removeParent!.hashCode) +
     (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, keepTimeUnchanged=$keepTimeUnchanged, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -124,6 +135,11 @@ class AssetBulkUpdateDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
     //  json[r'isFavorite'] = null;
+    }
+    if (this.keepTimeUnchanged != null) {
+      json[r'keepTimeUnchanged'] = this.keepTimeUnchanged;
+    } else {
+    //  json[r'keepTimeUnchanged'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
@@ -162,6 +178,7 @@ class AssetBulkUpdateDto {
             : const [],
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        keepTimeUnchanged: mapValueOfType<bool>(json, r'keepTimeUnchanged'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
         removeParent: mapValueOfType<bool>(json, r'removeParent'),

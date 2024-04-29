@@ -17,6 +17,7 @@ class UpdateAssetDto {
     this.description,
     this.isArchived,
     this.isFavorite,
+    this.keepTimeUnchanged,
     this.latitude,
     this.longitude,
   });
@@ -59,6 +60,14 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? keepTimeUnchanged;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   num? latitude;
 
   ///
@@ -75,6 +84,7 @@ class UpdateAssetDto {
     other.description == description &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
+    other.keepTimeUnchanged == keepTimeUnchanged &&
     other.latitude == latitude &&
     other.longitude == longitude;
 
@@ -85,11 +95,12 @@ class UpdateAssetDto {
     (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (keepTimeUnchanged == null ? 0 : keepTimeUnchanged!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, keepTimeUnchanged=$keepTimeUnchanged, latitude=$latitude, longitude=$longitude]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -112,6 +123,11 @@ class UpdateAssetDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
     //  json[r'isFavorite'] = null;
+    }
+    if (this.keepTimeUnchanged != null) {
+      json[r'keepTimeUnchanged'] = this.keepTimeUnchanged;
+    } else {
+    //  json[r'keepTimeUnchanged'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
@@ -138,6 +154,7 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        keepTimeUnchanged: mapValueOfType<bool>(json, r'keepTimeUnchanged'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
       );

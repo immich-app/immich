@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // bool keepTimeUnchanged
+    test('to test the property `keepTimeUnchanged`', () async {
+      // TODO
+    });
+
     // num latitude
     test('to test the property `latitude`', () async {
       // TODO

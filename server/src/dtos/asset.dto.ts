@@ -37,6 +37,9 @@ export class UpdateAssetBase {
   @IsDateString()
   dateTimeOriginal?: string;
 
+  @Optional()
+  keepTimeUnchanged?: boolean;
+
   @ValidateGPS()
   @IsLatitude()
   @IsNotEmpty()

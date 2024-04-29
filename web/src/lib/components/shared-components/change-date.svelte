@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
-  import ConfirmDialogue from './confirm-dialogue.svelte';
-  import Combobox from './combobox.svelte';
+  import { createEventDispatcher } from 'svelte';
   import DateInput from '../elements/date-input.svelte';
+  import Combobox from './combobox.svelte';
+  import ConfirmDialogue from './confirm-dialogue.svelte';
 
   export let initialDate: DateTime = DateTime.now();
 
@@ -29,7 +29,6 @@
   }));
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
-
   let selectedOption = initialOption && {
     label: initialOption?.label || '',
     value: initialOption?.value || '',
@@ -40,9 +39,10 @@
   // Keep local time if not it's really confusing
   $: date = DateTime.fromISO(selectedDate).setZone(selectedOption?.value, { keepLocalTime: true });
 
+  let keepTimeUnchanged = false;
   const dispatch = createEventDispatcher<{
     cancel: void;
-    confirm: string;
+    confirm: { newDateValue: string; keepTimeUnchanged: boolean };
   }>();
 
   const handleCancel = () => dispatch('cancel');
@@ -50,7 +50,7 @@
   const handleConfirm = () => {
     const value = date.toISO();
     if (value) {
-      dispatch('confirm', value);
+      dispatch('confirm', { newDateValue: value, keepTimeUnchanged });
     }
   };
 </script>
@@ -82,6 +82,9 @@
         options={timezones}
         placeholder="Search timezone..."
       />
+    </div>
+    <div class="flex flex-col w-full mt-8">
+      <Checkbox label="Keep Time unchanged?" id="keeptime" bind:checked={keepTimeUnchanged} />
     </div>
   </div>
 </ConfirmDialogue>

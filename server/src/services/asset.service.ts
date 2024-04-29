@@ -272,7 +272,7 @@ export class AssetService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, keepTimeUnchanged, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
     // TODO: refactor this logic into separate API calls POST /stack, PUT /stack, etc.
@@ -323,7 +323,22 @@ export class AssetService {
     }
 
     for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+      const asset = await this.assetRepository.getById(id);
+      const oldCreatedAtDate = asset?.fileCreatedAt;
+      const oldDateTime = oldCreatedAtDate ? DateTime.fromJSDate(oldCreatedAtDate) : undefined;
+      let newDateTimeString = dateTimeOriginal;
+      if (dateTimeOriginal && keepTimeUnchanged && oldDateTime) {
+        let newDateTime = DateTime.fromISO(dateTimeOriginal);
+
+        newDateTime = newDateTime.set({
+          hour: oldDateTime.hour,
+          minute: oldDateTime?.minute,
+          second: oldDateTime.second,
+        });
+        const newDateTimeStringWithNull = newDateTime?.toISO();
+        newDateTimeString = newDateTimeStringWithNull === null ? undefined : newDateTimeStringWithNull;
+      }
+      await this.updateMetadata({ id, dateTimeOriginal: newDateTimeString, latitude, longitude });
     }
 
     await this.assetRepository.updateAll(ids, options);

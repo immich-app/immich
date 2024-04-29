@@ -7,10 +7,11 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     ThumbnailFormat,
     getAssetInfo,
@@ -38,10 +39,9 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import ChangeLocation from '../shared-components/change-location.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { shortcut } from '$lib/utils/shortcut';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -145,7 +145,7 @@
 
   let isShowChangeDate = false;
 
-  async function handleConfirmChangeDate(dateTimeOriginal: string) {
+  async function handleConfirmChangeDate(dateTimeOriginal: string, keepTimeUnchanged: boolean) {
     isShowChangeDate = false;
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
@@ -433,7 +433,7 @@
         : DateTime.now()}
       <ChangeDate
         initialDate={assetDateTimeOriginal}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
+        on:confirm={({ detail: data }) => handleConfirmChangeDate(data.newDateValue, data.keepTimeUnchanged)}
         on:cancel={() => (isShowChangeDate = false)}
       />
     {/if}
