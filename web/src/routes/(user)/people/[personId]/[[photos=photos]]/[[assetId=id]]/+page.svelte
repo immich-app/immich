@@ -26,7 +26,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, QueryParameter, maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -35,7 +35,6 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import { searchNameLocal } from '$lib/utils/person';
   import {
     getPersonStatistics,
     mergePerson,
@@ -103,36 +102,11 @@
    * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
    * or if the new search word starts with another word / letter
    **/
-  let searchWord: string;
   let isSearchingPeople = false;
   let suggestionContainer: HTMLDivElement;
 
-  const searchPeople = async () => {
-    if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
-      return;
-    }
-    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
-    try {
-      people = await searchPerson({ name });
-      searchWord = name;
-    } catch (error) {
-      people = [];
-      handleError(error, "Can't search people");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    isSearchingPeople = false;
-  };
-
   $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-
-  $: {
-    if (people) {
-      suggestedPeople = name ? searchNameLocal(name, people, 5, data.person.id) : [];
-    }
-  }
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
@@ -480,10 +454,10 @@
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
-                suggestedPeople={suggestedPeople.length > 0 || isSearchingPeople}
+                bind:suggestedPeople
                 bind:name
+                bind:isSearchingPeople
                 on:change={(event) => handleNameChange(event.detail)}
-                on:input={searchPeople}
                 {thumbnailData}
               />
             {:else}
