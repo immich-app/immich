@@ -32,3 +32,7 @@ FASTSTORAGE_LOCATION='/path/to/ssd/storage/for/immich'
 :::note
 The `thumbs/` folder contains both the small thumbnails shown in the timeline, and the larger previews shown when clicking into an image. These cannot be split up.
 :::
+
+:::tip
+If you setup the storage as outlined in this article, make sure to backup the `profile/` folder in `FASTSTORAGE_LOCATION` in addition to the files at `UPLOAD_LOCATION`.
+:::
