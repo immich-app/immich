@@ -102,6 +102,7 @@ class ApiService {
           .get(Uri.parse("$serverUrl/server-info/ping"))
           .timeout(const Duration(seconds: 5));
 
+      _log.info("Pinging server with response code ${response.statusCode}");
       if (response.statusCode != 200) {
         _log.severe(
           "Server Gateway Error: ${response.body} - Cannot communicate to the server",
@@ -111,6 +112,13 @@ class ApiService {
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {
+      return false;
+    } catch (error, stackTrace) {
+      _log.severe(
+        "Error while checking server availability",
+        error,
+        stackTrace,
+      );
       return false;
     }
     return true;
