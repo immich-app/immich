@@ -105,9 +105,11 @@
     <div class="absolute inset-y-0 left-0 flex items-center pl-2">
       <CircleIconButton type="submit" title="Search" icon={mdiMagnify} size="20" />
     </div>
+    <label for="main-search-bar" class="sr-only">Search your photos</label>
     <input
       type="text"
       name="q"
+      id="main-search-bar"
       class="w-full {grayTheme
         ? 'dark:bg-immich-dark-gray'
         : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
