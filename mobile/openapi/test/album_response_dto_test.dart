@@ -96,7 +96,7 @@ void main() {
       // TODO
     });
 
-    // Deprecated in favor of albumUsers
+    // This property was deprecated in v1.102.0
     // List<UserResponseDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO

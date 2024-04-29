@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
@@ -131,7 +132,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
 }
 
 export class MemoryLaneResponseDto {
-  @ApiProperty({ deprecated: true })
+  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
   title!: string;
 
   @ApiProperty({ type: 'integer' })
