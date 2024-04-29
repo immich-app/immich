@@ -105,11 +105,15 @@ Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_
 
 ## Filesystem
 
-Immich stores two types of content in the filesystem: (1) original, unmodified content, and (2) generated content. Only the original content needs to be backed-up, which includes the following folders:
+Immich stores two types of content in the filesystem: (1) original, unmodified assets (photos and videos), and (2) generated content. Only the original content needs to be backed-up, which is stored in the following folders:
 
 1. `UPLOAD_LOCATION/library`
 2. `UPLOAD_LOCATION/upload`
 3. `UPLOAD_LOCATION/profile`
+
+:::caution
+If you moved some of these folders onto a different storage device, such as `profile/`, make sure to adjust the backup path to match your setup
+:::
 
 ### Asset Types and Storage Locations
 
@@ -119,7 +123,8 @@ Some storage locations are impacted by the Storage Template. See below for more 
   <TabItem value="Storage Template Off (Default)." label="Storage Template Off (Default)." default>
 
 :::note
-`UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template).
+The `UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. It is used only if the system administrator activated the storage template engine,
+for more info read the [release notes](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template).
 :::
 
 **1. User-Specific Folders:**
@@ -131,16 +136,16 @@ Some storage locations are impacted by the Storage Template. See below for more 
 
 - **Source Assets:**
   - Original assets uploaded through the browser interface & mobile & CLI.
-  - Stored in `/library/upload/<userID>`.
+  - Stored in `UPLOAD_LOCATION/upload/<userID>`.
 - **Avatar Images:**
   - User profile images.
-  - Stored in `/library/profile/<userID>`.
+  - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
-  - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `/library/thumbs/<userID>`.
+  - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
+  - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
-  - By default, unless otherwise specified re-encoded video assets for wider compatibility.
-  - Stored in `/library/encoded-video/<userID>`.
+  - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
+  - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -148,34 +153,34 @@ Some storage locations are impacted by the Storage Template. See below for more 
 :::note
 If you choose to activate the storage template engine, it will move all assets to `UPLOAD_LOCATION/library/<userID>`.
 
-When you turn off the storage template engine, it will leave the assets in `UPLOAD_LOCATION/library/<userID>` and will not return them to `/library/upload`.  
-**New assets** will be saved to `/library/upload`.
+When you turn off the storage template engine, it will leave the assets in `UPLOAD_LOCATION/library/<userID>` and will not return them to `UPLOAD_LOCATION/upload`.  
+**New assets** will be saved to `UPLOAD_LOCATION/upload`.
 :::
 
 **1. User-Specific Folders:**
 
 - Each user has a unique string representing them.
-  - The main user is "Admin" (but only for `UPLOAD_LOCATION/library`)
-  - Other users have different string identifiers.
-- You can find your user ID in Account Account Settings -> Account -> User ID.
+  - The administrator can set a Storage Label for a user, which will be used instead of `<userID>` for the `library/` folder.
+  - The Admin has a default storage label of `admin`.
+- You can find your user ID and Storage Label in Account Account Settings -> Account -> User ID.
 
 **2. Asset Types and Storage Locations:**
 
 - **Source Assets:**
-  - Original assets uploaded through the browser interface & mobile & CLI.
+  - Original assets uploaded through the browser interface, mobile, and CLI.
   - Stored in `UPLOAD_LOCATION/library/<userID>`.
 - **Avatar Images:**
   - User profile images.
-  - Stored in `/library/profile/<userID>`.
+  - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `/library/thumbs/<userID>`.
+  - Stored in `UPLOCAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
-  - By default, unless otherwise specified re-encoded video assets for wider compatibility .
-  - Stored in `/library/encoded-video/<userID>`.
+  - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
+  - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
 - **Files in Upload Queue (Mobile):**
   - Files uploaded through mobile apps.
-  - Temporarily located in `/library/upload/<userID>`.
+  - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
 
 </TabItem>
