@@ -4958,31 +4958,19 @@
       }
     },
     "/sync/delta-sync": {
-      "get": {
+      "post": {
         "operationId": "getDeltaSync",
-        "parameters": [
-          {
-            "name": "updatedAfter",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userIds",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "array",
-              "items": {
-                "type": "string"
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetDeltaSyncDto"
               }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -5012,55 +5000,19 @@
       }
     },
     "/sync/full-sync": {
-      "get": {
-        "operationId": "getAllForUserFullSync",
-        "parameters": [
-          {
-            "name": "lastCreationDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
+      "post": {
+        "operationId": "getFullSyncForUser",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFullSyncDto"
+              }
             }
           },
-          {
-            "name": "lastId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "updatedUntil",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -7023,6 +6975,26 @@
         ],
         "type": "object"
       },
+      "AssetDeltaSyncDto": {
+        "properties": {
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "updatedAfter",
+          "userIds"
+        ],
+        "type": "object"
+      },
       "AssetDeltaSyncResponseDto": {
         "properties": {
           "deleted": {
@@ -7172,6 +7144,35 @@
         "required": [
           "duplicate",
           "id"
+        ],
+        "type": "object"
+      },
+      "AssetFullSyncDto": {
+        "properties": {
+          "lastCreationDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "limit": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "updatedUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "limit",
+          "updatedUntil"
         ],
         "type": "object"
       },
