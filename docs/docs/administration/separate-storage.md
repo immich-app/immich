@@ -9,8 +9,9 @@ This page outlines how this can be setup.
 By default, all files (original pictures, thumbnails, encoded videos, and user profile pictures) are stored in `UPLOAD_LOCATION`.
 In order to split up the file storage, the following volumes can be added to your Docker deployment.
 
-While the exact size will depend on your original image sizes and ratio of videos to pictures, the `thumbs/` and `encoded-video/` folders can each be 10-20% the size of the entire library. The storage metrics of the Immich server will track the storage available at `UPLOAD_LOCATION`,
-so the administrator should setup some kind of monitoring to make sure the SSD does not run out of space.
+While the exact size will depend on your original image sizes and ratio of videos to pictures, the `thumbs/` and `encoded-video/` folders can each be 10-20% the size of the entire library.
+The storage metrics of the Immich server will track the storage available at `UPLOAD_LOCATION`,
+so the administrator should setup some kind of monitoring to make sure the SSD does not run out of space. The `profile/` folder is much smaller, typically less than 1 MB.
 
 :::tip
 Because of the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
