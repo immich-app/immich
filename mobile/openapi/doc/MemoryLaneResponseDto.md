@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
-**title** | **String** |  | 
+**title** | **String** | This property was deprecated in v1.100.0 | 
 **yearsAgo** | **int** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

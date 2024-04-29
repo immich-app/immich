@@ -6664,7 +6664,7 @@
           },
           "sharedUserIds": {
             "deprecated": true,
-            "description": "Deprecated in favor of albumUsers",
+            "description": "This property was deprecated in v1.102.0",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -6769,7 +6769,7 @@
           },
           "sharedUsers": {
             "deprecated": true,
-            "description": "Deprecated in favor of albumUsers",
+            "description": "This property was deprecated in v1.102.0",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -8432,6 +8432,7 @@
           },
           "title": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "yearsAgo": {
@@ -8639,6 +8640,7 @@
           },
           "resizePath": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "size": {
@@ -8681,6 +8683,7 @@
           },
           "webpPath": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "withArchived": {

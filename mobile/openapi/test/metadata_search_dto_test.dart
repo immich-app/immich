@@ -156,6 +156,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.100.0
     // String resizePath
     test('to test the property `resizePath`', () async {
       // TODO
@@ -211,6 +212,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.100.0
     // String webpPath
     test('to test the property `webpPath`', () async {
       // TODO

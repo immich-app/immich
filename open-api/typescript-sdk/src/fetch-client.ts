@@ -162,7 +162,7 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** Deprecated in favor of albumUsers */
+    /** This property was deprecated in v1.102.0 */
     sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
@@ -202,7 +202,7 @@ export type AlbumUserAddDto = {
 };
 export type AddUsersDto = {
     albumUsers: AlbumUserAddDto[];
-    /** Deprecated in favor of albumUsers */
+    /** This property was deprecated in v1.102.0 */
     sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
@@ -273,6 +273,7 @@ export type MapMarkerResponseDto = {
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
+    /** This property was deprecated in v1.100.0 */
     title: string;
     yearsAgo: number;
 };
@@ -637,6 +638,7 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
+    /** This property was deprecated in v1.100.0 */
     resizePath?: string;
     size?: number;
     state?: string;
@@ -648,6 +650,7 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
+    /** This property was deprecated in v1.100.0 */
     webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;

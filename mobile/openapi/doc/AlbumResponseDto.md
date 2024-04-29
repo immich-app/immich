@@ -24,7 +24,7 @@ Name | Type | Description | Notes
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 
 **shared** | **bool** |  | 
-**sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) | Deprecated in favor of albumUsers | [default to const []]
+**sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) | This property was deprecated in v1.102.0 | [default to const []]
 **startDate** | [**DateTime**](DateTime.md) |  | [optional] 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 
