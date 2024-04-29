@@ -18,11 +18,13 @@ If you prefer not to move all the folders, such as `encoded-video/`, you can lea
 ## Setup
 
 ### Add this line to your .env file
+
 ```title='.env'
 FASTSTORAGE_LOCATION='/path/to/ssd/storage/for/immich'
 ```
 
-### Add these lines to the `volumes` section of your docker-compose.yml under *both* immich-server and immich-microservices
+### Add these lines to the `volumes` section of your docker-compose.yml under _both_ immich-server and immich-microservices
+
 ```title='docker-compose.yml'
       - ${FASTSTORAGE_LOCATION}/profile:/usr/src/app/upload/profile
       - ${FASTSTORAGE_LOCATION}/thumbs:/usr/src/app/upload/thumbs
