@@ -51,7 +51,8 @@ class AssetNotifier extends StateNotifier<bool> {
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint(
-          "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal");
+        "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal",
+      );
 
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
