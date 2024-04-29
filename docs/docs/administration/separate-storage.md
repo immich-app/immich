@@ -22,7 +22,7 @@ If you prefer not to move all the folders, such as `encoded-video/`, you can lea
 FASTSTORAGE_LOCATION='/path/to/ssd/storage/for/immich'
 ```
 
-### Add these lines to docker-compose.yml for immich-server and immich-microservices
+### Add these lines to docker-compose.yml under **both** immich-server and immich-microservices
 ```title='docker-compose.yml'
       - ${FASTSTORAGE_LOCATION}/profile:/usr/src/app/upload/profile
       - ${FASTSTORAGE_LOCATION}/thumbs:/usr/src/app/upload/thumbs
