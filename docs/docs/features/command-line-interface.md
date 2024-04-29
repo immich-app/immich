@@ -44,11 +44,11 @@ Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variabl
 
 ## Usage
 
-```
-immich
-```
+<details>
+<summary>Usage</summary>
 
 ```
+$ immich
 Usage: immich [options] [command]
 
 Command line interface for Immich
@@ -69,11 +69,16 @@ Commands:
   help [command]                      display help for command
 ```
 
+</details>
+
 ## Commands
 
 The upload command supports the following options:
 
-```
+<details>
+<summary>Options</summary>
+
+  ```
 Usage: immich upload [paths...] [options]
 
 Upload assets
@@ -94,19 +99,17 @@ Options:
   --help                      display help for command
 ```
 
+</details>
+
+
 Note that the above options can read from environment variables as well.
 
 ## Quick Start
 
-You begin by authenticating to your Immich server.
+You begin by authenticating to your Immich server. For instance:
 
 ```bash
-immich login [url] [key]
-```
-
-For instance,
-
-```bash
+# immich login [url] [key]
 immich login http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
