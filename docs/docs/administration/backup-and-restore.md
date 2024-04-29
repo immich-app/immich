@@ -155,10 +155,9 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 **1. User-Specific Folders:**
 
 - Each user has a unique string representing them.
-  - The main user is "admin" (but only for `UPLOAD_LOCATION/library`)
-  - Other users have different string identifiers.
-  - The administrator can set a Storage Label for a user, which will be used instead of `<userID>`.
-- You can find your user ID in Account Account Settings -> Account -> User ID.
+  - The administrator can set a Storage Label for a user, which will be used instead of `<userID>` for the `library/` folder.
+  - The Admin has a default storage label of `admin`.
+- You can find your user ID and Storage Label in Account Account Settings -> Account -> User ID.
 
 **2. Asset Types and Storage Locations:**
 
