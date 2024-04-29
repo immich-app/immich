@@ -3,7 +3,7 @@
 This guide explains storing generated and raw files with docker's volume mount in different locations.
 
 :::caution Backup
-It is important to remember to update the backup settings after following the guide to back up the new backup paths if using automatic backup tools.
+It is important to remember to update the backup settings after following the guide to back up the new backup paths if using automatic backup tools, especially `profile/`.
 :::
 
 In our `.env` file, we will define variables that will help us in the future when we want to move to a more advanced server in the future
@@ -13,9 +13,10 @@ In our `.env` file, we will define variables that will help us in the future whe
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - {UPLOAD_LOCATION}=./library
-+ {UPLOAD_LOCATION}=/custom/location/on/your/system/
-+ {THUMB_LOCATION}=/custom/location/on/your/system/
-+ {ENCODED_VIDEO_LOCATION}=/custom/location/on/your/system/
++ {UPLOAD_LOCATION}=/custom/location/on/your/system/immich/upload
++ {THUMB_LOCATION}=/custom/location/on/your/system/immich/thumbs
++ {ENCODED_VIDEO_LOCATION}=/custom/location/on/your/system/immich/encoded-video
++ {PROFILE_LOCATION}=/custom/location/on/your/system/immich/profile
 ...
 ```
 
@@ -28,6 +29,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
++     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
       - /etc/localtime:/etc/localtime:ro
 
 ...
@@ -37,6 +39,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
++     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
       - /etc/localtime:/etc/localtime:ro
 ```
 
