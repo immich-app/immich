@@ -11,6 +11,7 @@
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { calculateWidth } from '$lib/utils/timeline-util';
   import { navigate } from '$lib/utils/navigation';
+  import { AssetAction } from '$lib/constants';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -65,6 +66,16 @@
     }
   };
 
+  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
+    switch (action) {
+      case AssetAction.DELETE:
+      case AssetAction.TRASH:
+        assets.splice(assets.findIndex((a) => a.id === asset.id), 1);
+        assets = assets;
+        break;
+    }
+  };
+
   onDestroy(() => {
     $showAssetViewer = false;
   });
@@ -116,6 +127,6 @@
 <!-- Overlay Asset Viewer -->
 {#if $showAssetViewer}
   <Portal target="body">
-    <AssetViewer asset={$viewingAsset} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
+    <AssetViewer asset={$viewingAsset} on:action={({ detail: action }) => handleAction(action.type, action.asset)} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
   </Portal>
 {/if}
