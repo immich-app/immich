@@ -9,6 +9,7 @@ The default configuration looks like this:
 
 <details>
 <summary>immich.json</summary>
+
 ```json
 {
   "ffmpeg": {
@@ -158,6 +159,7 @@ The default configuration looks like this:
   }
 }
 ```
+
 </details>
 
 :::tip
