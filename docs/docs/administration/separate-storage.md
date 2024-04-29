@@ -1,6 +1,6 @@
 # Separate storage volumes
 
-Because of the flexibility of the underlying Immich file structure, many administrators prefer to store more frequently used assets (like thumbnails) on faster storage, such as an solid state drive,
+Because of the flexibility of the underlying Immich file structure, an administrator may prefer to store more frequently used assets (like thumbnails) on faster storage, such as an solid state drive,
 while leaving the original files on a hard disk drive or network storage.
 This page outlines how this can be setup.
 
