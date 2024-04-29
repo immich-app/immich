@@ -78,29 +78,28 @@ The upload command supports the following options:
 <details>
 <summary>Options</summary>
 
-  ```
+```
 Usage: immich upload [paths...] [options]
 
 Upload assets
 
 Arguments:
-  paths                       One or more paths to assets to be uploaded
+paths                       One or more paths to assets to be uploaded
 
 Options:
-  -r, --recursive             Recursive (default: false, env: IMMICH_RECURSIVE)
-  -i, --ignore [paths...]     Paths to ignore (default: [], env: IMMICH_IGNORE_PATHS)
-  -h, --skip-hash             Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
-  -H, --include-hidden        Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
-  -a, --album                 Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
-  -A, --album-name <name>     Add all assets to specified album (env: IMMICH_ALBUM_NAME)
-  -n, --dry-run               Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
-  -c, --concurrency <number>  Number of assets to upload at the same time (default: 4, env: IMMICH_UPLOAD_CONCURRENCY)
-  --delete                    Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
-  --help                      display help for command
+-r, --recursive             Recursive (default: false, env: IMMICH_RECURSIVE)
+-i, --ignore [paths...]     Paths to ignore (default: [], env: IMMICH_IGNORE_PATHS)
+-h, --skip-hash             Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
+-H, --include-hidden        Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
+-a, --album                 Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
+-A, --album-name <name>     Add all assets to specified album (env: IMMICH_ALBUM_NAME)
+-n, --dry-run               Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
+-c, --concurrency <number>  Number of assets to upload at the same time (default: 4, env: IMMICH_UPLOAD_CONCURRENCY)
+--delete                    Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
+--help                      display help for command
 ```
 
 </details>
-
 
 Note that the above options can read from environment variables as well.
 
