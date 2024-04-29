@@ -2,7 +2,7 @@
 
 This guide explains storing generated and raw files with docker's volume mount in different locations.
 
-:::note Backup
+:::caution Backup
 It is important to remember to update the backup settings after following the guide to back up the new backup paths if using automatic backup tools.
 :::
 
@@ -46,5 +46,15 @@ Restart Immich to register the changes.
 docker compose down
 docker compose up -d
 ```
+
+:::note
+Because of the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
+For this reason, we mount the HDD or network storage to `/usr/src/app/upload` and then mount the folders we want quick access to below this folder.
+
+The `thumbs/` folder contains both the small thumbnails shown in the timeline, and the larger previews shown when clicking into an image. These cannot be split up.
+
+The storage metrics of the Immich server will track the storage available at `UPLOAD_LOCATION`,
+so the administrator should setup some kind of monitoring to make sure the SSD does not run out of space. The `profile/` folder is much smaller, typically less than 1 MB.
+:::
 
 Thanks to [Jrasm91](https://github.com/immich-app/immich/discussions/2110#discussioncomment-5477767) for writing the guide.
