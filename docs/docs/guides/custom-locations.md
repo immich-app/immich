@@ -13,7 +13,7 @@ In our `.env` file, we will define variables that will help us in the future whe
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - {UPLOAD_LOCATION}=./library
-+ {UPLOAD_LOCATION}=/custom/location/on/your/system/immich/upload
++ {UPLOAD_LOCATION}=/custom/location/on/your/system/immich/immich_files
 + {THUMB_LOCATION}=/custom/location/on/your/system/immich/thumbs
 + {ENCODED_VIDEO_LOCATION}=/custom/location/on/your/system/immich/encoded-video
 + {PROFILE_LOCATION}=/custom/location/on/your/system/immich/profile
