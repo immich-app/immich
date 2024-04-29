@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -67,6 +68,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           if (user != null) {
             user.profileImagePath = profileImagePath;
             Store.put(StoreKey.currentUser, user);
+            ref.read(currentUserProvider.notifier).refresh();
           }
         }
       }
