@@ -1,7 +1,7 @@
 import { authenticate } from '$lib/utils/auth';
+import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getUserById } from '@immich/sdk';
 import type { PageLoad } from './$types';
-import { getAssetInfoFromParam } from '$lib/utils/navigation';
 
 export const load = (async ({ params }) => {
   await authenticate();
