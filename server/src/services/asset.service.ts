@@ -326,13 +326,13 @@ export class AssetService {
       const asset = await this.assetRepository.getById(id);
       const oldCreatedAtDate = asset?.fileCreatedAt && DateTime.fromJSDate(asset.fileCreatedAt);
       let newDateTimeString = dateTimeOriginal;
-      if (dateTimeOriginal && keepTimeUnchanged && oldDateTime) {
+      if (dateTimeOriginal && keepTimeUnchanged && oldCreatedAtDate) {
         let newDateTime = DateTime.fromISO(dateTimeOriginal);
 
         newDateTime = newDateTime.set({
-          hour: oldDateTime.hour,
-          minute: oldDateTime?.minute,
-          second: oldDateTime.second,
+          hour: oldCreatedAtDate.hour,
+          minute: oldCreatedAtDate?.minute,
+          second: oldCreatedAtDate.second,
         });
         const newDateTimeStringWithNull = newDateTime?.toISO();
         newDateTimeString = newDateTimeStringWithNull === null ? undefined : newDateTimeStringWithNull;
