@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import {
   AddUsersDto,
@@ -16,7 +16,7 @@ import {
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserEntity, AlbumUserRole } from 'src/entities/album-user.entity';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -140,25 +140,14 @@ export class AlbumService {
   async updateAlbumOrder(auth: AuthDto, id: string, dto: UpdateAlbumOrderDto): Promise<UpdateAlbumOrderDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
 
-    if (auth.sharedLink) {
-      throw new ForbiddenException("You can't update the album order if you're not an authenticated user");
-    }
-
     const album = await this.findOrFail(id, { withAssets: false });
-    let order: AssetOrder | undefined = undefined;
-    if (album.ownerId === auth.user.id) {
-      const updatedAlbum = await this.albumRepository.update({
-        id: album.id,
-        order: dto.order,
-      });
-      order = updatedAlbum.order;
-    } else {
-      const updatedAlbum = await this.albumUserRepository.update(
-        { userId: auth.user.id, albumId: id },
-        { order: dto.order },
-      );
-      order = updatedAlbum.order;
-    }
+    const order = dto.order;
+    album.ownerId === auth.user.id
+      ? await this.albumRepository.update({
+          id: album.id,
+          order: dto.order,
+        })
+      : await this.albumUserRepository.update({ userId: auth.user.id, albumId: id }, { order: dto.order });
 
     return { order };
   }

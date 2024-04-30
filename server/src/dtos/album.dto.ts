@@ -50,7 +50,6 @@ export class CreateAlbumDto {
 
 export class UpdateAlbumOrderDto {
   @IsEnum(AssetOrder)
-  @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order!: AssetOrder;
 }

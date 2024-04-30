@@ -241,6 +241,55 @@ describe(AlbumService.name, () => {
     });
   });
 
+  describe('updateAlbumOrder', () => {
+    it('should prevent updating if the user is not a logged in user', async () => {
+      albumMock.getById.mockResolvedValue(null);
+
+      await expect(
+        sut.updateAlbumOrder(authStub.user1, 'invalid-id', {
+          order: AssetOrder.DESC,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+    it('should change the album order', async () => {
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-3']));
+      albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
+      albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
+
+      await sut.updateAlbumOrder(authStub.user1, albumStub.sharedWithAdmin.id, {
+        order: AssetOrder.DESC,
+      });
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: 'album-3',
+        order: AssetOrder.DESC,
+      });
+    });
+    it('should allow another user to update its album order', async () => {
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-3']));
+      albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
+      albumUserMock.update.mockResolvedValue(albumStub.sharedWithAdmin.albumUsers[0]);
+
+      await sut.updateAlbumOrder(authStub.admin, albumStub.sharedWithAdmin.id, {
+        order: AssetOrder.DESC,
+      });
+
+      expect(albumUserMock.update).toHaveBeenCalledTimes(1);
+      expect(albumUserMock.update).toHaveBeenCalledWith(
+        {
+          albumId: albumStub.sharedWithAdmin.id,
+          userId: authStub.admin.user.id,
+        },
+        {
+          order: AssetOrder.DESC,
+        },
+      );
+    });
+  });
+
   describe('update', () => {
     it('should prevent updating an album that does not exist', async () => {
       albumMock.getById.mockResolvedValue(null);
