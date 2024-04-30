@@ -160,12 +160,7 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <button
-          class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-          on:click={() => dispatch('close')}
-        >
-          <Icon path={mdiClose} size="24" />
-        </button>
+        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title="Close" />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
       </div>
@@ -193,10 +188,13 @@
                 </a>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
-                  <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
-                    <Icon path={mdiDotsVertical} />
-                  </button>
+                <div class="flex items-start w-fit pt-[5px]">
+                  <CircleIconButton
+                    icon={mdiDotsVertical}
+                    title="Comment options"
+                    size="16"
+                    on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
+                  />
                 </div>
               {/if}
               <div>
@@ -242,10 +240,13 @@
                   </a>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                  <div class="flex items-start w-fit" title="Delete like">
-                    <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
-                      <Icon path={mdiDotsVertical} />
-                    </button>
+                  <div class="flex items-start w-fit">
+                    <CircleIconButton
+                      icon={mdiDotsVertical}
+                      title="Reaction options"
+                      size="16"
+                      on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
+                    />
                   </div>
                 {/if}
                 <div>

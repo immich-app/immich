@@ -74,7 +74,7 @@
 
   <div class="absolute right-2 top-2" class:hidden={!showVerticalDots}>
     <CircleIconButton
-      color="light"
+      color="opaque"
       icon={mdiDotsVertical}
       title="Show person options"
       size="20"
