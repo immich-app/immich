@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -18,6 +17,7 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let showUploadButton = true;
 
@@ -58,12 +58,8 @@
 
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
         {#if $featureFlags.search}
-          <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
-            <IconButton title="Search">
-              <div class="flex gap-2">
-                <Icon path={mdiMagnify} size="1.5em" />
-              </div>
-            </IconButton>
+          <a href={AppRoute.SEARCH} id="search-button" class="ml-4 sm:hidden">
+            <CircleIconButton title="Go to search" icon={mdiMagnify} />
           </a>
         {/if}
 

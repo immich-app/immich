@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
@@ -13,10 +12,10 @@
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import IconButton from '../elements/buttons/icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let person: PersonResponseDto;
   export let preload = false;
@@ -73,17 +72,17 @@
     {/if}
   </a>
 
-  <button
-    class="absolute right-2 top-2"
-    on:click|stopPropagation|preventDefault={showMenu}
-    class:hidden={!showVerticalDots}
-    data-testid="context-button-parent"
-    id={`icon-${person.id}`}
-  >
-    <IconButton color="transparent-primary">
-      <Icon path={mdiDotsVertical} size="20" class="icon-white-drop-shadow text-white" />
-    </IconButton>
-  </button>
+  <div class="absolute right-2 top-2" class:hidden={!showVerticalDots}>
+    <CircleIconButton
+      color="light"
+      icon={mdiDotsVertical}
+      title="Show person options"
+      size="20"
+      padding="2"
+      class="icon-white-drop-shadow"
+      on:click={showMenu}
+    />
+  </div>
 </div>
 
 {#if showContextMenu}

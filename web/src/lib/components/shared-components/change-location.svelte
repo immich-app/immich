@@ -23,7 +23,7 @@
   let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
   let latestSearchTimeout: number;
-  let showSpinner = false;
+  let showLoadingSpinner = false;
   let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
@@ -74,14 +74,14 @@
     if (latestSearchTimeout) {
       clearTimeout(latestSearchTimeout);
     }
-    showSpinner = true;
+    showLoadingSpinner = true;
     const searchTimeout = window.setTimeout(() => {
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
           if (latestSearchTimeout === searchTimeout) {
             places = searchResult;
-            showSpinner = false;
+            showLoadingSpinner = false;
           }
         })
         .catch((error) => {
@@ -89,7 +89,7 @@
           if (latestSearchTimeout === searchTimeout) {
             places = [];
             handleError(error, "Can't search places");
-            showSpinner = false;
+            showLoadingSpinner = false;
           }
         });
     }, timeDebounceOnSearch);
@@ -121,7 +121,7 @@
         <SearchBar
           placeholder="Search places"
           bind:name={searchWord}
-          isSearching={showSpinner}
+          {showLoadingSpinner}
           on:reset={() => {
             suggestedPlaces = [];
           }}

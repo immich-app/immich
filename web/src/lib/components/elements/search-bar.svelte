@@ -7,7 +7,7 @@
 
   export let name: string;
   export let roundedBottom = true;
-  export let isSearching: boolean;
+  export let showLoadingSpinner: boolean;
   export let placeholder: string;
 
   const dispatch = createEventDispatcher<{ search: SearchOptions; reset: void }>();
@@ -15,6 +15,12 @@
   const resetSearch = () => {
     name = '';
     dispatch('reset');
+  };
+
+  const handleSearch = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      dispatch('search', { force: true });
+    }
   };
 </script>
 
@@ -33,9 +39,10 @@
     type="text"
     {placeholder}
     bind:value={name}
+    on:keydown={handleSearch}
     on:input={() => dispatch('search', { force: false })}
   />
-  {#if isSearching}
+  {#if showLoadingSpinner}
     <div class="flex place-items-center">
       <LoadingSpinner />
     </div>
