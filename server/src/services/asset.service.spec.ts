@@ -692,16 +692,7 @@ describe(AssetService.name, () => {
     });
 
     it('should process assets from external non-read-only library without fromExternal flag', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.externalDeletable.id, {
-          faces: {
-            person: true,
-          },
-          library: true,
-          stack: { assets: true },
-          exifInfo: true,
-        })
-        .mockResolvedValue(assetStub.externalDeletable);
+      assetMock.getById.mockResolvedValue(assetStub.externalDeletable);
 
       await sut.handleAssetDeletion({ id: assetStub.externalDeletable.id });
 
