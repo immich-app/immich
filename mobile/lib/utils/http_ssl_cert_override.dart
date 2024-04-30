@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:logging/logging.dart';
 
 class HttpSSLCertOverride extends HttpOverrides {

@@ -3,7 +3,7 @@ import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
-part 'store.g.dart';
+part 'store.entity.g.dart';
 
 /// Key-value store for individual items enumerated in StoreKey.
 /// Supports String, int and JSON-serializable Objects

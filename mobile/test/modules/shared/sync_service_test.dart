@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';

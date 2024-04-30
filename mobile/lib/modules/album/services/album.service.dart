@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/entities/backup_album.entity.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';

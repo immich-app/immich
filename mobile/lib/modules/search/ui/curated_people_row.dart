@@ -3,7 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {

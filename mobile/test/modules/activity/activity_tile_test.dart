@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:isar/isar.dart';
 

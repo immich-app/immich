@@ -5,7 +5,7 @@ import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:octo_image/octo_image.dart';
 
 class ImmichImage extends StatelessWidget {

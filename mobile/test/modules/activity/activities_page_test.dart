@@ -12,7 +12,7 @@ import 'package:immich_mobile/modules/album/providers/current_album.provider.dar
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:isar/isar.dart';

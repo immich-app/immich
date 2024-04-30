@@ -5,7 +5,7 @@ import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ExploreGrid extends StatelessWidget {

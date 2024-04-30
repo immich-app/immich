@@ -12,7 +12,7 @@ import 'package:immich_mobile/domain/entities/etag.entity.dart';
 import 'package:immich_mobile/domain/entities/exif_info.entity.dart';
 import 'package:immich_mobile/domain/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/domain/entities/logger_message.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';

@@ -1,6 +1,6 @@
 import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
-import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
