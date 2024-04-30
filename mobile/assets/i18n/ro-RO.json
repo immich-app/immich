@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Nu se pot distribui fișiere locale prin link, omitere",
   "home_page_upload_err_limit": "Se pot încărca maxim 30 de resurse odată, omitere",
   "image_viewer_page_state_provider_download_error": "Eroare descărcare",
+  "image_viewer_page_state_provider_download_started": "Descărcarea a început",
   "image_viewer_page_state_provider_download_success": "Descărcare cu succes",
   "image_viewer_page_state_provider_share_error": "Eroare distribuire",
   "library_page_albums": "Albume",

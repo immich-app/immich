@@ -56,7 +56,7 @@
     <div id="people-selection" class="-mb-4">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label py-3">PEOPLE</p>
-        <SearchBar bind:name placeholder="Filter people" isSearching={false} />
+        <SearchBar bind:name placeholder="Filter people" showLoadingSpinner={false} />
       </div>
 
       <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">
@@ -91,10 +91,10 @@
             on:click={() => (showAllPeople = !showAllPeople)}
           >
             {#if showAllPeople}
-              <span><Icon path={mdiClose} /></span>
+              <span><Icon path={mdiClose} ariaHidden /></span>
               Collapse
             {:else}
-              <span><Icon path={mdiArrowRight} /></span>
+              <span><Icon path={mdiArrowRight} ariaHidden /></span>
               See all people
             {/if}
           </Button>

@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Can not share local assets via link, skipping",
   "home_page_upload_err_limit": "Can only upload a maximum of 30 assets at a time, skipping",
   "image_viewer_page_state_provider_download_error": "Preuzimanje Neuspešno",
+  "image_viewer_page_state_provider_download_started": "Preuzimanje je počelo",
   "image_viewer_page_state_provider_download_success": "Preuzimanje Uspešno",
   "image_viewer_page_state_provider_share_error": "Share Error",
   "library_page_albums": "Albumi",

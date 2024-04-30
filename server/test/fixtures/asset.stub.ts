@@ -507,6 +507,25 @@ export const assetStub = {
     library: libraryStub.uploadLibrary1,
     exifInfo: {
       fileSizeInByte: 100_000,
+      timeZone: `America/New_York`,
+    },
+  } as AssetEntity),
+
+  liveMotionWithThumb: Object.freeze({
+    id: fileStub.livePhotoMotion.uuid,
+    originalPath: fileStub.livePhotoMotion.originalPath,
+    ownerId: authStub.user1.user.id,
+    type: AssetType.VIDEO,
+    isVisible: false,
+    fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
+    fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    libraryId: 'library-id',
+    library: libraryStub.uploadLibrary1,
+    previewPath: '/uploads/user-id/thumbs/path.ext',
+    thumbnailPath: '/uploads/user-id/webp/path.ext',
+    exifInfo: {
+      fileSizeInByte: 100_000,
+      timeZone: `America/New_York`,
     },
   } as AssetEntity),
 
@@ -523,6 +542,7 @@ export const assetStub = {
     library: libraryStub.uploadLibrary1,
     exifInfo: {
       fileSizeInByte: 25_000,
+      timeZone: `America/New_York`,
     },
   } as AssetEntity),
 

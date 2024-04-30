@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
@@ -34,6 +35,7 @@ class ApiService {
     }
   }
   String? _accessToken;
+  final _log = Logger("ApiService");
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
@@ -95,17 +97,28 @@ class ApiService {
       serverUrl += '/api';
     }
 
-    // Throw Socket or Timeout exceptions,
-    // we do not care if the endpoints hits an HTTP error
     try {
-      await client
-          .get(
-            Uri.parse(serverUrl),
-          )
+      final response = await client
+          .get(Uri.parse("$serverUrl/server-info/ping"))
           .timeout(const Duration(seconds: 5));
+
+      _log.info("Pinging server with response code ${response.statusCode}");
+      if (response.statusCode != 200) {
+        _log.severe(
+          "Server Gateway Error: ${response.body} - Cannot communicate to the server",
+        );
+        return false;
+      }
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {
+      return false;
+    } catch (error, stackTrace) {
+      _log.severe(
+        "Error while checking server availability",
+        error,
+        stackTrace,
+      );
       return false;
     }
     return true;

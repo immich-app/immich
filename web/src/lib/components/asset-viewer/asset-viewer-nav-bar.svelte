@@ -105,12 +105,12 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton isOpacity={true} icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
+    <CircleIconButton color="opaque" icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showShareButton}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={mdiShareVariantOutline}
         on:click={() => dispatch('showShareModal')}
         title="Share"
@@ -118,7 +118,7 @@
     {/if}
     {#if asset.isOffline}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={mdiAlertOutline}
         on:click={() => dispatch('showDetail')}
         title="Asset Offline"
@@ -127,14 +127,14 @@
     {#if showMotionPlayButton}
       {#if isMotionPhotoPlaying}
         <CircleIconButton
-          isOpacity={true}
+          color="opaque"
           icon={mdiMotionPauseOutline}
           title="Stop Motion Photo"
           on:click={() => dispatch('stopMotionPhoto')}
         />
       {:else}
         <CircleIconButton
-          isOpacity={true}
+          color="opaque"
           icon={mdiPlaySpeed}
           title="Play Motion Photo"
           on:click={() => dispatch('playMotionPhoto')}
@@ -143,7 +143,7 @@
     {/if}
     {#if showZoomButton}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title="Zoom Image"
@@ -155,7 +155,7 @@
     {/if}
     {#if showCopyButton}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={mdiContentCopy}
         title="Copy Image"
         on:click={() => {
@@ -167,7 +167,7 @@
 
     {#if !isOwner && showDownloadButton}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={mdiFolderDownloadOutline}
         on:click={() => dispatch('download')}
         title="Download"
@@ -176,7 +176,7 @@
 
     {#if showDetailButton}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={mdiInformationOutline}
         on:click={() => dispatch('showDetail')}
         title="Info"
@@ -185,7 +185,7 @@
 
     {#if isOwner}
       <CircleIconButton
-        isOpacity={true}
+        color="opaque"
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
         title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
@@ -194,7 +194,7 @@
 
     {#if isOwner}
       {#if !asset.isReadOnly}
-        <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+        <CircleIconButton color="opaque" icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       {/if}
       <div
         use:clickOutside={{
@@ -202,7 +202,7 @@
           onEscape: () => (isShowAssetOptions = false),
         }}
       >
-        <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
+        <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
             {#if showSlideshow}

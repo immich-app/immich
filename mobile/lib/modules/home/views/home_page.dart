@@ -98,21 +98,37 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    return Scaffold(
-      appBar: ref.watch(multiselectProvider) ? null : const ImmichAppBar(),
-      body: MultiselectGrid(
-        topWidget: (currentUser != null && currentUser.memoryEnabled)
-            ? const MemoryLane()
-            : const SizedBox(),
-        renderListProvider: timelineUsers.length > 1
-            ? multiUserAssetsProvider(timelineUsers)
-            : assetsProvider(currentUser?.isarId),
-        buildLoadingIndicator: buildLoadingIndicator,
-        onRefresh: refreshAssets,
-        stackEnabled: true,
-        archiveEnabled: true,
-        editEnabled: true,
-      ),
+    return Stack(
+      children: [
+        MultiselectGrid(
+          topWidget: (currentUser != null && currentUser.memoryEnabled)
+              ? const MemoryLane()
+              : const SizedBox(),
+          renderListProvider: timelineUsers.length > 1
+              ? multiUserAssetsProvider(timelineUsers)
+              : assetsProvider(currentUser?.isarId),
+          buildLoadingIndicator: buildLoadingIndicator,
+          onRefresh: refreshAssets,
+          stackEnabled: true,
+          archiveEnabled: true,
+          editEnabled: true,
+        ),
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 300),
+          top: ref.watch(multiselectProvider)
+              ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+              : 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: kToolbarHeight + MediaQuery.of(context).padding.top,
+            color: context.themeData.appBarTheme.backgroundColor,
+            child: const SafeArea(
+              child: ImmichAppBar(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

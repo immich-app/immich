@@ -39,13 +39,12 @@ describe(SyncService.name, () => {
   describe('getAllAssetsForUserFullSync', () => {
     it('should return a list of all assets owned by the user', async () => {
       assetMock.getAllForUserFullSync.mockResolvedValue([assetStub.external, assetStub.hasEncodedVideo]);
-      await expect(
-        sut.getAllAssetsForUserFullSync(authStub.user1, { limit: 2, updatedUntil: untilDate }),
-      ).resolves.toEqual([
+      await expect(sut.getFullSync(authStub.user1, { limit: 2, updatedUntil: untilDate })).resolves.toEqual([
         mapAsset(assetStub.external, mapAssetOpts),
         mapAsset(assetStub.hasEncodedVideo, mapAssetOpts),
       ]);
       expect(assetMock.getAllForUserFullSync).toHaveBeenCalledWith({
+        withStacked: true,
         ownerId: authStub.user1.user.id,
         updatedUntil: untilDate,
         limit: 2,
@@ -57,7 +56,7 @@ describe(SyncService.name, () => {
     it('should return a response requiring a full sync when partners are out of sync', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1]);
       await expect(
-        sut.getChangesForDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
       expect(assetMock.getChangedDeltaSync).toHaveBeenCalledTimes(0);
       expect(auditMock.getAfter).toHaveBeenCalledTimes(0);
@@ -66,7 +65,7 @@ describe(SyncService.name, () => {
     it('should return a response requiring a full sync when last sync was too long ago', async () => {
       partnerMock.getAll.mockResolvedValue([]);
       await expect(
-        sut.getChangesForDeltaSync(authStub.user1, { updatedAfter: new Date(2000), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(2000), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
       expect(assetMock.getChangedDeltaSync).toHaveBeenCalledTimes(0);
       expect(auditMock.getAfter).toHaveBeenCalledTimes(0);
@@ -78,7 +77,7 @@ describe(SyncService.name, () => {
         Array.from<AssetEntity>({ length: 10_000 }).fill(assetStub.image),
       );
       await expect(
-        sut.getChangesForDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
       expect(assetMock.getChangedDeltaSync).toHaveBeenCalledTimes(1);
       expect(auditMock.getAfter).toHaveBeenCalledTimes(0);
@@ -89,7 +88,7 @@ describe(SyncService.name, () => {
       assetMock.getChangedDeltaSync.mockResolvedValue([assetStub.image1]);
       auditMock.getAfter.mockResolvedValue([assetStub.external.id]);
       await expect(
-        sut.getChangesForDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({
         needsFullSync: false,
         upserted: [mapAsset(assetStub.image1, mapAssetOpts)],

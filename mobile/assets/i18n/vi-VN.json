@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Không thể chia sẻ ảnh cục bộ qua liên kết, bỏ qua",
   "home_page_upload_err_limit": "Chỉ có thể tải lên tối đa 30 ảnh cùng một lúc, bỏ qua",
   "image_viewer_page_state_provider_download_error": "Tải xuống không thành công",
+  "image_viewer_page_state_provider_download_started": "Tải xuống đã bắt đầu",
   "image_viewer_page_state_provider_download_success": "Tải xuống thành công",
   "image_viewer_page_state_provider_share_error": "Chia sẻ không thành công",
   "library_page_albums": "Album",

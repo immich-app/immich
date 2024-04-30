@@ -16,6 +16,7 @@ class JobSettingsDto {
     required this.concurrency,
   });
 
+  /// Minimum value: 1
   int concurrency;
 
   @override

@@ -13,6 +13,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
     required this.onAddToAlbumPressed,
+    required this.onRestorePressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
     required this.onFavorite,
@@ -28,6 +29,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
+  final VoidCallback onRestorePressed;
   final VoidCallback onActivitiesPressed;
   final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
@@ -94,13 +96,25 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
-    Widget buildAddToAlbumButtom() {
+    Widget buildAddToAlbumButton() {
       return IconButton(
         onPressed: () {
           onAddToAlbumPressed();
         },
         icon: Icon(
           Icons.add,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildRestoreButton() {
+      return IconButton(
+        onPressed: () {
+          onRestorePressed();
+        },
+        icon: Icon(
+          Icons.history_rounded,
           color: Colors.grey[200],
         ),
       );
@@ -170,7 +184,9 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && !asset.isOffline && isOwner)
           buildDownloadButton(),
-        if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButtom(),
+        if (asset.isRemote && (isOwner || isPartner) && !asset.isTrashed)
+          buildAddToAlbumButton(),
+        if (asset.isTrashed) buildRestoreButton(),
         if (album != null && album.shared) buildActivitiesButton(),
         buildMoreInfoButton(),
       ],

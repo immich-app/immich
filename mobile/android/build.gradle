@@ -1,21 +1,3 @@
-buildscript {
-    ext.kotlin_version = '1.8.20'
-    ext.kotlin_coroutines_version = '1.7.1'
-    ext.work_version = '2.7.1'
-    ext.concurrent_version = '1.1.0'
-    ext.guava_version = '33.0.0-android'
-    ext.glide_version = '4.14.2'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 allprojects {
     repositories {
         google()
@@ -33,4 +15,8 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
+}
+
+tasks.named('wrapper') {
+    distributionType = Wrapper.DistributionType.ALL
 }

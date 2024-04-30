@@ -130,19 +130,6 @@ export class GetAssetThumbnailDto {
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }
 
-export class SearchPropertiesDto {
-  tags?: string[];
-  objects?: string[];
-  assetType?: string;
-  orientation?: string;
-  lensModel?: string;
-  make?: string;
-  model?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-}
-
 export class ServeFileDto {
   @ValidateBoolean({ optional: true })
   @ApiProperty({ title: 'Is serve thumbnail (resize) file' })

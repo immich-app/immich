@@ -129,15 +129,13 @@ export interface AssetExploreOptions extends AssetExploreFieldOptions {
   unnest?: boolean;
 }
 
-export interface MetadataSearchOptions {
-  numResults: number;
-}
-
 export interface AssetFullSyncOptions {
   ownerId: string;
   lastCreationDate?: Date;
   lastId?: string;
   updatedUntil: Date;
+  isArchived?: false;
+  withStacked?: true;
   limit: number;
 }
 
@@ -188,7 +186,6 @@ export interface IAssetRepository {
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
 }

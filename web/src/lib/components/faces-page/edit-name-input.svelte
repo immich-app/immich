@@ -1,29 +1,23 @@
 <script lang="ts">
   import { type PersonResponseDto } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
 
   export let person: PersonResponseDto;
   export let name: string;
-  export let suggestedPeople = false;
+  export let suggestedPeople: PersonResponseDto[];
   export let thumbnailData: string;
-
-  let inputElement: HTMLInputElement;
+  export let isSearchingPeople: boolean;
 
   const dispatch = createEventDispatcher<{
     change: string;
-    cancel: void;
-    input: void;
   }>();
-
-  onMount(() => {
-    inputElement.focus();
-  });
 </script>
 
 <div
-  class="flex w-full h-14 place-items-center {suggestedPeople
+  class="flex w-full h-14 place-items-center {suggestedPeople.length > 0
     ? 'rounded-t-lg dark:border-immich-dark-gray'
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
@@ -33,13 +27,13 @@
     autocomplete="off"
     on:submit|preventDefault={() => dispatch('change', name)}
   >
-    <input
-      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-      type="text"
-      placeholder="New name or nickname"
-      bind:value={name}
-      bind:this={inputElement}
-      on:input={() => dispatch('input')}
+    <SearchPeople
+      bind:searchName={name}
+      bind:searchedPeopleLocal={suggestedPeople}
+      type="input"
+      numberPeopleToSearch={5}
+      inputClass="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+      bind:showLoadingSpinner={isSearchingPeople}
     />
     <Button size="sm" type="submit">Done</Button>
   </form>

@@ -630,6 +630,57 @@
         "tags": [
           "Album"
         ]
+      },
+      "put": {
+        "operationId": "updateAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
       }
     },
     "/album/{id}/users": {
@@ -1098,76 +1149,6 @@
         ]
       }
     },
-    "/asset/curated-locations": {
-      "get": {
-        "operationId": "getCuratedLocations",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CuratedLocationsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/curated-objects": {
-      "get": {
-        "operationId": "getCuratedObjects",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CuratedObjectsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
@@ -1447,6 +1428,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 31,
               "type": "integer"
             }
           },
@@ -1455,6 +1438,8 @@
             "required": true,
             "in": "query",
             "schema": {
+              "minimum": 1,
+              "maximum": 12,
               "type": "integer"
             }
           }
@@ -1499,6 +1484,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 1,
               "type": "number"
             }
           }
@@ -1510,41 +1496,6 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/search-terms": {
-      "get": {
-        "operationId": "getAssetSearchTerms",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
                   },
                   "type": "array"
                 }
@@ -1850,420 +1801,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/assets": {
-      "get": {
-        "deprecated": true,
-        "operationId": "searchAssets",
-        "parameters": [
-          {
-            "name": "checksum",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "country",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "createdBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceAssetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "encodedVideoPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isEncoded",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isExternal",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isMotion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isNotInAlbum",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isOffline",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isReadOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isVisible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "lensModel",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "libraryId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "make",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "model",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "order",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/AssetOrder"
-            }
-          },
-          {
-            "name": "originalFileName",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "originalPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "personIds",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "previewPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "resizePath",
-            "required": false,
-            "in": "query",
-            "deprecated": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "takenBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "thumbnailPath",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "trashedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/AssetTypeEnum"
-            }
-          },
-          {
-            "name": "updatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "updatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "webpPath",
-            "required": false,
-            "in": "query",
-            "deprecated": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "withArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": false,
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withDeleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withExif",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withPeople",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withStacked",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
                 }
               }
             },
@@ -4429,127 +3966,6 @@
         ]
       }
     },
-    "/search": {
-      "get": {
-        "deprecated": true,
-        "operationId": "search",
-        "parameters": [
-          {
-            "name": "clip",
-            "required": false,
-            "in": "query",
-            "deprecated": true,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "motion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "q",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recent",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "smart",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "IMAGE",
-                "VIDEO",
-                "AUDIO",
-                "OTHER"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "withArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SearchResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Search"
-        ]
-      }
-    },
     "/search/cities": {
       "get": {
         "operationId": "getAssetsByCity",
@@ -5542,31 +4958,19 @@
       }
     },
     "/sync/delta-sync": {
-      "get": {
+      "post": {
         "operationId": "getDeltaSync",
-        "parameters": [
-          {
-            "name": "updatedAfter",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userIds",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "array",
-              "items": {
-                "type": "string"
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetDeltaSyncDto"
               }
             }
-          }
-        ],
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -5596,54 +5000,19 @@
       }
     },
     "/sync/full-sync": {
-      "get": {
-        "operationId": "getAllForUserFullSync",
-        "parameters": [
-          {
-            "name": "lastCreationDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
+      "post": {
+        "operationId": "getFullSyncForUser",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFullSyncDto"
+              }
             }
           },
-          {
-            "name": "lastId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "updatedUntil",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -7078,7 +6447,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.102.0",
+    "version": "1.103.1",
     "contact": {}
   },
   "tags": [],
@@ -7239,7 +6608,15 @@
       },
       "AddUsersDto": {
         "properties": {
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserAddDto"
+            },
+            "type": "array"
+          },
           "sharedUserIds": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.102.0",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -7248,7 +6625,7 @@
           }
         },
         "required": [
-          "sharedUserIds"
+          "albumUsers"
         ],
         "type": "object"
       },
@@ -7290,6 +6667,12 @@
           "albumThumbnailAssetId": {
             "nullable": true,
             "type": "string"
+          },
+          "albumUsers": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserResponseDto"
+            },
+            "type": "array"
           },
           "assetCount": {
             "type": "integer"
@@ -7337,6 +6720,8 @@
             "type": "boolean"
           },
           "sharedUsers": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.102.0",
             "items": {
               "$ref": "#/components/schemas/UserResponseDto"
             },
@@ -7354,6 +6739,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumUsers",
           "assetCount",
           "assets",
           "createdAt",
@@ -7368,6 +6754,43 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "AlbumUserAddDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "AlbumUserResponseDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "role",
+          "user"
+        ],
+        "type": "object"
+      },
+      "AlbumUserRole": {
+        "enum": [
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
       },
       "AllJobStatusResponseDto": {
         "properties": {
@@ -7552,6 +6975,26 @@
         ],
         "type": "object"
       },
+      "AssetDeltaSyncDto": {
+        "properties": {
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "updatedAfter",
+          "userIds"
+        ],
+        "type": "object"
+      },
       "AssetDeltaSyncResponseDto": {
         "properties": {
           "deleted": {
@@ -7701,6 +7144,35 @@
         "required": [
           "duplicate",
           "id"
+        ],
+        "type": "object"
+      },
+      "AssetFullSyncDto": {
+        "properties": {
+          "lastCreationDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "limit": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "updatedUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "limit",
+          "updatedUntil"
         ],
         "type": "object"
       },
@@ -8054,6 +7526,7 @@
         "properties": {
           "newPassword": {
             "example": "password",
+            "minLength": 8,
             "type": "string"
           },
           "password": {
@@ -8286,6 +7759,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -8301,60 +7775,6 @@
           "email",
           "name",
           "password"
-        ],
-        "type": "object"
-      },
-      "CuratedLocationsResponseDto": {
-        "properties": {
-          "city": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "city",
-          "deviceAssetId",
-          "deviceId",
-          "id",
-          "resizePath"
-        ],
-        "type": "object"
-      },
-      "CuratedObjectsResponseDto": {
-        "properties": {
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string"
-          },
-          "resizePath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetId",
-          "deviceId",
-          "id",
-          "object",
-          "resizePath"
         ],
         "type": "object"
       },
@@ -8391,6 +7811,7 @@
             "type": "string"
           },
           "archiveSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "assetIds": {
@@ -8731,6 +8152,7 @@
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -9015,6 +8437,7 @@
           },
           "title": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "yearsAgo": {
@@ -9207,6 +8630,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -9221,9 +8645,12 @@
           },
           "resizePath": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -9261,6 +8688,7 @@
           },
           "webpPath": {
             "deprecated": true,
+            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "withArchived": {
@@ -9325,6 +8753,7 @@
       "OnThisDayDto": {
         "properties": {
           "year": {
+            "minimum": 1,
             "type": "number"
           }
         },
@@ -9680,13 +9109,18 @@
           },
           "maxDistance": {
             "format": "float",
+            "maximum": 2,
+            "minimum": 0,
             "type": "number"
           },
           "minFaces": {
+            "minimum": 1,
             "type": "integer"
           },
           "minScore": {
             "format": "float",
+            "maximum": 1,
+            "minimum": 0,
             "type": "number"
           },
           "modelName": {
@@ -10405,6 +9839,7 @@
             "type": "string"
           },
           "page": {
+            "minimum": 1,
             "type": "number"
           },
           "personIds": {
@@ -10418,6 +9853,8 @@
             "type": "string"
           },
           "size": {
+            "maximum": 1000,
+            "minimum": 1,
             "type": "number"
           },
           "state": {
@@ -10555,21 +9992,27 @@
             "type": "array"
           },
           "bframes": {
+            "maximum": 16,
+            "minimum": -1,
             "type": "integer"
           },
           "cqMode": {
             "$ref": "#/components/schemas/CQMode"
           },
           "crf": {
+            "maximum": 51,
+            "minimum": 0,
             "type": "integer"
           },
           "gopSize": {
+            "minimum": 0,
             "type": "integer"
           },
           "maxBitrate": {
             "type": "string"
           },
           "npl": {
+            "minimum": 0,
             "type": "integer"
           },
           "preferredHwDevice": {
@@ -10579,6 +10022,8 @@
             "type": "string"
           },
           "refs": {
+            "maximum": 6,
+            "minimum": 0,
             "type": "integer"
           },
           "targetAudioCodec": {
@@ -10594,6 +10039,7 @@
             "type": "boolean"
           },
           "threads": {
+            "minimum": 0,
             "type": "integer"
           },
           "tonemap": {
@@ -10642,15 +10088,19 @@
             "$ref": "#/components/schemas/ImageFormat"
           },
           "previewSize": {
+            "minimum": 1,
             "type": "integer"
           },
           "quality": {
+            "maximum": 100,
+            "minimum": 1,
             "type": "integer"
           },
           "thumbnailFormat": {
             "$ref": "#/components/schemas/ImageFormat"
           },
           "thumbnailSize": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -10839,6 +10289,7 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "minimum": 0,
             "type": "number"
           },
           "enabled": {
@@ -11017,6 +10468,7 @@
       "SystemConfigTrashDto": {
         "properties": {
           "days": {
+            "minimum": 0,
             "type": "integer"
           },
           "enabled": {
@@ -11032,6 +10484,7 @@
       "SystemConfigUserDto": {
         "properties": {
           "deleteDelay": {
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -11150,6 +10603,17 @@
         },
         "type": "object"
       },
+      "UpdateAlbumUserDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
       "UpdateAssetDto": {
         "properties": {
           "dateTimeOriginal": {
@@ -11261,6 +10725,7 @@
           },
           "quotaSizeInBytes": {
             "format": "int64",
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
