@@ -44,6 +44,7 @@ class CronValidator implements ValidatorConstraintInterface {
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
+const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -366,9 +367,16 @@ class SystemConfigServerDto {
 }
 
 class SystemConfigSmtpTransportDto {
+  @IsBoolean()
+  ignoreCert!: boolean;
+
+  @ValidateIf(isEmailNotificationEnabled)
+  @IsNotEmpty()
   @IsString()
   host!: string;
 
+  @ValidateIf(isEmailNotificationEnabled)
+  @IsNotEmpty()
   @IsNumber()
   port!: number;
 
@@ -383,6 +391,8 @@ class SystemConfigSmtpDto {
   @IsBoolean()
   enabled!: boolean;
 
+  @ValidateIf(isEmailNotificationEnabled)
+  @IsNotEmpty()
   @IsString()
   from!: string;
 

@@ -10420,6 +10420,9 @@
           "host": {
             "type": "string"
           },
+          "ignoreCert": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -10432,6 +10435,7 @@
         },
         "required": [
           "host",
+          "ignoreCert",
           "password",
           "port",
           "username"

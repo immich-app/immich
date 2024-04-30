@@ -11,8 +11,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
       <Container style={container}>
         <Section style={section}>
           <Img
-            src={`https://immich.app/img/immich-logo-stacked-light.svg`}
-            height="250px"
+            src={`https://immich.app/img/immich-logo-inline-light.png`}
             alt="Immich"
             style={{ width: '100%', alignSelf: 'center', color: 'white' }}
           />

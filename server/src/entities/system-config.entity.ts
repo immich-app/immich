@@ -83,6 +83,7 @@ export const SystemConfigKey = {
   NOTIFICATIONS_SMTP_ENABLED: 'notifications.smtp.enabled',
   NOTIFICATIONS_SMTP_FROM: 'notifications.smtp.from',
   NOTIFICATIONS_SMTP_REPLY_TO: 'notifications.smtp.replyTo',
+  NOTIFICATIONS_SMTP_TRANSPORT_IGNORE_CERT: 'notifications.smtp.transport.ignoreCert',
   NOTIFICATIONS_SMTP_TRANSPORT_HOST: 'notifications.smtp.transport.host',
   NOTIFICATIONS_SMTP_TRANSPORT_PORT: 'notifications.smtp.transport.port',
   NOTIFICATIONS_SMTP_TRANSPORT_USERNAME: 'notifications.smtp.transport.username',
@@ -320,6 +321,7 @@ export interface SystemConfig {
       from: string;
       replyTo: string;
       transport: {
+        ignoreCert: boolean;
         host: string;
         port: number;
         username: string;

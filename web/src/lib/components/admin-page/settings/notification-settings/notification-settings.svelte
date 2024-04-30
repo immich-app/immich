@@ -34,6 +34,13 @@
             />
 
             <hr />
+            <SettingSwitch
+              id="enable-ignore-cert"
+              title="Ignore certificate"
+              subtitle="Do not check certificate validity"
+              {disabled}
+              bind:checked={config.notifications.smtp.ignoreCert}
+            />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
@@ -79,6 +86,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
+              required
               label="From address"
               desc="Sender email address, for example: &quot;Immich Photo Server <noreply@mydomain.com>&quot;"
               disabled={disabled || !config.notifications.smtp.enabled}

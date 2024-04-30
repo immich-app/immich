@@ -152,6 +152,7 @@ export const defaults = Object.freeze<SystemConfig>({
       from: '',
       replyTo: '',
       transport: {
+        ignoreCert: false,
         host: '',
         port: 587,
         username: '',

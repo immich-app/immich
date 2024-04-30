@@ -53,7 +53,7 @@ export class NotificationRepository implements INotificationRepository {
     return createTransport({
       host: options.host,
       port: options.port,
-      secure: options.port == 465, // STARTTLS is automatically detected
+      tls: { rejectUnauthorized: options.ignoreCert },
       auth:
         options.username || options.password
           ? {

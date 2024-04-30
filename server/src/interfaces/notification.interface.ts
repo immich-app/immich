@@ -15,6 +15,7 @@ export type SmtpOptions = {
   port?: number;
   username?: string;
   password?: string;
+  ignoreCert?: boolean;
 };
 
 export enum EmailTemplate {
