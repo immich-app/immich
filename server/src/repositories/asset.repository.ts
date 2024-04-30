@@ -710,11 +710,11 @@ export class AssetRepository implements IAssetRepository {
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, isArchived, withStacked, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const { ownerId, isArchived, lastCreationDate, lastId, updatedUntil, limit } = options;
     const builder = this.getBuilder({
       userIds: [ownerId],
-      exifInfo: true,
-      withStacked,
+      exifInfo: true, // also joins stack information
+      withStacked: false, // return all assets individually as expected by the app
       isArchived,
     });
 
