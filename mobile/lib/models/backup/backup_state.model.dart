@@ -4,9 +4,9 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import 'package:immich_mobile/domain/models/backup/available_album.model.dart';
-import 'package:immich_mobile/domain/models/backup/current_upload_asset.model.dart';
-import 'package:immich_mobile/domain/models/server_info/server_disk_info.model.dart';
+import 'package:immich_mobile/models/backup/available_album.model.dart';
+import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
+import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 
 enum BackUpProgressEnum {
   idle,

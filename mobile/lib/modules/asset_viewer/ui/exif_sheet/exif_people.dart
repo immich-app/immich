@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_people.provider.dart';
-import 'package:immich_mobile/domain/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 class ExifPeople extends ConsumerWidget {
   final Asset asset;

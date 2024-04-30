@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 /// Returns the suitable [IconData] to represent an [Asset]s storage location
 IconData storageIcon(Asset asset) {

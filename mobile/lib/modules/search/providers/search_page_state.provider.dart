@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 
 import 'package:immich_mobile/modules/search/services/search.service.dart';
 

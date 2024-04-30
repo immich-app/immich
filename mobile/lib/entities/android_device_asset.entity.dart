@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/entities/device_asset.entity.dart';
+import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:isar/isar.dart';
 
 part 'android_device_asset.entity.g.dart';

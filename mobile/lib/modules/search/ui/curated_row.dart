@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/domain/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
-import 'package:immich_mobile/domain/entities/store.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 class CuratedRow extends StatelessWidget {
   final List<SearchCuratedContent> content;

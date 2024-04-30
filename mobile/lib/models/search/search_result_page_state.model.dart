@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 class SearchResultPageState {
   final bool isLoading;

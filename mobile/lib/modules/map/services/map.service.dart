@@ -1,5 +1,5 @@
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
-import 'package:immich_mobile/domain/models/map/map_marker.model.dart';
+import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:logging/logging.dart';
 

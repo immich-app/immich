@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:immich_mobile/domain/entities/exif_info.entity.dart';
-import 'package:immich_mobile/domain/entities/store.entity.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
