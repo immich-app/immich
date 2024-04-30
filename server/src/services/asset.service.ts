@@ -358,7 +358,7 @@ export class AssetService {
 
   async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
     const { id, fromExternal } = job;
-
+    console.error('hanndling asset deletion\n\n\n');
     const asset = await this.assetRepository.getById(id, {
       faces: {
         person: true,
