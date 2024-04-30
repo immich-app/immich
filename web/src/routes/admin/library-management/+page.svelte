@@ -412,10 +412,7 @@
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
                         <MenuOption
                           on:click={() => onToggleReadOnlyClicked()}
-                          text={selectedLibrary.isReadOnly ||
-                          (selectedLibrary.isReadOnly == null && selectedLibrary.type === LibraryType.External)
-                            ? 'Allow file deletion'
-                            : 'Disallow file deletion'}
+                          text={selectedLibrary.isReadOnly ? 'Allow file deletion' : 'Disallow file deletion'}
                         />
 
                         {#if selectedLibrary.type === LibraryType.External}
