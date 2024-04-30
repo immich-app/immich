@@ -56,7 +56,6 @@ export class MediaRepository implements IMediaRepository {
     }
 
     await pipeline
-      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
       .withIccProfile(options.colorspace)
