@@ -81,7 +81,6 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { onMount } from 'svelte';
 
   export let data: PageData;
 
