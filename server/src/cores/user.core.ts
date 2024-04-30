@@ -101,6 +101,7 @@ export class UserCore {
       type: LibraryType.UPLOAD,
       importPaths: [],
       exclusionPatterns: [],
+      isReadOnly: false,
       isVisible: true,
     });
 
