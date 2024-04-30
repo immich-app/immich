@@ -324,8 +324,7 @@ export class AssetService {
 
     for (const id of ids) {
       const asset = await this.assetRepository.getById(id);
-      const oldCreatedAtDate = asset?.fileCreatedAt;
-      const oldDateTime = oldCreatedAtDate ? DateTime.fromJSDate(oldCreatedAtDate) : undefined;
+      const oldCreatedAtDate = asset?.fileCreatedAt && DateTime.fromJSDate(asset.fileCreatedAt);
       let newDateTimeString = dateTimeOriginal;
       if (dateTimeOriginal && keepTimeUnchanged && oldDateTime) {
         let newDateTime = DateTime.fromISO(dateTimeOriginal);
