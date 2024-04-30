@@ -334,8 +334,7 @@
       }
       await deleteAsset();
       return;
-    }
-    else {
+    } else {
       await trashAsset();
     }
 
