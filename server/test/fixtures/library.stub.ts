@@ -17,7 +17,7 @@ export const libraryStub = {
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: false,
     exclusionPatterns: [],
   }),
   externalLibrary1: Object.freeze<LibraryEntity>({
@@ -32,7 +32,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: [],
   }),
   externalLibrary2: Object.freeze<LibraryEntity>({
@@ -47,7 +47,7 @@ export const libraryStub = {
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: [],
   }),
   externalLibraryNotReadOnly: Object.freeze<LibraryEntity>({
@@ -77,7 +77,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: [],
   }),
   externalLibraryWithImportPaths2: Object.freeze<LibraryEntity>({
@@ -92,7 +92,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: [],
   }),
   externalLibraryWithExclusionPattern: Object.freeze<LibraryEntity>({
@@ -107,7 +107,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
   patternPath: Object.freeze<LibraryEntity>({
@@ -122,7 +122,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
   hasImmichPaths: Object.freeze<LibraryEntity>({
@@ -137,7 +137,7 @@ export const libraryStub = {
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
     isVisible: true,
-    isReadOnly: null,
+    isReadOnly: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
 };

@@ -45,7 +45,7 @@ export const assetStub = {
     sharedLinks: [],
     faces: [],
     sidecarPath: null,
-    isReadOnly: false,
+    isReadOnly: true,
     deletedAt: null,
     isOffline: false,
     isExternal: false,
