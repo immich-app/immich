@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(backupProvider.notifier).updateServerInfo();
+        ref.watch(backupProvider.notifier).getBackupInfo();
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },
@@ -83,6 +86,49 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           ),
         ).tr(),
         onTap: onTap,
+      );
+    }
+
+    String formatBytes(int bytes, [int decimals = 2]) {
+      if (bytes <= 0) return "0 B";
+      const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+      var i = (log(bytes) / log(1024)).floor();
+      return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+    }
+
+    buildFreeSpaceButton() {
+      return buildActionButton(
+        Icons.mobile_friendly_rounded,
+        "profile_drawer_free_up_space",
+        () async {
+          int fileSizeBytes = 0;
+          var fileCount = backupState.selectedAlbumsBackupAssetsIds.length;
+          for (var i = 0; i < fileCount; i++) {
+            var assetId =
+                backupState.selectedAlbumsBackupAssetsIds.elementAt(i);
+            var asset =
+                backupState.allUniqueAssets.where((x) => x.id == assetId).first;
+            fileSizeBytes += (await asset.originBytes)!.length;
+          }
+
+          showDialog(
+            context: context,
+            builder: (BuildContext ctx) {
+              return ConfirmDialog(
+                title: "app_bar_free_up_space_dialog_title",
+                content: "app_bar_free_up_space_dialog_content".tr(
+                  args: ["$fileCount"],
+                ),
+                ok: "app_bar_free_up_space_dialog_ok".tr(
+                  args: [
+                    formatBytes(fileSizeBytes),
+                  ],
+                ),
+                onOk: () async {},
+              );
+            },
+          );
+        },
       );
     }
 
@@ -264,6 +310,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               const AppBarProfileInfoBox(),
               buildStorageInformation(),
               const AppBarServerInfo(),
+              buildFreeSpaceButton(),
               buildAppLogButton(),
               buildSettingButton(),
               buildSignOutButton(),
