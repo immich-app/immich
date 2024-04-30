@@ -7681,6 +7681,9 @@
             },
             "type": "array"
           },
+          "isReadOnly": {
+            "type": "boolean"
+          },
           "isVisible": {
             "type": "boolean"
           },

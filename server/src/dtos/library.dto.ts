@@ -19,6 +19,9 @@ export class CreateLibraryDto {
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
+  @ValidateBoolean({ optional: true })
+  isReadOnly?: boolean;
+
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
