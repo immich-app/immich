@@ -1,7 +1,7 @@
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
-part 'etag.g.dart';
+part 'etag.entity.g.dart';
 
 @Collection(inheritance: false)
 class ETag {

@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
 
 class AssetSelectionPageResult {
   final Set<Asset> selectedAssets;

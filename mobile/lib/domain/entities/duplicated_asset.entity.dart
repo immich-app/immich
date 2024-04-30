@@ -1,7 +1,7 @@
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
-part 'duplicated_asset.model.g.dart';
+part 'duplicated_asset.entity.g.dart';
 
 @Collection(inheritance: false)
 class DuplicatedAsset {

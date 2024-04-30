@@ -1,7 +1,7 @@
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
-part 'backup_album.model.g.dart';
+part 'backup_album.entity.g.dart';
 
 @Collection(inheritance: false)
 class BackupAlbum {

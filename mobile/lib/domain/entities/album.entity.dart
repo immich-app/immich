@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-part 'album.g.dart';
+part 'album.entity.g.dart';
 
 @Collection(inheritance: false)
 class Album {

@@ -4,8 +4,8 @@ import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/models/search_filter.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/entities/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ExploreGrid extends StatelessWidget {

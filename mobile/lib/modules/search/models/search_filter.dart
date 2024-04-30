@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:openapi/api.dart';
 
 class SearchLocationFilter {

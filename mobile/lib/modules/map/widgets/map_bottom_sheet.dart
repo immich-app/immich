@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/models/map_event.model.dart';
 import 'package:immich_mobile/modules/map/widgets/map_asset_grid.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
 class MapBottomSheet extends HookConsumerWidget {

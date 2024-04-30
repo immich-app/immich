@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
 final controlBottomAppBarNotifier = ControlBottomAppBarNotifier();

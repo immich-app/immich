@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
-part 'exif_info.g.dart';
+part 'exif_info.entity.g.dart';
 
 /// Exif information 1:1 relation with Asset
 @Collection(inheritance: false)

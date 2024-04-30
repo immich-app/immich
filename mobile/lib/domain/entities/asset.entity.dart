@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/domain/entities/exif_info.entity.dart';
+import 'package:immich_mobile/domain/entities/store.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -9,7 +9,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
-part 'asset.g.dart';
+part 'asset.entity.g.dart';
 
 /// Asset (online or local)
 @Collection(inheritance: false)
@@ -432,7 +432,10 @@ class Asset {
     return compareByChecksum(a, b);
   }
 
-  static int compareByOwnerChecksumCreatedModified(Asset a, Asset b) {
+  static int compareByOwnerChecksumCreatedModified(
+    Asset a,
+    Asset b,
+  ) {
     final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
     if (ownerIdOrder != 0) return ownerIdOrder;
     final int checksumOrder = compareByChecksum(a, b);
@@ -517,9 +520,13 @@ extension AssetsHelper on IsarCollection<Asset> {
   Future<Asset?> getByRemoteId(String id) =>
       where().remoteIdEqualTo(id).findFirst();
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(
+    Iterable<String> ids,
+  ) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
-  QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> local(
+    Iterable<String> ids,
+  ) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
 }

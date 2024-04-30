@@ -1,8 +1,8 @@
-import 'package:immich_mobile/shared/models/device_asset.dart';
+import 'package:immich_mobile/domain/entities/device_asset.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
-part 'ios_device_asset.g.dart';
+part 'ios_device_asset.entity.g.dart';
 
 @Collection()
 class IOSDeviceAsset extends DeviceAsset {

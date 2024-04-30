@@ -1,11 +1,11 @@
 import 'dart:ui';
 
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
-part 'user.g.dart';
+part 'user.entity.g.dart';
 
 @Collection(inheritance: false)
 class User {

@@ -3,7 +3,7 @@
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
-part 'logger_message.model.g.dart';
+part 'logger_message.entity.g.dart';
 
 @Collection(inheritance: false)
 class LoggerMessage {

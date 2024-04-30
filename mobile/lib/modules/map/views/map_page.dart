@@ -22,7 +22,7 @@ import 'package:immich_mobile/modules/map/widgets/map_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:immich_mobile/modules/map/widgets/positioned_asset_marker_icon.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';

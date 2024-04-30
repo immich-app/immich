@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 

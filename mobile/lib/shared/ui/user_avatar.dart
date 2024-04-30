@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/user.entity.dart';
 
 Widget userAvatar(BuildContext context, User u, {double? radius}) {
   final url =

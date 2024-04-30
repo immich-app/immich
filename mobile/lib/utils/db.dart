@@ -1,9 +1,9 @@
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/etag.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/domain/entities/album.entity.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/entities/etag.entity.dart';
+import 'package:immich_mobile/domain/entities/exif_info.entity.dart';
+import 'package:immich_mobile/domain/entities/store.dart';
+import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:isar/isar.dart';
 
 Future<void> clearAssetsAndAlbums(Isar db) async {

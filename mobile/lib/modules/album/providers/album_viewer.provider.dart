@@ -2,7 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/album_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/domain/entities/album.entity.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
