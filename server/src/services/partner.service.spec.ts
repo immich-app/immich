@@ -7,6 +7,7 @@ import { PartnerService } from 'src/services/partner.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { Mocked } from 'vitest';
 
 const responseDto = {
   admin: <PartnerResponseDto>{
@@ -49,8 +50,8 @@ const responseDto = {
 
 describe(PartnerService.name, () => {
   let sut: PartnerService;
-  let partnerMock: jest.Mocked<IPartnerRepository>;
-  let accessMock: jest.Mocked<IAccessRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
+  let accessMock: Mocked<IAccessRepository>;
 
   beforeEach(() => {
     partnerMock = newPartnerRepositoryMock();

@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
@@ -21,6 +21,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+
     final isDarkTheme = context.isDarkTheme;
 
     ColorFilter selectedFilter = ColorFilter.mode(
@@ -78,7 +79,7 @@ class AlbumInfoCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isSelected) {
           ref.read(backupProvider.notifier).removeAlbumForBackup(album);
@@ -87,7 +88,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         }
       },
       onDoubleTap: () {
-        HapticFeedback.selectionClick();
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isExcluded) {
           // Remove from exclude album list

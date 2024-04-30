@@ -25,6 +25,7 @@
     <form autocomplete="off" on:submit|preventDefault class="mx-4 mt-4">
       <div class="flex flex-col gap-4">
         <SettingSwitch
+          id="enable-machine-learning"
           title="ENABLED"
           subtitle="If disabled, all ML features will be disabled regardless of the below settings."
           {disabled}
@@ -51,6 +52,7 @@
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
+            id="enable-clip"
             title="ENABLED"
             subtitle="If disabled, images will not be encoded for smart search."
             bind:checked={config.machineLearning.clip.enabled}
@@ -82,6 +84,7 @@
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
+            id="enable-facial-recognition"
             title="ENABLED"
             subtitle="If disabled, images will not be encoded for facial recognition and will not populate the People section in the Explore page."
             bind:checked={config.machineLearning.facialRecognition.enabled}

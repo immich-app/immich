@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { vectorExt } from 'src/database.config';
@@ -11,8 +11,8 @@ import {
   VectorUpdateResult,
   extName,
 } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { Version, VersionType } from 'src/utils/version';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
@@ -20,10 +20,14 @@ import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
-  private logger = new ImmichLogger(DatabaseRepository.name);
   readonly asyncLock = new AsyncLock();
 
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(DatabaseRepository.name);
+  }
 
   async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);

@@ -1,18 +1,17 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/utils/shortcut';
   import { focusOutside } from '$lib/utils/focus-outside';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -87,12 +86,11 @@
 </script>
 
 <svelte:window
-  use:shortcut={{
-    shortcut: { key: 'Escape' },
-    onShortcut: () => {
-      onFocusOut();
-    },
-  }}
+  use:shortcuts={[
+    { shortcut: { key: 'Escape' }, onShortcut: onFocusOut },
+    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input.focus() },
+    { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
+  ]}
 />
 
 <div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
@@ -104,56 +102,41 @@
     on:reset={() => (value = '')}
     on:submit|preventDefault={onSubmit}
   >
-    <label>
-      <div class="absolute inset-y-0 left-0 flex items-center pl-6">
-        <div class="dark:text-immich-dark-fg/75">
-          <button class="flex items-center">
-            <Icon ariaLabel="search" path={mdiMagnify} size="1.5em" />
-          </button>
-        </div>
-      </div>
-      <input
-        type="text"
-        name="q"
-        class="w-full {grayTheme
-          ? 'dark:bg-immich-dark-gray'
-          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
-          $savedSearchTerms.length > 0) ||
-        showFilter
-          ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
-          : 'rounded-3xl border border-transparent bg-gray-200'}"
-        placeholder="Search your photos"
-        required
-        pattern="^(?!m:$).*$"
-        bind:value
-        bind:this={input}
-        on:click={onFocusIn}
-        on:focus={onFocusIn}
-        disabled={showFilter}
-        use:shortcut={{
-          shortcut: { key: 'Escape' },
-          onShortcut: () => {
-            onFocusOut();
-          },
-        }}
-      />
+    <div class="absolute inset-y-0 left-0 flex items-center pl-2">
+      <CircleIconButton type="submit" title="Search" icon={mdiMagnify} size="20" />
+    </div>
+    <label for="main-search-bar" class="sr-only">Search your photos</label>
+    <input
+      type="text"
+      name="q"
+      id="main-search-bar"
+      class="w-full {grayTheme
+        ? 'dark:bg-immich-dark-gray'
+        : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {(showHistory &&
+        $savedSearchTerms.length > 0) ||
+      showFilter
+        ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
+        : 'rounded-3xl border border-transparent bg-gray-200'}"
+      placeholder="Search your photos"
+      required
+      pattern="^(?!m:$).*$"
+      bind:value
+      bind:this={input}
+      on:click={onFocusIn}
+      on:focus={onFocusIn}
+      disabled={showFilter}
+      use:shortcuts={[
+        { shortcut: { key: 'Escape' }, onShortcut: onFocusOut },
+        { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
+      ]}
+    />
 
-      <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-5'} flex items-center pl-6 transition-all">
-        <div class="dark:text-immich-dark-fg/75">
-          <IconButton on:click={onFilterClick} title="Show search options">
-            <Icon path={mdiTune} size="1.5em" />
-          </IconButton>
-        </div>
-      </div>
-    </label>
+    <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-2'} flex items-center pl-6 transition-all">
+      <CircleIconButton title="Show search options" icon={mdiTune} on:click={onFilterClick} size="20" />
+    </div>
     {#if showClearIcon}
-      <div class="absolute inset-y-0 right-0 flex items-center pr-4">
-        <button
-          type="reset"
-          class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
-        >
-          <Icon ariaLabel="clear" path={mdiClose} size="1.5em" />
-        </button>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+        <CircleIconButton type="reset" icon={mdiClose} title="Clear" size="20" />
       </div>
     {/if}
 

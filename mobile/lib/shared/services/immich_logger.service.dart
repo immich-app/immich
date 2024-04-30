@@ -88,18 +88,19 @@ class ImmichLogger {
   Future<void> shareLogs() async {
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
-    final filePath = '${tempDir.path}/Immich_log_$dateTime.csv';
+    final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
     final logFile = await File(filePath).create();
     final io = logFile.openWrite();
     try {
-      // Write header
-      io.write("created_at,level,context,message,stacktrace\n");
-
       // Write messages
       for (final m in messages) {
-        io.write(
-          '${m.createdAt},${m.level},"${m.context1 ?? ""}","${m.message}","${m.context2 ?? ""}"\n',
-        );
+        final created = m.createdAt;
+        final level = m.level.name.padRight(8);
+        final logger = (m.context1 ?? "<UNKNOWN_LOGGER>").padRight(20);
+        final message = m.message;
+        final error = m.details != null ? " ${m.details} |" : "";
+        final stack = m.context2 != null ? "\n${m.context2!}" : "";
+        io.write('$created | $level | $logger | $message |$error$stack\n');
       }
     } finally {
       await io.flush();

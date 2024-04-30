@@ -6,6 +6,7 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final searchServiceProvider = Provider(
@@ -19,16 +20,8 @@ class SearchService {
   final ApiService _apiService;
   final Isar _db;
 
+  final _log = Logger("SearchService");
   SearchService(this._apiService, this._db);
-
-  Future<List<String>?> getUserSuggestedSearchTerms() async {
-    try {
-      return await _apiService.assetApi.getAssetSearchTerms();
-    } catch (e) {
-      debugPrint("[ERROR] [getUserSuggestedSearchTerms] ${e.toString()}");
-      return [];
-    }
-  }
 
   Future<List<String>?> getSearchSuggestions(
     SearchSuggestionType type, {
@@ -112,29 +105,18 @@ class SearchService {
 
       return _db.assets
           .getAllByRemoteId(response.assets.items.map((e) => e.id));
-    } catch (error) {
-      debugPrint("Error [search] $error");
+    } catch (error, stackTrace) {
+      _log.severe("Failed to search for assets", error, stackTrace);
     }
     return null;
   }
 
-  Future<List<CuratedLocationsResponseDto>?> getCuratedLocation() async {
+  Future<List<SearchExploreResponseDto>?> getExploreData() async {
     try {
-      var locations = await _apiService.assetApi.getCuratedLocations();
-
-      return locations;
-    } catch (e) {
-      debugPrint("Error [getCuratedLocation] ${e.toString()}");
-      return [];
+      return await _apiService.searchApi.getExploreData();
+    } catch (error, stackTrace) {
+      _log.severe("Failed to getExploreData", error, stackTrace);
     }
-  }
-
-  Future<List<CuratedObjectsResponseDto>?> getCuratedObjects() async {
-    try {
-      return await _apiService.assetApi.getCuratedObjects();
-    } catch (e) {
-      debugPrint("Error [getCuratedObjects] ${e.toString()}");
-      return [];
-    }
+    return null;
   }
 }

@@ -536,4 +536,53 @@ class AlbumApi {
     }
     return null;
   }
+
+  /// Performs an HTTP 'PUT /album/{id}/user/{userId}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
+  Future<Response> updateAlbumUserWithHttpInfo(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{id}/user/{userId}'
+      .replaceAll('{id}', id)
+      .replaceAll('{userId}', userId);
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateAlbumUserDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
+  Future<void> updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
+    final response = await updateAlbumUserWithHttpInfo(id, userId, updateAlbumUserDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

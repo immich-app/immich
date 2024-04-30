@@ -152,7 +152,7 @@
 
 {#if addImportPath}
   <LibraryImportPathForm
-    title="Add Import Path"
+    title="Add import path"
     submitText="Add"
     bind:importPath={importPathToAdd}
     {importPaths}
@@ -166,7 +166,7 @@
 
 {#if editImportPath != undefined}
   <LibraryImportPathForm
-    title="Edit Import Path"
+    title="Edit import path"
     submitText="Save"
     isEditing={true}
     bind:importPath={editedImportPath}

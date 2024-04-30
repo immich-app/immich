@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CuratedLocationsResponseDto, CuratedObjectsResponseDto } from 'src/dtos/asset-v1-response.dto';
-import { AssetSearchDto, CheckExistingAssetsDto, SearchPropertiesDto } from 'src/dtos/asset-v1.dto';
+import { AssetSearchDto, CheckExistingAssetsDto } from 'src/dtos/asset-v1.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetCheck, AssetOwnerCheck, IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { OptionalBetween } from 'src/utils/database';
@@ -40,56 +39,6 @@ export class AssetRepositoryV1 implements IAssetRepositoryV1 {
       },
       withDeleted: true,
     });
-  }
-
-  getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
-    return this.assetRepository
-      .createQueryBuilder('asset')
-      .where('asset.ownerId = :userId', { userId: userId })
-      .andWhere('asset.isVisible = true')
-      .leftJoin('asset.exifInfo', 'ei')
-      .leftJoin('asset.smartInfo', 'si')
-      .select('si.tags', 'tags')
-      .addSelect('si.objects', 'objects')
-      .addSelect('asset.type', 'assetType')
-      .addSelect('ei.orientation', 'orientation')
-      .addSelect('ei."lensModel"', 'lensModel')
-      .addSelect('ei.make', 'make')
-      .addSelect('ei.model', 'model')
-      .addSelect('ei.city', 'city')
-      .addSelect('ei.state', 'state')
-      .addSelect('ei.country', 'country')
-      .distinctOn(['si.tags'])
-      .getRawMany();
-  }
-
-  getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]> {
-    return this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."previewPath" AS "resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN smart_info si ON a.id = si."assetId"
-        WHERE a."ownerId" = $1
-        AND a."isVisible" = true
-        AND si.objects IS NOT NULL
-      `,
-      [userId],
-    );
-  }
-
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]> {
-    return this.assetRepository.query(
-      `
-        SELECT DISTINCT ON (e.city) a.id, e.city, a."previewPath" AS "resizePath", a."deviceAssetId", a."deviceId"
-        FROM assets a
-        LEFT JOIN exif e ON a.id = e."assetId"
-        WHERE a."ownerId" = $1
-        AND a."isVisible" = true
-        AND e.city IS NOT NULL
-        AND a.type = 'IMAGE';
-      `,
-      [userId],
-    );
   }
 
   get(id: string): Promise<AssetEntity | null> {

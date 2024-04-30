@@ -11,14 +11,14 @@ Future<bool> loadTranslations() async {
   await EasyLocalizationController.initEasyLocation();
 
   final controller = EasyLocalizationController(
-    supportedLocales: locales,
+    supportedLocales: locales.values.toList(),
     useFallbackTranslations: true,
     saveLocale: true,
     assetLoader: const RootBundleAssetLoader(),
     path: translationsPath,
     useOnlyLangCode: false,
     onLoadError: (e) => debugPrint(e.toString()),
-    fallbackLocale: locales.first,
+    fallbackLocale: locales.values.first,
   );
 
   await controller.loadTranslations();

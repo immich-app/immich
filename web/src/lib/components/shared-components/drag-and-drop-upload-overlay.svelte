@@ -1,28 +1,55 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
-  export let dropHandler: (event: DragEvent) => void;
+  import { page } from '$app/stores';
+  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { fileUploadHandler } from '$lib/utils/file-uploader';
+  import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+
+  $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
+  $: isShare = isSharedLinkRoute($page.route?.id);
 
   let dragStartTarget: EventTarget | null = null;
 
-  const handleDragEnter = (e: DragEvent) => {
+  const onDragEnter = (e: DragEvent) => {
     if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
       dragStartTarget = e.target;
     }
   };
-</script>
 
-<svelte:body
-  on:dragenter|stopPropagation|preventDefault={handleDragEnter}
-  on:dragleave|stopPropagation|preventDefault={(e) => {
+  const onDragLeave = (e: DragEvent) => {
     if (dragStartTarget === e.target) {
       dragStartTarget = null;
     }
-  }}
-  on:drop|stopPropagation|preventDefault={(e) => {
+  };
+
+  const onDrop = async (e: DragEvent) => {
     dragStartTarget = null;
-    dropHandler(e);
-  }}
+    await handleFiles(e.dataTransfer?.files);
+  };
+
+  const onPaste = ({ clipboardData }: ClipboardEvent) => handleFiles(clipboardData?.files);
+
+  const handleFiles = async (files?: FileList) => {
+    if (!files) {
+      return;
+    }
+
+    const filesArray: File[] = Array.from<File>(files);
+    if (isShare) {
+      dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
+    } else {
+      await fileUploadHandler(filesArray, albumId);
+    }
+  };
+</script>
+
+<svelte:window on:paste={onPaste} />
+
+<svelte:body
+  on:dragenter|stopPropagation|preventDefault={onDragEnter}
+  on:dragleave|stopPropagation|preventDefault={onDragLeave}
+  on:drop|stopPropagation|preventDefault={onDrop}
 />
 
 {#if dragStartTarget}

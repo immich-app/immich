@@ -1,4 +1,4 @@
-import { LoginResponseDto, getServerConfig } from '@immich/sdk';
+import { LoginResponseDto } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
@@ -160,21 +160,6 @@ describe('/server-info', () => {
       expect(body).toEqual({
         customCss: '',
       });
-    });
-  });
-
-  describe('POST /server-info/admin-onboarding', () => {
-    it('should set admin onboarding', async () => {
-      const config = await getServerConfig({});
-      expect(config.isOnboarded).toBe(false);
-
-      const { status } = await request(app)
-        .post('/server-info/admin-onboarding')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
-
-      const newConfig = await getServerConfig({});
-      expect(newConfig.isOnboarded).toBe(true);
     });
   });
 });

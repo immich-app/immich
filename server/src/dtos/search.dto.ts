@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
@@ -163,13 +164,13 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
-  @ApiProperty({ deprecated: true })
+  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
   resizePath?: string;
 
   @IsString()
   @IsNotEmpty()
   @Optional()
-  @ApiProperty({ deprecated: true })
+  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
   webpPath?: string;
 
   @IsString()
@@ -197,53 +198,6 @@ export class SmartSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   query!: string;
-}
-
-// TODO: remove after implementing new search filters
-/** @deprecated */
-export class SearchDto {
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  q?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  query?: string;
-
-  @ValidateBoolean({ optional: true })
-  smart?: boolean;
-
-  /** @deprecated */
-  @ValidateBoolean({ optional: true })
-  clip?: boolean;
-
-  @IsEnum(AssetType)
-  @Optional()
-  type?: AssetType;
-
-  @ValidateBoolean({ optional: true })
-  recent?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  motion?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withArchived?: boolean;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @Optional()
-  page?: number;
-
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  @Type(() => Number)
-  @Optional()
-  size?: number;
 }
 
 export class SearchPlacesDto {

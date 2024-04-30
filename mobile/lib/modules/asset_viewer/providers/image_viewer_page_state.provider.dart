@@ -29,6 +29,13 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   void downloadAsset(Asset asset, BuildContext context) async {
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
 
+    ImmichToast.show(
+      context: context,
+      msg: 'image_viewer_page_state_provider_download_started'.tr(),
+      toastType: ToastType.info,
+      gravity: ToastGravity.BOTTOM,
+    );
+
     bool isSuccess = await _imageViewerService.downloadAssetToDevice(asset);
 
     if (isSuccess) {

@@ -16,6 +16,12 @@ void main() {
   // final instance = AddUsersDto();
 
   group('test AddUsersDto', () {
+    // List<AlbumUserAddDto> albumUsers (default value: const [])
+    test('to test the property `albumUsers`', () async {
+      // TODO
+    });
+
+    // This property was deprecated in v1.102.0
     // List<String> sharedUserIds (default value: const [])
     test('to test the property `sharedUserIds`', () async {
       // TODO

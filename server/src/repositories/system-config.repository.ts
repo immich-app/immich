@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { readFile } from 'node:fs/promises';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
@@ -7,6 +8,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { In, Repository } from 'typeorm';
 
 @Instrumentation()
+@Injectable()
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
     @InjectRepository(SystemConfigEntity)

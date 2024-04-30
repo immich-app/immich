@@ -30,6 +30,20 @@ class TrashService {
     }
   }
 
+  Future<bool> restoreAsset(Asset asset) async {
+    try {
+      if (asset.isRemote) {
+        List<String> remoteId = [asset.remoteId!];
+
+        await _apiService.trashApi.restoreAssets(BulkIdsDto(ids: remoteId));
+      }
+      return true;
+    } catch (error, stack) {
+      _log.severe("Cannot restore assets", error, stack);
+      return false;
+    }
+  }
+
   Future<void> emptyTrash() async {
     try {
       await _apiService.trashApi.emptyTrash();

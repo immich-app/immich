@@ -1,6 +1,4 @@
-import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { ThumbnailFormat } from '@immich/sdk';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
 import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
@@ -33,7 +31,7 @@ describe('AlbumCard component', () => {
       shared: true,
     },
   ])('shows album data without thumbnail with count $count - shared: $shared', async ({ album, count, shared }) => {
-    sut = render(AlbumCard, { album });
+    sut = render(AlbumCard, { album, showItemCount: true });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
@@ -52,36 +50,22 @@ describe('AlbumCard component', () => {
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));
   });
 
-  it('shows album data and loads the thumbnail image when available', async () => {
-    const thumbnailFile = new File([new Blob()], 'fileThumbnail');
-    const thumbnailUrl = 'blob:thumbnailUrlOne';
-    sdkMock.getAssetThumbnail.mockResolvedValue(thumbnailFile);
-    createObjectURLMock.mockReturnValueOnce(thumbnailUrl);
-
+  it('shows album data', () => {
     const album = albumFactory.build({
-      albumThumbnailAssetId: 'thumbnailIdOne',
       shared: false,
       albumName: 'some album name',
     });
-    sut = render(AlbumCard, { album });
+    sut = render(AlbumCard, { album, showItemCount: true });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
-    expect(albumImgElement).toHaveAttribute('alt', album.albumName);
-
-    await waitFor(() => expect(albumImgElement).toHaveAttribute('src', thumbnailUrl));
 
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
-    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledTimes(1);
-    expect(sdkMock.getAssetThumbnail).toHaveBeenCalledWith({
-      id: 'thumbnailIdOne',
-      format: ThumbnailFormat.Jpeg,
-    });
-    expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailFile);
+    expect(albumImgElement).toHaveAttribute('src');
 
     expect(albumNameElement).toHaveTextContent('some album name');
-    expect(albumDetailsElement).toHaveTextContent('0 items');
+    expect(albumDetailsElement).toHaveTextContent('0 item');
   });
 
   it('hides context menu when "onShowContextMenu" is undefined', () => {

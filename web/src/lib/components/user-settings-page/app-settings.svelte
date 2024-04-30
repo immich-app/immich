@@ -66,6 +66,7 @@
     <div class="ml-4 mt-4 flex flex-col gap-4">
       <div class="ml-4">
         <SettingSwitch
+          id="theme-selection"
           title="Theme selection"
           subtitle="Automatically set the theme to light or dark based on your browser's system preference"
           bind:checked={$colorTheme.system}
@@ -75,6 +76,7 @@
 
       <div class="ml-4">
         <SettingSwitch
+          id="default-locale"
           title="Default Locale"
           subtitle="Format dates and numbers based on your browser locale"
           checked={$locale == undefined}
@@ -99,6 +101,7 @@
 
       <div class="ml-4">
         <SettingSwitch
+          id="always-load-original-file"
           title="Display original photos"
           subtitle="Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds."
           bind:checked={$alwaysLoadOriginalFile}
@@ -107,6 +110,7 @@
       </div>
       <div class="ml-4">
         <SettingSwitch
+          id="play-video-thumbnail-on-hover"
           title="Play video thumbnail on hover"
           subtitle="Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon."
           bind:checked={$playVideoThumbnailOnHover}
@@ -116,6 +120,7 @@
 
       <div class="ml-4">
         <SettingSwitch
+          id="show-delete-warning"
           title="Permanent deletion warning"
           subtitle="Show a warning when permanently deleting assets"
           bind:checked={$showDeleteModal}
@@ -124,6 +129,7 @@
 
       <div class="ml-4">
         <SettingSwitch
+          id="people-sidebar-link"
           title="People"
           subtitle="Display a link to People in the sidebar"
           bind:checked={$sidebarSettings.people}
@@ -131,6 +137,7 @@
       </div>
       <div class="ml-4">
         <SettingSwitch
+          id="sharing-sidebar-link"
           title="Sharing"
           subtitle="Display a link to Sharing in the sidebar"
           bind:checked={$sidebarSettings.sharing}

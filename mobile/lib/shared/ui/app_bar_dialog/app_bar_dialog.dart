@@ -35,31 +35,28 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },
-      [user],
+      [],
     );
 
     buildTopRow() {
-      return Row(
+      return Stack(
         children: [
-          InkWell(
-            onTap: () => context.pop(),
-            child: const Icon(
-              Icons.close,
-              size: 20,
+          Align(
+            alignment: Alignment.topLeft,
+            child: InkWell(
+              onTap: () => context.pop(),
+              child: const Icon(
+                Icons.close,
+                size: 20,
+              ),
             ),
           ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                'IMMICH',
-                style: TextStyle(
-                  fontFamily: 'SnowburstOne',
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
-                  fontSize: 16,
-                ),
-              ),
+          Center(
+            child: Image.asset(
+              context.isDarkTheme
+                  ? 'assets/immich-text-dark.png'
+                  : 'assets/immich-text-light.png',
+              height: 16,
             ),
           ),
         ],
@@ -118,12 +115,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 content: "app_bar_signout_dialog_content",
                 ok: "app_bar_signout_dialog_ok",
                 onOk: () async {
-                  await ref.watch(authenticationProvider.notifier).logout();
+                  await ref.read(authenticationProvider.notifier).logout();
 
                   ref.read(manualUploadProvider.notifier).cancelBackup();
-                  ref.watch(backupProvider.notifier).cancelBackup();
-                  ref.watch(assetProvider.notifier).clearAllAsset();
-                  ref.watch(websocketProvider.notifier).disconnect();
+                  ref.read(backupProvider.notifier).cancelBackup();
+                  ref.read(assetProvider.notifier).clearAllAsset();
+                  ref.read(websocketProvider.notifier).disconnect();
                   context.replaceRoute(const LoginRoute());
                 },
               );

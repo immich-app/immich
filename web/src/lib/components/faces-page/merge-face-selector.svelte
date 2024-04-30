@@ -161,6 +161,7 @@
 
     {#if isShowConfirmation}
       <ConfirmDialogue
+        id="merge-people-modal"
         title="Merge people"
         confirmText="Merge"
         onConfirm={handleMerge}

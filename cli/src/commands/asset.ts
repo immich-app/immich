@@ -26,7 +26,7 @@ type Asset = { id: string; filepath: string };
 
 interface UploadOptionsDto {
   recursive?: boolean;
-  exclusionPatterns?: string[];
+  ignore?: string;
   dryRun?: boolean;
   skipHash?: boolean;
   delete?: boolean;
@@ -56,14 +56,13 @@ class UploadFile extends File {
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
 
-  const files = await scan(paths, options);
-  if (files.length === 0) {
+  const scanFiles = await scan(paths, options);
+  if (scanFiles.length === 0) {
     console.log('No files found, exiting');
     return;
   }
 
-  const { newFiles, duplicates } = await checkForDuplicates(files, options);
-
+  const { newFiles, duplicates } = await checkForDuplicates(scanFiles, options);
   const newAssets = await uploadFiles(newFiles, options);
   await updateAlbums([...newAssets, ...duplicates], options);
   await deleteFiles(newFiles, options);
@@ -76,7 +75,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   const files = await crawl({
     pathsToCrawl,
     recursive: options.recursive,
-    exclusionPatterns: options.exclusionPatterns,
+    exclusionPattern: options.ignore,
     includeHidden: options.includeHidden,
     extensions: [...image, ...video],
   });
@@ -84,7 +83,12 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-const checkForDuplicates = async (files: string[], { concurrency }: UploadOptionsDto) => {
+const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
+  if (skipHash) {
+    console.log('Skipping hash check, assuming all files are new');
+    return { newFiles: files, duplicates: [] };
+  }
+
   const progressBar = new SingleBar(
     { format: 'Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
@@ -137,7 +141,7 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
 
   if (dryRun) {
     console.log(`Would have uploaded ${files.length} asset${s(files.length)} (${byteSize(totalSize)})`);
-    return [];
+    return files.map((filepath) => ({ id: '', filepath }));
   }
 
   const uploadProgress = new SingleBar(
@@ -147,17 +151,32 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
   uploadProgress.start(totalSize, 0);
   uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
 
-  let totalSizeUploaded = 0;
+  let duplicateCount = 0;
+  let duplicateSize = 0;
+  let successCount = 0;
+  let successSize = 0;
+
   const newAssets: Asset[] = [];
+
   try {
     for (const items of chunk(files, concurrency)) {
       await Promise.all(
         items.map(async (filepath) => {
           const stats = statsMap.get(filepath) as Stats;
           const response = await uploadFile(filepath, stats);
-          totalSizeUploaded += stats.size ?? 0;
-          uploadProgress.update(totalSizeUploaded, { value_formatted: byteSize(totalSizeUploaded) });
+
           newAssets.push({ id: response.id, filepath });
+
+          if (response.duplicate) {
+            duplicateCount++;
+            duplicateSize += stats.size ?? 0;
+          } else {
+            successCount++;
+            successSize += stats.size ?? 0;
+          }
+
+          uploadProgress.update(successSize, { value_formatted: byteSize(successSize + duplicateSize) });
+
           return response;
         }),
       );
@@ -166,7 +185,10 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
     uploadProgress.stop();
   }
 
-  console.log(`Successfully uploaded ${newAssets.length} asset${s(newAssets.length)} (${byteSize(totalSizeUploaded)})`);
+  console.log(`Successfully uploaded ${successCount} new asset${s(successCount)} (${byteSize(successSize)})`);
+  if (duplicateCount > 0) {
+    console.log(`Skipped ${duplicateCount} duplicate asset${s(duplicateCount)} (${byteSize(duplicateSize)})`);
+  }
   return newAssets;
 };
 
@@ -222,7 +244,7 @@ const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<
   }
 
   if (options.dryRun) {
-    console.log(`Would now have deleted assets, but skipped due to dry run`);
+    console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
     return;
   }
 
@@ -263,7 +285,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   if (dryRun) {
     // TODO print asset counts for new albums
     console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}`);
-    console.log(`Would have updated ${assets.length} asset${s(assets.length)}`);
+    console.log(`Would have updated albums of ${assets.length} asset${s(assets.length)}`);
     return;
   }
 

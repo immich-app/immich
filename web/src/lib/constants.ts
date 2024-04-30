@@ -5,7 +5,7 @@ export enum AssetAction {
   UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
   DELETE = 'delete',
-  // RESTORE = 'restore',
+  RESTORE = 'restore',
   ADD = 'add',
 }
 
@@ -90,6 +90,8 @@ export const maximumLengthSearchPeople: number = 20;
 export const timeToLoadTheMap: number = 100;
 
 export const timeBeforeShowLoadingSpinner: number = 100;
+
+export const timeDebounceOnSearch: number = 300;
 
 // should be the same values as the ones in the app.html
 export enum Theme {

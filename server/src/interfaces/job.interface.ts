@@ -80,6 +80,7 @@ export enum JobName {
   // cleanup
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
+  CLEAN_OLD_SESSION_TOKENS = 'clean-old-session-tokens',
 
   // smart search
   QUEUE_SMART_SEARCH = 'queue-smart-search',
@@ -218,8 +219,9 @@ export type JobItem =
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
-  // Audit Log Cleanup
+  // Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
+  | { name: JobName.CLEAN_OLD_SESSION_TOKENS; data?: IBaseJob }
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }

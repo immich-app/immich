@@ -3,6 +3,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Version } from 'src/utils/version';
 
+export const NEXT_RELEASE = 'NEXT_RELEASE';
+export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
+export const DEPRECATED_IN_PREFIX = 'This property was deprecated in ';
+export const ADDED_IN_PREFIX = 'This property was added in ';
+
 export const SALT_ROUNDS = 10;
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
@@ -26,12 +31,7 @@ export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
 
 export const MOBILE_REDIRECT = 'app.immich:/';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
-export const IMMICH_ACCESS_COOKIE = 'immich_access_token';
-export const IMMICH_IS_AUTHENTICATED = 'immich_is_authenticated';
-export const IMMICH_AUTH_TYPE_COOKIE = 'immich_auth_type';
-export const IMMICH_API_KEY_NAME = 'api_key';
-export const IMMICH_API_KEY_HEADER = 'x-api-key';
-export const IMMICH_SHARED_LINK_ACCESS_COOKIE = 'immich_shared_link_token';
+
 export enum AuthType {
   PASSWORD = 'password',
   OAUTH = 'oauth',

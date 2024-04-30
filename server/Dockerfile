@@ -1,11 +1,11 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240326@sha256:d945aba864051b30888617f36446f86b72c4bc7ad6476b9dd2aaa0c4c4e3c945 as dev
+FROM ghcr.io/immich-app/base-server-dev:20240423@sha256:9a22bc96acf02421a46706c6e0b5871b812d896f97bced295f8b7089de3de160 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci && \
-    # sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
+    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
@@ -22,9 +22,10 @@ FROM dev AS prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
+COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:iron-alpine3.18@sha256:fa5d3cf51725bd42d32e67917623038539dbe720dab082f590785c001eb4dfef as web
+FROM node:iron-alpine3.18@sha256:142644a60c2fd7b954d7de9dd3f2aba0ce9c99b14ce354ee2e65b47ee36f6baf as web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -40,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240326@sha256:28ad98fed8d746b5f92de49ff776cfdff7399df163ebeda2f37a01f473965841
+FROM ghcr.io/immich-app/base-server-prod:20240423@sha256:d6e65040afa2b45622af32ce5f4abbe59b15ca1fc79a078b3ec579d7742a2ebe
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

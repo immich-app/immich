@@ -1,9 +1,9 @@
 import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
-import { glob } from 'glob';
+import { glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
 export interface BaseOptions {
@@ -104,11 +104,11 @@ export interface CrawlOptions {
   pathsToCrawl: string[];
   recursive?: boolean;
   includeHidden?: boolean;
-  exclusionPatterns?: string[];
+  exclusionPattern?: string;
   extensions: string[];
 }
 export const crawl = async (options: CrawlOptions): Promise<string[]> => {
-  const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
+  const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPattern, includeHidden } = options;
   const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
 
   if (pathsToCrawl.length === 0) {
@@ -120,11 +120,12 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
   for await (const currentPath of pathsToCrawl) {
     try {
-      const stats = await stat(currentPath);
+      const absolutePath = resolve(currentPath);
+      const stats = await stat(absolutePath);
       if (stats.isFile() || stats.isSymbolicLink()) {
-        crawledFiles.push(currentPath);
+        crawledFiles.push(absolutePath);
       } else {
-        patterns.push(currentPath);
+        patterns.push(absolutePath);
       }
     } catch (error: any) {
       if (error.code === 'ENOENT') {
@@ -152,13 +153,13 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
   const globbedFiles = await glob(searchPattern, {
     absolute: true,
-    nocase: true,
-    nodir: true,
+    caseSensitiveMatch: false,
+    onlyFiles: true,
     dot: includeHidden,
-    ignore: exclusionPatterns,
+    ignore: [`**/${exclusionPattern}`],
   });
-
-  return [...crawledFiles, ...globbedFiles].sort();
+  globbedFiles.push(...crawledFiles);
+  return globbedFiles.sort();
 };
 
 export const sha1 = (filepath: string) => {

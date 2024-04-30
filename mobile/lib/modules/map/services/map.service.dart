@@ -13,6 +13,7 @@ class MapSerivce with ErrorLoggerMixin {
   Future<Iterable<MapMarker>> getMapMarkers({
     bool? isFavorite,
     bool? withArchived,
+    bool? withPartners,
     DateTime? fileCreatedAfter,
     DateTime? fileCreatedBefore,
   }) async {
@@ -21,6 +22,7 @@ class MapSerivce with ErrorLoggerMixin {
         final markers = await _apiService.assetApi.getMapMarkers(
           isFavorite: isFavorite,
           isArchived: withArchived,
+          withPartners: withPartners,
           fileCreatedAfter: fileCreatedAfter,
           fileCreatedBefore: fileCreatedBefore,
         );
