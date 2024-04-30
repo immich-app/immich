@@ -1,7 +1,10 @@
-import {INotificationRepository} from "src/interfaces/notification.interface";
+import { INotificationRepository } from 'src/interfaces/notification.interface';
+import { Mocked } from 'vitest';
 
-export const newNotificationRepositoryMock = (): jest.Mocked<INotificationRepository> => {
+export const newNotificationRepositoryMock = (): Mocked<INotificationRepository> => {
   return {
-    notify: jest.fn(),
+    renderEmail: vitest.fn(),
+    sendEmail: vitest.fn(),
+    verifySmtp: vitest.fn(),
   };
 };
