@@ -1,12 +1,10 @@
-import { Histogram, MetricOptions, ValueType, metrics as metricsApi } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-import { Resource } from '@opentelemetry/resources';
-import { NodeSDK, metrics } from '@opentelemetry/sdk-node';
+import { NodeSDK, contextBase, metrics, resources } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { snakeCase, startCase } from 'lodash';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
@@ -38,7 +36,7 @@ const aggregation = new metrics.ExplicitBucketHistogramAggregation(
 const metricsPort = Number.parseInt(process.env.IMMICH_METRICS_PORT ?? '8081');
 
 export const otelSDK = new NodeSDK({
-  resource: new Resource({
+  resource: new resources.Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: `immich`,
     [SemanticResourceAttributes.SERVICE_VERSION]: serverVersion.toString(),
   }),
@@ -63,7 +61,11 @@ export const otelConfig: OpenTelemetryModuleOptions = {
   },
 };
 
-function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueType.DOUBLE }: MetricOptions = {}) {
+function ExecutionTimeHistogram({
+  description,
+  unit = 'ms',
+  valueType = contextBase.ValueType.DOUBLE,
+}: contextBase.MetricOptions = {}) {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     if (!repoMetrics || process.env.OTEL_SDK_DISABLED) {
       return;
@@ -78,7 +80,7 @@ function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueTyp
       description ??
       `The elapsed time in ${unit} for the ${startCase(className)} to ${startCase(propertyName).toLowerCase()}`;
 
-    let histogram: Histogram | undefined;
+    let histogram: contextBase.Histogram | undefined;
 
     descriptor.value = function (...args: any[]) {
       const start = performance.now();
@@ -88,7 +90,7 @@ function ExecutionTimeHistogram({ description, unit = 'ms', valueType = ValueTyp
         .then(() => {
           const end = performance.now();
           if (!histogram) {
-            histogram = metricsApi
+            histogram = contextBase.metrics
               .getMeter('immich')
               .createHistogram(metricName, { description: metricDescription, unit, valueType });
           }
