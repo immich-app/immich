@@ -407,6 +407,7 @@ export type AllJobStatusResponseDto = {
     library: JobStatusDto;
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
+    notifications: JobStatusDto;
     search: JobStatusDto;
     sidecar: JobStatusDto;
     smartSearch: JobStatusDto;
@@ -895,6 +896,7 @@ export type SystemConfigJobDto = {
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
+    notifications: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
@@ -943,6 +945,21 @@ export type SystemConfigMapDto = {
 };
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
+};
+export type SystemConfigSmtpTransportDto = {
+    host: string;
+    password: string;
+    port: number;
+    username: string;
+};
+export type SystemConfigSmtpDto = {
+    enabled: boolean;
+    "from": string;
+    replyTo: string;
+    transport: SystemConfigSmtpTransportDto;
+};
+export type SystemConfigNotificationsDto = {
+    smtp: SystemConfigSmtpDto;
 };
 export type SystemConfigOAuthDto = {
     autoLaunch: boolean;
@@ -994,6 +1011,7 @@ export type SystemConfigDto = {
     machineLearning: SystemConfigMachineLearningDto;
     map: SystemConfigMapDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
@@ -2852,7 +2870,8 @@ export enum JobName {
     Migration = "migration",
     Search = "search",
     Sidecar = "sidecar",
-    Library = "library"
+    Library = "library",
+    Notifications = "notifications"
 }
 export enum JobCommand {
     Start = "start",

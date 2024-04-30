@@ -3,14 +3,13 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import { IEmailJob, IJobRepository, INotifySignupJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class NotificationService {
-  private logger = new ImmichLogger(NotificationService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -18,8 +17,10 @@ export class NotificationService {
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(NotificationService.name);
+    this.configCore = SystemConfigCore.create(configRepository, logger);
   }
 
   init() {

@@ -1,8 +1,9 @@
-import { NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React from 'react';
 import { WelcomeEmail } from 'src/emails/welcome.email';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   EmailRenderRequest,
   EmailTemplate,
@@ -12,11 +13,13 @@ import {
   SmtpOptions,
 } from 'src/interfaces/notification.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Instrumentation()
+@Injectable()
 export class NotificationRepository implements INotificationRepository {
-  private logger = new ImmichLogger(NotificationRepository.name);
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+    this.logger.setContext(NotificationRepository.name);
+  }
 
   verifySmtp(options: SmtpOptions): Promise<true> {
     return this.createTransport(options).verify();

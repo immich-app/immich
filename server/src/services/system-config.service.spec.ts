@@ -161,7 +161,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       replyTo: '',
       transport: {
         host: '',
-        port: 25,
+        port: 587,
         username: '',
         password: '',
       },
