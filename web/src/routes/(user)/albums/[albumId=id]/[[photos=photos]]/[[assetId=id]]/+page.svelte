@@ -81,6 +81,7 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { onMount } from 'svelte';
 
   export let data: PageData;
 
@@ -138,7 +139,10 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: isEditor = album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor;
+  $: isEditor =
+    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
+    album.ownerId === $user.id;
+
   $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
