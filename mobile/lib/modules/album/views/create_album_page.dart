@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/domain/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';

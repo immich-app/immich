@@ -3,20 +3,20 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-class AddAssetsResponse {
+class AlbumAddAssetsResponse {
   List<String> alreadyInAlbum;
   int successfullyAdded;
 
-  AddAssetsResponse({
+  AlbumAddAssetsResponse({
     required this.alreadyInAlbum,
     required this.successfullyAdded,
   });
 
-  AddAssetsResponse copyWith({
+  AlbumAddAssetsResponse copyWith({
     List<String>? alreadyInAlbum,
     int? successfullyAdded,
   }) {
-    return AddAssetsResponse(
+    return AlbumAddAssetsResponse(
       alreadyInAlbum: alreadyInAlbum ?? this.alreadyInAlbum,
       successfullyAdded: successfullyAdded ?? this.successfullyAdded,
     );
@@ -36,7 +36,7 @@ class AddAssetsResponse {
       'AddAssetsResponse(alreadyInAlbum: $alreadyInAlbum, successfullyAdded: $successfullyAdded)';
 
   @override
-  bool operator ==(covariant AddAssetsResponse other) {
+  bool operator ==(covariant AlbumAddAssetsResponse other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 

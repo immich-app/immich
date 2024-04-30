@@ -9,7 +9,7 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/map/models/map_event.model.dart';
+import 'package:immich_mobile/domain/models/map/map_event.model.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';

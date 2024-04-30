@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/album_viewer_page_state.model.dart';
+import 'package:immich_mobile/domain/models/albums/album_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/domain/entities/album.entity.dart';

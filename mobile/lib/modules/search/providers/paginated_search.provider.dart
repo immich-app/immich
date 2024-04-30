@@ -1,6 +1,6 @@
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/domain/models/search/search_filter.model.dart';
 import 'package:immich_mobile/modules/search/services/search.service.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

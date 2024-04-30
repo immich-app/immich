@@ -2,18 +2,18 @@ import 'dart:convert';
 
 enum DownloadAssetStatus { idle, loading, success, error }
 
-class ImageViewerPageState {
+class AssetViewerPageState {
   // enum
   final DownloadAssetStatus downloadAssetStatus;
 
-  ImageViewerPageState({
+  AssetViewerPageState({
     required this.downloadAssetStatus,
   });
 
-  ImageViewerPageState copyWith({
+  AssetViewerPageState copyWith({
     DownloadAssetStatus? downloadAssetStatus,
   }) {
-    return ImageViewerPageState(
+    return AssetViewerPageState(
       downloadAssetStatus: downloadAssetStatus ?? this.downloadAssetStatus,
     );
   }
@@ -26,8 +26,8 @@ class ImageViewerPageState {
     return result;
   }
 
-  factory ImageViewerPageState.fromMap(Map<String, dynamic> map) {
-    return ImageViewerPageState(
+  factory AssetViewerPageState.fromMap(Map<String, dynamic> map) {
+    return AssetViewerPageState(
       downloadAssetStatus:
           DownloadAssetStatus.values[map['downloadAssetStatus'] ?? 0],
     );
@@ -35,8 +35,8 @@ class ImageViewerPageState {
 
   String toJson() => json.encode(toMap());
 
-  factory ImageViewerPageState.fromJson(String source) =>
-      ImageViewerPageState.fromMap(json.decode(source));
+  factory AssetViewerPageState.fromJson(String source) =>
+      AssetViewerPageState.fromMap(json.decode(source));
 
   @override
   String toString() =>
@@ -46,7 +46,7 @@ class ImageViewerPageState {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ImageViewerPageState &&
+    return other is AssetViewerPageState &&
         other.downloadAssetStatus == downloadAssetStatus;
   }
 

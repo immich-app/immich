@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/domain/entities/store.entity.dart';
-import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
+import 'package:immich_mobile/domain/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';

@@ -6,7 +6,7 @@ import 'package:immich_mobile/modules/home/providers/upload_profile_image.provid
 import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
+import 'package:immich_mobile/domain/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 

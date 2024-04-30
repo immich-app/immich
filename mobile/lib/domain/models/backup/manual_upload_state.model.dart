@@ -1,7 +1,7 @@
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 
-import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/domain/models/backup/current_upload_asset.model.dart';
 
 class ManualUploadState {
   final CancellationToken cancelToken;

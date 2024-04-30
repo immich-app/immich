@@ -1,25 +1,25 @@
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
 
-class SelectionAssetState {
+class AssetSelectionState {
   final bool hasRemote;
   final bool hasLocal;
   final bool hasMerged;
   final int selectedCount;
 
-  const SelectionAssetState({
+  const AssetSelectionState({
     this.hasRemote = false,
     this.hasLocal = false,
     this.hasMerged = false,
     this.selectedCount = 0,
   });
 
-  SelectionAssetState copyWith({
+  AssetSelectionState copyWith({
     bool? hasRemote,
     bool? hasLocal,
     bool? hasMerged,
     int? selectedCount,
   }) {
-    return SelectionAssetState(
+    return AssetSelectionState(
       hasRemote: hasRemote ?? this.hasRemote,
       hasLocal: hasLocal ?? this.hasLocal,
       hasMerged: hasMerged ?? this.hasMerged,
@@ -27,7 +27,7 @@ class SelectionAssetState {
     );
   }
 
-  SelectionAssetState.fromSelection(Set<Asset> selection)
+  AssetSelectionState.fromSelection(Set<Asset> selection)
       : hasLocal = selection.any((e) => e.storage == AssetState.local),
         hasMerged = selection.any((e) => e.storage == AssetState.merged),
         hasRemote = selection.any((e) => e.storage == AssetState.remote),
@@ -38,7 +38,7 @@ class SelectionAssetState {
       'SelectionAssetState(hasRemote: $hasRemote, hasMerged: $hasMerged, hasMerged: $hasMerged, selectedCount: $selectedCount)';
 
   @override
-  bool operator ==(covariant SelectionAssetState other) {
+  bool operator ==(covariant AssetSelectionState other) {
     if (identical(this, other)) return true;
 
     return other.hasRemote == hasRemote &&

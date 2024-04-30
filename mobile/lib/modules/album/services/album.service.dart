@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/add_asset_response.model.dart';
+import 'package:immich_mobile/domain/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/domain/entities/backup_album.entity.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/domain/entities/album.entity.dart';
@@ -219,7 +219,7 @@ class AlbumService {
     );
   }
 
-  Future<AddAssetsResponse?> addAdditionalAssetToAlbum(
+  Future<AlbumAddAssetsResponse?> addAdditionalAssetToAlbum(
     Iterable<Asset> assets,
     Album album,
   ) async {
@@ -245,7 +245,7 @@ class AlbumService {
 
         await _updateAssets(album.id, add: successAssets);
 
-        return AddAssetsResponse(
+        return AlbumAddAssetsResponse(
           alreadyInAlbum: duplicatedAssets,
           successfullyAdded: successAssets.length,
         );

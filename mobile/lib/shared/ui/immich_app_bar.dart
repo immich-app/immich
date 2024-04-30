@@ -10,8 +10,8 @@ import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/domain/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/domain/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 

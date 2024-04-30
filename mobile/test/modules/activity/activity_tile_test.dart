@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/domain/models/activities/activity.model.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/domain/entities/store.entity.dart';
