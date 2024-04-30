@@ -7,7 +7,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsObject,
-  IsPort,
   IsPositive,
   IsString,
   IsUrl,
