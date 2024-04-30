@@ -12,7 +12,7 @@ export interface CropOptions {
 
 export interface ThumbnailOptions {
   size: number;
-  format: 'webp' | 'jpeg';
+  format: ImageFormat;
   colorspace: string;
   quality: number;
   crop?: CropOptions;

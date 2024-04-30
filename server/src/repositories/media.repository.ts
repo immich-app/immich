@@ -8,10 +8,8 @@ import sharp from 'sharp';
 import { Colorspace } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
-  CropOptions,
   IMediaRepository,
   ImageDimensions,
-  ResizeOptions,
   ThumbnailOptions,
   TranscodeOptions,
   VideoInfo,
