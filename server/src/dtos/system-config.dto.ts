@@ -7,6 +7,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsObject,
+  IsPort,
   IsPositive,
   IsString,
   IsUrl,
@@ -370,14 +371,13 @@ class SystemConfigSmtpTransportDto {
   @IsBoolean()
   ignoreCert!: boolean;
 
-  @ValidateIf(isEmailNotificationEnabled)
   @IsNotEmpty()
   @IsString()
   host!: string;
 
-  @ValidateIf(isEmailNotificationEnabled)
-  @IsNotEmpty()
   @IsNumber()
+  @Min(0)
+  @Max(65_535)
   port!: number;
 
   @IsString()
@@ -394,11 +394,13 @@ class SystemConfigSmtpDto {
   @ValidateIf(isEmailNotificationEnabled)
   @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   from!: string;
 
   @IsString()
   replyTo!: string;
 
+  @ValidateIf(isEmailNotificationEnabled)
   @Type(() => SystemConfigSmtpTransportDto)
   @ValidateNested()
   @IsObject()

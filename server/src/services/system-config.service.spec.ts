@@ -164,6 +164,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
         port: 587,
         username: '',
         password: '',
+        ignoreCert: false,
       },
     },
   },

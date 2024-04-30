@@ -31,7 +31,9 @@ export class NotificationService {
   @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
   async onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     try {
-      await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
+      if (newConfig.notifications.smtp.enabled) {
+        await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
+      }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
       throw new Error(`Invalid SMTP configuration: ${error}`);

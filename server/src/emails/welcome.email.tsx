@@ -1,4 +1,17 @@
-import { Body, Button, Container, Head, Hr, Html, Img, Link, Preview, Section, Text } from '@react-email/components';
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
 import { WelcomeEmailProps } from 'src/interfaces/notification.interface';
@@ -35,13 +48,21 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
             )}
           </Text>
 
-          <Button style={button} href={`${baseUrl}/auth/login`}>
-            Login
-          </Button>
-
-          <Text style={text}>
-            Or visit (<Link href={baseUrl}>{baseUrl}</Link>) to login.
-          </Text>
+          <Row>
+            <Text style={{ ...text, marginBottom: '2em' }}>
+              To login, open the link in a browser, or click the button below.
+            </Text>
+          </Row>
+          <Row>
+            <Link style={{ marginTop: '50px' }} href={baseUrl}>
+              {baseUrl}
+            </Link>
+          </Row>
+          <Row>
+            <Button style={button} href={`${baseUrl}/auth/login`}>
+              Login
+            </Button>
+          </Row>
         </Section>
 
         <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '24px' }} />
@@ -121,7 +142,7 @@ const text = {
 
 const button: CSS.Properties = {
   backgroundColor: 'rgb(66, 80, 175)',
-  margin: '1em 2em',
+  margin: '1em 0',
   padding: '0.75em 3em',
   color: '#fff',
   fontSize: '1em',
@@ -129,7 +150,6 @@ const button: CSS.Properties = {
   lineHeight: 1.5,
   textTransform: 'uppercase',
   borderRadius: '9999px',
-  textAlign: 'center',
 };
 
 const footer = {

@@ -22,7 +22,12 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   verifySmtp(options: SmtpOptions): Promise<true> {
-    return this.createTransport(options).verify();
+    const transport = this.createTransport(options);
+    try {
+      return transport.verify();
+    } finally {
+      transport.close();
+    }
   }
 
   renderEmail(request: EmailRenderRequest): { html: string; text: string } {
@@ -34,7 +39,12 @@ export class NotificationRepository implements INotificationRepository {
 
   sendEmail({ to, from, subject, html, text, smtp }: SendEmailOptions): Promise<SendEmailResponse> {
     this.logger.debug(`Sending email to ${to} with subject: ${subject}`);
-    return this.createTransport(smtp).sendMail({ to, from, subject, html, text });
+    const transport = this.createTransport(smtp);
+    try {
+      return transport.sendMail({ to, from, subject, html, text });
+    } finally {
+      transport.close();
+    }
   }
 
   private render({ template, data }: EmailRenderRequest): React.FunctionComponentElement<any> {

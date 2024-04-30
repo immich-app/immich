@@ -34,19 +34,12 @@
             />
 
             <hr />
-            <SettingSwitch
-              id="enable-ignore-cert"
-              title="Ignore certificate"
-              subtitle="Do not check certificate validity"
-              {disabled}
-              bind:checked={config.notifications.smtp.ignoreCert}
-            />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required
               label="Host"
-              desc="Host of the email server; When using SSL instead of TLS  use the prefix smtps://"
+              desc="Host of the email server (e.g. smtp.immich.app)"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.host}
               isEdited={config.notifications.smtp.transport.host !== savedConfig.notifications.smtp.transport.host}
@@ -56,7 +49,7 @@
               inputType={SettingInputFieldType.NUMBER}
               required
               label="Port"
-              desc="Port of the email server; common ports: 25, 465, 587"
+              desc="Port of the email server (e.g 25, 465, or 587)"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.port}
               isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
@@ -65,7 +58,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="Username"
-              desc="The username used to login to the email server"
+              desc="Username to use when authenticating with the email server"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.username}
               isEdited={config.notifications.smtp.transport.username !==
@@ -75,11 +68,19 @@
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
               label="Password"
-              desc="The password used to login to the email server"
+              desc="Password to use when authenticating with the email server"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
                 savedConfig.notifications.smtp.transport.password}
+            />
+
+            <SettingSwitch
+              id="enable-ignore-cert"
+              title="Ignore certificate errors"
+              subtitle="Ignore TLS certificate validation errors (not recommended)"
+              disabled={disabled || !config.notifications.smtp.enabled}
+              bind:checked={config.notifications.smtp.transport.ignoreCert}
             />
 
             <hr />
@@ -88,7 +89,7 @@
               inputType={SettingInputFieldType.TEXT}
               required
               label="From address"
-              desc="Sender email address, for example: &quot;Immich Photo Server <noreply@mydomain.com>&quot;"
+              desc="Sender email address, for example: &quot;Immich Photo Server <noreply@immich.app>&quot;"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.from}
               isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}

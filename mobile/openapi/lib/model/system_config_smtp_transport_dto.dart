@@ -26,6 +26,8 @@ class SystemConfigSmtpTransportDto {
 
   String password;
 
+  /// Minimum value: 0
+  /// Maximum value: 65535
   num port;
 
   String username;

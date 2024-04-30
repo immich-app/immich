@@ -124,6 +124,7 @@ export const getJobName = (jobName: JobName) => {
     [JobName.BackgroundTask]: 'Background Tasks',
     [JobName.Search]: 'Search',
     [JobName.Library]: 'Library',
+    [JobName.Notifications]: 'Notifications',
   };
 
   return names[jobName];
