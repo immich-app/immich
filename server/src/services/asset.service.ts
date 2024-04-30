@@ -372,7 +372,8 @@ export class AssetService {
       return JobStatus.FAILED;
     }
 
-    if (asset.isReadOnly) {
+    // Ignore requests that are not from external library job but is for an external asset
+    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
       return JobStatus.SKIPPED;
     }
 
