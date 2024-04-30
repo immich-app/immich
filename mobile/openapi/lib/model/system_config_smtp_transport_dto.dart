@@ -14,12 +14,15 @@ class SystemConfigSmtpTransportDto {
   /// Returns a new [SystemConfigSmtpTransportDto] instance.
   SystemConfigSmtpTransportDto({
     required this.host,
+    required this.ignoreCert,
     required this.password,
     required this.port,
     required this.username,
   });
 
   String host;
+
+  bool ignoreCert;
 
   String password;
 
@@ -30,6 +33,7 @@ class SystemConfigSmtpTransportDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigSmtpTransportDto &&
     other.host == host &&
+    other.ignoreCert == ignoreCert &&
     other.password == password &&
     other.port == port &&
     other.username == username;
@@ -38,16 +42,18 @@ class SystemConfigSmtpTransportDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (host.hashCode) +
+    (ignoreCert.hashCode) +
     (password.hashCode) +
     (port.hashCode) +
     (username.hashCode);
 
   @override
-  String toString() => 'SystemConfigSmtpTransportDto[host=$host, password=$password, port=$port, username=$username]';
+  String toString() => 'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, username=$username]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'host'] = this.host;
+      json[r'ignoreCert'] = this.ignoreCert;
       json[r'password'] = this.password;
       json[r'port'] = this.port;
       json[r'username'] = this.username;
@@ -63,6 +69,7 @@ class SystemConfigSmtpTransportDto {
 
       return SystemConfigSmtpTransportDto(
         host: mapValueOfType<String>(json, r'host')!,
+        ignoreCert: mapValueOfType<bool>(json, r'ignoreCert')!,
         password: mapValueOfType<String>(json, r'password')!,
         port: num.parse('${json[r'port']}'),
         username: mapValueOfType<String>(json, r'username')!,
@@ -114,6 +121,7 @@ class SystemConfigSmtpTransportDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'host',
+    'ignoreCert',
     'password',
     'port',
     'username',

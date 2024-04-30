@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **host** | **String** |  | 
+**ignoreCert** | **bool** |  | 
 **password** | **String** |  | 
 **port** | **num** |  | 
 **username** | **String** |  | 

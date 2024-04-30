@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool ignoreCert
+    test('to test the property `ignoreCert`', () async {
+      // TODO
+    });
+
     // String password
     test('to test the property `password`', () async {
       // TODO

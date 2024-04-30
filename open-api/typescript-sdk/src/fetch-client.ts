@@ -948,6 +948,7 @@ export type SystemConfigNewVersionCheckDto = {
 };
 export type SystemConfigSmtpTransportDto = {
     host: string;
+    ignoreCert: boolean;
     password: string;
     port: number;
     username: string;
