@@ -79,7 +79,8 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
   // Notification
-  [JobName.NOTIFY_SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
 };
 
 @Instrumentation()

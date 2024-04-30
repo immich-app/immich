@@ -1,5 +1,3 @@
-import { MailOptions } from "src/interfaces/mail.interface";
-
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
@@ -94,7 +92,8 @@ export enum JobName {
   SIDECAR_WRITE = 'sidecar-write',
 
   // Notification
-  NOTIFY_SEND_EMAIL = 'notification-email-send',
+  NOTIFY_SIGNUP = 'notify-signup',
+  SEND_EMAIL = 'notification-send-email',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -141,9 +140,15 @@ export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
 }
 
-export interface IEmailJob extends IBaseJob {
-  template: string;
-  options: MailOptions;
+export interface IEmailJob {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export interface INotifySignupJob extends IEntityJob {
+  tempPassword?: string;
 }
 
 export interface JobCounts {
@@ -230,7 +235,8 @@ export type JobItem =
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification
-  | { name: JobName.NOTIFY_SEND_EMAIL; data: IEmailJob };
+  | { name: JobName.SEND_EMAIL; data: IEmailJob }
+  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

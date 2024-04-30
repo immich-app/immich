@@ -1,20 +1,50 @@
-import { UserResponseDto } from 'src/dtos/user.dto';
-
 export const INotificationRepository = 'INotificationRepository';
 
-export enum NotificationName {
-  // Notification management
-  NOTIFY_USER_INVITE = 'notification-user-invite',
+export type SendEmailOptions = {
+  from: string;
+  to: string;
+  replyTo?: string;
+  subject: string;
+  html: string;
+  text: string;
+  smtp: SmtpOptions;
+};
+
+export type SmtpOptions = {
+  host: string;
+  port?: number;
+  username?: string;
+  password?: string;
+};
+
+export enum EmailTemplate {
+  WELCOME = 'welcome',
+  RESET_PASSWORD = 'reset-password',
 }
 
-export interface UserCreatedNotification {
-  user: UserResponseDto;
-  tempPassword?: string;
+export interface WelcomeEmailProps {
+  baseUrl: string;
+  displayName: string;
+  username: string;
+  password?: string;
 }
+
+export interface ResetPasswordEmailProps {
+  user: string;
+  email: string;
+}
+
+export type EmailRenderRequest =
+  | { template: EmailTemplate.WELCOME; data: WelcomeEmailProps }
+  | { template: EmailTemplate.RESET_PASSWORD; data: ResetPasswordEmailProps };
+
+export type SendEmailResponse = {
+  messageId: string;
+  response: any;
+};
 
 export interface INotificationRepository {
-  /**
-   * notify, move the notification chain!
-   */
-  notify<E>(event: NotificationName, data: E): Promise<Boolean>;
+  renderEmail(request: EmailRenderRequest): { html: string; text: string };
+  sendEmail(options: SendEmailOptions): Promise<SendEmailResponse>;
+  verifySmtp(options: SmtpOptions): Promise<true>;
 }

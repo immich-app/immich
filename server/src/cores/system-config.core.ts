@@ -145,15 +145,17 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
   },
-  smtp: {
-    transport: {
-      host: '',
-      port: 587,
-      username: '',
-      password: '',
-    },
-    defaults: {
+  notifications: {
+    smtp: {
+      enabled: false,
       from: '',
+      replyTo: '',
+      transport: {
+        host: '',
+        port: 587,
+        username: '',
+        password: '',
+      },
     },
   },
   user: {

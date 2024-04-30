@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -364,30 +365,41 @@ class SystemConfigServerDto {
   loginPageMessage!: string;
 }
 
-export class SystemConfigSmtpTransportDto {
+class SystemConfigSmtpTransportDto {
   @IsString()
   host!: string;
+
   @IsNumber()
   port!: number;
+
   @IsString()
   username!: string;
+
   @IsString()
   password!: string;
 }
 
-export class SystemConfigSmtpDefaultsDto {
+class SystemConfigSmtpDto {
+  @IsBoolean()
+  enabled!: boolean;
+
   @IsString()
   from!: string;
-}
-export class SystemConfigSmtpDto {
+
+  @IsString()
+  replyTo!: string;
+
   @Type(() => SystemConfigSmtpTransportDto)
   @ValidateNested()
   @IsObject()
   transport!: SystemConfigSmtpTransportDto;
-  @Type(() => SystemConfigSmtpDefaultsDto)
+}
+
+class SystemConfigNotificationsDto {
+  @Type(() => SystemConfigSmtpDto)
   @ValidateNested()
   @IsObject()
-  defaults!: SystemConfigSmtpDefaultsDto;
+  smtp!: SystemConfigSmtpDto;
 }
 
 class SystemConfigStorageTemplateDto {
@@ -541,15 +553,15 @@ export class SystemConfigDto implements SystemConfig {
   @IsObject()
   library!: SystemConfigLibraryDto;
 
+  @Type(() => SystemConfigNotificationsDto)
+  @ValidateNested()
+  @IsObject()
+  notifications!: SystemConfigNotificationsDto;
+
   @Type(() => SystemConfigServerDto)
   @ValidateNested()
   @IsObject()
   server!: SystemConfigServerDto;
-
-  @Type(() => SystemConfigSmtpDto)
-  @ValidateNested()
-  @IsObject()
-  smtp!: SystemConfigSmtpDto;
 
   @Type(() => SystemConfigUserDto)
   @ValidateNested()

@@ -1,39 +1,21 @@
-import {
-  Body,
-  Button,
-  Column,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Body, Button, Container, Head, Hr, Html, Img, Link, Preview, Section, Text } from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
+import { WelcomeEmailProps } from 'src/interfaces/notification.interface';
 
-interface WelcomeUserEmailProps {
-  displayName: string;
-  username: string;
-  password?: string;
-  url: string;
-}
-
-export const WelcomeUserEmail = ({ displayName, username, password, url }: WelcomeUserEmailProps) => (
+export const WelcomeEmail = ({ baseUrl, displayName, username, password }: WelcomeEmailProps) => (
   <Html>
     <Head />
-    <Preview>You have bee invited to a new Immich istance.</Preview>
+    <Preview>You have been invited to a new Immich instance.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={logo}>
-          <Img src={`https://immich.app//img/immich-logo-inline-light.png`} height="45px" alt="Immich" />
-        </Section>
-
         <Section style={section}>
+          <Img
+            src={`https://immich.app/img/immich-logo-stacked-light.svg`}
+            height="250px"
+            alt="Immich"
+            style={{ width: '100%', alignSelf: 'center', color: 'white' }}
+          />
           <Text style={title}>
             Self-hosted photo and <br />
             video management solution
@@ -54,16 +36,12 @@ export const WelcomeUserEmail = ({ displayName, username, password, url }: Welco
             )}
           </Text>
 
-          <Row style={buttonWrapper}>
-            <Column>
-              <Button style={button} href={url}>
-                First Login
-              </Button>
-            </Column>
-          </Row>
+          <Button style={button} href={`${baseUrl}/auth/login`}>
+            Login
+          </Button>
 
           <Text style={text}>
-            Or visit (<Link href={url}>{url}</Link>) for your first login.
+            Or visit (<Link href={baseUrl}>{baseUrl}</Link>) to login.
           </Text>
         </Section>
 
@@ -100,14 +78,14 @@ export const WelcomeUserEmail = ({ displayName, username, password, url }: Welco
   </Html>
 );
 
-WelcomeUserEmail.PreviewProps = {
+WelcomeEmail.PreviewProps = {
+  baseUrl: 'https://demo.immich.app/auth/login',
   displayName: 'Alan Turing',
-  url: 'https://demo.immich.app/auth/login',
   username: 'alanturing',
   password: 'mysuperpassword',
-} as WelcomeUserEmailProps;
+} as WelcomeEmailProps;
 
-export default WelcomeUserEmail;
+export default WelcomeEmail;
 
 const main = {
   backgroundColor: '#ffffff',
@@ -123,14 +101,10 @@ const container = {
   padding: '20px 0 48px',
 };
 
-const logo = {
-  padding: '16px 0px',
-};
-
 const title = {
-  fontSize: '2.25rem',
+  fontSize: '2rem',
   fontWeight: 500,
-  lineHeight: '40px',
+  lineHeight: '36px',
 };
 
 const section = {
@@ -146,19 +120,17 @@ const text = {
   textAlign: 'left' as const,
 };
 
-const buttonWrapper = {
-  padding: '24px 0',
-};
-
 const button: CSS.Properties = {
   backgroundColor: 'rgb(66, 80, 175)',
+  margin: '1em 2em',
+  padding: '0.75em 3em',
   color: '#fff',
-  fontSize: '1rem',
+  fontSize: '1em',
   fontWeight: 700,
   lineHeight: 1.5,
   textTransform: 'uppercase',
   borderRadius: '9999px',
-  padding: '12px 32px',
+  textAlign: 'center',
 };
 
 const footer = {

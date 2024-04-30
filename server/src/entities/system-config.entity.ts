@@ -71,6 +71,14 @@ export enum SystemConfigKey {
   MAP_LIGHT_STYLE = 'map.lightStyle',
   MAP_DARK_STYLE = 'map.darkStyle',
 
+  NOTIFICATIONS_SMTP_ENABLED = 'notifications.smtp.enabled',
+  NOTIFICATIONS_SMTP_FROM = 'notifications.smtp.from',
+  NOTIFICATIONS_SMTP_REPLY_TO = 'notifications.smtp.replyTo',
+  NOTIFICATIONS_SMTP_TRANSPORT_HOST = 'notifications.smtp.transport.host',
+  NOTIFICATIONS_SMTP_TRANSPORT_PORT = 'notifications.smtp.transport.port',
+  NOTIFICATIONS_SMTP_TRANSPORT_USERNAME = 'notifications.smtp.transport.username',
+  NOTIFICATIONS_SMTP_TRANSPORT_PASSWORD = 'notifications.smtp.transport.password',
+
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
@@ -94,13 +102,6 @@ export enum SystemConfigKey {
 
   SERVER_EXTERNAL_DOMAIN = 'server.externalDomain',
   SERVER_LOGIN_PAGE_MESSAGE = 'server.loginPageMessage',
-
-  SMTP_TRANSPORT = 'smtp.transport.',
-  SMTP_TRANSPORT_HOST = 'smtp.transport.host',
-  SMTP_TRANSPORT_PORT = 'smtp.transport.port',
-  SMTP_TRANSPORT_USERNAME = 'smtp.transport.username',
-  SMTP_TRANSPORT_PASSWORD = 'smtp.transport.password',
-  SMTP_DEFAULTS_FROM = 'smtp.defaults.from',
 
   STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
   STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
@@ -288,20 +289,22 @@ export interface SystemConfig {
       enabled: boolean;
     };
   };
+  notifications: {
+    smtp: {
+      enabled: boolean;
+      from: string;
+      replyTo: string;
+      transport: {
+        host: string;
+        port: number;
+        username: string;
+        password: string;
+      };
+    };
+  };
   server: {
     externalDomain: string;
     loginPageMessage: string;
-  };
-  smtp: {
-    transport: {
-      host: string;
-      port: number;
-      username: string;
-      password: string;
-    };
-    defaults: {
-      from: string;
-    };
   };
   user: {
     deleteDelay: number;

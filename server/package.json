@@ -31,7 +31,7 @@
     "typeorm:schema:drop": "typeorm query -d ./dist/database.config.js 'DROP schema public cascade; CREATE schema public;'",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "sql:generate": "node ./dist/utils/sql.js",
-    "email:dev": "email dev -p 3050"
+    "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",

@@ -10237,6 +10237,9 @@
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/SystemConfigNotificationsDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -10248,9 +10251,6 @@
           },
           "server": {
             "$ref": "#/components/schemas/SystemConfigServerDto"
-          },
-          "smtp": {
-            "$ref": "#/components/schemas/SystemConfigSmtpDto"
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
@@ -10274,11 +10274,11 @@
           "machineLearning",
           "map",
           "newVersionCheck",
+          "notifications",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
           "server",
-          "smtp",
           "storageTemplate",
           "theme",
           "trash",
@@ -10570,6 +10570,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigNotificationsDto": {
+        "properties": {
+          "smtp": {
+            "$ref": "#/components/schemas/SystemConfigSmtpDto"
+          }
+        },
+        "required": [
+          "smtp"
+        ],
+        "type": "object"
+      },
       "SystemConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
@@ -10670,28 +10681,25 @@
         ],
         "type": "object"
       },
-      "SystemConfigSmtpDefaultsDto": {
-        "properties": {
-          "from": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "from"
-        ],
-        "type": "object"
-      },
       "SystemConfigSmtpDto": {
         "properties": {
-          "defaults": {
-            "$ref": "#/components/schemas/SystemConfigSmtpDefaultsDto"
+          "enabled": {
+            "type": "boolean"
+          },
+          "from": {
+            "type": "string"
+          },
+          "replyTo": {
+            "type": "string"
           },
           "transport": {
             "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
           }
         },
         "required": [
-          "defaults",
+          "enabled",
+          "from",
+          "replyTo",
           "transport"
         ],
         "type": "object"
