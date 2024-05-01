@@ -14,8 +14,6 @@
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { QueryParameter } from '$lib/constants';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -79,9 +77,7 @@
           showMetadata,
         },
       });
-      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key, {
-        [QueryParameter.ORDER]: $user.preferedAlbumOrder,
-      });
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
