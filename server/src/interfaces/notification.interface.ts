@@ -30,11 +30,6 @@ export interface WelcomeEmailProps {
   password?: string;
 }
 
-export interface ResetPasswordEmailProps {
-  user: string;
-  email: string;
-}
-
 export type EmailRenderRequest = { template: EmailTemplate.WELCOME; data: WelcomeEmailProps };
 
 export type SendEmailResponse = {
