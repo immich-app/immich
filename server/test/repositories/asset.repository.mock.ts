@@ -32,6 +32,7 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getTimeBucket: vitest.fn(),
     getTimeBuckets: vitest.fn(),
     restoreAll: vitest.fn(),
+    setReadOnlyForLibrary: vitest.fn(),
     softDeleteAll: vitest.fn(),
     getAssetIdByCity: vitest.fn(),
     getAssetIdByTag: vitest.fn(),
