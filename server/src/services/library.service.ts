@@ -249,14 +249,12 @@ export class LibraryService {
         if (!dto.name) {
           dto.name = 'New External Library';
         }
-        dto.isReadOnly ??= true;
         break;
       }
       case LibraryType.UPLOAD: {
         if (!dto.name) {
           dto.name = 'New Upload Library';
         }
-        dto.isReadOnly ??= false;
         if (dto.isReadOnly) {
           throw new BadRequestException('Upload libraries cannot be readonly');
         }
@@ -276,6 +274,7 @@ export class LibraryService {
       type: dto.type,
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
+      isReadOnly: dto.isReadOnly ?? dto.type === LibraryType.EXTERNAL,
       isVisible: dto.isVisible ?? true,
     });
 
