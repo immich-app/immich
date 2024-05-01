@@ -36,6 +36,22 @@ If you still cannot log in to the app, try the following:
 - Check the mobile logs
 - Make sure login credentials are correct by logging in on the web app
 
+### Why does foreground backup stop when I navigate away from the app? Shouldn't it transfer the job to background backup?
+
+Foreground backup and background backup are two separate mechanisms. They don't communicate or interact with each other.
+
+Foreground backup is controlled by the user's action, while background backup is controlled by your device's operating system. When the app is put in the background, the invocation of background tasks is delegated to the device's operating system scheduler. It decides when the background task can run and how long it can run.
+
+The behaviors differ based on your device manufacturer and operating system, but most are related to battery-saving policies.
+
+### Why is background backup on iOS not working?
+
+On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
+
+- Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
+- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
+- Use the Immich app more often.
+
 ---
 
 ## Assets
@@ -386,21 +402,5 @@ If your version of Immich is below 1.92.0 and the crash occurs after logs about 
 ### Why does Immich log migration errors on startup?
 
 Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
-
-### Why does foreground backup stop when I navigate away from the app? Shouldn't it transfer the job to background backup?
-
-Foreground backup and background backup are two separate mechanisms. They don't communicate or interact with each other.
-
-Foreground backup is controlled by the user's action, while background backup is controlled by your device's operating system. When the app is put in the background, the invocation of background tasks is delegated to the device's operating system scheduler. It decides when the background task can run and how long it can run.
-
-The behaviors differ based on your device manufacturer and operating system, but most are related to battery-saving policies.
-
-### Why is background backup on iOS not working?
-
-On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
-
-- Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
-- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
-- Use the Immich app more often.
 
 [huggingface]: https://huggingface.co/immich-app
