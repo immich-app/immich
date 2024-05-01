@@ -68,6 +68,7 @@
 
   const handleAction = (action: AssetAction, asset: AssetResponseDto) => {
     switch (action) {
+      case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         assets.splice(
