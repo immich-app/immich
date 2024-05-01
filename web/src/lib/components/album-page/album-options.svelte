@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto, AssetOrder } from '@immich/sdk';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus } from '@mdi/js';
+  import { mdiArrowDownThin, mdiArrowUpThin, mdiCog, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
@@ -17,7 +17,7 @@
   export let onChangeOrder: (order: AssetOrder) => void;
 
   const options: Record<AssetOrder, RenderedOption> = {
-    [AssetOrder.Preference]: { icon: mdiArrowUpThin, title: 'Default' },
+    [AssetOrder.Preference]: { icon: mdiCog, title: 'Default' },
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Oldest first' },
     [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
   };
