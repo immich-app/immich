@@ -67,9 +67,8 @@ const items: Item[] = [
     description: 'Joining Futo and Immich core team goes full-time',
     title: 'Immich is joining FUTO!',
     release: 'v1.103.0',
-    tag: 'v1.103.0',
     date: new Date(2024, 4, 1),
-    dateType: DateType.RELEASE,
+    dateType: DateType.DATE,
   },
   {
     icon: mdiStar,
