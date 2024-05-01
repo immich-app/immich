@@ -129,6 +129,28 @@ class AssetNotifier extends StateNotifier<bool> {
     return false;
   }
 
+  Future<bool> deleteLocalOnlyAssetEntities(
+    Iterable<AssetEntity> deleteAssets,
+  ) async {
+    _deleteInProgress = true;
+    state = true;
+    try {
+      final localDeleted = await _deleteLocalAssetEntities(deleteAssets);
+      if (localDeleted.isNotEmpty) {
+        final localOnlyIds = deleteAssets.map((e) => int.parse(e.id)).toList();
+        await _db.writeTxn(() async {
+          await _db.exifInfos.deleteAll(localOnlyIds);
+          await _db.assets.deleteAll(localOnlyIds);
+        });
+        return true;
+      }
+    } finally {
+      _deleteInProgress = false;
+      state = false;
+    }
+    return false;
+  }
+
   Future<bool> deleteRemoteOnlyAssets(
     Iterable<Asset> deleteAssets, {
     bool force = false,
@@ -268,6 +290,21 @@ class AssetNotifier extends StateNotifier<bool> {
   ) async {
     final List<String> local =
         assetsToDelete.where((a) => a.isLocal).map((a) => a.localId!).toList();
+    // Delete asset from device
+    if (local.isNotEmpty) {
+      try {
+        return await PhotoManager.editor.deleteWithIds(local);
+      } catch (e, stack) {
+        log.severe("Failed to delete asset from device", e, stack);
+      }
+    }
+    return [];
+  }
+
+  Future<List<String>> _deleteLocalAssetEntities(
+    Iterable<AssetEntity> assetsToDelete,
+  ) async {
+    final List<String> local = assetsToDelete.map((a) => a.id).toList();
     // Delete asset from device
     if (local.isNotEmpty) {
       try {
