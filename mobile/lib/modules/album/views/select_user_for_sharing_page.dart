@@ -9,8 +9,8 @@ import 'package:immich_mobile/modules/album/providers/album_title.provider.dart'
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 @RoutePage<List<String>>()

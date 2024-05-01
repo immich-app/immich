@@ -1,15 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/search/models/curated_content.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ExploreGrid extends StatelessWidget {
-  final List<CuratedContent> curatedContent;
+  final List<SearchCuratedContent> curatedContent;
   final bool isPeople;
 
   const ExploreGrid({

@@ -5,7 +5,7 @@ import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class CuratedPlacesRow extends CuratedRow {

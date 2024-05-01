@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/video_player_contro
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 

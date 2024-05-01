@@ -1,6 +1,6 @@
 import 'package:immich_mobile/constants/errors.dart';
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

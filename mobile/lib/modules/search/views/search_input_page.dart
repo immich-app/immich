@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/modules/search/providers/paginated_search.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/camera_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/display_option_picker.dart';
@@ -15,7 +15,7 @@ import 'package:immich_mobile/modules/search/ui/search_filter/media_type_picker.
 import 'package:immich_mobile/modules/search/ui/search_filter/people_picker.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/modules/search/ui/search_filter/search_filter_utils.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:openapi/api.dart';
 

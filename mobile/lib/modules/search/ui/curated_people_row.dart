@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
-  final List<CuratedContent> content;
+  final List<SearchCuratedContent> content;
   final EdgeInsets? padding;
 
   /// Callback with the content and the index when tapped
-  final Function(CuratedContent, int)? onTap;
-  final Function(CuratedContent, int)? onNameTap;
+  final Function(SearchCuratedContent, int)? onTap;
+  final Function(SearchCuratedContent, int)? onNameTap;
 
   const CuratedPeopleRow({
     super.key,

@@ -3,7 +3,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
 
 class MemoryBottomInfo extends StatelessWidget {

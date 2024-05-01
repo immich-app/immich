@@ -5,13 +5,13 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/models/add_asset_response.model.dart';
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
+import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -219,7 +219,7 @@ class AlbumService {
     );
   }
 
-  Future<AddAssetsResponse?> addAdditionalAssetToAlbum(
+  Future<AlbumAddAssetsResponse?> addAdditionalAssetToAlbum(
     Iterable<Asset> assets,
     Album album,
   ) async {
@@ -245,7 +245,7 @@ class AlbumService {
 
         await _updateAssets(album.id, add: successAssets);
 
-        return AddAssetsResponse(
+        return AlbumAddAssetsResponse(
           alreadyInAlbum: duplicatedAssets,
           successfullyAdded: successAssets.length,
         );

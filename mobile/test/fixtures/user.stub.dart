@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 
 final class UserStub {
   const UserStub._();
