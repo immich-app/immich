@@ -634,17 +634,14 @@ export class PersonService {
 
   private withOrientation(orientation: Orientation, { width, height }: ImageDimensions): ImageDimensions {
     switch (orientation) {
-      case Orientation.Horizontal:
-      case Orientation.MirrorHorizontal:
-      case Orientation.Rotate180:
-      case Orientation.MirrorVertical: {
-        return { width, height };
-      }
       case Orientation.MirrorHorizontalRotate270CW:
       case Orientation.Rotate90CW:
       case Orientation.MirrorHorizontalRotate90CW:
       case Orientation.Rotate270CW: {
         return { width: height, height: width };
+      }
+      default: {
+        return { width, height };
       }
     }
   }
