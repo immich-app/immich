@@ -55,8 +55,8 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
             alt="Immich"
             style={{
               height: 'auto',
-              margin: '0 auto 36px auto',
-              width: '80%',
+              margin: '0 auto 48px auto',
+              width: '50%',
               alignSelf: 'center',
               color: 'white',
             }}
