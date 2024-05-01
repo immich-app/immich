@@ -67,12 +67,11 @@ export enum QueryParameter {
   MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
-  ORDER = 'order',
-  PAGE = 'page',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
+  PAGE = 'page',
 }
 
 export enum OpenSettingQueryParameterValue {
