@@ -81,8 +81,6 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { findKey } from 'lodash-es';
-  import type { RenderedOption } from '$lib/utils/actions';
 
   export let data: PageData;
 
