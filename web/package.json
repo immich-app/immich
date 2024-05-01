@@ -76,5 +76,8 @@
     "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.8.1",
     "thumbhash": "^0.1.1"
+  },
+  "volta": {
+    "node": "20.12.2"
   }
 }
