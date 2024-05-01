@@ -56,7 +56,6 @@ import {
   mdiAccountGroupOutline,
   mdiFlowerPoppy,
   mdiHandshakeOutline,
-
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
