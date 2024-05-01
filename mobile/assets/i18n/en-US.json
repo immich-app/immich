@@ -37,7 +37,7 @@
   "app_bar_free_up_space_dialog_content": "Delete all {} files that are backed up to Immich and on your local device?",
   "app_bar_free_up_space_dialog_ok": "Free up {}",
   "app_bar_free_up_space_dialog_title": "Free up space",
-  "app_bar_free_up_space_dialog_toast": "Deleted {} files from your local device.",
+  "app_bar_free_up_space_dialog_toast": "{} {} removed permanently from your device.",
   "app_bar_signout_dialog_content": "Are you sure you want to sign out?",
   "app_bar_signout_dialog_ok": "Yes",
   "app_bar_signout_dialog_title": "Sign out",

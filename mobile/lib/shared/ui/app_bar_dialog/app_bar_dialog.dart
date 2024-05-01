@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -17,6 +16,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -89,13 +89,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    String formatBytes(int bytes, [int decimals = 2]) {
-      if (bytes <= 0) return "0 B";
-      const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-      var i = (log(bytes) / log(1024)).floor();
-      return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
-    }
-
     buildFreeSpaceButton() {
       return buildActionButton(
         Icons.mobile_friendly_rounded,
@@ -103,6 +96,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         () async {
           int fileSizeBytes = 0;
           var fileCount = backupState.selectedAlbumsBackupAssetsIds.length;
+          if (fileCount == 0) return;
+
           for (var i = 0; i < fileCount; i++) {
             var assetId =
                 backupState.selectedAlbumsBackupAssetsIds.elementAt(i);
@@ -124,7 +119,31 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     formatBytes(fileSizeBytes),
                   ],
                 ),
-                onOk: () async {},
+                onOk: () async {
+                  final List<String> localIds =
+                      backupState.allUniqueAssets.map((a) => a.id).toList();
+
+                  final isDeleted = await ref
+                      .read(assetProvider.notifier)
+                      .deleteLocalOnlyAssetEntities(
+                        backupState.allUniqueAssets,
+                      );
+
+                  if (isDeleted) {
+                    final assetOrAssets =
+                        localIds.length > 1 ? 'assets' : 'asset';
+                    ImmichToast.show(
+                      context: context,
+                      msg: "app_bar_free_up_space_dialog_toast".tr(
+                        args: [
+                          "${localIds.length}",
+                          assetOrAssets,
+                        ],
+                      ),
+                      gravity: ToastGravity.BOTTOM,
+                    );
+                  }
+                },
               );
             },
           );
