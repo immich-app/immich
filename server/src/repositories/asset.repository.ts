@@ -202,7 +202,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async setReadOnlyForLibrary(libraryId: string, isReadOnly: boolean): Promise<void> {
-    await this.repository.update({ library: { id: libraryId } }, { isReadOnly });
+    await this.repository.update({ library: { id: libraryId }, isVisible: true }, { isReadOnly });
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
