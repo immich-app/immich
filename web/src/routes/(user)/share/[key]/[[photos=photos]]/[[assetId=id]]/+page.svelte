@@ -7,7 +7,7 @@
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetOrderPreference, getMySharedLink, SharedLinkType } from '@immich/sdk';
+  import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import type { PageData } from './$types';
   import { setSharedLink } from '$lib/utils';
 
@@ -16,7 +16,6 @@
   let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
   let password = '';
-  let order: AssetOrderPreference = data.order || AssetOrderPreference.Asc;
 
   const handlePasswordSubmit = async () => {
     try {
@@ -69,7 +68,7 @@
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
-  <AlbumViewer {sharedLink} {order} />
+  <AlbumViewer {sharedLink} />
 {/if}
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
   <div class="immich-scrollbar">

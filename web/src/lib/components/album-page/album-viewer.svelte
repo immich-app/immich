@@ -3,13 +3,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import {
-    AssetOrder,
-    AssetOrderPreference,
-    type AlbumResponseDto,
-    type SharedLinkResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
+  import { type AlbumResponseDto, type SharedLinkResponseDto, type UserResponseDto } from '@immich/sdk';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
   import { downloadAlbum } from '../../utils/asset-utils';
@@ -21,21 +15,18 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import { shortcut } from '$lib/utils/shortcut';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
-  export let order: AssetOrderPreference;
 
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  $: albumOrder = order as unknown as AssetOrder;
-
-  $: assetStore = new AssetStore({ albumId: album.id, order: albumOrder });
+  $: assetStore = new AssetStore({ albumId: album.id, order: sharedLink.album?.order });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -45,10 +36,6 @@
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
-
-  const handleToggle = () => {
-    order = order === AssetOrderPreference.Asc ? AssetOrderPreference.Desc : AssetOrderPreference.Asc;
-  };
 </script>
 
 <svelte:window
@@ -90,13 +77,7 @@
             icon={mdiFileImagePlusOutline}
           />
         {/if}
-        {#if album.assetCount > 1}
-          <CircleIconButton
-            title="Change order"
-            on:click={handleToggle}
-            icon={order === AssetOrderPreference.Asc ? mdiArrowDownThin : mdiArrowUpThin}
-          />
-        {/if}
+
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <CircleIconButton title="Download" on:click={() => downloadAlbum(album)} icon={mdiFolderDownloadOutline} />
         {/if}
@@ -108,29 +89,27 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  {#key albumOrder}
-    <AssetGrid {album} {assetStore} {assetInteractionStore}>
-      <section class="pt-24">
-        <!-- ALBUM TITLE -->
-        <h1
-          class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+  <AssetGrid {album} {assetStore} {assetInteractionStore}>
+    <section class="pt-24">
+      <!-- ALBUM TITLE -->
+      <h1
+        class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+      >
+        {album.albumName}
+      </h1>
+
+      {#if album.assetCount > 0}
+        <AlbumSummary {album} />
+      {/if}
+
+      <!-- ALBUM DESCRIPTION -->
+      {#if album.description}
+        <p
+          class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
         >
-          {album.albumName}
-        </h1>
-
-        {#if album.assetCount > 0}
-          <AlbumSummary {album} />
-        {/if}
-
-        <!-- ALBUM DESCRIPTION -->
-        {#if album.description}
-          <p
-            class="whitespace-pre-line mb-12 mt-6 w-full pb-2 text-left font-medium text-base text-black dark:text-gray-300"
-          >
-            {album.description}
-          </p>
-        {/if}
-      </section>
-    </AssetGrid>
-  {/key}
+          {album.description}
+        </p>
+      {/if}
+    </section>
+  </AssetGrid>
 </main>
