@@ -41,7 +41,7 @@ import 'package:immich_mobile/modules/trash/views/trash_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
-import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
+import 'package:immich_mobile/modules/search/views/all_places_page.dart';
 import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
@@ -127,7 +127,7 @@ class AppRouter extends _$AppRouter {
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
     AutoRoute(
-      page: CuratedLocationRoute.page,
+      page: AllPlacesRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(

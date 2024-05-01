@@ -27,7 +27,7 @@ class SearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final places = ref.watch(getPlacesProvider);
+    final places = ref.watch(getPreviewPlacesProvider);
     final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
@@ -174,7 +174,7 @@ class SearchPage extends HookConsumerWidget {
               SearchRowTitle(
                 title: "search_page_places".tr(),
                 onViewAllPressed: () =>
-                    context.pushRoute(const CuratedLocationRoute()),
+                    context.pushRoute(const AllPlacesRoute()),
                 top: 0,
               ),
               const SizedBox(height: 10.0),

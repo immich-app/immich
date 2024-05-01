@@ -119,4 +119,13 @@ class SearchService {
     }
     return null;
   }
+
+  Future<List<AssetResponseDto>?> getAllPlaces() async {
+    try {
+      return await _apiService.searchApi.getAssetsByCity();
+    } catch (error, stackTrace) {
+      _log.severe("Failed to getAllPlaces", error, stackTrace);
+    }
+    return null;
+  }
 }

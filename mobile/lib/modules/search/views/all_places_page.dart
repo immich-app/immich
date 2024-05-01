@@ -8,13 +8,13 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
 
 @RoutePage()
-class CuratedLocationPage extends HookConsumerWidget {
-  const CuratedLocationPage({super.key});
+class AllPlacesPage extends HookConsumerWidget {
+  const AllPlacesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AsyncValue<List<SearchCuratedContent>> places =
-        ref.watch(getPlacesProvider);
+        ref.watch(getAllPlacesProvider);
 
     return Scaffold(
       appBar: AppBar(
