@@ -137,8 +137,27 @@ class AssetNotifier extends StateNotifier<bool> {
     try {
       final localDeleted = await _deleteLocalAssetEntities(deleteAssets);
       if (localDeleted.isNotEmpty) {
-        final localOnlyIds = deleteAssets.map((e) => int.parse(e.id)).toList();
+        final localOnlyEntityIds = deleteAssets.map((e) => e.id).toList();
+        final allLocalAssets =
+            await _db.assets.filter().localIdIsNotEmpty().findAll();
+        final localAssets = allLocalAssets
+            .where((element) => localOnlyEntityIds.contains(element.localId))
+            .toList();
+
+        final localOnlyIds = localAssets
+            .where((e) => e.storage == AssetState.local)
+            .map((e) => e.id)
+            .toList();
+        final mergedAssets =
+            localAssets.where((e) => e.storage == AssetState.merged).map((e) {
+          e.localId = null;
+          return e;
+        }).toList();
+
         await _db.writeTxn(() async {
+          if (mergedAssets.isNotEmpty) {
+            await _db.assets.putAll(mergedAssets);
+          }
           await _db.exifInfos.deleteAll(localOnlyIds);
           await _db.assets.deleteAll(localOnlyIds);
         });

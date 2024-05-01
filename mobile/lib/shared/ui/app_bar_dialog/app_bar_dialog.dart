@@ -18,6 +18,7 @@ import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart'
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -95,7 +96,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         "profile_drawer_free_up_space",
         () async {
           int fileSizeBytes = 0;
-          var fileCount = backupState.selectedAlbumsBackupAssetsIds.length;
+          final List<AssetEntity> localFiles = [];
+          final fileCount = backupState.selectedAlbumsBackupAssetsIds.length;
           if (fileCount == 0) return;
 
           for (var i = 0; i < fileCount; i++) {
@@ -103,7 +105,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 backupState.selectedAlbumsBackupAssetsIds.elementAt(i);
             var asset =
                 backupState.allUniqueAssets.where((x) => x.id == assetId).first;
+
             fileSizeBytes += (await asset.originBytes)!.length;
+            localFiles.add(asset);
           }
 
           showDialog(
@@ -120,23 +124,20 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   ],
                 ),
                 onOk: () async {
-                  final List<String> localIds =
-                      backupState.allUniqueAssets.map((a) => a.id).toList();
-
                   final isDeleted = await ref
                       .read(assetProvider.notifier)
                       .deleteLocalOnlyAssetEntities(
-                        backupState.allUniqueAssets,
+                        localFiles,
                       );
 
                   if (isDeleted) {
                     final assetOrAssets =
-                        localIds.length > 1 ? 'assets' : 'asset';
+                        localFiles.length > 1 ? 'assets' : 'asset';
                     ImmichToast.show(
                       context: context,
                       msg: "app_bar_free_up_space_dialog_toast".tr(
                         args: [
-                          "${localIds.length}",
+                          "${localFiles.length}",
                           assetOrAssets,
                         ],
                       ),
