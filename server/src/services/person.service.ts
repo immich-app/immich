@@ -40,7 +40,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, ImageDimensions, IMediaRepository } from 'src/interfaces/media.interface';
+import { CropOptions, IMediaRepository, ImageDimensions } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
