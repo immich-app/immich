@@ -710,12 +710,11 @@ export class AssetRepository implements IAssetRepository {
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, isArchived, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
     const builder = this.getBuilder({
       userIds: [ownerId],
       exifInfo: true, // also joins stack information
       withStacked: false, // return all assets individually as expected by the app
-      isArchived,
     });
 
     if (lastCreationDate !== undefined && lastId !== undefined) {
@@ -736,9 +735,9 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
-    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: true })
+    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: false })
       .andWhere({ updatedAt: MoreThan(options.updatedAfter) })
-      .take(options.limit)
+      .limit(options.limit)
       .withDeleted();
 
     return builder.getMany();
