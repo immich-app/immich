@@ -39,13 +39,14 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository } from 'src/interfaces/media.interface';
+import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { CropOptions, ImageDimensions, IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { Orientation } from 'src/services/metadata.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
@@ -489,13 +490,13 @@ export class PersonService {
 
     const person = await this.repository.getById(data.id);
     if (!person?.faceAssetId) {
-      this.logger.warn(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
+      this.logger.error(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
       return JobStatus.FAILED;
     }
 
     const face = await this.repository.getFaceByIdWithAssets(person.faceAssetId);
     if (face === null) {
-      this.logger.warn(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
+      this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
       return JobStatus.FAILED;
     }
 
@@ -510,8 +511,8 @@ export class PersonService {
     } = face;
 
     const asset = await this.assetRepository.getById(assetId, { exifInfo: true });
-    if (!asset?.exifInfo?.exifImageHeight || !asset?.exifInfo?.exifImageWidth) {
-      this.logger.warn(`Could not generate person thumbnail: asset ${assetId} dimensions are unknown`);
+    if (!asset?.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
+      this.logger.error(`Could not generate person thumbnail: asset ${assetId} dimensions are unknown`);
       return JobStatus.FAILED;
     }
 
@@ -519,8 +520,17 @@ export class PersonService {
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
-    const widthScale = asset.exifInfo.exifImageWidth / imageWidth;
-    const heightScale = asset.exifInfo.exifImageHeight / imageHeight;
+    let exifWidth = asset.exifInfo.exifImageWidth;
+    let exifHeight = asset.exifInfo.exifImageHeight;
+    if (asset.exifInfo.orientation) {
+      ({ width: exifWidth, height: exifHeight } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
+        width: asset.exifInfo.exifImageWidth,
+        height: asset.exifInfo.exifImageHeight,
+      }));
+    }
+
+    const widthScale = exifWidth / imageWidth;
+    const heightScale = exifHeight / imageHeight;
 
     const halfWidth = (widthScale * (x2 - x1)) / 2;
     const halfHeight = (heightScale * (y2 - y1)) / 2;
@@ -620,5 +630,22 @@ export class PersonService {
       throw new BadRequestException('Person not found');
     }
     return person;
+  }
+
+  private withOrientation(orientation: Orientation, { width, height }: ImageDimensions): ImageDimensions {
+    switch (orientation) {
+      case Orientation.Horizontal:
+      case Orientation.MirrorHorizontal:
+      case Orientation.Rotate180:
+      case Orientation.MirrorVertical: {
+        return { width, height };
+      }
+      case Orientation.MirrorHorizontalRotate270CW:
+      case Orientation.Rotate90CW:
+      case Orientation.MirrorHorizontalRotate90CW:
+      case Orientation.Rotate270CW: {
+        return { width: height, height: width };
+      }
+    }
   }
 }
