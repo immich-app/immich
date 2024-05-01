@@ -11,6 +11,8 @@
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { calculateWidth } from '$lib/utils/timeline-util';
   import { navigate } from '$lib/utils/navigation';
+  import { AppRoute, AssetAction } from '$lib/constants';
+  import { goto } from '$app/navigation';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -20,7 +22,7 @@
   export let showArchiveIcon = false;
   export let viewport: Viewport;
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
+  let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
   let currentViewAssetIndex = 0;
   $: isMultiSelectionMode = selectedAssets.size > 0;
@@ -43,7 +45,7 @@
     selectedAssets = temporary;
   };
 
-  const navigateAssetForward = async () => {
+  const handleNext = async () => {
     try {
       if (currentViewAssetIndex < assets.length - 1) {
         setAsset(assets[++currentViewAssetIndex]);
@@ -54,7 +56,7 @@
     }
   };
 
-  const navigateAssetBackward = async () => {
+  const handlePrevious = async () => {
     try {
       if (currentViewAssetIndex > 0) {
         setAsset(assets[--currentViewAssetIndex]);
@@ -65,8 +67,30 @@
     }
   };
 
+  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
+    switch (action) {
+      case AssetAction.ARCHIVE:
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        assets.splice(
+          assets.findIndex((a) => a.id === asset.id),
+          1,
+        );
+        assets = assets;
+        if (assets.length === 0) {
+          await goto(AppRoute.PHOTOS);
+        } else if (currentViewAssetIndex === assets.length) {
+          await handlePrevious();
+        } else {
+          setAsset(assets[currentViewAssetIndex]);
+        }
+        break;
+      }
+    }
+  };
+
   onDestroy(() => {
-    $showAssetViewer = false;
+    $isViewerOpen = false;
   });
 
   $: geometry = (() => {
@@ -114,8 +138,13 @@
 {/if}
 
 <!-- Overlay Asset Viewer -->
-{#if $showAssetViewer}
+{#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer asset={$viewingAsset} on:previous={navigateAssetBackward} on:next={navigateAssetForward} />
+    <AssetViewer
+      asset={$viewingAsset}
+      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      on:previous={handlePrevious}
+      on:next={handleNext}
+    />
   </Portal>
 {/if}
