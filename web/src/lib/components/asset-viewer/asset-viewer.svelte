@@ -334,11 +334,9 @@
       }
       await deleteAsset();
       return;
-    } else {
-      await trashAsset();
     }
 
-    await navigateAsset('next');
+    await trashAsset();
     return;
   };
 
