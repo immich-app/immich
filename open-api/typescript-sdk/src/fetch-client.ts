@@ -194,9 +194,6 @@ export type BulkIdResponseDto = {
     id: string;
     success: boolean;
 };
-export type UpdateAlbumOrderDto = {
-    order: AssetOrder;
-};
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
 };
@@ -1205,19 +1202,6 @@ export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
-    })));
-}
-export function updateAlbumOrder({ id, updateAlbumOrderDto }: {
-    id: string;
-    updateAlbumOrderDto: UpdateAlbumOrderDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UpdateAlbumDto;
-    }>(`/album/${encodeURIComponent(id)}/order`, oazapfts.json({
-        ...opts,
-        method: "PATCH",
-        body: updateAlbumOrderDto
     })));
 }
 export function removeUserFromAlbum({ id, userId }: {

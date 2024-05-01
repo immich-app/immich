@@ -67,11 +67,6 @@ void main() {
       // TODO
     });
 
-    //Future<UpdateAlbumDto> updateAlbumOrder(String id, UpdateAlbumOrderDto updateAlbumOrderDto) async
-    test('test updateAlbumOrder', () async {
-      // TODO
-    });
-
     //Future updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto) async
     test('test updateAlbumUser', () async {
       // TODO

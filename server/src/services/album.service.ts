@@ -8,7 +8,6 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
-  UpdateAlbumOrderDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
@@ -134,22 +133,7 @@ export class AlbumService {
       albumThumbnailAssetId: assets[0]?.id || null,
     });
 
-    return mapAlbumWithAssets(album, auth);
-  }
-
-  async updateAlbumOrder(auth: AuthDto, id: string, dto: UpdateAlbumOrderDto): Promise<UpdateAlbumOrderDto> {
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
-
-    const album = await this.findOrFail(id, { withAssets: false });
-    const order = dto.order;
-    album.ownerId === auth.user.id
-      ? await this.albumRepository.update({
-          id: album.id,
-          order: dto.order,
-        })
-      : await this.albumUserRepository.update({ userId: auth.user.id, albumId: id }, { order: dto.order });
-
-    return { order };
+    return mapAlbumWithAssets(album);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
@@ -172,7 +156,7 @@ export class AlbumService {
       order: dto.order,
     });
 
-    return mapAlbumWithoutAssets(updatedAlbum, auth);
+    return mapAlbumWithoutAssets(updatedAlbum);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

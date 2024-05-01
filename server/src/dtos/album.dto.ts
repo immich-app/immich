@@ -48,12 +48,6 @@ export class CreateAlbumDto {
   assetIds?: string[];
 }
 
-export class UpdateAlbumOrderDto {
-  @IsEnum(AssetOrder)
-  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
-  order!: AssetOrder;
-}
-
 export class UpdateAlbumDto {
   @Optional()
   @IsString()
@@ -157,14 +151,6 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     }
   }
 
-  if (auth && !auth.sharedLink && auth.user.id !== entity.ownerId) {
-    entity.albumUsers.find((user) => {
-      if (user.userId === auth.user.id) {
-        entity.order = user.order;
-      }
-    });
-  }
-
   const albumUsersSorted = _.orderBy(albumUsers, ['role', 'user.name']);
 
   const assets = entity.assets || [];
@@ -197,9 +183,9 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
-    order: auth ? entity.order : undefined,
+    order: entity.order,
   };
 };
 
-export const mapAlbumWithAssets = (entity: AlbumEntity, auth?: AuthDto) => mapAlbum(entity, true, auth);
-export const mapAlbumWithoutAssets = (entity: AlbumEntity, auth?: AuthDto) => mapAlbum(entity, false, auth);
+export const mapAlbumWithAssets = (entity: AlbumEntity) => mapAlbum(entity, true);
+export const mapAlbumWithoutAssets = (entity: AlbumEntity) => mapAlbum(entity, false);

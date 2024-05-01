@@ -589,58 +589,6 @@
         ]
       }
     },
-    "/album/{id}/order": {
-      "patch": {
-        "operationId": "updateAlbumOrder",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAlbumOrderDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateAlbumDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Album"
-        ]
-      }
-    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -10657,17 +10605,6 @@
             "$ref": "#/components/schemas/AssetOrder"
           }
         },
-        "type": "object"
-      },
-      "UpdateAlbumOrderDto": {
-        "properties": {
-          "order": {
-            "$ref": "#/components/schemas/AssetOrder"
-          }
-        },
-        "required": [
-          "order"
-        ],
         "type": "object"
       },
       "UpdateAlbumUserDto": {

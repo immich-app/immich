@@ -40,7 +40,7 @@ export class SharedLinkService {
     }
 
     const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
-    const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif, auth });
+    const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
@@ -50,7 +50,7 @@ export class SharedLinkService {
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    return this.mapToSharedLink(sharedLink, { withExif: true, auth });
+    return this.mapToSharedLink(sharedLink, { withExif: true });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
@@ -196,8 +196,8 @@ export class SharedLinkService {
     };
   }
 
-  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif, auth }: { withExif: boolean; auth?: AuthDto }) {
-    return withExif ? mapSharedLink(sharedLink, auth) : mapSharedLinkWithoutMetadata(sharedLink, auth);
+  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
+    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 
   private validateAndRefreshToken(sharedLink: SharedLinkEntity, dto: SharedLinkPasswordDto): string {

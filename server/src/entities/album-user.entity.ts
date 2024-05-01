@@ -7,12 +7,6 @@ export enum AlbumUserRole {
   VIEWER = 'viewer',
 }
 
-export enum AssetOrder {
-  ASC = 'asc',
-  DESC = 'desc',
-  PREFERENCE = 'preference',
-}
-
 @Entity('albums_shared_users_users')
 // Pre-existing indices from original album <--> user ManyToMany mapping
 @Index('IDX_427c350ad49bd3935a50baab73', ['album'])
@@ -34,7 +28,4 @@ export class AlbumUserEntity {
 
   @Column({ type: 'varchar', default: AlbumUserRole.EDITOR })
   role!: AlbumUserRole;
-
-  @Column({ nullable: true, type: 'varchar', default: AssetOrder.PREFERENCE })
-  order!: AssetOrder;
 }

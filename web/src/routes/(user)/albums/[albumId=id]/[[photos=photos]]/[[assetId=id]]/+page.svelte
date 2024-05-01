@@ -63,7 +63,6 @@
     getActivityStatistics,
     getAlbumInfo,
     updateAlbumInfo,
-    updateAlbumOrder,
     type ActivityResponseDto,
     type AlbumUserAddDto,
   } from '@immich/sdk';
@@ -420,9 +419,9 @@
     order = findKey(options, (option) => option === returnedOption) as AssetOrder;
 
     try {
-      await updateAlbumOrder({
+      await updateAlbumInfo({
         id: album.id,
-        updateAlbumOrderDto: {
+        updateAlbumDto: {
           order,
         },
       });
@@ -472,7 +471,7 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
-            {#if album.assetCount > 1 && albumOrder}
+            {#if album.assetCount > 1 && $user.id === album.ownerId}
               <Dropdown
                 options={Object.values(options)}
                 hideText={true}
