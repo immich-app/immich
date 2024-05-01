@@ -35,9 +35,7 @@ export interface ResetPasswordEmailProps {
   email: string;
 }
 
-export type EmailRenderRequest =
-  | { template: EmailTemplate.WELCOME; data: WelcomeEmailProps }
-  | { template: EmailTemplate.RESET_PASSWORD; data: ResetPasswordEmailProps };
+export type EmailRenderRequest = { template: EmailTemplate.WELCOME; data: WelcomeEmailProps };
 
 export type SendEmailResponse = {
   messageId: string;

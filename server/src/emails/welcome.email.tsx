@@ -1,6 +1,7 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Hr,
@@ -20,23 +21,52 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
   <Html>
     <Head />
     <Preview>You have been invited to a new Immich instance.</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={section}>
+    <Body
+      style={{
+        margin: 0,
+        padding: 0,
+        backgroundColor: '#ffffff',
+        color: 'rgb(66, 80, 175)',
+        fontFamily: 'Overpass, sans-serif',
+        fontSize: '18px',
+        lineHeight: '24px',
+      }}
+    >
+      <Container
+        style={{
+          width: '480px',
+          maxWidth: '100%',
+          padding: '10px',
+          margin: '0 auto',
+        }}
+      >
+        <Section
+          style={{
+            padding: '36px',
+            tableLayout: 'fixed',
+            backgroundColor: 'rgb(226, 232, 240)',
+            border: 'solid 0px rgb(248 113 113)',
+            borderRadius: '50px',
+            textAlign: 'center' as const,
+          }}
+        >
           <Img
-            src={`https://immich.app/img/immich-logo-inline-light.png`}
+            src="https://immich.app/img/immich-logo-inline-light.png"
             alt="Immich"
-            style={{ width: '100%', alignSelf: 'center', color: 'white' }}
+            style={{
+              height: 'auto',
+              margin: '0 auto 36px auto',
+              width: '80%',
+              alignSelf: 'center',
+              color: 'white',
+            }}
           />
-          <Text style={title}>
-            Self-hosted photo and <br />
-            video management solution
-          </Text>
 
           <Text style={text}>
             Hey <strong>{displayName}</strong>!
-            <br />A new account has been created for you.
           </Text>
+
+          <Text style={text}>A new account has been created for you.</Text>
 
           <Text style={text}>
             <strong>Username</strong>: {username}
@@ -49,7 +79,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
           </Text>
 
           <Row>
-            <Text style={{ ...text, marginBottom: '2em' }}>
+            <Text style={{ ...text, marginBottom: '36px' }}>
               To login, open the link in a browser, or click the button below.
             </Text>
           </Row>
@@ -67,30 +97,32 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
 
         <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '24px' }} />
 
-        {/* TODO: This needs tailwind support for responsive columns */}
-        {/* <Section>
+        <Section style={{ textAlign: 'center' }}>
           <Row>
-            <Column>
+            <Column align="center">
               <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich">
                 <Img src={`https://immich.app/img/google-play-badge.png`} height="96px" alt="Immich" />
               </Link>
-            </Column>
-            <Column>
               <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
                 <Img
+                  // TODO get this as a png
                   src={`https://immich.app/img/ios-app-store-badge.svg`}
                   alt="Immich"
-                  style={{
-                    height: '68px',
-                    padding: '14px',
-                  }}
+                  style={{ height: '68px', padding: '14px' }}
                 />
               </Link>
             </Column>
           </Row>
-        </Section> */}
+        </Section>
 
-        <Text style={footer}>
+        <Text
+          style={{
+            color: '#6a737d',
+            fontSize: '0.8rem',
+            textAlign: 'center' as const,
+            marginTop: '12px',
+          }}
+        >
           <Link href="https://immich.app">Immich</Link> project is available under GNU AGPL v3 license.
         </Text>
       </Container>
@@ -107,37 +139,11 @@ WelcomeEmail.PreviewProps = {
 
 export default WelcomeEmail;
 
-const main = {
-  backgroundColor: '#ffffff',
-  color: 'rgb(66, 80, 175)',
-  fontFamily: 'Overpass, sans-serif',
-  fontSize: '16px',
-  lineHeight: '16px',
-};
-
-const container = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-};
-
-const title = {
-  fontSize: '2rem',
-  fontWeight: 500,
-  lineHeight: '36px',
-};
-
-const section = {
-  padding: '50px',
-  backgroundColor: 'rgb(226, 232, 240)',
-  border: 'solid 0px rgb(248 113 113)',
-  borderRadius: '50px',
-  textAlign: 'center' as const,
-};
-
 const text = {
-  margin: '0 0 10px 0',
+  margin: '0 0 24px 0',
   textAlign: 'left' as const,
+  fontSize: '18px',
+  lineHeight: '24px',
 };
 
 const button: CSS.Properties = {
@@ -150,11 +156,4 @@ const button: CSS.Properties = {
   lineHeight: 1.5,
   textTransform: 'uppercase',
   borderRadius: '9999px',
-};
-
-const footer = {
-  color: '#6a737d',
-  fontSize: '0.8rem',
-  textAlign: 'center' as const,
-  marginTop: '24px',
 };

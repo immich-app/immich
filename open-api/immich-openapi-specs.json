@@ -7758,6 +7758,9 @@
           "name": {
             "type": "string"
           },
+          "notify": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -9362,6 +9365,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "email": {
+            "type": "boolean"
+          },
           "facialRecognition": {
             "type": "boolean"
           },
@@ -9395,6 +9401,7 @@
         },
         "required": [
           "configFile",
+          "email",
           "facialRecognition",
           "map",
           "oauth",

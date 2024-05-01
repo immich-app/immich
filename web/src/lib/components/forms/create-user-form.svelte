@@ -8,6 +8,7 @@
   import PasswordField from '../shared-components/password-field.svelte';
   import Slider from '../elements/slider.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let onClose: () => void;
 
@@ -19,6 +20,7 @@
   let confirmPassword = '';
   let name = '';
   let shouldChangePassword = true;
+  let notify = true;
 
   let canCreateUser = false;
   let quotaSize: number | undefined;
@@ -54,6 +56,7 @@
             shouldChangePassword,
             name,
             quotaSizeInBytes,
+            notify,
           },
         });
 
@@ -77,6 +80,13 @@
       <label class="immich-form-label" for="email">Email</label>
       <input class="immich-form-input" id="email" bind:value={email} type="email" required />
     </div>
+
+    {#if $featureFlags.email}
+      <div class="my-4 flex place-items-center justify-between gap-2">
+        <label class="text-sm dark:text-immich-dark-fg" for="send-welcome-email"> Send welcome email </label>
+        <Slider id="send-welcome-email" bind:checked={notify} />
+      </div>
+    {/if}
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">Password</label>

@@ -63,7 +63,9 @@ export class UserService {
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.createUser(dto);
     const tempPassword = user.shouldChangePassword ? dto.password : undefined;
-    await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
+    if (dto.notify) {
+      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
+    }
     return mapUser(user);
   }
 

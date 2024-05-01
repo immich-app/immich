@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React from 'react';
@@ -51,10 +51,6 @@ export class NotificationRepository implements INotificationRepository {
     switch (template) {
       case EmailTemplate.WELCOME: {
         return React.createElement(WelcomeEmail, data);
-      }
-
-      case EmailTemplate.RESET_PASSWORD: {
-        throw new NotImplementedException();
       }
     }
   }

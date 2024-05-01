@@ -746,6 +746,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    email: boolean;
     facialRecognition: boolean;
     map: boolean;
     oauth: boolean;
@@ -1054,6 +1055,7 @@ export type CreateUserDto = {
     email: string;
     memoriesEnabled?: boolean;
     name: string;
+    notify?: boolean;
     password: string;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
