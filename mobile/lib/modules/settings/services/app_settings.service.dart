@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),

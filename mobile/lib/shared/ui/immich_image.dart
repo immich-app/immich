@@ -4,8 +4,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:octo_image/octo_image.dart';
 
 class ImmichImage extends StatelessWidget {

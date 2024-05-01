@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/search/models/curated_content.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
@@ -15,7 +15,7 @@ import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
@@ -27,7 +27,7 @@ class SearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final places = ref.watch(getPlacesProvider);
+    final places = ref.watch(getPreviewPlacesProvider);
     final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
@@ -64,7 +64,7 @@ class SearchPage extends HookConsumerWidget {
             ),
             child: CuratedPeopleRow(
               content: people
-                  .map((e) => CuratedContent(label: e.name, id: e.id))
+                  .map((e) => SearchCuratedContent(label: e.name, id: e.id))
                   .take(12)
                   .toList(),
               onTap: (content, index) {
@@ -174,7 +174,7 @@ class SearchPage extends HookConsumerWidget {
               SearchRowTitle(
                 title: "search_page_places".tr(),
                 onViewAllPressed: () =>
-                    context.pushRoute(const CuratedLocationRoute()),
+                    context.pushRoute(const AllPlacesRoute()),
                 top: 0,
               ),
               const SizedBox(height: 10.0),

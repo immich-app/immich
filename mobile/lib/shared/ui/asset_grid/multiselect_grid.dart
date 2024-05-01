@@ -13,14 +13,14 @@ import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
-import 'package:immich_mobile/modules/home/models/selection_state.dart';
+import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -69,7 +69,7 @@ class MultiselectGrid extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionAssetState = useState(const SelectionAssetState());
+    final selectionAssetState = useState(const AssetSelectionState());
 
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
@@ -98,7 +98,7 @@ class MultiselectGrid extends HookConsumerWidget {
       selectionEnabledHook.value = multiselect;
       selection.value = selectedAssets;
       selectionAssetState.value =
-          SelectionAssetState.fromSelection(selectedAssets);
+          AssetSelectionState.fromSelection(selectedAssets);
     }
 
     errorBuilder(String? msg) => msg != null && msg.isNotEmpty

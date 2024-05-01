@@ -4,14 +4,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
+import 'package:immich_mobile/models/asset_viewer/asset_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
-class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
+class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   final ImageViewerService _imageViewerService;
   final ShareService _shareService;
   final AlbumService _albumService;
@@ -21,7 +21,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
     this._shareService,
     this._albumService,
   ) : super(
-          ImageViewerPageState(
+          AssetViewerPageState(
             downloadAssetStatus: DownloadAssetStatus.idle,
           ),
         );
@@ -86,7 +86,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
 }
 
 final imageViewerStateProvider =
-    StateNotifierProvider<ImageViewerStateNotifier, ImageViewerPageState>(
+    StateNotifierProvider<ImageViewerStateNotifier, AssetViewerPageState>(
   ((ref) => ImageViewerStateNotifier(
         ref.watch(imageViewerServiceProvider),
         ref.watch(shareServiceProvider),

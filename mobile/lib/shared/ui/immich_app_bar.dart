@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 

@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/models/map_state.model.dart';
+import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:mocktail/mocktail.dart';
 

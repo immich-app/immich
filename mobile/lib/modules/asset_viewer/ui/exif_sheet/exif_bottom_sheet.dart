@@ -9,8 +9,8 @@ import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_detail.dar
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_image_properties.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_location.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_people.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 

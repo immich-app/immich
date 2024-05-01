@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';

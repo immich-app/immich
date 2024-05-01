@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/map/models/map_marker.dart';
+import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logging/logging.dart';
