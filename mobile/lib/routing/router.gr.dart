@@ -138,10 +138,10 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    CuratedLocationRoute.name: (routeData) {
+    AllPlacesRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const CuratedLocationPage(),
+        child: const AllPlacesPage(),
       );
     },
     FailedBackupStatusRoute.name: (routeData) {
@@ -753,11 +753,11 @@ class CreateAlbumRouteArgs {
 }
 
 /// generated route for
-/// [CuratedLocationPage]
-class CuratedLocationRoute extends PageRouteInfo<void> {
-  const CuratedLocationRoute({List<PageRouteInfo>? children})
+/// [AllPlacesPage]
+class AllPlacesRoute extends PageRouteInfo<void> {
+  const AllPlacesRoute({List<PageRouteInfo>? children})
       : super(
-          CuratedLocationRoute.name,
+          AllPlacesRoute.name,
           initialChildren: children,
         );
 
