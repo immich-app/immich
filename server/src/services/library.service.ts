@@ -512,7 +512,7 @@ export class LibraryService {
         type: assetType,
         originalFileName,
         sidecarPath,
-        isReadOnly: true,
+        isReadOnly: library?.isReadOnly ?? false,
         isExternal: true,
       });
       assetId = addedAsset.id;
