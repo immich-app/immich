@@ -39,7 +39,7 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { CropOptions, ImageDimensions, IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
