@@ -151,41 +151,42 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
+  deleteAll(ownerId: string): Promise<void>;
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
+  getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
+  getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getByIds(
     ids: string[],
     relations?: FindOptionsRelations<AssetEntity>,
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]>;
-  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
-  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
-  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
+  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
+  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
+  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;
-  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
+  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
+  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
-  deleteAll(ownerId: string): Promise<void>;
-  getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
-  update(asset: AssetUpdateOptions): Promise<void>;
-  remove(asset: AssetEntity): Promise<void>;
-  softDeleteAll(ids: string[]): Promise<void>;
-  restoreAll(ids: string[]): Promise<void>;
-  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
+  remove(asset: AssetEntity): Promise<void>;
+  restoreAll(ids: string[]): Promise<void>;
+  setReadOnlyForLibrary(libraryId: string, isReadOnly: boolean): Promise<void>;
+  softDeleteAll(ids: string[]): Promise<void>;
+  updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
+  update(asset: AssetUpdateOptions): Promise<void>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
-  getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
-  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
 }

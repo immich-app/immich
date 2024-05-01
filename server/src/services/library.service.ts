@@ -364,6 +364,10 @@ export class LibraryService {
       }
     }
 
+    if (dto.isReadOnly !== undefined) {
+      await this.assetRepository.setReadOnlyForLibrary(id, dto.isReadOnly);
+    }
+
     return mapLibrary(library);
   }
 
