@@ -67,10 +67,7 @@
     type AlbumUserAddDto,
   } from '@immich/sdk';
   import {
-    mdiArrowDownThin,
     mdiArrowLeft,
-    mdiArrowUpThin,
-    mdiCog,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
