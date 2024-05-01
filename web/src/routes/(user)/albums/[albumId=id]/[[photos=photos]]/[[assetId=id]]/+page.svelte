@@ -85,7 +85,6 @@
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
   import { findKey } from 'lodash-es';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
   import type { RenderedOption } from '$lib/utils/actions';
 
   export let data: PageData;
@@ -402,34 +401,6 @@
       handleError(error, 'Unable to update album cover');
     }
   };
-
-  $: selectedOption = albumOrder ? options[albumOrder] : options[AssetOrder.Desc];
-
-  const options: Record<AssetOrder, RenderedOption> = {
-    [AssetOrder.Preference]: { icon: mdiCog, title: 'Default' },
-    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Oldest first' },
-    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
-  };
-
-  const handleToggle = async (returnedOption: RenderedOption) => {
-    if (selectedOption === returnedOption) {
-      return;
-    }
-    let order = AssetOrder.Desc;
-    order = findKey(options, (option) => option === returnedOption) as AssetOrder;
-
-    try {
-      await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          order,
-        },
-      });
-      albumOrder = order;
-    } catch (error) {
-      handleError(error, 'Error updating album order');
-    }
-  };
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -471,20 +442,6 @@
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
-            {#if album.assetCount > 1 && $user.id === album.ownerId}
-              <Dropdown
-                options={Object.values(options)}
-                hideText={true}
-                bind:selectedOption
-                render={(option) => {
-                  return {
-                    title: option.title,
-                    icon: option.icon,
-                  };
-                }}
-                on:select={({ detail }) => handleToggle(detail)}
-              />
-            {/if}
             {#if isEditor}
               <CircleIconButton
                 title="Add photos"

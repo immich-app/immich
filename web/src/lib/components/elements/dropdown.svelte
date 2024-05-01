@@ -30,7 +30,6 @@
   export let showMenu = false;
   export let controlable = false;
   export let hideTextOnSmallScreen = true;
-  export let hideText = false;
   export let title: string | undefined = undefined;
 
   export let render: (item: T) => string | RenderedOption = String;
@@ -76,9 +75,7 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      {#if !hideText}
-        <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
-      {/if}
+      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
     </div>
   </LinkButton>
 
