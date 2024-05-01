@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -116,6 +116,15 @@ class SearchService {
       return await _apiService.searchApi.getExploreData();
     } catch (error, stackTrace) {
       _log.severe("Failed to getExploreData", error, stackTrace);
+    }
+    return null;
+  }
+
+  Future<List<AssetResponseDto>?> getAllPlaces() async {
+    try {
+      return await _apiService.searchApi.getAssetsByCity();
+    } catch (error, stackTrace) {
+      _log.severe("Failed to getAllPlaces", error, stackTrace);
     }
     return null;
   }

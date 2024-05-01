@@ -1,4 +1,4 @@
-import 'package:immich_mobile/modules/map/models/map_marker.dart';
+import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_service.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

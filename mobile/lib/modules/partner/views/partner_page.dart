@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/modules/partner/services/partner.service.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_avatar.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:isar/isar.dart';

@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/services/backup_verification.service.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';

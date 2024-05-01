@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart' as local_store;
+import 'package:immich_mobile/entities/store.entity.dart' as local_store;
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';

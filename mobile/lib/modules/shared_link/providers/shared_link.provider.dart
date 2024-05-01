@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
+import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
 
 class SharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>> {

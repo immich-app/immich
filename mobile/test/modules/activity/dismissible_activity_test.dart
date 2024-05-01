@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';

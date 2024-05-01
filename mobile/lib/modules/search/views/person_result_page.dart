@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 

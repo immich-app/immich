@@ -12,7 +12,7 @@ import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dar
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';

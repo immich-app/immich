@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

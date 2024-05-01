@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 ValueNotifier<T> useAppSettingsState<T>(
   AppSettingsEnum<T> key,

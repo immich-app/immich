@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/views/activities_page.dart';
-import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/views/album_options_part.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_options_page.dart';
 import 'package:immich_mobile/modules/map/views/map_location_picker_page.dart';
 import 'package:immich_mobile/modules/map/views/map_page.dart';
-import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/modules/memories/views/memory_page.dart';
 import 'package:immich_mobile/modules/partner/views/partner_detail_page.dart';
 import 'package:immich_mobile/modules/partner/views/partner_page.dart';
@@ -31,17 +31,17 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/modules/settings/views/settings_sub_page.dart';
 import 'package:immich_mobile/modules/search/views/search_input_page.dart';
-import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
+import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_edit_page.dart';
 import 'package:immich_mobile/modules/shared_link/views/shared_link_page.dart';
 import 'package:immich_mobile/modules/trash/views/trash_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
-import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
+import 'package:immich_mobile/modules/search/views/all_places_page.dart';
 import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
@@ -50,10 +50,10 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/logger_message.model.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/logger_message.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
@@ -127,7 +127,7 @@ class AppRouter extends _$AppRouter {
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
     AutoRoute(
-      page: CuratedLocationRoute.page,
+      page: AllPlacesRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(

@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';

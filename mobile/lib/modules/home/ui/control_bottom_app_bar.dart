@@ -6,12 +6,12 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
-import 'package:immich_mobile/modules/home/models/selection_state.dart';
+import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
 final controlBottomAppBarNotifier = ControlBottomAppBarNotifier();
@@ -40,7 +40,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
   final bool enabled;
   final bool unfavorite;
   final bool unarchive;
-  final SelectionAssetState selectionAssetState;
+  final AssetSelectionState selectionAssetState;
 
   const ControlBottomAppBar({
     super.key,
@@ -57,7 +57,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     this.onEditTime,
     this.onEditLocation,
     this.onRemoveFromAlbum,
-    this.selectionAssetState = const SelectionAssetState(),
+    this.selectionAssetState = const AssetSelectionState(),
     this.enabled = true,
     this.unarchive = false,
     this.unfavorite = false,

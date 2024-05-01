@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'current_asset.provider.g.dart';

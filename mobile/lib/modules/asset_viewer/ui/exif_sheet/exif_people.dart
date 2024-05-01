@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_people.provider.dart';
-import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 class ExifPeople extends ConsumerWidget {
   final Asset asset;
@@ -48,9 +48,10 @@ class ExifPeople extends ConsumerWidget {
       return Container();
     }
 
-    final curatedPeople =
-        people?.map((p) => CuratedContent(id: p.id, label: p.name)).toList() ??
-            [];
+    final curatedPeople = people
+            ?.map((p) => SearchCuratedContent(id: p.id, label: p.name))
+            .toList() ??
+        [];
 
     return Column(
       children: [

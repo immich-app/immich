@@ -6,7 +6,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

@@ -4,10 +4,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';

@@ -9,8 +9,8 @@ import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 

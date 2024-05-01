@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset

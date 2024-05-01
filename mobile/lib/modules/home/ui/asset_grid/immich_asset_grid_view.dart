@@ -17,7 +17,7 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_to_date_notifier.provider.dart';
 import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';

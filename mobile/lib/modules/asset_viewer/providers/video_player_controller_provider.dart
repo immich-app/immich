@@ -1,5 +1,5 @@
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_player/video_player.dart';
 

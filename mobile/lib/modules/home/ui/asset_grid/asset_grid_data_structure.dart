@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 

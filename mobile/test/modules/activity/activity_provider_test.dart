@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/activities/models/activity.model.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/activities/providers/activity_service.provider.dart';
 import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';

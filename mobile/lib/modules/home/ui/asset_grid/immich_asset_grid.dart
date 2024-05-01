@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid_view.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
