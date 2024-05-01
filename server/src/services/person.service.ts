@@ -520,14 +520,10 @@ export class PersonService {
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
-    let exifWidth = asset.exifInfo.exifImageWidth;
-    let exifHeight = asset.exifInfo.exifImageHeight;
-    if (asset.exifInfo.orientation) {
-      ({ width: exifWidth, height: exifHeight } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
-        width: asset.exifInfo.exifImageWidth,
-        height: asset.exifInfo.exifImageHeight,
-      }));
-    }
+    const { width: exifWidth, height: exifHeight } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
+      width: asset.exifInfo.exifImageWidth,
+      height: asset.exifInfo.exifImageHeight,
+    });
 
     const widthScale = exifWidth / imageWidth;
     const heightScale = exifHeight / imageHeight;
