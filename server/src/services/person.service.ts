@@ -545,8 +545,8 @@ export class PersonService {
     const newHalfSize = Math.min(
       middleX - Math.max(0, middleX - targetHalfSize),
       middleY - Math.max(0, middleY - targetHalfSize),
-      Math.min(asset.exifInfo.exifImageWidth - 1, middleX + targetHalfSize) - middleX,
-      Math.min(asset.exifInfo.exifImageHeight - 1, middleY + targetHalfSize) - middleY,
+      Math.min(exifWidth - 1, middleX + targetHalfSize) - middleX,
+      Math.min(exifHeight - 1, middleY + targetHalfSize) - middleY,
     );
 
     const cropOptions: CropOptions = {
