@@ -245,10 +245,9 @@
 
   const onToggleReadOnlyClicked = async () => {
     const library = libraries[selectedLibraryIndex];
-    const prevValue = library.isReadOnly == null ? library.type === LibraryType.External : library.isReadOnly;
 
     try {
-      await updateLibrary({ id: library.id, updateLibraryDto: { isReadOnly: !prevValue } });
+      await updateLibrary({ id: library.id, updateLibraryDto: { isReadOnly: !library.isReadOnly } });
       closeAll();
       await readLibraryList();
     } catch (error) {
