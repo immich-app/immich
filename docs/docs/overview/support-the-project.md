@@ -4,23 +4,7 @@ sidebar_position: 5
 
 # Support The Project
 
-I am committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone, so I need your help to give me additional motivation to keep going.
-
-As our hosts in the [selfhosted.show - In the episode 'The-organization-which-must-not-be-named is a Hostile Actor'](https://selfhosted.show/79?t=1418) said, this is a massive undertaking that the team and I are doing. I would love to someday be able to do this full-time, and I am asking for your help to make that happen.
-
-If you feel like this is the right cause and the app is something you see yourself using for a long time, please consider supporting the project with one of the options below.
-
-## Donation
-
-- Monthly donation via [GitHub Sponsors](https://github.com/sponsors/immich-app)
-- One-time donation via [GitHub Sponsors](https://github.com/sponsors/immich-app?frequency=one-time)
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-
 ## Contributing
-
-There are lots of non-monetary ways to contribute to Immich as well.
 
 1. Testing - Using Immich and reporting bugs is a great way to help support the project. Found a bug? [Open an issue on GitHub][github-issue].
 1. Translations - The Immich mobile app has been translated into [17 languages][github-langs] so far! To contribute with translations, email me at alex.tran1502@gmail.com or send me a message on discord.
