@@ -1503,8 +1503,9 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function uploadFile({ key, createAssetDto }: {
+export function uploadFile({ key, xImmichChecksum, createAssetDto }: {
     key?: string;
+    xImmichChecksum?: string;
     createAssetDto: CreateAssetDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -1515,7 +1516,10 @@ export function uploadFile({ key, createAssetDto }: {
     }))}`, oazapfts.multipart({
         ...opts,
         method: "POST",
-        body: createAssetDto
+        body: createAssetDto,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-checksum": xImmichChecksum
+        })
     })));
 }
 export function getAssetInfo({ id, key }: {
