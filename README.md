@@ -48,7 +48,6 @@
 - [Introduction](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
-- [Support The Project](#support-the-project)
 
 ## Documentation
 

@@ -48,7 +48,6 @@
 - [Introdução](https://immich.app/docs/overview/introduction)
 - [Instalação](https://immich.app/docs/install/requirements)
 - [Diretrizes de Contribuição](https://immich.app/docs/overview/support-the-project)
-- [Apoie o Projeto](#support-the-project)
 
 ## Documentação
 
@@ -106,23 +105,6 @@ Especificações: Nível Gratuito da Oracle VM - Amsterdam - 2.4Ghz quad-core AR
 | Suporte off-line                                    | Sim              | Não |
 | Galeria em modo apenas leitura                      | Sim              | Sim |
 | Empilhamento de fotos                               | Sim              | Sim |
-
-## Apoie o Projeto
-
-Comprometi-me com este projeto, e não vou parar. Continuarei atualizando a documentação, adicionando novos recursos e corrigindo bugs. Mas não posso fazer isso sozinho. Então, preciso da sua ajuda para me fornecer motivação adicional para continuar.
-
-Como nossos anfitriões no [selfhosted.show - No episódio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) disseram, isso é uma empreitada massiva do que a equipe e eu estamos fazendo. E eu adoraria, algum dia, poder dedicar-me integralmente a esse projeto, e estou pedindo a sua ajuda para tornar isso possível.
-
-Se você acredita que esta é a causa certa e que o aplicativo é algo que você pretende usar por um longo tempo, por favor, considere apoiar o projeto através de uma das opções abaixo.
-
-### Doação
-
-- [Doação recorrente mensal](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Doação única](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Liberapay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Contribuidores
 
