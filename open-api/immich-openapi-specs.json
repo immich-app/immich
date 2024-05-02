@@ -6812,6 +6812,9 @@
           "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6838,6 +6841,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "notifications",
           "search",
           "sidecar",
           "smartSearch",
@@ -7754,6 +7758,9 @@
           "name": {
             "type": "string"
           },
+          "notify": {
+            "type": "boolean"
+          },
           "password": {
             "type": "string"
           },
@@ -8145,7 +8152,8 @@
           "migration",
           "search",
           "sidecar",
-          "library"
+          "library",
+          "notifications"
         ],
         "type": "string"
       },
@@ -9357,6 +9365,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "email": {
+            "type": "boolean"
+          },
           "facialRecognition": {
             "type": "boolean"
           },
@@ -9390,6 +9401,7 @@
         },
         "required": [
           "configFile",
+          "email",
           "facialRecognition",
           "map",
           "oauth",
@@ -9925,6 +9937,9 @@
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/SystemConfigNotificationsDto"
+          },
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
@@ -9959,6 +9974,7 @@
           "machineLearning",
           "map",
           "newVersionCheck",
+          "notifications",
           "oauth",
           "passwordLogin",
           "reverseGeocoding",
@@ -10128,6 +10144,9 @@
           "migration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -10150,6 +10169,7 @@
           "library",
           "metadataExtraction",
           "migration",
+          "notifications",
           "search",
           "sidecar",
           "smartSearch",
@@ -10267,6 +10287,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigNotificationsDto": {
+        "properties": {
+          "smtp": {
+            "$ref": "#/components/schemas/SystemConfigSmtpDto"
+          }
+        },
+        "required": [
+          "smtp"
+        ],
+        "type": "object"
+      },
       "SystemConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
@@ -10365,6 +10396,58 @@
         "required": [
           "externalDomain",
           "loginPageMessage"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSmtpDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "from": {
+            "type": "string"
+          },
+          "replyTo": {
+            "type": "string"
+          },
+          "transport": {
+            "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
+          }
+        },
+        "required": [
+          "enabled",
+          "from",
+          "replyTo",
+          "transport"
+        ],
+        "type": "object"
+      },
+      "SystemConfigSmtpTransportDto": {
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "ignoreCert": {
+            "type": "boolean"
+          },
+          "password": {
+            "type": "string"
+          },
+          "port": {
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "number"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "ignoreCert",
+          "password",
+          "port",
+          "username"
         ],
         "type": "object"
       },

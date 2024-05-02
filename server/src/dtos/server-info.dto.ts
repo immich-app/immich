@@ -108,6 +108,7 @@ export class ServerFeaturesDto implements FeatureFlags {
   passwordLogin!: boolean;
   sidecar!: boolean;
   search!: boolean;
+  email!: boolean;
 }
 
 export interface ReleaseNotification {

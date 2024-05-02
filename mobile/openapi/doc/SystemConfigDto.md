@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
 **newVersionCheck** | [**SystemConfigNewVersionCheckDto**](SystemConfigNewVersionCheckDto.md) |  | 
+**notifications** | [**SystemConfigNotificationsDto**](SystemConfigNotificationsDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **reverseGeocoding** | [**SystemConfigReverseGeocodingDto**](SystemConfigReverseGeocodingDto.md) |  | 

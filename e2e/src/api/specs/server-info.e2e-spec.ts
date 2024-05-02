@@ -75,6 +75,7 @@ describe('/server-info', () => {
         search: true,
         sidecar: true,
         trash: true,
+        email: false,
       });
     });
   });

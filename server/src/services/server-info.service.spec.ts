@@ -186,6 +186,7 @@ describe(ServerInfoService.name, () => {
         sidecar: true,
         configFile: false,
         trash: true,
+        email: false,
       });
       expect(configMock.load).toHaveBeenCalled();
     });

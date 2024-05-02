@@ -11,6 +11,7 @@ export enum QueueName {
   SEARCH = 'search',
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
+  NOTIFICATION = 'notifications',
 }
 
 export type ConcurrentQueueName = Exclude<
@@ -90,6 +91,10 @@ export enum JobName {
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
+
+  // Notification
+  NOTIFY_SIGNUP = 'notify-signup',
+  SEND_EMAIL = 'notification-send-email',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -134,6 +139,17 @@ export interface ISidecarWriteJob extends IEntityJob {
 
 export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
+}
+
+export interface IEmailJob {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export interface INotifySignupJob extends IEntityJob {
+  tempPassword?: string;
 }
 
 export interface JobCounts {
@@ -218,7 +234,11 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
+
+  // Notification
+  | { name: JobName.SEND_EMAIL; data: IEmailJob }
+  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
 
 export enum JobStatus {
   SUCCESS = 'success',
