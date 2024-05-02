@@ -28,6 +28,7 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Feragatname

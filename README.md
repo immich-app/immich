@@ -29,6 +29,7 @@
   <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
   <a href="readme_i18n/README_zh_CN.md">中文</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Disclaimer
