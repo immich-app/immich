@@ -473,6 +473,30 @@ WHERE
 LIMIT
   1
 
+-- AssetRepository.getUploadAssetIdByChecksum
+SELECT DISTINCT
+  "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
+FROM
+  (
+    SELECT
+      "AssetEntity"."id" AS "AssetEntity_id"
+    FROM
+      "assets" "AssetEntity"
+      LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
+    WHERE
+      (
+        ("AssetEntity"."ownerId" = $1)
+        AND ("AssetEntity"."checksum" = $2)
+        AND (
+          (("AssetEntity__AssetEntity_library"."type" = $3))
+        )
+      )
+  ) "distinctAlias"
+ORDER BY
+  "AssetEntity_id" ASC
+LIMIT
+  1
+
 -- AssetRepository.getWithout (sidecar)
 SELECT
   "AssetEntity"."id" AS "AssetEntity_id",

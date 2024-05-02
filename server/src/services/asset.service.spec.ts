@@ -29,6 +29,8 @@ import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.r
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
+const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
   [AssetType.VIDEO]: 23,
@@ -196,6 +198,31 @@ describe(AssetService.name, () => {
     );
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
+  });
+
+  describe('getUploadAssetIdByChecksum', () => {
+    it('should handle a non-existent asset', async () => {
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset by base64', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
   });
 
   describe('canUpload', () => {

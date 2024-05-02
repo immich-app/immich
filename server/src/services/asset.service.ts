@@ -12,6 +12,7 @@ import {
   SanitizedAssetResponseDto,
   mapAsset,
 } from 'src/dtos/asset-response.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -47,6 +48,7 @@ import { ISystemConfigRepository } from 'src/interfaces/system-config.interface'
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
+import { fromChecksum } from 'src/utils/request';
 
 export interface UploadRequest {
   auth: AuthDto | null;
@@ -81,6 +83,19 @@ export class AssetService {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository, this.logger);
+  }
+
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
+    if (!checksum) {
+      return;
+    }
+
+    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
+    if (!assetId) {
+      return;
+    }
+
+    return { id: assetId, duplicate: true };
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
