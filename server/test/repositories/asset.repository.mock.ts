@@ -14,6 +14,7 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getById: vitest.fn(),
     getWithout: vitest.fn(),
     getByChecksum: vitest.fn(),
+    getUploadAssetIdByChecksum: vitest.fn(),
     getWith: vitest.fn(),
     getRandom: vitest.fn(),
     getFirstAssetForAlbumId: vitest.fn(),
