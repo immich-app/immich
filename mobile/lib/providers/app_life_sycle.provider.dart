@@ -17,7 +17,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-enum AppStateEnum {
+enum AppLifeCycleEnum {
   active,
   inactive,
   paused,
@@ -26,18 +26,18 @@ enum AppStateEnum {
   hidden,
 }
 
-class AppStateNotiifer extends StateNotifier<AppStateEnum> {
+class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
   bool _wasPaused = false;
 
-  AppStateNotiifer(this._ref) : super(AppStateEnum.active);
+  AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
-  AppStateEnum getAppState() {
+  AppLifeCycleEnum getAppState() {
     return state;
   }
 
   void handleAppResume() {
-    state = AppStateEnum.resumed;
+    state = AppLifeCycleEnum.resumed;
 
     // no need to resume because app was never really paused
     if (!_wasPaused) return;
@@ -80,12 +80,12 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
   }
 
   void handleAppInactivity() {
-    state = AppStateEnum.inactive;
+    state = AppLifeCycleEnum.inactive;
     // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 
   void handleAppPause() {
-    state = AppStateEnum.paused;
+    state = AppLifeCycleEnum.paused;
     _wasPaused = true;
     // Do not cancel backup if manual upload is in progress
     if (_ref.read(backupProvider.notifier).backupProgress !=
@@ -97,18 +97,18 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
   }
 
   void handleAppDetached() {
-    state = AppStateEnum.detached;
+    state = AppLifeCycleEnum.detached;
     // no guarantee this is called at all
     _ref.read(manualUploadProvider.notifier).cancelBackup();
   }
 
   void handleAppHidden() {
-    state = AppStateEnum.hidden;
+    state = AppLifeCycleEnum.hidden;
     // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 }
 
 final appStateProvider =
-    StateNotifierProvider<AppStateNotiifer, AppStateEnum>((ref) {
-  return AppStateNotiifer(ref);
+    StateNotifierProvider<AppLifeCycleNotifier, AppLifeCycleEnum>((ref) {
+  return AppLifeCycleNotifier(ref);
 });

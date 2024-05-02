@@ -674,9 +674,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   Future<void> notifyBackgroundServiceCanRun() async {
     const allowedStates = [
-      AppStateEnum.inactive,
-      AppStateEnum.paused,
-      AppStateEnum.detached,
+      AppLifeCycleEnum.inactive,
+      AppLifeCycleEnum.paused,
+      AppLifeCycleEnum.detached,
     ];
     if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       _backgroundService.releaseLock();
