@@ -64,7 +64,7 @@ import Timeline, { DateType, Item } from '../components/timeline';
 const items: Item[] = [
   {
     icon: mdiHandshakeOutline,
-    description: 'Joining Futo and Immich core team goes full-time',
+    description: 'Joined Futo and Immich core team goes full-time',
     title: 'Immich joins FUTO!',
     release: 'v1.103.0',
     date: new Date(2024, 4, 1),
