@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
 
 class LocalStorageSettings extends HookConsumerWidget {
   const LocalStorageSettings({super.key});

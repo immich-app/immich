@@ -6,13 +6,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class ActivitiesPage extends HookConsumerWidget {

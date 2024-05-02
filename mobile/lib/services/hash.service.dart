@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';

@@ -9,7 +9,7 @@ import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart
 import 'package:immich_mobile/modules/settings/utils/app_settings_update_hook.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:logging/logging.dart';

@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
 

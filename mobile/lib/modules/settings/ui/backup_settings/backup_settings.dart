@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/backup/providers/backup_verification.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_verification.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/backup_settings/background_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/backup_settings/foreground_settings.dart';

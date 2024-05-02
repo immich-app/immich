@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
+import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 
 class AlbumViewerEditableTitle extends HookConsumerWidget {

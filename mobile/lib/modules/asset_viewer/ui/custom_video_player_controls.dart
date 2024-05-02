@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/center_play_button.dart';
 import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/hooks/timer_hook.dart';

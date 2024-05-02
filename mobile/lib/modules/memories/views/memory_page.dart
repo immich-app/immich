@@ -9,7 +9,7 @@ import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_epilogue.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_progress_indicator.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 @RoutePage()

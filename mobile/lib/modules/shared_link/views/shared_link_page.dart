@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
-import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
+import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/ui/shared_link_item.dart';
 
 @RoutePage()

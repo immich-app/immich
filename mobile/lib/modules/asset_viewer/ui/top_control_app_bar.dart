@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
+import 'package:immich_mobile/providers/activity_statistics.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
