@@ -163,7 +163,7 @@ class TabControllerPage extends HookConsumerWidget {
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: const [
-        HomeRoute(),
+        PhotosRoute(),
         SearchRoute(),
         SharingRoute(),
         LibraryRoute(),

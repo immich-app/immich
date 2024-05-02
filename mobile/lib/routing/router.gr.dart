@@ -170,10 +170,10 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    HomeRoute.name: (routeData) {
+    PhotosRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const HomePage(),
+        child: const PhotosPage(),
       );
     },
     LibraryRoute.name: (routeData) {
@@ -853,15 +853,15 @@ class GalleryViewerRouteArgs {
 }
 
 /// generated route for
-/// [HomePage]
-class HomeRoute extends PageRouteInfo<void> {
-  const HomeRoute({List<PageRouteInfo>? children})
+/// [PhotosPage]
+class PhotosRoute extends PageRouteInfo<void> {
+  const PhotosRoute({List<PageRouteInfo>? children})
       : super(
-          HomeRoute.name,
+          PhotosRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'HomeRoute';
+  static const String name = 'PhotosRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

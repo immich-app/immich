@@ -26,7 +26,7 @@ import 'package:immich_mobile/modules/backup/views/backup_album_selection_page.d
 import 'package:immich_mobile/modules/backup/views/backup_controller_page.dart';
 import 'package:immich_mobile/modules/backup/views/failed_backup_status_page.dart';
 import 'package:immich_mobile/modules/favorite/views/favorites_page.dart';
-import 'package:immich_mobile/modules/home/views/home_page.dart';
+import 'package:immich_mobile/modules/home/views/photos_page.dart';
 import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -97,7 +97,10 @@ class AppRouter extends _$AppRouter {
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],
       children: [
-        AutoRoute(page: HomeRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(
+          page: PhotosRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
         AutoRoute(
           page: SearchRoute.page,
           guards: [_authGuard, _duplicateGuard],
