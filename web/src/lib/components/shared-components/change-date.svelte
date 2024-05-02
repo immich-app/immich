@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import DateInput from '../elements/date-input.svelte';
