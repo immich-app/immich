@@ -1,5 +1,5 @@
-import type { LayoutLoad } from './$types';
 import { defaults } from '@immich/sdk';
+import type { LayoutLoad } from './$types';
 
 export const ssr = false;
 export const csr = true;
