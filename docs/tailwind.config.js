@@ -20,8 +20,6 @@ module.exports = {
         'immich-dark-bg': 'black',
         'immich-dark-fg': '#e5e7eb',
         'immich-dark-gray': '#212121',
-
-        'immich-sponsor': '#db61a2',
       },
       fontFamily: {
         'immich-title': ['Snowburst One', 'cursive'],
