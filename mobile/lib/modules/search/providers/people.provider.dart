@@ -1,7 +1,7 @@
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/search/services/person.service.dart';
+import 'package:immich_mobile/services/person.service.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

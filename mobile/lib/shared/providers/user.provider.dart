@@ -5,7 +5,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:isar/isar.dart';
 
 class CurrentUserProvider extends StateNotifier<User?> {

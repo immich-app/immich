@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/modules/partner/services/partner.service.dart';
+import 'package:immich_mobile/services/partner.service.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';

@@ -9,7 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
+import 'package:immich_mobile/services/asset_stack.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_controls.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';

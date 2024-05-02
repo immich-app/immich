@@ -55,7 +55,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
 import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';

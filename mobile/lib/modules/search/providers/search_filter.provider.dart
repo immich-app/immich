@@ -1,4 +1,4 @@
-import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:immich_mobile/services/search.service.dart';
 import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

@@ -14,7 +14,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum AppStateEnum {

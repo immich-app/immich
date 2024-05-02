@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/models/asset_viewer/asset_viewer_page_state.model.dart';
-import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
+import 'package:immich_mobile/services/image_viewer.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
 

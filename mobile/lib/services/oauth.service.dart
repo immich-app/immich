@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';

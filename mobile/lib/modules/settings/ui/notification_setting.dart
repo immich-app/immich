@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_button_list_tile.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_slider_list_tile.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_sub_page_scaffold.dart';

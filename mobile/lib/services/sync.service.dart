@@ -9,7 +9,7 @@ import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/services/hash.service.dart';
+import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';

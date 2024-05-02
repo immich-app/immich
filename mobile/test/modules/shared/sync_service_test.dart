@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
-import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/sync.service.dart';
 import 'package:isar/isar.dart';
 
 import '../../test_utils.dart';

@@ -5,7 +5,7 @@ import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
 
 final serverInfoServiceProvider = Provider(
   (ref) => ServerInfoService(

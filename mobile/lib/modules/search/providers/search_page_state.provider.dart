@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 
-import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:immich_mobile/services/search.service.dart';
 
 final getPreviewPlacesProvider =
     FutureProvider.autoDispose<List<SearchCuratedContent>>((ref) async {

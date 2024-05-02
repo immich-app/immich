@@ -11,7 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

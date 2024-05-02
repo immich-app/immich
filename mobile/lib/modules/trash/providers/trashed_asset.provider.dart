@@ -1,11 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/trash/services/trash.service.dart';
+import 'package:immich_mobile/services/trash.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
-import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';

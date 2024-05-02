@@ -14,10 +14,10 @@ import 'package:immich_mobile/modules/backup/background_service/localization.dar
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
-import 'package:immich_mobile/modules/backup/services/backup.service.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/services/backup.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/url_helper.dart';

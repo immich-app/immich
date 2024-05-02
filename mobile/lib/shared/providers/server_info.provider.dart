@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';

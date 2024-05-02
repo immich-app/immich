@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

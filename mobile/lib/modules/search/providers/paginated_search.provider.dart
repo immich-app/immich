@@ -1,7 +1,7 @@
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
-import 'package:immich_mobile/modules/search/services/search.service.dart';
+import 'package:immich_mobile/services/search.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
