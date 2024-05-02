@@ -10,6 +10,7 @@ import {
   getSupportedMediaTypes,
   type AssetFileUploadResponseDto,
 } from '@immich/sdk';
+import { tick } from 'svelte';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -78,115 +79,80 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
-  {
-    try {
-      const formData = new FormData();
-      for (const [key, value] of Object.entries({
-        deviceAssetId,
-        deviceId: 'WEB',
-        fileCreatedAt,
-        fileModifiedAt: new Date(asset.lastModified).toISOString(),
-        isFavorite: 'false',
-        duration: '0:00:00.000000',
-        assetData: new File([asset], asset.name),
-      })) {
-        formData.append(key, value);
-      }
-
-      const key = getKey();
-
-      const res: AssetFileUploadResponseDto = await (async () => {
-        const checksum = await getSha1Checksum(asset);
-        if (checksum) {
-          // TODO: 2 roundtrips to the servers have performance and functionality problems
-          // We can have a single endpoint that does both checks and uploads using headers
-          // for example, `x-immich-checksum`. Server can then process headers first,
-          // and determine whether to consume body stream, or not at all, and return 201.
-          // With that approach, we can saves bandwidth for duplicated assets even from different users/owners.
-          // That is, on server, we can check the whole DB for the checksum. If checksum is found
-          // but the assets belong to another user, we can do hardlink or copy --reflink=always
-          // and create record, instead of uploading the whole file again.
-          // It would save both bandwidth and storage.
-          const {
-            results: [checkUploadResult],
-          } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] } });
-          if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
-            // Always because of duplicate
-            return {
-              duplicate: true,
-              id: checkUploadResult.assetId,
-            };
-          }
-        }
-        const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
-          data: formData,
-          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-        });
-        if (![200, 201].includes(response.status)) {
-          throw new Error('Failed to upload file');
-        }
-        return response.data;
-      })();
-
-      {
-        if (res.duplicate) {
-          uploadAssetsStore.duplicateCounter.update((count) => count + 1);
-        } else {
-          uploadAssetsStore.successCounter.update((c) => c + 1);
-        }
-
-        if (albumId && res.id) {
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-          await addAssetsToAlbum(albumId, [res.id]);
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
-        }
-
-        uploadAssetsStore.updateAsset(deviceAssetId, {
-          state: res.duplicate ? UploadState.DUPLICATED : UploadState.DONE,
-        });
-
-        setTimeout(() => {
-          uploadAssetsStore.removeUploadAsset(deviceAssetId);
-        }, 1000);
-
-        return res.id;
-      }
-    } catch (error) {
-      handleError(error, 'Unable to upload file');
-      const reason = getServerErrorMessage(error) || error;
-      uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
-      return undefined;
-    }
-  }
-}
-
-// TODO: should probably move this to @immach/sdk as well
-async function getSha1Checksum(file: File): Promise<string | null> {
-  // Step 0: Check if the Crypto API is supported
-  if (!crypto || !crypto.subtle || !crypto.subtle.digest) {
-    // how do we use logger here?
-    console.warn(
-      "crypto.subtle.digest API is not available. Client side duplicate checks cannot be used. Ensure you're using a secure context (HTTPS) or a supported browser.",
-    );
-    return null;
-  }
-
   try {
-    // Step 1: Convert the Blob to an ArrayBuffer directly
-    const arrayBuffer = await file.arrayBuffer();
+    const formData = new FormData();
+    for (const [key, value] of Object.entries({
+      deviceAssetId,
+      deviceId: 'WEB',
+      fileCreatedAt,
+      fileModifiedAt: new Date(asset.lastModified).toISOString(),
+      isFavorite: 'false',
+      duration: '0:00:00.000000',
+      assetData: new File([asset], asset.name),
+    })) {
+      formData.append(key, value);
+    }
 
-    // Step 2: Compute the SHA-1 hash
-    const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
+    let responseData: AssetFileUploadResponseDto | undefined;
+    const key = getKey();
+    if (crypto?.subtle?.digest && !key) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
+      await tick();
+      try {
+        const bytes = await asset.arrayBuffer();
+        const hash = await crypto.subtle.digest('SHA-1', bytes);
+        const checksum = Array.from(new Uint8Array(hash))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
 
-    // Step 3: Convert ArrayBuffer to Hex String
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+        const {
+          results: [checkUploadResult],
+        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] } });
+        if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
+          responseData = { duplicate: true, id: checkUploadResult.assetId };
+        }
+      } catch (error) {
+        console.error(`Error calculating sha1 file=${asset.name})`, error);
+      }
+    }
 
-    // Step 4: Return the SHA-1 checksum
-    return hashHex;
+    if (!responseData) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
+      const response = await uploadRequest<AssetFileUploadResponseDto>({
+        url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
+        data: formData,
+        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+      });
+      if (![200, 201].includes(response.status)) {
+        throw new Error('Failed to upload file');
+      }
+      responseData = response.data;
+    }
+    const { duplicate, id: assetId } = responseData;
+
+    if (duplicate) {
+      uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+    } else {
+      uploadAssetsStore.successCounter.update((c) => c + 1);
+    }
+
+    if (albumId && assetId) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+      await addAssetsToAlbum(albumId, [assetId]);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+    }
+
+    uploadAssetsStore.updateAsset(deviceAssetId, { state: duplicate ? UploadState.DUPLICATED : UploadState.DONE });
+
+    setTimeout(() => {
+      uploadAssetsStore.removeUploadAsset(deviceAssetId);
+    }, 1000);
+
+    return assetId;
   } catch (error) {
-    console.warn('Error processing the file for checksum generation:', error);
-    return null;
+    handleError(error, 'Unable to upload file');
+    const reason = getServerErrorMessage(error) || error;
+    uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
+    return;
   }
 }
