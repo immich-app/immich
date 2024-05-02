@@ -29,6 +29,7 @@
   <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
   <a href="readme_i18n/README_zh_CN.md">中文</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Disclaimer
@@ -47,7 +48,6 @@
 - [Introduction](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
-- [Support The Project](#support-the-project)
 
 ## Documentation
 

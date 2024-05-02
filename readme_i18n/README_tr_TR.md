@@ -28,6 +28,7 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Feragatname
@@ -45,7 +46,6 @@
 - [Giriş](https://immich.app/docs/overview/introduction)
 - [Kurulum](https://immich.app/docs/install/requirements)
 - [Katkı Sağlama Rehberi](https://immich.app/docs/overview/support-the-project)
-- [Projeyi Destekle](#projeyi-destekle)
 
 ## Belgeler
 
@@ -94,20 +94,3 @@ Server Özellikleri: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CP
 | Partner paylaşımı                                   | Evet   | Evet |
 | Yüz tanıma ve kümeleme                              | Hayır  | Evet |
 | Çevrimdışı destek                                   | Evet   | Hayır|
-
-# Projeyi Destekle
-
-Bu projeye bağlı kaldım ve durmayacağım. Belgeleri güncellemeye, yeni özellikler eklemeye ve hataları düzeltmeye devam edeceğim. Ancak bunu tek başıma yapamam. Bu yüzden devam etme konusunda bana motivasyon sağlamanız için yardımınıza ihtiyacım var.
-
-[selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) bölümünde söylendiği üzere,bu projede takımımın ve benim projeye harcadağımız büyük bir çaba var. Bir gün bunu tam zamanlı olarak yapabilmeyi çok isterim. Bunu gerçekleştirebilmek için gerçekten sizlerin desteğine ihtiyacım var.
-
-Eğer bu size doğru bir amaç gibi geliyorsa ve uygulamanın uzun bir süre boyunca kullanacağınız bir şey olduğunu düşünüyorsanız, aşağıdaki bağlantılardan birini kullanarak bana destek olabilirsiniz.
-
-## Bağış
-
-- [Aylık bağış](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Bir seferlik bağış](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
