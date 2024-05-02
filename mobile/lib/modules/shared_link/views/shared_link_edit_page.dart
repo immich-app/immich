@@ -7,9 +7,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
-import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
-import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/shared_link.provider.dart';
+import 'package:immich_mobile/services/shared_link.service.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 

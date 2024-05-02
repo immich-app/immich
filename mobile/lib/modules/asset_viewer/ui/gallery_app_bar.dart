@@ -2,19 +2,19 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
-import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
-import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dart';
+import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
-import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class GalleryAppBar extends ConsumerWidget {

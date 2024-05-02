@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 
 @RoutePage()

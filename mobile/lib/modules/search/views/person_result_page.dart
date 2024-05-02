@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/search/providers/people.provider.dart';
+import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';

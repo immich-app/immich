@@ -2,12 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 

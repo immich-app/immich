@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 

@@ -1,4 +1,4 @@
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:mocktail/mocktail.dart';
 
