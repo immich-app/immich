@@ -71,19 +71,6 @@ extension AssetListExtension on Iterable<Asset> {
     return this;
   }
 
-  /// Returns the assets that are present on a file system which has write permission
-  /// This filters out assets on readOnly external library to which we cannot perform any write operation
-  Iterable<Asset> writableOnly({
-    void Function()? errorCallback,
-  }) {
-    final bool onlyWritable = every((e) => !e.isReadOnly);
-    if (!onlyWritable) {
-      if (errorCallback != null) errorCallback();
-      return where((a) => !a.isReadOnly);
-    }
-    return this;
-  }
-
   /// Filters out offline assets and returns those that are still accessible by the Immich server
   Iterable<Asset> nonOfflineOnly({
     void Function()? errorCallback,

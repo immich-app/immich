@@ -295,7 +295,6 @@ export class AssetServiceV1 {
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
       originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
-      isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
     });
 

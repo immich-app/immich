@@ -33,7 +33,7 @@ import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
-  IAssetDeletionJob,
+  IEntityJob,
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
@@ -371,8 +371,8 @@ export class AssetService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
-    const { id, fromExternal } = job;
+  async handleAssetDeletion(job: IEntityJob): Promise<JobStatus> {
+    const { id } = job;
 
     const asset = await this.assetRepository.getById(id, {
       faces: {
@@ -385,11 +385,6 @@ export class AssetService {
 
     if (!asset) {
       return JobStatus.FAILED;
-    }
-
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
-      return JobStatus.SKIPPED;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -414,18 +409,15 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.livePhotoVideoId, fromExternal },
-      });
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
-      files.push(asset.sidecarPath, asset.originalPath);
-    }
-
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({
+      name: JobName.DELETE_FILES,
+      data: {
+        files: [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath],
+      },
+    });
 
     return JobStatus.SUCCESS;
   }
