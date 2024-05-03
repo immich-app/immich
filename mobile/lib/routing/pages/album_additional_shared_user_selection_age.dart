@@ -5,52 +5,28 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/album_title.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
-@RoutePage<List<String>>()
-class SelectUserForSharingPage extends HookConsumerWidget {
-  const SelectUserForSharingPage({super.key, required this.assets});
+@RoutePage<List<String>?>()
+class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
+  final Album album;
 
-  final Set<Asset> assets;
+  const AlbumAdditionalSharedUserSelectionPage({
+    super.key,
+    required this.album,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<User>> suggestedShareUsers =
+        ref.watch(otherUsersProvider);
     final sharedUsersList = useState<Set<User>>({});
-    final suggestedShareUsers = ref.watch(otherUsersProvider);
 
-    createSharedAlbum() async {
-      var newAlbum =
-          await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
-                ref.watch(albumTitleProvider),
-                assets,
-                sharedUsersList.value,
-              );
-
-      if (newAlbum != null) {
-        await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        // ref.watch(assetSelectionProvider.notifier).removeAll();
-        ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        context.popRoute(true);
-        context
-            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
-      }
-
-      ScaffoldMessenger(
-        child: SnackBar(
-          content: Text(
-            'select_user_for_sharing_page_err_album',
-            style: context.textTheme.bodyLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-          ).tr(),
-        ),
-      );
+    addNewUsersHandler() {
+      context.popRoute(sharedUsersList.value.map((e) => e.id).toList());
     }
 
     buildTileIcon(User user) {
@@ -97,14 +73,14 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: const Text(
-              'select_user_for_sharing_page_share_suggestions',
-              style: TextStyle(
+            child: Text(
+              'select_additional_user_for_sharing_page_suggestions'.tr(),
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
                 fontWeight: FontWeight.bold,
               ),
-            ).tr(),
+            ),
           ),
           ListView.builder(
             primary: false,
@@ -143,37 +119,36 @@ class SelectUserForSharingPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'share_invite',
-          style: TextStyle(color: context.primaryColor),
         ).tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () async {
-            context.popRoute();
+          onPressed: () {
+            context.popRoute(null);
           },
         ),
         actions: [
           TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: context.primaryColor,
-            ),
-            onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
+            onPressed:
+                sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
-              "share_create_album",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                // color: context.primaryColor,
-              ),
+              "share_add",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ).tr(),
           ),
         ],
       ),
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
+          for (var sharedUsers in album.sharedUsers) {
+            users.removeWhere(
+              (u) => u.id == sharedUsers.id || u.id == album.ownerId,
+            );
+          }
+
           return buildUserList(users);
         },
       ),

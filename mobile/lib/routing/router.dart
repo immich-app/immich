@@ -7,11 +7,11 @@ import 'package:immich_mobile/modules/activities/views/activities_page.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/views/album_options_part.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
-import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
+import 'package:immich_mobile/modules/album/views/album_asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
-import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
-import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
+import 'package:immich_mobile/modules/album/views/album_additional_shared_user_selection_age.dart';
+import 'package:immich_mobile/modules/album/views/album_shared_user_selection_page.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
@@ -41,6 +41,7 @@ import 'package:immich_mobile/routing/pages/photos/memory_page.dart';
 import 'package:immich_mobile/routing/pages/photos/photos_page.dart';
 import 'package:immich_mobile/routing/pages/search/all_motion_videos_page.dart';
 import 'package:immich_mobile/routing/pages/search/all_people_page.dart';
+import 'package:immich_mobile/routing/pages/search/all_places_page.dart';
 import 'package:immich_mobile/routing/pages/search/all_videos_page.dart';
 import 'package:immich_mobile/routing/pages/search/map/map_location_picker_page.dart';
 import 'package:immich_mobile/routing/pages/search/map/map_page.dart';
@@ -147,12 +148,12 @@ class AppRouter extends _$AppRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(
-      page: AssetSelectionRoute.page,
+      page: AlbumAssetSelectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     CustomRoute(
-      page: SelectUserForSharingRoute.page,
+      page: AlbumSharedUserSelectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
@@ -161,7 +162,7 @@ class AppRouter extends _$AppRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(
-      page: SelectAdditionalUserForSharingRoute.page,
+      page: AlbumAdditionalSharedUserSelectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),

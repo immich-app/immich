@@ -39,7 +39,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     showSelectUserPage() async {
       final bool? ok = await context.pushRoute<bool?>(
-        SelectUserForSharingRoute(assets: selectedAssets.value),
+        AlbumSharedUserSelectionRoute(assets: selectedAssets.value),
       );
       if (ok == true) {
         selectedAssets.value = {};
@@ -61,7 +61,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     onSelectPhotosButtonPressed() async {
       AssetSelectionPageResult? selectedAsset =
           await context.pushRoute<AssetSelectionPageResult?>(
-        AssetSelectionRoute(
+        AlbumAssetSelectionRoute(
           existingAssets: selectedAssets.value,
           canDeselect: true,
           query: getRemoteAssetQuery(ref),

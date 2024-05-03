@@ -70,7 +70,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     void onAddPhotosPressed(Album albumInfo) async {
       AssetSelectionPageResult? returnPayload =
           await context.pushRoute<AssetSelectionPageResult?>(
-        AssetSelectionRoute(
+        AlbumAssetSelectionRoute(
           existingAssets: albumInfo.assets,
           canDeselect: false,
           query: getRemoteAssetQuery(ref),
@@ -92,7 +92,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     void onAddUsersPressed(Album album) async {
       List<String>? sharedUserIds = await context.pushRoute<List<String>?>(
-        SelectAdditionalUserForSharingRoute(album: album),
+        AlbumAdditionalSharedUserSelectionRoute(album: album),
       );
 
       if (sharedUserIds != null) {

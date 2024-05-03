@@ -91,11 +91,11 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const ArchivePage(),
       );
     },
-    AssetSelectionRoute.name: (routeData) {
+    AlbumAssetSelectionRoute.name: (routeData) {
       final args = routeData.argsAs<AssetSelectionRouteArgs>();
       return AutoRoutePage<AssetSelectionPageResult?>(
         routeData: routeData,
-        child: AssetSelectionPage(
+        child: AlbumAssetSelectionPage(
           key: args.key,
           existingAssets: args.existingAssets,
           canDeselect: args.canDeselect,
@@ -272,21 +272,21 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const SearchPage(),
       );
     },
-    SelectAdditionalUserForSharingRoute.name: (routeData) {
+    AlbumAdditionalSharedUserSelectionRoute.name: (routeData) {
       final args = routeData.argsAs<SelectAdditionalUserForSharingRouteArgs>();
       return AutoRoutePage<List<String>?>(
         routeData: routeData,
-        child: SelectAdditionalUserForSharingPage(
+        child: AlbumAdditionalSharedUserSelectionPage(
           key: args.key,
           album: args.album,
         ),
       );
     },
-    SelectUserForSharingRoute.name: (routeData) {
+    AlbumSharedUserSelectionRoute.name: (routeData) {
       final args = routeData.argsAs<SelectUserForSharingRouteArgs>();
       return AutoRoutePage<List<String>>(
         routeData: routeData,
-        child: SelectUserForSharingPage(
+        child: AlbumSharedUserSelectionPage(
           key: args.key,
           assets: args.assets,
         ),
@@ -606,16 +606,16 @@ class ArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [AssetSelectionPage]
-class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
-  AssetSelectionRoute({
+/// [AlbumAssetSelectionPage]
+class AlbumAssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
+  AlbumAssetSelectionRoute({
     Key? key,
     required Set<Asset> existingAssets,
     bool canDeselect = false,
     required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
     List<PageRouteInfo>? children,
   }) : super(
-          AssetSelectionRoute.name,
+          AlbumAssetSelectionRoute.name,
           args: AssetSelectionRouteArgs(
             key: key,
             existingAssets: existingAssets,
@@ -625,7 +625,7 @@ class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
           initialChildren: children,
         );
 
-  static const String name = 'AssetSelectionRoute';
+  static const String name = 'AlbumAssetSelectionRoute';
 
   static const PageInfo<AssetSelectionRouteArgs> page =
       PageInfo<AssetSelectionRouteArgs>(name);
@@ -1164,15 +1164,15 @@ class SearchRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [SelectAdditionalUserForSharingPage]
-class SelectAdditionalUserForSharingRoute
+/// [AlbumAdditionalSharedUserSelectionPage]
+class AlbumAdditionalSharedUserSelectionRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
-  SelectAdditionalUserForSharingRoute({
+  AlbumAdditionalSharedUserSelectionRoute({
     Key? key,
     required Album album,
     List<PageRouteInfo>? children,
   }) : super(
-          SelectAdditionalUserForSharingRoute.name,
+          AlbumAdditionalSharedUserSelectionRoute.name,
           args: SelectAdditionalUserForSharingRouteArgs(
             key: key,
             album: album,
@@ -1180,7 +1180,7 @@ class SelectAdditionalUserForSharingRoute
           initialChildren: children,
         );
 
-  static const String name = 'SelectAdditionalUserForSharingRoute';
+  static const String name = 'AlbumAdditionalSharedUserSelectionRoute';
 
   static const PageInfo<SelectAdditionalUserForSharingRouteArgs> page =
       PageInfo<SelectAdditionalUserForSharingRouteArgs>(name);
@@ -1203,15 +1203,15 @@ class SelectAdditionalUserForSharingRouteArgs {
 }
 
 /// generated route for
-/// [SelectUserForSharingPage]
-class SelectUserForSharingRoute
+/// [AlbumSharedUserSelectionPage]
+class AlbumSharedUserSelectionRoute
     extends PageRouteInfo<SelectUserForSharingRouteArgs> {
-  SelectUserForSharingRoute({
+  AlbumSharedUserSelectionRoute({
     Key? key,
     required Set<Asset> assets,
     List<PageRouteInfo>? children,
   }) : super(
-          SelectUserForSharingRoute.name,
+          AlbumSharedUserSelectionRoute.name,
           args: SelectUserForSharingRouteArgs(
             key: key,
             assets: assets,
@@ -1219,7 +1219,7 @@ class SelectUserForSharingRoute
           initialChildren: children,
         );
 
-  static const String name = 'SelectUserForSharingRoute';
+  static const String name = 'AlbumSharedUserSelectionRoute';
 
   static const PageInfo<SelectUserForSharingRouteArgs> page =
       PageInfo<SelectUserForSharingRouteArgs>(name);

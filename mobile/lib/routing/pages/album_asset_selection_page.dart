@@ -13,8 +13,8 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 
 @RoutePage<AssetSelectionPageResult?>()
-class AssetSelectionPage extends HookConsumerWidget {
-  const AssetSelectionPage({
+class AlbumAssetSelectionPage extends HookConsumerWidget {
+  const AlbumAssetSelectionPage({
     super.key,
     required this.existingAssets,
     this.canDeselect = false,
