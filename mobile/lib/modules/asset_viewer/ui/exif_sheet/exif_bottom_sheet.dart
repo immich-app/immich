@@ -42,7 +42,7 @@ class ExifBottomSheet extends HookConsumerWidget {
             fontSize: 14,
           ),
         ),
-        if (asset.isRemote && !asset.isReadOnly)
+        if (asset.isRemote)
           IconButton(
             onPressed: () => handleEditDateTime(
               ref,

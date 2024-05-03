@@ -102,16 +102,6 @@ class BottomGalleryBar extends ConsumerWidget {
     }
 
     void handleDelete() async {
-      // Cannot delete readOnly / external assets. They are handled through library offline jobs
-      if (asset.isReadOnly) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_delete_err_read_only'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {asset},
