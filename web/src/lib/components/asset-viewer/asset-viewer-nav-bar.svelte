@@ -193,9 +193,7 @@
     {/if}
 
     {#if isOwner}
-      {#if !asset.isReadOnly || !asset.isExternal}
-        <CircleIconButton color="opaque" icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-      {/if}
+      <CircleIconButton color="opaque" icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
       <div
         use:clickOutside={{
           onOutclick: () => (isShowAssetOptions = false),

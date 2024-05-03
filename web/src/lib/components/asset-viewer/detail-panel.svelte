@@ -308,23 +308,15 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo && !asset.isExternal}
-      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
-    {:else if !asset.exifInfo && asset.isExternal}
-      <div class="flex gap-4 py-4">
-        <div>
-          <p class="break-all">
-            Metadata not loaded for {asset.originalPath}
-          </p>
-        </div>
-      </div>
-    {:else}
+    {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
         <h2>DETAILS</h2>
       </div>
+    {:else}
+      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {#if asset.exifInfo?.dateTimeOriginal}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
@@ -374,7 +366,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
+    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -383,43 +375,6 @@
         </div>
         <div class="p-1">
           <Icon path={mdiPencil} size="20" />
-        </div>
-      </div>
-    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon path={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {assetDateTimeOriginal.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {assetDateTimeOriginal.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    timeZoneName: 'longOffset',
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     {/if}
@@ -501,7 +456,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city && !asset.isReadOnly}
+    {#if asset.exifInfo?.city}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -534,7 +489,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
+    {:else if !asset.exifInfo?.city && isOwner}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
@@ -552,26 +507,6 @@
           <Icon path={mdiPencil} size="20" />
         </div>
       </button>
-    {:else if asset.exifInfo?.city && asset.isReadOnly}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-          <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
     {/if}
     {#if isShowChangeLocation}
       <ChangeLocation

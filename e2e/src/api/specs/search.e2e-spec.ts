@@ -52,7 +52,7 @@ describe('/search', () => {
       { filename: '/formats/motionphoto/Samsung One UI 6.jpg' },
       { filename: '/formats/motionphoto/Samsung One UI 6.heic' },
       { filename: '/formats/motionphoto/Samsung One UI 5.jpg' },
-      { filename: '/formats/raw/Nikon/D80/glarus.nef', dto: { isReadOnly: true } },
+      { filename: '/formats/raw/Nikon/D80/glarus.nef' },
       { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
 
       // used for search suggestions
@@ -190,16 +190,7 @@ describe('/search', () => {
         dto: { size: -1.5 },
         expected: ['size must not be less than 1', 'size must be an integer number'],
       },
-      ...[
-        'isArchived',
-        'isFavorite',
-        'isReadOnly',
-        'isExternal',
-        'isEncoded',
-        'isMotion',
-        'isOffline',
-        'isVisible',
-      ].map((value) => ({
+      ...['isArchived', 'isFavorite', 'isEncoded', 'isMotion', 'isOffline', 'isVisible'].map((value) => ({
         should: `should reject ${value} not a boolean`,
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],
@@ -254,14 +245,6 @@ describe('/search', () => {
       {
         should: 'should search by isArchived (false)',
         deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
-      },
-      {
-        should: 'should search by isReadOnly (true)',
-        deferred: () => ({ dto: { isReadOnly: true }, assets: [assetGlarus] }),
-      },
-      {
-        should: 'should search by isReadOnly (false)',
-        deferred: () => ({ dto: { size: 1, isReadOnly: false }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',

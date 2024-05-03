@@ -558,26 +558,5 @@ describe(StorageTemplateService.name, () => {
       );
       expect(assetMock.update).not.toHaveBeenCalled();
     });
-
-    it('should not move read-only asset', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [
-          {
-            ...assetStub.image,
-            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.jpg',
-            isReadOnly: true,
-          },
-        ],
-        hasNextPage: false,
-      });
-      userMock.getList.mockResolvedValue([userStub.user1]);
-
-      await sut.handleMigration();
-
-      expect(assetMock.getAll).toHaveBeenCalled();
-      expect(storageMock.rename).not.toHaveBeenCalled();
-      expect(storageMock.copyFile).not.toHaveBeenCalled();
-      expect(assetMock.update).not.toHaveBeenCalled();
-    });
   });
 });

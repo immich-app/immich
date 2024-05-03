@@ -122,10 +122,12 @@ export type AssetResponseDto = {
     hasMetadata: boolean;
     id: string;
     isArchived: boolean;
-    isExternal: boolean;
+    /** This property was deprecated in v1.104.0 */
+    isExternal?: boolean;
     isFavorite: boolean;
     isOffline: boolean;
-    isReadOnly: boolean;
+    /** This property was deprecated in v1.104.0 */
+    isReadOnly?: boolean;
     isTrashed: boolean;
     libraryId: string;
     livePhotoVideoId?: string | null;
@@ -296,7 +298,6 @@ export type CreateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     libraryId?: string;
     livePhotoData?: Blob;
@@ -622,12 +623,10 @@ export type MetadataSearchDto = {
     id?: string;
     isArchived?: boolean;
     isEncoded?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     lensModel?: string;
     libraryId?: string;
@@ -699,12 +698,10 @@ export type SmartSearchDto = {
     deviceId?: string;
     isArchived?: boolean;
     isEncoded?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     lensModel?: string;
     libraryId?: string;

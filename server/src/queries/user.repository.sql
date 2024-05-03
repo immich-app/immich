@@ -151,6 +151,14 @@ GROUP BY
 ORDER BY
   "users"."createdAt" ASC
 
+-- UserRepository.updateUsage
+UPDATE "users"
+SET
+  "quotaUsageInBytes" = "quotaUsageInBytes" + 50,
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  "id" = $1
+
 -- UserRepository.syncUsage
 UPDATE "users"
 SET

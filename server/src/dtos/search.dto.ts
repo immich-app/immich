@@ -34,9 +34,6 @@ class BaseSearchDto {
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
-  isExternal?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -44,9 +41,6 @@ class BaseSearchDto {
 
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isReadOnly?: boolean;
 
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
