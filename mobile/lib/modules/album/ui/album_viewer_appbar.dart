@@ -8,10 +8,10 @@ import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {

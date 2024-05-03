@@ -25,7 +25,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class MultiselectGrid extends HookConsumerWidget {

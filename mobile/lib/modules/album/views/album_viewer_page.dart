@@ -12,6 +12,7 @@ import 'package:immich_mobile/models/albums/asset_selection_page_result.model.da
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
@@ -25,7 +26,6 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 @RoutePage()
 class AlbumViewerPage extends HookConsumerWidget {
