@@ -18,7 +18,6 @@ If you want to change the storage template during the initial setup, first enabl
 
 <img src={require('./img/enable-storage-template.png').default} width="100%" title="Enable Storage Template Setting" />
 
-
 Then, customize your storage template.
 
 <img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
