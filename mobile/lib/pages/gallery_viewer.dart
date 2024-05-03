@@ -18,7 +18,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/bottom_gallery_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/gallery_app_bar.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/routing/pages/video_viewer_page.dart';
+import 'package:immich_mobile/pages/video_viewer_page.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';

@@ -12,7 +12,7 @@ import 'package:immich_mobile/models/albums/asset_selection_page_result.model.da
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
-import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
+import 'package:immich_mobile/pages/immich_loading_overlay.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';

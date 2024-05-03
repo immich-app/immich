@@ -13,7 +13,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
+import 'package:immich_mobile/pages/immich_loading_overlay.dart';
 
 @RoutePage()
 class TrashPage extends HookConsumerWidget {

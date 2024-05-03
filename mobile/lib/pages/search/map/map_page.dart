@@ -25,7 +25,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/routing/pages/immich_loading_overlay.dart';
+import 'package:immich_mobile/pages/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
