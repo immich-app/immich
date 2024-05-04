@@ -8,7 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/widgets/map_settings_sheet.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/pages/immich_loading_overlay.dart';
+import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class MapAppBar extends HookWidget implements PreferredSizeWidget {

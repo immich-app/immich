@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/pages/activities_page.dart';
+import 'package:immich_mobile/pages/activities.page.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';

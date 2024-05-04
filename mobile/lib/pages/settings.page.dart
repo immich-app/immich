@@ -119,3 +119,21 @@ class _TabletLayout extends HookWidget {
     );
   }
 }
+
+@RoutePage()
+class SettingsSubPage extends StatelessWidget {
+  const SettingsSubPage(this.section, {super.key});
+
+  final SettingSection section;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: Text(section.title).tr(),
+      ),
+      body: section.widget,
+    );
+  }
+}
