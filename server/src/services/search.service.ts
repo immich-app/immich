@@ -213,28 +213,12 @@ export class SearchService {
       userIds: [asset.ownerId],
     });
 
-    const assetIds = [asset.id];
-
+    let assetIds = [asset.id];
     if (duplicateAssets.length > 0) {
       this.logger.debug(
         `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
       );
-
-      const duplicateIds = [
-        ...new Set(
-          duplicateAssets
-            .filter((asset): asset is AssetDuplicateResult & { duplicateId: string } => !!asset.duplicateId)
-            .map((duplicate) => duplicate.duplicateId),
-        ),
-      ];
-
-      const targetDuplicateId = asset.duplicateId ?? duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
-      const assetIdsToUpdate = duplicateAssets
-        .filter((asset) => asset.duplicateId !== targetDuplicateId)
-        .map((duplicate) => duplicate.assetId);
-
-      assetIds.push(...assetIdsToUpdate);
-      await this.assetRepository.updateDuplicates({ targetDuplicateId, assetIds, duplicateIds });
+      assetIds = await this.updateDuplicates(asset, duplicateAssets);
     } else if (asset.duplicateId) {
       this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
       await this.assetRepository.update({ id: asset.id, duplicateId: null });
@@ -244,6 +228,25 @@ export class SearchService {
     await this.assetRepository.upsertJobStatus(...assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
 
     return JobStatus.SUCCESS;
+  }
+
+  private async updateDuplicates(asset: AssetEntity, duplicateAssets: AssetDuplicateResult[]): Promise<string[]> {
+    const duplicateIds = [
+      ...new Set(
+        duplicateAssets
+          .filter((asset): asset is AssetDuplicateResult & { duplicateId: string } => !!asset.duplicateId)
+          .map((duplicate) => duplicate.duplicateId),
+      ),
+    ];
+
+    const targetDuplicateId = asset.duplicateId ?? duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
+    const assetIdsToUpdate = duplicateAssets
+      .filter((asset) => asset.duplicateId !== targetDuplicateId)
+      .map((duplicate) => duplicate.assetId);
+    assetIdsToUpdate.push(asset.id);
+
+    await this.assetRepository.updateDuplicates({ targetDuplicateId, assetIds: assetIdsToUpdate, duplicateIds });
+    return assetIdsToUpdate;
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
