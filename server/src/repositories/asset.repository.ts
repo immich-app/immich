@@ -18,6 +18,7 @@ import {
   AssetStats,
   AssetStatsOptions,
   AssetUpdateAllOptions,
+  AssetUpdateDuplicateOptions,
   AssetUpdateOptions,
   IAssetRepository,
   LivePhotoSearchOptions,
@@ -256,6 +257,21 @@ export class AssetRepository implements IAssetRepository {
   @Chunked()
   async updateAll(ids: string[], options: AssetUpdateAllOptions): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  @GenerateSql({
+    params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
+  })
+  async updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ duplicateId: options.targetDuplicateId })
+      .where({
+        duplicateId: In(options.duplicateIds),
+      })
+      .orWhere({ id: In(options.assetIds) })
+      .execute();
   }
 
   @Chunked()
