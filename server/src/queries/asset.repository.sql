@@ -429,6 +429,15 @@ SET
 WHERE
   "id" IN ($2)
 
+-- AssetRepository.updateDuplicates
+UPDATE "assets"
+SET
+  "duplicateId" = $1,
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  "duplicateId" IN ($2)
+  OR "id" IN ($3)
+
 -- AssetRepository.getByChecksum
 SELECT
   "AssetEntity"."id" AS "AssetEntity_id",
@@ -829,7 +838,6 @@ SELECT
   "asset"."isFavorite" AS "asset_isFavorite",
   "asset"."isArchived" AS "asset_isArchived",
   "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
   "asset"."isOffline" AS "asset_isOffline",
   "asset"."checksum" AS "asset_checksum",
   "asset"."duration" AS "asset_duration",
@@ -889,7 +897,6 @@ SELECT
   "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
   "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
   "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
-  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
   "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
   "stackedAssets"."checksum" AS "stackedAssets_checksum",
   "stackedAssets"."duration" AS "stackedAssets_duration",
@@ -1063,7 +1070,8 @@ SELECT
   "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
   "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
   "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
-  "stackedAssets"."stackId" AS "stackedAssets_stackId"
+  "stackedAssets"."stackId" AS "stackedAssets_stackId",
+  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
@@ -1169,7 +1177,8 @@ SELECT
   "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
   "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
   "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
-  "stackedAssets"."stackId" AS "stackedAssets_stackId"
+  "stackedAssets"."stackId" AS "stackedAssets_stackId",
+  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
