@@ -31,7 +31,12 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
+import {
+  AssetDuplicateResult,
+  AssetDuplicateSearch,
+  ISearchRepository,
+  SearchExploreItem,
+} from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { usePagination } from 'src/utils/pagination';
 
@@ -215,14 +220,24 @@ export class SearchService {
         `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
       );
 
-      const duplicateId =
-        duplicateAssets.find((duplicate) => duplicate.duplicateId)?.duplicateId ?? this.cryptoRepository.randomUUID();
+      const duplicateIds = [
+        ...new Set(
+          duplicateAssets
+            .filter((asset): asset is AssetDuplicateResult & { duplicateId: string } => !!asset.duplicateId)
+            .map((duplicate) => duplicate.duplicateId),
+        ),
+      ];
 
-      assetIds.push(...duplicateAssets.map((duplicate) => duplicate.assetId));
-      await this.assetRepository.updateAll(assetIds, { duplicateId });
+      const targetDuplicateId = duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
+      const assetIdsToUpdate = duplicateAssets
+        .filter((asset) => asset.duplicateId !== targetDuplicateId)
+        .map((duplicate) => duplicate.assetId);
+
+      assetIds.push(...assetIdsToUpdate);
+      await this.assetRepository.updateDuplicates({ targetDuplicateId, assetIds, duplicateIds });
     } else if (asset.duplicateId) {
       this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
-      await this.assetRepository.updateAll(assetIds, { duplicateId: null });
+      await this.assetRepository.update({ id: asset.id, duplicateId: null });
     }
 
     const duplicatesDetectedAt = new Date();

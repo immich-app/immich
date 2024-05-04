@@ -147,6 +147,12 @@ export interface AssetDeltaSyncOptions {
   limit: number;
 }
 
+export interface AssetUpdateDuplicateOptions {
+  targetDuplicateId: string | null;
+  assetIds: string[];
+  duplicateIds: string[];
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
@@ -180,6 +186,7 @@ export interface IAssetRepository {
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
+  updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
   softDeleteAll(ids: string[]): Promise<void>;
