@@ -62,64 +62,59 @@ const AssetSchema = CollectionSchema(
       name: r'isOffline',
       type: IsarType.bool,
     ),
-    r'isReadOnly': PropertySchema(
-      id: 9,
-      name: r'isReadOnly',
-      type: IsarType.bool,
-    ),
     r'isTrashed': PropertySchema(
-      id: 10,
+      id: 9,
       name: r'isTrashed',
       type: IsarType.bool,
     ),
     r'livePhotoVideoId': PropertySchema(
-      id: 11,
+      id: 10,
       name: r'livePhotoVideoId',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 12,
+      id: 11,
       name: r'localId',
       type: IsarType.string,
     ),
     r'ownerId': PropertySchema(
-      id: 13,
+      id: 12,
       name: r'ownerId',
       type: IsarType.long,
     ),
     r'remoteId': PropertySchema(
-      id: 14,
+      id: 13,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'stackCount': PropertySchema(
-      id: 15,
+      id: 14,
       name: r'stackCount',
       type: IsarType.long,
     ),
     r'stackParentId': PropertySchema(
-      id: 16,
+      id: 15,
       name: r'stackParentId',
       type: IsarType.string,
     ),
     r'thumbhash': PropertySchema(
-      id: 17,
+      id: 16,
       name: r'thumbhash',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 18,
+      id: 17,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 19,
+      id: 18,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 20,
+      id: 19,
       name: r'width',
       type: IsarType.int,
     )
@@ -239,18 +234,17 @@ void _assetSerialize(
   writer.writeBool(offsets[6], object.isArchived);
   writer.writeBool(offsets[7], object.isFavorite);
   writer.writeBool(offsets[8], object.isOffline);
-  writer.writeBool(offsets[9], object.isReadOnly);
-  writer.writeBool(offsets[10], object.isTrashed);
-  writer.writeString(offsets[11], object.livePhotoVideoId);
-  writer.writeString(offsets[12], object.localId);
-  writer.writeLong(offsets[13], object.ownerId);
-  writer.writeString(offsets[14], object.remoteId);
-  writer.writeLong(offsets[15], object.stackCount);
-  writer.writeString(offsets[16], object.stackParentId);
-  writer.writeString(offsets[17], object.thumbhash);
-  writer.writeByte(offsets[18], object.type.index);
-  writer.writeDateTime(offsets[19], object.updatedAt);
-  writer.writeInt(offsets[20], object.width);
+  writer.writeBool(offsets[9], object.isTrashed);
+  writer.writeString(offsets[10], object.livePhotoVideoId);
+  writer.writeString(offsets[11], object.localId);
+  writer.writeLong(offsets[12], object.ownerId);
+  writer.writeString(offsets[13], object.remoteId);
+  writer.writeLong(offsets[14], object.stackCount);
+  writer.writeString(offsets[15], object.stackParentId);
+  writer.writeString(offsets[16], object.thumbhash);
+  writer.writeByte(offsets[17], object.type.index);
+  writer.writeDateTime(offsets[18], object.updatedAt);
+  writer.writeInt(offsets[19], object.width);
 }
 
 Asset _assetDeserialize(
@@ -270,19 +264,18 @@ Asset _assetDeserialize(
     isArchived: reader.readBoolOrNull(offsets[6]) ?? false,
     isFavorite: reader.readBoolOrNull(offsets[7]) ?? false,
     isOffline: reader.readBoolOrNull(offsets[8]) ?? false,
-    isReadOnly: reader.readBoolOrNull(offsets[9]) ?? false,
-    isTrashed: reader.readBoolOrNull(offsets[10]) ?? false,
-    livePhotoVideoId: reader.readStringOrNull(offsets[11]),
-    localId: reader.readStringOrNull(offsets[12]),
-    ownerId: reader.readLong(offsets[13]),
-    remoteId: reader.readStringOrNull(offsets[14]),
-    stackCount: reader.readLongOrNull(offsets[15]),
-    stackParentId: reader.readStringOrNull(offsets[16]),
-    thumbhash: reader.readStringOrNull(offsets[17]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
+    isTrashed: reader.readBoolOrNull(offsets[9]) ?? false,
+    livePhotoVideoId: reader.readStringOrNull(offsets[10]),
+    localId: reader.readStringOrNull(offsets[11]),
+    ownerId: reader.readLong(offsets[12]),
+    remoteId: reader.readStringOrNull(offsets[13]),
+    stackCount: reader.readLongOrNull(offsets[14]),
+    stackParentId: reader.readStringOrNull(offsets[15]),
+    thumbhash: reader.readStringOrNull(offsets[16]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[17])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[19]),
-    width: reader.readIntOrNull(offsets[20]),
+    updatedAt: reader.readDateTime(offsets[18]),
+    width: reader.readIntOrNull(offsets[19]),
   );
   return object;
 }
@@ -315,27 +308,25 @@ P _assetDeserializeProp<P>(
     case 9:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 10:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 11:
       return (reader.readStringOrNull(offset)) as P;
     case 12:
-      return (reader.readStringOrNull(offset)) as P;
-    case 13:
       return (reader.readLong(offset)) as P;
-    case 14:
+    case 13:
       return (reader.readStringOrNull(offset)) as P;
-    case 15:
+    case 14:
       return (reader.readLongOrNull(offset)) as P;
+    case 15:
+      return (reader.readStringOrNull(offset)) as P;
     case 16:
       return (reader.readStringOrNull(offset)) as P;
     case 17:
-      return (reader.readStringOrNull(offset)) as P;
-    case 18:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 19:
+    case 18:
       return (reader.readDateTime(offset)) as P;
-    case 20:
+    case 19:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1361,16 +1352,6 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isOffline',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isReadOnlyEqualTo(
-      bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isReadOnly',
         value: value,
       ));
     });
@@ -2527,18 +2508,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsReadOnly() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isReadOnly', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsReadOnlyDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isReadOnly', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsTrashed() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isTrashed', Sort.asc);
@@ -2793,18 +2762,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsReadOnly() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isReadOnly', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsReadOnlyDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isReadOnly', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsTrashed() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isTrashed', Sort.asc);
@@ -2995,12 +2952,6 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByIsReadOnly() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isReadOnly');
-    });
-  }
-
   QueryBuilder<Asset, Asset, QDistinct> distinctByIsTrashed() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isTrashed');
@@ -3133,12 +3084,6 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, bool, QQueryOperations> isOfflineProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isOffline');
-    });
-  }
-
-  QueryBuilder<Asset, bool, QQueryOperations> isReadOnlyProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isReadOnly');
     });
   }
 

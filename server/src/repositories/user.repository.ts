@@ -112,6 +112,7 @@ export class UserRepository implements IUserRepository {
     return stats;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   async updateUsage(id: string, delta: number): Promise<void> {
     await this.userRepository.increment({ id }, 'quotaUsageInBytes', delta);
   }

@@ -9,9 +9,9 @@
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import Icon from '../elements/icon.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let peopleWithFaces: AssetFaceResponseDto[];
   export let allPeople: PersonResponseDto[];
@@ -119,38 +119,19 @@
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
       <div class="flex items-center gap-2">
-        <button
-          class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-          on:click={handleBackButton}
-        >
-          <div>
-            <Icon path={mdiArrowLeftThin} size="24" />
-          </div>
-        </button>
+        <CircleIconButton icon={mdiArrowLeftThin} title="Back" on:click={handleBackButton} />
         <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Select face</p>
       </div>
       <div class="flex justify-end gap-2">
-        <button
-          class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-          title="Search existing person"
+        <CircleIconButton
+          icon={mdiMagnify}
+          title="Search for existing person"
           on:click={() => {
             searchFaces = true;
           }}
-        >
-          <div>
-            <Icon path={mdiMagnify} size="24" />
-          </div>
-        </button>
+        />
         {#if !isShowLoadingNewPerson}
-          <button
-            class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-            on:click={handleCreatePerson}
-            title="Create new person"
-          >
-            <div>
-              <Icon path={mdiPlus} size="24" />
-            </div>
-          </button>
+          <CircleIconButton icon={mdiPlus} title="Create new person" on:click={handleCreatePerson} />
         {:else}
           <div class="flex place-content-center place-items-center">
             <LoadingSpinner />
@@ -158,14 +139,7 @@
         {/if}
       </div>
     {:else}
-      <button
-        class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-        on:click={handleBackButton}
-      >
-        <div>
-          <Icon path={mdiArrowLeftThin} size="24" />
-        </div>
-      </button>
+      <CircleIconButton icon={mdiArrowLeftThin} title="Back" on:click={handleBackButton} />
       <div class="w-full flex">
         <SearchPeople
           type="input"
@@ -179,14 +153,7 @@
           </div>
         {/if}
       </div>
-      <button
-        class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-        on:click={() => (searchFaces = false)}
-      >
-        <div>
-          <Icon path={mdiClose} size="24" />
-        </div>
-      </button>
+      <CircleIconButton icon={mdiClose} title="Cancel search" on:click={() => (searchFaces = false)} />
     {/if}
   </div>
   <div class="px-4 py-4 text-sm">

@@ -56,11 +56,9 @@ export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
 export interface SearchStatusOptions {
   isArchived?: boolean;
   isEncoded?: boolean;
-  isExternal?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isReadOnly?: boolean;
   isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;

@@ -685,61 +685,6 @@ describe(AssetService.name, () => {
       });
     });
 
-    it('should only delete generated files for readonly assets', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.readOnly);
-
-      await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.readOnly.thumbnailPath,
-                assetStub.readOnly.previewPath,
-                assetStub.readOnly.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
-    });
-
-    it('should not process assets from external library without fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id });
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(assetMock.remove).not.toHaveBeenCalled();
-    });
-
-    it('should process assets from external library with fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.external);
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.external.thumbnailPath,
-                assetStub.external.previewPath,
-                assetStub.external.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
-    });
-
     it('should delete a live photo', async () => {
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
 

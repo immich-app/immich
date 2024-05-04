@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { LibraryType, type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -138,17 +138,17 @@
           }`}
         >
           <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
-          <td class="w-1/4 text-ellipsis px-4 text-sm">
-            <button
-              type="button"
+          <td class="w-1/4 text-ellipsis flex justify-center">
+            <CircleIconButton
+              color="primary"
+              icon={mdiPencilOutline}
+              title="Edit exclusion pattern"
+              size="16"
               on:click={() => {
                 editExclusionPattern = listIndex;
                 editedExclusionPattern = exclusionPattern;
               }}
-              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-            >
-              <Icon path={mdiPencilOutline} size="16" />
-            </button>
+            />
           </td>
         </tr>
       {/each}

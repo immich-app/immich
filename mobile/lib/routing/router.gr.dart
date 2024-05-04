@@ -63,6 +63,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const AllPeoplePage(),
       );
     },
+    AllPlacesRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const AllPlacesPage(),
+      );
+    },
     AllVideosRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -136,12 +142,6 @@ abstract class _$AppRouter extends RootStackRouter {
           isSharedAlbum: args.isSharedAlbum,
           initialAssets: args.initialAssets,
         ),
-      );
-    },
-    AllPlacesRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const AllPlacesPage(),
       );
     },
     FailedBackupStatusRoute.name: (routeData) {
@@ -526,6 +526,20 @@ class AllPeopleRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AllPlacesPage]
+class AllPlacesRoute extends PageRouteInfo<void> {
+  const AllPlacesRoute({List<PageRouteInfo>? children})
+      : super(
+          AllPlacesRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AllPlacesRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [AllVideosPage]
 class AllVideosRoute extends PageRouteInfo<void> {
   const AllVideosRoute({List<PageRouteInfo>? children})
@@ -750,20 +764,6 @@ class CreateAlbumRouteArgs {
   String toString() {
     return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
   }
-}
-
-/// generated route for
-/// [AllPlacesPage]
-class AllPlacesRoute extends PageRouteInfo<void> {
-  const AllPlacesRoute({List<PageRouteInfo>? children})
-      : super(
-          AllPlacesRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'CuratedLocationRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for

@@ -32,7 +32,6 @@ class Asset {
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
-        isReadOnly = remote.isReadOnly,
         isOffline = remote.isOffline,
         // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
@@ -55,7 +54,6 @@ class Asset {
         isFavorite = local.isFavorite,
         isArchived = false,
         isTrashed = false,
-        isReadOnly = false,
         isOffline = false,
         stackCount = 0,
         fileCreatedAt = local.createDateTime {
@@ -90,7 +88,6 @@ class Asset {
     this.isTrashed = false,
     this.stackParentId,
     this.stackCount = 0,
-    this.isReadOnly = false,
     this.isOffline = false,
     this.thumbhash,
   });
@@ -160,8 +157,6 @@ class Asset {
   bool isArchived;
 
   bool isTrashed;
-
-  bool isReadOnly;
 
   bool isOffline;
 
@@ -278,7 +273,6 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
-        isReadOnly != a.isReadOnly ||
         isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
@@ -324,7 +318,6 @@ class Asset {
           isFavorite: isFavorite,
           isArchived: isArchived,
           isTrashed: isTrashed,
-          isReadOnly: isReadOnly,
           isOffline: isOffline,
         );
       }
@@ -345,7 +338,6 @@ class Asset {
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
           isTrashed: a.isTrashed,
-          isReadOnly: a.isReadOnly,
           isOffline: a.isOffline,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
           thumbhash: a.thumbhash,
@@ -380,7 +372,6 @@ class Asset {
     bool? isFavorite,
     bool? isArchived,
     bool? isTrashed,
-    bool? isReadOnly,
     bool? isOffline,
     ExifInfo? exifInfo,
     String? stackParentId,
@@ -405,7 +396,6 @@ class Asset {
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
         isTrashed: isTrashed ?? this.isTrashed,
-        isReadOnly: isReadOnly ?? this.isReadOnly,
         isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
         stackParentId: stackParentId ?? this.stackParentId,
@@ -470,7 +460,6 @@ class Asset {
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived,
   "isTrashed": $isTrashed,
-  "isReadOnly": $isReadOnly,
   "isOffline": $isOffline,
 }""";
   }

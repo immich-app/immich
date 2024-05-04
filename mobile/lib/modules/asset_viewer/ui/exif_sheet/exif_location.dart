@@ -24,7 +24,7 @@ class ExifLocation extends StatelessWidget {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
     // Guard no lat/lng
     if (!hasCoordinates) {
-      return asset.isRemote && !asset.isReadOnly
+      return asset.isRemote
           ? ListTile(
               minLeadingWidth: 0,
               contentPadding: const EdgeInsets.all(0),
@@ -57,7 +57,7 @@ class ExifLocation extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ).tr(),
-                if (asset.isRemote && !asset.isReadOnly)
+                if (asset.isRemote)
                   IconButton(
                     onPressed: editLocation,
                     icon: const Icon(Icons.edit_outlined),

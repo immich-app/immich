@@ -7297,6 +7297,8 @@
             "type": "boolean"
           },
           "isExternal": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.104.0",
             "type": "boolean"
           },
           "isFavorite": {
@@ -7306,6 +7308,8 @@
             "type": "boolean"
           },
           "isReadOnly": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.104.0",
             "type": "boolean"
           },
           "isTrashed": {
@@ -7388,10 +7392,8 @@
           "hasMetadata",
           "id",
           "isArchived",
-          "isExternal",
           "isFavorite",
           "isOffline",
-          "isReadOnly",
           "isTrashed",
           "libraryId",
           "localDateTime",
@@ -7650,9 +7652,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
             "type": "boolean"
           },
           "isVisible": {
@@ -8599,9 +8598,6 @@
           "isEncoded": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -8612,9 +8608,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
             "type": "boolean"
           },
           "isVisible": {
@@ -9821,9 +9814,6 @@
           "isEncoded": {
             "type": "boolean"
           },
-          "isExternal": {
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -9834,9 +9824,6 @@
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
             "type": "boolean"
           },
           "isVisible": {
