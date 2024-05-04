@@ -208,7 +208,11 @@ describe(SearchService.name, () => {
         maxDistance: 0.03,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(expectedAssetIds, { duplicateId: expect.any(String) });
+      expect(assetMock.updateDuplicates).toHaveBeenCalledWith({
+        assetIds: expectedAssetIds,
+        targetDuplicateId: expect.any(String),
+        duplicateIds: [],
+      });
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith(
         ...expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
       );
@@ -218,7 +222,7 @@ describe(SearchService.name, () => {
       const duplicateId = assetStub.hasDupe.duplicateId;
       assetMock.getById.mockResolvedValue(assetStub.hasEmbedding);
       searchMock.searchDuplicates.mockResolvedValue([{ assetId: assetStub.hasDupe.id, distance: 0.01, duplicateId }]);
-      const expectedAssetIds = [assetStub.hasEmbedding.id, assetStub.hasDupe.id];
+      const expectedAssetIds = [assetStub.hasEmbedding.id];
 
       const result = await sut.handleSearchDuplicates({ id: assetStub.hasEmbedding.id });
 
@@ -229,8 +233,10 @@ describe(SearchService.name, () => {
         maxDistance: 0.03,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(expectedAssetIds, {
-        duplicateId: assetStub.hasDupe.duplicateId,
+      expect(assetMock.updateDuplicates).toHaveBeenCalledWith({
+        assetIds: expectedAssetIds,
+        targetDuplicateId: assetStub.hasDupe.duplicateId,
+        duplicateIds: [],
       });
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith(
         ...expectedAssetIds.map((assetId) => ({ assetId, duplicatesDetectedAt: expect.any(Date) })),
@@ -244,7 +250,7 @@ describe(SearchService.name, () => {
       const result = await sut.handleSearchDuplicates({ id: assetStub.hasDupe.id });
 
       expect(result).toBe(JobStatus.SUCCESS);
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasDupe.id], { duplicateId: null });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.hasDupe.id, duplicateId: null });
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
         assetId: assetStub.hasDupe.id,
         duplicatesDetectedAt: expect.any(Date),
