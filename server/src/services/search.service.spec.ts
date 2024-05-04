@@ -197,7 +197,7 @@ describe(SearchService.name, () => {
       searchMock.searchDuplicates.mockResolvedValue([
         { assetId: assetStub.image.id, distance: 0.01, duplicateId: null },
       ]);
-      const expectedAssetIds = [assetStub.hasEmbedding.id, assetStub.image.id];
+      const expectedAssetIds = [assetStub.image.id, assetStub.hasEmbedding.id];
 
       const result = await sut.handleSearchDuplicates({ id: assetStub.hasEmbedding.id });
 
