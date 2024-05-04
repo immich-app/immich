@@ -87,11 +87,16 @@ class LocationPicker extends HookConsumerWidget {
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
           selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
+            if(value.toString() == selectedCountry.value) {
+              return;
+            }
             selectedCountry.value = value.toString();
+            stateTextController.value = TextEditingValue.empty;
+            cityTextController.value = TextEditingValue.empty;
             onSelected({
               'country': selectedCountry.value,
-              'state': selectedState.value,
-              'city': selectedCity.value,
+              'state': null,
+              'city': null,
             });
           },
         ),
@@ -120,11 +125,15 @@ class LocationPicker extends HookConsumerWidget {
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
           selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
+            if (value.toString() == selectedState.value) {
+              return;
+            }
             selectedState.value = value.toString();
+            cityTextController.value = TextEditingValue.empty;
             onSelected({
               'country': selectedCountry.value,
               'state': selectedState.value,
-              'city': selectedCity.value,
+              'city': null,
             });
           },
         ),
