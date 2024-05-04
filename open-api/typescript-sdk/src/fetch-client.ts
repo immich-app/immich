@@ -122,10 +122,12 @@ export type AssetResponseDto = {
     hasMetadata: boolean;
     id: string;
     isArchived: boolean;
-    isExternal: boolean;
+    /** This property was deprecated in v1.104.0 */
+    isExternal?: boolean;
     isFavorite: boolean;
     isOffline: boolean;
-    isReadOnly: boolean;
+    /** This property was deprecated in v1.104.0 */
+    isReadOnly?: boolean;
     isTrashed: boolean;
     libraryId: string;
     livePhotoVideoId?: string | null;
@@ -296,7 +298,6 @@ export type CreateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     libraryId?: string;
     livePhotoData?: Blob;
@@ -407,6 +408,7 @@ export type AllJobStatusResponseDto = {
     library: JobStatusDto;
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
+    notifications: JobStatusDto;
     search: JobStatusDto;
     sidecar: JobStatusDto;
     smartSearch: JobStatusDto;
@@ -621,12 +623,10 @@ export type MetadataSearchDto = {
     id?: string;
     isArchived?: boolean;
     isEncoded?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     lensModel?: string;
     libraryId?: string;
@@ -698,12 +698,10 @@ export type SmartSearchDto = {
     deviceId?: string;
     isArchived?: boolean;
     isEncoded?: boolean;
-    isExternal?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isReadOnly?: boolean;
     isVisible?: boolean;
     lensModel?: string;
     libraryId?: string;
@@ -745,6 +743,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    email: boolean;
     facialRecognition: boolean;
     map: boolean;
     oauth: boolean;
@@ -895,6 +894,7 @@ export type SystemConfigJobDto = {
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
+    notifications: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
@@ -943,6 +943,22 @@ export type SystemConfigMapDto = {
 };
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
+};
+export type SystemConfigSmtpTransportDto = {
+    host: string;
+    ignoreCert: boolean;
+    password: string;
+    port: number;
+    username: string;
+};
+export type SystemConfigSmtpDto = {
+    enabled: boolean;
+    "from": string;
+    replyTo: string;
+    transport: SystemConfigSmtpTransportDto;
+};
+export type SystemConfigNotificationsDto = {
+    smtp: SystemConfigSmtpDto;
 };
 export type SystemConfigOAuthDto = {
     autoLaunch: boolean;
@@ -994,6 +1010,7 @@ export type SystemConfigDto = {
     machineLearning: SystemConfigMachineLearningDto;
     map: SystemConfigMapDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
@@ -1035,6 +1052,7 @@ export type CreateUserDto = {
     email: string;
     memoriesEnabled?: boolean;
     name: string;
+    notify?: boolean;
     password: string;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
@@ -1503,8 +1521,9 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
-export function uploadFile({ key, createAssetDto }: {
+export function uploadFile({ key, xImmichChecksum, createAssetDto }: {
     key?: string;
+    xImmichChecksum?: string;
     createAssetDto: CreateAssetDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -1515,7 +1534,10 @@ export function uploadFile({ key, createAssetDto }: {
     }))}`, oazapfts.multipart({
         ...opts,
         method: "POST",
-        body: createAssetDto
+        body: createAssetDto,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-checksum": xImmichChecksum
+        })
     })));
 }
 export function getAssetInfo({ id, key }: {
@@ -2852,7 +2874,8 @@ export enum JobName {
     Migration = "migration",
     Search = "search",
     Sidecar = "sidecar",
-    Library = "library"
+    Library = "library",
+    Notifications = "notifications"
 }
 export enum JobCommand {
     Start = "start",

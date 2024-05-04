@@ -19,6 +19,7 @@ class AllJobStatusResponseDto {
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
+    required this.notifications,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
@@ -38,6 +39,8 @@ class AllJobStatusResponseDto {
   JobStatusDto metadataExtraction;
 
   JobStatusDto migration;
+
+  JobStatusDto notifications;
 
   JobStatusDto search;
 
@@ -59,6 +62,7 @@ class AllJobStatusResponseDto {
     other.library_ == library_ &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
+    other.notifications == notifications &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
@@ -75,6 +79,7 @@ class AllJobStatusResponseDto {
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
+    (notifications.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
@@ -83,7 +88,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -93,6 +98,7 @@ class AllJobStatusResponseDto {
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
+      json[r'notifications'] = this.notifications;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
@@ -116,6 +122,7 @@ class AllJobStatusResponseDto {
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
+        notifications: JobStatusDto.fromJson(json[r'notifications'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobStatusDto.fromJson(json[r'smartSearch'])!,
@@ -175,6 +182,7 @@ class AllJobStatusResponseDto {
     'library',
     'metadataExtraction',
     'migration',
+    'notifications',
     'search',
     'sidecar',
     'smartSearch',

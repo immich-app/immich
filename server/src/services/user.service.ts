@@ -60,8 +60,13 @@ export class UserService {
     return this.findOrFail(auth.user.id, {}).then(mapUser);
   }
 
-  create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userCore.createUser(createUserDto).then(mapUser);
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.userCore.createUser(dto);
+    const tempPassword = user.shouldChangePassword ? dto.password : undefined;
+    if (dto.notify) {
+      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
+    }
+    return mapUser(user);
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {

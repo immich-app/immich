@@ -97,9 +97,6 @@ export class CreateAssetDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isReadOnly?: boolean;
-
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })

@@ -170,7 +170,7 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly || asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
+    if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;

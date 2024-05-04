@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/backup/background_service/localization.dart';
+import 'package:immich_mobile/services/localization.service.dart';
 
 class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});

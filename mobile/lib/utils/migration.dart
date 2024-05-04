@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:isar/isar.dart';
 

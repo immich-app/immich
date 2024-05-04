@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
 import { getRandomAvatarColor } from 'src/dtos/user-profile.dto';
 import { UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
@@ -34,6 +34,10 @@ export class CreateUserDto {
 
   @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  notify?: boolean;
 }
 
 export class CreateAdminDto {

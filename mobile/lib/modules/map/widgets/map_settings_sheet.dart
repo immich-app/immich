@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
+import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/modules/map/widgets/map_settings/map_settings_list_tile.dart';
 import 'package:immich_mobile/modules/map/widgets/map_settings/map_settings_time_dropdown.dart';
 import 'package:immich_mobile/modules/map/widgets/map_settings/map_theme_picker.dart';

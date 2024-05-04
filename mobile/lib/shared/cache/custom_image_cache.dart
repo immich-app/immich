@@ -1,8 +1,8 @@
 import 'package:flutter/painting.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_thumbnail_provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_image_provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_remote_thumbnail_provider.dart';
+import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
+import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
+import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
+import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small iamges

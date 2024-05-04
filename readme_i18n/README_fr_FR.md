@@ -28,6 +28,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Clause de non-responsabilité
@@ -46,7 +47,6 @@
 - [Introduction](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Contribution](https://immich.app/docs/overview/support-the-project)
-- [Soutenir le projet](#support-the-project)
 
 ## Documentation
 
@@ -97,20 +97,3 @@ Caractéristiques: Plan gratuit Oracle VM - Amsterdam - 2.4Ghz quatre-cœurs ARM
 | Souvenirs (il y a x années)                                      | Oui    | Oui |
 | Support hors-ligne                                               | Oui    | Non |
 | Gallerie en lecture seule                                        | Oui    | Oui |
-
-# Soutenir le projet
-
-Je me suis engagé sur ce projet, et je ne compte pas m'arrêter. Je continuerai à mettre à jour les documentations, d'ajouter de nouvelles fonctionnalités et de résoudre des bugs. Mais je ne peux pas faire cela seul. Donc j'ai besoin de votre aide pour me donner encore plus de motivation et ainsi continuer.
-
-Comme l'ont dit nos hôtes dans le [selfhosted.show - Dans l'épisode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), c'est un travail colossal ce que l'équipe et moi faisons. J'aimerais un jour être capable de faire ça à temps plein, c'est pourquoi je vous demande votre aide pour rendre cela possible.
-
-Si vous estimez que c'est pour la bonne cause et que vous prévoyez d'utiliser l'application pour un moment, s'il-vous-plaît, pensez à soutenir le projet avec les moyens ci-dessous.
-
-## Donation
-
-- [Donation mensuelle](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Donation occasionnelle](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz

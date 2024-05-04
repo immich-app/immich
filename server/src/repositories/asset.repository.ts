@@ -5,6 +5,7 @@ import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryType } from 'src/entities/library.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import {
@@ -252,7 +253,7 @@ export class AssetRepository implements IAssetRepository {
 
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids), isExternal: false });
+    await this.repository.softDelete({ id: In(ids) });
   }
 
   @Chunked()
@@ -271,6 +272,23 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { libraryId, checksum } });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
+  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
+    const asset = await this.repository.findOne({
+      select: { id: true },
+      where: {
+        ownerId,
+        checksum,
+        library: {
+          type: LibraryType.UPLOAD,
+        },
+      },
+      withDeleted: true,
+    });
+
+    return asset?.id;
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {

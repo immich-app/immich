@@ -7,6 +7,7 @@ import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
+import { NotificationService } from 'src/services/notification.service';
 import { PersonService } from 'src/services/person.service';
 import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
@@ -22,23 +23,25 @@ export class MicroservicesService {
     private auditService: AuditService,
     private assetService: AssetService,
     private configService: SystemConfigService,
+    private databaseService: DatabaseService,
     private jobService: JobService,
     private libraryService: LibraryService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
+    private notificationService: NotificationService,
     private personService: PersonService,
     private smartInfoService: SmartInfoService,
     private sessionService: SessionService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
-    private databaseService: DatabaseService,
   ) {}
 
   async init() {
     await this.databaseService.init();
     await this.configService.init();
     await this.libraryService.init();
+    await this.notificationService.init();
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
@@ -80,6 +83,8 @@ export class MicroservicesService {
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
+      [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
+      [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
     });
 
     await this.metadataService.init();
