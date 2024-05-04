@@ -69,7 +69,7 @@ export const SystemConfigKey = {
 
   MACHINE_LEARNING_CLIP_ENABLED: 'machineLearning.clip.enabled',
   MACHINE_LEARNING_CLIP_MODEL_NAME: 'machineLearning.clip.modelName',
-  MACHINE_LEARNING_CLIP_DUPLICATE_DETECTION_THRESHOLD: 'machineLearning.clip.duplicateThreshold',
+  MACHINE_LEARNING_CLIP_DUPLICATE_THRESHOLD: 'machineLearning.clip.duplicateThreshold',
 
   MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED: 'machineLearning.facialRecognition.enabled',
   MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL_NAME: 'machineLearning.facialRecognition.modelName',
