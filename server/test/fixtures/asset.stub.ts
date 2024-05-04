@@ -819,7 +819,7 @@ export const assetStub = {
     duplicateId: null,
   }),
   hasEmbedding: Object.freeze<AssetEntity>({
-    id: 'asset-id',
+    id: 'asset-id-embedding',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -838,7 +838,6 @@ export const assetStub = {
     localDateTime: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: true,
     isArchived: false,
-    isReadOnly: false,
     duration: null,
     isVisible: true,
     isExternal: false,
@@ -863,7 +862,7 @@ export const assetStub = {
     },
   }),
   hasDupe: Object.freeze<AssetEntity>({
-    id: 'asset-id',
+    id: 'asset-id-dupe',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -882,7 +881,6 @@ export const assetStub = {
     localDateTime: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: true,
     isArchived: false,
-    isReadOnly: false,
     duration: null,
     isVisible: true,
     isExternal: false,
