@@ -87,7 +87,7 @@ class LocationPicker extends HookConsumerWidget {
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
           selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
-            if(value.toString() == selectedCountry.value) {
+            if (value.toString() == selectedCountry.value) {
               return;
             }
             selectedCountry.value = value.toString();
