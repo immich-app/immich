@@ -228,7 +228,7 @@ export class SearchService {
         ),
       ];
 
-      const targetDuplicateId = duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
+      const targetDuplicateId = asset.duplicateId ?? duplicateIds.shift() ?? this.cryptoRepository.randomUUID();
       const assetIdsToUpdate = duplicateAssets
         .filter((asset) => asset.duplicateId !== targetDuplicateId)
         .map((duplicate) => duplicate.assetId);
