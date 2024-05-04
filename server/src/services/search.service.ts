@@ -31,12 +31,7 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import {
-  AssetDuplicateResult,
-  AssetDuplicateSearch,
-  ISearchRepository,
-  SearchExploreItem,
-} from 'src/interfaces/search.interface';
+import { AssetDuplicateResult, ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { usePagination } from 'src/utils/pagination';
 

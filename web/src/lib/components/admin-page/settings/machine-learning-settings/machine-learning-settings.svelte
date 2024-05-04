@@ -84,9 +84,9 @@
             max={0.1}
             desc="Maximum distance between two images to consider them duplicates, ranging from 0.01-0.1. Higher values will detect more duplicates, but may result in false positives."
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
-            isEdited={config.machineLearning.clip.duplicateThreshold !== savedConfig.machineLearning.clip.duplicateThreshold}
-          >
-          </SettingInputField>
+            isEdited={config.machineLearning.clip.duplicateThreshold !==
+              savedConfig.machineLearning.clip.duplicateThreshold}
+          ></SettingInputField>
         </div>
       </SettingAccordion>
 
