@@ -205,7 +205,7 @@ describe(SearchService.name, () => {
       expect(searchMock.searchDuplicates).toHaveBeenCalledWith({
         assetId: assetStub.hasEmbedding.id,
         embedding: assetStub.hasEmbedding.smartSearch!.embedding,
-        maxDistance: 0.02,
+        maxDistance: 0.03,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
       expect(assetMock.updateAll).toHaveBeenCalledWith(expectedAssetIds, { duplicateId: expect.any(String) });
@@ -226,7 +226,7 @@ describe(SearchService.name, () => {
       expect(searchMock.searchDuplicates).toHaveBeenCalledWith({
         assetId: assetStub.hasEmbedding.id,
         embedding: assetStub.hasEmbedding.smartSearch!.embedding,
-        maxDistance: 0.02,
+        maxDistance: 0.03,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
       expect(assetMock.updateAll).toHaveBeenCalledWith(expectedAssetIds, {
