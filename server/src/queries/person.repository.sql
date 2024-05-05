@@ -85,6 +85,8 @@ FROM
   LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
 WHERE
   (("AssetFaceEntity"."assetId" = $1))
+ORDER BY
+  "AssetFaceEntity"."boundingBoxX1" ASC
 
 -- PersonRepository.getFaceById
 SELECT DISTINCT

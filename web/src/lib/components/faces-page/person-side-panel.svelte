@@ -36,6 +36,7 @@
   let selectedPersonToReassign: Record<string, PersonResponseDto> = {};
   let selectedPersonToCreate: Record<string, string> = {};
   let editedPerson: PersonResponseDto;
+  let editedFace: AssetFaceResponseDto;
 
   // loading spinners
   let isShowLoadingDone = false;
@@ -155,24 +156,23 @@
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
-    if (newFeaturePhoto && personToUpdate) {
-      selectedPersonToCreate[personToUpdate.id] = newFeaturePhoto;
+    if (newFeaturePhoto) {
+      selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
     showSelectedFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
-    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
-    if (person && personToUpdate) {
-      selectedPersonToReassign[personToUpdate.id] = person;
-      showSelectedFaces = false;
+    if (person) {
+      selectedPersonToReassign[editedFace.id] = person;
     }
+    showSelectedFaces = false;
   };
 
-  const handlePersonPicker = (person: PersonResponseDto | null) => {
-    if (person) {
-      editedPerson = person;
+  const handlePersonPicker = (face: AssetFaceResponseDto) => {
+    if (face.person) {
+      editedFace = face;
+      editedPerson = face.person;
       showSelectedFaces = true;
     }
   };
@@ -285,7 +285,7 @@
                       size="18"
                       padding="1"
                       class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
-                      on:click={() => handlePersonPicker(face.person)}
+                      on:click={() => handlePersonPicker(face)}
                     />
                   {/if}
                 </div>

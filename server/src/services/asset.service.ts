@@ -227,21 +227,29 @@ export class AssetService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, id);
 
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      tags: true,
-      sharedLinks: true,
-      smartInfo: true,
-      owner: true,
-      faces: {
-        person: true,
-      },
-      stack: {
-        assets: {
-          exifInfo: true,
+    const asset = await this.assetRepository.getById(
+      id,
+      {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        owner: true,
+        faces: {
+          person: true,
+        },
+        stack: {
+          assets: {
+            exifInfo: true,
+          },
         },
       },
-    });
+      {
+        faces: {
+          boundingBoxX1: 'ASC',
+        },
+      },
+    );
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
