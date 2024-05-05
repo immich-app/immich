@@ -11,16 +11,15 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class UserService {
   private configCore: SystemConfigCore;
-  private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(
@@ -31,9 +30,16 @@ export class UserService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(UserService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+  }
+
+  async listUsers(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.getList({ withDeleted: true });
+    return users.map((user) => mapUser(user));
   }
 
   async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -54,8 +60,13 @@ export class UserService {
     return this.findOrFail(auth.user.id, {}).then(mapUser);
   }
 
-  create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userCore.createUser(createUserDto).then(mapUser);
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.userCore.createUser(dto);
+    const tempPassword = user.shouldChangePassword ? dto.password : undefined;
+    if (dto.notify) {
+      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
+    }
+    return mapUser(user);
   }
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {

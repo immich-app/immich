@@ -2,12 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -30,16 +30,25 @@ class SplashScreenPage extends HookConsumerWidget {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(serverUrl);
-        } on ApiException catch (e) {
+        } on ApiException catch (error, stackTrace) {
+          log.severe(
+            "Failed to resolve endpoint [ApiException]",
+            error,
+            stackTrace,
+          );
           // okay, try to continue anyway if offline
-          if (e.code == 503) {
+          if (error.code == 503) {
             deviceIsOffline = true;
-            log.fine("Device seems to be offline upon launch");
+            log.warning("Device seems to be offline upon launch");
           } else {
-            log.severe("Failed to resolve endpoint", e);
+            log.severe("Failed to resolve endpoint", error);
           }
-        } catch (e) {
-          log.severe("Failed to resolve endpoint", e);
+        } catch (error, stackTrace) {
+          log.severe(
+            "Failed to resolve endpoint [Catch All]",
+            error,
+            stackTrace,
+          );
         }
 
         try {

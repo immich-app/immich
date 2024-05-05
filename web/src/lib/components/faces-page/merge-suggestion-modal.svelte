@@ -102,8 +102,8 @@
   <div class="flex px-4 pt-2">
     <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
   </div>
-  <div class="mt-8 flex w-full gap-4 pb-4">
+  <svelte:fragment slot="sticky-bottom">
     <Button fullwidth color="gray" on:click={() => dispatch('reject')}>No</Button>
     <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>
-  </div>
+  </svelte:fragment>
 </FullScreenModal>

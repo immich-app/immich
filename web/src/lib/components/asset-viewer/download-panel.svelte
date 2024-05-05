@@ -44,7 +44,7 @@
               on:click={() => abort(downloadKey, download)}
               size="20"
               icon={mdiClose}
-              forceDark
+              class="dark:text-immich-dark-gray"
             />
           </div>
         </div>

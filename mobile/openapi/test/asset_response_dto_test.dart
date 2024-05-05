@@ -67,6 +67,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.104.0
     // bool isExternal
     test('to test the property `isExternal`', () async {
       // TODO
@@ -82,6 +83,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.104.0
     // bool isReadOnly
     test('to test the property `isReadOnly`', () async {
       // TODO

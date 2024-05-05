@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto notifications
+    test('to test the property `notifications`', () async {
+      // TODO
+    });
+
     // JobSettingsDto search
     test('to test the property `search`', () async {
       // TODO

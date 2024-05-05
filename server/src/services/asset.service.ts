@@ -12,6 +12,7 @@ import {
   SanitizedAssetResponseDto,
   mapAsset,
 } from 'src/dtos/asset-response.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -32,7 +33,7 @@ import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
-  IAssetDeletionJob,
+  IEntityJob,
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
@@ -40,13 +41,14 @@ import {
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
+import { fromChecksum } from 'src/utils/request';
 
 export interface UploadRequest {
   auth: AuthDto | null;
@@ -63,7 +65,6 @@ export interface UploadFile {
 }
 
 export class AssetService {
-  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -77,9 +78,24 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+  }
+
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
+    if (!checksum) {
+      return;
+    }
+
+    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
+    if (!assetId) {
+      return;
+    }
+
+    return { id: assetId, duplicate: true };
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
@@ -189,7 +205,7 @@ export class AssetService {
       .map((yearsAgo) => ({
         yearsAgo,
         // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
         assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
       }));
   }
@@ -355,8 +371,8 @@ export class AssetService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
-    const { id, fromExternal } = job;
+  async handleAssetDeletion(job: IEntityJob): Promise<JobStatus> {
+    const { id } = job;
 
     const asset = await this.assetRepository.getById(id, {
       faces: {
@@ -369,11 +385,6 @@ export class AssetService {
 
     if (!asset) {
       return JobStatus.FAILED;
-    }
-
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
-      return JobStatus.SKIPPED;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -391,23 +402,22 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    if (asset.library.type === LibraryType.UPLOAD) {
+      await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.livePhotoVideoId, fromExternal },
-      });
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
-      files.push(asset.sidecarPath, asset.originalPath);
-    }
-
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({
+      name: JobName.DELETE_FILES,
+      data: {
+        files: [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath],
+      },
+    });
 
     return JobStatus.SUCCESS;
   }

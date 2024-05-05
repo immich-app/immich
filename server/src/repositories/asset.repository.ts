@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import path from 'node:path';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryType } from 'src/entities/library.entity';
+import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import {
   AssetBuilderOptions,
   AssetCreate,
+  AssetDeltaSyncOptions,
   AssetExploreFieldOptions,
+  AssetFullSyncOptions,
   AssetPathEntity,
   AssetStats,
   AssetStatsOptions,
@@ -20,7 +23,6 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
-  MetadataSearchOptions,
   MonthDay,
   TimeBucketItem,
   TimeBucketOptions,
@@ -39,6 +41,7 @@ import {
   FindOptionsWhere,
   In,
   IsNull,
+  MoreThan,
   Not,
   Repository,
 } from 'typeorm';
@@ -61,6 +64,8 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
+    @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
+    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -248,7 +253,7 @@ export class AssetRepository implements IAssetRepository {
 
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids), isExternal: false });
+    await this.repository.softDelete({ id: In(ids) });
   }
 
   @Chunked()
@@ -267,6 +272,23 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { libraryId, checksum } });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
+  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
+    const asset = await this.repository.findOne({
+      select: { id: true },
+      where: {
+        ownerId,
+        checksum,
+        library: {
+          type: LibraryType.UPLOAD,
+        },
+      },
+      withDeleted: true,
+    });
+
+    return asset?.id;
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
@@ -506,7 +528,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = this.repository
+    const builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
@@ -516,15 +538,15 @@ export class AssetRepository implements IAssetRepository {
 
     const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
-      builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
+      builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
-      builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+      builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
     }
 
     if (isTrashed !== undefined) {
-      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
+      builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -640,43 +662,43 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: AssetBuilderOptions) {
     const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
 
-    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
+    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
     if (assetType !== undefined) {
-      builder = builder.andWhere('asset.type = :assetType', { assetType });
+      builder.andWhere('asset.type = :assetType', { assetType });
     }
 
     let stackJoined = false;
 
     if (exifInfo !== false) {
       stackJoined = true;
-      builder = builder
+      builder
         .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
         .leftJoinAndSelect('asset.stack', 'stack')
         .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
     if (albumId) {
-      builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
     }
 
     if (userIds) {
-      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
+      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
     }
 
     if (isArchived !== undefined) {
-      builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+      builder.andWhere('asset.isArchived = :isArchived', { isArchived });
     }
 
     if (isFavorite !== undefined) {
-      builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
     }
 
     if (isTrashed !== undefined) {
-      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+      builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
     if (personId !== undefined) {
-      builder = builder
+      builder
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
@@ -684,9 +706,9 @@ export class AssetRepository implements IAssetRepository {
 
     if (withStacked) {
       if (!stackJoined) {
-        builder = builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
+        builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
       }
-      builder = builder.andWhere(
+      builder.andWhere(
         new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
       );
     }
@@ -694,91 +716,49 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
-  async searchMetadata(
-    query: string,
-    userIds: string[],
-    { numResults }: MetadataSearchOptions,
-  ): Promise<AssetEntity[]> {
-    const rows = await this.getBuilder({
-      userIds: userIds,
-      exifInfo: false,
-      isArchived: false,
-    })
-      .select('asset.*')
-      .addSelect('e.*')
-      .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
-      .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
-      .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where(
-            `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
-          @@ PLAINTO_TSQUERY('english', :query)`,
-            { query },
-          ).orWhere('asset."originalFileName" = :path', { path: path.parse(query).name });
-        }),
-      )
-      .addOrderBy('asset.fileCreatedAt', 'DESC')
-      .limit(numResults)
-      .getRawMany();
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        lastCreationDate: DummyValue.DATE,
+        lastId: DummyValue.STRING,
+        updatedUntil: DummyValue.DATE,
+        limit: 10,
+      },
+    ],
+  })
+  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
+    const { ownerId, isArchived, withStacked, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const builder = this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: true,
+      withStacked,
+      isArchived,
+    });
 
-    return rows.map(
-      ({
-        tags,
-        objects,
-        country,
-        state,
-        city,
-        description,
-        model,
-        make,
-        dateTimeOriginal,
-        exifImageHeight,
-        exifImageWidth,
-        exposureTime,
-        fNumber,
-        fileSizeInByte,
-        focalLength,
-        iso,
-        latitude,
-        lensModel,
-        longitude,
-        modifyDate,
-        projectionType,
-        timeZone,
-        ...assetInfo
-      }) =>
-        ({
-          exifInfo: {
-            city,
-            country,
-            dateTimeOriginal,
-            description,
-            exifImageHeight,
-            exifImageWidth,
-            exposureTime,
-            fNumber,
-            fileSizeInByte,
-            focalLength,
-            iso,
-            latitude,
-            lensModel,
-            longitude,
-            make,
-            model,
-            modifyDate,
-            projectionType,
-            state,
-            timeZone,
-          },
-          smartInfo: {
-            tags,
-            objects,
-          },
-          ...assetInfo,
-        }) as AssetEntity,
-    );
+    if (lastCreationDate !== undefined && lastId !== undefined) {
+      builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
+        lastCreationDate,
+        lastId,
+      });
+    }
+
+    return builder
+      .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
+      .orderBy('asset.fileCreatedAt', 'DESC')
+      .addOrderBy('asset.id', 'DESC')
+      .limit(limit)
+      .withDeleted()
+      .getMany();
+  }
+
+  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
+  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
+    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: true })
+      .andWhere({ updatedAt: MoreThan(options.updatedAfter) })
+      .take(options.limit)
+      .withDeleted();
+
+    return builder.getMany();
   }
 }

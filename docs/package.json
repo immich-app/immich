@@ -16,8 +16,8 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.1.0",
-    "@docusaurus/preset-classic": "^3.1.0",
+    "@docusaurus/core": "^3.2.1",
+    "@docusaurus/preset-classic": "^3.2.1",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -25,7 +25,7 @@
     "classnames": "^2.3.2",
     "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^3.3.2",
-    "docusaurus-preset-openapi": "^0.7.3",
+    "docusaurus-preset-openapi": "^0.7.5",
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",
     "raw-loader": "^4.0.2",
@@ -53,6 +53,9 @@
     ]
   },
   "engines": {
-    "node": ">=16.14"
+    "node": ">=20"
+  },
+  "volta": {
+    "node": "20.12.2"
   }
 }

@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Kan ikke dele lokale objekter via link, hopper over",
   "home_page_upload_err_limit": "Maksimalt 30 objekter kan lastes opp om gangen, hopper over",
   "image_viewer_page_state_provider_download_error": "Nedlasting feilet",
+  "image_viewer_page_state_provider_download_started": "Nedlasting startet",
   "image_viewer_page_state_provider_download_success": "Nedlasting vellykket",
   "image_viewer_page_state_provider_share_error": "Delingsfeil",
   "library_page_albums": "Albumer",

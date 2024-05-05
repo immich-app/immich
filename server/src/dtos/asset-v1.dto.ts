@@ -97,9 +97,6 @@ export class CreateAssetDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isReadOnly?: boolean;
-
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })
@@ -128,19 +125,6 @@ export class GetAssetThumbnailDto {
     enumName: 'ThumbnailFormat',
   })
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
-}
-
-export class SearchPropertiesDto {
-  tags?: string[];
-  objects?: string[];
-  assetType?: string;
-  orientation?: string;
-  lensModel?: string;
-  make?: string;
-  model?: string;
-  city?: string;
-  state?: string;
-  country?: string;
 }
 
 export class ServeFileDto {

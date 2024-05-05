@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_sheet/exif_map.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
 
 class ExifLocation extends StatelessWidget {
   final Asset asset;
@@ -24,7 +24,7 @@ class ExifLocation extends StatelessWidget {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
     // Guard no lat/lng
     if (!hasCoordinates) {
-      return asset.isRemote && !asset.isReadOnly
+      return asset.isRemote
           ? ListTile(
               minLeadingWidth: 0,
               contentPadding: const EdgeInsets.all(0),
@@ -57,7 +57,7 @@ class ExifLocation extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ).tr(),
-                if (asset.isRemote && !asset.isReadOnly)
+                if (asset.isRemote)
                   IconButton(
                     onPressed: editLocation,
                     icon: const Icon(Icons.edit_outlined),

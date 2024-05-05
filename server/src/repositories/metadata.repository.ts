@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
 import geotz from 'geo-tz';
@@ -11,31 +11,33 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Instrumentation()
+@Injectable()
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ISystemMetadataRepository)
-    private readonly systemMetadataRepository: ISystemMetadataRepository,
+    private systemMetadataRepository: ISystemMetadataRepository,
     @InjectDataSource() private dataSource: DataSource,
-  ) {}
-
-  private logger = new ImmichLogger(MetadataRepository.name);
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(MetadataRepository.name);
+  }
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
+    // TODO move to metadata service init
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
-
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }
@@ -77,7 +79,9 @@ export class MetadataRepository implements IMetadataRepository {
     queryRunner: QueryRunner,
     lineToEntityMapper: (lineSplit: string[]) => GeodataPlacesEntity,
     filePath: string,
+    options?: { entityFilter?: (linesplit: string[]) => boolean },
   ) {
+    const _entityFilter = options?.entityFilter ?? (() => true);
     if (!existsSync(filePath)) {
       this.logger.error(`Geodata file ${filePath} not found`);
       throw new Error(`Geodata file ${filePath} not found`);
@@ -89,6 +93,9 @@ export class MetadataRepository implements IMetadataRepository {
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
+      if (!_entityFilter(lineSplit)) {
+        continue;
+      }
       const geoData = lineToEntityMapper(lineSplit);
       bufferGeodata.push(geoData);
       if (bufferGeodata.length > 1000) {
@@ -121,6 +128,7 @@ export class MetadataRepository implements IMetadataRepository {
           admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
       geodataCities500Path,
+      { entityFilter: (lineSplit) => lineSplit[7] != 'PPLX' },
     );
   }
 
@@ -165,10 +173,9 @@ export class MetadataRepository implements IMetadataRepository {
 
     this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
 
-    const { countryCode, name: city, admin1Name, admin2Name } = response;
+    const { countryCode, name: city, admin1Name } = response;
     const country = getName(countryCode, 'en') ?? null;
-    const stateParts = [admin2Name, admin1Name].filter((name) => !!name);
-    const state = stateParts.length > 0 ? stateParts.join(', ') : null;
+    const state = admin1Name;
 
     return { country, state, city };
   }

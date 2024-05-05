@@ -8,6 +8,7 @@ const Map<String, Locale> locales = {
   'Catalan (ca_CA)': Locale('ca', 'CA'),
   'Chinese (zh_CN)': Locale('zh', 'CN'),
   'Chinese Simplified (zh_Hans)': Locale('zh', 'Hans'),
+  'Chinese TW (zh_TW)': Locale('zh', 'TW'),
   'Czech (cs_CZ)': Locale('cs', 'CZ'),
   'Danish (da_DK)': Locale('da', 'DK'),
   'Dutch (nl_NL)': Locale('nl', 'NL'),

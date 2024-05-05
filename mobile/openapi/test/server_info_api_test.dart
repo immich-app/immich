@@ -57,10 +57,5 @@ void main() {
       // TODO
     });
 
-    //Future setAdminOnboarding() async
-    test('test setAdminOnboarding', () async {
-      // TODO
-    });
-
   });
 }

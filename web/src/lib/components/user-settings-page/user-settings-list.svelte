@@ -4,7 +4,8 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
-  import { type ApiKeyResponseDto, type AuthDeviceResponseDto } from '@immich/sdk';
+  import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
+  import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
   import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
@@ -14,10 +15,9 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-  import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
-  export let devices: AuthDeviceResponseDto[] = [];
+  export let sessions: SessionResponseDto[] = [];
 
   let oauthOpen =
     oauth.isCallback(window.location) ||
@@ -38,7 +38,7 @@
   </SettingAccordion>
 
   <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
-    <DeviceList bind:devices />
+    <DeviceList bind:devices={sessions} />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">

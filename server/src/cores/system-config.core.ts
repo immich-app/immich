@@ -22,8 +22,8 @@ import {
   VideoCodec,
 } from 'src/entities/system-config.entity';
 import { QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -61,6 +61,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+    [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
   logging: {
     enabled: true,
@@ -120,6 +121,7 @@ export const defaults = Object.freeze<SystemConfig>({
     previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+    extractEmbedded: false,
   },
   newVersionCheck: {
     enabled: true,
@@ -144,6 +146,20 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
   },
+  notifications: {
+    smtp: {
+      enabled: false,
+      from: '',
+      replyTo: '',
+      transport: {
+        ignoreCert: false,
+        host: '',
+        port: 587,
+        username: '',
+        password: '',
+      },
+    },
+  },
   user: {
     deleteDelay: 7,
   },
@@ -161,6 +177,7 @@ export enum FeatureFlag {
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
   TRASH = 'trash',
+  EMAIL = 'email',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -169,16 +186,18 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new ImmichLogger(SystemConfigCore.name);
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
   public config$ = new Subject<SystemConfig>();
 
-  private constructor(private repository: ISystemConfigRepository) {}
+  private constructor(
+    private repository: ISystemConfigRepository,
+    private logger: ILoggerRepository,
+  ) {}
 
-  static create(repository: ISystemConfigRepository) {
+  static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
     if (!instance) {
-      instance = new SystemConfigCore(repository);
+      instance = new SystemConfigCore(repository, logger);
     }
     return instance;
   }
@@ -240,6 +259,7 @@ export class SystemConfigCore {
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
       [FeatureFlag.CONFIG_FILE]: !!process.env.IMMICH_CONFIG_FILE,
+      [FeatureFlag.EMAIL]: config.notifications.smtp.enabled,
     };
   }
 

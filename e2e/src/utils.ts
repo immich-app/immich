@@ -21,10 +21,13 @@ import {
   getAllAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfigDefaults,
   login,
   searchMetadata,
-  setAdminOnboarding,
   signUpAdmin,
+  updateAdminOnboarding,
+  updateAlbumUser,
+  updateConfig,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
@@ -41,7 +44,7 @@ import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
-type CliResponse = { stdout: string; stderr: string; exitCode: number | null };
+type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
 type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
@@ -50,6 +53,7 @@ type AssetData = { bytes?: Buffer; filename: string };
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
 const baseUrl = 'http://127.0.0.1:2283';
 
+export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
 export const testAssetDir = path.resolve(`./../server/test/assets/`);
@@ -57,13 +61,15 @@ export const testAssetDirInternal = '/data/assets';
 export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
-export const immichCli = async (args: string[]) => {
-  let _resolve: (value: CliResponse) => void;
-  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
-  const _args = ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args];
-  const child = spawn('node', _args, {
-    stdio: 'pipe',
-  });
+export const immichCli = (args: string[]) =>
+  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]);
+export const immichAdmin = (args: string[]) =>
+  executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
+
+const executeCommand = (command: string, args: string[]) => {
+  let _resolve: (value: CommandResponse) => void;
+  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
   let stderr = '';
@@ -136,9 +142,10 @@ export const utils = {
         'asset_faces',
         'activity',
         'api_keys',
-        'user_token',
+        'sessions',
         'users',
         'system_metadata',
+        'system_config',
       ];
 
       const sql: string[] = [];
@@ -148,7 +155,12 @@ export const utils = {
       }
 
       for (const table of tables) {
-        sql.push(`DELETE FROM ${table} CASCADE;`);
+        if (table === 'system_metadata') {
+          // prevent reverse geocoder from being re-initialized
+          sql.push(`DELETE FROM "system_metadata" where "key" != 'reverse-geocoding-state';`);
+        } else {
+          sql.push(`DELETE FROM ${table} CASCADE;`);
+        }
       }
 
       await client.query(sql.join('\n'));
@@ -254,7 +266,10 @@ export const utils = {
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
     if (options.onboarding) {
-      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+      await updateAdminOnboarding(
+        { adminOnboardingUpdateDto: { isOnboarded: true } },
+        { headers: asBearerAuth(response.accessToken) },
+      );
     }
     return response;
   },
@@ -272,6 +287,9 @@ export const utils = {
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
+    updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),
 
   createAsset: async (
     accessToken: string,
@@ -310,9 +328,7 @@ export const utils = {
     if (!existsSync(dirname(path))) {
       mkdirSync(dirname(path), { recursive: true });
     }
-    if (!existsSync(path)) {
-      writeFileSync(path, makeRandomImage());
-    }
+    writeFileSync(path, makeRandomImage());
   },
 
   removeImageFile: (path: string) => {
@@ -407,8 +423,14 @@ export const utils = {
       },
     ]),
 
-  deleteTempFolder: () => {
+  resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
+    mkdirSync(`${testAssetDir}/temp`, { recursive: true });
+  },
+
+  resetAdminConfig: async (accessToken: string) => {
+    const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
+    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {

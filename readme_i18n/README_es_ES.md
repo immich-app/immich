@@ -28,6 +28,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Descargo de responsabilidad
@@ -45,7 +46,6 @@
 - [Introducción](https://immich.app/docs/overview/introduction)
 - [Instalación](https://immich.app/docs/install/requirements)
 - [Directrices para contribuir](https://immich.app/docs/overview/support-the-project)
-- [Apoya el proyecto](#support-the-project)
 
 ## Documentación
 
@@ -96,20 +96,3 @@ Especificaciones: VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cua
 | Recuerdos (hace x años)                              | Sí     | Sí  |
 | Soporte sin conexión                                 | Sí     | No  |
 | Galería de solo lectura                              | Sí     | Sí  |
-
-## Apoya el proyecto
-
-Me he comprometido con este proyecto, y no me detendré. Continuaré actualizando la documentación, agregando nuevas funcionalidades y corrigiendo errores. Pero no puedo hacerlo solo. Por eso, necesito tu ayuda para darme una motivación adicional para seguir adelante.
-
-Como dijeron nuestros anfitriones en [selfhosted.show - En el episodio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), esto es una gran tarea de lo que el equipo y yo estamos haciendo. Y me encantaría poder dedicarme a esto a tiempo completo algún día, así que te pido tu ayuda para que eso sea posible.
-
-Si consideras que esta es una causa justa y la aplicación es algo que te gustaría usar durante mucho tiempo, por favor, considera apoyar el proyecto con las siguientes opciones.
-
-## Donación
-
-- [Donación mensual](https://github.com/sponsors/immich-app) a través de GitHub Sponsors
-- [Donación única](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) a través de GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz

@@ -20,8 +20,6 @@ import {
   AssetBulkUploadCheckResponseDto,
   AssetFileUploadResponseDto,
   CheckExistingAssetsResponseDto,
-  CuratedLocationsResponseDto,
-  CuratedObjectsResponseDto,
 } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkUploadCheckDto,
@@ -31,7 +29,8 @@ import {
   GetAssetThumbnailDto,
   ServeFileDto,
 } from 'src/dtos/asset-v1.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
@@ -52,8 +51,13 @@ export class AssetControllerV1 {
 
   @SharedLinkRoute()
   @Post('upload')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
+  @ApiHeader({
+    name: ImmichHeader.CHECKSUM,
+    description: 'sha1 checksum that can be used for duplicate detection before the file is uploaded',
+    required: false,
+  })
   @ApiBody({
     description: 'Asset Upload Information',
     type: CreateAssetDto,
@@ -109,21 +113,6 @@ export class AssetControllerV1 {
     @Query() dto: GetAssetThumbnailDto,
   ) {
     await sendFile(res, next, () => this.service.serveThumbnail(auth, id, dto));
-  }
-
-  @Get('/curated-objects')
-  getCuratedObjects(@Auth() auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.service.getCuratedObject(auth);
-  }
-
-  @Get('/curated-locations')
-  getCuratedLocations(@Auth() auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.service.getCuratedLocation(auth);
-  }
-
-  @Get('/search-terms')
-  getAssetSearchTerms(@Auth() auth: AuthDto): Promise<string[]> {
-    return this.service.getAssetSearchTerm(auth);
   }
 
   /**

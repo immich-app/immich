@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigNotificationsDto notifications
+    test('to test the property `notifications`', () async {
+      // TODO
+    });
+
     // SystemConfigOAuthDto oauth
     test('to test the property `oauth`', () async {
       // TODO

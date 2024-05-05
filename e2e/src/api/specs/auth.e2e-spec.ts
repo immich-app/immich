@@ -1,7 +1,7 @@
-import { LoginResponseDto, getAuthDevices, login, signUpAdmin } from '@immich/sdk';
-import { loginDto, signupDto, uuidDto } from 'src/fixtures';
-import { deviceDto, errorDto, loginResponseDto, signupResponseDto } from 'src/responses';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { LoginResponseDto, login, signUpAdmin } from '@immich/sdk';
+import { loginDto, signupDto } from 'src/fixtures';
+import { errorDto, loginResponseDto, signupResponseDto } from 'src/responses';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -112,70 +112,29 @@ describe('/auth/*', () => {
 
       const cookies = headers['set-cookie'];
       expect(cookies).toHaveLength(3);
-      expect(cookies[0]).toEqual(`immich_access_token=${token}; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;`);
-      expect(cookies[1]).toEqual('immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;');
-      expect(cookies[2]).toEqual('immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;');
-    });
-  });
-
-  describe('GET /auth/devices', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/auth/devices');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should get a list of authorized devices', async () => {
-      const { status, body } = await request(app)
-        .get('/auth/devices')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual([deviceDto.current]);
-    });
-  });
-
-  describe('DELETE /auth/devices', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/auth/devices`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should logout all devices (except the current one)', async () => {
-      for (let i = 0; i < 5; i++) {
-        await login({ loginCredentialDto: loginDto.admin });
-      }
-
-      await expect(getAuthDevices({ headers: asBearerAuth(admin.accessToken) })).resolves.toHaveLength(6);
-
-      const { status } = await request(app).delete(`/auth/devices`).set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
-
-      await expect(getAuthDevices({ headers: asBearerAuth(admin.accessToken) })).resolves.toHaveLength(1);
-    });
-
-    it('should throw an error for a non-existent device id', async () => {
-      const { status, body } = await request(app)
-        .delete(`/auth/devices/${uuidDto.notFound}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no authDevice.delete access'));
-    });
-
-    it('should logout a device', async () => {
-      const [device] = await getAuthDevices({
-        headers: asBearerAuth(admin.accessToken),
-      });
-      const { status } = await request(app)
-        .delete(`/auth/devices/${device.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
-
-      const response = await request(app)
-        .post('/auth/validateToken')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(response.body).toEqual(errorDto.invalidToken);
-      expect(response.status).toBe(401);
+      expect(cookies[0].split(';').map((item) => item.trim())).toEqual([
+        `immich_access_token=${token}`,
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[1].split(';').map((item) => item.trim())).toEqual([
+        'immich_auth_type=password',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[2].split(';').map((item) => item.trim())).toEqual([
+        'immich_is_authenticated=true',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'SameSite=Lax',
+      ]);
     });
   });
 

@@ -1,8 +1,10 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
+import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
 import Joi from 'joi';
+import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { LogLevel } from 'src/entities/system-config.entity';
 import { QueueName } from 'src/interfaces/job.interface';
 
@@ -26,6 +28,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_DATABASE_NAME: WHEN_DB_URL_SET,
     DB_URL: Joi.string().optional(),
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
+    DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
@@ -49,7 +52,7 @@ function parseRedisConfig(): RedisOptions {
     }
   }
   return {
-    host: process.env.REDIS_HOSTNAME || 'immich_redis',
+    host: process.env.REDIS_HOSTNAME || 'redis',
     port: Number.parseInt(process.env.REDIS_PORT || '6379'),
     db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
     username: process.env.REDIS_USERNAME || undefined,
@@ -69,3 +72,17 @@ export const bullConfig: QueueOptions = {
 };
 
 export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
+
+export const clsConfig: ClsModuleOptions = {
+  middleware: {
+    mount: true,
+    generateId: true,
+    setup: (cls, req: Request, res: Response) => {
+      const headerValues = req.headers['x-immich-cid'];
+      const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
+      const cid = headerValue || cls.get(CLS_ID);
+      cls.set(CLS_ID, cid);
+      res.header('x-immich-cid', cid);
+    },
+  },
+};

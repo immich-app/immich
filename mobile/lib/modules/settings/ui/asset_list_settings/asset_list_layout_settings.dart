@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_slider_list_tile.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_sub_title.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';

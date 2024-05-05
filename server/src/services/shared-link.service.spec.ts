@@ -12,12 +12,13 @@ import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-lin
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
   let accessMock: IAccessRepositoryMock;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let shareMock: jest.Mocked<ISharedLinkRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let shareMock: Mocked<ISharedLinkRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();

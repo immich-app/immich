@@ -28,6 +28,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Warnung
@@ -46,7 +47,6 @@
 - [Einführung](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Beitragsrichtlinien](https://immich.app/docs/overview/support-the-project)
-- [Unterstütze das Projekt](#unterstütze-das-projekt)
 
 ## Dokumentation
 
@@ -98,23 +98,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline Unterstützung                                | Ja     | Nein  |
 | Schreibgeschützte Gallerie                           | Ja     | Ja    |
 | Gestapelte Bilder                                    | Ja     | Ja    |
-
-## Unterstütze das Projekt
-
-Ich habe mich diesem Projekt verpflichtet und werde nicht aufgeben. Ich werde die Dokumentation weiter aktualisieren, neue Funktionen hinzufügen und Fehler beheben. Allerdings kann ich das nicht alleine schaffen. Daher brauche ich Eure Unterstützung, um mir zusätzliche Motivation zu geben, weiterzumachen.
-
-Wie unsere Gastgeber in der [selfhosted.show - In der Episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) gesagt haben, ist dies ein riesiges Unterfangen, welchem das Team und ich uns annehmen. In Zukunft würde ich liebend gerne Vollzeit an dem Projekt arbeiten und bitte daher um Eure Unterstützung.
-
-Wenn Du denkst, dass dies die richtige Sache ist und dich selbst die App für eine längere Zeit nutzen siehst, dann denke bitte darüber nach, das Projekt mit einer der unten aufgelisteten Optionen zu unterstützen.  
-
-### Spenden
-
-- [Monatliche Spende](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Einmalige Spende](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=immich-app) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Mitwirkende
 <a href="https://github.com/alextran1502/immich/graphs/contributors">

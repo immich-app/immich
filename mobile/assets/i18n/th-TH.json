@@ -216,6 +216,7 @@
   "home_page_share_err_local": "ไม่สามารถแชร์ผ่านลิงค์ได้ กำลังข้าม",
   "home_page_upload_err_limit": "สามารถอัพโหลดได้มากสุดครั้งละ 30 ทรัพยากร กำลังข้าม",
   "image_viewer_page_state_provider_download_error": "ดาวน์โหลดผิดพลาด",
+  "image_viewer_page_state_provider_download_started": "เริ่มดาวน์โหลดแล้ว",
   "image_viewer_page_state_provider_download_success": "ดาวน์โหลดสำเร็จ",
   "image_viewer_page_state_provider_share_error": "แชร์ผิดพลาด",
   "library_page_albums": "Albums",

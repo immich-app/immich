@@ -10,6 +10,7 @@
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
+  import NotificationSettings from '$lib/components/admin-page/settings/notification-settings/notification-settings.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
@@ -23,14 +24,16 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
+  import { mdiAlert, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
   import type { PageData } from './$types';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import { QueryParameter } from '$lib/constants';
+  import type { SystemConfigDto } from '@immich/sdk';
 
   export let data: PageData;
 
   let config = data.configs;
+  let handleSave: (update: Partial<SystemConfigDto>) => Promise<void>;
 
   type Settings =
     | typeof JobSettings
@@ -46,6 +49,7 @@
     | typeof ImageSettings
     | typeof TrashSettings
     | typeof NewVersionCheckSettings
+    | typeof NotificationSettings
     | typeof FFmpegSettings
     | typeof UserSettings;
 
@@ -56,6 +60,20 @@
     downloadManager.update(downloadKey, blob.size);
     downloadBlob(blob, downloadKey);
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
+  };
+
+  let inputElement: HTMLInputElement;
+  const uploadConfig = (e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = async () => {
+      const text = await file.text();
+      const newConfig = JSON.parse(text);
+      await handleSave(newConfig);
+    };
+    reader().catch((error) => console.error('Error handling JSON config upload', error));
   };
 
   const settings: Array<{
@@ -99,6 +117,12 @@
       title: 'Map & GPS Settings',
       subtitle: 'Manage map related features and setting',
       key: 'location',
+    },
+    {
+      item: NotificationSettings,
+      title: 'Notification Settings',
+      subtitle: 'Manage notification settings, including email',
+      key: 'notifications',
     },
     {
       item: OAuthSettings,
@@ -157,6 +181,8 @@
   ];
 </script>
 
+<input bind:this={inputElement} type="file" accept=".json" style="display: none" on:change={uploadConfig} />
+
 <div class="h-svh flex flex-col overflow-hidden">
   {#if $featureFlags.configFile}
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
@@ -181,9 +207,15 @@
           Export as JSON
         </div>
       </LinkButton>
+      <LinkButton on:click={() => inputElement?.click()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiUpload} size="18" />
+          Import from JSON
+        </div>
+      </LinkButton>
     </div>
 
-    <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
+    <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
           <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>

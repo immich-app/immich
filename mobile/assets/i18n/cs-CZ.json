@@ -216,6 +216,7 @@
   "home_page_share_err_local": "Nelze sdílet místní položky prostřednictvím odkazu, přeskakuji",
   "home_page_upload_err_limit": "Lze nahrát nejvýše 30 položek najednou, přeskakuji",
   "image_viewer_page_state_provider_download_error": "Chyba stahování",
+  "image_viewer_page_state_provider_download_started": "Stahování zahájeno",
   "image_viewer_page_state_provider_download_success": "Stahování bylo úspěšné",
   "image_viewer_page_state_provider_share_error": "Chyba sdílení",
   "library_page_albums": "Alba",

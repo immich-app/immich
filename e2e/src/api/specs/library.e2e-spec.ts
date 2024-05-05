@@ -27,6 +27,7 @@ describe('/library', () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
+    await utils.resetAdminConfig(admin.accessToken);
     user = await utils.userSetup(admin.accessToken, userDto.user1);
     library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId, type: LibraryType.External });
     websocket = await utils.connectWebsocket(admin.accessToken);
@@ -36,7 +37,7 @@ describe('/library', () => {
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
-    utils.deleteTempFolder();
+    utils.resetTempFolder();
   });
 
   beforeEach(() => {
@@ -816,40 +817,4 @@ describe('/library', () => {
       expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
     });
   });
-
-  // describe('Watching', () => {
-  //   beforeAll(async () => {
-  //     const config = await getConfigDefaults({ headers: asBearerAuth(admin.accessToken) });
-  //     await updateConfig(
-  //       { systemConfigDto: { ...config, library: { ...config.library, watch: { enabled: true } } } },
-  //       { headers: asBearerAuth(admin.accessToken) },
-  //     );
-  //   });
-
-  //   afterAll(async () => {
-  //     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(admin.accessToken) });
-  //     await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(admin.accessToken) });
-  //     rmSync(`${testAssetDir}/temp/watch`, { recursive: true });
-  //   });
-
-  //   describe('Single import path', () => {
-  //     let library: LibraryResponseDto;
-  //     beforeEach(async () => {
-  //       library = await utils.createLibrary(admin.accessToken, {
-  //         ownerId: admin.userId,
-  //         type: LibraryType.External,
-  //         importPaths: [`${testAssetDirInternal}/temp`],
-  //       });
-  //     });
-
-  //     it('should import a new file', async () => {
-  //       utils.createImageFile(`${testAssetDir}/temp/watch/assetA.png`);
-
-  //       await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
-
-  //       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-  //       expect(assets.count).toEqual(3);
-  //     });
-  //   });
-  // });
 });

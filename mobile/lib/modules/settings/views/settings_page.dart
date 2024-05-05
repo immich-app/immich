@@ -7,7 +7,6 @@ import 'package:immich_mobile/modules/settings/ui/advanced_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_viewer_settings/asset_viewer_settings.dart';
-import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/language_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/preference_settings/preference_setting.dart';

@@ -216,6 +216,7 @@
   "home_page_share_err_local": "ローカルのみの項目をリンクで共有はできません。スキップします",
   "home_page_upload_err_limit": "一回でアップロードできる写真の数は30枚です。スキップします",
   "image_viewer_page_state_provider_download_error": "ダウンロード失敗",
+  "image_viewer_page_state_provider_download_started": "Download Started",
   "image_viewer_page_state_provider_download_success": "ダウンロード成功",
   "image_viewer_page_state_provider_share_error": "共有エラー",
   "library_page_albums": "アルバム",

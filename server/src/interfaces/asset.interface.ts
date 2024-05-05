@@ -129,8 +129,20 @@ export interface AssetExploreOptions extends AssetExploreFieldOptions {
   unnest?: boolean;
 }
 
-export interface MetadataSearchOptions {
-  numResults: number;
+export interface AssetFullSyncOptions {
+  ownerId: string;
+  lastCreationDate?: Date;
+  lastId?: string;
+  updatedUntil: Date;
+  isArchived?: false;
+  withStacked?: true;
+  limit: number;
+}
+
+export interface AssetDeltaSyncOptions {
+  userIds: string[];
+  updatedAfter: Date;
+  limit: number;
 }
 
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
@@ -147,6 +159,7 @@ export interface IAssetRepository {
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
+  getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;
@@ -174,5 +187,6 @@ export interface IAssetRepository {
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
+  getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
+  getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
 }

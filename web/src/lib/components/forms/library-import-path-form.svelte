@@ -31,7 +31,7 @@
 </script>
 
 <FullScreenModal id="library-import-path-modal" {title} icon={mdiFolderSync} onClose={handleCancel}>
-  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
+  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="library-import-path-form">
     <p class="py-5 text-sm">
       Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.
     </p>
@@ -42,18 +42,16 @@
     </div>
 
     <div class="mt-8 flex w-full gap-4">
-      <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
-      {#if isEditing}
-        <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
-      {/if}
-
-      <Button type="submit" disabled={!canSubmit} fullwidth>{submitText}</Button>
-    </div>
-
-    <div class="mt-8 flex w-full gap-4">
       {#if isDuplicate}
         <p class="text-red-500 text-sm">This import path already exists.</p>
       {/if}
     </div>
   </form>
+  <svelte:fragment slot="sticky-bottom">
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+    {#if isEditing}
+      <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+    {/if}
+    <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
+  </svelte:fragment>
 </FullScreenModal>

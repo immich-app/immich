@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
   ServerConfigDto,
@@ -64,12 +64,5 @@ export class ServerInfoController {
   @Get('media-types')
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
-  }
-
-  @AdminRoute()
-  @Post('admin-onboarding')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  setAdminOnboarding(): Promise<void> {
-    return this.service.setAdminOnboarding();
   }
 }
