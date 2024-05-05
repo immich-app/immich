@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
-import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
+import 'package:immich_mobile/representation/activities/widgets/activity_tile.dart';
+import 'package:immich_mobile/representation/activities/widgets/dismissible_activity.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
+import 'package:immich_mobile/representation/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 

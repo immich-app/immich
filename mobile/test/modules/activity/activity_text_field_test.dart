@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
+import 'package:immich_mobile/representation/activities/widgets/activity_text_field.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
