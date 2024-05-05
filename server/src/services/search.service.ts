@@ -182,6 +182,9 @@ export class SearchService {
 
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+      return JobStatus.SKIPPED;
+    }
 
     const asset = await this.assetRepository.getById(id, { smartSearch: true });
     if (!asset) {
