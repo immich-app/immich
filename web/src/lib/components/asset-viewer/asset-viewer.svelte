@@ -536,6 +536,10 @@
       handleError(error, 'Unable to update album cover');
     }
   };
+
+  $: if (!$user) {
+    shouldShowShareModal = false;
+  }
 </script>
 
 <svelte:window
