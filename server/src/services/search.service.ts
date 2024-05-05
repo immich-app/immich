@@ -88,13 +88,13 @@ export class SearchService {
     const enumToOrder = { [AssetOrderPreference.ASC]: 'ASC', [AssetOrderPreference.DESC]: 'DESC' } as const;
 
     const mapOrder = (order?: AssetOrder) => {
-      if (order) {
-        if (order === AssetOrder.PREFERENCE) {
-          return enumToOrder[auth.user.preferedAlbumOrder];
-        }
-        return enumToOrder[order];
+      if (!order) {
+        return enumToOrder[AssetOrderPreference.DESC];
       }
-      return enumToOrder[AssetOrderPreference.DESC];
+      if (order === AssetOrder.PREFERENCE) {
+        return enumToOrder[auth.user.preferedAlbumOrder];
+      }
+      return enumToOrder[order];
     };
 
     const order = mapOrder(dto.order);
