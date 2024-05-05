@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/representation/home/ui/asset_grid/thumbnail_placeholder.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/shared/ui/fade_in_placeholder_image.dart';
 import 'package:octo_image/octo_image.dart';
 
