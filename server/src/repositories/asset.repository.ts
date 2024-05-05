@@ -36,6 +36,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
+  FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
@@ -236,12 +237,17 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
+  getById(
+    id: string,
+    relations: FindOptionsRelations<AssetEntity>,
+    order?: FindOptionsOrder<AssetEntity>,
+  ): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },
       relations,
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
+      order,
     });
   }
 
