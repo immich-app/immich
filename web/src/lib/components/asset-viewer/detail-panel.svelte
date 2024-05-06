@@ -169,13 +169,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <button
-      class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-      on:click={() => dispatch('close')}
-    >
-      <Icon path={mdiClose} size="24" />
-    </button>
-
+    <CircleIconButton icon={mdiClose} title="Close" on:click={() => dispatch('close')} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
@@ -256,7 +250,6 @@
               on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
-              on:click={() => dispatch('closeViewer')}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -401,9 +394,13 @@
           <p class="break-all flex place-items-center gap-2">
             {asset.originalFileName}
             {#if isOwner}
-              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
-                <Icon path={mdiInformationOutline} />
-              </button>
+              <CircleIconButton
+                icon={mdiInformationOutline}
+                title="Show file location"
+                size="16"
+                padding="2"
+                on:click={toggleAssetPath}
+              />
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
