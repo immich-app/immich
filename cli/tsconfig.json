@@ -16,7 +16,12 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "baseUrl": "./",
-    "types": ["vitest/globals"]
+    "types": [
+      "vitest/globals"
+    ]
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }

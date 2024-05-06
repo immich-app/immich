@@ -8,23 +8,21 @@ import {
   defaults,
   getAllAlbums,
   getSupportedMediaTypes,
-} from "@immich/sdk";
-import byteSize from "byte-size";
-import { Presets, SingleBar } from "cli-progress";
-import { chunk } from "lodash-es";
-import { Stats, createReadStream } from "node:fs";
-import { stat, unlink } from "node:fs/promises";
-import * as upath from "upath";
-import os from "node:os";
-import path, { basename } from "node:path";
-import { BaseOptions, authenticate, crawl, sha1 } from "src/utils";
+} from '@immich/sdk';
+import byteSize from 'byte-size';
+import { Presets, SingleBar } from 'cli-progress';
+import { chunk } from 'lodash-es';
+import { Stats, createReadStream } from 'node:fs';
+import { stat, unlink } from 'node:fs/promises';
+import os from 'node:os';
+import path, { basename } from 'node:path';
+import { BaseOptions, authenticate, crawl, sha1 } from 'src/utils';
+import * as upath from 'upath';
 
-const s = (count: number) => (count === 1 ? "" : "s");
+const s = (count: number) => (count === 1 ? '' : 's');
 
 // TODO figure out why `id` is missing
-type AssetBulkUploadCheckResults = Array<
-  AssetBulkUploadCheckResult & { id: string }
->;
+type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
 type Asset = { id: string; filepath: string };
 
 interface UploadOptionsDto {
@@ -40,9 +38,13 @@ interface UploadOptionsDto {
 }
 
 class UploadFile extends File {
-  constructor(private filepath: string, private _size: number) {
+  private filepath: string;
+  private _size: number;
+
+  constructor(filepath: string, size: number) {
+    super([], upath.basename(filepath)); // Call super() before using `this`
     this.filepath = upath.toUnix(upath.normalize(filepath));
-    super([], upath.basename(this.filepath));
+    this._size = size;
   }
 
   get size() {
@@ -54,20 +56,14 @@ class UploadFile extends File {
   }
 }
 
-export const upload = async (
-  paths: string[],
-  baseOptions: BaseOptions,
-  options: UploadOptionsDto
-) => {
+export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
   // Normalizing paths before scanning
-  const normalizedPaths = paths.map((path) =>
-    upath.toUnix(upath.normalize(path))
-  );
+  const normalizedPaths = paths.map((path) => upath.toUnix(upath.normalize(path)));
   const scanFiles = await scan(normalizedPaths, options);
 
   if (scanFiles.length === 0) {
-    console.log("No files found, exiting");
+    console.log('No files found, exiting');
     return;
   }
 
@@ -80,7 +76,7 @@ export const upload = async (
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   const { image, video } = await getSupportedMediaTypes();
 
-  console.log("Crawling for assets...");
+  console.log('Crawling for assets...');
   const files = await crawl({
     pathsToCrawl,
     recursive: options.recursive,
@@ -92,21 +88,17 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-const checkForDuplicates = async (
-  files: string[],
-  { concurrency, skipHash }: UploadOptionsDto
-) => {
+const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
   if (skipHash) {
-    console.log("Skipping hash check, assuming all files are new");
+    console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
   }
 
   const progressBar = new SingleBar(
     {
-      format:
-        "Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets",
+      format: 'Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
     },
-    Presets.shades_classic
+    Presets.shades_classic,
   );
 
   progressBar.start(files.length, 0);
@@ -121,17 +113,13 @@ const checkForDuplicates = async (
         items.map(async (filepath) => ({
           id: filepath,
           checksum: await sha1(filepath),
-        }))
+        })),
       );
       const { results } = await checkBulkUpload({
         assetBulkUploadCheckDto: { assets: dto },
       });
 
-      for (const {
-        id: filepath,
-        assetId,
-        action,
-      } of results as AssetBulkUploadCheckResults) {
+      for (const { id: filepath, assetId, action } of results as AssetBulkUploadCheckResults) {
         if (action === Action.Accept) {
           newFiles.push(filepath);
         } else {
@@ -145,21 +133,14 @@ const checkForDuplicates = async (
     progressBar.stop();
   }
 
-  console.log(
-    `Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(
-      duplicates.length
-    )}`
-  );
+  console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
   return { newFiles, duplicates };
 };
 
-const uploadFiles = async (
-  files: string[],
-  { dryRun, concurrency }: UploadOptionsDto
-): Promise<Asset[]> => {
+const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptionsDto): Promise<Asset[]> => {
   if (files.length === 0) {
-    console.log("All assets were already uploaded, nothing to do.");
+    console.log('All assets were already uploaded, nothing to do.');
     return [];
   }
 
@@ -173,20 +154,15 @@ const uploadFiles = async (
   }
 
   if (dryRun) {
-    console.log(
-      `Would have uploaded ${files.length} asset${s(files.length)} (${byteSize(
-        totalSize
-      )})`
-    );
-    return files.map((filepath) => ({ id: "", filepath }));
+    console.log(`Would have uploaded ${files.length} asset${s(files.length)} (${byteSize(totalSize)})`);
+    return files.map((filepath) => ({ id: '', filepath }));
   }
 
   const uploadProgress = new SingleBar(
     {
-      format:
-        "Uploading assets | {bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}",
+      format: 'Uploading assets | {bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}',
     },
-    Presets.shades_classic
+    Presets.shades_classic,
   );
   uploadProgress.start(totalSize, 0);
   uploadProgress.update({
@@ -223,32 +199,21 @@ const uploadFiles = async (
           });
 
           return response;
-        })
+        }),
       );
     }
   } finally {
     uploadProgress.stop();
   }
 
-  console.log(
-    `Successfully uploaded ${successCount} new asset${s(
-      successCount
-    )} (${byteSize(successSize)})`
-  );
+  console.log(`Successfully uploaded ${successCount} new asset${s(successCount)} (${byteSize(successSize)})`);
   if (duplicateCount > 0) {
-    console.log(
-      `Skipped ${duplicateCount} duplicate asset${s(
-        duplicateCount
-      )} (${byteSize(duplicateSize)})`
-    );
+    console.log(`Skipped ${duplicateCount} duplicate asset${s(duplicateCount)} (${byteSize(duplicateSize)})`);
   }
   return newAssets;
 };
 
-const uploadFile = async (
-  input: string,
-  stats: Stats
-): Promise<AssetFileUploadResponseDto> => {
+const uploadFile = async (input: string, stats: Stats): Promise<AssetFileUploadResponseDto> => {
   const { baseUrl, headers } = defaults;
 
   const assetPath = path.parse(input);
@@ -263,32 +228,27 @@ const uploadFile = async (
       } catch {
         return false;
       }
-    })
+    }),
   );
 
-  const sidecarData = sidecarsFiles.find(
-    (file): file is UploadFile => file !== false
-  );
+  const sidecarData = sidecarsFiles.find((file): file is UploadFile => file !== false);
 
   const formData = new FormData();
-  formData.append(
-    "deviceAssetId",
-    `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, "")
-  );
-  formData.append("deviceId", "CLI");
-  formData.append("fileCreatedAt", stats.mtime.toISOString());
-  formData.append("fileModifiedAt", stats.mtime.toISOString());
-  formData.append("fileSize", String(stats.size));
-  formData.append("isFavorite", "false");
-  formData.append("assetData", new UploadFile(input, stats.size));
+  formData.append('deviceAssetId', `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, ''));
+  formData.append('deviceId', 'CLI');
+  formData.append('fileCreatedAt', stats.mtime.toISOString());
+  formData.append('fileModifiedAt', stats.mtime.toISOString());
+  formData.append('fileSize', String(stats.size));
+  formData.append('isFavorite', 'false');
+  formData.append('assetData', new UploadFile(input, stats.size));
 
   if (sidecarData) {
-    formData.append("sidecarData", sidecarData);
+    formData.append('sidecarData', sidecarData);
   }
 
   const response = await fetch(`${baseUrl}/asset/upload`, {
-    method: "post",
-    redirect: "error",
+    method: 'post',
+    redirect: 'error',
     headers: headers as Record<string, string>,
     body: formData,
   });
@@ -299,29 +259,23 @@ const uploadFile = async (
   return response.json();
 };
 
-const deleteFiles = async (
-  files: string[],
-  options: UploadOptionsDto
-): Promise<void> => {
+const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<void> => {
   if (!options.delete) {
     return;
   }
 
   if (options.dryRun) {
-    console.log(
-      `Would have deleted ${files.length} local asset${s(files.length)}`
-    );
+    console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
     return;
   }
 
-  console.log("Deleting assets that have been uploaded...");
+  console.log('Deleting assets that have been uploaded...');
 
   const deletionProgress = new SingleBar(
     {
-      format:
-        "Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets",
+      format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
     },
-    Presets.shades_classic
+    Presets.shades_classic,
   );
   deletionProgress.start(files.length, 0);
 
@@ -342,9 +296,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   const { dryRun, concurrency } = options;
 
   const albums = await getAllAlbums({});
-  const existingAlbums = new Map(
-    albums.map((album) => [album.albumName, album.id])
-  );
+  const existingAlbums = new Map(albums.map((album: { albumName: string; id: string }) => [album.albumName, album.id]));
   const newAlbums: Set<string> = new Set();
   for (const { filepath } of assets) {
     const albumName = getAlbumName(filepath, options);
@@ -355,30 +307,23 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
 
   if (dryRun) {
     // TODO print asset counts for new albums
-    console.log(
-      `Would have created ${newAlbums.size} new album${s(newAlbums.size)}`
-    );
-    console.log(
-      `Would have updated albums of ${assets.length} asset${s(assets.length)}`
-    );
+    console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}`);
+    console.log(`Would have updated albums of ${assets.length} asset${s(assets.length)}`);
     return;
   }
 
   const progressBar = new SingleBar(
     {
-      format:
-        "Creating albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} albums",
+      format: 'Creating albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} albums',
     },
-    Presets.shades_classic
+    Presets.shades_classic,
   );
   progressBar.start(newAlbums.size, 0);
 
   try {
     for (const albumNames of chunk([...newAlbums], concurrency)) {
       const items = await Promise.all(
-        albumNames.map((albumName: string) =>
-          createAlbum({ createAlbumDto: { albumName } })
-        )
+        albumNames.map((albumName: string) => createAlbum({ createAlbumDto: { albumName } })),
       );
       for (const { id, albumName } of items) {
         existingAlbums.set(albumName, id);
@@ -389,41 +334,42 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
     progressBar.stop();
   }
 
-  console.log(
-    `Successfully created ${newAlbums.size} new album${s(newAlbums.size)}`
-  );
+  console.log(`Successfully created ${newAlbums.size} new album${s(newAlbums.size)}`);
   console.log(`Successfully updated ${assets.length} asset${s(assets.length)}`);
 
   const albumToAssets = new Map<string, string[]>();
+
   for (const asset of assets) {
     const albumName = getAlbumName(asset.filepath, options);
     if (!albumName) {
       continue;
     }
-    const albumId = existingAlbums.get(albumName);
+    const albumId = String(existingAlbums.get(albumName));
     if (albumId) {
       if (!albumToAssets.has(albumId)) {
         albumToAssets.set(albumId, []);
       }
-      albumToAssets.get(albumId)?.push(asset.id);
+      // Ensure asset.id is a string and albumId is not undefined
+      if (typeof asset.id === 'string' && typeof albumId === 'string') {
+        albumToAssets.get(albumId)?.push(asset.id);
+      }
+    } else {
+      // Handle the case where albumId is undefined
+      console.error(`Album ID for album name "${albumName}" not found.`);
     }
   }
 
   const albumUpdateProgress = new SingleBar(
     {
-      format:
-        "Adding assets to albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets",
+      format: 'Adding assets to albums | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets',
     },
-    Presets.shades_classic
+    Presets.shades_classic,
   );
   albumUpdateProgress.start(assets.length, 0);
 
   try {
     for (const [albumId, assets] of albumToAssets.entries()) {
-      for (const assetBatch of chunk(
-        assets,
-        Math.min(1000 * concurrency, 65_000)
-      )) {
+      for (const assetBatch of chunk(assets, Math.min(1000 * concurrency, 65_000))) {
         await addAssetsToAlbum({
           id: albumId,
           bulkIdsDto: { ids: assetBatch },
@@ -437,9 +383,6 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
 };
 
 const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
-  const folderName =
-    os.platform() === "win32"
-      ? filepath.split("\\").at(-2)
-      : filepath.split("/").at(-2);
+  const folderName = os.platform() === 'win32' ? filepath.split('\\').at(-2) : filepath.split('/').at(-2);
   return options.albumName ?? folderName;
 };
