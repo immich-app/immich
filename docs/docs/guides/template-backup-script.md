@@ -12,22 +12,6 @@ The database is saved to your Immich upload folder in the `database-backup` subd
 - (Optional) To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
 - To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
-To initialize the borg repository, run the following commands once.
-
-```bash title='Borg set-up'
-UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as set in your .env file
-BACKUP_PATH="/path/to/local/backup/directory"
-
-mkdir "$UPLOAD_LOCATION/database-backup"
-borg init --encryption=none "$BACKUP_PATH/immich-borg"
-
-## Remote set up
-REMOTE_HOST="remote_host@IP"
-REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
-
-borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg"
-```
-
 Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
 
 ```bash title='Borg backup template'
@@ -39,6 +23,16 @@ BACKUP_PATH="/path/to/local/backup/directory"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
+### init Borg setup
+if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
+    mkdir "$UPLOAD_LOCATION/database-backup"
+fi
+if [ ! -d "$BACKUP_PATH/immich-borg" ]; then
+    borg init --encryption=none "$BACKUP_PATH/immich-borg"
+fi
+if ! ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d $REMOTE_BACKUP_PATH/immich-borg"
+    borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg"
+fi
 
 ### Local
 
