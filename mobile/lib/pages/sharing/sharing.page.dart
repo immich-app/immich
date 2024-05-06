@@ -220,7 +220,7 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
-return RefreshIndicator(
+    return RefreshIndicator(
       onRefresh: () async {
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
       },
@@ -271,7 +271,6 @@ return RefreshIndicator(
           ],
         ),
       ),
-);
-
+    );
   }
 }
