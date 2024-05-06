@@ -24,12 +24,12 @@ describe('/search', () => {
   // let assetRidge: AssetFileUploadResponseDto;
   // let assetPolemonium: AssetFileUploadResponseDto;
   // let assetWood: AssetFileUploadResponseDto;
+  // let assetGlarus: AssetFileUploadResponseDto;
   let assetHeic: AssetFileUploadResponseDto;
   let assetRocks: AssetFileUploadResponseDto;
   let assetOneJpg6: AssetFileUploadResponseDto;
   let assetOneHeic6: AssetFileUploadResponseDto;
   let assetOneJpg5: AssetFileUploadResponseDto;
-  let assetGlarus: AssetFileUploadResponseDto;
   let assetSprings: AssetFileUploadResponseDto;
   let assetLast: AssetFileUploadResponseDto;
   let cities: string[];
@@ -52,11 +52,12 @@ describe('/search', () => {
       { filename: '/formats/motionphoto/Samsung One UI 6.jpg' },
       { filename: '/formats/motionphoto/Samsung One UI 6.heic' },
       { filename: '/formats/motionphoto/Samsung One UI 5.jpg' },
-      { filename: '/formats/raw/Nikon/D80/glarus.nef', dto: { isReadOnly: true } },
+
       { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
 
       // used for search suggestions
       { filename: '/formats/png/density_plot.png' },
+      { filename: '/formats/raw/Nikon/D80/glarus.nef' },
       { filename: '/formats/raw/Nikon/D700/philadelphia.nef' },
       { filename: '/albums/nature/orychophragmus_violaceus.jpg' },
       { filename: '/albums/nature/tanners_ridge.jpg' },
@@ -93,9 +94,9 @@ describe('/search', () => {
       { latitude: 23.133_02, longitude: -82.383_04 }, // havana
       { latitude: 41.694_11, longitude: 44.833_68 }, // tbilisi
       { latitude: 31.222_22, longitude: 121.458_06 }, // shanghai
-      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
       { latitude: 38.9711, longitude: -109.7137 }, // thompson springs
       { latitude: 40.714_27, longitude: -74.005_97 }, // new york
+      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
       { latitude: 32.771_52, longitude: -89.116_73 }, // philadelphia
       { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
       { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
@@ -123,9 +124,9 @@ describe('/search', () => {
       assetOneJpg6,
       assetOneHeic6,
       assetOneJpg5,
-      assetGlarus,
       assetSprings,
       assetDensity,
+      // assetGlarus,
       // assetPhiladelphia,
       // assetOrychophragmus,
       // assetRidge,
@@ -190,16 +191,7 @@ describe('/search', () => {
         dto: { size: -1.5 },
         expected: ['size must not be less than 1', 'size must be an integer number'],
       },
-      ...[
-        'isArchived',
-        'isFavorite',
-        'isReadOnly',
-        'isExternal',
-        'isEncoded',
-        'isMotion',
-        'isOffline',
-        'isVisible',
-      ].map((value) => ({
+      ...['isArchived', 'isFavorite', 'isEncoded', 'isMotion', 'isOffline', 'isVisible'].map((value) => ({
         should: `should reject ${value} not a boolean`,
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],
@@ -254,14 +246,6 @@ describe('/search', () => {
       {
         should: 'should search by isArchived (false)',
         deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
-      },
-      {
-        should: 'should search by isReadOnly (true)',
-        deferred: () => ({ dto: { isReadOnly: true }, assets: [assetGlarus] }),
-      },
-      {
-        should: 'should search by isReadOnly (false)',
-        deferred: () => ({ dto: { size: 1, isReadOnly: false }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',

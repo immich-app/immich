@@ -55,12 +55,20 @@ import {
   mdiChartBoxMultipleOutline,
   mdiAccountGroupOutline,
   mdiFlowerPoppy,
+  mdiHandshakeOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiHandshakeOutline,
+    description: 'Joined Futo and Immich core team goes full-time',
+    title: 'Immich joins FUTO!',
+    date: new Date(2024, 4, 1),
+    dateType: DateType.DATE,
+  },
   {
     icon: mdiStar,
     description: 'Reached 30K Stars on GitHub!',

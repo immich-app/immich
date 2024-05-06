@@ -18,6 +18,7 @@ export enum ImmichHeader {
   USER_TOKEN = 'x-immich-user-token',
   SESSION_TOKEN = 'x-immich-session-token',
   SHARED_LINK_TOKEN = 'x-immich-share-key',
+  CHECKSUM = 'x-immich-checksum',
 }
 
 export type CookieResponse = {

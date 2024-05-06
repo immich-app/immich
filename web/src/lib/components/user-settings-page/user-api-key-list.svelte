@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
@@ -10,6 +9,7 @@
   import APIKeySecret from '../forms/api-key-secret.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let keys: ApiKeyResponseDto[];
 
@@ -143,19 +143,21 @@
                 <td class="w-1/3 text-ellipsis px-4 text-sm"
                   >{new Date(key.createdAt).toLocaleDateString($locale, format)}
                 </td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm">
-                  <button
+                <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
+                  <CircleIconButton
+                    color="primary"
+                    icon={mdiPencilOutline}
+                    title="Edit key"
+                    size="16"
                     on:click={() => (editKey = key)}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <Icon path={mdiPencilOutline} size="16" />
-                  </button>
-                  <button
+                  />
+                  <CircleIconButton
+                    color="primary"
+                    icon={mdiTrashCanOutline}
+                    title="Delete key"
+                    size="16"
                     on:click={() => (deleteKey = key)}
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                  >
-                    <Icon path={mdiTrashCanOutline} size="16" />
-                  </button>
+                  />
                 </td>
               </tr>
             {/key}

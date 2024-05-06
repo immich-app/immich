@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
 
@@ -36,12 +37,12 @@
               🚨 Error - Something went wrong
             </h1>
             <div class="flex justify-end">
-              <button
+              <CircleIconButton
+                color="primary"
+                icon={mdiContentCopy}
+                title="Copy error"
                 on:click={() => handleCopy()}
-                class="rounded-full bg-immich-primary px-3 py-2 text-sm text-white shadow-md transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80"
-              >
-                <Icon path={mdiContentCopy} size={24} />
-              </button>
+              />
             </div>
           </div>
 

@@ -17,6 +17,7 @@
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "baseUrl": "./",
+    "jsx": "react",
     "types": ["vitest/globals"]
   },
   "exclude": ["dist", "node_modules", "upload"]

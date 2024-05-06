@@ -37,6 +37,7 @@ import { IUserRepository } from 'src/interfaces/user.interface';
 import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
+import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
@@ -164,14 +165,7 @@ export class AssetServiceV1 {
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
-    // support base64 and hex checksums
-    for (const asset of dto.assets) {
-      if (asset.checksum.length === 28) {
-        asset.checksum = Buffer.from(asset.checksum, 'base64').toString('hex');
-      }
-    }
-
-    const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
+    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
@@ -181,7 +175,7 @@ export class AssetServiceV1 {
 
     return {
       results: dto.assets.map(({ id, checksum }) => {
-        const duplicate = checksumMap[checksum];
+        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
         if (duplicate) {
           return {
             id,
@@ -301,7 +295,6 @@ export class AssetServiceV1 {
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
       originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
-      isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
     });
 

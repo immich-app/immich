@@ -28,6 +28,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Declino di responsabilità
@@ -46,7 +47,6 @@
 - [Introduzione](https://immich.app/docs/overview/introduction)
 - [Installazione](https://immich.app/docs/install/requirements)
 - [Linee Guida per Contribuire](https://immich.app/docs/overview/support-the-project)
-- [Supporta il Progetto](#support-the-project)
 
 ## Documentazione
 
@@ -98,20 +98,3 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Supporto offline                               |   Sì   | No  |
 | Galleria sola lettura                          |   Sì   | Sì  |
 | Foto raggruppate                               |   Sì   | Sì  |
-
-# Supporta il progetto
-
-Mi dedico al progetto e non smetterò di farlo. Manterrò aggiornata la documentazione, aggiungerò nuove funzioni e risolverò i bug, ma non posso farlo da solo. Ho bisogno del tuo aiuto che mi da motivazione per continuare.
-
-Come detto dal nostro host [selfhosted.show - Nell'episodio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), quello che il team ed io stiamo facendo è un lavoro enorme. Mi piacerebbe dedicarmi al progetto full-time e chiedo il tuo aiuto affinchè sia possibile.
-
-Se pensi che Immich sia una buona causa e che l'app sia qualcosa che useresti nel lungo termine, sappi che puoi supportare il progetto scegliendo tra le opzioni sotto elencate.
-
-## Donazioni
-
-- [Donazione mensile](https://github.com/sponsors/immich-app) tramite GitHub Sponsors
-- [Donazione una tantum](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) tramite GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz

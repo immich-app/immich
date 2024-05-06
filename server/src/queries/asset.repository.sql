@@ -22,7 +22,6 @@ SELECT
   "entity"."isFavorite" AS "entity_isFavorite",
   "entity"."isArchived" AS "entity_isArchived",
   "entity"."isExternal" AS "entity_isExternal",
-  "entity"."isReadOnly" AS "entity_isReadOnly",
   "entity"."isOffline" AS "entity_isOffline",
   "entity"."checksum" AS "entity_checksum",
   "entity"."duration" AS "entity_duration",
@@ -105,7 +104,6 @@ SELECT
   "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
   "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
   "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
   "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
   "AssetEntity"."checksum" AS "AssetEntity_checksum",
   "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -141,7 +139,6 @@ SELECT
   "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
   "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
   "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
   "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
   "AssetEntity"."checksum" AS "AssetEntity_checksum",
   "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -226,7 +223,6 @@ SELECT
   "bd93d5747511a4dad4923546c51365bf1a803774"."isFavorite" AS "bd93d5747511a4dad4923546c51365bf1a803774_isFavorite",
   "bd93d5747511a4dad4923546c51365bf1a803774"."isArchived" AS "bd93d5747511a4dad4923546c51365bf1a803774_isArchived",
   "bd93d5747511a4dad4923546c51365bf1a803774"."isExternal" AS "bd93d5747511a4dad4923546c51365bf1a803774_isExternal",
-  "bd93d5747511a4dad4923546c51365bf1a803774"."isReadOnly" AS "bd93d5747511a4dad4923546c51365bf1a803774_isReadOnly",
   "bd93d5747511a4dad4923546c51365bf1a803774"."isOffline" AS "bd93d5747511a4dad4923546c51365bf1a803774_isOffline",
   "bd93d5747511a4dad4923546c51365bf1a803774"."checksum" AS "bd93d5747511a4dad4923546c51365bf1a803774_checksum",
   "bd93d5747511a4dad4923546c51365bf1a803774"."duration" AS "bd93d5747511a4dad4923546c51365bf1a803774_duration",
@@ -308,7 +304,6 @@ FROM
       "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
       "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
       "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-      "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
       "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
       "AssetEntity"."checksum" AS "AssetEntity_checksum",
       "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -405,7 +400,6 @@ SELECT
   "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
   "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
   "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
   "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
   "AssetEntity"."checksum" AS "AssetEntity_checksum",
   "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -451,7 +445,6 @@ SELECT
   "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
   "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
   "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
   "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
   "AssetEntity"."checksum" AS "AssetEntity_checksum",
   "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -470,6 +463,30 @@ WHERE
     )
   )
   AND ("AssetEntity"."deletedAt" IS NULL)
+LIMIT
+  1
+
+-- AssetRepository.getUploadAssetIdByChecksum
+SELECT DISTINCT
+  "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
+FROM
+  (
+    SELECT
+      "AssetEntity"."id" AS "AssetEntity_id"
+    FROM
+      "assets" "AssetEntity"
+      LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
+    WHERE
+      (
+        ("AssetEntity"."ownerId" = $1)
+        AND ("AssetEntity"."checksum" = $2)
+        AND (
+          (("AssetEntity__AssetEntity_library"."type" = $3))
+        )
+      )
+  ) "distinctAlias"
+ORDER BY
+  "AssetEntity_id" ASC
 LIMIT
   1
 
@@ -495,7 +512,6 @@ SELECT
   "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
   "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
   "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
   "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
   "AssetEntity"."checksum" AS "AssetEntity_checksum",
   "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -584,7 +600,6 @@ SELECT
   "asset"."isFavorite" AS "asset_isFavorite",
   "asset"."isArchived" AS "asset_isArchived",
   "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
   "asset"."isOffline" AS "asset_isOffline",
   "asset"."checksum" AS "asset_checksum",
   "asset"."duration" AS "asset_duration",
@@ -643,7 +658,6 @@ SELECT
   "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
   "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
   "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
-  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
   "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
   "stackedAssets"."checksum" AS "stackedAssets_checksum",
   "stackedAssets"."duration" AS "stackedAssets_duration",
@@ -760,7 +774,6 @@ SELECT
   "asset"."isFavorite" AS "asset_isFavorite",
   "asset"."isArchived" AS "asset_isArchived",
   "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
   "asset"."isOffline" AS "asset_isOffline",
   "asset"."checksum" AS "asset_checksum",
   "asset"."duration" AS "asset_duration",
@@ -819,7 +832,6 @@ SELECT
   "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
   "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
   "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
-  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
   "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
   "stackedAssets"."checksum" AS "stackedAssets_checksum",
   "stackedAssets"."duration" AS "stackedAssets_duration",
@@ -867,7 +879,6 @@ SELECT
   "asset"."isFavorite" AS "asset_isFavorite",
   "asset"."isArchived" AS "asset_isArchived",
   "asset"."isExternal" AS "asset_isExternal",
-  "asset"."isReadOnly" AS "asset_isReadOnly",
   "asset"."isOffline" AS "asset_isOffline",
   "asset"."checksum" AS "asset_checksum",
   "asset"."duration" AS "asset_duration",
@@ -926,7 +937,6 @@ SELECT
   "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
   "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
   "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
-  "stackedAssets"."isReadOnly" AS "stackedAssets_isReadOnly",
   "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
   "stackedAssets"."checksum" AS "stackedAssets_checksum",
   "stackedAssets"."duration" AS "stackedAssets_duration",

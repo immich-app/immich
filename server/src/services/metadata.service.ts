@@ -440,7 +440,6 @@ export class MetadataService {
           originalPath: motionPath,
           originalFileName: asset.originalFileName,
           isVisible: false,
-          isReadOnly: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });

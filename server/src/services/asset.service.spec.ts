@@ -29,6 +29,8 @@ import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.r
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
+const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
   [AssetType.VIDEO]: 23,
@@ -196,6 +198,31 @@ describe(AssetService.name, () => {
     );
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
+  });
+
+  describe('getUploadAssetIdByChecksum', () => {
+    it('should handle a non-existent asset', async () => {
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset by base64', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
   });
 
   describe('canUpload', () => {
@@ -656,61 +683,6 @@ describe(AssetService.name, () => {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });
-    });
-
-    it('should only delete generated files for readonly assets', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.readOnly);
-
-      await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.readOnly.thumbnailPath,
-                assetStub.readOnly.previewPath,
-                assetStub.readOnly.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
-    });
-
-    it('should not process assets from external library without fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id });
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(assetMock.remove).not.toHaveBeenCalled();
-    });
-
-    it('should process assets from external library with fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.external);
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.external.thumbnailPath,
-                assetStub.external.previewPath,
-                assetStub.external.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
     });
 
     it('should delete a live photo', async () => {

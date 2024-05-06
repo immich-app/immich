@@ -28,6 +28,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## 免責事項
@@ -46,7 +47,6 @@
 - [紹介](https://immich.app/docs/overview/introduction)
 - [インストール](https://immich.app/docs/install/requirements)
 - [コントリビューションガイド](https://immich.app/docs/overview/support-the-project)
-- [プロジェクトのサポート](#プロジェクトのサポート)
 
 ## ドキュメント
 
@@ -97,19 +97,3 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | 思い出（x 年前）                             | はい    | はい |
 | オフラインサポート                            | はい    | いいえ  |
 | 読み取り専用ギャラリー                        | はい    | はい |
-
-# プロジェクトのサポート
-
-私はこのプロジェクトにコミットしてきました。ドキュメントを更新し、新しい機能を追加し、バグを修正し続けるつもりですが、私ひとりではできません。だから、続けるためのモチベーションをさらに高めてくれる皆さんの助けが必要なのです。
-
-[selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) のホストが言ったように、これはチームと私がやっていることの大規模な事業だ。そしていつの日か、フルタイムでこの仕事ができるようになりたいと思っています。
-
-もし、あなたがこのプロジェクトに賛同し、このアプリを長く使い続けたいと思われるのであれば、以下のオプションから支援をご検討ください。
-
-## 寄付
-
-- GitHub スポンサー経由の[毎月の寄付](https://github.com/sponsors/immich-app)
-- GitHub スポンサー経由の[一回寄付](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7

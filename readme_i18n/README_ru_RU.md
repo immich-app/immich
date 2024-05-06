@@ -29,6 +29,7 @@
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## Предупреждение
@@ -47,7 +48,6 @@
 - [Введение](https://immich.app/docs/overview/introduction)
 - [Инсталяция](https://immich.app/docs/install/requirements)
 - [Гайд по доработке проекта](https://immich.app/docs/overview/support-the-project)
-- [Поддержки проект](#support-the-project)
 
 ## Документация
 
@@ -99,24 +99,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Работа без интернета                                | Да         | Нет |
 | Галлереи только для просмотра                       | Да         | Да  |
 | Колллажи                                            | Да         | Да  |
-
-## Поддержка проекта
-
-Я посвятил себя этому проекту и не остановлюсь. Я буду продолжать обновлять документацию, добавлять новые функции и исправлять ошибки. Но я не могу сделать это один. Поэтому мне нужна ваша помощь, чтобы дать мне дополнительную мотивацию продолжать идти дальше.
-
-Как сказали наши покровители [selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), это масштабная работа, которую мы с командой делаем. И мне бы очень хотелось когда-нибудь иметь возможность заниматься этим на постоянной основе, и я прошу вашей помощи, чтобы это произошло.
-
-
-Если вы считаете, что это правильная причина и вы уже давно используете это приложение, рассмотрите возможность финансовой поддержки проекта, выбрав вариант ниже.
-
-### Пожертвование
-
-- [Ежемесячное пожертвование](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Одноразовое пожертвование](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Авторы
 <a href="https://github.com/alextran1502/immich/graphs/contributors">

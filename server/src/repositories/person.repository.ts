@@ -104,6 +104,9 @@ export class PersonRepository implements IPersonRepository {
       relations: {
         person: true,
       },
+      order: {
+        boundingBoxX1: 'ASC',
+      },
     });
   }
 

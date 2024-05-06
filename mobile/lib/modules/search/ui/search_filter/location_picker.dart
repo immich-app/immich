@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/search/models/search_filter.dart';
-import 'package:immich_mobile/modules/search/providers/search_filter.provider.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/providers/search/search_filter.provider.dart';
 import 'package:openapi/api.dart';
 
 class LocationPicker extends HookConsumerWidget {
@@ -87,11 +87,16 @@ class LocationPicker extends HookConsumerWidget {
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
           selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
+            if (value.toString() == selectedCountry.value) {
+              return;
+            }
             selectedCountry.value = value.toString();
+            stateTextController.value = TextEditingValue.empty;
+            cityTextController.value = TextEditingValue.empty;
             onSelected({
               'country': selectedCountry.value,
-              'state': selectedState.value,
-              'city': selectedCity.value,
+              'state': null,
+              'city': null,
             });
           },
         ),
@@ -120,11 +125,15 @@ class LocationPicker extends HookConsumerWidget {
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
           selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
+            if (value.toString() == selectedState.value) {
+              return;
+            }
             selectedState.value = value.toString();
+            cityTextController.value = TextEditingValue.empty;
             onSelected({
               'country': selectedCountry.value,
               'state': selectedState.value,
-              'city': selectedCity.value,
+              'city': null,
             });
           },
         ),

@@ -5,7 +5,7 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
-import { FindOptionsRelations, FindOptionsSelect } from 'typeorm';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -159,9 +159,14 @@ export interface IAssetRepository {
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
+  getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
-  getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;
+  getById(
+    id: string,
+    relations?: FindOptionsRelations<AssetEntity>,
+    order?: FindOptionsOrder<AssetEntity>,
+  ): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
   getRandom(userId: string, count: number): Promise<AssetEntity[]>;

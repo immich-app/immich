@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -14,6 +14,12 @@ The admin user can set the template by using the template builder in the `Admini
 Year/Year-Month-Day/Filename.Extension
 ```
 
+If you want to change the storage template during the initial setup, first enable the feature.
+
+<img src={require('./img/enable-storage-template.png').default} width="100%" title="Enable Storage Template Setting" />
+
+Then, customize your storage template.
+
 <img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
 
 :::tip

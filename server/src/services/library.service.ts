@@ -387,7 +387,7 @@ export class LibraryService {
     const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
     await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } })),
+      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId } })),
     );
 
     if (assetIds.length === 0) {
@@ -503,7 +503,6 @@ export class LibraryService {
         type: assetType,
         originalFileName,
         sidecarPath,
-        isReadOnly: true,
         isExternal: true,
       });
       assetId = addedAsset.id;
@@ -580,7 +579,7 @@ export class LibraryService {
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } })),
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
       );
     }
 
