@@ -23,17 +23,28 @@ BACKUP_PATH="/path/to/local/backup/directory"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
-### init Borg setup
-if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
-    mkdir "$UPLOAD_LOCATION/database-backup"
-fi
-if [ ! -d "$BACKUP_PATH/immich-borg" ]; then
-    borg init --encryption=none "$BACKUP_PATH/immich-borg"
-fi
-if ! ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d $REMOTE_BACKUP_PATH/immich-borg"
-    borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg"
-fi
 
+### init Borg setup
+_init_setup(){
+    if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
+        mkdir "$UPLOAD_LOCATION/database-backup" || return 1
+    fi
+    if [ ! -d "$BACKUP_PATH/immich-borg" ]; then
+        borg init --encryption=none "$BACKUP_PATH/immich-borg" || return 1
+    fi
+    if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\"/immich-borg"
+        echo "OK. Found $REMOTE_BACKUP_PATH/immich-borg on remote host."
+    else
+        borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg" || return 1
+    fi
+}
+
+if _init_setup; then
+    echo "init setup OK."
+else
+    echo "init setup Fail, exit 1"
+    exit 1
+fi
 ### Local
 
 # Backup Immich database
