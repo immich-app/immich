@@ -39,7 +39,7 @@ class AssetService {
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
-  Future<bool> refreshRemoteAssets([User? user]) async {
+  Future<bool> refreshRemoteAssets({User? user, bool isArchive = true}) async {
     user ??= Store.get<User>(StoreKey.currentUser);
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
@@ -53,12 +53,19 @@ class AssetService {
 
   /// Returns `(null, null)` if changes are invalid -> requires full sync
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
-      _getRemoteAssetChanges(User user, DateTime since) async {
+      _getRemoteAssetChanges(
+    User user,
+    DateTime since, {
+    bool isArchive = true,
+  }) async {
     final deleted = await _apiService.auditApi
         .getAuditDeletes(since, EntityType.ASSET, userId: user.id);
     if (deleted == null || deleted.needsFullSync) return (null, null);
-    final assetDto = await _apiService.assetApi
-        .getAllAssets(userId: user.id, updatedAfter: since);
+    final assetDto = await _apiService.assetApi.getAllAssets(
+      userId: user.id,
+      updatedAfter: since,
+      isArchived: isArchive,
+    );
     if (assetDto == null) return (null, null);
     return (assetDto.map(Asset.remote).toList(), deleted.ids);
   }
@@ -85,7 +92,10 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user) async {
+  Future<List<Asset>?> _getRemoteAssets(
+    User user, {
+    bool isArchive = true,
+  }) async {
     const int chunkSize = 10000;
     try {
       final DateTime now = DateTime.now().toUtc();
@@ -101,6 +111,7 @@ class AssetService {
           updatedBefore: now,
           skip: i,
           take: chunkSize,
+          isArchived: isArchive,
         );
         if (assets == null) {
           return null;
