@@ -201,6 +201,8 @@
   "experimental_settings_title": "Experimental",
   "favorites_page_no_favorites": "No favorite assets found",
   "favorites_page_title": "Favorites",
+  "haptic_feedback_switch": "Enable haptic feedback",
+  "haptic_feedback_title": "Haptic Feedback",
   "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",
@@ -442,8 +444,8 @@
   "shared_link_edit_expire_after_option_minute": "1 minute",
   "shared_link_edit_expire_after_option_minutes": "{} minutes",
   "shared_link_edit_expire_after_option_months": "{} months",
-  "shared_link_edit_expire_after_option_year": "{} year",
   "shared_link_edit_expire_after_option_never": "Never",
+  "shared_link_edit_expire_after_option_year": "{} year",
   "shared_link_edit_password": "Password",
   "shared_link_edit_password_hint": "Enter the share password",
   "shared_link_edit_show_meta": "Show metadata",
@@ -513,7 +515,5 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack",
-  "haptic_feedback_title": "Haptic Feedback",
-  "haptic_feedback_switch": "Enable haptic feedback"
+  "viewer_unstack": "Un-Stack"
 }
