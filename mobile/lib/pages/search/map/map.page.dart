@@ -24,7 +24,7 @@ import 'package:immich_mobile/widgets/map/positioned_asset_marker_icon.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';

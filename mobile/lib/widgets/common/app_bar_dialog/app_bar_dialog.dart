@@ -12,9 +12,9 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
-import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart';
-import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
+import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:url_launcher/url_launcher.dart';
 

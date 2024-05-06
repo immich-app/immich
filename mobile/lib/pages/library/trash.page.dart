@@ -11,8 +11,8 @@ import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 
 @RoutePage()

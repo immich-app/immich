@@ -14,9 +14,9 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 @RoutePage()
 class PhotosPage extends HookConsumerWidget {

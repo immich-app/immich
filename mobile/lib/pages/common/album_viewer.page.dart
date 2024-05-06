@@ -23,9 +23,9 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
 class AlbumViewerPage extends HookConsumerWidget {

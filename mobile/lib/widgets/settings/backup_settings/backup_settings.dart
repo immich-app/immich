@@ -10,7 +10,7 @@ import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/utils/app_settings_update_hook.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class BackupSettings extends HookConsumerWidget {
   const BackupSettings({

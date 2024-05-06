@@ -11,8 +11,8 @@ import 'package:immich_mobile/widgets/album/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/drag_sheet.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AddToAlbumBottomSheet extends HookConsumerWidget {
   /// The asset to add to an album

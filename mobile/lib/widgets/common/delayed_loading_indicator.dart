@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class DelayedLoadingIndicator extends StatelessWidget {
   /// The delay to avoid showing the loading indicator

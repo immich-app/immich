@@ -5,10 +5,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class AppBarProfileInfoBox extends HookConsumerWidget {
   const AppBarProfileInfoBox({

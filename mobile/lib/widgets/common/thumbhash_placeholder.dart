@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
-import 'package:immich_mobile/shared/ui/fade_in_placeholder_image.dart';
+import 'package:immich_mobile/widgets/common/fade_in_placeholder_image.dart';
 import 'package:octo_image/octo_image.dart';
 
 /// Simple set to show [OctoPlaceholder.circularProgressIndicator] as

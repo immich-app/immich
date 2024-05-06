@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/ui/user_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_avatar.dart';
 
 class PartnerList extends HookConsumerWidget {
   const PartnerList({super.key, required this.partner});

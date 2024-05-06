@@ -17,7 +17,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;

@@ -16,7 +16,7 @@ import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:openapi/api.dart';
 
 @RoutePage()

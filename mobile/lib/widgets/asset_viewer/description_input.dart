@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_description.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
 class DescriptionInput extends HookConsumerWidget {

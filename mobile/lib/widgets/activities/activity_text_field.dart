@@ -6,7 +6,7 @@ import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class ActivityTextField extends HookConsumerWidget {
   final bool isEnabled;

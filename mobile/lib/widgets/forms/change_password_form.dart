@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class ChangePasswordForm extends HookConsumerWidget {
   const ChangePasswordForm({super.key});

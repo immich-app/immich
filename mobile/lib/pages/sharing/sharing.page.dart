@@ -11,8 +11,8 @@ import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/widgets/partner/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
 class SharingPage extends HookConsumerWidget {

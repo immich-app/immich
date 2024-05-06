@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 @RoutePage()

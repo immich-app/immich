@@ -9,7 +9,7 @@ import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dar
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 
 @RoutePage()
 class LibraryPage extends HookConsumerWidget {

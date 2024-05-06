@@ -8,10 +8,10 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/share.service.dart';
-import 'package:immich_mobile/shared/ui/date_time_picker.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/ui/location_picker.dart';
-import 'package:immich_mobile/shared/ui/share_dialog.dart';
+import 'package:immich_mobile/widgets/common/date_time_picker.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/location_picker.dart';
+import 'package:immich_mobile/widgets/common/share_dialog.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 void handleShareAssets(

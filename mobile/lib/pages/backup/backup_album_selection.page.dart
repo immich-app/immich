@@ -8,7 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/widgets/backup/album_info_card.dart';
 import 'package:immich_mobile/widgets/backup/album_info_list_tile.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 @RoutePage()
 class BackupAlbumSelectionPage extends HookConsumerWidget {

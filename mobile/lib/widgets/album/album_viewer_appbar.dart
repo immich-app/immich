@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {

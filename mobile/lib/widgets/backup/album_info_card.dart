@@ -8,7 +8,7 @@ import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
   final AvailableAlbum album;

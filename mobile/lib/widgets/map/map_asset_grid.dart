@@ -12,7 +12,7 @@ import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/shared/ui/drag_sheet.dart';
+import 'package:immich_mobile/widgets/common/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/throttle.dart';
 import 'package:logging/logging.dart';

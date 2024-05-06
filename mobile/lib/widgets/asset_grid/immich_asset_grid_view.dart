@@ -13,7 +13,7 @@ import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.da
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';

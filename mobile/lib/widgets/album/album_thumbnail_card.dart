@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
   final Function()? onTap;

@@ -10,7 +10,7 @@ import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/drag_sheet.dart';
+import 'package:immich_mobile/widgets/common/drag_sheet.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 

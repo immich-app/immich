@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/shared/ui/transparent_image.dart';
+import 'package:immich_mobile/widgets/common/transparent_image.dart';
 
 class FadeInPlaceholderImage extends StatelessWidget {
   final Widget placeholder;

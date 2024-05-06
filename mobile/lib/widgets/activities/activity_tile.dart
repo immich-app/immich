@@ -5,7 +5,7 @@ import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class ActivityTile extends HookConsumerWidget {
   final Activity activity;

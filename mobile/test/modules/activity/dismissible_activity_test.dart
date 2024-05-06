@@ -6,7 +6,7 @@ import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../fixtures/user.stub.dart';

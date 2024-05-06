@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/pages/common/video_viewer.page.dart';
 import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/widgets/common/immich_image.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
