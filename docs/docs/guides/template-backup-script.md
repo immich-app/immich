@@ -23,7 +23,6 @@ BACKUP_PATH="/path/to/local/backup/directory"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
-
 ### init Borg setup
 _init_setup(){
     if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
@@ -39,12 +38,15 @@ _init_setup(){
     fi
 }
 
-if _init_setup; then
-    echo "init setup OK."
-else
-    echo "init setup Fail, exit 1"
-    exit 1
+if [ "$1" = init ]; then
+    if _init_setup; then
+        echo "init setup OK."
+    else
+        echo "init setup Fail, exit 1"
+        exit 1
+    fi
 fi
+
 ### Local
 
 # Backup Immich database
