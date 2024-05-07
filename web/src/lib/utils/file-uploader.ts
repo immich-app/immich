@@ -7,6 +7,7 @@ import {
   Action,
   checkBulkUpload,
   defaults,
+  getServerConfig,
   getSupportedMediaTypes,
   type AssetFileUploadResponseDto,
 } from '@immich/sdk';
@@ -118,11 +119,14 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
+      const url =
+        ((await getServerConfig()).uploadEndpoint || defaults.baseUrl) + '/asset/upload' + (key ? `?key=${key}` : '');
       const response = await uploadRequest<AssetFileUploadResponseDto>({
-        url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
+        url,
         data: formData,
         onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
       });
+
       if (![200, 201].includes(response.status)) {
         throw new Error('Failed to upload file');
       }
