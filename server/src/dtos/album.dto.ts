@@ -25,7 +25,6 @@ export class AlbumUserAddDto {
 
 export class AddUsersDto {
   @ValidateUUID({ each: true, optional: true })
-  @ArrayNotEmpty()
   @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
   sharedUserIds?: string[];
 
