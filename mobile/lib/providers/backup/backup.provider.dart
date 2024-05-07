@@ -330,19 +330,25 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Hash all album assets, excluding assets in `assetsFromExcludedAlbums`
     for (final album in state.selectedBackupAlbums) {
-      final result = await hashService.getHashedAssets(album.albumEntity, excludedAssets: assetsFromExcludedAlbums.toList().map((e) => e.id).toSet());
+      final result = await hashService.getHashedAssets(album.albumEntity,
+          excludedAssets:
+              assetsFromExcludedAlbums.toList().map((e) => e.id).toSet());
       hashedSelectedAssets.addAll(result);
     }
 
     if (hashedSelectedAssets.isNotEmpty) {
-      final assetHashCheckResponse = await _backupService.bulkUploadCheckRequest(hashedSelectedAssets);
+      final assetHashCheckResponse =
+          await _backupService.bulkUploadCheckRequest(hashedSelectedAssets);
 
       if (assetHashCheckResponse?.results != null) {
-        final rejectedAssetIds = assetHashCheckResponse!.results.where((e) => e.action == AssetBulkUploadCheckResultActionEnum.reject).map((e) => e.id);
-        assetsFromSelectedAlbums.removeWhere((e) => rejectedAssetIds.contains(e.id));
+        final rejectedAssetIds = assetHashCheckResponse!.results
+            .where(
+                (e) => e.action == AssetBulkUploadCheckResultActionEnum.reject)
+            .map((e) => e.id);
+        assetsFromSelectedAlbums
+            .removeWhere((e) => rejectedAssetIds.contains(e.id));
       }
     }
-
 
     final Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
