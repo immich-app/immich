@@ -31,10 +31,17 @@ _init_setup(){
     if [ ! -d "$BACKUP_PATH/immich-borg" ]; then
         borg init --encryption=none "$BACKUP_PATH/immich-borg" || return 1
     fi
-    if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\"/immich-borg"
-        echo "OK. Found $REMOTE_BACKUP_PATH/immich-borg on remote host."
+    if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "true"; then
+        echo "OK. ssh remote host $REMOTE_HOST"
+        if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\"/immich-borg"
+            echo "OK. Found $REMOTE_BACKUP_PATH/immich-borg on remote host."
+        else
+            echo "Not found $REMOTE_BACKUP_PATH/immich-borg on remote host, borg init begin..."
+            borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg" || return 1
+        fi
     else
-        borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg" || return 1
+        echo "FAIL. ssh remote host $REMOTE_HOST"
+        return 1
     fi
 }
 
