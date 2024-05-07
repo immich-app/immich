@@ -30,6 +30,14 @@
         />
 
         <SettingInputField
+        inputType={SettingInputFieldType.TEXT}
+        label="UPLOAD ENDPOINT"
+        desc="Endpoint for asset uploads, including http(s)://. Useful for only exposing the upload endpoint to the internet."
+        bind:value={config.server.uploadEndpoint}
+        isEdited={config.server.uploadEndpoint !== savedConfig.server.uploadEndpoint}
+      />
+
+        <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="WELCOME MESSAGE"
           desc="A message that is displayed on the login page."
