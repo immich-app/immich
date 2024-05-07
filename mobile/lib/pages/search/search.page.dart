@@ -10,15 +10,15 @@ import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
-import 'package:immich_mobile/modules/search/ui/curated_places_row.dart';
-import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
-import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
+import 'package:immich_mobile/widgets/search/curated_people_row.dart';
+import 'package:immich_mobile/widgets/search/curated_places_row.dart';
+import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
+import 'package:immich_mobile/widgets/search/search_row_title.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/scaffold_error_body.dart';
 
 @RoutePage()
 // ignore: must_be_immutable

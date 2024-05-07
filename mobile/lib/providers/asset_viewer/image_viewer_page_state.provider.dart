@@ -8,8 +8,8 @@ import 'package:immich_mobile/models/asset_viewer/asset_viewer_page_state.model.
 import 'package:immich_mobile/services/image_viewer.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/share.service.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/ui/share_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/share_dialog.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   final ImageViewerService _imageViewerService;
