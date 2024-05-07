@@ -571,6 +571,7 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
     const builder = this.getBuilder({
       userIds: [ownerId],
