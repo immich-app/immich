@@ -3,7 +3,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shortcuts } from '$lib/utils/shortcut';
@@ -90,7 +90,7 @@
     }
 
     try {
-      await copyImageToClipboard(assetData);
+      await copyImageToClipboard(assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
         message: 'Copied image to clipboard.',

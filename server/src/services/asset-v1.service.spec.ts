@@ -314,7 +314,6 @@ describe('AssetService', () => {
         isArchived: false,
         isFavorite: false,
         isOffline: false,
-        isReadOnly: false,
         isVisible: false,
         localDateTime: dto.fileCreatedAt,
         originalFileName: uploadFile.originalName,
