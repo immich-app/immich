@@ -1,5 +1,6 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import e from 'express';
 import { PublicRoute } from 'src/middleware/auth.guard';
 import { SystemConfigService } from 'src/services/system-config.service';
 
@@ -10,11 +11,16 @@ export class AppController {
   @ApiExcludeEndpoint()
   @Get('.well-known/immich')
   getImmichWellKnown() {
-    return {
-      api: {
-        endpoint: '/api',
-      },
-    };
+    return this.service.getConfig().then((config) => {
+      return {
+        api: {
+          endpoint: '/api',
+        },
+        upload: {
+          endpoint: config.server.uploadEndpoint,
+        },
+      };
+    });
   }
 
   @ApiExcludeEndpoint()
