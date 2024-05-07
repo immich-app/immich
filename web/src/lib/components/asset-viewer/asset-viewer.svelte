@@ -27,6 +27,7 @@
     getActivityStatistics,
     getAllAlbums,
     runAssetJobs,
+    restoreAssets,
     updateAsset,
     updateAlbumInfo,
     type ActivityResponseDto,
@@ -49,7 +50,8 @@
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
-  import VideoViewer from './video-viewer.svelte';
+  import VideoViewer from './video-wrapper-viewer.svelte';
+  import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
 
   export let assetStore: AssetStore | null = null;
@@ -197,6 +199,8 @@
       }
     });
 
+    await navigate({ targetRoute: 'current', assetId: asset.id });
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -272,11 +276,16 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = () => {
-    closeViewer();
+  const handleCloseViewer = async () => {
+    await closeViewer();
   };
 
-  const closeViewer = () => dispatch('close');
+  const closeViewer = async () => {
+    $slideshowState = SlideshowState.StopSlideshow;
+    document.body.style.cursor = '';
+    dispatch('close');
+    await navigate({ targetRoute: 'current', assetId: null });
+  };
 
   const navigateAssetRandom = async () => {
     if (!assetStore) {
@@ -309,7 +318,7 @@
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext =
-        order === 'previous' ? await assetStore.getPreviousAsset(asset.id) : await assetStore.getNextAsset(asset.id);
+        order === 'previous' ? await assetStore.getPreviousAsset(asset) : await assetStore.getNextAsset(asset);
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
@@ -411,6 +420,22 @@
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await handleGetAllAlbums();
+  };
+
+  const handleRestoreAsset = async () => {
+    try {
+      await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+      asset.isTrashed = false;
+
+      dispatch('action', { type: AssetAction.RESTORE, asset });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Restored asset`,
+      });
+    } catch (error) {
+      handleError(error, 'Error restoring asset');
+    }
   };
 
   const toggleArchive = async () => {
@@ -522,6 +547,10 @@
       handleError(error, 'Unable to update album cover');
     }
   };
+
+  $: if (!$user) {
+    shouldShowShareModal = false;
+  }
 </script>
 
 <svelte:window
@@ -566,6 +595,7 @@
           on:delete={() => trashOrDelete()}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
+          on:restoreAsset={() => handleRestoreAsset()}
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
@@ -581,7 +611,7 @@
     {/if}
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 justify-self-start">
         <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
@@ -615,6 +645,7 @@
             <VideoViewer
               assetId={previewStackedAsset.id}
               checksum={previewStackedAsset.checksum}
+              projectionType={previewStackedAsset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -636,6 +667,7 @@
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
                 checksum={asset.checksum}
+                projectionType={asset.exifInfo?.projectionType}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -650,6 +682,7 @@
             <VideoViewer
               assetId={asset.id}
               checksum={asset.checksum}
+              projectionType={asset.exifInfo?.projectionType}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -669,48 +702,10 @@
           {/if}
         {/key}
       {/if}
-
-      {#if $stackAssetsStore.length > 0 && withStacked}
-        <div
-          id="stack-slideshow"
-          class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
-        >
-          <div class="relative w-full whitespace-nowrap transition-all">
-            {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
-              <div
-                class="{stackedAsset.id == asset.id
-                  ? '-translate-y-[1px]'
-                  : '-translate-y-0'} inline-block px-1 transition-transform"
-              >
-                <Thumbnail
-                  class="{stackedAsset.id == asset.id
-                    ? 'bg-transparent border-2 border-white'
-                    : 'bg-gray-700/40'} inline-block hover:bg-transparent"
-                  asset={stackedAsset}
-                  onClick={() => {
-                    asset = stackedAsset;
-                    preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
-                  }}
-                  on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
-                  readonly
-                  thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
-                  showStackedIcon={false}
-                />
-
-                {#if stackedAsset.id == asset.id}
-                  <div class="w-full flex place-items-center place-content-center">
-                    <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
-                  </div>
-                {/if}
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
     </div>
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 justify-self-end">
         <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
@@ -731,6 +726,44 @@
           on:close={() => ($isShowDetail = false)}
           on:closeViewer={handleCloseViewer}
         />
+      </div>
+    {/if}
+
+    {#if $stackAssetsStore.length > 0 && withStacked}
+      <div
+        id="stack-slideshow"
+        class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative w-full whitespace-nowrap transition-all">
+          {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
+            <div
+              class="{stackedAsset.id == asset.id
+                ? '-translate-y-[1px]'
+                : '-translate-y-0'} inline-block px-1 transition-transform"
+            >
+              <Thumbnail
+                class="{stackedAsset.id == asset.id
+                  ? 'bg-transparent border-2 border-white'
+                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+                asset={stackedAsset}
+                onClick={() => {
+                  asset = stackedAsset;
+                  preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                }}
+                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+                showStackedIcon={false}
+              />
+
+              {#if stackedAsset.id == asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
       </div>
     {/if}
 

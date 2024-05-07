@@ -14,11 +14,11 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
   import { createEventDispatcher, tick } from 'svelte';
-  import IconButton from '../elements/buttons/icon-button.svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/utils/shortcut';
   import { clickOutside } from '$lib/utils/click-outside';
   import { focusOutside } from '$lib/utils/focus-outside';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   /**
    * Unique identifier for the combobox.
@@ -199,9 +199,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <IconButton color="transparent-gray" on:click={onClear} title="Clear value">
-          <Icon path={mdiClose} ariaLabel="Clear value" />
-        </IconButton>
+        <CircleIconButton on:click={onClear} title="Clear value" icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}

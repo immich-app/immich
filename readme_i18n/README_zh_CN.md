@@ -33,6 +33,7 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
 </p>
 
 ## 免责声明
@@ -51,7 +52,6 @@
 - [介绍](https://immich.app/docs/overview/introduction)
 - [安装](https://immich.app/docs/install/requirements)
 - [贡献指南](https://immich.app/docs/overview/support-the-project)
-- [支持本项目](#支持本项目)
 
 ## 官方文档
 
@@ -109,23 +109,6 @@
 | 离线支持                                    | 是     | 否     |
 | 只读相册                                    | 是     | 是     |
 | 照片堆叠                                    | 是     | 是     |
-
-# 支持本项目
-
-我已经致力于本项目并且我将会持续更新文档、新增功能和修复问题。但是独木不成林，我需要您给予我坚持下去的动力。
-
-就像我在 [selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) 节目里说的一样，这是我和团队的一项艰巨任务。并且我希望某一天我能够全职开发本项目，在此我请求您能够助我梦想成真。
-
-如果您使用了本项目一段时间，并且觉得上面的话有道理，那么请您考虑通过下列任一方式支持我吧。
-
-## 捐赠
-
-- 通过 GitHub Sponsors [按月捐赠](https://github.com/sponsors/immich-app)
-- 通过 Github Sponsors [单次捐赠](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- 比特币: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## 贡献者
 <a href="https://github.com/alextran1502/immich/graphs/contributors">

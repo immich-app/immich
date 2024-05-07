@@ -30,6 +30,8 @@ download:
       locale_code: pl-PL
     - file: mobile/assets/i18n/fi-FI.json
       locale_code: fi-FI
+    - file: mobile/assets/i18n/pt-BR.json
+      locale_code: pt-BR
     - file: mobile/assets/i18n/pt-PT.json
       locale_code: pt-PT
     - file: mobile/assets/i18n/pt-BR.json
@@ -74,6 +76,8 @@ download:
       locale_code: lv-LV
     - file: mobile/assets/i18n/zh-Hans.json
       locale_code: zh-Hans
+    - file: mobile/assets/i18n/zh-TW.json
+      locale_code: zh-TW
     - file: mobile/assets/i18n/th-TH.json
       locale_code: th-TH
     - file: mobile/assets/i18n/lt-LT.json

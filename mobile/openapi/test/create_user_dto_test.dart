@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool notify
+    test('to test the property `notify`', () async {
+      // TODO
+    });
+
     // String password
     test('to test the property `password`', () async {
       // TODO

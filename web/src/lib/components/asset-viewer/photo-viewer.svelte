@@ -14,6 +14,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+
+  const { slideshowState, slideshowLook } = slideshowStore;
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | null = null;
@@ -21,12 +24,13 @@
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
-  let assetData: string;
-  let abortController: AbortController;
-  let hasZoomed = false;
+  let assetFileUrl: string = '';
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
   let imageLoaded: boolean = false;
+  // set to true when am image has been zoomed, to force loading of the original image regardless
+  // of app settings
+  let forceLoadOriginal: boolean = false;
 
   const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
@@ -38,14 +42,10 @@
   }
 
   $: {
-    // this reative effect block is triggered when properties on this page change, like
-    // asset id. When this happens, we load the data and set it to a property, which is
-    // bound in the html template below. Need to use a IIFE because of async/await is not
-    // in the svelte reative block, but $effect in svelte5 will fix this.
-    void (async () => {
-      assetData = (await loadAssetData({ loadOriginal: loadOriginalByDefault }))!;
-    })();
+    preload({ preloadAssets, loadOriginal: loadOriginalByDefault });
   }
+
+  $: assetFileUrl = load(asset.id, !loadOriginalByDefault || forceLoadOriginal, false, asset.checksum);
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -57,34 +57,31 @@
 
   onDestroy(() => {
     $boundingBoxesArray = [];
-    abortController?.abort();
   });
 
-  const loadAssetData = async ({ loadOriginal }: { loadOriginal: boolean }) => {
-    try {
-      abortController?.abort();
-      abortController = new AbortController();
-
-      // TODO: Use sdk once it supports signals
-      const { data } = await downloadRequest({
-        url: getAssetFileUrl(asset.id, !loadOriginal, false),
-        signal: abortController.signal,
-      });
-
-      for (const preloadAsset of preloadAssets || []) {
-        if (preloadAsset.type === AssetTypeEnum.Image) {
-          // no need to wait for these preloads
-          void downloadRequest({
-            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
-            signal: abortController.signal,
-          });
-        }
+  const preload = ({
+    preloadAssets,
+    loadOriginal,
+  }: {
+    preloadAssets: AssetResponseDto[] | null;
+    loadOriginal: boolean;
+  }) => {
+    for (const preloadAsset of preloadAssets || []) {
+      if (preloadAsset.type === AssetTypeEnum.Image) {
+        let img = new Image();
+        img.src = getAssetFileUrl(preloadAsset.id, !loadOriginal, false, preloadAsset.checksum);
       }
-      imageLoaded = true;
-      return URL.createObjectURL(data);
-    } catch {
-      imageLoaded = false;
     }
+  };
+
+  const load = (assetId: string, isWeb: boolean, isThumb: boolean, checksum: string) => {
+    // sideeffect: everytime load is called, imageLoaded is set to false, this is set to true when by load event on the img.
+    imageLoaded = false;
+    return getAssetFileUrl(assetId, isWeb, isThumb, checksum);
+  };
+
+  const loaded = () => {
+    imageLoaded = true;
   };
 
   const doCopy = async () => {
@@ -122,12 +119,7 @@
 
   zoomImageWheelState.subscribe((state) => {
     photoZoomState.set(state);
-
-    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
-      hasZoomed = true;
-
-      handlePromiseError(loadAssetData({ loadOriginal: true }));
-    }
+    forceLoadOriginal = state.currentZoom > 1 && isWebCompatibleImage(asset) ? true : false;
   });
 
   const onCopyShortcut = () => {
@@ -150,18 +142,31 @@
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="flex h-full select-none place-content-center place-items-center"
+  class="relative h-full select-none"
 >
   {#if !imageLoaded}
-    <LoadingSpinner />
+    <!-- hidden image loader -->
+    <img style="display:none" src={assetFileUrl} alt={getAltText(asset)} on:load={loaded} />
+    <div class="flex h-full items-center justify-center">
+      <LoadingSpinner />
+    </div>
   {:else}
-    <div bind:this={imgElement} class="h-full w-full">
+    <div bind:this={imgElement} class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+        <img
+          src={assetFileUrl}
+          alt={getAltText(asset)}
+          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          draggable="false"
+        />
+      {/if}
       <img
         bind:this={$photoViewer}
-        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-        src={assetData}
+        src={assetFileUrl}
         alt={getAltText(asset)}
-        class="h-full w-full object-contain"
+        class="h-full w-full {$slideshowState === SlideshowState.None
+          ? 'object-contain'
+          : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}

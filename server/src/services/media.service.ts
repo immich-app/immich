@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
+import { dirname } from 'node:path';
 import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -42,6 +43,7 @@ import {
   VAAPIConfig,
   VP9Config,
 } from 'src/utils/media';
+import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -77,7 +79,7 @@ export class MediaService {
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination)
+        ? this.assetRepository.getAll(pagination, { isVisible: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
@@ -113,7 +115,7 @@ export class MediaService {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
+          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
         }
 
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
@@ -178,7 +180,15 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
+    if (asset.previewPath && asset.previewPath !== previewPath) {
+      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.previewPath);
+    }
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
   }
@@ -191,9 +201,21 @@ export class MediaService {
 
     switch (asset.type) {
       case AssetType.IMAGE: {
-        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-        const imageOptions = { format, size, colorspace, quality: image.quality };
-        await this.mediaRepository.resize(asset.originalPath, path, imageOptions);
+        const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
+        const extractedPath = StorageCore.getTempPathInDir(dirname(path));
+        const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
+
+        try {
+          const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
+          const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+          const imageOptions = { format, size, colorspace, quality: image.quality };
+
+          await this.mediaRepository.resize(useExtracted ? extractedPath : asset.originalPath, path, imageOptions);
+        } finally {
+          if (didExtract) {
+            await this.storageRepository.unlink(extractedPath);
+          }
+        }
         break;
       }
 
@@ -230,14 +252,30 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
+    if (asset.thumbnailPath && asset.thumbnailPath !== thumbnailPath) {
+      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.thumbnailPath);
+    }
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
   }
 
   async handleGenerateThumbhash({ id }: IEntityJob): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset?.previewPath) {
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    if (!asset.previewPath) {
       return JobStatus.FAILED;
     }
 
@@ -511,7 +549,7 @@ export class MediaService {
     }
   }
 
-  parseBitrateToBps(bitrateString: string) {
+  private parseBitrateToBps(bitrateString: string) {
     const bitrateValue = Number.parseInt(bitrateString);
 
     if (Number.isNaN(bitrateValue)) {
@@ -525,5 +563,12 @@ export class MediaService {
     } else {
       return bitrateValue;
     }
+  }
+
+  private async shouldUseExtractedImage(extractedPath: string, targetSize: number) {
+    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPath);
+    const extractedSize = Math.min(width, height);
+
+    return extractedSize >= targetSize;
   }
 }

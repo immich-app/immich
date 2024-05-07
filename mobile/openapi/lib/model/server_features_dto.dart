@@ -14,6 +14,7 @@ class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
     required this.configFile,
+    required this.email,
     required this.facialRecognition,
     required this.map,
     required this.oauth,
@@ -27,6 +28,8 @@ class ServerFeaturesDto {
   });
 
   bool configFile;
+
+  bool email;
 
   bool facialRecognition;
 
@@ -51,6 +54,7 @@ class ServerFeaturesDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
     other.configFile == configFile &&
+    other.email == email &&
     other.facialRecognition == facialRecognition &&
     other.map == map &&
     other.oauth == oauth &&
@@ -66,6 +70,7 @@ class ServerFeaturesDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (configFile.hashCode) +
+    (email.hashCode) +
     (facialRecognition.hashCode) +
     (map.hashCode) +
     (oauth.hashCode) +
@@ -78,11 +83,12 @@ class ServerFeaturesDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, email=$email, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'configFile'] = this.configFile;
+      json[r'email'] = this.email;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'map'] = this.map;
       json[r'oauth'] = this.oauth;
@@ -105,6 +111,7 @@ class ServerFeaturesDto {
 
       return ServerFeaturesDto(
         configFile: mapValueOfType<bool>(json, r'configFile')!,
+        email: mapValueOfType<bool>(json, r'email')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         map: mapValueOfType<bool>(json, r'map')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
@@ -163,6 +170,7 @@ class ServerFeaturesDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'configFile',
+    'email',
     'facialRecognition',
     'map',
     'oauth',

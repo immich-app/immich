@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
@@ -9,6 +10,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   CropOptions,
   IMediaRepository,
+  ImageDimensions,
   ResizeOptions,
   TranscodeOptions,
   VideoInfo,
@@ -26,6 +28,23 @@ export class MediaRepository implements IMediaRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MediaRepository.name);
   }
+
+  async extract(input: string, output: string): Promise<boolean> {
+    try {
+      await exiftool.extractJpgFromRaw(input, output);
+    } catch (error: any) {
+      this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+      try {
+        await exiftool.extractPreview(input, output);
+      } catch (error: any) {
+        this.logger.debug('Could not extract preview from image', error.message);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
       .pipelineColorspace('rgb16')
@@ -133,16 +152,16 @@ export class MediaRepository implements IMediaRepository {
     return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
   }
 
+  async getImageDimensions(input: string): Promise<ImageDimensions> {
+    const { width = 0, height = 0 } = await sharp(input).metadata();
+    return { width, height };
+  }
+
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
       .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
-  }
-
-  private chainPath(existing: string, path: string) {
-    const separator = existing.endsWith(':') ? '' : ':';
-    return `${existing}${separator}${path}`;
   }
 }

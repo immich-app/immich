@@ -8,24 +8,24 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/asset_viewer/services/asset_stack.service.dart';
-import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
-import 'package:immich_mobile/modules/home/models/selection_state.dart';
-import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/models/asset_selection_state.dart';
+import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class MultiselectGrid extends HookConsumerWidget {
@@ -63,13 +63,13 @@ class MultiselectGrid extends HookConsumerWidget {
       const Center(child: ImmichLoadingIndicator());
 
   Widget buildEmptyIndicator() =>
-      emptyIndicator ?? const Center(child: Text("No assets to show"));
+      emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr());
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
-    final selectionAssetState = useState(const SelectionAssetState());
+    final selectionAssetState = useState(const AssetSelectionState());
 
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
@@ -98,7 +98,7 @@ class MultiselectGrid extends HookConsumerWidget {
       selectionEnabledHook.value = multiselect;
       selection.value = selectedAssets;
       selectionAssetState.value =
-          SelectionAssetState.fromSelection(selectedAssets);
+          AssetSelectionState.fromSelection(selectedAssets);
     }
 
     errorBuilder(String? msg) => msg != null && msg.isNotEmpty
@@ -184,11 +184,6 @@ class MultiselectGrid extends HookConsumerWidget {
               currentUser,
               errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
             )
-            // Cannot delete readOnly / external assets. They are handled through library offline jobs
-            .writableOnly(
-              errorCallback:
-                  errorBuilder('asset_action_delete_err_read_only'.tr()),
-            )
             .toList();
         final isDeleted = await ref
             .read(assetProvider.notifier)
@@ -238,13 +233,7 @@ class MultiselectGrid extends HookConsumerWidget {
         final toDelete = ownedRemoteSelection(
           localErrorMessage: 'home_page_delete_remote_err_local'.tr(),
           ownerErrorMessage: 'home_page_delete_err_partner'.tr(),
-        )
-            // Cannot delete readOnly / external assets. They are handled through library offline jobs
-            .writableOnly(
-              errorCallback:
-                  errorBuilder('asset_action_delete_err_read_only'.tr()),
-            )
-            .toList();
+        ).toList();
 
         final isDeleted = await ref
             .read(assetProvider.notifier)
@@ -372,12 +361,8 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
-        ).writableOnly(
-          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
-          errorCallback: errorBuilder(
-            'multiselect_grid_edit_date_time_err_read_only'.tr(),
-          ),
         );
+
         if (remoteAssets.isNotEmpty) {
           handleEditDateTime(ref, context, remoteAssets.toList());
         }
@@ -391,12 +376,8 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
-        ).writableOnly(
-          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
-          errorCallback: errorBuilder(
-            'multiselect_grid_edit_gps_err_read_only'.tr(),
-          ),
         );
+
         if (remoteAssets.isNotEmpty) {
           handleEditLocation(ref, context, remoteAssets.toList());
         }

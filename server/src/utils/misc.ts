@@ -10,13 +10,8 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import {
-  CLIP_MODEL_INFO,
-  IMMICH_ACCESS_COOKIE,
-  IMMICH_API_KEY_HEADER,
-  IMMICH_API_KEY_NAME,
-  serverVersion,
-} from 'src/constants';
+import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
 
@@ -143,14 +138,14 @@ export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
       scheme: 'Bearer',
       in: 'header',
     })
-    .addCookieAuth(IMMICH_ACCESS_COOKIE)
+    .addCookieAuth(ImmichCookie.ACCESS_TOKEN)
     .addApiKey(
       {
         type: 'apiKey',
         in: 'header',
-        name: IMMICH_API_KEY_HEADER,
+        name: ImmichHeader.API_KEY,
       },
-      IMMICH_API_KEY_NAME,
+      Metadata.API_KEY_SECURITY,
     )
     .addServer('/api')
     .build();

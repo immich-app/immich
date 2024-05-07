@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -307,5 +308,9 @@ export class StorageCore {
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
     return join(this.getNestedFolder(folder, ownerId, filename), filename);
+  }
+
+  static getTempPathInDir(dir: string): string {
+    return join(dir, `${randomUUID()}.tmp`);
   }
 }

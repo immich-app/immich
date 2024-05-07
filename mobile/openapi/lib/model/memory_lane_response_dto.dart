@@ -20,6 +20,7 @@ class MemoryLaneResponseDto {
 
   List<AssetResponseDto> assets;
 
+  /// This property was deprecated in v1.100.0
   String title;
 
   int yearsAgo;

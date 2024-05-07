@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { getAuthDevices, logoutAuthDevice, logoutAuthDevices, type AuthDeviceResponseDto } from '@immich/sdk';
+  import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
 
-  export let devices: AuthDeviceResponseDto[];
-  let deleteDevice: AuthDeviceResponseDto | null = null;
+  export let devices: SessionResponseDto[];
+  let deleteDevice: SessionResponseDto | null = null;
   let deleteAll = false;
 
-  const refresh = () => getAuthDevices().then((_devices) => (devices = _devices));
+  const refresh = () => getSessions().then((_devices) => (devices = _devices));
 
   $: currentDevice = devices.find((device) => device.current);
   $: otherDevices = devices.filter((device) => !device.current);
@@ -21,7 +21,7 @@
     }
 
     try {
-      await logoutAuthDevice({ id: deleteDevice.id });
+      await deleteSession({ id: deleteDevice.id });
       notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to log out device');
@@ -33,7 +33,7 @@
 
   const handleDeleteAll = async () => {
     try {
-      await logoutAuthDevices();
+      await deleteAllSessions();
       notificationController.show({
         message: `Logged out all devices`,
         type: NotificationType.Info,

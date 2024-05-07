@@ -28,6 +28,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_DATABASE_NAME: WHEN_DB_URL_SET,
     DB_URL: Joi.string().optional(),
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
+    DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
@@ -51,7 +52,7 @@ function parseRedisConfig(): RedisOptions {
     }
   }
   return {
-    host: process.env.REDIS_HOSTNAME || 'immich_redis',
+    host: process.env.REDIS_HOSTNAME || 'redis',
     port: Number.parseInt(process.env.REDIS_PORT || '6379'),
     db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
     username: process.env.REDIS_USERNAME || undefined,

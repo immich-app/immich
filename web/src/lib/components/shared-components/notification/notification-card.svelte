@@ -8,6 +8,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let notification: Notification;
 
@@ -78,9 +79,14 @@
         {notification.type.toString()}
       </h2>
     </div>
-    <button on:click|stopPropagation={discard}>
-      <Icon path={mdiWindowClose} size="20" />
-    </button>
+    <CircleIconButton
+      icon={mdiWindowClose}
+      title="Close"
+      class="dark:text-immich-dark-gray"
+      size="20"
+      padding="2"
+      on:click={discard}
+    />
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">

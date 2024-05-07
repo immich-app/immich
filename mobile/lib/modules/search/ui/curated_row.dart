@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 class CuratedRow extends StatelessWidget {
-  final List<CuratedContent> content;
+  final List<SearchCuratedContent> content;
   final double imageSize;
 
   /// Callback with the content and the index when tapped
-  final Function(CuratedContent, int)? onTap;
+  final Function(SearchCuratedContent, int)? onTap;
 
   const CuratedRow({
     super.key,

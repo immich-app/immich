@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
-import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/activity_statistics.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -13,6 +13,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
     required this.onAddToAlbumPressed,
+    required this.onRestorePressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
     required this.onFavorite,
@@ -28,6 +29,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
+  final VoidCallback onRestorePressed;
   final VoidCallback onActivitiesPressed;
   final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
@@ -94,13 +96,25 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
-    Widget buildAddToAlbumButtom() {
+    Widget buildAddToAlbumButton() {
       return IconButton(
         onPressed: () {
           onAddToAlbumPressed();
         },
         icon: Icon(
           Icons.add,
+          color: Colors.grey[200],
+        ),
+      );
+    }
+
+    Widget buildRestoreButton() {
+      return IconButton(
+        onPressed: () {
+          onRestorePressed();
+        },
+        icon: Icon(
+          Icons.history_rounded,
           color: Colors.grey[200],
         ),
       );
@@ -170,7 +184,9 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && !asset.isOffline && isOwner)
           buildDownloadButton(),
-        if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButtom(),
+        if (asset.isRemote && (isOwner || isPartner) && !asset.isTrashed)
+          buildAddToAlbumButton(),
+        if (asset.isTrashed) buildRestoreButton(),
         if (album != null && album.shared) buildActivitiesButton(),
         buildMoreInfoButton(),
       ],

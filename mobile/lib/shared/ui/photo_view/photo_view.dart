@@ -256,6 +256,7 @@ class PhotoView extends StatefulWidget {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     this.customSize,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -294,6 +295,7 @@ class PhotoView extends StatefulWidget {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     this.customSize,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -400,6 +402,10 @@ class PhotoView extends StatefulWidget {
   /// A pointer that will trigger a scale has stopped contacting the screen at a
   /// particular location.
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+
+  /// A pointer that might cause a tap has contacted the screen at a particular
+  /// location.
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
 
   /// [HitTestBehavior] to be passed to the internal gesture detector.
   final HitTestBehavior? gestureDetectorBehavior;
@@ -537,6 +543,7 @@ class _PhotoViewState extends State<PhotoView>
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
                 onScaleEnd: widget.onScaleEnd,
+                onLongPressStart: widget.onLongPressStart,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
                 tightMode: widget.tightMode,
@@ -566,6 +573,7 @@ class _PhotoViewState extends State<PhotoView>
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
                 onScaleEnd: widget.onScaleEnd,
+                onLongPressStart: widget.onLongPressStart,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
                 tightMode: widget.tightMode,
@@ -646,6 +654,13 @@ typedef PhotoViewImageDragEndCallback = Function(
 typedef PhotoViewImageScaleEndCallback = Function(
   BuildContext context,
   ScaleEndDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user long press start
+typedef PhotoViewImageLongPressStartCallback = Function(
+  BuildContext context,
+  LongPressStartDetails details,
   PhotoViewControllerValue controllerValue,
 );
 

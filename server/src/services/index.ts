@@ -14,16 +14,19 @@ import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { MicroservicesService } from 'src/services/microservices.service';
+import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerInfoService } from 'src/services/server-info.service';
+import { SessionService } from 'src/services/session.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { TagService } from 'src/services/tag.service';
 import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
@@ -46,16 +49,19 @@ export const services = [
   MediaService,
   MemoryService,
   MetadataService,
+  NotificationService,
   PartnerService,
   PersonService,
   SearchService,
   ServerInfoService,
+  SessionService,
   SharedLinkService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
   SyncService,
   SystemConfigService,
+  SystemMetadataService,
   TagService,
   TimelineService,
   TrashService,
