@@ -206,8 +206,6 @@ class BackupService {
         existing.addAll(allAssetsInDatabase);
       }
     }
-    // Checked for duplicates, check for checksum
-    _apiService.assetApi.checkBulkUpload(AssetBulkUploadCheckDto());
     return existing.isEmpty
         ? candidates
         : candidates.whereNot((e) => existing.contains(e.id)).toList();

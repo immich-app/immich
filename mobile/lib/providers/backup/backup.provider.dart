@@ -298,6 +298,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<AssetEntity> assetsFromExcludedAlbums = {};
     final Set<Asset> hashedSelectedAssets = {};
     final hashService = HashService(_db, _backgroundService);
+
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
 
