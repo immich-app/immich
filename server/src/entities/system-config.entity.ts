@@ -331,6 +331,7 @@ export interface SystemConfig {
   };
   server: {
     externalDomain: string;
+    uploadEndpoint: string;
     loginPageMessage: string;
   };
   user: {
