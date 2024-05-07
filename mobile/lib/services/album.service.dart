@@ -279,9 +279,13 @@ class AlbumService {
     Album album,
   ) async {
     try {
+      final List<AlbumUserAddDto> albumUsers = sharedUserIds
+          .map((userId) => AlbumUserAddDto(userId: userId))
+          .toList();
+
       final result = await _apiService.albumApi.addUsersToAlbum(
         album.remoteId!,
-        AddUsersDto(sharedUserIds: sharedUserIds),
+        AddUsersDto(albumUsers: albumUsers),
       );
       if (result != null) {
         album.sharedUsers
