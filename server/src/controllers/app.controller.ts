@@ -17,7 +17,7 @@ export class AppController {
           endpoint: '/api',
         },
         upload: {
-          endpoint: config.server.uploadEndpoint,
+          domain: config.server.uploadDomain,
         },
       };
     });

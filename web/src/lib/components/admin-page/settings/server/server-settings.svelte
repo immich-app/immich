@@ -31,10 +31,10 @@
 
         <SettingInputField
         inputType={SettingInputFieldType.TEXT}
-        label="UPLOAD ENDPOINT"
-        desc="Endpoint for asset uploads, including http(s)://. Useful for only exposing the upload endpoint to the internet."
-        bind:value={config.server.uploadEndpoint}
-        isEdited={config.server.uploadEndpoint !== savedConfig.server.uploadEndpoint}
+        label="UPLOAD DOMAIN"
+        desc="Domain for asset uploads, including http(s)://. Useful for only exposing the upload endpoints to the internet."
+        bind:value={config.server.uploadDomain}
+        isEdited={config.server.uploadDomain !== savedConfig.server.uploadDomain}
       />
 
         <SettingInputField

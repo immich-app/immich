@@ -4,38 +4,38 @@ class ServerConfig {
   final int trashDays;
   final String oauthButtonText;
   final String externalDomain;
-  final String uploadEndpoint;
+  final String uploadDomain;
 
   const ServerConfig({
     required this.trashDays,
     required this.oauthButtonText,
     required this.externalDomain,
-    required this.uploadEndpoint,
+    required this.uploadDomain,
   });
 
   ServerConfig copyWith({
     int? trashDays,
     String? oauthButtonText,
     String? externalDomain,
-    String? uploadEndpoint,
+    String? uploadDomain,
   }) {
     return ServerConfig(
       trashDays: trashDays ?? this.trashDays,
       oauthButtonText: oauthButtonText ?? this.oauthButtonText,
       externalDomain: externalDomain ?? this.externalDomain,
-      uploadEndpoint: uploadEndpoint ?? this.uploadEndpoint,
+      uploadDomain: uploadDomain ?? this.uploadDomain,
     );
   }
 
   @override
   String toString() =>
-      'ServerConfig(trashDays: $trashDays, oauthButtonText: $oauthButtonText, externalDomain: $externalDomain, uploadEndpoint: $uploadEndpoint)';
+      'ServerConfig(trashDays: $trashDays, oauthButtonText: $oauthButtonText, externalDomain: $externalDomain, uploadDomain: $uploadDomain)';
 
   ServerConfig.fromDto(ServerConfigDto dto)
       : trashDays = dto.trashDays,
         oauthButtonText = dto.oauthButtonText,
         externalDomain = dto.externalDomain,
-        uploadEndpoint = dto.uploadEndpoint;
+        uploadDomain = dto.uploadDomain;
 
   @override
   bool operator ==(covariant ServerConfig other) {
@@ -44,7 +44,7 @@ class ServerConfig {
     return other.trashDays == trashDays &&
         other.oauthButtonText == oauthButtonText &&
         other.externalDomain == externalDomain &&
-        other.uploadEndpoint == uploadEndpoint;
+        other.uploadDomain == uploadDomain;
   }
 
   @override
@@ -52,5 +52,5 @@ class ServerConfig {
       trashDays.hashCode ^
       oauthButtonText.hashCode ^
       externalDomain.hashCode ^
-      uploadEndpoint.hashCode;
+      uploadDomain.hashCode;
 }

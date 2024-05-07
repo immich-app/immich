@@ -94,7 +94,7 @@ export class ServerConfigDto {
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
-  uploadEndpoint!: string;
+  uploadDomain!: string;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {

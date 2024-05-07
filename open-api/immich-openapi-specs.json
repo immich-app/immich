@@ -9347,7 +9347,7 @@
           "trashDays": {
             "type": "integer"
           },
-          "uploadEndpoint": {
+          "uploadDomain": {
             "type": "string"
           },
           "userDeleteDelay": {
@@ -9361,7 +9361,7 @@
           "loginPageMessage",
           "oauthButtonText",
           "trashDays",
-          "uploadEndpoint",
+          "uploadDomain",
           "userDeleteDelay"
         ],
         "type": "object"
@@ -10392,14 +10392,14 @@
           "loginPageMessage": {
             "type": "string"
           },
-          "uploadEndpoint": {
+          "uploadDomain": {
             "type": "string"
           }
         },
         "required": [
           "externalDomain",
           "loginPageMessage",
-          "uploadEndpoint"
+          "uploadDomain"
         ],
         "type": "object"
       },

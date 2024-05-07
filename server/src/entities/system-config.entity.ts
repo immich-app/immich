@@ -111,7 +111,7 @@ export const SystemConfigKey = {
   PASSWORD_LOGIN_ENABLED: 'passwordLogin.enabled',
 
   SERVER_EXTERNAL_DOMAIN: 'server.externalDomain',
-  SERVER_UPLOAD_ENDPOINT: 'server.uploadEndpoint',
+  SERVER_UPLOAD_DOMAIN: 'server.uploadDomain',
   SERVER_LOGIN_PAGE_MESSAGE: 'server.loginPageMessage',
 
   STORAGE_TEMPLATE_ENABLED: 'storageTemplate.enabled',
@@ -332,7 +332,7 @@ export interface SystemConfig {
   };
   server: {
     externalDomain: string;
-    uploadEndpoint: string;
+    uploadDomain: string;
     loginPageMessage: string;
   };
   user: {

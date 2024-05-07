@@ -104,7 +104,7 @@ export class ServerInfoService {
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
-      uploadEndpoint: config.server.uploadEndpoint,
+      uploadDomain: config.server.uploadDomain,
     };
   }
 

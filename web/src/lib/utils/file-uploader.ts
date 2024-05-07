@@ -80,9 +80,9 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
-  let uploadEndpoint = (await getServerConfig()).uploadEndpoint || defaults.baseUrl;
-  if (!uploadEndpoint.endsWith('/')) {
-    uploadEndpoint += '/';
+  let uploadDomain = (await getServerConfig()).uploadDomain || defaults.baseUrl;
+  if (!uploadDomain.endsWith('/')) {
+    uploadDomain += '/';
   }
 
   try {
@@ -118,7 +118,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
             assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] },
           },
           {
-            baseUrl: uploadEndpoint,
+            baseUrl: uploadDomain,
           },
         );
         if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
@@ -131,7 +131,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
-      const url = uploadEndpoint + 'asset/upload' + (key ? `?key=${key}` : '');
+      const url = uploadDomain + 'asset/upload' + (key ? `?key=${key}` : '');
       const response = await uploadRequest<AssetFileUploadResponseDto>({
         url,
         data: formData,

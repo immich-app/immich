@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // String uploadEndpoint
-    test('to test the property `uploadEndpoint`', () async {
+    // String uploadDomain
+    test('to test the property `uploadDomain`', () async {
       // TODO
     });
 
