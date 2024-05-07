@@ -68,6 +68,7 @@ part 'model/admin_onboarding_update_dto.dart';
 part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/album_user_add_dto.dart';
+part 'model/album_user_create_dto.dart';
 part 'model/album_user_response_dto.dart';
 part 'model/album_user_role.dart';
 part 'model/all_job_status_response_dto.dart';

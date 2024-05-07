@@ -281,11 +281,11 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
-  async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
+  create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
-  async update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
+  update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
