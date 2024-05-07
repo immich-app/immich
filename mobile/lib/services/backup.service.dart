@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart' as immich_asset_entity;
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
@@ -47,6 +48,17 @@ class BackupService {
       return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
+      return null;
+    }
+  }
+
+  Future<AssetBulkUploadCheckResponseDto?> bulkUploadCheckRequest(Set<immich_asset_entity.Asset > assets) async {
+    try {
+      final assetList = assets.toList();
+      final bulkUploadCheckRequest = assetList.map((e) => AssetBulkUploadCheckItem(checksum: e.checksum, id: e.localId != null ? e.localId! : e.id.toString())).toList();
+      return await _apiService.assetApi.checkBulkUpload(AssetBulkUploadCheckDto(assets: bulkUploadCheckRequest));
+    } catch (e) {
+      debugPrint('Error [bulkUploadCheckRequest] ${e.toString()}');
       return null;
     }
   }
@@ -194,6 +206,8 @@ class BackupService {
         existing.addAll(allAssetsInDatabase);
       }
     }
+    // Checked for duplicates, check for checksum
+    _apiService.assetApi.checkBulkUpload(AssetBulkUploadCheckDto());
     return existing.isEmpty
         ? candidates
         : candidates.whereNot((e) => existing.contains(e.id)).toList();
