@@ -65,6 +65,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     }
 
     xhr.open('POST', url);
+    xhr.withCredentials = true;
     xhr.responseType = 'json';
     xhr.send(data);
   });

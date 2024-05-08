@@ -118,7 +118,9 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
             assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] },
           },
           {
-            baseUrl: uploadDomain,
+            baseUrl: defaults.baseUrl,
+            redirect: 'follow',
+            credentials: 'include',
           },
         );
         if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
