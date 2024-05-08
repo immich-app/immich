@@ -31,7 +31,7 @@ import {
 } from 'src/dtos/asset-v1.dto';
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { sendFile } from 'src/utils/file';
@@ -45,11 +45,9 @@ interface UploadFiles {
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)
-@Authenticated()
 export class AssetControllerV1 {
   constructor(private service: AssetServiceV1) {}
 
-  @SharedLinkRoute()
   @Post('upload')
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
@@ -58,10 +56,8 @@ export class AssetControllerV1 {
     description: 'sha1 checksum that can be used for duplicate detection before the file is uploaded',
     required: false,
   })
-  @ApiBody({
-    description: 'Asset Upload Information',
-    type: CreateAssetDto,
-  })
+  @ApiBody({ description: 'Asset Upload Information', type: CreateAssetDto })
+  @Authenticated({ sharedLink: true })
   async uploadFile(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
@@ -89,9 +85,9 @@ export class AssetControllerV1 {
     return responseDto;
   }
 
-  @SharedLinkRoute()
   @Get('/file/:id')
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   async serveFile(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -102,9 +98,9 @@ export class AssetControllerV1 {
     await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
   }
 
-  @SharedLinkRoute()
   @Get('/thumbnail/:id')
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   async getAssetThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -125,6 +121,7 @@ export class AssetControllerV1 {
     required: false,
     schema: { type: 'string' },
   })
+  @Authenticated()
   getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     return this.service.getAllAssets(auth, dto);
   }
@@ -134,6 +131,7 @@ export class AssetControllerV1 {
    */
   @Post('/exist')
   @HttpCode(HttpStatus.OK)
+  @Authenticated()
   checkExistingAssets(
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
@@ -146,6 +144,7 @@ export class AssetControllerV1 {
    */
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
+  @Authenticated()
   checkBulkUpload(
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,

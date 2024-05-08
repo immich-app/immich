@@ -9,26 +9,29 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Memory')
 @Controller('memories')
-@Authenticated()
 export class MemoryController {
   constructor(private service: MemoryService) {}
 
   @Get()
+  @Authenticated()
   searchMemories(@Auth() auth: AuthDto): Promise<MemoryResponseDto[]> {
     return this.service.search(auth);
   }
 
   @Post()
+  @Authenticated()
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get(':id')
+  @Authenticated()
   getMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MemoryResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
+  @Authenticated()
   updateMemory(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -39,11 +42,13 @@ export class MemoryController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
   deleteMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
   @Put(':id/assets')
+  @Authenticated()
   addMemoryAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -54,6 +59,7 @@ export class MemoryController {
 
   @Delete(':id/assets')
   @HttpCode(HttpStatus.OK)
+  @Authenticated()
   removeMemoryAssets(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,

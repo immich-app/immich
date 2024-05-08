@@ -6,16 +6,17 @@ import { JobService } from 'src/services/job.service';
 
 @ApiTags('Job')
 @Controller('jobs')
-@Authenticated({ admin: true })
 export class JobController {
   constructor(private service: JobService) {}
 
   @Get()
+  @Authenticated({ admin: true })
   getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
     return this.service.getAllJobsStatus();
   }
 
   @Put(':id')
+  @Authenticated({ admin: true })
   sendJobCommand(@Param() { id }: JobIdParamDto, @Body() dto: JobCommandDto): Promise<JobStatusDto> {
     return this.service.handleCommand(id, dto);
   }
