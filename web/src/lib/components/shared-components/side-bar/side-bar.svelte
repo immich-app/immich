@@ -131,19 +131,6 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title="Duplicates" routeId="/(user)/duplicates" icon={mdiArchiveArrowDownOutline}>
-      <svelte:fragment slot="moreInformation">
-        {#await getStats({ isArchived: true })}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
-            <p>{data.images.toLocaleString($locale)} Photos</p>
-          </div>
-        {/await}
-      </svelte:fragment>
-    </SideBarLink>
-
     {#if $featureFlags.trash}
       <SideBarLink title="Trash" routeId="/(user)/trash" icon={mdiTrashCanOutline}>
         <svelte:fragment slot="moreInformation">
