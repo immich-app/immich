@@ -38,6 +38,7 @@ class AlbumUserCreateDto {
   userId!: string;
 
   @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
