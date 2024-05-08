@@ -157,6 +157,26 @@ describe(SearchService.name, () => {
   });
 
   describe('handleSearchDuplicates', () => {
+    it('should skip if machine learning is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      const id = assetStub.livePhotoMotionAsset.id;
+      assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      const result = await sut.handleSearchDuplicates({ id });
+
+      expect(result).toBe(JobStatus.SKIPPED);
+    });
+
+    it('should skip if clip is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
+      const id = assetStub.livePhotoMotionAsset.id;
+      assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      const result = await sut.handleSearchDuplicates({ id });
+
+      expect(result).toBe(JobStatus.SKIPPED);
+    });
+
     it('should fail if asset is not found', async () => {
       const result = await sut.handleSearchDuplicates({ id: assetStub.image.id });
 
