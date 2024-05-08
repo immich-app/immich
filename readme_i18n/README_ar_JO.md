@@ -11,7 +11,7 @@
 <p align="center">
 <img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">High performance self-hosted photo and video management solution</h3>
+<h3 align="center">حل إدارة الصور والفيديو عالي الأداء مستضاف ذاتيًا</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
@@ -30,37 +30,43 @@
   <a href="readme_i18n/README_zh_CN.md">中文</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
   <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
+  <a href="readme_i18n/README_ar_JO.md">العربية</a>
 </p>
 
-## Disclaimer
+## تنصل
 
-- ⚠️ The project is under **very active** development.
-- ⚠️ Expect bugs and breaking changes.
-- ⚠️ **Do not use the app as the only way to store your photos and videos.**
-- ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
+- ⚠️ هذا التطبيق قيد التطوير النشط للغاية
+- ⚠️ توقع الأخطاء والتغييرات العاجلة
+- ⚠️ **لا تستخدم التطبيق باعتباره الطريقة الوحيدة لتخزين الصور ومقاطع الفيديو الخاصة بك**
+- ⚠️ اتبع دائمًا خطة النسخ الاحتياطي [١-٢-٣](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) لصورك ومقاطع الفيديو الثمينة الخاصة بك
 
-## Content
 
-- [Official Documentation](https://immich.app/docs)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Features](#features)
-- [Introduction](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
-- [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
+## محتوى
 
-## Documentation
+- [الوثائق الرسمية](https://immich.app/docs)
+- [خريطة الطريق](https://github.com/orgs/immich-app/projects/1)
+- [تجريبي](#demo)
+- [سمات](#features)
+- [مقدمة](https://immich.app/docs/overview/introduction)
+- [تعليمات التحميل](https://immich.app/docs/install/requirements)
+- [قواعد المساهمة](https://immich.app/docs/overview/support-the-project)
 
-You can find the main documentation, including installation guides, at https://immich.app/.
+## توثيق
 
-## Demo
+يمكنك العثور على الوثائق الرئيسية، بما في ذلك أدلة التثبيت، هنا 
+https://immich.app/
 
-You can access the web demo at https://demo.immich.app
+## تجريبي
 
-For the mobile app, you can use `https://demo.immich.app/api` for the `Server Endpoint URL`
+يمكنك الوصول إلى العرض التوضيحي على الويب على
+https://demo.immich.app
+
+بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام 
+`https://demo.immich.app/api` 
+for the `نقطة نهاية الخادم`
 
 ```bash title="Demo Credential"
-The credential
+تفاصيل تسجيل  الدخول
 email: demo@immich.app
 password: demo
 ```
@@ -69,10 +75,10 @@ password: demo
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
-## Activities
+## نشاط المساهمة
 ![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
-## Features
+## سمات
 
 
 | Features                                     | Mobile | Web |
@@ -106,7 +112,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
 
-## Contributors
+## المساهمين
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
