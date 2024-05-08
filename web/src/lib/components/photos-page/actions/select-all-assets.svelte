@@ -2,7 +2,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { type AssetStore, isSelectingAllAssets } from '$lib/stores/assets.store';
-  import { mdiSelectAll, mdiSelectOff } from '@mdi/js';
+  import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';
   import { selectAllAssets } from '$lib/utils/asset-utils';
 
   export let assetStore: AssetStore;
@@ -19,7 +19,7 @@
 </script>
 
 {#if $isSelectingAllAssets}
-  <CircleIconButton title="Cancel" icon={mdiSelectOff} on:click={handleCancel} />
+  <CircleIconButton title="Unselect all" icon={mdiSelectRemove} on:click={handleCancel} />
 {:else}
   <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
 {/if}
