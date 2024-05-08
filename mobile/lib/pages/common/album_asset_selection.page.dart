@@ -31,10 +31,6 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
-    String buildAssetCountText() {
-      return selected.value.length.toString();
-    }
-
     Widget buildBody(RenderList renderList) {
       return ImmichAssetGrid(
         renderList: renderList,
@@ -63,10 +59,10 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
                 'share_add_photos',
                 style: TextStyle(fontSize: 18),
               ).tr()
-            : Text(
-                buildAssetCountText(),
-                style: const TextStyle(fontSize: 18),
-              ),
+            : const Text(
+                'share_assets_selected',
+                style: TextStyle(fontSize: 18),
+              ).tr(args: [selected.value.length.toString()]),
         centerTitle: false,
         actions: [
           if (selected.value.isNotEmpty || canDeselect)
