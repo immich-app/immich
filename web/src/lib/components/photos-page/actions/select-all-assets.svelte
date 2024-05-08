@@ -14,6 +14,7 @@
 
   const handleCancel = () => {
     $isSelectingAllAssets = false;
+    assetInteractionStore.clearMultiselect();
   };
 </script>
 
