@@ -23,7 +23,6 @@ server/node_modules/
 server/upload/
 server/dist/
 server/www/
-server/test/assets/
 
 web/node_modules/
 web/coverage/
