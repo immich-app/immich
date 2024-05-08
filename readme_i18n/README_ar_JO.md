@@ -54,7 +54,7 @@
 ## توثيق
 
 يمكنك العثور على الوثائق الرئيسية، بما في ذلك أدلة التثبيت، هنا 
-https://immich.app/
+https://immich.app
 
 ## تجريبي
 
@@ -63,7 +63,7 @@ https://demo.immich.app
 
 بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام 
 `https://demo.immich.app/api` 
-for the `نقطة نهاية الخادم`
+ل `نقطة نهاية الخادم`
 
 ```bash title="Demo Credential"
 تفاصيل تسجيل  الدخول
