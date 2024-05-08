@@ -220,51 +220,56 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      appBar: ImmichAppBar(
-        action: sharePartnerButton(),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: buildTopBottons()),
-          if (partner.isNotEmpty)
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+      },
+      child: Scaffold(
+        appBar: ImmichAppBar(
+          action: sharePartnerButton(),
+        ),
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: buildTopBottons()),
+            if (partner.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.all(12),
+                sliver: SliverToBoxAdapter(
+                  child: Text(
+                    "partner_page_title",
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ).tr(),
+                ),
+              ),
+            if (partner.isNotEmpty) PartnerList(partner: partner),
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  "partner_page_title",
+                  "sharing_page_album",
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ).tr(),
               ),
             ),
-          if (partner.isNotEmpty) PartnerList(partner: partner),
-          SliverPadding(
-            padding: const EdgeInsets.all(12),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                "sharing_page_album",
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ).tr(),
-            ),
-          ),
-          SliverLayoutBuilder(
-            builder: (context, constraints) {
-              if (sharedAlbums.isEmpty) {
-                return buildEmptyListIndication();
-              }
+            SliverLayoutBuilder(
+              builder: (context, constraints) {
+                if (sharedAlbums.isEmpty) {
+                  return buildEmptyListIndication();
+                }
 
-              if (constraints.crossAxisExtent < 600) {
-                return buildAlbumList();
-              } else {
-                return buildAlbumGrid();
-              }
-            },
-          ),
-        ],
+                if (constraints.crossAxisExtent < 600) {
+                  return buildAlbumList();
+                } else {
+                  return buildAlbumGrid();
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
