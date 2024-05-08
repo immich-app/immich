@@ -2,7 +2,7 @@
   import { serveFile, type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { getKey } from '$lib/utils';
+  import { getAssetFileUrl, getKey } from '$lib/utils';
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
 
@@ -19,11 +19,11 @@
       : ([undefined, [], false] as [undefined, [], false]);
 
   const loadAssetData = async () => {
+    if (asset.type === AssetTypeEnum.Video) {
+      return { source: getAssetFileUrl(asset.id, false, false) };
+    }
     const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false, key: getKey() });
     const url = URL.createObjectURL(data);
-    if (asset.type === AssetTypeEnum.Video) {
-      return { source: url };
-    }
     return url;
   };
 </script>

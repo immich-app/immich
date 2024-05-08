@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -43,6 +44,7 @@ class CronValidator implements ValidatorConstraintInterface {
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
+const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -202,6 +204,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.LIBRARY]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.NOTIFICATION]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {
@@ -358,6 +366,53 @@ class SystemConfigServerDto {
   loginPageMessage!: string;
 }
 
+class SystemConfigSmtpTransportDto {
+  @IsBoolean()
+  ignoreCert!: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  host!: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(65_535)
+  port!: number;
+
+  @IsString()
+  username!: string;
+
+  @IsString()
+  password!: string;
+}
+
+class SystemConfigSmtpDto {
+  @IsBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isEmailNotificationEnabled)
+  @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
+  from!: string;
+
+  @IsString()
+  replyTo!: string;
+
+  @ValidateIf(isEmailNotificationEnabled)
+  @Type(() => SystemConfigSmtpTransportDto)
+  @ValidateNested()
+  @IsObject()
+  transport!: SystemConfigSmtpTransportDto;
+}
+
+class SystemConfigNotificationsDto {
+  @Type(() => SystemConfigSmtpDto)
+  @ValidateNested()
+  @IsObject()
+  smtp!: SystemConfigSmtpDto;
+}
+
 class SystemConfigStorageTemplateDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -511,6 +566,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   library!: SystemConfigLibraryDto;
+
+  @Type(() => SystemConfigNotificationsDto)
+  @ValidateNested()
+  @IsObject()
+  notifications!: SystemConfigNotificationsDto;
 
   @Type(() => SystemConfigServerDto)
   @ValidateNested()

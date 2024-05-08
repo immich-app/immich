@@ -113,6 +113,7 @@ export const DummyValue = {
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',
   STRING: 'abcdefghi',
+  NUMBER: 50,
   BUFFER: Buffer.from('abcdefghi'),
   DATE: new Date(),
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',

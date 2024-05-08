@@ -2,5 +2,5 @@
 	path = mobile/.isar
 	url = https://github.com/isar/isar
 [submodule "server/test/assets"]
-	path = server/test/assets
+	path = e2e/test-assets
 	url = https://github.com/immich-app/test-assets

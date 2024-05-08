@@ -12,6 +12,7 @@
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   let isShowSelectAvatar = false;
 
@@ -61,15 +62,16 @@
         {#key $user}
           <UserAvatar user={$user} size="xl" />
         {/key}
-        <div
-          class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6 border dark:border-immich-dark-primary bg-immich-primary"
-        >
-          <button
-            class="flex items-center justify-center w-full h-full text-white"
+        <div class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6">
+          <CircleIconButton
+            color="primary"
+            icon={mdiPencil}
+            title="Edit avatar"
+            class="border"
+            size="12"
+            padding="2"
             on:click={() => (isShowSelectAvatar = true)}
-          >
-            <Icon path={mdiPencil} />
-          </button>
+          />
         </div>
       </div>
       <div>

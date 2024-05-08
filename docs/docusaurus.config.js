@@ -77,9 +77,13 @@ const config = {
       },
       announcementBar: {
         id: 'site_announcement_immich',
-        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-        backgroundColor: '#593f00',
-        textColor: '#ffefc9',
+        content:
+          'Immich joins Futo! Read about the announcement <a href="/blog/2024/immich-core-team-goes-fulltime">here</a>.',
+        backgroundColor: '#4250af',
+        textColor: 'white',
+        // content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
+        // backgroundColor: '#593f00',
+        // textColor: '#ffefc9',
         isCloseable: false,
       },
       docs: {

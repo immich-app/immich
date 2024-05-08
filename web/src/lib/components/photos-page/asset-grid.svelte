@@ -47,7 +47,7 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
+  $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
 
   $: {
     void assetStore.updateViewport(viewport);

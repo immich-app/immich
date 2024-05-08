@@ -957,6 +957,9 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] xImmichChecksum:
+  ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
+  ///
   /// * [String] duration:
   ///
   /// * [bool] isArchived:
@@ -965,8 +968,6 @@ class AssetApi {
   ///
   /// * [bool] isOffline:
   ///
-  /// * [bool] isReadOnly:
-  ///
   /// * [bool] isVisible:
   ///
   /// * [String] libraryId:
@@ -974,7 +975,7 @@ class AssetApi {
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -987,6 +988,10 @@ class AssetApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+
+    if (xImmichChecksum != null) {
+      headerParams[r'x-immich-checksum'] = parameterToString(xImmichChecksum);
     }
 
     const contentTypes = <String>['multipart/form-data'];
@@ -1029,10 +1034,6 @@ class AssetApi {
     if (isOffline != null) {
       hasFields = true;
       mp.fields[r'isOffline'] = parameterToString(isOffline);
-    }
-    if (isReadOnly != null) {
-      hasFields = true;
-      mp.fields[r'isReadOnly'] = parameterToString(isReadOnly);
     }
     if (isVisible != null) {
       hasFields = true;
@@ -1081,6 +1082,9 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] xImmichChecksum:
+  ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
+  ///
   /// * [String] duration:
   ///
   /// * [bool] isArchived:
@@ -1089,8 +1093,6 @@ class AssetApi {
   ///
   /// * [bool] isOffline:
   ///
-  /// * [bool] isReadOnly:
-  ///
   /// * [bool] isVisible:
   ///
   /// * [String] libraryId:
@@ -1098,8 +1100,8 @@ class AssetApi {
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
-    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, );
+  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isVisible: isVisible, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

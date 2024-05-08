@@ -33,7 +33,7 @@
       data-testid="context-button-parent"
     >
       <CircleIconButton
-        color="light"
+        color="opaque"
         title="Show album options"
         icon={mdiDotsVertical}
         size="20"

@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool email
+    test('to test the property `email`', () async {
+      // TODO
+    });
+
     // bool facialRecognition
     test('to test the property `facialRecognition`', () async {
       // TODO

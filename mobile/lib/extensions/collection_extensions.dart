@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({
@@ -67,19 +67,6 @@ extension AssetListExtension on Iterable<Asset> {
     if (!onlyOwned) {
       if (errorCallback != null) errorCallback();
       return where((a) => a.ownerId == userId);
-    }
-    return this;
-  }
-
-  /// Returns the assets that are present on a file system which has write permission
-  /// This filters out assets on readOnly external library to which we cannot perform any write operation
-  Iterable<Asset> writableOnly({
-    void Function()? errorCallback,
-  }) {
-    final bool onlyWritable = every((e) => !e.isReadOnly);
-    if (!onlyWritable) {
-      if (errorCallback != null) errorCallback();
-      return where((a) => !a.isReadOnly);
     }
     return this;
   }

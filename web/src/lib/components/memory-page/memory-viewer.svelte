@@ -340,9 +340,12 @@
         class:opacity-0={galleryInView}
         class:opacity-100={!galleryInView}
       >
-        <button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-          <CircleIconButton title="Show gallery" icon={mdiChevronDown} color="light" />
-        </button>
+        <CircleIconButton
+          title="Show gallery"
+          icon={mdiChevronDown}
+          color="light"
+          on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}
+        />
       </div>
 
       <IntersectionObserver
