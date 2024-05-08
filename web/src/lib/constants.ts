@@ -20,6 +20,7 @@ export enum AppRoute {
   ALBUMS = '/albums',
   LIBRARIES = '/libraries',
   ARCHIVE = '/archive',
+  UTILITIES = '/utilities',
   FAVORITES = '/favorites',
   PEOPLE = '/people',
   PLACES = '/places',

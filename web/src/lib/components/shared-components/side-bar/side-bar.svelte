@@ -14,6 +14,7 @@
     mdiImageMultipleOutline,
     mdiMagnify,
     mdiMap,
+    mdiToolboxOutline,
     mdiTrashCanOutline,
   } from '@mdi/js';
   import LoadingSpinner from '../loading-spinner.svelte';
@@ -117,6 +118,8 @@
         {/await}
       </svelte:fragment>
     </SideBarLink>
+
+    <SideBarLink title="Utilities" routeId="/(user)/utilities" icon={mdiToolboxOutline}></SideBarLink>
 
     <SideBarLink title="Archive" routeId="/(user)/archive" icon={mdiArchiveArrowDownOutline}>
       <svelte:fragment slot="moreInformation">
