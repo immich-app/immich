@@ -59,7 +59,7 @@ services:
     env_file:
       - .env
     ports:
-      - 2283:3000
+      - ${IMMICH_PORT:-2283}:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app

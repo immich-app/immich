@@ -18,7 +18,7 @@ services:
     command: ['start.sh', 'immich']
     <<: *server-common
     ports:
-      - 2283:3001
+      - ${IMMICH_PORT:-2283}:3001
     depends_on:
       - redis
       - database
