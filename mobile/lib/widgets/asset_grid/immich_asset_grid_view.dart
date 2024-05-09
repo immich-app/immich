@@ -267,6 +267,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)
                 : const EdgeInsets.only(),
+            heightOffset: appBarOffset() ? 60 : 0,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
             scrollbarTimeToFade: const Duration(milliseconds: 1000),
