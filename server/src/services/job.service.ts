@@ -117,7 +117,7 @@ export class JobService {
       }
 
       case QueueName.DUPLICATE_DETECTION: {
-        await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
+        await this.configCore.requireFeature(FeatureFlag.DUPLICATE_DETECTION);
         return this.jobRepository.queue({ name: JobName.QUEUE_DUPLICATE_DETECTION, data: { force } });
       }
 
