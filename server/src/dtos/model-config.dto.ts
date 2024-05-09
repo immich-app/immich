@@ -29,7 +29,7 @@ export class CLIPConfig extends ModelConfig {
 
 export class DuplicateDetectionConfig extends TaskConfig {
   @IsNumber()
-  @Min(0.01)
+  @Min(0.001)
   @Max(0.1)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'float' })
