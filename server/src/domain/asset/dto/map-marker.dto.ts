@@ -32,7 +32,6 @@ export class MapMarkerDto {
   @Transform(toBoolean)
   withPartners?: boolean;
 
-  @ApiProperty()
   @Optional()
   @IsBoolean()
   @Transform(toBoolean)
