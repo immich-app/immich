@@ -6817,7 +6817,11 @@
       "AlbumUserCreateDto": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
+            "enum": [
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
           },
           "userId": {
             "format": "uuid",
@@ -7558,10 +7562,6 @@
       },
       "CLIPConfig": {
         "properties": {
-          "duplicateThreshold": {
-            "format": "float",
-            "type": "number"
-          },
           "enabled": {
             "type": "boolean"
           },
@@ -7576,7 +7576,6 @@
           }
         },
         "required": [
-          "duplicateThreshold",
           "enabled",
           "modelName"
         ],
@@ -7927,6 +7926,24 @@
         "required": [
           "archives",
           "totalSize"
+        ],
+        "type": "object"
+      },
+      "DuplicateDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 0.3,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
         ],
         "type": "object"
       },
@@ -9437,6 +9454,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9473,6 +9493,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",
@@ -10305,6 +10326,9 @@
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/DuplicateDetectionConfig"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -10317,6 +10341,7 @@
         },
         "required": [
           "clip",
+          "duplicateDetection",
           "enabled",
           "facialRecognition",
           "url"
