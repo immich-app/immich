@@ -1,5 +1,6 @@
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
@@ -18,6 +19,7 @@ import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
+import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
@@ -31,6 +33,7 @@ import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetStackRepository } from 'src/repositories/asset-stack.repository';
@@ -49,6 +52,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetricRepository } from 'src/repositories/metric.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -65,6 +69,7 @@ export const repositories = [
   { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
+  { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },
@@ -81,6 +86,7 @@ export const repositories = [
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMetricRepository, useClass: MetricRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
+  { provide: INotificationRepository, useClass: NotificationRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },

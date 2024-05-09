@@ -124,7 +124,7 @@
     on:submit|preventDefault={search}
     on:reset|preventDefault={resetForm}
   >
-    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar">
+    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar" tabindex="-1">
       <!-- PEOPLE -->
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
@@ -153,8 +153,8 @@
       id="button-row"
       class="flex justify-end gap-4 border-t dark:border-gray-800 dark:bg-immich-dark-gray px-4 sm:py-6 py-4 mt-2 rounded-b-3xl"
     >
-      <Button type="reset" color="gray">CLEAR ALL</Button>
-      <Button type="submit">SEARCH</Button>
+      <Button type="reset" color="gray">Clear all</Button>
+      <Button type="submit">Search</Button>
     </div>
   </form>
 </div>

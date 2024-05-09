@@ -102,7 +102,6 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken, {
         isFavorite: true,
-        isReadOnly: true,
         fileCreatedAt: yesterday.toISO(),
         fileModifiedAt: yesterday.toISO(),
         assetData: { filename: 'example.mp4' },
@@ -1006,7 +1005,7 @@ describe('/asset', () => {
           id: expect.any(String),
           lat: expect.closeTo(39.115),
           lon: expect.closeTo(-108.400_968),
-          state: 'Mesa County, Colorado',
+          state: 'Colorado',
         },
         {
           city: 'Ralston',
@@ -1014,7 +1013,7 @@ describe('/asset', () => {
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
           lon: expect.closeTo(-96.071_625),
-          state: 'Douglas County, Nebraska',
+          state: 'Nebraska',
         },
       ]);
     });
@@ -1033,7 +1032,7 @@ describe('/asset', () => {
           id: expect.any(String),
           lat: expect.closeTo(39.115),
           lon: expect.closeTo(-108.400_968),
-          state: 'Mesa County, Colorado',
+          state: 'Colorado',
         },
         {
           city: 'Ralston',
@@ -1041,7 +1040,7 @@ describe('/asset', () => {
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
           lon: expect.closeTo(-96.071_625),
-          state: 'Douglas County, Nebraska',
+          state: 'Nebraska',
         },
       ]);
     });

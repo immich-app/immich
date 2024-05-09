@@ -15,14 +15,14 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
+  import { mdiArrowLeftThin, mdiMinus, mdiRestart } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import Icon from '../elements/icon.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -36,13 +36,14 @@
   let selectedPersonToReassign: Record<string, PersonResponseDto> = {};
   let selectedPersonToCreate: Record<string, string> = {};
   let editedPerson: PersonResponseDto;
+  let editedFace: AssetFaceResponseDto;
 
   // loading spinners
   let isShowLoadingDone = false;
   let isShowLoadingPeople = false;
 
   // search people
-  let showSeletecFaces = false;
+  let showSelectedFaces = false;
   let allPeople: PersonResponseDto[] = [];
 
   // timers
@@ -155,25 +156,24 @@
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
-    if (newFeaturePhoto && personToUpdate) {
-      selectedPersonToCreate[personToUpdate.id] = newFeaturePhoto;
+    if (newFeaturePhoto) {
+      selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
-    showSeletecFaces = false;
+    showSelectedFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
-    const personToUpdate = peopleWithFaces.find((face) => face.person?.id === editedPerson.id);
-    if (person && personToUpdate) {
-      selectedPersonToReassign[personToUpdate.id] = person;
-      showSeletecFaces = false;
+    if (person) {
+      selectedPersonToReassign[editedFace.id] = person;
     }
+    showSelectedFaces = false;
   };
 
-  const handlePersonPicker = (person: PersonResponseDto | null) => {
-    if (person) {
-      editedPerson = person;
-      showSeletecFaces = true;
+  const handleFacePicker = (face: AssetFaceResponseDto) => {
+    if (face.person) {
+      editedFace = face;
+      editedPerson = face.person;
+      showSelectedFaces = true;
     }
   };
 </script>
@@ -184,14 +184,7 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <button
-        class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-        on:click={handleBackButton}
-      >
-        <div>
-          <Icon path={mdiArrowLeftThin} size="24" />
-        </div>
-      </button>
+      <CircleIconButton icon={mdiArrowLeftThin} title="Back" on:click={handleBackButton} />
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
     </div>
     {#if !isShowLoadingDone}
@@ -273,21 +266,27 @@
                   </p>
                 {/if}
 
-                <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
+                <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full">
                   {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
-                    <button on:click={() => handleReset(face.id)} class="flex h-full w-full">
-                      <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                        <div>
-                          <Icon path={mdiRestart} size={18} />
-                        </div>
-                      </div>
-                    </button>
+                    <CircleIconButton
+                      color="primary"
+                      icon={mdiRestart}
+                      title="Reset"
+                      size="18"
+                      padding="1"
+                      class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                      on:click={() => handleReset(face.id)}
+                    />
                   {:else}
-                    <button on:click={() => handlePersonPicker(face.person)} class="flex h-full w-full">
-                      <div
-                        class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
-                      />
-                    </button>
+                    <CircleIconButton
+                      color="primary"
+                      icon={mdiMinus}
+                      title="Select new face"
+                      size="18"
+                      padding="1"
+                      class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                      on:click={() => handleFacePicker(face)}
+                    />
                   {/if}
                 </div>
               </div>
@@ -299,14 +298,14 @@
   </div>
 </section>
 
-{#if showSeletecFaces}
+{#if showSelectedFaces}
   <AssignFaceSidePanel
     {peopleWithFaces}
     {allPeople}
     {editedPerson}
     {assetType}
     {assetId}
-    on:close={() => (showSeletecFaces = false)}
+    on:close={() => (showSelectedFaces = false)}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}
   />

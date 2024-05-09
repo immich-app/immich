@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **email** | **String** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | 
+**notify** | **bool** |  | [optional] 
 **password** | **String** |  | 
 **quotaSizeInBytes** | **int** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 

@@ -78,6 +78,10 @@ export interface AuthRequest extends Request {
   user?: AuthDto;
 }
 
+export interface AuthenticatedRequest extends Request {
+  user: AuthDto;
+}
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(

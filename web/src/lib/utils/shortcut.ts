@@ -20,7 +20,7 @@ export const shouldIgnoreShortcut = (event: KeyboardEvent): boolean => {
     return false;
   }
   const type = (event.target as HTMLInputElement).type;
-  return ['textarea', 'text'].includes(type);
+  return ['textarea', 'text', 'date', 'datetime-local'].includes(type);
 };
 
 export const matchesShortcut = (event: KeyboardEvent, shortcut: Shortcut) => {

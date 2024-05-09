@@ -1,12 +1,11 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
-  SearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
   SearchPlacesDto,
@@ -22,12 +21,6 @@ import { SearchService } from 'src/services/search.service';
 @Authenticated()
 export class SearchController {
   constructor(private service: SearchService) {}
-
-  @Get()
-  @ApiOperation({ deprecated: true })
-  search(@Auth() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
-    return this.service.search(auth, dto);
-  }
 
   @Post('metadata')
   @HttpCode(HttpStatus.OK)

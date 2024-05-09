@@ -7,6 +7,9 @@ A config file can be provided as an alternative to the UI configuration.
 In JSON format, create a new config file (e.g. `immich.json`) and put it in a location that can be accessed by Immich.
 The default configuration looks like this:
 
+<details>
+<summary>immich.json</summary>
+
 ```json
 {
   "ffmpeg": {
@@ -156,6 +159,8 @@ The default configuration looks like this:
   }
 }
 ```
+
+</details>
 
 :::tip
 In Administration > Settings is a button to copy the current configuration to your clipboard.

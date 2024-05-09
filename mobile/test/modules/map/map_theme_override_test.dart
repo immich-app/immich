@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/map/models/map_state.model.dart';
-import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
-import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
+import 'package:immich_mobile/models/map/map_state.model.dart';
+import 'package:immich_mobile/providers/map/map_state.provider.dart';
+import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 
 import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';

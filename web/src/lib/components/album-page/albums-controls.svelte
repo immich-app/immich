@@ -100,7 +100,7 @@
 
 <!-- Search Albums -->
 <div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
-  <SearchBar placeholder="Search albums" bind:name={searchQuery} isSearching={false} />
+  <SearchBar placeholder="Search albums" bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
 <!-- Create Album -->

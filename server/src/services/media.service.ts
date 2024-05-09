@@ -115,7 +115,7 @@ export class MediaService {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
+          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
         }
 
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
@@ -185,6 +185,10 @@ export class MediaService {
     }
 
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
+    if (asset.previewPath && asset.previewPath !== previewPath) {
+      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.previewPath);
+    }
     await this.assetRepository.update({ id: asset.id, previewPath });
     return JobStatus.SUCCESS;
   }
@@ -206,7 +210,8 @@ export class MediaService {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const imageOptions = { format, size, colorspace, quality: image.quality };
 
-          await this.mediaRepository.resize(useExtracted ? extractedPath : asset.originalPath, path, imageOptions);
+          const outputPath = useExtracted ? extractedPath : asset.originalPath;
+          await this.mediaRepository.generateThumbnail(outputPath, path, imageOptions);
         } finally {
           if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
@@ -253,6 +258,10 @@ export class MediaService {
     }
 
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
+    if (asset.thumbnailPath && asset.thumbnailPath !== thumbnailPath) {
+      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.thumbnailPath);
+    }
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
     return JobStatus.SUCCESS;
   }

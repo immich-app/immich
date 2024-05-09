@@ -72,6 +72,7 @@ describe(JobService.name, () => {
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
         { name: JobName.USER_SYNC_USAGE },
         { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
+        { name: JobName.CLEAN_OLD_SESSION_TOKENS },
       ]);
     });
   });
@@ -119,6 +120,7 @@ describe(JobService.name, () => {
         [QueueName.FACIAL_RECOGNITION]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
         [QueueName.LIBRARY]: expectedJobStatus,
+        [QueueName.NOTIFICATION]: expectedJobStatus,
       });
     });
   });
@@ -251,6 +253,7 @@ describe(JobService.name, () => {
           [QueueName.MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
+          [QueueName.NOTIFICATION]: { concurrency: 5 },
         },
       } as SystemConfig);
 

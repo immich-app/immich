@@ -3,6 +3,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Version } from 'src/utils/version';
 
+export const NEXT_RELEASE = 'NEXT_RELEASE';
+export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
+export const DEPRECATED_IN_PREFIX = 'This property was deprecated in ';
+export const ADDED_IN_PREFIX = 'This property was added in ';
+
 export const SALT_ROUNDS = 10;
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
