@@ -1,7 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/widgets/asset_viewer/hooks/chewiew_controller_hook.dart';
+import 'package:immich_mobile/utils/hooks/chewiew_controller_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:video_player/video_player.dart';
 

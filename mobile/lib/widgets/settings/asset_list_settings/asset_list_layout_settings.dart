@@ -6,7 +6,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/utils/app_settings_update_hook.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({

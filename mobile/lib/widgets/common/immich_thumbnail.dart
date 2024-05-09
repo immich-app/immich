@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/ui/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
