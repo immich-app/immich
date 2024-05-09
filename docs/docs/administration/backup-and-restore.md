@@ -17,6 +17,10 @@ Refer to the official [postgres documentation](https://www.postgresql.org/docs/c
 
 The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if it exists) to reset the database.
 
+:::caution
+It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
+:::
+
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
 
