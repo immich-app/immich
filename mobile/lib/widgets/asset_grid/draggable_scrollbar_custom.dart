@@ -36,6 +36,9 @@ class DraggableScrollbar extends StatefulWidget {
   /// The amount of padding that should surround the thumb
   final EdgeInsetsGeometry? padding;
 
+  /// The height offset of the thumb/bar from the bottom of the page
+  final double? heightOffset;
+
   /// Determines how quickly the scrollbar will animate in and out
   final Duration scrollbarAnimationDuration;
 
@@ -67,6 +70,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
     this.padding,
+    this.heightOffset,
     this.scrollbarAnimationDuration = const Duration(milliseconds: 300),
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
@@ -247,7 +251,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get barMaxScrollExtent =>
-      (context.size?.height ?? 0) - widget.heightScrollThumb;
+      (context.size?.height ?? 0) -
+      widget.heightScrollThumb -
+      (widget.heightOffset ?? 0);
 
   double get barMinScrollExtent => 0;
 
