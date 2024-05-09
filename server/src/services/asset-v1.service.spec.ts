@@ -158,7 +158,7 @@ describe('AssetService', () => {
   });
 
   describe('uploadFile', () => {
-    it('should a file upload', async () => {
+    it('should handle a file upload', async () => {
       const assetEntity = _getAsset_1();
 
       const file = {
@@ -185,7 +185,7 @@ describe('AssetService', () => {
       );
     });
 
-    it('should a duplicate', async () => {
+    it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
         originalPath: 'fake_path/asset_1.jpeg',
@@ -211,7 +211,7 @@ describe('AssetService', () => {
       expect(userMock.updateUsage).not.toHaveBeenCalled();
     });
 
-    it('should a live photo', async () => {
+    it('should handle a live photo', async () => {
       const dto = _getCreateAssetDto();
 
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
@@ -258,8 +258,6 @@ describe('AssetService', () => {
     ) => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: existingAsset.id,
-        ownerId: authStub.user1.user.id,
-        libraryId: existingAsset.libraryId,
         checksum: uploadFile.checksum,
         originalFileName: uploadFile.originalName,
         originalPath: uploadFile.originalPath,
@@ -327,7 +325,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(null);
 
-      await expect(sut.updateFile(authStub.user1, dto, 'id', fileStub.photo)).rejects.toThrow('Not found or no asset.update access');
+      await expect(sut.updateFile(authStub.user1, 'id', dto, fileStub.photo)).rejects.toThrow('Not found or no asset.update access');
 
       expect(assetMock.create).not.toHaveBeenCalled();
     });
@@ -343,7 +341,7 @@ describe('AssetService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile)).resolves.toEqual({
+      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         id: existingAsset.id,
       });
@@ -374,7 +372,7 @@ describe('AssetService', () => {
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
       await expect(
-        sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile, undefined, sidecarFile),
+        sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile, undefined, sidecarFile),
       ).resolves.toEqual({
         duplicate: false,
         id: existingAsset.id,
@@ -403,7 +401,7 @@ describe('AssetService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile)).resolves.toEqual({
+      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         id: existingAsset.id,
       });
@@ -435,7 +433,7 @@ describe('AssetService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, dto, existingAsset.id, updatedFile)).resolves.toEqual({
+      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: true,
         id: existingAsset.id,
       });
@@ -464,7 +462,7 @@ describe('AssetService', () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
 
       await expect(
-        sut.updateFile(authStub.user1, dto, existingAsset.id, fileStub.livePhotoStill, fileStub.livePhotoMotion),
+        sut.updateFile(authStub.user1, existingAsset.id, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
       ).resolves.toEqual({
         duplicate: false,
         id: existingAsset.id,
@@ -515,7 +513,7 @@ describe('AssetService', () => {
       assetMock.create.mockResolvedValueOnce(clonedAsset as AssetEntity);
 
       await expect(
-        sut.updateFile(authStub.user1, dto, existingAsset.id, fileStub.livePhotoStill, fileStub.livePhotoMotion),
+        sut.updateFile(authStub.user1, existingAsset.id, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
       ).resolves.toEqual({
         duplicate: false,
         id: existingAsset.id,
@@ -523,8 +521,9 @@ describe('AssetService', () => {
 
       expectAssetUpdate(existingLivePhotoMotionAsset, fileStub.livePhotoMotion, dto);
       expectAssetCreateFromClone(existingLivePhotoMotionAsset);
-      expectAssetUpdate(existingAsset, fileStub.livePhotoStill, dto, assetStub.livePhotoMotionAsset);
-      expectAssetCreateFromClone({ ...existingAsset, livePhotoVideoId: _getClonedLivePhotoMotionAsset.id });
+      console.log(assetStub.livePhotoMotionAsset)
+      expectAssetUpdate(existingAsset, fileStub.livePhotoStill, dto, _getClonedLivePhotoMotionAsset as AssetEntity);
+      expectAssetCreateFromClone(existingAsset);
       expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getClonedAsset.id]);
       // only soft delete the main asset, not the live photo
       expect(assetMock.softDeleteAll).not.toHaveBeenCalledWith([_getClonedLivePhotoMotionAsset.id]);

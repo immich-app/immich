@@ -94,28 +94,14 @@ export class AssetServiceV1 {
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
-      // clean up files
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
-      });
-
-      // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
-        return { id: duplicate.id, duplicate: true };
-      }
-
-      this.logger.error(`Error uploading file ${error}`, error?.stack);
-      throw error;
+      return await this.handleUploadError(error, auth, file, livePhotoFile, sidecarFile);
     }
   }
 
   public async updateFile(
     auth: AuthDto,
-    dto: UpdateAssetDataDto,
     id: string,
+    dto: UpdateAssetDataDto,
     file: UploadFile,
     livePhotoFile?: UploadFile,
     sidecarFile?: UploadFile,
@@ -150,54 +136,88 @@ export class AssetServiceV1 {
         ? await this.assetRepositoryV1.get(existingAssetEntity.livePhotoVideoId)
         : null;
 
-      let nextLivePhotoId;
-      let backupLivePhotoId = existingLivePhotoAsset?.id || null;
+      let nextLivePhoto: AssetEntity | undefined;
       if (livePhotoFile) {
-        // handle the case where new file has attached livephoto
+        // In this if-branch, handle the case where a new live photo is being uploading at 
+        // same time as primary photo
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         if (existingLivePhotoAsset) {
-          // update existing live photo record with new upload
-          await this.update(auth, existingLivePhotoAsset, livePhotoDto, livePhotoFile);
-          // clone original live photo record
-          const cloned = await this.clone(existingLivePhotoAsset);
-          nextLivePhotoId = existingLivePhotoAsset.id;
-          // original had a live photo, so ensure that the clone of the main asset links to the
-          // clone of the live photo
-          backupLivePhotoId = cloned.id;
+          // In this if-branch primary photo has related live photo and is being updated to new
+          // photo/live-photo together
+
+          // To prevent creating creating multiple records with the same data file (duplicate)
+          // update the existing live photo record first. The original path information is
+          // saved within the local variable existingLivePhotoAsset. 
+
+          // First, update existing live photo record with file data from new upload. 
+          // Note: ASSET_CHECKSUM_CONSTRAINT may be thrown here. Normal cleanup is ok, since the
+          // update did not proceed.
+          await this.updateAssetFileData(existingLivePhotoAsset.id, livePhotoDto, livePhotoFile);
+
+          // Next, create a backup copy of the existing record, to be linked to the backup copy
+          // of the primary photo. Both of these will be immediately trashed. 
+          // Note:  The db record has already been updated above,  but the local variable holds
+          // the original file data paths. 
+          nextLivePhoto = await this.createAssetCopy(existingLivePhotoAsset);
         } else {
-          const createdLivePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
-          nextLivePhotoId = createdLivePhotoAsset.id;
+          // In this else-branch, primary photo does not have related live photo and is being 
+          // updated to new photo/live-photo together
+          // Note: ASSET_CHECKSUM_CONSTRAINT may be thrown here. Normal cleanup is ok, since the
+          // create did not proceed.
+          nextLivePhoto = await this.create(auth, livePhotoDto, livePhotoFile);
         }
       }
-      // update main asset record
-      await this.update(auth, existingAssetEntity, dto, file, nextLivePhotoId, sidecarFile?.originalPath);
-      // clone main asset record
-      const cloned = await this.clone({ ...existingAssetEntity, livePhotoVideoId: backupLivePhotoId });
+      // First, update existing primary photo record with file data from new upload. 
+      // Note: ASSET_CHECKSUM_CONSTRAINT may be thrown here. Additional cleanup may be necessary - transactions 
+      // would make this easier. 
+      try {
+        await this.updateAssetFileData(existingAssetEntity.id, dto, file, nextLivePhoto?.id, sidecarFile?.originalPath);
+      } catch (error: any) {
+        if (livePhotoFile && error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
+          if (existingLivePhotoAsset) {
+            // First, delete the asset-copy
+            nextLivePhoto && await this.assetRepository.remove(nextLivePhoto);
+            // Next, need to revert the update to the live photo file data
+            await this.revertAssetFileData(existingLivePhotoAsset);
+          } else {
+            nextLivePhoto && await this.assetRepository.remove(nextLivePhoto);
+          }
+        }
+        // end of additional handling, rethrow to enter normal error handling flow
+        throw error;
+      }
+      // Next, create a backup copy of the existing record. The db record has already been updated above, 
+      // but the local variable holds the original file data paths. 
+      const copiedPhoto = await this.createAssetCopy(existingAssetEntity);
       // and immediate trash it
-      await this.assetRepository.softDeleteAll([cloned.id]);
-      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [cloned.id]);
+      await this.assetRepository.softDeleteAll([copiedPhoto.id]);
+      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [copiedPhoto.id]);
 
       // original records are already counted in usage, only need to add the deltas
       await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
-      return { id: id, duplicate: false };
+      return { id, duplicate: false };
     } catch (error: any) {
-      // clean up files
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
-      });
-
-      // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
-        return { id: duplicate.id, duplicate: true };
-      }
-
-      this.logger.error(`Error uploading file ${error}`, error?.stack);
-      throw error;
+      return await this.handleUploadError(error, auth, file, livePhotoFile, sidecarFile);
     }
+  }
+
+  private async handleUploadError(error: any, auth: AuthDto, file: UploadFile, livePhotoFile?: UploadFile, sidecarFile?: UploadFile) {
+    // clean up files
+    await this.jobRepository.queue({
+      name: JobName.DELETE_FILES,
+      data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
+    });
+
+    // handle duplicates with a success response
+    if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
+      const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
+      const [duplicate] = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
+      return { id: duplicate.id, duplicate: true };
+    }
+
+    this.logger.error(`Error uploading file ${error}`, error?.stack);
+    throw error;
   }
 
   public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
@@ -358,33 +378,7 @@ export class AssetServiceV1 {
     return library.id;
   }
 
-  /**
-   * Clones (makes a copy) of the specified asset creating a new asset record in the database,
-   * using only vital properties, excluding things like: stacks, faces, smart search info, etc,
-   * and then queues a METADATA_EXTRACTION job.
-   */
-  private async clone(asset: AssetEntity): Promise<AssetEntity> {
-    const created = await this.assetRepository.create({
-      ownerId: asset.ownerId,
-      originalPath: asset.originalPath,
-      originalFileName: asset.originalFileName,
-      libraryId: asset.libraryId,
-      deviceAssetId: asset.deviceAssetId,
-      deviceId: asset.deviceId,
-      type: asset.type,
-      checksum: asset.checksum,
-      fileCreatedAt: asset.fileCreatedAt,
-      localDateTime: asset.localDateTime,
-      fileModifiedAt: asset.fileModifiedAt,
-      livePhotoVideoId: asset.livePhotoVideoId || null,
-      sidecarPath: asset.sidecarPath || null,
-    });
 
-    const { size } = await this.storageRepository.stat(created.originalPath);
-    await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'copy' } });
-    return created;
-  }
 
   private async create(
     auth: AuthDto,
@@ -429,37 +423,34 @@ export class AssetServiceV1 {
   }
 
   /**
-   * Updates the specified asset to vital properties, like device(Asset)?Id, checksum,
-   * file modification, and livePhotoId, and sidecar path. Stacks, and derived properties like:
-   * faces, smart search info, etc are UNTOUCHED. File modification times are updated, exif if
-   * upserted, and then A METADATA_EXTRACTION job is queued to update these derived properties.
+   * Updates the specified assetId to the specified photo data file properties: checksum, path, 
+   * timestamps, deviceIds, sidecar and the related LivePhoto record. Derived properties like:
+   * faces, smart search info, etc are UNTOUCHED. The photo data files modification times on 
+   * the filesysytem are updated to the specified timestamps. The exif db record is upserted, 
+   * and then A METADATA_EXTRACTION job is queued to update these derived properties.
    */
-  private async update(
-    auth: AuthDto,
-    existingEntity: AssetEntity,
+  private async updateAssetFileData(
+    assetId: string,
     dto: UpdateAssetDataDto,
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,
   ): Promise<void> {
     await this.assetRepository.update({
-      id: existingEntity.id,
-      ownerId: auth.user.id,
-      libraryId: existingEntity.libraryId,
+      id: assetId,
 
       checksum: file.checksum,
       originalPath: file.originalPath,
+      type: mimeTypes.assetType(file.originalPath),
+      originalFileName: file.originalName,
 
       deviceAssetId: dto.deviceAssetId,
       deviceId: dto.deviceId,
-
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
       localDateTime: dto.fileCreatedAt,
-
-      type: mimeTypes.assetType(file.originalPath),
       duration: dto.duration || null,
-      originalFileName: file.originalName,
+
       livePhotoVideo: livePhotoAssetId ? ({ id: livePhotoAssetId } as AssetEntity) : null,
       sidecarPath: sidecarPath || null,
     });
@@ -468,12 +459,65 @@ export class AssetServiceV1 {
       await this.storageRepository.utimes(sidecarPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif({ assetId: existingEntity.id, fileSizeInByte: file.size });
+    await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
     await this.jobRepository.queue({
       name: JobName.METADATA_EXTRACTION,
-      data: { id: existingEntity.id, source: 'upload' },
+      data: { id: assetId, source: 'upload' },
     });
   }
+
+  private async revertAssetFileData(asset: AssetEntity): Promise<void> {
+    await this.assetRepository.update({
+      id: asset.id,
+      ownerId: asset.ownerId,
+      originalPath: asset.originalPath,
+      originalFileName: asset.originalFileName,
+      libraryId: asset.libraryId,
+      deviceAssetId: asset.deviceAssetId,
+      deviceId: asset.deviceId,
+      type: asset.type,
+      checksum: asset.checksum,
+      fileCreatedAt: asset.fileCreatedAt,
+      localDateTime: asset.localDateTime,
+      fileModifiedAt: asset.fileModifiedAt,
+      livePhotoVideoId: asset.livePhotoVideoId || null,
+      sidecarPath: asset.sidecarPath || null
+    });
+
+    const { size } = await this.storageRepository.stat(asset.originalPath);
+    await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: size });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+  }
+
+
+  /**
+   * Create a 'shallow' copy of the specified asset record creating a new asset record in the database. 
+   * Uses only vital properties likxcluding things like: stacks, faces, smart search info, etc,
+   * and then queues a METADATA_EXTRACTION job.
+   */
+  private async createAssetCopy(asset: AssetEntity): Promise<AssetEntity> {
+    const created = await this.assetRepository.create({
+      ownerId: asset.ownerId,
+      originalPath: asset.originalPath,
+      originalFileName: asset.originalFileName,
+      libraryId: asset.libraryId,
+      deviceAssetId: asset.deviceAssetId,
+      deviceId: asset.deviceId,
+      type: asset.type,
+      checksum: asset.checksum,
+      fileCreatedAt: asset.fileCreatedAt,
+      localDateTime: asset.localDateTime,
+      fileModifiedAt: asset.fileModifiedAt,
+      livePhotoVideoId: asset.livePhotoVideoId || null,
+      sidecarPath: asset.sidecarPath || null,
+    });
+
+    const { size } = await this.storageRepository.stat(created.originalPath);
+    await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'copy' } });
+    return created;
+  }
+
 
   private requireQuota(auth: AuthDto, size: number) {
     if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {

@@ -63,7 +63,7 @@ function getFiles(files: UploadFiles) {
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetControllerV1 {
-  constructor(private service: AssetServiceV1) {}
+  constructor(private service: AssetServiceV1) { }
 
   @SharedLinkRoute()
   @Post('upload')
@@ -108,7 +108,7 @@ export class AssetControllerV1 {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
     const { file, livePhotoFile, sidecarFile } = getFiles(files);
-    const responseDto = await this.service.updateFile(auth, dto, id, file, livePhotoFile, sidecarFile);
+    const responseDto = await this.service.updateFile(auth, id, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
     }
