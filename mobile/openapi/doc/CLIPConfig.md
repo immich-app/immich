@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**duplicateThreshold** | **double** |  | 
 **enabled** | **bool** |  | 
 **mode** | [**CLIPMode**](CLIPMode.md) |  | [optional] 
 **modelName** | **String** |  | 
