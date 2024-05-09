@@ -78,7 +78,7 @@ The default configuration looks like this:
       "modelName": "ViT-B-32__openai"
     },
     "duplicateDetection": {
-      "enabled": true,
+      "enabled": false,
       "maxDistance": 0.03
     },
     "facialRecognition": {
