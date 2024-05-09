@@ -13,14 +13,11 @@ part of openapi.api;
 class CLIPConfig {
   /// Returns a new [CLIPConfig] instance.
   CLIPConfig({
-    required this.duplicateThreshold,
     required this.enabled,
     this.mode,
     required this.modelName,
     this.modelType,
   });
-
-  double duplicateThreshold;
 
   bool enabled;
 
@@ -44,7 +41,6 @@ class CLIPConfig {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CLIPConfig &&
-    other.duplicateThreshold == duplicateThreshold &&
     other.enabled == enabled &&
     other.mode == mode &&
     other.modelName == modelName &&
@@ -53,18 +49,16 @@ class CLIPConfig {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (duplicateThreshold.hashCode) +
     (enabled.hashCode) +
     (mode == null ? 0 : mode!.hashCode) +
     (modelName.hashCode) +
     (modelType == null ? 0 : modelType!.hashCode);
 
   @override
-  String toString() => 'CLIPConfig[duplicateThreshold=$duplicateThreshold, enabled=$enabled, mode=$mode, modelName=$modelName, modelType=$modelType]';
+  String toString() => 'CLIPConfig[enabled=$enabled, mode=$mode, modelName=$modelName, modelType=$modelType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'duplicateThreshold'] = this.duplicateThreshold;
       json[r'enabled'] = this.enabled;
     if (this.mode != null) {
       json[r'mode'] = this.mode;
@@ -88,7 +82,6 @@ class CLIPConfig {
       final json = value.cast<String, dynamic>();
 
       return CLIPConfig(
-        duplicateThreshold: mapValueOfType<double>(json, r'duplicateThreshold')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         mode: CLIPMode.fromJson(json[r'mode']),
         modelName: mapValueOfType<String>(json, r'modelName')!,
@@ -140,7 +133,6 @@ class CLIPConfig {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'duplicateThreshold',
     'enabled',
     'modelName',
   };

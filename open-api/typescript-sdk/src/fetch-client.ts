@@ -170,7 +170,7 @@ export type AlbumResponseDto = {
     updatedAt: string;
 };
 export type AlbumUserCreateDto = {
-    role: AlbumUserRole;
+    role: Role;
     userId: string;
 };
 export type CreateAlbumDto = {
@@ -751,6 +751,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
     map: boolean;
@@ -925,11 +926,14 @@ export type SystemConfigLoggingDto = {
     level: LogLevel;
 };
 export type ClipConfig = {
-    duplicateThreshold: number;
     enabled: boolean;
     mode?: CLIPMode;
     modelName: string;
     modelType?: ModelType;
+};
+export type DuplicateDetectionConfig = {
+    enabled: boolean;
+    maxDistance: number;
 };
 export type RecognitionConfig = {
     enabled: boolean;
@@ -941,6 +945,7 @@ export type RecognitionConfig = {
 };
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
+    duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: RecognitionConfig;
     url: string;
@@ -2851,6 +2856,10 @@ export enum AssetTypeEnum {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
+}
+export enum Role {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum Error {
     Duplicate = "duplicate",

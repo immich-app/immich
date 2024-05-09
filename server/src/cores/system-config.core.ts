@@ -257,7 +257,8 @@ export class SystemConfigCore {
 
     return {
       [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
-      [FeatureFlag.DUPLICATE_DETECTION]: mlEnabled && config.machineLearning.clip.enabled && config.machineLearning.duplicateDetection.enabled,
+      [FeatureFlag.DUPLICATE_DETECTION]:
+        mlEnabled && config.machineLearning.clip.enabled && config.machineLearning.duplicateDetection.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,

@@ -17,7 +17,7 @@ class AlbumUserCreateDto {
     required this.userId,
   });
 
-  AlbumUserRole role;
+  AlbumUserCreateDtoRoleEnum role;
 
   String userId;
 
@@ -50,7 +50,7 @@ class AlbumUserCreateDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumUserCreateDto(
-        role: AlbumUserRole.fromJson(json[r'role'])!,
+        role: AlbumUserCreateDtoRoleEnum.fromJson(json[r'role'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
@@ -103,4 +103,78 @@ class AlbumUserCreateDto {
     'userId',
   };
 }
+
+
+class AlbumUserCreateDtoRoleEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AlbumUserCreateDtoRoleEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const editor = AlbumUserCreateDtoRoleEnum._(r'editor');
+  static const viewer = AlbumUserCreateDtoRoleEnum._(r'viewer');
+
+  /// List of all possible values in this [enum][AlbumUserCreateDtoRoleEnum].
+  static const values = <AlbumUserCreateDtoRoleEnum>[
+    editor,
+    viewer,
+  ];
+
+  static AlbumUserCreateDtoRoleEnum? fromJson(dynamic value) => AlbumUserCreateDtoRoleEnumTypeTransformer().decode(value);
+
+  static List<AlbumUserCreateDtoRoleEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AlbumUserCreateDtoRoleEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AlbumUserCreateDtoRoleEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AlbumUserCreateDtoRoleEnum] to String,
+/// and [decode] dynamic data back to [AlbumUserCreateDtoRoleEnum].
+class AlbumUserCreateDtoRoleEnumTypeTransformer {
+  factory AlbumUserCreateDtoRoleEnumTypeTransformer() => _instance ??= const AlbumUserCreateDtoRoleEnumTypeTransformer._();
+
+  const AlbumUserCreateDtoRoleEnumTypeTransformer._();
+
+  String encode(AlbumUserCreateDtoRoleEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AlbumUserCreateDtoRoleEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AlbumUserCreateDtoRoleEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'editor': return AlbumUserCreateDtoRoleEnum.editor;
+        case r'viewer': return AlbumUserCreateDtoRoleEnum.viewer;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AlbumUserCreateDtoRoleEnumTypeTransformer] instance.
+  static AlbumUserCreateDtoRoleEnumTypeTransformer? _instance;
+}
+
 

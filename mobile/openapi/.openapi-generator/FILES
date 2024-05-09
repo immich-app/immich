@@ -68,6 +68,7 @@ doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
+doc/DuplicateDetectionConfig.md
 doc/EntityType.md
 doc/ExifResponseDto.md
 doc/FaceApi.md
@@ -308,6 +309,7 @@ lib/model/delete_user_dto.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
+lib/model/duplicate_detection_config.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
 lib/model/face_dto.dart
@@ -501,6 +503,7 @@ test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
+test/duplicate_detection_config_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
 test/face_api_test.dart

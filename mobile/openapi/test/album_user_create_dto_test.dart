@@ -16,7 +16,7 @@ void main() {
   // final instance = AlbumUserCreateDto();
 
   group('test AlbumUserCreateDto', () {
-    // AlbumUserRole role
+    // String role
     test('to test the property `role`', () async {
       // TODO
     });
