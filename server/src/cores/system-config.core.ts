@@ -171,6 +171,7 @@ export const defaults = Object.freeze<SystemConfig>({
 
 export enum FeatureFlag {
   SMART_SEARCH = 'smartSearch',
+  DUPLICATE_DETECTION = 'duplicateDetection',
   FACIAL_RECOGNITION = 'facialRecognition',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
@@ -217,6 +218,9 @@ export class SystemConfigCore {
         case FeatureFlag.SMART_SEARCH: {
           throw new BadRequestException('Smart search is not enabled');
         }
+        case FeatureFlag.DUPLICATE_DETECTION: {
+          throw new BadRequestException('Duplicate detection is not enabled');
+        }
         case FeatureFlag.FACIAL_RECOGNITION: {
           throw new BadRequestException('Facial recognition is not enabled');
         }
@@ -253,6 +257,7 @@ export class SystemConfigCore {
 
     return {
       [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
+      [FeatureFlag.DUPLICATE_DETECTION]: mlEnabled && config.machineLearning.clip.enabled && config.machineLearning.duplicateDetection.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
