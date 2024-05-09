@@ -29,6 +29,7 @@
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
 ## Disclaimer
@@ -39,7 +40,7 @@
 - ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
 
 ## Inhoud
-
+s
 - [Officiële documentatie](https://immich.app/docs)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)

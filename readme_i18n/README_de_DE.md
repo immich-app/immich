@@ -29,6 +29,7 @@
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
 ## Warnung
