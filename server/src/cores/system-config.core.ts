@@ -73,7 +73,10 @@ export const defaults = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
-      duplicateThreshold: 0.03,
+    },
+    duplicateDetection: {
+      enabled: false,
+      maxDistance: 0.03,
     },
     facialRecognition: {
       enabled: true,

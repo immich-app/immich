@@ -4,10 +4,12 @@ import { IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validato
 import { CLIPMode, ModelType } from 'src/interfaces/machine-learning.interface';
 import { Optional, ValidateBoolean } from 'src/validation';
 
-export class ModelConfig {
+export class TaskConfig {
   @ValidateBoolean()
   enabled!: boolean;
+}
 
+export class ModelConfig extends TaskConfig {
   @IsString()
   @IsNotEmpty()
   modelName!: string;
@@ -23,13 +25,15 @@ export class CLIPConfig extends ModelConfig {
   @Optional()
   @ApiProperty({ enumName: 'CLIPMode', enum: CLIPMode })
   mode?: CLIPMode;
+}
 
+export class DuplicateDetectionConfig extends TaskConfig {
   @IsNumber()
   @Min(0.01)
   @Max(0.1)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'float' })
-  duplicateThreshold!: number;
+  maxDistance!: number;
 }
 
 export class RecognitionConfig extends ModelConfig {

@@ -109,7 +109,7 @@ describe(SmartInfoService.name, () => {
       expect(machineMock.encodeImage).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
         { imagePath: assetStub.image.previewPath },
-        { duplicateThreshold: 0.03, enabled: true, modelName: 'ViT-B-32__openai' },
+        { enabled: true, modelName: 'ViT-B-32__openai' },
       );
       expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
     });
