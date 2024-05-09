@@ -157,8 +157,18 @@ describe(SearchService.name, () => {
   });
 
   describe('handleSearchDuplicates', () => {
+    beforeEach(() => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
+      ]);
+    });
+
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
+      ]);
       const id = assetStub.livePhotoMotionAsset.id;
       assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
@@ -167,8 +177,11 @@ describe(SearchService.name, () => {
       expect(result).toBe(JobStatus.SKIPPED);
     });
 
-    it('should skip if clip is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
+    it('should skip if duplicate detection is disabled', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: false },
+      ]);
       const id = assetStub.livePhotoMotionAsset.id;
       assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 

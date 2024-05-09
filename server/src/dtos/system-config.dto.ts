@@ -18,6 +18,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { CLIPConfig, DuplicateDetectionConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -261,6 +262,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   clip!: CLIPConfig;
+
+  @Type(() => DuplicateDetectionConfig)
+  @ValidateNested()
+  @IsObject()
+  duplicateDetection!: DuplicateDetectionConfig;
 
   @Type(() => RecognitionConfig)
   @ValidateNested()

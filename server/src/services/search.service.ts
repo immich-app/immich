@@ -182,7 +182,7 @@ export class SearchService {
 
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!machineLearning.enabled || !machineLearning.duplicateDetection.enabled) {
       return JobStatus.SKIPPED;
     }
 
@@ -210,7 +210,7 @@ export class SearchService {
     const duplicateAssets = await this.searchRepository.searchDuplicates({
       assetId: asset.id,
       embedding: asset.smartSearch.embedding,
-      maxDistance: machineLearning.clip.duplicateThreshold,
+      maxDistance: machineLearning.duplicateDetection.maxDistance,
       userIds: [asset.ownerId],
     });
 
