@@ -60,14 +60,23 @@
   let edittingPerson: PersonResponseDto | null = null;
   let searchedPeopleLocal: PersonResponseDto[] = [];
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
+  let showPeople: PersonResponseDto[] = [];
+  let countVisiblePeople: number;
 
   let innerHeight: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
-  $: showPeople = searchName ? searchedPeopleLocal : people.filter((person) => !person.isHidden);
-  $: countVisiblePeople = countTotalPeople - countHiddenPeople;
+  $: {
+    if (searchName) {
+      showPeople = searchedPeopleLocal;
+      countVisiblePeople = searchedPeopleLocal.length;
+    } else {
+      showPeople = people.filter((person) => !person.isHidden);
+      countVisiblePeople = countTotalPeople - countHiddenPeople;
+    }
+  }
 
   onMount(async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -382,7 +391,7 @@
 
 <UserPageLayout
   title="People"
-  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
