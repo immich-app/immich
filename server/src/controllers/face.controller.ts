@@ -8,16 +8,17 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Face')
 @Controller('face')
-@Authenticated()
 export class FaceController {
   constructor(private service: PersonService) {}
 
   @Get()
+  @Authenticated()
   getFaces(@Auth() auth: AuthDto, @Query() dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     return this.service.getFacesById(auth, dto);
   }
 
   @Put(':id')
+  @Authenticated()
   reassignFacesById(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

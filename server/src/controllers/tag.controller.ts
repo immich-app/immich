@@ -11,41 +11,47 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Tag')
 @Controller('tag')
-@Authenticated()
 export class TagController {
   constructor(private service: TagService) {}
 
   @Post()
+  @Authenticated()
   createTag(@Auth() auth: AuthDto, @Body() dto: CreateTagDto): Promise<TagResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
+  @Authenticated()
   getAllTags(@Auth() auth: AuthDto): Promise<TagResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Get(':id')
+  @Authenticated()
   getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Patch(':id')
+  @Authenticated()
   updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateTagDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
+  @Authenticated()
   deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
   @Get(':id/assets')
+  @Authenticated()
   getTagAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
   }
 
   @Put(':id/assets')
+  @Authenticated()
   tagAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -55,6 +61,7 @@ export class TagController {
   }
 
   @Delete(':id/assets')
+  @Authenticated()
   untagAssets(
     @Auth() auth: AuthDto,
     @Body() dto: AssetIdsDto,

@@ -5814,15 +5814,6 @@
           },
           {
             "api_key": []
-          },
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
           }
         ],
         "tags": [
@@ -5942,15 +5933,6 @@
           }
         },
         "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          },
           {
             "bearer": []
           },
