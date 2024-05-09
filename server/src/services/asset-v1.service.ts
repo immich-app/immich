@@ -121,9 +121,10 @@ export class AssetServiceV1 {
     sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
     try {
+      await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = await this.assetRepositoryV1.get(id);
       if (!existingAssetEntity) {
-        throw new NotFoundException('Asset does not exist');
+        throw new BadRequestException('Asset not found');
       }
 
       if (livePhotoFile) {
@@ -381,7 +382,7 @@ export class AssetServiceV1 {
 
     const { size } = await this.storageRepository.stat(created.originalPath);
     await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'clone' } });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'copy' } });
     return created;
   }
 

@@ -327,7 +327,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(null);
 
-      await expect(sut.updateFile(authStub.user1, dto, 'id', fileStub.photo)).rejects.toThrow('Asset does not exist');
+      await expect(sut.updateFile(authStub.user1, dto, 'id', fileStub.photo)).rejects.toThrow('Not found or no asset.update access');
 
       expect(assetMock.create).not.toHaveBeenCalled();
     });
@@ -337,6 +337,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
@@ -366,6 +367,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
@@ -395,6 +397,7 @@ describe('AssetService', () => {
       const dto = _getUpdateAssetDto();
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
@@ -426,6 +429,7 @@ describe('AssetService', () => {
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([existingAsset]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
@@ -457,6 +461,7 @@ describe('AssetService', () => {
       const clonedAsset = _getClonedAsset as AssetEntity;
       assetMock.create.mockResolvedValueOnce(clonedAsset);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
 
       await expect(
         sut.updateFile(authStub.user1, dto, existingAsset.id, fileStub.livePhotoStill, fileStub.livePhotoMotion),
@@ -476,7 +481,7 @@ describe('AssetService', () => {
           },
         ],
         [{ name: JobName.METADATA_EXTRACTION, data: { id: existingAsset.id, source: 'upload' } }],
-        [{ name: JobName.METADATA_EXTRACTION, data: { id: clonedAsset.id, source: 'clone' } }],
+        [{ name: JobName.METADATA_EXTRACTION, data: { id: clonedAsset.id, source: 'copy' } }],
       ]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, 111);
       expect(storageMock.utimes).toHaveBeenCalledWith(
@@ -495,6 +500,7 @@ describe('AssetService', () => {
       const existingAsset = _getExistingLivePhotoStillAsset;
       const dto = _getUpdateAssetDto();
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the existing asset
       assetRepositoryMockV1.get.mockResolvedValueOnce(existingAsset);
       // this is the existing live photo
