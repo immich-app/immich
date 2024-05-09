@@ -91,6 +91,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   int _hapticFeedbackTS = 0;
   DateTime? _prevItemTime;
   bool _scrolling = false;
+  bool _offset = true;
   final Set<Asset> _selectedAssets =
       LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
 
@@ -267,6 +268,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)
                 : const EdgeInsets.only(),
+            heightOffset: 60,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
             scrollbarTimeToFade: const Duration(milliseconds: 1000),
