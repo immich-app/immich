@@ -31,13 +31,13 @@ void main() {
       // TODO
     });
 
-    // bool isWatched
-    test('to test the property `isWatched`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 
-    // String name
-    test('to test the property `name`', () async {
+    // String ownerId
+    test('to test the property `ownerId`', () async {
       // TODO
     });
 

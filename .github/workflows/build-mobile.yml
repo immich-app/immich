@@ -37,15 +37,15 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
-          java-version: "11.0.21+9"
-          cache: "gradle"
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.16.9"
+          channel: 'stable'
+          flutter-version: '3.19.3'
           cache: true
 
       - name: Create the Keystore

@@ -21,16 +21,6 @@ void main() {
       // TODO
     });
 
-    // int interval
-    test('to test the property `interval`', () async {
-      // TODO
-    });
-
-    // bool usePolling
-    test('to test the property `usePolling`', () async {
-      // TODO
-    });
-
 
   });
 

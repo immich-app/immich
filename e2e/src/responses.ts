@@ -65,7 +65,6 @@ export const signupResponseDto = {
     name: 'Immich Admin',
     email: 'admin@immich.cloud',
     storageLabel: 'admin',
-    externalPath: null,
     profileImagePath: '',
     // why? lol
     shouldChangePassword: true,
@@ -77,6 +76,7 @@ export const signupResponseDto = {
     memoriesEnabled: true,
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,
+    status: 'active',
   },
 };
 

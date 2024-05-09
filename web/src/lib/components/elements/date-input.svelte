@@ -6,19 +6,15 @@
   }
 
   export let value: $$Props['value'] = undefined;
+
+  // Updating `value` directly causes the date input to reset itself or
+  // interfere with user changes.
   $: updatedValue = value;
 </script>
 
 <input
   {...$$restProps}
   {value}
-  on:input={(e) => {
-    updatedValue = e.currentTarget.value;
-
-    // Only update when value is not empty to prevent resetting the input
-    if (updatedValue !== '') {
-      value = updatedValue;
-    }
-  }}
+  on:input={(e) => (updatedValue = e.currentTarget.value)}
   on:blur={() => (value = updatedValue)}
 />

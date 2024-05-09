@@ -4,12 +4,18 @@ import { writable } from 'svelte/store';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
+  const preloadAssets = writable<AssetResponseDto[]>([]);
   const viewState = writable<boolean>(false);
 
-  const setAssetId = async (id: string) => {
-    const data = await getAssetInfo({ id, key: getKey() });
-    viewingAssetStoreState.set(data);
+  const setAsset = (asset: AssetResponseDto, assetsToPreload: AssetResponseDto[] = []) => {
+    preloadAssets.set(assetsToPreload);
+    viewingAssetStoreState.set(asset);
     viewState.set(true);
+  };
+
+  const setAssetId = async (id: string) => {
+    const asset = await getAssetInfo({ id, key: getKey() });
+    setAsset(asset);
   };
 
   const showAssetViewer = (show: boolean) => {
@@ -20,10 +26,14 @@ function createAssetViewingStore() {
     asset: {
       subscribe: viewingAssetStoreState.subscribe,
     },
+    preloadAssets: {
+      subscribe: preloadAssets.subscribe,
+    },
     isViewing: {
       subscribe: viewState.subscribe,
       set: viewState.set,
     },
+    setAsset,
     setAssetId,
     showAssetViewer,
   };

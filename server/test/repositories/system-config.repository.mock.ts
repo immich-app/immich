@@ -1,15 +1,17 @@
-import { ISystemConfigRepository, SystemConfigCore } from '@app/domain';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newSystemConfigRepositoryMock = (reset = true): jest.Mocked<ISystemConfigRepository> => {
+export const newSystemConfigRepositoryMock = (reset = true): Mocked<ISystemConfigRepository> => {
   if (reset) {
     SystemConfigCore.reset();
   }
 
   return {
-    fetchStyle: jest.fn(),
-    load: jest.fn().mockResolvedValue([]),
-    readFile: jest.fn(),
-    saveAll: jest.fn().mockResolvedValue([]),
-    deleteKeys: jest.fn(),
+    fetchStyle: vitest.fn(),
+    load: vitest.fn().mockResolvedValue([]),
+    readFile: vitest.fn(),
+    saveAll: vitest.fn().mockResolvedValue([]),
+    deleteKeys: vitest.fn(),
   };
 };

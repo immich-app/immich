@@ -19,6 +19,7 @@ class ServerConfigDto {
     required this.loginPageMessage,
     required this.oauthButtonText,
     required this.trashDays,
+    required this.userDeleteDelay,
   });
 
   String externalDomain;
@@ -33,6 +34,8 @@ class ServerConfigDto {
 
   int trashDays;
 
+  int userDeleteDelay;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
     other.externalDomain == externalDomain &&
@@ -40,7 +43,8 @@ class ServerConfigDto {
     other.isOnboarded == isOnboarded &&
     other.loginPageMessage == loginPageMessage &&
     other.oauthButtonText == oauthButtonText &&
-    other.trashDays == trashDays;
+    other.trashDays == trashDays &&
+    other.userDeleteDelay == userDeleteDelay;
 
   @override
   int get hashCode =>
@@ -50,10 +54,11 @@ class ServerConfigDto {
     (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
     (oauthButtonText.hashCode) +
-    (trashDays.hashCode);
+    (trashDays.hashCode) +
+    (userDeleteDelay.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -63,6 +68,7 @@ class ServerConfigDto {
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'oauthButtonText'] = this.oauthButtonText;
       json[r'trashDays'] = this.trashDays;
+      json[r'userDeleteDelay'] = this.userDeleteDelay;
     return json;
   }
 
@@ -80,6 +86,7 @@ class ServerConfigDto {
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
+        userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
       );
     }
     return null;
@@ -133,6 +140,7 @@ class ServerConfigDto {
     'loginPageMessage',
     'oauthButtonText',
     'trashDays',
+    'userDeleteDelay',
   };
 }
 

@@ -10,7 +10,7 @@ If foreground backup is enabled: whenever the app is opened or resumed, it will 
 
 ## Background backup
 
-Background backup is available thanks to the contribution effort of [@zoodyy](https://github.com/zoodyy) and [@martyfuhry](https://github.com/martyfuhry).
+Background backup is available thanks to the contribution effort of [@fyfrey](https://github.com/fyfrey) and [@martyfuhry](https://github.com/martyfuhry).
 
 If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the cloud. If there are, it will upload them to the cloud in the background.
 

@@ -1,27 +1,28 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import { BucketPosition, isSelectingAllAssets, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { selectAllAssets } from '$lib/utils/asset-utils';
+  import { navigate } from '$lib/utils/navigation';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -39,30 +40,28 @@
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
   const viewport: Viewport = { width: 0, height: 0 };
-  let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets } = assetViewingStore;
   let element: HTMLElement;
   let showShortcuts = false;
   let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets].filter((a) => !a.isExternal).map((a) => a.id);
+  $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
+
+  $: {
+    void assetStore.updateViewport(viewport);
+  }
 
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
-  const onKeydown = (event: KeyboardEvent) => handlePromiseError(handleKeyboardPress(event));
   onMount(async () => {
     showSkeleton = false;
-    document.addEventListener('keydown', onKeydown);
     assetStore.connect();
     await assetStore.init(viewport);
   });
 
   onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeydown);
-    }
-
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
@@ -72,54 +71,61 @@
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
     assetInteractionStore.clearMultiselect();
   };
 
-  const handleKeyboardPress = async (event: KeyboardEvent) => {
-    if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
+  const onDelete = () => {
+    const hasTrashedAsset = Array.from($selectedAssets).some((asset) => asset.isTrashed);
+
+    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
+      isShowDeleteConfirmation = true;
       return;
     }
+    handlePromiseError(trashOrDelete(hasTrashedAsset));
+  };
 
-    const key = event.key;
-    const shiftKey = event.shiftKey;
+  const onForceDelete = () => {
+    if ($showDeleteModal) {
+      isShowDeleteConfirmation = true;
+      return;
+    }
+    handlePromiseError(trashOrDelete(true));
+  };
 
-    if (!$showAssetViewer) {
-      switch (key) {
-        case 'Escape': {
-          dispatch('escape');
-          return;
-        }
-        case '?': {
-          if (event.shiftKey) {
-            event.preventDefault();
-            showShortcuts = !showShortcuts;
-          }
-          return;
-        }
-        case '/': {
-          event.preventDefault();
-          await goto(AppRoute.EXPLORE);
-          return;
-        }
-        case 'Delete': {
-          if ($isMultiSelectState) {
-            let force = false;
-            if (shiftKey || !isTrashEnabled) {
-              if ($showDeleteModal) {
-                isShowDeleteConfirmation = true;
-                return;
-              }
-              force = true;
-            }
-
-            await trashOrDelete(force);
-          }
-          return;
-        }
-      }
+  const onStackAssets = async () => {
+    const ids = await stackAssets(Array.from($selectedAssets));
+    if (ids) {
+      assetStore.removeAssets(ids);
+      dispatch('escape');
     }
   };
+
+  $: shortcutList = (() => {
+    if ($isSearchEnabled || $showAssetViewer) {
+      return [];
+    }
+
+    const shortcuts: ShortcutOptions[] = [
+      { shortcut: { key: 'Escape' }, onShortcut: () => dispatch('escape') },
+      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
+      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
+      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = viewport.height) },
+    ];
+
+    if ($isMultiSelectState) {
+      shortcuts.push(
+        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+      );
+    }
+
+    return shortcuts;
+  })();
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!assetStore.albumAssets.has(asset.id)) {
@@ -141,18 +147,24 @@
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await assetStore.getPreviousAssetId($viewingAsset.id);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
+
     if (previousAsset) {
-      await assetViewingStore.setAssetId(previousAsset);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
+      assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
 
     return !!previousAsset;
   };
 
   const handleNext = async () => {
-    const nextAsset = await assetStore.getNextAssetId($viewingAsset.id);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset);
+
     if (nextAsset) {
-      await assetViewingStore.setAssetId(nextAsset);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset);
+      assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
 
     return !!nextAsset;
@@ -164,12 +176,13 @@
     switch (action) {
       case removeAction:
       case AssetAction.TRASH:
+      case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
-        assetStore.removeAsset(asset.id);
+        assetStore.removeAssets([asset.id]);
         break;
       }
 
@@ -177,12 +190,12 @@
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
       case AssetAction.UNFAVORITE: {
-        assetStore.updateAsset(asset);
+        assetStore.updateAssets([asset]);
         break;
       }
 
       case AssetAction.ADD: {
-        assetStore.addAsset(asset);
+        assetStore.addAssets([asset]);
         break;
       }
     }
@@ -210,24 +223,29 @@
 
   let shiftKeyIsDown = false;
 
-  const onKeyDown = (e: KeyboardEvent) => {
+  const deselectAllAssets = () => {
+    $isSelectingAllAssets = false;
+    assetInteractionStore.clearMultiselect();
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
     if ($isSearchEnabled) {
       return;
     }
 
-    if (e.key == 'Shift') {
-      e.preventDefault();
+    if (event.key === 'Shift') {
+      event.preventDefault();
       shiftKeyIsDown = true;
     }
   };
 
-  const onKeyUp = (e: KeyboardEvent) => {
+  const onKeyUp = (event: KeyboardEvent) => {
     if ($isSearchEnabled) {
       return;
     }
 
-    if (e.key == 'Shift') {
-      e.preventDefault();
+    if (event.key === 'Shift') {
+      event.preventDefault();
       shiftKeyIsDown = false;
     }
   };
@@ -364,7 +382,7 @@
   };
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
+<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -388,7 +406,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
@@ -414,7 +432,7 @@
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
-      {#each $assetStore.buckets as bucket, bucketIndex (bucketIndex)}
+      {#each $assetStore.buckets as bucket (bucket.bucketDate)}
         <IntersectionObserver
           on:intersected={intersectedHandler}
           on:hidden={() => assetStore.cancelBucket(bucket)}
@@ -451,17 +469,20 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetViewer
-      {withStacked}
-      {assetStore}
-      asset={$viewingAsset}
-      {isShared}
-      {album}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={handleClose}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-    />
+    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        {withStacked}
+        {assetStore}
+        asset={$viewingAsset}
+        preloadAssets={$preloadAssets}
+        {isShared}
+        {album}
+        on:previous={handlePrevious}
+        on:next={handleNext}
+        on:close={handleClose}
+        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      />
+    {/await}
   {/if}
 </Portal>
 

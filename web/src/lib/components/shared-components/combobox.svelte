@@ -11,74 +11,186 @@
 
 <script lang="ts">
   import { fly } from 'svelte/transition';
-
   import Icon from '$lib/components/elements/icon.svelte';
-  import { clickOutside } from '$lib/utils/click-outside';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
-  import IconButton from '../elements/buttons/icon-button.svelte';
+  import { createEventDispatcher, tick } from 'svelte';
+  import type { FormEventHandler } from 'svelte/elements';
+  import { shortcuts } from '$lib/utils/shortcut';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import { focusOutside } from '$lib/utils/focus-outside';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
-  export let id: string | undefined = undefined;
+  /**
+   * Unique identifier for the combobox.
+   */
+  export let id: string;
+  export let label: string;
+  export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined;
   export let placeholder = '';
 
+  /**
+   * Indicates whether or not the dropdown autocomplete list should be visible.
+   */
   let isOpen = false;
+  /**
+   * Keeps track of whether the combobox is actively being used.
+   */
+  let isActive = false;
   let searchQuery = selectedOption?.label || '';
+  let selectedIndex: number | undefined;
+  let optionRefs: HTMLElement[] = [];
+  let input: HTMLInputElement;
+  const inputId = `combobox-${id}`;
+  const listboxId = `listbox-${id}`;
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  $: {
+    searchQuery = selectedOption ? selectedOption.label : '';
+  }
+
   const dispatch = createEventDispatcher<{
     select: ComboBoxOption | undefined;
-    click: void;
   }>();
 
-  const handleClick = () => {
-    searchQuery = '';
+  const activate = () => {
+    isActive = true;
+    openDropdown();
+  };
+
+  const deactivate = () => {
+    searchQuery = selectedOption ? selectedOption.label : '';
+    isActive = false;
+    closeDropdown();
+  };
+
+  const openDropdown = () => {
     isOpen = true;
-    dispatch('click');
   };
 
-  let handleOutClick = () => {
+  const closeDropdown = () => {
     isOpen = false;
+    selectedIndex = undefined;
   };
 
-  let handleSelect = (option: ComboBoxOption) => {
+  const incrementSelectedIndex = async (increment: number) => {
+    if (filteredOptions.length === 0) {
+      selectedIndex = 0;
+    } else if (selectedIndex === undefined) {
+      selectedIndex = increment === 1 ? 0 : filteredOptions.length - 1;
+    } else {
+      selectedIndex = (selectedIndex + increment + filteredOptions.length) % filteredOptions.length;
+    }
+    await tick();
+    optionRefs[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  const onInput: FormEventHandler<HTMLInputElement> = (event) => {
+    openDropdown();
+    searchQuery = event.currentTarget.value;
+    selectedIndex = undefined;
+    optionRefs[0]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  let onSelect = (option: ComboBoxOption) => {
     selectedOption = option;
+    searchQuery = option.label;
     dispatch('select', option);
-    isOpen = false;
+    closeDropdown();
   };
 
   const onClear = () => {
+    input?.focus();
+    selectedIndex = undefined;
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
   };
 </script>
 
-<div class="relative w-full dark:text-gray-300 text-gray-700 text-base" use:clickOutside on:outclick={handleOutClick}>
+<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<div
+  class="relative w-full dark:text-gray-300 text-gray-700 text-base"
+  use:clickOutside={{ onOutclick: deactivate }}
+  use:focusOutside={{ onFocusOut: deactivate }}
+  use:shortcuts={[
+    {
+      shortcut: { key: 'Escape' },
+      onShortcut: (event) => {
+        event.stopPropagation();
+        closeDropdown();
+      },
+    },
+  ]}
+>
   <div>
-    {#if isOpen}
+    {#if isActive}
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
         <div class="dark:text-immich-dark-fg/75">
-          <Icon path={mdiMagnify} />
+          <Icon path={mdiMagnify} ariaHidden={true} />
         </div>
       </div>
     {/if}
 
     <input
-      {id}
       {placeholder}
-      role="combobox"
+      aria-activedescendant={selectedIndex || selectedIndex === 0 ? `${listboxId}-${selectedIndex}` : ''}
+      aria-autocomplete="list"
+      aria-controls={listboxId}
       aria-expanded={isOpen}
-      aria-controls={id}
-      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
-      class:!pl-8={isOpen}
+      autocomplete="off"
+      bind:this={input}
+      class:!pl-8={isActive}
       class:!rounded-b-none={isOpen}
-      class:cursor-pointer={!isOpen}
-      value={isOpen ? '' : selectedOption?.label || ''}
-      on:input={(e) => (searchQuery = e.currentTarget.value)}
-      on:focus={handleClick}
+      class:cursor-pointer={!isActive}
+      class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
+      id={inputId}
+      on:click={activate}
+      on:focus={activate}
+      on:input={onInput}
+      role="combobox"
+      type="text"
+      value={searchQuery}
+      use:shortcuts={[
+        {
+          shortcut: { key: 'ArrowUp' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(-1);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowDown' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(1);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowDown', alt: true },
+          onShortcut: () => {
+            openDropdown();
+          },
+        },
+        {
+          shortcut: { key: 'Enter' },
+          onShortcut: () => {
+            if (selectedIndex !== undefined && filteredOptions.length > 0) {
+              onSelect(filteredOptions[selectedIndex]);
+            }
+            closeDropdown();
+          },
+        },
+        {
+          shortcut: { key: 'Escape' },
+          onShortcut: (event) => {
+            event.stopPropagation();
+            closeDropdown();
+          },
+        },
+      ]}
     />
 
     <div
@@ -87,38 +199,48 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <IconButton color="transparent-gray" on:click={onClear} title="Clear value">
-          <Icon path={mdiClose} />
-        </IconButton>
+        <CircleIconButton on:click={onClear} title="Clear value" icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
-        <Icon path={mdiUnfoldMoreHorizontal} />
+        <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
     </div>
   </div>
 
-  {#if isOpen}
-    <div
-      role="listbox"
-      transition:fly={{ duration: 250 }}
-      class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 rounded-b-lg border border-t-0 border-gray-300 dark:border-gray-900 z-10"
-    >
+  <ul
+    role="listbox"
+    id={listboxId}
+    transition:fly={{ duration: 250 }}
+    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
+    class:border={isOpen}
+    tabindex="-1"
+  >
+    {#if isOpen}
       {#if filteredOptions.length === 0}
-        <div class="px-4 py-2 font-medium">No results</div>
-      {/if}
-      {#each filteredOptions as option (option.label)}
-        {@const selected = option.label === selectedOption?.label}
-        <button
-          type="button"
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <li
           role="option"
-          aria-selected={selected}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-          class:bg-gray-300={selected}
-          class:dark:bg-gray-600={selected}
-          on:click={() => handleSelect(option)}
+          aria-selected={selectedIndex === 0}
+          aria-disabled={true}
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+          id={`${listboxId}-${0}`}
+          on:click={() => closeDropdown()}
+        >
+          No results
+        </li>
+      {/if}
+      {#each filteredOptions as option, index (option.label)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <li
+          aria-selected={index === selectedIndex}
+          bind:this={optionRefs[index]}
+          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+          id={`${listboxId}-${index}`}
+          on:click={() => onSelect(option)}
+          role="option"
         >
           {option.label}
-        </button>
+        </li>
       {/each}
-    </div>
-  {/if}
+    {/if}
+  </ul>
 </div>

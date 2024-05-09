@@ -1,7 +1,7 @@
-Immich allows the admin user to set the uploaded filename pattern. Both at the directory and filename level.
+Immich allows the admin user to set the uploaded filename pattern at the directory and filename level as well as the [storage label for a user](/docs/administration/user-management/#set-storage-label-for-user).
 
 :::note new version
-On new machines running version 1.92.0 storage template engine is off by default, for [more info](https://github.com/immich-app/immich/releases#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
+On new machines running version 1.92.0 storage template engine is off by default, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
 :::
 
 :::tip
@@ -13,6 +13,12 @@ The admin user can set the template by using the template builder in the `Admini
 ```bash title="Default template"
 Year/Year-Month-Day/Filename.Extension
 ```
+
+If you want to change the storage template during the initial setup, first enable the feature.
+
+<img src={require('./img/enable-storage-template.png').default} width="100%" title="Enable Storage Template Setting" />
+
+Then, customize your storage template.
 
 <img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
 

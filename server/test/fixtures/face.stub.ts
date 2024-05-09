@@ -1,6 +1,6 @@
-import { AssetFaceEntity } from '@app/infra/entities';
-import { assetStub } from './asset.stub';
-import { personStub } from './person.stub';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { personStub } from 'test/fixtures/person.stub';
 
 type NonNullableProperty<T> = { [P in keyof T]: NonNullable<T[P]> };
 

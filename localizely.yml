@@ -30,6 +30,8 @@ download:
       locale_code: pl-PL
     - file: mobile/assets/i18n/fi-FI.json
       locale_code: fi-FI
+    - file: mobile/assets/i18n/pt-BR.json
+      locale_code: pt-BR
     - file: mobile/assets/i18n/pt-PT.json
       locale_code: pt-PT
     - file: mobile/assets/i18n/pt-BR.json
@@ -66,13 +68,31 @@ download:
       locale_code: es-MX
     - file: mobile/assets/i18n/sv-FI.json
       locale_code: sv-FI
-    - file: mobile/assets/i18n/ca.json
-      locale_code: ca
+    - file: mobile/assets/i18n/ca-CA.json
+      locale_code: ca-CA
     - file: mobile/assets/i18n/hu-HU.json
       locale_code: hu-HU
     - file: mobile/assets/i18n/lv-LV.json
       locale_code: lv-LV
     - file: mobile/assets/i18n/zh-Hans.json
       locale_code: zh-Hans
+    - file: mobile/assets/i18n/zh-TW.json
+      locale_code: zh-TW
     - file: mobile/assets/i18n/th-TH.json
       locale_code: th-TH
+    - file: mobile/assets/i18n/lt-LT.json
+      locale_code: lt-LT
+    - file: mobile/assets/i18n/el-GR.json
+      locale_code: el-GR
+    - file: mobile/assets/i18n/fr-CA.json
+      locale_code: fr-CA
+    - file: mobile/assets/i18n/es-US.json
+      locale_code: es-US
+    - file: mobile/assets/i18n/sl-SI.json
+      locale_code: sl-SI
+    - file: mobile/assets/i18n/ar-JO.json
+      locale_code: ar-JO
+    - file: mobile/assets/i18n/he-IL.json
+      locale_code: he-IL
+    - file: mobile/assets/i18n/ro-RO.json
+      locale_code: ro-RO

@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigImageDto image
+    test('to test the property `image`', () async {
+      // TODO
+    });
+
     // SystemConfigJobDto job
     test('to test the property `job`', () async {
       // TODO
@@ -48,6 +53,11 @@ void main() {
 
     // SystemConfigNewVersionCheckDto newVersionCheck
     test('to test the property `newVersionCheck`', () async {
+      // TODO
+    });
+
+    // SystemConfigNotificationsDto notifications
+    test('to test the property `notifications`', () async {
       // TODO
     });
 
@@ -81,13 +91,13 @@ void main() {
       // TODO
     });
 
-    // SystemConfigThumbnailDto thumbnail
-    test('to test the property `thumbnail`', () async {
+    // SystemConfigTrashDto trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 
-    // SystemConfigTrashDto trash
-    test('to test the property `trash`', () async {
+    // SystemConfigUserDto user
+    test('to test the property `user`', () async {
       // TODO
     });
 

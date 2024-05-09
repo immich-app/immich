@@ -16,4 +16,4 @@ max_line_length = off
 trim_trailing_whitespace = false
 
 [*.{yml,yaml}]
-quote_type = double
+quote_type = single

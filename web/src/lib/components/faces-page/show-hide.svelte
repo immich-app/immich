@@ -2,11 +2,11 @@
   import { fly } from 'svelte/transition';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { quintOut } from 'svelte/easing';
-  import IconButton from '../elements/buttons/icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
   import { locale } from '$lib/stores/preferences.store';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -29,7 +29,7 @@
     class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
-      <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+      <CircleIconButton title="Close" icon={mdiClose} on:click={() => dispatch('close')} />
       <div class="flex gap-2 items-center">
         <p class="ml-2">Show & hide people</p>
         <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>
@@ -45,7 +45,7 @@
         />
       </div>
       {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('done')}>Done</IconButton>
+        <Button on:click={() => dispatch('done')} size="sm" rounded="lg">Done</Button>
       {:else}
         <LoadingSpinner />
       {/if}

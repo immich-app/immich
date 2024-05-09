@@ -30,10 +30,12 @@ export default defineConfig({
   },
   plugins: [
     sveltekit(),
-    visualizer({
-      emitFile: true,
-      filename: 'stats.html',
-    }),
+    process.env.BUILD_STATS === 'true'
+      ? visualizer({
+          emitFile: true,
+          filename: 'stats.html',
+        })
+      : undefined,
     enhancedImages(),
   ],
   optimizeDeps: {

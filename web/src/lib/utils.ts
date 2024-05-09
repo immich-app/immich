@@ -1,5 +1,3 @@
-import { goto } from '$app/navigation';
-import { page } from '$app/stores';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { locales } from '$lib/constants';
 import { handleError } from '$lib/utils/handle-error';
@@ -12,38 +10,104 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { get } from 'svelte/store';
+import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
-interface UpdateParamAction {
-  param: string;
-  value: string;
-  add: boolean;
+interface DownloadRequestOptions<T = unknown> {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  data?: T;
+  signal?: AbortSignal;
+  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-const getParamValues = (param: string) =>
-  new Set((get(page).url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
+interface UploadRequestOptions {
+  url: string;
+  data: FormData;
+  onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+}
 
-export const hasParamValue = (param: string, value: string) => getParamValues(param).has(value);
+export class AbortError extends Error {
+  name = 'AbortError';
+}
 
-export const updateParamList = async ({ param, value, add }: UpdateParamAction) => {
-  const values = getParamValues(param);
+class ApiError extends Error {
+  name = 'ApiError';
 
-  if (add) {
-    values.add(value);
-  } else {
-    values.delete(value);
+  constructor(
+    public message: string,
+    public statusCode: number,
+    public details: string,
+  ) {
+    super(message);
+  }
+}
+
+export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
+  const { onUploadProgress: onProgress, data, url } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as T, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
+      }
+    });
+
+    if (onProgress) {
+      xhr.upload.addEventListener('progress', (event) => onProgress(event));
+    }
+
+    xhr.open('POST', url);
+    xhr.responseType = 'json';
+    xhr.send(data);
+  });
+};
+
+export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {
+  if (typeof options === 'string') {
+    options = { url: options };
   }
 
-  const searchParams = new URLSearchParams(get(page).url.searchParams);
-  searchParams.set(param, [...values.values()].join(' '));
+  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
 
-  if (values.size === 0) {
-    searchParams.delete(param);
-  }
+  return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-  await goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
+    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('abort', () => reject(new AbortError()));
+    xhr.addEventListener('load', () => {
+      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        resolve({ data: xhr.response as Blob, status: xhr.status });
+      } else {
+        reject(new ApiError(xhr.statusText, xhr.status, xhr.responseText));
+      }
+    });
+
+    if (onProgress) {
+      xhr.addEventListener('progress', (event) => onProgress(event));
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', () => xhr.abort());
+    }
+
+    xhr.open(method || 'GET', url);
+    xhr.responseType = 'blob';
+
+    if (body) {
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(body));
+    } else {
+      xhr.send();
+    }
+  });
 };
 
 export const getJobName = (jobName: JobName) => {
@@ -60,20 +124,19 @@ export const getJobName = (jobName: JobName) => {
     [JobName.BackgroundTask]: 'Background Tasks',
     [JobName.Search]: 'Search',
     [JobName.Library]: 'Library',
+    [JobName.Notifications]: 'Notifications',
   };
 
   return names[jobName];
 };
 
 let _key: string | undefined;
+let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setKey = (key: string) => {
-  _key = key;
-};
-
-export const getKey = (): string | undefined => {
-  return _key;
-};
+export const setKey = (key: string) => (_key = key);
+export const getKey = (): string | undefined => _key;
+export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
+export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
 
 export const isSharedLink = () => {
   return !!_key;
@@ -132,6 +195,16 @@ export const getAssetJobMessage = (job: AssetJobName) => {
   };
 
   return messages[job];
+};
+
+export const getAssetJobIcon = (job: AssetJobName) => {
+  const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
+    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
+    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
+  };
+
+  return names[job];
 };
 
 export const copyToClipboard = async (secret: string) => {
@@ -204,3 +277,5 @@ export const asyncTimeout = (ms: number) => {
 export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
+
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} ${yearsAgo ? 'years' : 'year'} ago`;

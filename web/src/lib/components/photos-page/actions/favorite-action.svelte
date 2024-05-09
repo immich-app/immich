@@ -16,7 +16,7 @@
   export let menuItem = false;
   export let removeFavorite: boolean;
 
-  $: text = removeFavorite ? 'Remove from Favorites' : 'Favorite';
+  $: text = removeFavorite ? 'Remove from favorites' : 'Favorite';
   $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
 
   let loading = false;
@@ -57,7 +57,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption {text} on:click={handleFavorite} />
+  <MenuOption {text} {icon} on:click={handleFavorite} />
 {/if}
 
 {#if !menuItem}

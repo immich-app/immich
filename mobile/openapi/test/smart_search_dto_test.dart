@@ -51,11 +51,6 @@ void main() {
       // TODO
     });
 
-    // bool isExternal
-    test('to test the property `isExternal`', () async {
-      // TODO
-    });
-
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
@@ -73,11 +68,6 @@ void main() {
 
     // bool isOffline
     test('to test the property `isOffline`', () async {
-      // TODO
-    });
-
-    // bool isReadOnly
-    test('to test the property `isReadOnly`', () async {
       // TODO
     });
 
@@ -108,6 +98,11 @@ void main() {
 
     // num page
     test('to test the property `page`', () async {
+      // TODO
+    });
+
+    // List<String> personIds (default value: const [])
+    test('to test the property `personIds`', () async {
       // TODO
     });
 

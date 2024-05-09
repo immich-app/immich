@@ -241,6 +241,7 @@
       "size" : "29x29"
     },
     {
+      "filename" : "66.png",
       "idiom" : "watch",
       "role" : "notificationCenter",
       "scale" : "2x",
@@ -264,6 +265,7 @@
       "subtype" : "40mm"
     },
     {
+      "filename" : "92.png",
       "idiom" : "watch",
       "role" : "appLauncher",
       "scale" : "2x",
@@ -335,6 +337,14 @@
       "idiom" : "watch-marketing",
       "scale" : "1x",
       "size" : "1024x1024"
+    },
+    {
+      "filename" : "102.png",
+      "idiom" : "watch",
+      "role" : "appLauncher",
+      "scale" : "2x",
+      "size" : "45x45",
+      "subtype" : "41mm"
     }
   ],
   "info" : {

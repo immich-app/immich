@@ -21,8 +21,14 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.100.0
     // String title
     test('to test the property `title`', () async {
+      // TODO
+    });
+
+    // int yearsAgo
+    test('to test the property `yearsAgo`', () async {
       // TODO
     });
 

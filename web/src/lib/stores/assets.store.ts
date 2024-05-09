@@ -1,4 +1,5 @@
 import { getKey } from '$lib/utils';
+import { fromLocalDateTime } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -46,22 +47,27 @@ const THUMBNAIL_HEIGHT = 235;
 
 interface AddAsset {
   type: 'add';
-  value: AssetResponseDto;
+  values: AssetResponseDto[];
+}
+
+interface UpdateAsset {
+  type: 'update';
+  values: AssetResponseDto[];
 }
 
 interface DeleteAsset {
   type: 'delete';
-  value: string;
+  values: string[];
 }
 
-interface TrashAsset {
+interface TrashAssets {
   type: 'trash';
-  value: string;
+  values: string[];
 }
 
 export const photoViewer = writable<HTMLImageElement | null>(null);
 
-type PendingChange = AddAsset | DeleteAsset | TrashAsset;
+type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
 
 export class AssetStore {
   private store$ = writable(this);
@@ -97,13 +103,16 @@ export class AssetStore {
   connect() {
     this.unsubscribers.push(
       websocketEvents.on('on_upload_success', (asset) => {
-        this.addPendingChanges({ type: 'add', value: asset });
+        this.addPendingChanges({ type: 'add', values: [asset] });
       }),
       websocketEvents.on('on_asset_trash', (ids) => {
-        this.addPendingChanges(...ids.map((id): TrashAsset => ({ type: 'trash', value: id })));
+        this.addPendingChanges({ type: 'trash', values: ids });
+      }),
+      websocketEvents.on('on_asset_update', (asset) => {
+        this.addPendingChanges({ type: 'update', values: [asset] });
       }),
       websocketEvents.on('on_asset_delete', (id: string) => {
-        this.addPendingChanges({ type: 'delete', value: id });
+        this.addPendingChanges({ type: 'delete', values: [id] });
       }),
     );
   }
@@ -114,23 +123,55 @@ export class AssetStore {
     }
   }
 
+  private getPendingChangeBatches() {
+    const batches: PendingChange[] = [];
+    let batch: PendingChange | undefined;
+
+    for (const { type, values: _values } of this.pendingChanges) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const values = _values as any[];
+
+      if (batch && batch.type !== type) {
+        batches.push(batch);
+        batch = undefined;
+      }
+
+      if (batch) {
+        batch.values.push(...values);
+      } else {
+        batch = { type, values };
+      }
+    }
+
+    if (batch) {
+      batches.push(batch);
+    }
+
+    return batches;
+  }
+
   processPendingChanges = throttle(() => {
-    for (const { type, value } of this.pendingChanges) {
+    for (const { type, values } of this.getPendingChangeBatches()) {
       switch (type) {
         case 'add': {
-          this.addAsset(value);
+          this.addAssets(values);
+          break;
+        }
+
+        case 'update': {
+          this.updateAssets(values);
           break;
         }
 
         case 'trash': {
           if (!this.options.isTrashed) {
-            this.removeAsset(value);
+            this.removeAssets(values);
           }
           break;
         }
 
         case 'delete': {
-          this.removeAsset(value);
+          this.removeAssets(values);
           break;
         }
       }
@@ -138,7 +179,7 @@ export class AssetStore {
 
     this.pendingChanges = [];
     this.emit(true);
-  }, 10_000);
+  }, 2500);
 
   async init(viewport: Viewport) {
     this.initialized = false;
@@ -148,28 +189,39 @@ export class AssetStore {
     this.assetToBucket = {};
     this.albumAssets = new Set();
 
-    const buckets = await getTimeBuckets({ ...this.options, key: getKey() });
+    const timebuckets = await getTimeBuckets({
+      ...this.options,
+      key: getKey(),
+    });
 
     this.initialized = true;
 
-    this.buckets = buckets.map((bucket) => {
-      const unwrappedWidth = (3 / 2) * bucket.count * THUMBNAIL_HEIGHT * (7 / 10);
+    this.buckets = timebuckets.map((bucket) => ({
+      bucketDate: bucket.timeBucket,
+      bucketHeight: 0,
+      bucketCount: bucket.count,
+      assets: [],
+      cancelToken: null,
+      position: BucketPosition.Unknown,
+    }));
+
+    // if loading an asset, the grid-view may be hidden, which means
+    // it has 0 width and height. No need to update bucket or timeline
+    // heights in this case. Later, updateViewport will be called to
+    // update the heights.
+    if (viewport.height !== 0 && viewport.width !== 0) {
+      await this.updateViewport(viewport);
+    }
+  }
+
+  async updateViewport(viewport: Viewport) {
+    for (const bucket of this.buckets) {
+      const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewport.width);
       const height = rows * THUMBNAIL_HEIGHT;
-
-      return {
-        bucketDate: bucket.timeBucket,
-        bucketHeight: height,
-        bucketCount: bucket.count,
-        assets: [],
-        cancelToken: null,
-        position: BucketPosition.Unknown,
-      };
-    });
-
+      bucket.bucketHeight = height;
+    }
     this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
-
-    this.emit(false);
 
     let height = 0;
     const loaders = [];
@@ -179,28 +231,28 @@ export class AssetStore {
         loaders.push(this.loadBucket(bucket.bucketDate, BucketPosition.Visible));
         continue;
       }
-
       break;
     }
     await Promise.all(loaders);
+    this.emit(false);
   }
 
   async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
+    const bucket = this.getBucketByDate(bucketDate);
+    if (!bucket) {
+      return;
+    }
+
+    bucket.position = position;
+
+    if (bucket.cancelToken || bucket.assets.length > 0) {
+      this.emit(false);
+      return;
+    }
+
+    bucket.cancelToken = new AbortController();
+
     try {
-      const bucket = this.getBucketByDate(bucketDate);
-      if (!bucket) {
-        return;
-      }
-
-      bucket.position = position;
-
-      if (bucket.assets.length > 0) {
-        this.emit(false);
-        return;
-      }
-
-      bucket.cancelToken = new AbortController();
-
       const assets = await getTimeBucket(
         {
           ...this.options,
@@ -235,6 +287,8 @@ export class AssetStore {
       this.emit(true);
     } catch (error) {
       handleError(error, 'Failed to load assets');
+    } finally {
+      bucket.cancelToken = null;
     }
   }
 
@@ -261,61 +315,93 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
-  addAsset(asset: AssetResponseDto): void {
-    if (
-      this.assetToBucket[asset.id] ||
-      this.options.userId ||
-      this.options.personId ||
-      this.options.albumId ||
-      isMismatched(this.options.isArchived, asset.isArchived) ||
-      isMismatched(this.options.isFavorite, asset.isFavorite)
-    ) {
-      // If asset is already in the bucket we don't need to recalculate
-      // asset store containers
-      this.updateAsset(asset);
-      return;
+  addAssets(assets: AssetResponseDto[]) {
+    const assetsToUpdate: AssetResponseDto[] = [];
+    const assetsToAdd: AssetResponseDto[] = [];
+
+    for (const asset of assets) {
+      if (
+        this.assetToBucket[asset.id] ||
+        this.options.userId ||
+        this.options.personId ||
+        this.options.albumId ||
+        isMismatched(this.options.isArchived, asset.isArchived) ||
+        isMismatched(this.options.isFavorite, asset.isFavorite)
+      ) {
+        // If asset is already in the bucket we don't need to recalculate
+        // asset store containers
+        assetsToUpdate.push(asset);
+      } else {
+        assetsToAdd.push(asset);
+      }
     }
 
-    const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
-    let bucket = this.getBucketByDate(timeBucket);
+    this.updateAssets(assetsToUpdate);
+    this.addAssetsToBuckets(assetsToAdd);
+  }
 
-    if (!bucket) {
-      bucket = {
-        bucketDate: timeBucket,
-        bucketHeight: THUMBNAIL_HEIGHT,
-        bucketCount: 0,
-        assets: [],
-        cancelToken: null,
-        position: BucketPosition.Unknown,
-      };
+  private addAssetsToBuckets(assets: AssetResponseDto[]) {
+    if (assets.length === 0) {
+      return;
+    }
+    const updatedBuckets = new Set<AssetBucket>();
 
-      this.buckets.push(bucket);
-      this.buckets = this.buckets.sort((a, b) => {
-        const aDate = DateTime.fromISO(a.bucketDate).toUTC();
-        const bDate = DateTime.fromISO(b.bucketDate).toUTC();
+    for (const asset of assets) {
+      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+      let bucket = this.getBucketByDate(timeBucket);
+
+      if (!bucket) {
+        bucket = {
+          bucketDate: timeBucket,
+          bucketHeight: THUMBNAIL_HEIGHT,
+          bucketCount: 0,
+          assets: [],
+          cancelToken: null,
+          position: BucketPosition.Unknown,
+        };
+
+        this.buckets.push(bucket);
+      }
+
+      bucket.assets.push(asset);
+      this.assets.push(asset);
+      updatedBuckets.add(bucket);
+    }
+
+    this.buckets = this.buckets.sort((a, b) => {
+      const aDate = DateTime.fromISO(a.bucketDate).toUTC();
+      const bDate = DateTime.fromISO(b.bucketDate).toUTC();
+      return bDate.diff(aDate).milliseconds;
+    });
+
+    for (const bucket of updatedBuckets) {
+      bucket.assets.sort((a, b) => {
+        const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
+        const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
         return bDate.diff(aDate).milliseconds;
       });
     }
 
-    bucket.assets.push(asset);
-    bucket.assets.sort((a, b) => {
-      const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-      const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-      return bDate.diff(aDate).milliseconds;
-    });
-
-    // If we added an asset to the store, we need to recalculate
-    // asset store containers
-    this.assets.push(asset);
-    this.updateAsset(asset, true);
+    this.emit(true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
     return this.buckets.find((bucket) => bucket.bucketDate === bucketDate) || null;
   }
 
-  getBucketInfoForAssetId(assetId: string) {
-    return this.assetToBucket[assetId] || null;
+  async getBucketInfoForAssetId({ id, localDateTime }: Pick<AssetResponseDto, 'id' | 'localDateTime'>) {
+    const bucketInfo = this.assetToBucket[id];
+    if (bucketInfo) {
+      return bucketInfo;
+    }
+    let date = fromLocalDateTime(localDateTime);
+    if (this.options.size == TimeBucketSize.Month) {
+      date = date.set({ day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 });
+    } else if (this.options.size == TimeBucketSize.Day) {
+      date = date.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    }
+    await this.loadBucket(date.toISO()!, BucketPosition.Unknown);
+    return this.assetToBucket[id] || null;
   }
 
   getBucketIndexByAssetId(assetId: string) {
@@ -338,30 +424,40 @@ export class AssetStore {
     return null;
   }
 
-  updateAsset(_asset: AssetResponseDto, recalculate = false) {
-    const asset = this.assets.find((asset) => asset.id === _asset.id);
-    if (!asset) {
+  updateAssets(assets: AssetResponseDto[]) {
+    if (assets.length === 0) {
       return;
     }
+    const assetsToReculculate: AssetResponseDto[] = [];
 
-    Object.assign(asset, _asset);
+    for (const _asset of assets) {
+      const asset = this.assets.find((asset) => asset.id === _asset.id);
+      if (!asset) {
+        continue;
+      }
 
-    this.emit(recalculate);
+      const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+      Object.assign(asset, _asset);
+
+      if (recalculate) {
+        assetsToReculculate.push(asset);
+      }
+    }
+
+    this.removeAssets(assetsToReculculate.map((asset) => asset.id));
+    this.addAssetsToBuckets(assetsToReculculate);
+    this.emit(assetsToReculculate.length > 0);
   }
 
   removeAssets(ids: string[]) {
-    // TODO: this could probably be more efficient
-    for (const id of ids) {
-      this.removeAsset(id);
-    }
-  }
+    const idSet = new Set(ids);
 
-  removeAsset(id: string) {
-    for (let index = 0; index < this.buckets.length; index++) {
+    // Iterate in reverse to allow array splicing.
+    for (let index = this.buckets.length - 1; index >= 0; index--) {
       const bucket = this.buckets[index];
-      for (let index_ = 0; index_ < bucket.assets.length; index_++) {
+      for (let index_ = bucket.assets.length - 1; index_ >= 0; index_--) {
         const asset = bucket.assets[index_];
-        if (asset.id !== id) {
+        if (!idSet.has(asset.id)) {
           continue;
         }
 
@@ -369,15 +465,14 @@ export class AssetStore {
         if (bucket.assets.length === 0) {
           this.buckets.splice(index, 1);
         }
-
-        this.emit(true);
-        return;
       }
     }
+
+    this.emit(true);
   }
 
-  async getPreviousAssetId(assetId: string): Promise<string | null> {
-    const info = this.getBucketInfoForAssetId(assetId);
+  async getPreviousAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
+    const info = await this.getBucketInfoForAssetId(asset);
     if (!info) {
       return null;
     }
@@ -385,7 +480,7 @@ export class AssetStore {
     const { bucket, assetIndex, bucketIndex } = info;
 
     if (assetIndex !== 0) {
-      return bucket.assets[assetIndex - 1].id;
+      return bucket.assets[assetIndex - 1];
     }
 
     if (bucketIndex === 0) {
@@ -394,11 +489,11 @@ export class AssetStore {
 
     const previousBucket = this.buckets[bucketIndex - 1];
     await this.loadBucket(previousBucket.bucketDate, BucketPosition.Unknown);
-    return previousBucket.assets.at(-1)?.id || null;
+    return previousBucket.assets.at(-1) || null;
   }
 
-  async getNextAssetId(assetId: string): Promise<string | null> {
-    const info = this.getBucketInfoForAssetId(assetId);
+  async getNextAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
+    const info = await this.getBucketInfoForAssetId(asset);
     if (!info) {
       return null;
     }
@@ -406,7 +501,7 @@ export class AssetStore {
     const { bucket, assetIndex, bucketIndex } = info;
 
     if (assetIndex !== bucket.assets.length - 1) {
-      return bucket.assets[assetIndex + 1].id;
+      return bucket.assets[assetIndex + 1];
     }
 
     if (bucketIndex === this.buckets.length - 1) {
@@ -415,7 +510,7 @@ export class AssetStore {
 
     const nextBucket = this.buckets[bucketIndex + 1];
     await this.loadBucket(nextBucket.bucketDate, BucketPosition.Unknown);
-    return nextBucket.assets[0]?.id || null;
+    return nextBucket.assets[0] || null;
   }
 
   triggerUpdate() {
@@ -444,4 +539,4 @@ export class AssetStore {
   }
 }
 
-export const isSelectAllCancelled = writable(false);
+export const isSelectingAllAssets = writable(false);

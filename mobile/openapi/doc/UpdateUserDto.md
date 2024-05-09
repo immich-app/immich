@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **avatarColor** | [**UserAvatarColor**](UserAvatarColor.md) |  | [optional] 
 **email** | **String** |  | [optional] 
-**externalPath** | **String** |  | [optional] 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 

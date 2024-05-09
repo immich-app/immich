@@ -9,11 +9,12 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **email** | **String** |  | 
-**externalPath** | **String** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | 
+**notify** | **bool** |  | [optional] 
 **password** | **String** |  | 
 **quotaSizeInBytes** | **int** |  | [optional] 
+**shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

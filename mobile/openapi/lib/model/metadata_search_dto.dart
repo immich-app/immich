@@ -24,12 +24,10 @@ class MetadataSearchDto {
     this.id,
     this.isArchived,
     this.isEncoded,
-    this.isExternal,
     this.isFavorite,
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.isReadOnly,
     this.isVisible,
     this.lensModel,
     this.libraryId,
@@ -40,11 +38,13 @@ class MetadataSearchDto {
     this.originalPath,
     this.page,
     this.personIds = const [],
+    this.previewPath,
     this.resizePath,
     this.size,
     this.state,
     this.takenAfter,
     this.takenBefore,
+    this.thumbnailPath,
     this.trashedAfter,
     this.trashedBefore,
     this.type,
@@ -152,14 +152,6 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isExternal;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   bool? isFavorite;
 
   ///
@@ -185,14 +177,6 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? isOffline;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isReadOnly;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -258,6 +242,7 @@ class MetadataSearchDto {
   ///
   String? originalPath;
 
+  /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -274,8 +259,19 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? previewPath;
+
+  /// This property was deprecated in v1.100.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? resizePath;
 
+  /// Minimum value: 1
+  /// Maximum value: 1000
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -307,6 +303,14 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   DateTime? takenBefore;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? thumbnailPath;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -348,6 +352,7 @@ class MetadataSearchDto {
   ///
   DateTime? updatedBefore;
 
+  /// This property was deprecated in v1.100.0
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -403,12 +408,10 @@ class MetadataSearchDto {
     other.id == id &&
     other.isArchived == isArchived &&
     other.isEncoded == isEncoded &&
-    other.isExternal == isExternal &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
-    other.isReadOnly == isReadOnly &&
     other.isVisible == isVisible &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
@@ -419,11 +422,13 @@ class MetadataSearchDto {
     other.originalPath == originalPath &&
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
+    other.previewPath == previewPath &&
     other.resizePath == resizePath &&
     other.size == size &&
     other.state == state &&
     other.takenAfter == takenAfter &&
     other.takenBefore == takenBefore &&
+    other.thumbnailPath == thumbnailPath &&
     other.trashedAfter == trashedAfter &&
     other.trashedBefore == trashedBefore &&
     other.type == type &&
@@ -450,12 +455,10 @@ class MetadataSearchDto {
     (id == null ? 0 : id!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
-    (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (isReadOnly == null ? 0 : isReadOnly!.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
@@ -466,11 +469,13 @@ class MetadataSearchDto {
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
+    (previewPath == null ? 0 : previewPath!.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
+    (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
     (trashedAfter == null ? 0 : trashedAfter!.hashCode) +
     (trashedBefore == null ? 0 : trashedBefore!.hashCode) +
     (type == null ? 0 : type!.hashCode) +
@@ -484,7 +489,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isExternal=$isExternal, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isReadOnly=$isReadOnly, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, resizePath=$resizePath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, webpPath=$webpPath, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, resizePath=$resizePath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, webpPath=$webpPath, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -543,11 +548,6 @@ class MetadataSearchDto {
     } else {
     //  json[r'isEncoded'] = null;
     }
-    if (this.isExternal != null) {
-      json[r'isExternal'] = this.isExternal;
-    } else {
-    //  json[r'isExternal'] = null;
-    }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
@@ -567,11 +567,6 @@ class MetadataSearchDto {
       json[r'isOffline'] = this.isOffline;
     } else {
     //  json[r'isOffline'] = null;
-    }
-    if (this.isReadOnly != null) {
-      json[r'isReadOnly'] = this.isReadOnly;
-    } else {
-    //  json[r'isReadOnly'] = null;
     }
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
@@ -619,6 +614,11 @@ class MetadataSearchDto {
     //  json[r'page'] = null;
     }
       json[r'personIds'] = this.personIds;
+    if (this.previewPath != null) {
+      json[r'previewPath'] = this.previewPath;
+    } else {
+    //  json[r'previewPath'] = null;
+    }
     if (this.resizePath != null) {
       json[r'resizePath'] = this.resizePath;
     } else {
@@ -643,6 +643,11 @@ class MetadataSearchDto {
       json[r'takenBefore'] = this.takenBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'takenBefore'] = null;
+    }
+    if (this.thumbnailPath != null) {
+      json[r'thumbnailPath'] = this.thumbnailPath;
+    } else {
+    //  json[r'thumbnailPath'] = null;
     }
     if (this.trashedAfter != null) {
       json[r'trashedAfter'] = this.trashedAfter!.toUtc().toIso8601String();
@@ -717,12 +722,10 @@ class MetadataSearchDto {
         id: mapValueOfType<String>(json, r'id'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
-        isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly'),
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
@@ -735,11 +738,13 @@ class MetadataSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        previewPath: mapValueOfType<String>(json, r'previewPath'),
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         takenAfter: mapDateTime(json, r'takenAfter', r''),
         takenBefore: mapDateTime(json, r'takenBefore', r''),
+        thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
         trashedAfter: mapDateTime(json, r'trashedAfter', r''),
         trashedBefore: mapDateTime(json, r'trashedBefore', r''),
         type: AssetTypeEnum.fromJson(json[r'type']),

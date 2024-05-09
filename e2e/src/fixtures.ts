@@ -21,6 +21,13 @@ export const signupDto = {
 };
 
 export const createUserDto = {
+  create(key: string) {
+    return {
+      email: `${key}@immich.cloud`,
+      name: `Generated User ${key}`,
+      password: `password-${key}`,
+    };
+  },
   user1: {
     email: 'user1@immich.cloud',
     name: 'User 1',
@@ -36,6 +43,17 @@ export const createUserDto = {
     name: 'User 3',
     password: 'password123',
   },
+  user4: {
+    email: 'user4@immich.cloud',
+    name: 'User 4',
+    password: 'password123',
+  },
+  userQuota: {
+    email: 'user-quota@immich.cloud',
+    name: 'User Quota',
+    password: 'password-quota',
+    quotaSizeInBytes: 512,
+  },
 };
 
 export const userDto = {
@@ -44,7 +62,6 @@ export const userDto = {
     email: signupDto.admin.email,
     password: signupDto.admin.password,
     storageLabel: 'admin',
-    externalPath: null,
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
@@ -63,7 +80,6 @@ export const userDto = {
     email: createUserDto.user1.email,
     password: createUserDto.user1.password,
     storageLabel: null,
-    externalPath: null,
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',

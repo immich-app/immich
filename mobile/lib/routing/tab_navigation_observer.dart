@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
-import 'package:immich_mobile/modules/search/providers/people.provider.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/memory.provider.dart';
+import 'package:immich_mobile/providers/search/people.provider.dart';
 
-import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
+import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 
 class TabNavigationObserver extends AutoRouterObserver {
   /// Riverpod Instance
@@ -37,8 +37,8 @@ class TabNavigationObserver extends AutoRouterObserver {
     // Perform tasks on re-visit to SearchRoute
     if (route.name == 'SearchRoute') {
       // Refresh Location State
-      ref.invalidate(getCuratedLocationProvider);
-      ref.invalidate(getCuratedPeopleProvider);
+      ref.invalidate(getPreviewPlacesProvider);
+      ref.invalidate(getAllPeopleProvider);
     }
 
     if (route.name == 'SharingRoute') {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
@@ -25,6 +25,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import { shortcut } from '$lib/utils/shortcut';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -95,14 +96,6 @@
     }
   };
 
-  const handleEnter = async (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      await handleSendComment();
-      return;
-    }
-  };
-
   const timeOptions = {
     year: 'numeric',
     month: '2-digit',
@@ -167,12 +160,7 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <button
-          class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-          on:click={() => dispatch('close')}
-        >
-          <Icon path={mdiClose} size="24" />
-        </button>
+        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title="Close" />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
       </div>
@@ -191,19 +179,22 @@
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <div class="aspect-square w-[75px] h-[75px]">
+                <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                    alt="comment-thumbnail"
+                    alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
-                </div>
+                </a>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
-                  <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
-                    <Icon path={mdiDotsVertical} />
-                  </button>
+                <div class="flex items-start w-fit pt-[5px]">
+                  <CircleIconButton
+                    icon={mdiDotsVertical}
+                    title="Comment options"
+                    size="16"
+                    on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
+                  />
                 </div>
               {/if}
               <div>
@@ -237,19 +228,25 @@
                   {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
-                  <div class="aspect-square w-[75px] h-[75px]">
+                  <a
+                    class="aspect-square w-[75px] h-[75px]"
+                    href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}"
+                  >
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
                       src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
-                      alt="like-thumbnail"
+                      alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
-                  </div>
+                  </a>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                  <div class="flex items-start w-fit" title="Delete like">
-                    <button on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}>
-                      <Icon path={mdiDotsVertical} />
-                    </button>
+                  <div class="flex items-start w-fit">
+                    <CircleIconButton
+                      icon={mdiDotsVertical}
+                      title="Reaction options"
+                      size="16"
+                      on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
+                    />
                   </div>
                 {/if}
                 <div>
@@ -295,7 +292,10 @@
               use:autoGrowHeight={'5px'}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
               on:input={() => autoGrowHeight(textArea, '5px')}
-              on:keypress={handleEnter}
+              use:shortcut={{
+                shortcut: { key: 'Enter' },
+                onShortcut: () => handleSendComment(),
+              }}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
@@ -309,7 +309,7 @@
             </div>
           {:else if message}
             <div class="flex items-end w-fit ml-0">
-              <CircleIconButton size="15" icon={mdiSend} iconColor={'dark'} hoverColor={'rgb(173,203,250)'} />
+              <CircleIconButton title="Send message" size="15" icon={mdiSend} class="dark:text-immich-dark-gray" />
             </div>
           {/if}
         </form>

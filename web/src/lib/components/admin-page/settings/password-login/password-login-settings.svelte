@@ -41,7 +41,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDisableLogin on:cancel={() => handleConfirm(false)} on:confirm={() => handleConfirm(true)} />
+  <ConfirmDisableLogin onCancel={() => handleConfirm(false)} onConfirm={() => handleConfirm(true)} />
 {/if}
 
 <div>
@@ -49,6 +49,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col">
         <SettingSwitch
+          id="enable-password-login"
           title="ENABLED"
           {disabled}
           subtitle="Login with email and password"

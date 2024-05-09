@@ -17,16 +17,8 @@
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "baseUrl": "./",
-    "paths": {
-      "@test": ["test"],
-      "@test/*": ["test/*"],
-      "@app/immich": ["src/immich"],
-      "@app/immich/*": ["src/immich/*"],
-      "@app/infra": ["src/infra"],
-      "@app/infra/*": ["src/infra/*"],
-      "@app/domain": ["src/domain"],
-      "@app/domain/*": ["src/domain/*"],
-    },
+    "jsx": "react",
+    "types": ["vitest/globals"]
   },
-  "exclude": ["dist", "node_modules", "upload"],
+  "exclude": ["dist", "node_modules", "upload"]
 }

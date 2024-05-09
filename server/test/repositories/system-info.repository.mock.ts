@@ -1,7 +1,8 @@
-import { IServerInfoRepository } from '@app/domain';
+import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newServerInfoRepositoryMock = (): jest.Mocked<IServerInfoRepository> => {
+export const newServerInfoRepositoryMock = (): Mocked<IServerInfoRepository> => {
   return {
-    getGitHubRelease: jest.fn(),
+    getGitHubRelease: vitest.fn(),
   };
 };

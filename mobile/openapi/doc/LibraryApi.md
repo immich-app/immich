@@ -11,8 +11,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createLibrary**](LibraryApi.md#createlibrary) | **POST** /library | 
 [**deleteLibrary**](LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-[**getLibraries**](LibraryApi.md#getlibraries) | **GET** /library | 
-[**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
+[**getAllLibraries**](LibraryApi.md#getalllibraries) | **GET** /library | 
+[**getLibrary**](LibraryApi.md#getlibrary) | **GET** /library/{id} | 
 [**getLibraryStatistics**](LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
 [**removeOfflineFiles**](LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 [**scanLibrary**](LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
@@ -129,8 +129,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getLibraries**
-> List<LibraryResponseDto> getLibraries()
+# **getAllLibraries**
+> List<LibraryResponseDto> getAllLibraries(type)
 
 
 
@@ -153,17 +153,21 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = LibraryApi();
+final type = ; // LibraryType | 
 
 try {
-    final result = api_instance.getLibraries();
+    final result = api_instance.getAllLibraries(type);
     print(result);
 } catch (e) {
-    print('Exception when calling LibraryApi->getLibraries: $e\n');
+    print('Exception when calling LibraryApi->getAllLibraries: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **type** | [**LibraryType**](.md)|  | [optional] 
 
 ### Return type
 
@@ -180,8 +184,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getLibraryInfo**
-> LibraryResponseDto getLibraryInfo(id)
+# **getLibrary**
+> LibraryResponseDto getLibrary(id)
 
 
 
@@ -207,10 +211,10 @@ final api_instance = LibraryApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getLibraryInfo(id);
+    final result = api_instance.getLibrary(id);
     print(result);
 } catch (e) {
-    print('Exception when calling LibraryApi->getLibraryInfo: $e\n');
+    print('Exception when calling LibraryApi->getLibrary: $e\n');
 }
 ```
 

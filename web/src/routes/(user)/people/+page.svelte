@@ -1,14 +1,11 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import ShowHide from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -17,17 +14,10 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import {
-    ActionQueryParameterValue,
-    AppRoute,
-    maximumLengthSearchPeople,
-    QueryParameter,
-    timeBeforeShowLoadingSpinner,
-  } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { searchNameLocal } from '$lib/utils/person';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/utils/shortcut';
   import {
     getPerson,
     mergePerson,
@@ -38,9 +28,12 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { locale } from '$lib/stores/preferences.store';
+  import { clearQueryParam } from '$lib/utils/navigation';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 
   export let data: PageData;
 
@@ -52,10 +45,7 @@
   let initialHiddenValues: Record<string, boolean> = {};
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
-  let searchedPeople: PersonResponseDto[] = [];
   let searchName = '';
-  let searchWord: string;
-  let isSearchingPeople = false;
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
@@ -68,50 +58,31 @@
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
+  let searchedPeopleLocal: PersonResponseDto[] = [];
+  let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
 
   let innerHeight: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
-
-  $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
-
+  $: showPeople = searchName ? searchedPeopleLocal : people.filter((person) => !person.isHidden);
   $: countVisiblePeople = countTotalPeople - countHiddenPeople;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
   onMount(async () => {
-    document.addEventListener('keydown', onKeyboardPress);
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      await handleSearchPeople(true);
+      await handleSearchPeople(true, searchName);
     }
   });
 
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
+  const handleSearch = async () => {
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    if (getSearchedPeople !== searchName) {
+      $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+      await goto($page.url, { keepFocus: true });
     }
-  });
-
-  const handleKeyboardPress = (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-    switch (event.key) {
-      case 'Escape': {
-        handleCloseClick();
-        return;
-      }
-    }
-  };
-
-  const handleSearch = async (force: boolean) => {
-    $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
-    await goto($page.url);
-    await handleSearchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -299,31 +270,6 @@
     );
   };
 
-  const handleSearchPeople = async (force: boolean) => {
-    if (searchName === '') {
-      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
-        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        await goto($page.url);
-      }
-      return;
-    }
-    if (!force && people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
-      return;
-    }
-
-    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
-    try {
-      searchedPeople = await searchPerson({ name: searchName, withHidden: false });
-      searchWord = searchName;
-    } catch (error) {
-      handleError(error, "Can't search people");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    isSearchingPeople = false;
-  };
-
   const submitNameChange = async () => {
     potentialMergePeople = [];
     showChangeNameModal = false;
@@ -415,21 +361,23 @@
       handleError(error, 'Unable to save name');
     }
   };
+
+  const onResetSearchBar = async () => {
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+  };
 </script>
 
-<svelte:window bind:innerHeight />
+<svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
 
 {#if showMergeModal}
-  <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
-    <MergeSuggestionModal
-      {personMerge1}
-      {personMerge2}
-      {potentialMergePeople}
-      on:close={() => (showMergeModal = false)}
-      on:reject={() => changeName()}
-      on:confirm={(event) => handleMergeSamePerson(event.detail)}
-    />
-  </FullScreenModal>
+  <MergeSuggestionModal
+    {personMerge1}
+    {personMerge2}
+    {potentialMergePeople}
+    on:close={() => (showMergeModal = false)}
+    on:reject={() => changeName()}
+    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+  />
 {/if}
 
 <UserPageLayout
@@ -441,81 +389,69 @@
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
           <div class="w-40 lg:w-80 h-10">
-            <SearchBar
-              bind:name={searchName}
-              isSearching={isSearchingPeople}
+            <SearchPeople
+              type="searchBar"
               placeholder="Search people"
-              on:reset={() => {
-                searchedPeople = [];
-              }}
-              on:search={({ detail }) => handleSearch(detail.force ?? false)}
+              onReset={onResetSearchBar}
+              onSearch={handleSearch}
+              bind:searchName
+              bind:searchedPeopleLocal
+              bind:handleSearch={handleSearchPeople}
             />
           </div>
         </div>
-        <IconButton on:click={() => (selectHidden = !selectHidden)}>
+        <LinkButton on:click={() => (selectHidden = !selectHidden)}>
           <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
             <Icon path={mdiEyeOutline} size="18" />
             <p class="ml-2">Show & hide people</p>
           </div>
-        </IconButton>
+        </LinkButton>
       </div>
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0}
+  {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, index (person.id)}
-        {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
-          <PeopleCard
-            {person}
-            preload={index < 20}
-            on:change-name={() => handleChangeName(person)}
-            on:set-birth-date={() => handleSetBirthDate(person)}
-            on:merge-people={() => handleMergePeople(person)}
-            on:hide-person={() => handleHidePerson(person)}
-          />
-        {/if}
+      {#each showPeople as person, index (person.id)}
+        <PeopleCard
+          {person}
+          preload={index < 20}
+          on:change-name={() => handleChangeName(person)}
+          on:set-birth-date={() => handleSetBirthDate(person)}
+          on:merge-people={() => handleMergePeople(person)}
+          on:hide-person={() => handleHidePerson(person)}
+        />
       {/each}
     </div>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium">No people</p>
+        <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
+          {`No people${searchName ? ` named "${searchName}"` : ''}`}
+        </p>
       </div>
     </div>
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal on:clickOutside={() => (showChangeNameModal = false)}>
-      <div
-        class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
-      >
-        <div
-          class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-        >
-          <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Change name</h1>
+    <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
+      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
+        <div class="flex flex-col gap-2">
+          <label class="immich-form-label" for="name">Name</label>
+          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
         </div>
-
-        <form on:submit|preventDefault={submitNameChange} autocomplete="off">
-          <div class="m-4 flex flex-col gap-2">
-            <label class="immich-form-label" for="name">Name</label>
-            <!-- svelte-ignore a11y-autofocus -->
-            <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} autofocus />
-          </div>
-
-          <div class="mt-8 flex w-full gap-4 px-4">
-            <Button
-              color="gray"
-              fullwidth
-              on:click={() => {
-                showChangeNameModal = false;
-              }}>Cancel</Button
-            >
-            <Button type="submit" fullwidth>Ok</Button>
-          </div>
-        </form>
-      </div>
+      </form>
+      <svelte:fragment slot="sticky-bottom">
+        <Button
+          color="gray"
+          fullwidth
+          on:click={() => {
+            showChangeNameModal = false;
+          }}>Cancel</Button
+        >
+        <Button type="submit" fullwidth form="change-name-form">Ok</Button>
+      </svelte:fragment>
     </FullScreenModal>
   {/if}
 

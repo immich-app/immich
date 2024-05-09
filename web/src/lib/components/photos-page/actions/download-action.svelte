@@ -3,7 +3,7 @@
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiCloudDownloadOutline } from '@mdi/js';
+  import { mdiCloudDownloadOutline, mdiFileDownloadOutline, mdiFolderDownloadOutline } from '@mdi/js';
 
   export let filename = 'immich.zip';
   export let menuItem = false;
@@ -21,10 +21,12 @@
     clearSelect();
     await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) });
   };
+
+  $: menuItemIcon = getAssets().size === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline;
 </script>
 
 {#if menuItem}
-  <MenuOption text="Download" on:click={handleDownloadFiles} />
+  <MenuOption text="Download" icon={menuItemIcon} on:click={handleDownloadFiles} />
 {:else}
   <CircleIconButton title="Download" icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
 {/if}

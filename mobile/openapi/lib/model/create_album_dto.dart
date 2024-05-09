@@ -14,12 +14,16 @@ class CreateAlbumDto {
   /// Returns a new [CreateAlbumDto] instance.
   CreateAlbumDto({
     required this.albumName,
+    this.albumUsers = const [],
     this.assetIds = const [],
     this.description,
     this.sharedWithUserIds = const [],
   });
 
   String albumName;
+
+  /// This property was added in v1.104.0
+  List<AlbumUserCreateDto> albumUsers;
 
   List<String> assetIds;
 
@@ -31,11 +35,13 @@ class CreateAlbumDto {
   ///
   String? description;
 
+  /// This property was deprecated in v1.104.0
   List<String> sharedWithUserIds;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
     other.albumName == albumName &&
+    _deepEquality.equals(other.albumUsers, albumUsers) &&
     _deepEquality.equals(other.assetIds, assetIds) &&
     other.description == description &&
     _deepEquality.equals(other.sharedWithUserIds, sharedWithUserIds);
@@ -44,16 +50,18 @@ class CreateAlbumDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName.hashCode) +
+    (albumUsers.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (sharedWithUserIds.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, description=$description, sharedWithUserIds=$sharedWithUserIds]';
+  String toString() => 'CreateAlbumDto[albumName=$albumName, albumUsers=$albumUsers, assetIds=$assetIds, description=$description, sharedWithUserIds=$sharedWithUserIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumName'] = this.albumName;
+      json[r'albumUsers'] = this.albumUsers;
       json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -73,6 +81,7 @@ class CreateAlbumDto {
 
       return CreateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
+        albumUsers: AlbumUserCreateDto.listFromJson(json[r'albumUsers']),
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

@@ -1,10 +1,11 @@
-import { IAssetStackRepository } from '@app/domain';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newAssetStackRepositoryMock = (): jest.Mocked<IAssetStackRepository> => {
+export const newAssetStackRepositoryMock = (): Mocked<IAssetStackRepository> => {
   return {
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    getById: jest.fn(),
+    create: vitest.fn(),
+    update: vitest.fn(),
+    delete: vitest.fn(),
+    getById: vitest.fn(),
   };
 };

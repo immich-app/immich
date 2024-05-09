@@ -34,7 +34,6 @@ linter:
 analyzer:
   exclude:
     - openapi/**
-    - openapi/test/**
     - lib/generated_plugin_registrant.dart
 
 plugins:

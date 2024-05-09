@@ -6,8 +6,9 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk/axios';
+  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let library: LibraryResponseDto;
 
@@ -152,7 +153,7 @@
 
 {#if addImportPath}
   <LibraryImportPathForm
-    title="Add Import Path"
+    title="Add import path"
     submitText="Add"
     bind:importPath={importPathToAdd}
     {importPaths}
@@ -166,7 +167,7 @@
 
 {#if editImportPath != undefined}
   <LibraryImportPathForm
-    title="Edit Import Path"
+    title="Edit import path"
     submitText="Save"
     isEditing={true}
     bind:importPath={editedImportPath}
@@ -209,17 +210,17 @@
           </td>
 
           <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
-            <button
-              type="button"
+          <td class="w-1/5 text-ellipsis flex justify-center">
+            <CircleIconButton
+              color="primary"
+              icon={mdiPencilOutline}
+              title="Edit import path"
+              size="16"
               on:click={() => {
                 editImportPath = listIndex;
                 editedImportPath = validatedPath.importPath;
               }}
-              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-            >
-              <Icon path={mdiPencilOutline} size="16" />
-            </button>
+            />
           </td>
         </tr>
       {/each}
@@ -243,8 +244,8 @@
               addImportPath = true;
             }}>Add path</Button
           ></td
-        ></tr
-      >
+        >
+      </tr>
     </tbody>
   </table>
   <div class="flex justify-between w-full">

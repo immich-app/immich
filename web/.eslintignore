@@ -11,3 +11,4 @@ node_modules
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+svelte.config.js

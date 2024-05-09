@@ -17,7 +17,6 @@ class UserResponseDto {
     required this.createdAt,
     required this.deletedAt,
     required this.email,
-    required this.externalPath,
     required this.id,
     required this.isAdmin,
     this.memoriesEnabled,
@@ -27,6 +26,7 @@ class UserResponseDto {
     required this.quotaSizeInBytes,
     required this.quotaUsageInBytes,
     required this.shouldChangePassword,
+    required this.status,
     required this.storageLabel,
     required this.updatedAt,
   });
@@ -38,8 +38,6 @@ class UserResponseDto {
   DateTime? deletedAt;
 
   String email;
-
-  String? externalPath;
 
   String id;
 
@@ -65,6 +63,8 @@ class UserResponseDto {
 
   bool shouldChangePassword;
 
+  UserStatus status;
+
   String? storageLabel;
 
   DateTime updatedAt;
@@ -75,7 +75,6 @@ class UserResponseDto {
     other.createdAt == createdAt &&
     other.deletedAt == deletedAt &&
     other.email == email &&
-    other.externalPath == externalPath &&
     other.id == id &&
     other.isAdmin == isAdmin &&
     other.memoriesEnabled == memoriesEnabled &&
@@ -85,6 +84,7 @@ class UserResponseDto {
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.quotaUsageInBytes == quotaUsageInBytes &&
     other.shouldChangePassword == shouldChangePassword &&
+    other.status == status &&
     other.storageLabel == storageLabel &&
     other.updatedAt == updatedAt;
 
@@ -95,7 +95,6 @@ class UserResponseDto {
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
@@ -105,11 +104,12 @@ class UserResponseDto {
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
+    (status.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -121,11 +121,6 @@ class UserResponseDto {
     //  json[r'deletedAt'] = null;
     }
       json[r'email'] = this.email;
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
     if (this.memoriesEnabled != null) {
@@ -147,6 +142,7 @@ class UserResponseDto {
     //  json[r'quotaUsageInBytes'] = null;
     }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'status'] = this.status;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -168,7 +164,6 @@ class UserResponseDto {
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
@@ -178,6 +173,7 @@ class UserResponseDto {
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        status: UserStatus.fromJson(json[r'status'])!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
@@ -231,7 +227,6 @@ class UserResponseDto {
     'createdAt',
     'deletedAt',
     'email',
-    'externalPath',
     'id',
     'isAdmin',
     'name',
@@ -240,6 +235,7 @@ class UserResponseDto {
     'quotaSizeInBytes',
     'quotaUsageInBytes',
     'shouldChangePassword',
+    'status',
     'storageLabel',
     'updatedAt',
   };

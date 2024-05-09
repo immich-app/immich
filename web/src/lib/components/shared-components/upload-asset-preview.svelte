@@ -27,7 +27,7 @@
   <div class="grid grid-cols-[65px_auto_auto]">
     <div class="relative h-[65px]">
       <div in:fade={{ duration: 250 }}>
-        <ImmichLogo class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
+        <ImmichLogo noText class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
       </div>
       <div class="absolute bottom-0 left-0 h-[25px] w-full rounded-bl-md bg-immich-primary/30">
         <p

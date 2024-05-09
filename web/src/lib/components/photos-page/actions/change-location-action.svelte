@@ -6,6 +6,7 @@
   import { updateAssets } from '@immich/sdk';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiMapMarkerMultipleOutline } from '@mdi/js';
 
   export let menuItem = false;
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
@@ -26,7 +27,11 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Change location" on:click={() => (isShowChangeLocation = true)} />
+  <MenuOption
+    text="Change location"
+    icon={mdiMapMarkerMultipleOutline}
+    on:click={() => (isShowChangeLocation = true)}
+  />
 {/if}
 {#if isShowChangeLocation}
   <ChangeLocation

@@ -203,12 +203,7 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
         <div class="w-full">
-          <EmptyPlaceholder
-            fullWidth
-            text="Untracked and missing files will show up here"
-            alt="Empty report"
-            src={empty4Url}
-          />
+          <EmptyPlaceholder fullWidth text="Untracked and missing files will show up here" src={empty4Url} />
         </div>
       {:else}
         <div class="gap-2">
@@ -255,7 +250,7 @@
                   <div class="px-3">
                     <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These files are the results of manually deletion of the default upload library
+                      These results may be due to manual deletion of files in the default upload library
                     </p>
                   </div>
                 </th>
@@ -271,7 +266,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -291,7 +286,7 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKS FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>UNTRACKED FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       These files are not tracked by the application. They can be the results of failed moves,
                       interrupted uploads, or left behind due to a bug
@@ -311,7 +306,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

@@ -67,7 +67,7 @@ class ValidateLibraryImportPathResponseDto {
 
       return ValidateLibraryImportPathResponseDto(
         importPath: mapValueOfType<String>(json, r'importPath')!,
-        isValid: mapValueOfType<bool>(json, r'isValid') ?? false,
+        isValid: mapValueOfType<bool>(json, r'isValid')!,
         message: mapValueOfType<String>(json, r'message'),
       );
     }
@@ -117,6 +117,7 @@ class ValidateLibraryImportPathResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'importPath',
+    'isValid',
   };
 }
 

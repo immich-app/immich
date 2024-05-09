@@ -1,11 +1,14 @@
 import 'package:flutter/painting.dart';
-import 'package:immich_mobile/modules/asset_viewer/image_providers/immich_local_image_provider.dart';
+import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
+import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
+import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
+import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small iamges
 final class CustomImageCache implements ImageCache {
   final _small = ImageCache();
-  final _large = ImageCache();
+  final _large = ImageCache()..maximumSize = 5; // Maximum 5 images
 
   @override
   int get maximumSize => _small.maximumSize + _large.maximumSize;
@@ -31,9 +34,20 @@ final class CustomImageCache implements ImageCache {
     _large.clearLiveImages();
   }
 
+  /// Gets the cache for the given key
+  /// [_large] is used for [ImmichLocalImageProvider] and [ImmichRemoteImageProvider]
+  /// [_small] is used for [ImmichLocalThumbnailProvider] and [ImmichRemoteThumbnailProvider]
+  ImageCache _cacheForKey(Object key) =>
+      (key is ImmichLocalImageProvider || key is ImmichRemoteImageProvider)
+          ? _large
+          : _small;
+
   @override
-  bool containsKey(Object key) =>
-      (key is ImmichLocalImageProvider ? _large : _small).containsKey(key);
+  bool containsKey(Object key) {
+    // [ImmichLocalImageProvider] and [ImmichRemoteImageProvider] are both
+    // large size images while the other thumbnail providers are small
+    return _cacheForKey(key).containsKey(key);
+  }
 
   @override
   int get currentSize => _small.currentSize + _large.currentSize;
@@ -43,8 +57,7 @@ final class CustomImageCache implements ImageCache {
 
   @override
   bool evict(Object key, {bool includeLive = true}) =>
-      (key is ImmichLocalImageProvider ? _large : _small)
-          .evict(key, includeLive: includeLive);
+      _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
   int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
@@ -59,10 +72,9 @@ final class CustomImageCache implements ImageCache {
     ImageStreamCompleter Function() loader, {
     ImageErrorListener? onError,
   }) =>
-      (key is ImmichLocalImageProvider ? _large : _small)
-          .putIfAbsent(key, loader, onError: onError);
+      _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
 
   @override
   ImageCacheStatus statusForKey(Object key) =>
-      (key is ImmichLocalImageProvider ? _large : _small).statusForKey(key);
+      _cacheForKey(key).statusForKey(key);
 }

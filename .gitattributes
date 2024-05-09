@@ -8,8 +8,6 @@ mobile/openapi/.openapi-generator/FILES linguist-generated=true
 mobile/lib/**/*.g.dart -diff -merge
 mobile/lib/**/*.g.dart linguist-generated=true
 
-open-api/typescript-sdk/axios-client/**/* -diff -merge
-open-api/typescript-sdk/axios-client/**/* linguist-generated=true
 open-api/typescript-sdk/fetch-client.ts -diff -merge
 open-api/typescript-sdk/fetch-client.ts linguist-generated=true
 

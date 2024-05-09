@@ -41,22 +41,30 @@ class SystemConfigFFmpegDto {
 
   List<VideoCodec> acceptedVideoCodecs;
 
+  /// Minimum value: -1
+  /// Maximum value: 16
   int bframes;
 
   CQMode cqMode;
 
+  /// Minimum value: 0
+  /// Maximum value: 51
   int crf;
 
+  /// Minimum value: 0
   int gopSize;
 
   String maxBitrate;
 
+  /// Minimum value: 0
   int npl;
 
   String preferredHwDevice;
 
   String preset;
 
+  /// Minimum value: 0
+  /// Maximum value: 6
   int refs;
 
   AudioCodec targetAudioCodec;
@@ -67,6 +75,7 @@ class SystemConfigFFmpegDto {
 
   bool temporalAQ;
 
+  /// Minimum value: 0
   int threads;
 
   ToneMapping tonemap;

@@ -80,17 +80,13 @@
     });
   }
 
-  const assetClickHandler = async (
-    asset: AssetResponseDto,
-    assetsInDateGroup: AssetResponseDto[],
-    groupTitle: string,
-  ) => {
+  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assetsInDateGroup, groupTitle);
       return;
     }
 
-    await assetViewingStore.setAssetId(asset.id);
+    assetViewingStore.setAsset(asset);
   };
 
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
@@ -127,7 +123,7 @@
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      class="mt-5 flex flex-col"
+      class="flex flex-col"
       on:mouseenter={() => {
         isMouseOverGroup = true;
         assetMouseEventHandler(groupTitle, null);
@@ -138,8 +134,8 @@
       }}
     >
       <!-- Date group title -->
-      <p
-        class="mb-2 flex h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+      <div
+        class="flex z-[100] sticky top-0 pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
         style="width: {geometry[groupIndex].containerWidth}px"
       >
         {#if !singleSelect && ((hoveredDateGroup == groupTitle && isMouseOverGroup) || $selectedGroup.has(groupTitle))}
@@ -160,7 +156,7 @@
         <span class="truncate first-letter:capitalize" title={groupTitle}>
           {groupTitle}
         </span>
-      </p>
+      </div>
 
       <!-- Image grid -->
       <div
@@ -178,7 +174,7 @@
               {showArchiveIcon}
               {asset}
               {groupIndex}
-              on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}
+              onClick={() => assetClickHandler(asset, groupAssets, groupTitle)}
               on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
               on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
               selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}

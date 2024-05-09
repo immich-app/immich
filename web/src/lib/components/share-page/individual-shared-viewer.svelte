@@ -23,6 +23,7 @@
 
   const viewport: Viewport = { width: 0, height: 0 };
   let selectedAssets: Set<AssetResponseDto> = new Set();
+  let innerWidth: number;
 
   $: assets = sharedLink.assets;
   $: isMultiSelectionMode = selectedAssets.size > 0;
@@ -68,6 +69,8 @@
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
@@ -82,9 +85,8 @@
   {:else}
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
-          <ImmichLogo height="30" width="30" />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
+          <ImmichLogo class="h-[24px] w-[24px] max-w-none md:w-auto md:h-10 md:max-w-full" noText={innerWidth < 768} />
         </a>
       </svelte:fragment>
 

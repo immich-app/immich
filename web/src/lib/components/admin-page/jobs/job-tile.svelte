@@ -1,6 +1,5 @@
 <script lang="ts">
   import Badge from '$lib/components/elements/badge.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
@@ -16,6 +15,7 @@
   import { createEventDispatcher } from 'svelte';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let title: string;
   export let subtitle: string | undefined;
@@ -56,16 +56,19 @@
         <div class="flex gap-2">
           {#if jobCounts.failed > 0}
             <Badge color="primary">
-              <span class="text-sm">
-                {jobCounts.failed.toLocaleString($locale)} failed
-              </span>
-              <Button
-                size="tiny"
-                shadow={false}
-                on:click={() => dispatch('command', { command: JobCommand.ClearFailed, force: false })}
-              >
-                <Icon path={mdiClose} size="18" />
-              </Button>
+              <div class="flex flex-row gap-1">
+                <span class="text-sm">
+                  {jobCounts.failed.toLocaleString($locale)} failed
+                </span>
+                <CircleIconButton
+                  color="primary"
+                  icon={mdiClose}
+                  title="Clear message"
+                  size="12"
+                  padding="1"
+                  on:click={() => dispatch('command', { command: JobCommand.ClearFailed, force: false })}
+                />
+              </div>
             </Badge>
           {/if}
           {#if jobCounts.delayed > 0}

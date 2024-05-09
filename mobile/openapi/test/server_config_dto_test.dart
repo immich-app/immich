@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // int userDeleteDelay
+    test('to test the property `userDeleteDelay`', () async {
+      // TODO
+    });
+
 
   });
 
