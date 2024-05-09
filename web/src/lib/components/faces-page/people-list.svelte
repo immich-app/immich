@@ -6,8 +6,8 @@
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
-  export let peopleCopy: PersonResponseDto[];
-  export let unselectedPeople: PersonResponseDto[];
+  export let peopleToNotShow: PersonResponseDto[];
+  let searchedPeopleLocal: PersonResponseDto[] = [];
 
   let name = '';
   let showPeople: PersonResponseDto[];
@@ -17,20 +17,15 @@
   }>();
 
   $: {
-    showPeople = people.filter(
-      (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
+    showPeople = name ? searchedPeopleLocal : people;
+    showPeople = showPeople.filter(
+      (person) => !peopleToNotShow.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
   }
 </script>
 
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
-  <SearchPeople
-    type="searchBar"
-    placeholder="Search people"
-    bind:searchName={name}
-    bind:searchedPeopleLocal={people}
-    onReset={() => (people = peopleCopy)}
-  />
+  <SearchPeople type="searchBar" placeholder="Search people" bind:searchName={name} bind:searchedPeopleLocal />
 </div>
 
 <div

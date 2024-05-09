@@ -31,7 +31,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
@@ -137,12 +137,23 @@
       return;
     }
   };
+
+  const updateAssetCount = async () => {
+    try {
+      const { assets } = await getPersonStatistics({ id: data.person.id });
+      numberOfAssets = assets;
+    } catch (error) {
+      handleError(error, "Can't update the asset count");
+    }
+  };
+
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
     }
     if (previousPersonId !== data.person.id) {
+      handlePromiseError(updateAssetCount());
       assetStore = new AssetStore({
         isArchived: false,
         personId: data.person.id,
@@ -182,8 +193,7 @@
   };
 
   const handleMerge = async (person: PersonResponseDto) => {
-    const { assets } = await getPersonStatistics({ id: person.id });
-    numberOfAssets = assets;
+    await updateAssetCount();
     await handleGoBack();
 
     data.person = person;
@@ -202,15 +212,6 @@
     assetInteractionStore.clearMultiselect();
 
     viewMode = ViewMode.VIEW_ASSETS;
-  };
-
-  const updateAssetCount = async () => {
-    try {
-      const { assets } = await getPersonStatistics({ id: data.person.id });
-      numberOfAssets = assets;
-    } catch (error) {
-      handleError(error, "Can't update the asset count");
-    }
   };
 
   const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
