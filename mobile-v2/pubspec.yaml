@@ -10,47 +10,36 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # OS specific path
   path_provider: ^2.0.0
   path: ^1.9.0
   # Database
-  drift: ^2.17.0
+  drift: ^2.18.0
   sqlite3: ^2.4.2
   sqlite3_flutter_libs: ^0.5.0
   # Route handling
   auto_route: ^8.1.0
   # Logging
   logging: ^1.2.0
-  # Hooks
-  flutter_hooks: ^0.20.5
   # Collection Utils
   collection: ^1.18.0
-  # BLOC
-  flutter_bloc: ^8.1.5
-  # get_it
-  get_it: ^7.7.0
+  # get_it / watch_it
+  watch_it: ^1.4.1
   # Photo Manager
   photo_manager: ^3.0.0
   photo_manager_image_provider: ^2.1.0
-
-dependency_overrides:
-  # TODO: Remove the drift related overrides once the manager PR change version is released to pub
-  drift:
-    git:
-      url: https://github.com/simolus3/drift.git
-      ref: develop
-      path: drift
-  drift_dev:
-    git:
-      url: https://github.com/simolus3/drift.git
-      ref: develop
-      path: drift_dev
-  sqlparser:
-    git:
-      url: https://github.com/simolus3/drift.git
-      ref: develop
-      path: sqlparser
+  # Dynamic colors - Android
+  dynamic_color: ^1.7.0
+  # Material symbols
+  material_symbols_icons: ^4.2719.3
+  # Localization
+  slang: ^3.30.2
+  slang_flutter: ^3.30.0
+  # Adaptive scaffold
+  flutter_adaptive_scaffold: ^0.1.10+2
 
 dev_dependencies:
   flutter_test:
@@ -60,11 +49,12 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   # Code generator
   build_runner: ^2.4.9
-  source_gen: ^1.5.0
   # Database helper
-  drift_dev: ^2.17.0
+  drift_dev: ^2.18.0
   # Route helper
   auto_route_generator: ^8.0.0
+  # Localization generator
+  slang_build_runner: ^3.30.0
 
 flutter:
   uses-material-design: true

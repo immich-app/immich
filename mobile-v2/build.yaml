@@ -27,4 +27,11 @@ targets:
       #autoroute @AutoRouterConfig()
       auto_route_generator:auto_router_generator:
         generate_for:
-          - lib/presentation/router.dart
+          - lib/presentation/router/router.dart
+      #localization
+      slang_build_runner:
+        options:
+          fallback_strategy: base_locale_empty_string
+          input_directory: assets/i18n
+          output_directory: lib/i18n
+          timestamp: false

@@ -15,4 +15,9 @@ dart_code_metrics:
     - recommended
   rules:
     - prefer-match-file-name: false
-    - avoid-passing-self-as-argument: false
+    - avoid-passing-self-as-argument:
+        exclude:
+          - lib/domain/repositories/**
+    - prefer-single-widget-per-file:
+        ignore-private-widgets: true
+    - prefer-correct-callback-field-name: false

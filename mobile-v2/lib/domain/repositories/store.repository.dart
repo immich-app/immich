@@ -20,7 +20,7 @@ class StoreDriftRepository implements IStoreRepository {
   }
 
   @override
-  FutureOr<void> setValue<T>(StoreKey<T> key, T value) {
+  FutureOr<void> setValue<T>(StoreKey key, T value) {
     return db.transaction(() async {
       final storeValue = StoreValue.of(key, value);
       await db.into(db.store).insertOnConflictUpdate(StoreCompanion.insert(

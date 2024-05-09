@@ -55,11 +55,11 @@ class StoreManager with LogContext {
   }
 
   /// Returns the stored value for the given key (possibly null)
-  T? tryGet<T>(StoreKey<T> key) => _cache[key.id] as T?;
+  T? tryGet<T>(StoreKey key) => _cache[key.id] as T?;
 
   /// Returns the stored value for the given key or if null the [defaultValue]
   /// Throws a [StoreKeyNotFoundException] if both are null
-  T get<T>(StoreKey<T> key, [T? defaultValue]) {
+  T get<T>(StoreKey key, [T? defaultValue]) {
     final value = _cache[key.id] ?? defaultValue;
     if (value == null) {
       throw StoreKeyNotFoundException(key);
@@ -68,17 +68,17 @@ class StoreManager with LogContext {
   }
 
   /// Watches a specific key for changes
-  Stream<T?> watch<T>(StoreKey<T> key) => _db.watchValue(key);
+  Stream<T?> watch<T>(StoreKey key) => _db.watchValue(key);
 
   /// Stores the value synchronously in the cache and asynchronously in the DB
-  FutureOr<void> put<T>(StoreKey<T> key, T value) async {
+  FutureOr<void> put<T>(StoreKey key, T value) async {
     if (_cache[key.id] == value) return Future.value();
     _cache[key.id] = value;
     return await _db.setValue(key, value);
   }
 
   /// Removes the value synchronously from the cache and asynchronously from the DB
-  Future<void> delete<T>(StoreKey<T> key) async {
+  Future<void> delete(StoreKey key) async {
     if (_cache[key.id] == null) return Future.value();
     _cache.remove(key.id);
     return await _db.deleteValue(key);

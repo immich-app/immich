@@ -1,10 +1,7 @@
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
-enum StoreKey<T> {
-  // Server endpoint related stores
-  accessToken<String>(0, type: String),
-  serverEndpoint<String>(1, type: String),
-  ;
+enum StoreKey {
+  appTheme(1000, type: int);
 
   const StoreKey(this.id, {required this.type});
   final int id;
@@ -45,7 +42,7 @@ class StoreValue {
     }
   }
 
-  static StoreValue of<T>(StoreKey<T> key, T? value) {
+  static StoreValue of<T>(StoreKey key, T? value) {
     int? i;
     String? s;
 

@@ -1,0 +1,8 @@
+{
+    "tab_controller": {
+      "photos": "Photos",
+      "search": "Search",
+      "sharing": "Sharing",
+      "library": "Library"
+    }
+  }
