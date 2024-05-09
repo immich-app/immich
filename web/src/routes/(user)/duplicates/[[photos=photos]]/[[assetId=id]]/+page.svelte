@@ -30,6 +30,7 @@
     assets = await getAssetDuplicates();
   });
 
+  const assetStore = new AssetStore({ assets });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
