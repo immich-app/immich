@@ -50,4 +50,45 @@
     </button>
   </div>
 </div>
+<div
+  class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]"
+>
+  <div class="flex w-full flex-col">
+    <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
+      <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
+        <span class="flex items-center gap-2">
+          title and icon
+        </span>
+      </div>
+
+        <div class="whitespace-pre-line text-sm dark:text-white"><p>blah subtitle</p></div>
+
+        <div class="text-sm dark:text-white">
+          <p>description</p>
+        </div>
+
+      <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
+        <div
+          class="rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
+        >
+          <p>Active</p>
+          <p class="text-2xl">
+            1
+          </p>
+        </div>
+
+        <div
+          class="flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-l-none sm:rounded-r-lg"
+        >
+          <p class="text-2xl">
+            {waitingCount.toLocaleString($locale)}
+          </p>
+          <p>Waiting</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">
+  </div>
+</div>
 </UserPageLayout>
