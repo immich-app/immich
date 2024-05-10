@@ -8,7 +8,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <section>
-    <LinkButton on:click={() => }>
+    <LinkButton href="./duplicates">
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentCopy} size="18" />
       </div>
