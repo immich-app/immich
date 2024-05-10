@@ -10,7 +10,7 @@ name: immich
 
 services:
   immich-server:
-    container_name: immich_server
+    container_name: immich_server1
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     command: ['start.sh', 'immich']
     volumes:
