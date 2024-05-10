@@ -23,7 +23,7 @@
       </a>
     </Button>
     <Button title="Duplicates" size="lg" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={true}>
-      <a href="{AppRoute.DUPLICATES}" class="flex place-items-center gap-2 text-sm">
+      <a href="{AppRoute.DUPLICATES}" class="flex place-items-left gap-2 text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
         <p>
           Duplicates
