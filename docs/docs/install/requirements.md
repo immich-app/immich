@@ -17,8 +17,9 @@ Immich requires the command `docker compose` - the similarly named `docker-compo
 
 ## Hardware
 
-- **OS**: Recommended Unix-compatible operating system (Ubuntu, Debian, MacOS, etc).
-  - Windows is supported with [Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/) or [WSL 2](https://docs.docker.com/desktop/wsl/)
+- **OS**: Recommended Linux operating system (Ubuntu, Debian, etc).
+  - Windows is supported with [Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/) or [WSL 2](https://docs.docker.com/desktop/wsl/).
+  - macOS is supported with [Docker Desktop on Mac](https://docs.docker.com/desktop/install/mac-install/).
 - **RAM**: Minimum 4GB, recommended 6GB.
 - **CPU**: Minimum 2 cores, recommended 4 cores.
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
