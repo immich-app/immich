@@ -14,7 +14,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <section class="flex place-items-center gap-2">
-    <Button title="Duplicates" size="lg" color="transparent-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
+    <Button title="Duplicates" size="lg" color="overlay-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
       <a href="{AppRoute.DUPLICATES}" class="text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
         <p>
@@ -22,8 +22,8 @@
         </p>
       </a>
     </Button>
-    <Button title="Duplicates" size="lg" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={true}>
-      <a href="{AppRoute.DUPLICATES}" class="flex place-items-left gap-2 text-sm">
+    <Button title="Duplicates" size="lg" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
+      <a href="{AppRoute.DUPLICATES}" class="flex inset-y-0 gap-2 text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
         <p>
           Duplicates
