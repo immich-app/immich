@@ -14,7 +14,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <section>
-    <Button title="Dupltitle" size="link" color="transparent-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
+    <Button title="Duplicates" size="base" color="transparent-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
       <a href="{AppRoute.DUPLICATES}">
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentDuplicate} size="18" />
