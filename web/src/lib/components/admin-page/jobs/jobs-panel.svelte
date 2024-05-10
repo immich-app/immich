@@ -89,7 +89,7 @@
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
-      icon: mdiImageSearch,
+      icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
       subtitle: 'Run machine learning on assets to detect near-duplicate images',
       disabled: !$featureFlags.duplicateDetection,
