@@ -23,6 +23,13 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 | `UPLOAD_LOCATION`  | Host Path for uploads           |           | server, microservices                   |
 | `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                                |
 
+:::warning
+
+Do not use a directory under `/mnt` for `DB_DATA_LOCATION` if you are using WSL.
+Generally (on all operating systems) we recommend against using a network share for your database location. This is bound to break and cause all sorts of weird issues.
+
+:::
+
 :::tip
 
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
