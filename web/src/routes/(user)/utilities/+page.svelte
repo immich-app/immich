@@ -81,7 +81,7 @@
           class="flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-l-none sm:rounded-r-lg"
         >
           <p class="text-2xl">
-            {waitingCount.toLocaleString($locale)}
+            1
           </p>
           <p>Waiting</p>
         </div>
