@@ -15,16 +15,14 @@
 <UserPageLayout title={data.meta.title}>
   <section>
     <Button title="Duplicates" size="base" color="transparent-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
-      <a href="{AppRoute.DUPLICATES}">
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiContentDuplicate} size="18" />
-          <p>
-            Duplicates
-          </p>
-        </div>
+      <a href="{AppRoute.DUPLICATES}" class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiContentDuplicate} size="18" />
+        <p>
+          Duplicates
+        </p>
       </a>
     </Button>
-    <Button title="Duplicates" size="base" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
+    <Button title="Duplicates" size="lg" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
       <a href="{AppRoute.DUPLICATES}" class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
         <p>
