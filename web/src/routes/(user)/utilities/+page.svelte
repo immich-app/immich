@@ -25,13 +25,11 @@
       </a>
     </Button>
     <Button title="Duplicates" size="base" color="dark-gray" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
-      <a href="{AppRoute.DUPLICATES}">
-        <div>
-          <Icon path={mdiContentDuplicate} size="18" />
-          <p>
-            Duplicates
-          </p>
-        </div>
+      <a href="{AppRoute.DUPLICATES}" class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiContentDuplicate} size="18" />
+        <p>
+          Duplicates
+        </p>
       </a>
     </Button>
   </section>
