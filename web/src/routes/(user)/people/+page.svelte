@@ -7,7 +7,7 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
-  import ShowHide from '$lib/components/faces-page/show-hide.svelte';
+  import ShowHide, { changeVisibility, ToggleVisibilty } from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
@@ -48,7 +48,7 @@
   let searchName = '';
 
   let showLoadingSpinner = false;
-  let toggleVisibility = false;
+  let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
 
   let showChangeNameModal = false;
   let showSetBirthDateModal = false;
@@ -104,7 +104,7 @@
     // Reset variables used on the "Show & hide people"   modal
     showLoadingSpinner = false;
     selectHidden = false;
-    toggleVisibility = false;
+    toggleVisibility = ToggleVisibilty.VIEW_ALL;
   };
 
   const handleResetVisibility = () => {
@@ -117,9 +117,17 @@
   };
 
   const handleToggleVisibility = () => {
-    toggleVisibility = !toggleVisibility;
+    toggleVisibility = changeVisibility(toggleVisibility);
     for (const person of people) {
-      person.isHidden = toggleVisibility;
+      if (toggleVisibility == ToggleVisibilty.HIDE_ALL) {
+        person.isHidden = true;
+      }
+      if (toggleVisibility == ToggleVisibilty.VIEW_ALL) {
+        person.isHidden = false;
+      }
+      if (toggleVisibility == ToggleVisibilty.HIDE_UNNANEMD && !person.name) {
+        person.isHidden = true;
+      }
     }
 
     // trigger reactivity
@@ -172,7 +180,7 @@
     // Reset variables used on the "Show & hide people" modal
     showLoadingSpinner = false;
     selectHidden = false;
-    toggleVisibility = false;
+    toggleVisibility = ToggleVisibilty.VIEW_ALL;
   };
 
   const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {

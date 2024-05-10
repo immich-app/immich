@@ -1,10 +1,28 @@
+<script lang="ts" context="module">
+  export enum ToggleVisibilty {
+    HIDE_ALL = 'hide-all',
+    HIDE_UNNANEMD = 'hide-unnamed',
+    VIEW_ALL = 'view-all',
+  }
+
+  export const changeVisibility = (toggleVisibility: ToggleVisibilty) => {
+    if (toggleVisibility === ToggleVisibilty.VIEW_ALL) {
+      return ToggleVisibilty.HIDE_UNNANEMD;
+    } else if (toggleVisibility === ToggleVisibilty.HIDE_UNNANEMD) {
+      return ToggleVisibilty.HIDE_ALL;
+    } else {
+      return ToggleVisibilty.VIEW_ALL;
+    }
+  };
+</script>
+
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { quintOut } from 'svelte/easing';
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
+  import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { locale } from '$lib/stores/preferences.store';
   import Button from '$lib/components/elements/buttons/button.svelte';
 
@@ -16,9 +34,17 @@
   }>();
 
   export let showLoadingSpinner: boolean;
-  export let toggleVisibility: boolean;
+  export let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
   export let screenHeight: number;
   export let countTotalPeople: number;
+
+  const toggleIconOptions: Record<ToggleVisibilty, string> = {
+    [ToggleVisibilty.HIDE_ALL]: mdiEyeOff,
+    [ToggleVisibilty.HIDE_UNNANEMD]: mdiEyeSettings,
+    [ToggleVisibilty.VIEW_ALL]: mdiEye,
+  };
+
+  $: toggleIcon = toggleIconOptions[toggleVisibility];
 </script>
 
 <section
@@ -38,11 +64,7 @@
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
         <CircleIconButton title="Reset people visibility" icon={mdiRestart} on:click={() => dispatch('reset')} />
-        <CircleIconButton
-          title="Toggle visibility"
-          icon={toggleVisibility ? mdiEye : mdiEyeOff}
-          on:click={() => dispatch('change')}
-        />
+        <CircleIconButton title="Toggle visibility" icon={toggleIcon} on:click={() => dispatch('change')} />
       </div>
       {#if !showLoadingSpinner}
         <Button on:click={() => dispatch('done')} size="sm" rounded="lg">Done</Button>
