@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
+    mdiContentDuplicate
     mdiFaceRecognition,
     mdiFileJpgBox,
     mdiFileXmlBox,
