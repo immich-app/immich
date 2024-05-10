@@ -6,6 +6,7 @@
   } from '@mdi/js';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let data: PageData;
 </script>
