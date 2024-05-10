@@ -2053,14 +2053,19 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
+    });
 
-      storageMock.readdir.mockResolvedValue(['renderD129', 'renderD128']);
+    it('should prefer higher index gpu node', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD129', 'renderD130', 'renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.VAAPI }]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD129', '-filter_hw_device accel'],
+          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD130', '-filter_hw_device accel'],
           outputOptions: [
             `-c:v h264_vaapi`,
             '-c:a copy',
