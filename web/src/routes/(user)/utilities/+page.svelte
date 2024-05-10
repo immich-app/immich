@@ -32,7 +32,7 @@
     </Button>
   </section>
 
-<div class="bg-gray-100 rounded overflow-hidden shadow-sm my-4 mx-4">
+<div class="bg-gray-100 rounded overflow-hidden shadow-sm my-4 mx-40">
   <div class="flex flex-col space-y-2 px-4 py-4">
     <button type="button" class="flex items-center px-4 py-2 space-x-2 rounded bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
       <span class="material-icons text-indigo-500">home</span>
