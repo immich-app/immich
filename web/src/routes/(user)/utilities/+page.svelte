@@ -7,16 +7,19 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let data: PageData;
 </script>
 
 <UserPageLayout title={data.meta.title}>
   <section>
-    <LinkButton href="./duplicates">
+    <a href="{AppRoute.DUPLICATES}">
+    <LinkButton>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
       </div>
     </LinkButton>
+    </a>
   </section>
 </UserPageLayout>
