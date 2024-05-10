@@ -13,7 +13,8 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <section class="bg-gray-200 rounded my-10 mx-10">
+  <section class="
+  class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]">
     <div class="flex flex-col space-y-2 px-4 py-4">
       <Button title="Duplicates" size="lg" color="overlay-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
         <a href="{AppRoute.DUPLICATES}" class="text-sm">
@@ -50,6 +51,7 @@
     </button>
   </div>
 </div>
+
 <div
   class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]"
 >
@@ -89,6 +91,7 @@
     </div>
   </div>
   <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">
+    <p>blah below</p>
   </div>
 </div>
 </UserPageLayout>
