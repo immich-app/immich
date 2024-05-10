@@ -13,7 +13,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <section class="
+  <section
   class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]">
     <div class="flex flex-col space-y-2 px-4 py-4">
       <Button title="Duplicates" size="lg" color="overlay-primary" shadow={false} rounded="lg" disabled={false} on:click fullwidth={false}>
