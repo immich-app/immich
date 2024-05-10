@@ -108,8 +108,30 @@ describe(SearchService.name, () => {
   });
 
   describe('handleQueueSearchDuplicates', () => {
+    beforeEach(() => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
+      ]);
+    });
+
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
+      ]);
+
+      await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.SKIPPED);
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(configMock.load).toHaveBeenCalled();
+    });
+
+    it('should skip if duplicate detection is disabled', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
+        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: false },
+      ]);
 
       await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queue).not.toHaveBeenCalled();

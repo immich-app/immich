@@ -176,6 +176,7 @@ describe(ServerInfoService.name, () => {
     it('should respond the server features', async () => {
       await expect(sut.getFeatures()).resolves.toEqual({
         smartSearch: true,
+        duplicateDetection: false,
         facialRecognition: true,
         map: true,
         reverseGeocoding: true,
