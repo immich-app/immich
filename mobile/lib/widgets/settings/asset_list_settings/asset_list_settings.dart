@@ -6,7 +6,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/utils/app_settings_update_hook.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'asset_list_layout_settings.dart';
 
 class AssetListSettings extends HookConsumerWidget {
