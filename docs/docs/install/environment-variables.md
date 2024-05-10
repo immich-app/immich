@@ -30,8 +30,9 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 ### Supported filesystems
 
 The Immich Postgres database (`DB_DATA_LOCATION`) must be located on a filesystem that supports user/group
-ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32, or in a mounted directory
-(commonly under `/mnt`) in WSL (Windows Subsystem for Linux). If this is an issue, you can change the bind mount to a Docker volume instead.
+ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32.
+It will not work in WSL (Windows Subsystem for Linux) when using a mounted host directory (commonly under `/mnt`).
+If this is an issue, you can change the bind mount to a Docker volume instead.
 
 Regardless of filesystem, it is not recommended to use a network share for your database location due to performance and possible data loss issues.
 
