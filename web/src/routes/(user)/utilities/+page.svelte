@@ -15,11 +15,9 @@
 <UserPageLayout title={data.meta.title}>
   <section>
     <a href="{AppRoute.DUPLICATES}">
-    <LinkButton>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentDuplicate} size="18" />
       </div>
-    </LinkButton>
     </a>
   </section>
 </UserPageLayout>
