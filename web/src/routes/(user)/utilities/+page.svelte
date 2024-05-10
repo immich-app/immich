@@ -8,6 +8,10 @@
 
 <UserPageLayout title={data.meta.title}>
   <section>
-    <EmptyPlaceholder slot="empty" text="Create an album to organize your photos and videos" />
+    <LinkButton on:click={() => }>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiContentCopy} size="18" />
+      </div>
+    </LinkButton>
   </section>
 </UserPageLayout>
