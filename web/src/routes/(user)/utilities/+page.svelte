@@ -5,7 +5,7 @@
     mdiContentDuplicate
   } from '@mdi/js';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
 
@@ -14,7 +14,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <section>
-    <LinkButton>
+    <Button {thing} size="link" {color} shadow={false} rounded="lg" {false} on:click {false}>
       <a href="{AppRoute.DUPLICATES}">
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentDuplicate} size="18" />
@@ -23,6 +23,6 @@
           </p>
         </div>
       </a>
-    </LinkButton>
+    </Button>
   </section>
 </UserPageLayout>
