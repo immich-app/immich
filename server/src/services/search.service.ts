@@ -160,8 +160,7 @@ export class SearchService {
   }
 
   async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!(await this.configCore.hasFeature(FeatureFlag.DUPLICATE_DETECTION))) {
       return JobStatus.SKIPPED;
     }
 
@@ -182,7 +181,7 @@ export class SearchService {
 
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.duplicateDetection.enabled) {
+    if (!(await this.configCore.hasFeature(FeatureFlag.DUPLICATE_DETECTION))) {
       return JobStatus.SKIPPED;
     }
 

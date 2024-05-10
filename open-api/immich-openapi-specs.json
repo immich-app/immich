@@ -9441,6 +9441,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9477,6 +9480,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",

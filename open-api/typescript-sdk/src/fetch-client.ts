@@ -749,6 +749,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
     map: boolean;
