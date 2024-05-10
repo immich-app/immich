@@ -99,19 +99,22 @@ describe(MetadataService.name, () => {
   });
 
   describe('init', () => {
-    beforeEach(async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
-
+    it('should pause and resume queue during init', async () => {
       await sut.init();
+
+      expect(jobMock.pause).toHaveBeenCalledTimes(1);
+      expect(metadataMock.init).toHaveBeenCalledTimes(1);
+      expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
 
     it('should return if reverse geocoding is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: false }]);
 
       await sut.init();
-      expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
-      expect(jobMock.resume).toHaveBeenCalledTimes(1);
+
+      expect(jobMock.pause).not.toHaveBeenCalled();
+      expect(metadataMock.init).not.toHaveBeenCalled();
+      expect(jobMock.resume).not.toHaveBeenCalled();
     });
   });
 

@@ -20,6 +20,7 @@ export enum DatabaseLock {
   StorageTemplateMigration = 420,
   CLIPDimSize = 512,
   LibraryWatch = 1337,
+  GetSystemConfig = 304,
 }
 
 export const extName: Record<DatabaseExtension, string> = {
