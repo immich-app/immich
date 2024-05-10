@@ -35,7 +35,6 @@ ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not w
 
 Regardless of filesystem, it is not recommended to use a network share for your database location due to performance and possible data loss issues.
 
-
 ## General
 
 | Variable                        | Description                                  |         Default          | Services                                |
