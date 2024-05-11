@@ -42,7 +42,7 @@
 ## Inhoud
 s
 - [Officiële documentatie](https://immich.app/docs)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
+- [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Functies](#functies)
 - [Introductie](https://immich.app/docs/overview/introduction)
@@ -59,7 +59,7 @@ De demo is te bekijken op https://demo.immich.app.
 
 Voor de mobiele app kunt u gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
 
-```bash title="Demo Credential"
+```bash title="Demo inloggegevens"
 De inloggegevens
 email: demo@immich.app
 wachtwoord: demo
@@ -69,12 +69,18 @@ wachtwoord: demo
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
+## Activiteiten
+
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+
+
 # Functies
 
 | Functies                                            | Mobiel | Web |
 |-----------------------------------------------------|--------|-----|
 | Upload en bekijk video's en foto's                  | Ja     | Ja  |
 | Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
+| Preventieve duplicatie van bestanden                | Ja     | Ja  |
 | Selectieve album(s) voor back-up                    | Ja     | NVT |
 | Download foto's en video's naar een lokaal apparaat | Ja     | Ja  |
 | Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
@@ -89,6 +95,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | OAuth-ondersteuning                                 | Ja     | Ja  |
 | API-sleutels                                        | NVT    | Ja  |
 | LivePhoto-back-up en weergave                       | iOS    | Ja  |
+| Ondersteuning 360 Graden foto weergave              | Nee    | Ja  |
 | Door de gebruiker gedefinieerde opslagstructuur     | Ja     | Ja  |
 | Openbaar delen                                      | Nee    | Ja  |
 | Archief en Favorieten                               | Ja     | Ja  |
@@ -98,3 +105,19 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Herinneringen (x jaar geleden)                      | Ja     | Ja  |
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
+
+## Contributie-leden
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
+
+## Ster geschiedenis
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
