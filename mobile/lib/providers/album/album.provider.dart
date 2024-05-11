@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';

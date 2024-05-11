@@ -110,7 +110,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: options.auth?.user.id === entity.ownerId ? entity.isArchived : false,
+    isArchived: entity.isArchived,
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,

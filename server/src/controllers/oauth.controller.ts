@@ -11,17 +11,15 @@ import {
   OAuthConfigDto,
 } from 'src/dtos/auth.dto';
 import { UserResponseDto } from 'src/dtos/user.dto';
-import { Auth, Authenticated, GetLoginDetails, PublicRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
 
 @ApiTags('OAuth')
 @Controller('oauth')
-@Authenticated()
 export class OAuthController {
   constructor(private service: AuthService) {}
 
-  @PublicRoute()
   @Get('mobile-redirect')
   @Redirect()
   redirectOAuthToMobile(@Req() request: Request) {
@@ -31,13 +29,11 @@ export class OAuthController {
     };
   }
 
-  @PublicRoute()
   @Post('authorize')
   startOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     return this.service.authorize(dto);
   }
 
-  @PublicRoute()
   @Post('callback')
   async finishOAuth(
     @Res({ passthrough: true }) res: Response,
@@ -56,11 +52,13 @@ export class OAuthController {
   }
 
   @Post('link')
+  @Authenticated()
   linkOAuthAccount(@Auth() auth: AuthDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
     return this.service.link(auth, dto);
   }
 
   @Post('unlink')
+  @Authenticated()
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserResponseDto> {
     return this.service.unlink(auth);
   }

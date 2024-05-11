@@ -30,6 +30,8 @@ download:
       locale_code: pl-PL
     - file: mobile/assets/i18n/fi-FI.json
       locale_code: fi-FI
+    - file: mobile/assets/i18n/pt-BR.json
+      locale_code: pt-BR
     - file: mobile/assets/i18n/pt-PT.json
       locale_code: pt-PT
     - file: mobile/assets/i18n/pt-BR.json

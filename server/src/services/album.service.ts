@@ -114,7 +114,12 @@ export class AlbumService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
+    const albumUsers = dto.albumUsers || [];
     for (const userId of dto.sharedWithUserIds || []) {
+      albumUsers.push({ userId, role: AlbumUserRole.EDITOR });
+    }
+
+    for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         throw new BadRequestException('User not found');
@@ -128,7 +133,7 @@ export class AlbumService {
       ownerId: auth.user.id,
       albumName: dto.albumName,
       description: dto.description,
-      albumUsers: dto.sharedWithUserIds?.map((userId) => ({ user: { id: userId } }) as AlbumUserEntity) ?? [],
+      albumUsers: albumUsers.map((albumUser) => albumUser as AlbumUserEntity) ?? [],
       assets,
       albumThumbnailAssetId: assets[0]?.id || null,
     });

@@ -20,7 +20,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';

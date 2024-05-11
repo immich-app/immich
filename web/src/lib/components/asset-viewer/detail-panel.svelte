@@ -250,7 +250,6 @@
               on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
-              on:click={() => dispatch('closeViewer')}
             >
               <div class="relative">
                 <ImageThumbnail

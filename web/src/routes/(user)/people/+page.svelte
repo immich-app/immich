@@ -60,14 +60,23 @@
   let edittingPerson: PersonResponseDto | null = null;
   let searchedPeopleLocal: PersonResponseDto[] = [];
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
-
+  let showPeople: PersonResponseDto[] = [];
+  let countVisiblePeople: number;
+  let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
-  $: showPeople = searchName ? searchedPeopleLocal : people.filter((person) => !person.isHidden);
-  $: countVisiblePeople = countTotalPeople - countHiddenPeople;
+  $: {
+    if (searchName) {
+      showPeople = searchedPeopleLocal;
+      countVisiblePeople = searchedPeopleLocal.length;
+    } else {
+      showPeople = people.filter((person) => !person.isHidden);
+      countVisiblePeople = countTotalPeople - countHiddenPeople;
+    }
+  }
 
   onMount(async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -228,6 +237,8 @@
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
+
+    setTimeout(() => changeNameInputEl?.focus(), 100);
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
@@ -382,7 +393,7 @@
 
 <UserPageLayout
   title="People"
-  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
@@ -439,7 +450,14 @@
       <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
+          <input
+            class="immich-form-input"
+            id="name"
+            name="name"
+            type="text"
+            bind:value={personName}
+            bind:this={changeNameInputEl}
+          />
         </div>
       </form>
       <svelte:fragment slot="sticky-bottom">

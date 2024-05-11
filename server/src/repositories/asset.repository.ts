@@ -36,6 +36,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
+  FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,
@@ -236,12 +237,17 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
+  getById(
+    id: string,
+    relations: FindOptionsRelations<AssetEntity>,
+    order?: FindOptionsOrder<AssetEntity>,
+  ): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },
       relations,
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
+      order,
     });
   }
 
@@ -565,15 +571,14 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
-    // can't use queryBuilder because of custom OFFSET clause
-    return this.repository.query(
-      `SELECT *
-       FROM assets
-       WHERE "ownerId" = $1
-       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
-      [ownerId, count],
-    );
+    const builder = this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: true,
+    });
+
+    return builder.orderBy('RANDOM()').limit(count).getMany();
   }
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })

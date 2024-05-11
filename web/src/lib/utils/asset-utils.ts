@@ -370,7 +370,6 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     }
   } catch (error) {
     handleError(error, 'Error selecting all assets');
-  } finally {
     isSelectingAllAssets.set(false);
   }
 };
