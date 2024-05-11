@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UploadFieldName } from 'src/dtos/asset.dto';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { UserAvatarColor, UserEntity } from 'src/entities/user.entity';
 
 export class CreateProfileImageDto {

@@ -2,13 +2,11 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpStatus,
   Next,
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Res,
   UploadedFiles,
@@ -16,55 +14,34 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import {
-  AssetBulkUploadCheckResponseDto,
-  AssetFileUploadResponseDto,
-  CheckExistingAssetsResponseDto,
-} from 'src/dtos/asset-v1-response.dto';
-import {
-  AssetBulkUploadCheckDto,
-  AssetSearchDto,
-  CheckExistingAssetsDto,
-  CreateAssetDto,
-  GetAssetThumbnailDto,
-  ServeFileDto,
-  UpdateAssetDataDto,
-} from 'src/dtos/asset-v1.dto';
+import { GetAssetThumbnailDto } from 'src/dtos/asset-media-response.dto';
+import { ServeFileDto } from 'src/dtos/asset-media.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
+import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
+import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
+import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
-import { UploadFile } from 'src/services/asset.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
-interface UploadFiles {
-  assetData: ImmichFile[];
-  livePhotoData?: ImmichFile[];
-  sidecarData: ImmichFile[];
-}
-
-function getFile(files: UploadFiles, property: 'assetData' | 'livePhotoData' | 'sidecarData') {
-  const file = files[property]?.[0];
-  return file ? mapToUploadFile(file) : file;
-}
-
-function getFiles(files: UploadFiles) {
-  return {
-    file: getFile(files, 'assetData') as UploadFile,
-    livePhotoFile: getFile(files, 'livePhotoData'),
-    sidecarFile: getFile(files, 'sidecarData'),
-  };
-}
-
+/**
+ * This entire class holds deprecated routes for backwards compat with older mobile clients
+ * Delete this file this after a few releases
+ * @deprecated
+ */
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 @Authenticated()
 export class AssetControllerV1 {
-  constructor(private service: AssetServiceV1) { }
+  constructor(
+    private service: AssetServiceV1,
+    private assetMediaService: AssetMediaService,
+  ) {}
 
+  /** @deprecated  - renamed to POST /api/asset */
   @SharedLinkRoute()
   @Post('upload')
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
@@ -92,42 +69,7 @@ export class AssetControllerV1 {
     return responseDto;
   }
 
-  @SharedLinkRoute()
-  @Put(':id/upload')
-  @UseInterceptors(FileUploadInterceptor)
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Asset Upload Information',
-    type: UpdateAssetDataDto,
-  })
-  async updateFile(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
-    @Body() dto: UpdateAssetDataDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetFileUploadResponseDto> {
-    const { file, livePhotoFile, sidecarFile } = getFiles(files);
-    const responseDto = await this.service.updateFile(auth, id, dto, file, livePhotoFile, sidecarFile);
-    if (responseDto.duplicate) {
-      res.status(HttpStatus.OK);
-    }
-    return responseDto;
-  }
-
-  @SharedLinkRoute()
-  @Get('/file/:id')
-  @FileResponse()
-  async serveFile(
-    @Res() res: Response,
-    @Next() next: NextFunction,
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Query() dto: ServeFileDto,
-  ) {
-    await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
-  }
-
+  /** @deprecated - renamed to GET /api/asset/:id/thumbnail */
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
   @FileResponse()
@@ -138,44 +80,20 @@ export class AssetControllerV1 {
     @Param() { id }: UUIDParamDto,
     @Query() dto: GetAssetThumbnailDto,
   ) {
-    await sendFile(res, next, () => this.service.serveThumbnail(auth, id, dto));
+    await sendFile(res, next, () => this.assetMediaService.serveThumbnail(auth, id, dto));
   }
 
-  /**
-   * Get all AssetEntity belong to the user
-   */
-  @Get('/')
-  @ApiHeader({
-    name: 'if-none-match',
-    description: 'ETag of data already cached on the client',
-    required: false,
-    schema: { type: 'string' },
-  })
-  getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.getAllAssets(auth, dto);
-  }
-
-  /**
-   * Checks if multiple assets exist on the server and returns all existing - used by background backup
-   */
-  @Post('/exist')
-  @HttpCode(HttpStatus.OK)
-  checkExistingAssets(
+  /** @deprecated  - renamed to GET /api/asset/:id/file */
+  @SharedLinkRoute()
+  @Get('/file/:id')
+  @FileResponse()
+  async serveFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Body() dto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return this.service.checkExistingAssets(auth, dto);
-  }
-
-  /**
-   * Checks if assets exist by checksums
-   */
-  @Post('/bulk-upload-check')
-  @HttpCode(HttpStatus.OK)
-  checkBulkUpload(
-    @Auth() auth: AuthDto,
-    @Body() dto: AssetBulkUploadCheckDto,
-  ): Promise<AssetBulkUploadCheckResponseDto> {
-    return this.service.bulkUploadCheck(auth, dto);
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: ServeFileDto,
+  ) {
+    await sendFile(res, next, () => this.assetMediaService.serveFile(auth, id, dto));
   }
 }

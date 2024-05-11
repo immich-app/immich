@@ -152,35 +152,37 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
-    <div
-      bind:this={imgElement}
-      class:hidden={!imageLoaded}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-    >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+    {#key assetFileUrl}
+      <div
+        bind:this={imgElement}
+        class:hidden={!imageLoaded}
+        class="h-full w-full"
+        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+      >
+        {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+          <img
+            src={assetFileUrl}
+            alt={getAltText(asset)}
+            class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+            draggable="false"
+          />
+        {/if}
         <img
+          bind:this={$photoViewer}
           src={assetFileUrl}
           alt={getAltText(asset)}
-          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          class="h-full w-full {$slideshowState === SlideshowState.None
+            ? 'object-contain'
+            : slideshowLookCssMapping[$slideshowLook]}"
           draggable="false"
         />
-      {/if}
-      <img
-        bind:this={$photoViewer}
-        src={assetFileUrl}
-        alt={getAltText(asset)}
-        class="h-full w-full {$slideshowState === SlideshowState.None
-          ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
-        draggable="false"
-      />
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
-        <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        />
-      {/each}
-    </div>
+        {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
+          <div
+            class="absolute border-solid border-white border-[3px] rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          />
+        {/each}
+      </div>
+    {/key}
   {/if}
 </div>

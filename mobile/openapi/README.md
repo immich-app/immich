@@ -94,20 +94,23 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**updateAlbumUser**](doc//AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/user/{userId} | 
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+*AssetApi* | [**createAssetMedia**](doc//AssetApi.md#createassetmedia) | **POST** /asset | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
+*AssetApi* | [**getAssetMediaThumbnail**](doc//AssetApi.md#getassetmediathumbnail) | **GET** /asset/{id}/thumbnail | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
+*AssetApi* | [**getAsssetMedia**](doc//AssetApi.md#getasssetmedia) | **GET** /asset/{id}/file | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
+*AssetApi* | [**updateAssetMedia**](doc//AssetApi.md#updateassetmedia) | **PUT** /asset/{id}/file | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
-*AssetApi* | [**updateFile**](doc//AssetApi.md#updatefile) | **PUT** /asset/{id}/upload | 
 *AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
@@ -257,6 +260,7 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
+ - [AssetMediaUploadResponseDto](doc//AssetMediaUploadResponseDto.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)

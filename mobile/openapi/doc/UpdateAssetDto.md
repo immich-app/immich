@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **isArchived** | **bool** |  | [optional] 
 **isFavorite** | **bool** |  | [optional] 
 **latitude** | **num** |  | [optional] 
+**livePhotoVideoId** | **String** |  | [optional] 
 **longitude** | **num** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

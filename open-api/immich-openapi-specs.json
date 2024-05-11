@@ -1072,6 +1072,66 @@
           "Asset"
         ]
       },
+      "post": {
+        "description": "POST /api/asset",
+        "operationId": "createAssetMedia",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-checksum",
+            "in": "header",
+            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetMediaDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaUploadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      },
       "put": {
         "operationId": "updateAssets",
         "parameters": [],
@@ -1108,7 +1168,7 @@
     },
     "/asset/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
+        "description": "POST /api/asset/bulk-upload-check\nChecks if assets exist by checksums",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1196,7 +1256,7 @@
     },
     "/asset/exist": {
       "post": {
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
+        "description": "POST /api/asset/exist\nChecks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
         "parameters": [],
         "requestBody": {
@@ -1832,9 +1892,78 @@
         ]
       }
     },
-    "/asset/{id}/upload": {
+    "/asset/{id}/file": {
+      "get": {
+        "description": "GET /api/asset/:id/file",
+        "operationId": "getAsssetMedia",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isThumb",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "title": "Is serve thumbnail (resize) file",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isWeb",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "title": "Is request made from web",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      },
       "put": {
-        "operationId": "updateFile",
+        "description": "PUT /api/asset/:id/file",
+        "operationId": "updateAssetMedia",
         "parameters": [
           {
             "name": "id",
@@ -1858,7 +1987,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAssetDataDto"
+                "$ref": "#/components/schemas/UpdateAssetMediaDto"
               }
             }
           },
@@ -1870,7 +1999,67 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
+                  "$ref": "#/components/schemas/AssetMediaUploadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset/{id}/thumbnail": {
+      "get": {
+        "description": "GET /api/asset/:id/thumbnail",
+        "operationId": "getAssetMediaThumbnail",
+        "parameters": [
+          {
+            "name": "format",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ThumbnailFormat"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
                 }
               }
             },
@@ -7315,6 +7504,24 @@
         ],
         "type": "object"
       },
+      "AssetMediaUploadResponseDto": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "duplicate": {
+            "type": "boolean"
+          },
+          "duplicateId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "duplicate",
+          "duplicateId"
+        ],
+        "type": "object"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -7724,6 +7931,59 @@
           },
           "livePhotoData": {
             "format": "binary",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
+      "CreateAssetMediaDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "libraryId": {
+            "format": "uuid",
             "type": "string"
           },
           "sidecarData": {
@@ -10750,7 +11010,34 @@
         ],
         "type": "object"
       },
-      "UpdateAssetDataDto": {
+      "UpdateAssetDto": {
+        "properties": {
+          "dateTimeOriginal": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateAssetMediaDto": {
         "properties": {
           "assetData": {
             "format": "binary",
@@ -10772,14 +11059,6 @@
           "fileModifiedAt": {
             "format": "date-time",
             "type": "string"
-          },
-          "livePhotoData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "sidecarData": {
-            "format": "binary",
-            "type": "string"
           }
         },
         "required": [
@@ -10789,29 +11068,6 @@
           "fileCreatedAt",
           "fileModifiedAt"
         ],
-        "type": "object"
-      },
-      "UpdateAssetDto": {
-        "properties": {
-          "dateTimeOriginal": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "latitude": {
-            "type": "number"
-          },
-          "longitude": {
-            "type": "number"
-          }
-        },
         "type": "object"
       },
       "UpdateLibraryDto": {

@@ -17,17 +17,24 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    // Checks if assets exist by checksums
+    // POST /api/asset/bulk-upload-check Checks if assets exist by checksums
     //
     //Future<AssetBulkUploadCheckResponseDto> checkBulkUpload(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
     test('test checkBulkUpload', () async {
       // TODO
     });
 
-    // Checks if multiple assets exist on the server and returns all existing - used by background backup
+    // POST /api/asset/exist Checks if multiple assets exist on the server and returns all existing - used by background backup
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
     test('test checkExistingAssets', () async {
+      // TODO
+    });
+
+    // POST /api/asset
+    //
+    //Future<AssetMediaUploadResponseDto> createAssetMedia(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
+    test('test createAssetMedia', () async {
       // TODO
     });
 
@@ -55,6 +62,13 @@ void main() {
       // TODO
     });
 
+    // GET /api/asset/:id/thumbnail
+    //
+    //Future<MultipartFile> getAssetMediaThumbnail(String id, { ThumbnailFormat format, String key }) async
+    test('test getAssetMediaThumbnail', () async {
+      // TODO
+    });
+
     //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStatistics', () async {
       // TODO
@@ -62,6 +76,13 @@ void main() {
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
+      // TODO
+    });
+
+    // GET /api/asset/:id/file
+    //
+    //Future<MultipartFile> getAsssetMedia(String id, { bool isThumb, bool isWeb, String key }) async
+    test('test getAsssetMedia', () async {
       // TODO
     });
 
@@ -95,13 +116,15 @@ void main() {
       // TODO
     });
 
-    //Future updateAssets(AssetBulkUpdateDto assetBulkUpdateDto) async
-    test('test updateAssets', () async {
+    // PUT /api/asset/:id/file
+    //
+    //Future<AssetMediaUploadResponseDto> updateAssetMedia(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
+    test('test updateAssetMedia', () async {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> updateFile(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration, MultipartFile livePhotoData, MultipartFile sidecarData }) async
-    test('test updateFile', () async {
+    //Future updateAssets(AssetBulkUpdateDto assetBulkUpdateDto) async
+    test('test updateAssets', () async {
       // TODO
     });
 

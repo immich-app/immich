@@ -53,7 +53,8 @@ const truncateMap: Record<TimeBucketSize, string> = {
 };
 
 const dateTrunc = (options: TimeBucketOptions) =>
-  `(date_trunc('${truncateMap[options.size]
+  `(date_trunc('${
+    truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
 @Instrumentation()
@@ -66,7 +67,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
-  ) { }
+  ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
@@ -153,6 +154,18 @@ export class AssetRepository implements IAssetRepository {
         albums: true,
         exifInfo: true,
       },
+    });
+  }
+
+  getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(deviceAssetIds),
+        deviceId,
+        ownerId,
+      },
+      withDeleted: true,
     });
   }
 
@@ -277,6 +290,21 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { libraryId, checksum } });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
+  getByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: {
+        id: true,
+        checksum: true,
+      },
+      where: {
+        ownerId,
+        checksum: In(checksums),
+      },
+      withDeleted: true,
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })

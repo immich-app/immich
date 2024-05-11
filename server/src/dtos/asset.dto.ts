@@ -9,12 +9,44 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
+  IsUUID,
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+
+export class AssetSearchDto {
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isArchived?: boolean;
+
+  @Optional()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  skip?: number;
+
+  @Optional()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  take?: number;
+
+  @Optional()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  userId?: string;
+
+  @ValidateDate({ optional: true })
+  updatedAfter?: Date;
+
+  @ValidateDate({ optional: true })
+  updatedBefore?: Date;
+}
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -63,6 +95,9 @@ export class UpdateAssetDto extends UpdateAssetBase {
   @Optional()
   @IsString()
   description?: string;
+
+  @ValidateUUID({ optional: true })
+  livePhotoVideoId?: string;
 }
 
 export class RandomAssetsDto {
@@ -124,9 +159,3 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
     total: Object.values(stats).reduce((total, value) => total + value, 0),
   };
 };
-export enum UploadFieldName {
-  ASSET_DATA = 'assetData',
-  LIVE_PHOTO_DATA = 'livePhotoData',
-  SIDECAR_DATA = 'sidecarData',
-  PROFILE_DATA = 'file',
-}

@@ -1,10 +1,7 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { extname } from 'node:path';
-import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
@@ -12,15 +9,14 @@ import {
   SanitizedAssetResponseDto,
   mapAsset,
 } from 'src/dtos/asset-response.dto';
-import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
+  AssetSearchDto,
   AssetStatsDto,
   UpdateAssetDto,
-  UploadFieldName,
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -30,6 +26,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -46,23 +43,7 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
-import { fromChecksum } from 'src/utils/request';
-
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
 
 export class AssetService {
   private access: AccessCore;
@@ -71,6 +52,7 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IAssetRepositoryV1) private assetRepositoryV1: IAssetRepositoryV1,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -83,86 +65,6 @@ export class AssetService {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository, this.logger);
-  }
-
-  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
-    if (!checksum) {
-      return;
-    }
-
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
-    if (!assetId) {
-      return;
-    }
-
-    return { id: assetId, duplicate: true };
-  }
-
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
-    this.access.requireUploadAccess(auth);
-
-    const filename = file.originalName;
-
-    switch (fieldName) {
-      case UploadFieldName.ASSET_DATA: {
-        if (mimeTypes.isAsset(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.LIVE_PHOTO_DATA: {
-        if (mimeTypes.isVideo(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.SIDECAR_DATA: {
-        if (mimeTypes.isSidecar(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.PROFILE_DATA: {
-        if (mimeTypes.isProfile(filename)) {
-          return true;
-        }
-        break;
-      }
-    }
-
-    this.logger.error(`Unsupported file type ${filename}`);
-    throw new BadRequestException(`Unsupported file type ${filename}`);
-  }
-
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
-    this.access.requireUploadAccess(auth);
-
-    const originalExtension = extname(file.originalName);
-
-    const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
-      [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
-      [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
-    };
-
-    return sanitize(`${file.uuid}${lookup[fieldName]}`);
-  }
-
-  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
-    auth = this.access.requireUploadAccess(auth);
-
-    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
-    if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
-    }
-
-    this.storageRepository.mkdirSync(folder);
-
-    return folder;
   }
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
@@ -512,5 +414,12 @@ export class AssetService {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
     }
+  }
+
+  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || auth.user.id;
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
+    return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
   }
 }

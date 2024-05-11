@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String livePhotoVideoId
+    test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
     // num longitude
     test('to test the property `longitude`', () async {
       // TODO

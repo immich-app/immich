@@ -6,10 +6,29 @@ import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
-import { UploadFieldName } from 'src/dtos/asset.dto';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
-import { AssetService, UploadFile } from 'src/services/asset.service';
+import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+
+export interface UploadFiles {
+  assetData: ImmichFile[];
+  livePhotoData?: ImmichFile[];
+  sidecarData: ImmichFile[];
+}
+
+export function getFile(files: UploadFiles, property: 'assetData' | 'livePhotoData' | 'sidecarData') {
+  const file = files[property]?.[0];
+  return file ? mapToUploadFile(file) : file;
+}
+
+export function getFiles(files: UploadFiles) {
+  return {
+    file: getFile(files, 'assetData') as UploadFile,
+    livePhotoFile: getFile(files, 'livePhotoData'),
+    sidecarFile: getFile(files, 'sidecarData'),
+  };
+}
 
 export enum Route {
   ASSET = 'asset',
@@ -67,7 +86,7 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   constructor(
     private reflect: Reflector,
-    private assetService: AssetService,
+    private assetMediaService: AssetMediaService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
@@ -113,18 +132,21 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private fileFilter(request: AuthRequest, file: Express.Multer.File, callback: multer.FileFilterCallback) {
-    return callbackify(() => this.assetService.canUploadFile(asRequest(request, file)), callback);
+    return callbackify(() => this.assetMediaService.canUploadFile(asRequest(request, file)), callback);
   }
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
     return callbackify(
-      () => this.assetService.getUploadFilename(asRequest(request, file)),
+      () => this.assetMediaService.getUploadFilename(asRequest(request, file)),
       callback as Callback<string>,
     );
   }
 
   private destination(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(() => this.assetService.getUploadFolder(asRequest(request, file)), callback as Callback<string>);
+    return callbackify(
+      () => this.assetMediaService.getUploadFolder(asRequest(request, file)),
+      callback as Callback<string>,
+    );
   }
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {

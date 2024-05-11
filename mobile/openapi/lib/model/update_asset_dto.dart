@@ -18,6 +18,7 @@ class UpdateAssetDto {
     this.isArchived,
     this.isFavorite,
     this.latitude,
+    this.livePhotoVideoId,
     this.longitude,
   });
 
@@ -67,6 +68,14 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? livePhotoVideoId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   num? longitude;
 
   @override
@@ -76,6 +85,7 @@ class UpdateAssetDto {
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
+    other.livePhotoVideoId == livePhotoVideoId &&
     other.longitude == longitude;
 
   @override
@@ -86,10 +96,11 @@ class UpdateAssetDto {
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -118,6 +129,11 @@ class UpdateAssetDto {
     } else {
     //  json[r'latitude'] = null;
     }
+    if (this.livePhotoVideoId != null) {
+      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
+    } else {
+    //  json[r'livePhotoVideoId'] = null;
+    }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
@@ -139,6 +155,7 @@ class UpdateAssetDto {
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
+        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         longitude: num.parse('${json[r'longitude']}'),
       );
     }

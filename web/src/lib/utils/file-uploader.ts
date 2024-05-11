@@ -136,7 +136,7 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       if (assetId) {
         const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: defaults.baseUrl + '/asset/' + assetId + '/upload' + (key ? `?key=${key}` : ''),
+          url: defaults.baseUrl + '/asset/' + assetId + '/file' + (key ? `?key=${key}` : ''),
           method: 'PUT',
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),

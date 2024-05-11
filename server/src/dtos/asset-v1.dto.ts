@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { UploadFieldName } from 'src/dtos/asset.dto';
+import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
+/** @deprecated */
 export class AssetBulkUploadCheckItem {
   @IsString()
   @IsNotEmpty()
@@ -15,6 +16,7 @@ export class AssetBulkUploadCheckItem {
   checksum!: string;
 }
 
+/** @deprecated */
 export class AssetBulkUploadCheckDto {
   @IsArray()
   @ValidateNested({ each: true })
@@ -22,6 +24,7 @@ export class AssetBulkUploadCheckDto {
   assets!: AssetBulkUploadCheckItem[];
 }
 
+/** @deprecated */
 export class AssetSearchDto {
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
@@ -53,6 +56,7 @@ export class AssetSearchDto {
   updatedBefore?: Date;
 }
 
+/** @deprecated */
 export class CheckExistingAssetsDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
@@ -63,7 +67,11 @@ export class CheckExistingAssetsDto {
   deviceId!: string;
 }
 
-export class UpdateAssetDataDto {
+/** @deprecated */
+export class CreateAssetDto {
+  @ValidateUUID({ optional: true })
+  libraryId?: string;
+
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;
@@ -82,22 +90,6 @@ export class UpdateAssetDataDto {
   @IsString()
   duration?: string;
 
-  // The properties below are added to correctly generate the API docs
-  // and client SDKs. Validation should be handled in the controller.
-  @ApiProperty({ type: 'string', format: 'binary' })
-  [UploadFieldName.ASSET_DATA]!: any;
-
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
-  [UploadFieldName.LIVE_PHOTO_DATA]?: any;
-
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
-  [UploadFieldName.SIDECAR_DATA]?: any;
-}
-
-export class CreateAssetDto extends UpdateAssetDataDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
-
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
@@ -109,32 +101,15 @@ export class CreateAssetDto extends UpdateAssetDataDto {
 
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
-}
 
-export enum GetAssetThumbnailFormatEnum {
-  JPEG = 'JPEG',
-  WEBP = 'WEBP',
-}
+  // The properties below are added to correctly generate the API docs
+  // and client SDKs. Validation should be handled in the controller.
+  @ApiProperty({ type: 'string', format: 'binary' })
+  [UploadFieldName.ASSET_DATA]!: any;
 
-export class GetAssetThumbnailDto {
-  @Optional()
-  @IsEnum(GetAssetThumbnailFormatEnum)
-  @ApiProperty({
-    type: String,
-    enum: GetAssetThumbnailFormatEnum,
-    default: GetAssetThumbnailFormatEnum.WEBP,
-    required: false,
-    enumName: 'ThumbnailFormat',
-  })
-  format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
-}
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.LIVE_PHOTO_DATA]?: any;
 
-export class ServeFileDto {
-  @ValidateBoolean({ optional: true })
-  @ApiProperty({ title: 'Is serve thumbnail (resize) file' })
-  isThumb?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  @ApiProperty({ title: 'Is request made from web' })
-  isWeb?: boolean;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.SIDECAR_DATA]?: any;
 }

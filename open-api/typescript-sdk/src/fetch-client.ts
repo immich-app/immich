@@ -227,6 +227,25 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
 };
+export type CreateAssetMediaDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isOffline?: boolean;
+    isVisible?: boolean;
+    libraryId?: string;
+    sidecarData?: Blob;
+};
+export type AssetMediaUploadResponseDto = {
+    asset?: AssetResponseDto;
+    duplicate: boolean;
+    duplicateId: string;
+};
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
     ids: string[];
@@ -313,17 +332,16 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
+    livePhotoVideoId?: string;
     longitude?: number;
 };
-export type UpdateAssetDataDto = {
+export type UpdateAssetMediaDto = {
     assetData: Blob;
     deviceAssetId: string;
     deviceId: string;
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
-    livePhotoData?: Blob;
-    sidecarData?: Blob;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -1367,6 +1385,28 @@ export function getAllAssets({ ifNoneMatch, isArchived, isFavorite, skip, take, 
         })
     }));
 }
+/**
+ * POST /api/asset
+ */
+export function createAssetMedia({ key, xImmichChecksum, createAssetMediaDto }: {
+    key?: string;
+    xImmichChecksum?: string;
+    createAssetMediaDto: CreateAssetMediaDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AssetMediaUploadResponseDto;
+    }>(`/asset${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: createAssetMediaDto,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-checksum": xImmichChecksum
+        })
+    })));
+}
 export function updateAssets({ assetBulkUpdateDto }: {
     assetBulkUpdateDto: AssetBulkUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1377,6 +1417,7 @@ export function updateAssets({ assetBulkUpdateDto }: {
     })));
 }
 /**
+ * POST /api/asset/bulk-upload-check
  * Checks if assets exist by checksums
  */
 export function checkBulkUpload({ assetBulkUploadCheckDto }: {
@@ -1405,6 +1446,7 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
     }));
 }
 /**
+ * POST /api/asset/exist
  * Checks if multiple assets exist on the server and returns all existing - used by background backup
  */
 export function checkExistingAssets({ checkExistingAssetsDto }: {
@@ -1576,21 +1618,62 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function updateFile({ id, key, updateAssetDataDto }: {
+/**
+ * GET /api/asset/:id/file
+ */
+export function getAsssetMedia({ id, isThumb, isWeb, key }: {
+    id: string;
+    isThumb?: boolean;
+    isWeb?: boolean;
+    key?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
+        isThumb,
+        isWeb,
+        key
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * PUT /api/asset/:id/file
+ */
+export function updateAssetMedia({ id, key, updateAssetMediaDto }: {
     id: string;
     key?: string;
-    updateAssetDataDto: UpdateAssetDataDto;
+    updateAssetMediaDto: UpdateAssetMediaDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetFileUploadResponseDto;
-    }>(`/asset/${encodeURIComponent(id)}/upload${QS.query(QS.explode({
+        data: AssetMediaUploadResponseDto;
+    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
         ...opts,
         method: "PUT",
-        body: updateAssetDataDto
+        body: updateAssetMediaDto
     })));
+}
+/**
+ * GET /api/asset/:id/thumbnail
+ */
+export function getAssetMediaThumbnail({ format, id, key }: {
+    format?: ThumbnailFormat;
+    id: string;
+    key?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/asset/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        format,
+        key
+    }))}`, {
+        ...opts
+    }));
 }
 export function getAuditDeletes({ after, entityType, userId }: {
     after: string;

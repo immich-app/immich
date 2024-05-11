@@ -3,12 +3,12 @@ import { Response } from 'express';
 import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import { ImmichHeader } from 'src/dtos/auth.dto';
 import { AuthenticatedRequest } from 'src/middleware/auth.guard';
-import { AssetService } from 'src/services/asset.service';
+import { AssetMediaService } from 'src/services/asset-media.service';
 import { fromMaybeArray } from 'src/utils/request';
 
 @Injectable()
 export class AssetUploadInterceptor implements NestInterceptor {
-  constructor(private service: AssetService) {}
+  constructor(private service: AssetMediaService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler<any>) {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();

@@ -118,7 +118,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
-    checksum: entity.checksum.toString('base64'),
+    checksum: (entity.checksum || '').toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack
       ? entity.stack?.assets
