@@ -26,14 +26,18 @@ class BaseConfig implements VideoCodecSWConfig {
       }
     }
 
-    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
+    options.outputOptions.push(
+      ...this.getPresetOptions(),
+      ...this.getOutputThreadOptions(),
+      ...this.getBitrateOptions(),
+    );
 
     return options;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
-    return [];
+    return [...this.getDeviceOptions(), ...this.getInputThreadOptions()];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -75,17 +79,28 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = [];
+    const options = ['hwupload=derive_device=vulkan'];
     if (this.shouldScale(videoStream)) {
-      options.push(`scale=${this.getScaling(videoStream)}`);
+      const { width, height } = this.getSize(videoStream);
+      options.push(`scale_vulkan=w=${width}:h=${height}`);
     }
 
     if (this.shouldToneMap(videoStream)) {
       options.push(...this.getToneMapping());
     }
-    options.push('format=yuv420p');
+
+    if (options.length > 1) {
+      options[options.length - 1] = `${options.at(-1)}:format=yuv420p`;
+      options.push(this.getFilterEnd());
+    } else {
+      options.push(this.getFilterEnd(), 'format=yuv420p');
+    }
 
     return options;
+  }
+
+  getFilterEnd(): string {
+    return this.config.accel === TranscodeHWAccel.DISABLED ? 'hwdownload' : `hwupload=derive_device=${this.getAccel()}`;
   }
 
   getPresetOptions() {
@@ -112,7 +127,14 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  getThreadOptions(): Array<string> {
+  getInputThreadOptions() {
+    if (this.config.threads <= 0) {
+      return [];
+    }
+    return [`-threads ${this.config.threads}`];
+  }
+
+  getOutputThreadOptions() {
     if (this.config.threads <= 0) {
       return [];
     }
@@ -158,12 +180,6 @@ class BaseConfig implements VideoCodecSWConfig {
 
   shouldToneMap(videoStream: VideoStreamInfo) {
     return videoStream.isHDR && this.config.tonemap !== ToneMapping.DISABLED;
-  }
-
-  getScaling(videoStream: VideoStreamInfo) {
-    const targetResolution = this.getTargetResolution(videoStream);
-    const mult = this.config.accel === TranscodeHWAccel.QSV ? 1 : 2; // QSV doesn't support scaling numbers below -1
-    return this.isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
   getSize(videoStream: VideoStreamInfo) {
@@ -222,10 +238,38 @@ class BaseConfig implements VideoCodecSWConfig {
     const colors = this.getColors();
 
     return [
-      `zscale=t=linear:npl=${this.getNPL()}`,
-      `tonemap=${this.config.tonemap}:desat=0`,
-      `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
+      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:range=pc:downscaler=lanczos:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
     ];
+  }
+
+  getDeviceOptions() {
+    return [
+      `-init_hw_device ${this.getAccel()}=${this.getDevice()}`,
+      `-filter_hw_device ${this.getDevice()}`,
+      `-hwaccel ${this.getAccel()}`,
+      `-hwaccel_output_format ${this.getOutputFormat()}`,
+    ];
+  }
+
+  getDevice() {
+    let device = this.getAccel();
+    if (this.getDevicePath() !== null) {
+      device += `:${this.getDevicePath()}`;
+    }
+
+    return device;
+  }
+
+  getDevicePath(): string | null {
+    return null;
+  }
+
+  getAccel() {
+    return 'vulkan';
+  }
+
+  getOutputFormat() {
+    return this.getAccel();
   }
 
   getAudioCodec(): string {
@@ -294,7 +338,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     return this.config.gopSize;
   }
 
-  getPreferredHardwareDevice(): string | null {
+  getPreferredDevice(): string | null {
     const device = this.config.preferredHwDevice;
     if (device === 'auto') {
       return null;
@@ -307,12 +351,17 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
     return device;
   }
+
+  getInputThreadOptions() {
+    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  getBaseInputOptions(): string[] {
-    return ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'];
+  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+    return ['-ss 00:00:00', ...super.getBaseInputOptions(videoStream)];
   }
+
   getBaseOutputOptions() {
     return ['-frames:v 1'];
   }
@@ -329,27 +378,30 @@ export class ThumbnailConfig extends BaseConfig {
     return false;
   }
 
-  getScaling(videoStream: VideoStreamInfo) {
-    let options = super.getScaling(videoStream);
-    options += ':flags=lanczos+accurate_rnd+bitexact+full_chroma_int';
-    if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=601:out_range=pc';
+  getFilterOptions(videoStream: VideoStreamInfo): string[] {
+    const options = super.getFilterOptions(videoStream);
+    if (options.at(-1) !== 'format=yuv420p') {
+      options.push('format=yuv420p');
     }
     return options;
+  }
+
+  getFilterEnd() {
+    return 'hwdownload';
   }
 
   getColors() {
     return {
       primaries: 'bt709',
-      transfer: '601',
+      transfer: 'iec61966-2-1',
       matrix: 'bt470bg',
     };
   }
 }
 
 export class H264Config extends BaseConfig {
-  getThreadOptions() {
-    const options = super.getThreadOptions();
+  getOutputThreadOptions() {
+    const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
       options.push('-x264-params frame-threads=1:pools=none');
     }
@@ -359,8 +411,8 @@ export class H264Config extends BaseConfig {
 }
 
 export class HEVCConfig extends BaseConfig {
-  getThreadOptions() {
-    const options = super.getThreadOptions();
+  getOutputThreadOptions() {
+    const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
       options.push('-x265-params frame-threads=1:pools=none');
     }
@@ -391,8 +443,8 @@ export class VP9Config extends BaseConfig {
     return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
   }
 
-  getThreadOptions() {
-    return ['-row-mt 1', ...super.getThreadOptions()];
+  getOutputThreadOptions() {
+    return ['-row-mt 1', ...super.getOutputThreadOptions()];
   }
 
   eligibleForTwoPass() {
@@ -425,7 +477,7 @@ export class AV1Config extends BaseConfig {
     return options;
   }
 
-  getThreadOptions() {
+  getOutputThreadOptions() {
     return []; // Already set above with svtav1-params
   }
 
@@ -435,12 +487,12 @@ export class AV1Config extends BaseConfig {
 }
 
 export class NVENCConfig extends BaseHWConfig {
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
+  getAccel() {
+    return 'cuda';
   }
 
-  getBaseInputOptions() {
-    return ['-hwaccel cuda', '-hwaccel_output_format cuda', ...this.getThreadOptions()];
+  getSupportedCodecs() {
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -458,29 +510,6 @@ export class NVENCConfig extends BaseHWConfig {
     if (this.config.temporalAQ) {
       options.push('-temporal-aq 1');
     }
-    return options;
-  }
-
-  getToneMapping() {
-    const colors = this.getColors();
-
-    return [
-      'hwupload=derive_device=vulkan',
-      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:range=pc:downscaler=lanczos:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
-      'hwupload=derive_device=cuda',
-    ];
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = [];
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
-    }
-
-    if (this.shouldToneMap(videoStream)) {
-      options.push(...this.getToneMapping());
-    }
-
     return options;
   }
 
@@ -513,8 +542,8 @@ export class NVENCConfig extends BaseHWConfig {
     }
   }
 
-  getThreadOptions() {
-    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+  getOutputThreadOptions() {
+    return [];
   }
 
   getRefs() {
@@ -527,18 +556,19 @@ export class NVENCConfig extends BaseHWConfig {
 }
 
 export class QSVConfig extends BaseHWConfig {
-  getBaseInputOptions() {
+  getAccel() {
+    return 'qsv';
+  }
+
+  getDevice() {
     if (this.devices.length === 0) {
       throw new Error('No QSV device found');
     }
 
-    let qsvString = '';
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice !== null) {
-      qsvString = `,child_device=${hwDevice}`;
-    }
+    const hwDevice = this.getPreferredDevice();
+    const device = hwDevice === null ? '' : `,child_device=${hwDevice}`;
 
-    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
+    return device;
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -546,15 +576,6 @@ export class QSVConfig extends BaseHWConfig {
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
       options.push('-low_power 1');
-    }
-    return options;
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-    options.push('format=nv12', 'hwupload=extra_hw_frames=64');
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale_qsv=${this.getScaling(videoStream)}`);
     }
     return options;
   }
@@ -603,27 +624,17 @@ export class QSVConfig extends BaseHWConfig {
 }
 
 export class VAAPIConfig extends BaseHWConfig {
-  getBaseInputOptions() {
+  getDevicePath() {
     if (this.devices.length === 0) {
       throw new Error('No VAAPI device found');
     }
 
-    let hwDevice = this.getPreferredHardwareDevice();
+    let hwDevice = this.getPreferredDevice();
     if (hwDevice === null) {
       hwDevice = `/dev/dri/${this.devices[0]}`;
     }
 
-    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-    options.push('format=nv12', 'hwupload');
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}`);
-    }
-
-    return options;
+    return hwDevice;
   }
 
   getPresetOptions() {
@@ -670,47 +681,24 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  private hasOpenCL: boolean;
-
-  constructor(
-    protected config: SystemConfigFFmpegDto,
-    devices: string[] = [],
-    hasOpenCL: boolean = false,
-  ) {
-    super(config, devices);
-    this.hasOpenCL = hasOpenCL;
-  }
-
   eligibleForTwoPass(): boolean {
     return false;
   }
 
-  getBaseInputOptions(videoStream: VideoStreamInfo) {
+  getDeviceOptions(): string[] {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
-    return this.shouldToneMap(videoStream) && !this.hasOpenCL
-      ? [] // disable hardware decoding & filters
-      : ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+
+    return [...super.getDeviceOptions(), '-afbc rga'];
   }
 
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    if (this.shouldToneMap(videoStream)) {
-      if (!this.hasOpenCL) {
-        return super.getFilterOptions(videoStream);
-      }
-      const colors = this.getColors();
-      return [
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
-        'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
-        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
-        'format=drm_prime',
-      ];
-    } else if (this.shouldScale(videoStream)) {
-      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
-    }
-    return [];
+  getAccel() {
+    return 'rkmpp';
+  }
+
+  getOutputFormat() {
+    return 'drm_prime';
   }
 
   getPresetOptions() {

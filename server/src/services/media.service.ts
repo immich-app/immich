@@ -507,7 +507,7 @@ export class MediaService {
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler = new RKMPPConfig(config, await this.getDevices(), await this.hasOpenCL());
+        handler = new RKMPPConfig(config, await this.getDevices());
         break;
       }
       default: {
