@@ -180,7 +180,7 @@
           }
         }
 
-        for (const [id, _] of Object.entries(selectedFaceToRemove)) {
+        for (const [id] of Object.entries(selectedFaceToRemove)) {
           await unassignFace({
             id,
           });
