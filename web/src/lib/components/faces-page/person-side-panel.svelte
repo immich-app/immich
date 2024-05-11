@@ -21,7 +21,7 @@
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
+  import type { FaceWithGeneratedThumbnail } from '$lib/utils/people-utils';
   import {
     NotificationType,
     notificationController,
@@ -45,11 +45,11 @@
   let peopleWithFaces: AssetFaceResponseDto[] = [];
   let selectedPersonToReassign: Record<string, PersonResponseDto> = {};
   let selectedPersonToCreate: Record<string, string> = {};
-  let selectedPersonToAdd: Record<string, FaceWithGeneretedThumbnail> = {};
+  let selectedPersonToAdd: Record<string, FaceWithGeneratedThumbnail> = {};
   let selectedFaceToRemove: Record<string, AssetFaceResponseDto> = {};
   let editedPerson: PersonResponseDto;
   let editedFace: AssetFaceResponseDto;
-  let unassignedFaces: FaceWithGeneretedThumbnail[] = [];
+  let unassignedFaces: FaceWithGeneratedThumbnail[] = [];
 
   // loading spinners
   let isShowLoadingDone = false;
@@ -75,7 +75,7 @@
         }
       }),
     );
-    unassignedFaces = peopleWithGeneratedImage.filter((item): item is FaceWithGeneretedThumbnail => item !== undefined);
+    unassignedFaces = peopleWithGeneratedImage.filter((item): item is FaceWithGeneratedThumbnail => item !== undefined);
   };
 
   async function loadPeople() {
@@ -225,7 +225,7 @@
       showSelectedFaces = true;
     }
   };
-  const handleCreateOrReassignFaceFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
+  const handleCreateOrReassignFaceFromUnassignedFace = (face: FaceWithGeneratedThumbnail) => {
     selectedPersonToAdd[face.id] = face;
     selectedPersonToAdd = selectedPersonToAdd;
     showUnassignedFaces = false;
@@ -234,7 +234,7 @@
   const handleOpenAvailableFaces = () => {
     showUnassignedFaces = !showUnassignedFaces;
   };
-  const handleRemoveAddedFace = (face: FaceWithGeneretedThumbnail) => {
+  const handleRemoveAddedFace = (face: FaceWithGeneratedThumbnail) => {
     $boundingBoxesArray = [];
     delete selectedPersonToAdd[face.id];
 

@@ -20,7 +20,7 @@ export interface boundingBox {
   height: number;
 }
 
-export interface FaceWithGeneretedThumbnail extends AssetFaceResponseDto {
+export interface FaceWithGeneratedThumbnail extends AssetFaceResponseDto {
   customThumbnail: string;
 }
 

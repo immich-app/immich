@@ -2,7 +2,7 @@
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
   import { mdiAccountOff, mdiArrowLeftThin, mdiClose, mdiMinus } from '@mdi/js';
-  import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
+  import type { FaceWithGeneratedThumbnail } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import type { AssetFaceResponseDto, AssetTypeEnum, PersonResponseDto } from '@immich/sdk';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -11,28 +11,28 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
-  export let unassignedFaces: FaceWithGeneretedThumbnail[];
+  export let unassignedFaces: FaceWithGeneratedThumbnail[];
   export let allPeople: PersonResponseDto[];
-  export let selectedPersonToAdd: Record<string, FaceWithGeneretedThumbnail>;
+  export let selectedPersonToAdd: Record<string, FaceWithGeneratedThumbnail>;
   export let selectedFaceToRemove: Record<string, AssetFaceResponseDto>;
   export let assetType: AssetTypeEnum;
   export let assetId: string;
   export let onResetFacesToBeRemoved = () => {};
   export let onClose = () => {};
-  export let onCreatePerson: (face: FaceWithGeneretedThumbnail) => void;
-  export let onReassign: (face: FaceWithGeneretedThumbnail) => void;
+  export let onCreatePerson: (face: FaceWithGeneratedThumbnail) => void;
+  export let onReassign: (face: FaceWithGeneratedThumbnail) => void;
   export let onAbortRemove: (id: string) => void;
 
-  let showSeletecFaces = false;
-  let editedFace: FaceWithGeneretedThumbnail;
+  let showSelectedFaces = false;
+  let editedFace: FaceWithGeneratedThumbnail;
 
-  const handleSelectedFace = (face: FaceWithGeneretedThumbnail) => {
+  const handleSelectedFace = (face: FaceWithGeneratedThumbnail) => {
     editedFace = face;
-    showSeletecFaces = true;
+    showSelectedFaces = true;
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    showSeletecFaces = false;
+    showSelectedFaces = false;
     if (newFeaturePhoto) {
       editedFace.customThumbnail = newFeaturePhoto;
       onCreatePerson(editedFace);
@@ -43,7 +43,7 @@
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
     if (person) {
-      showSeletecFaces = false;
+      showSelectedFaces = false;
       editedFace.person = person;
       onReassign(editedFace);
     } else {
@@ -95,8 +95,8 @@
               <button
                 tabindex={index}
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
-                on:focus={() => (face ? ($boundingBoxesArray = [face]) : '')}
-                on:mouseover={() => (face ? ($boundingBoxesArray = [face]) : '')}
+                on:focus={() => ($boundingBoxesArray = [face])}
+                on:mouseover={() => ($boundingBoxesArray = [face])}
                 on:mouseleave={() => ($boundingBoxesArray = [])}
               >
                 <ImageThumbnail
@@ -191,13 +191,13 @@
   {/if}
 </section>
 
-{#if showSeletecFaces}
+{#if showSelectedFaces}
   <AssignFaceSidePanel
     {assetType}
     {assetId}
     {editedFace}
     {allPeople}
-    onClose={() => (showSeletecFaces = false)}
+    onClose={() => (showSelectedFaces = false)}
     onCreatePerson={handleCreatePerson}
     onReassign={handleReassignFace}
   />

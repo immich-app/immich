@@ -152,10 +152,10 @@
           disabled={disableButtons || hasSelection}
           on:click={handleUnassign}
         >
-          {#if !showLoadingSpinnerUnassign}
-            <Icon path={mdiTagRemove} size={18} />
-          {:else}
+          {#if showLoadingSpinnerUnassign}
             <LoadingSpinner />
+          {:else}
+            <Icon path={mdiTagRemove} size={18} />
           {/if}
           <span class="ml-2"> Unassign</span></Button
         >
@@ -165,10 +165,10 @@
           disabled={disableButtons || hasSelection}
           on:click={handleCreate}
         >
-          {#if !showLoadingSpinnerCreate}
-            <Icon path={mdiPlus} size={18} />
-          {:else}
+          {#if showLoadingSpinnerCreate}
             <LoadingSpinner />
+          {:else}
+            <Icon path={mdiPlus} size={18} />
           {/if}
           <span class="ml-2"> Create new Person</span></Button
         >
@@ -178,12 +178,12 @@
           disabled={disableButtons || !hasSelection}
           on:click={handleReassign}
         >
-          {#if !showLoadingSpinnerReassign}
+          {#if showLoadingSpinnerReassign}
+            <LoadingSpinner />
+          {:else}
             <div>
               <Icon path={mdiMerge} size={18} class="rotate-180" />
             </div>
-          {:else}
-            <LoadingSpinner />
           {/if}
           <span class="ml-2"> Reassign</span></Button
         >
