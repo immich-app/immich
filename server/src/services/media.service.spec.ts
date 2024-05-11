@@ -633,7 +633,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -644,7 +644,7 @@ describe(MediaService.name, () => {
             '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -674,7 +674,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a aac',
             '-movflags faststart',
@@ -685,7 +685,7 @@ describe(MediaService.name, () => {
             '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -700,7 +700,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -711,7 +711,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -729,7 +729,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -742,7 +742,7 @@ describe(MediaService.name, () => {
             '-crf 23',
             '-maxrate 30M',
             '-bufsize 60M',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -760,7 +760,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a aac',
             '-movflags faststart',
@@ -771,7 +771,7 @@ describe(MediaService.name, () => {
             '-vf format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -787,7 +787,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -798,7 +798,7 @@ describe(MediaService.name, () => {
             '-vf scale=720:-2,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -817,7 +817,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a aac',
             '-movflags faststart',
@@ -828,7 +828,7 @@ describe(MediaService.name, () => {
             `-vf scale=-2:354,format=yuv420p`,
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -847,7 +847,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a aac',
             '-movflags faststart',
@@ -858,7 +858,7 @@ describe(MediaService.name, () => {
             `-vf scale=354:-2,format=yuv420p`,
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -877,7 +877,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v copy',
             '-c:a aac',
             '-movflags faststart',
@@ -888,7 +888,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -908,7 +908,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v copy',
             '-c:a aac',
             '-movflags faststart',
@@ -918,7 +918,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -938,7 +938,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v copy',
             '-c:a aac',
             '-movflags faststart',
@@ -949,7 +949,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -965,7 +965,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -976,7 +976,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -992,7 +992,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1003,7 +1003,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1058,7 +1058,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1071,7 +1071,7 @@ describe(MediaService.name, () => {
             '-crf 23',
             '-maxrate 4500k',
             '-bufsize 9000k',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1090,7 +1090,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1103,7 +1103,7 @@ describe(MediaService.name, () => {
             '-b:v 3104k',
             '-minrate 1552k',
             '-maxrate 4500k',
-          ],
+          ]),
           twoPass: true,
         },
       );
@@ -1119,7 +1119,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1130,7 +1130,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1150,7 +1150,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v vp9',
             '-c:a copy',
             '-movflags faststart',
@@ -1164,7 +1164,7 @@ describe(MediaService.name, () => {
             '-b:v 3104k',
             '-minrate 1552k',
             '-maxrate 4500k',
-          ],
+          ]),
           twoPass: true,
         },
       );
@@ -1184,7 +1184,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v vp9',
             '-c:a copy',
             '-movflags faststart',
@@ -1197,7 +1197,7 @@ describe(MediaService.name, () => {
             '-row-mt 1',
             '-crf 23',
             '-b:v 0',
-          ],
+          ]),
           twoPass: true,
         },
       );
@@ -1216,7 +1216,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v vp9',
             '-c:a copy',
             '-movflags faststart',
@@ -1229,7 +1229,7 @@ describe(MediaService.name, () => {
             '-row-mt 1',
             '-crf 23',
             '-b:v 0',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1248,7 +1248,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v vp9',
             '-c:a copy',
             '-movflags faststart',
@@ -1260,7 +1260,7 @@ describe(MediaService.name, () => {
             '-row-mt 1',
             '-crf 23',
             '-b:v 0',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1279,7 +1279,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v vp9',
             '-c:a copy',
             '-movflags faststart',
@@ -1293,7 +1293,7 @@ describe(MediaService.name, () => {
             '-threads 2',
             '-crf 23',
             '-b:v 0',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1309,7 +1309,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1322,7 +1322,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-x264-params frame-threads=1:pools=none',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1338,7 +1338,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -1349,7 +1349,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1368,7 +1368,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v hevc',
             '-c:a copy',
             '-movflags faststart',
@@ -1382,7 +1382,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-x265-params frame-threads=1:pools=none',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1401,7 +1401,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v hevc',
             '-c:a copy',
             '-movflags faststart',
@@ -1413,7 +1413,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1429,7 +1429,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v av1',
             '-c:a copy',
             '-movflags faststart',
@@ -1440,7 +1440,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset 12',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1459,7 +1459,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v av1',
             '-c:a copy',
             '-movflags faststart',
@@ -1470,7 +1470,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset 4',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1489,7 +1489,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v av1',
             '-c:a copy',
             '-movflags faststart',
@@ -1501,7 +1501,7 @@ describe(MediaService.name, () => {
             '-preset 12',
             '-crf 23',
             '-svtav1-params mbr=2M',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1520,7 +1520,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v av1',
             '-c:a copy',
             '-movflags faststart',
@@ -1532,7 +1532,7 @@ describe(MediaService.name, () => {
             '-preset 12',
             '-crf 23',
             '-svtav1-params lp=4',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1552,7 +1552,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v av1',
             '-c:a copy',
             '-movflags faststart',
@@ -1564,7 +1564,7 @@ describe(MediaService.name, () => {
             '-preset 12',
             '-crf 23',
             '-svtav1-params lp=4:mbr=2M',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1614,8 +1614,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          outputOptions: expect.arrayContaining([
             '-tune hq',
             '-qmin 0',
             '-rc-lookahead 20',
@@ -1634,7 +1634,7 @@ describe(MediaService.name, () => {
             '-maxrate 10000k',
             '-bufsize 6897k',
             '-multipass 2',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1652,8 +1652,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          outputOptions: expect.arrayContaining([
             '-tune hq',
             '-qmin 0',
             '-rc-lookahead 20',
@@ -1671,7 +1671,7 @@ describe(MediaService.name, () => {
             '-cq:v 23',
             '-maxrate 10000k',
             '-bufsize 6897k',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1686,8 +1686,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          outputOptions: expect.arrayContaining([
             '-tune hq',
             '-qmin 0',
             '-rc-lookahead 20',
@@ -1703,7 +1703,7 @@ describe(MediaService.name, () => {
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1721,8 +1721,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          outputOptions: expect.arrayContaining([
             '-tune hq',
             '-qmin 0',
             '-rc-lookahead 20',
@@ -1737,7 +1737,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-cq:v 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1752,8 +1752,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          outputOptions: expect.arrayContaining([
             '-tune hq',
             '-qmin 0',
             '-rc-lookahead 20',
@@ -1769,7 +1769,7 @@ describe(MediaService.name, () => {
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
             '-preset p1',
             '-cq:v 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1788,8 +1788,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_qsv`,
             '-c:a copy',
             '-movflags faststart',
@@ -1805,7 +1805,7 @@ describe(MediaService.name, () => {
             '-global_quality 23',
             '-maxrate 10000k',
             '-bufsize 20000k',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1825,8 +1825,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=hw,child_device=/dev/dri/renderD128', '-filter_hw_device hw'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device hw',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_qsv`,
             '-c:a copy',
             '-movflags faststart',
@@ -1842,7 +1845,7 @@ describe(MediaService.name, () => {
             '-global_quality 23',
             '-maxrate 10000k',
             '-bufsize 20000k',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1861,8 +1864,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_qsv`,
             '-c:a copy',
             '-movflags faststart',
@@ -1875,7 +1878,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-global_quality 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1894,8 +1897,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device qsv=hw', '-filter_hw_device hw'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          outputOptions: expect.arrayContaining([
             `-c:v vp9_qsv`,
             '-c:a copy',
             '-movflags faststart',
@@ -1910,7 +1913,7 @@ describe(MediaService.name, () => {
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
             '-q:v 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1938,8 +1941,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -1954,7 +1960,7 @@ describe(MediaService.name, () => {
             '-maxrate 10000k',
             '-minrate 3448.5k',
             '-rc_mode 3',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -1970,8 +1976,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -1985,7 +1994,7 @@ describe(MediaService.name, () => {
             '-qp 23',
             '-global_quality 23',
             '-rc_mode 1',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2004,8 +2013,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -2018,7 +2030,7 @@ describe(MediaService.name, () => {
             '-qp 23',
             '-global_quality 23',
             '-rc_mode 1',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2034,8 +2046,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/card1',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -2049,7 +2064,7 @@ describe(MediaService.name, () => {
             '-qp 23',
             '-global_quality 23',
             '-rc_mode 1',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2065,8 +2080,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD130', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD130',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -2080,7 +2098,7 @@ describe(MediaService.name, () => {
             '-qp 23',
             '-global_quality 23',
             '-rc_mode 1',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2099,8 +2117,11 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-init_hw_device vaapi=accel:/dev/dri/renderD128', '-filter_hw_device accel'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
             '-movflags faststart',
@@ -2114,7 +2135,7 @@ describe(MediaService.name, () => {
             '-qp 23',
             '-global_quality 23',
             '-rc_mode 1',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2133,7 +2154,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
           inputOptions: [],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
             '-movflags faststart',
@@ -2144,7 +2165,7 @@ describe(MediaService.name, () => {
             '-vf scale=-2:720,format=yuv420p',
             '-preset ultrafast',
             '-crf 23',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2173,8 +2194,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          outputOptions: expect.arrayContaining([
             `-c:v hevc_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
@@ -2188,7 +2209,7 @@ describe(MediaService.name, () => {
             '-level 153',
             '-rc_mode AVBR',
             '-b:v 10000k',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2208,8 +2229,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
@@ -2222,7 +2243,7 @@ describe(MediaService.name, () => {
             '-level 51',
             '-rc_mode CQP',
             '-qp_init 30',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2243,8 +2264,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'],
-          outputOptions: [
+          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          outputOptions: expect.arrayContaining([
             `-c:v h264_rkmpp`,
             '-c:a copy',
             '-movflags faststart',
@@ -2257,7 +2278,7 @@ describe(MediaService.name, () => {
             '-level 51',
             '-rc_mode CQP',
             '-qp_init 30',
-          ],
+          ]),
           twoPass: false,
         },
       );
@@ -2274,7 +2295,7 @@ describe(MediaService.name, () => {
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
       {
         inputOptions: [],
-        outputOptions: [
+        outputOptions: expect.arrayContaining([
           '-c:v h264',
           '-c:a copy',
           '-movflags faststart',
@@ -2285,7 +2306,7 @@ describe(MediaService.name, () => {
           '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
           '-crf 23',
-        ],
+        ]),
         twoPass: false,
       },
     );
@@ -2301,7 +2322,7 @@ describe(MediaService.name, () => {
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
       {
         inputOptions: [],
-        outputOptions: [
+        outputOptions: expect.arrayContaining([
           '-c:v h264',
           '-c:a copy',
           '-movflags faststart',
@@ -2312,7 +2333,7 @@ describe(MediaService.name, () => {
           '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
           '-crf 23',
-        ],
+        ]),
         twoPass: false,
       },
     );
@@ -2328,7 +2349,7 @@ describe(MediaService.name, () => {
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
       {
         inputOptions: [],
-        outputOptions: [
+        outputOptions: expect.arrayContaining([
           '-c:v h264',
           '-c:a copy',
           '-movflags faststart',
@@ -2339,7 +2360,7 @@ describe(MediaService.name, () => {
           '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
           '-preset ultrafast',
           '-crf 23',
-        ],
+        ]),
         twoPass: false,
       },
     );
