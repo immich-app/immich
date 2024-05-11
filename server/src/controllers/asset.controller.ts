@@ -23,7 +23,7 @@ import { UUIDParamDto } from 'src/validation';
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 export class AssetController {
-  constructor(private service: AssetService) { }
+  constructor(private service: AssetService) {}
 
   @Get('map-marker')
   @Authenticated()
