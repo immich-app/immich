@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
+import AsyncLock from 'async-lock';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { load as loadYaml } from 'js-yaml';
@@ -21,9 +22,10 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/entities/system-config.entity';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -61,6 +63,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+    [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
   logging: {
     enabled: true,
@@ -120,6 +123,7 @@ export const defaults = Object.freeze<SystemConfig>({
     previewSize: 1440,
     quality: 80,
     colorspace: Colorspace.P3,
+    extractEmbedded: false,
   },
   newVersionCheck: {
     enabled: true,
@@ -144,6 +148,20 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
   },
+  notifications: {
+    smtp: {
+      enabled: false,
+      from: '',
+      replyTo: '',
+      transport: {
+        ignoreCert: false,
+        host: '',
+        port: 587,
+        username: '',
+        password: '',
+      },
+    },
+  },
   user: {
     deleteDelay: 7,
   },
@@ -161,6 +179,7 @@ export enum FeatureFlag {
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
   TRASH = 'trash',
+  EMAIL = 'email',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -169,16 +188,20 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new ImmichLogger(SystemConfigCore.name);
-  private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
+  private readonly asyncLock = new AsyncLock();
+  private config: SystemConfig | null = null;
+  private lastUpdated: number | null = null;
 
   public config$ = new Subject<SystemConfig>();
 
-  private constructor(private repository: ISystemConfigRepository) {}
+  private constructor(
+    private repository: ISystemConfigRepository,
+    private logger: ILoggerRepository,
+  ) {}
 
-  static create(repository: ISystemConfigRepository) {
+  static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
     if (!instance) {
-      instance = new SystemConfigCore(repository);
+      instance = new SystemConfigCore(repository, logger);
     }
     return instance;
   }
@@ -240,6 +263,7 @@ export class SystemConfigCore {
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
       [FeatureFlag.CONFIG_FILE]: !!process.env.IMMICH_CONFIG_FILE,
+      [FeatureFlag.EMAIL]: config.notifications.smtp.enabled,
     };
   }
 
@@ -248,32 +272,17 @@ export class SystemConfigCore {
   }
 
   public async getConfig(force = false): Promise<SystemConfig> {
-    const configFilePath = process.env.IMMICH_CONFIG_FILE;
-    const config = _.cloneDeep(defaults);
-    const overrides = configFilePath ? await this.loadFromFile(configFilePath, force) : await this.repository.load();
-
-    for (const { key, value } of overrides) {
-      // set via dot notation
-      _.set(config, key, value);
+    if (force || !this.config) {
+      const lastUpdated = this.lastUpdated;
+      await this.asyncLock.acquire(DatabaseLock[DatabaseLock.GetSystemConfig], async () => {
+        if (lastUpdated === this.lastUpdated) {
+          this.config = await this.buildConfig();
+          this.lastUpdated = Date.now();
+        }
+      });
     }
 
-    const errors = await validate(plainToInstance(SystemConfigDto, config));
-    if (errors.length > 0) {
-      this.logger.error('Validation error', errors);
-      if (configFilePath) {
-        throw new Error(`Invalid value(s) in file: ${errors}`);
-      }
-    }
-
-    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
-      config.ffmpeg.acceptedVideoCodecs.unshift(config.ffmpeg.targetVideoCodec);
-    }
-
-    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
-      config.ffmpeg.acceptedAudioCodecs.unshift(config.ffmpeg.targetAudioCodec);
-    }
-
-    return config;
+    return this.config!;
   }
 
   public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
@@ -325,33 +334,60 @@ export class SystemConfigCore {
     this.config$.next(newConfig);
   }
 
-  private async loadFromFile(filepath: string, force = false) {
-    if (force || !this.configCache) {
-      try {
-        const file = await this.repository.readFile(filepath);
-        const config = loadYaml(file.toString()) as any;
-        const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
+  private async buildConfig() {
+    const config = _.cloneDeep(defaults);
+    const overrides = process.env.IMMICH_CONFIG_FILE
+      ? await this.loadFromFile(process.env.IMMICH_CONFIG_FILE)
+      : await this.repository.load();
 
-        for (const key of Object.values(SystemConfigKey)) {
-          const value = _.get(config, key);
-          this.unsetDeep(config, key);
-          if (value !== undefined) {
-            overrides.push({ key, value });
-          }
-        }
+    for (const { key, value } of overrides) {
+      // set via dot notation
+      _.set(config, key, value);
+    }
 
-        if (!_.isEmpty(config)) {
-          this.logger.warn(`Unknown keys found: ${JSON.stringify(config, null, 2)}`);
-        }
-
-        this.configCache = overrides;
-      } catch (error: Error | any) {
-        this.logger.error(`Unable to load configuration file: ${filepath}`);
-        throw error;
+    const errors = await validate(plainToInstance(SystemConfigDto, config));
+    if (errors.length > 0) {
+      if (process.env.IMMICH_CONFIG_FILE) {
+        throw new Error(`Invalid value(s) in file: ${errors}`);
+      } else {
+        this.logger.error('Validation error', errors);
       }
     }
 
-    return this.configCache;
+    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
+      config.ffmpeg.acceptedVideoCodecs.push(config.ffmpeg.targetVideoCodec);
+    }
+
+    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
+      config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec);
+    }
+
+    return config;
+  }
+
+  private async loadFromFile(filepath: string) {
+    try {
+      const file = await this.repository.readFile(filepath);
+      const config = loadYaml(file.toString()) as any;
+      const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
+
+      for (const key of Object.values(SystemConfigKey)) {
+        const value = _.get(config, key);
+        this.unsetDeep(config, key);
+        if (value !== undefined) {
+          overrides.push({ key, value });
+        }
+      }
+
+      if (!_.isEmpty(config)) {
+        this.logger.warn(`Unknown keys found: ${JSON.stringify(config, null, 2)}`);
+      }
+
+      return overrides;
+    } catch (error: Error | any) {
+      this.logger.error(`Unable to load configuration file: ${filepath}`);
+      throw error;
+    }
   }
 
   private unsetDeep(object: object, key: string) {

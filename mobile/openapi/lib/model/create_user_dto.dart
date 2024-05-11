@@ -16,6 +16,7 @@ class CreateUserDto {
     required this.email,
     this.memoriesEnabled,
     required this.name,
+    this.notify,
     required this.password,
     this.quotaSizeInBytes,
     this.shouldChangePassword,
@@ -34,8 +35,17 @@ class CreateUserDto {
 
   String name;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? notify;
+
   String password;
 
+  /// Minimum value: 1
   int? quotaSizeInBytes;
 
   ///
@@ -53,6 +63,7 @@ class CreateUserDto {
     other.email == email &&
     other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
+    other.notify == notify &&
     other.password == password &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.shouldChangePassword == shouldChangePassword &&
@@ -64,13 +75,14 @@ class CreateUserDto {
     (email.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
+    (notify == null ? 0 : notify!.hashCode) +
     (password.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,6 +93,11 @@ class CreateUserDto {
     //  json[r'memoriesEnabled'] = null;
     }
       json[r'name'] = this.name;
+    if (this.notify != null) {
+      json[r'notify'] = this.notify;
+    } else {
+    //  json[r'notify'] = null;
+    }
       json[r'password'] = this.password;
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
@@ -111,6 +128,7 @@ class CreateUserDto {
         email: mapValueOfType<String>(json, r'email')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
+        notify: mapValueOfType<bool>(json, r'notify'),
         password: mapValueOfType<String>(json, r'password')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),

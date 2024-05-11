@@ -1,14 +1,14 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "kotlin-kapt"
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    localPropertiesFile.withInputStream { localProperties.load(it) }
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
@@ -21,17 +21,11 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
-
 
 android {
     compileSdkVersion 34
@@ -50,7 +44,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "app.alextran.immich"
         minSdkVersion 26
         targetSdkVersion 33
@@ -88,6 +81,13 @@ flutter {
 }
 
 dependencies {
+    def kotlin_version = '1.9.23'
+    def kotlin_coroutines_version = '1.8.0'
+    def work_version = '2.9.0'
+    def concurrent_version = '1.1.0'
+    def guava_version = '33.2.0-android'
+    def glide_version = '4.16.0'
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
     implementation "androidx.work:work-runtime-ktx:$work_version"

@@ -37,6 +37,7 @@
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let data: PageData;
 
@@ -386,12 +387,13 @@
                 {/if}
 
                 <td class=" text-ellipsis px-4 text-sm">
-                  <button
-                    class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                    on:click|stopPropagation|preventDefault={(e) => showMenu(e, library, index)}
-                  >
-                    <Icon path={mdiDotsVertical} size="16" />
-                  </button>
+                  <CircleIconButton
+                    color="primary"
+                    icon={mdiDotsVertical}
+                    title="Library options"
+                    size="16"
+                    on:click={(e) => showMenu(e, library, index)}
+                  />
 
                   {#if showContextMenu}
                     <Portal target="body">

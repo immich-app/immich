@@ -29,7 +29,7 @@
       />
     </div>
     <div class="w-60">
-      <SearchBar placeholder="Search albums" bind:name={searchQuery} isSearching={false} />
+      <SearchBar placeholder="Search albums" bind:name={searchQuery} showLoadingSpinner={false} />
     </div>
   </div>
 

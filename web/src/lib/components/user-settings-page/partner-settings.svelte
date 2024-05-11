@@ -182,7 +182,7 @@
 {#if createPartnerFlag}
   <PartnerSelectionModal
     {user}
-    on:close={() => (createPartnerFlag = false)}
+    onClose={() => (createPartnerFlag = false)}
     on:add-users={(event) => handleCreatePartners(event.detail)}
   />
 {/if}

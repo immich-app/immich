@@ -9,7 +9,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { app, asBearerAuth, shareUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -87,6 +87,31 @@ describe('/shared-link', () => {
       ]);
 
     await deleteUser({ id: user2.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+  });
+
+  describe('GET /share/${key}', () => {
+    it('should have correct asset count in meta tag for non-empty album', async () => {
+      const resp = await request(shareUrl).get(`/${linkWithMetadata.key}`);
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(
+        `<meta name="description" content="${metadataAlbum.assets.length} shared photos & videos" />`,
+      );
+    });
+
+    it('should have correct asset count in meta tag for empty album', async () => {
+      const resp = await request(shareUrl).get(`/${linkWithAlbum.key}`);
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(`<meta name="description" content="0 shared photos & videos" />`);
+    });
+
+    it('should have correct asset count in meta tag for shared asset', async () => {
+      const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(`<meta name="description" content="1 shared photos & videos" />`);
+    });
   });
 
   describe('GET /shared-link', () => {

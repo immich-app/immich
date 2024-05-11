@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **library_** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **metadataExtraction** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **migration** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**notifications** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **search** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **sidecar** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **smartSearch** | [**JobStatusDto**](JobStatusDto.md) |  | 

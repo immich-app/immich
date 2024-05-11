@@ -1,18 +1,20 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { Colorspace } from 'src/entities/system-config.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
-  CropOptions,
   IMediaRepository,
-  ResizeOptions,
+  ImageDimensions,
+  ThumbnailOptions,
   TranscodeOptions,
   VideoInfo,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
@@ -20,26 +22,39 @@ sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
 @Instrumentation()
+@Injectable()
 export class MediaRepository implements IMediaRepository {
-  private logger = new ImmichLogger(MediaRepository.name);
-
-  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOn: 'none' })
-      .pipelineColorspace('rgb16')
-      .extract({
-        left: options.left,
-        top: options.top,
-        width: options.width,
-        height: options.height,
-      })
-      .toBuffer();
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+    this.logger.setContext(MediaRepository.name);
   }
 
-  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
+  async extract(input: string, output: string): Promise<boolean> {
+    try {
+      await exiftool.extractJpgFromRaw(input, output);
+    } catch (error: any) {
+      this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+      try {
+        await exiftool.extractPreview(input, output);
+      } catch (error: any) {
+        this.logger.debug('Could not extract preview from image', error.message);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+    const pipeline = sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .rotate();
+
+    if (options.crop) {
+      pipeline.extract(options.crop);
+    }
+
+    await pipeline
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
       .withIccProfile(options.colorspace)
       .toFormat(options.format, {
         quality: options.quality,
@@ -130,16 +145,16 @@ export class MediaRepository implements IMediaRepository {
     return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
   }
 
+  async getImageDimensions(input: string): Promise<ImageDimensions> {
+    const { width = 0, height = 0 } = await sharp(input).metadata();
+    return { width, height };
+  }
+
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
     return ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
       .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
-  }
-
-  private chainPath(existing: string, path: string) {
-    const separator = existing.endsWith(':') ? '' : ':';
-    return `${existing}${separator}${path}`;
   }
 }

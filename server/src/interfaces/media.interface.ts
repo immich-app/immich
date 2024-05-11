@@ -3,11 +3,19 @@ import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/entities/system-co
 
 export const IMediaRepository = 'IMediaRepository';
 
-export interface ResizeOptions {
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+export interface ThumbnailOptions {
   size: number;
   format: ImageFormat;
   colorspace: string;
   quality: number;
+  crop?: CropOptions;
 }
 
 export interface VideoStreamInfo {
@@ -34,17 +42,15 @@ export interface VideoFormat {
   bitrate: number;
 }
 
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
   audioStreams: AudioStreamInfo[];
-}
-
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
 }
 
 export interface TranscodeOptions {
@@ -70,9 +76,10 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface IMediaRepository {
   // image
-  resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
-  crop(input: string, options: CropOptions): Promise<Buffer>;
+  extract(input: string, output: string): Promise<boolean>;
+  generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
+  getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
   probe(input: string): Promise<VideoInfo>;

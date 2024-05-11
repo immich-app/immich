@@ -80,6 +80,15 @@ export const SystemConfigKey = {
   MAP_LIGHT_STYLE: 'map.lightStyle',
   MAP_DARK_STYLE: 'map.darkStyle',
 
+  NOTIFICATIONS_SMTP_ENABLED: 'notifications.smtp.enabled',
+  NOTIFICATIONS_SMTP_FROM: 'notifications.smtp.from',
+  NOTIFICATIONS_SMTP_REPLY_TO: 'notifications.smtp.replyTo',
+  NOTIFICATIONS_SMTP_TRANSPORT_IGNORE_CERT: 'notifications.smtp.transport.ignoreCert',
+  NOTIFICATIONS_SMTP_TRANSPORT_HOST: 'notifications.smtp.transport.host',
+  NOTIFICATIONS_SMTP_TRANSPORT_PORT: 'notifications.smtp.transport.port',
+  NOTIFICATIONS_SMTP_TRANSPORT_USERNAME: 'notifications.smtp.transport.username',
+  NOTIFICATIONS_SMTP_TRANSPORT_PASSWORD: 'notifications.smtp.transport.password',
+
   REVERSE_GEOCODING_ENABLED: 'reverseGeocoding.enabled',
 
   NEW_VERSION_CHECK_ENABLED: 'newVersionCheck.enabled',
@@ -114,6 +123,7 @@ export const SystemConfigKey = {
   IMAGE_PREVIEW_SIZE: 'image.previewSize',
   IMAGE_QUALITY: 'image.quality',
   IMAGE_COLORSPACE: 'image.colorspace',
+  IMAGE_EXTRACT_EMBEDDED: 'image.extractEmbedded',
 
   TRASH_ENABLED: 'trash.enabled',
   TRASH_DAYS: 'trash.days',
@@ -153,6 +163,7 @@ export enum VideoCodec {
   H264 = 'h264',
   HEVC = 'hevc',
   VP9 = 'vp9',
+  AV1 = 'av1',
 }
 
 export enum AudioCodec {
@@ -283,6 +294,7 @@ export interface SystemConfig {
     previewSize: number;
     quality: number;
     colorspace: Colorspace;
+    extractEmbedded: boolean;
   };
   newVersionCheck: {
     enabled: boolean;
@@ -301,6 +313,20 @@ export interface SystemConfig {
     };
     watch: {
       enabled: boolean;
+    };
+  };
+  notifications: {
+    smtp: {
+      enabled: boolean;
+      from: string;
+      replyTo: string;
+      transport: {
+        ignoreCert: boolean;
+        host: string;
+        port: number;
+        username: string;
+        password: string;
+      };
     };
   };
   server: {

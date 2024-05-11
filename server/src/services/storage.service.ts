@@ -1,14 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ImmichLogger } from 'src/utils/logger';
 
 @Injectable()
 export class StorageService {
-  private logger = new ImmichLogger(StorageService.name);
-
-  constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {}
+  constructor(
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(StorageService.name);
+  }
 
   init() {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);

@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { groupBy, orderBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type UserResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -329,7 +328,7 @@
     updateAlbumInfo(album);
   };
 
-  const handleAddUsers = async (users: UserResponseDto[]) => {
+  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
     if (!albumToShare) {
       return;
     }
@@ -337,7 +336,7 @@
       const album = await addUsersToAlbum({
         id: albumToShare.id,
         addUsersDto: {
-          sharedUserIds: [...users].map(({ id }) => id),
+          albumUsers,
         },
       });
       updateAlbumInfo(album);
@@ -432,9 +431,12 @@
 {#if allowEdit}
   <!-- Edit Modal -->
   {#if albumToEdit}
-    <FullScreenModal id="edit-album-modal" title="Edit album" width="wide" onClose={() => (albumToEdit = null)}>
-      <EditAlbumForm album={albumToEdit} onEditSuccess={successEditAlbumInfo} onCancel={() => (albumToEdit = null)} />
-    </FullScreenModal>
+    <EditAlbumForm
+      album={albumToEdit}
+      onEditSuccess={successEditAlbumInfo}
+      onCancel={() => (albumToEdit = null)}
+      onClose={() => (albumToEdit = null)}
+    />
   {/if}
 
   <!-- Share Modal -->
@@ -442,7 +444,7 @@
     {#if showShareByURLModal}
       <CreateSharedLinkModal
         albumId={albumToShare.id}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
         on:created={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
@@ -450,7 +452,7 @@
         album={albumToShare}
         on:select={({ detail: users }) => handleAddUsers(users)}
         on:share={() => (showShareByURLModal = true)}
-        on:close={() => closeShareModal()}
+        onClose={() => closeShareModal()}
       />
     {/if}
   {/if}

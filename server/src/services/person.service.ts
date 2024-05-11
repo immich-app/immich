@@ -38,15 +38,16 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository } from 'src/interfaces/media.interface';
+import { CropOptions, IMediaRepository, ImageDimensions } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { Orientation } from 'src/services/metadata.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
@@ -56,7 +57,6 @@ export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  readonly logger = new ImmichLogger(PersonService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -70,16 +70,19 @@ export class PersonService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(PersonService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       repository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -290,7 +293,12 @@ export class PersonService {
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { orderDirection: 'DESC', withFaces: true })
+        ? this.assetRepository.getAll(pagination, {
+            orderDirection: 'DESC',
+            withFaces: true,
+            withArchived: true,
+            isVisible: true,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
@@ -318,6 +326,10 @@ export class PersonService {
     const [asset] = await this.assetRepository.getByIds([id], relations);
     if (!asset || !asset.previewPath || asset.faces?.length > 0) {
       return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
     }
 
     const faces = await this.machineLearningRepository.detectFaces(
@@ -422,7 +434,7 @@ export class PersonService {
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
 
-    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces && !face.asset.isArchived;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
@@ -478,11 +490,13 @@ export class PersonService {
 
     const person = await this.repository.getById(data.id);
     if (!person?.faceAssetId) {
+      this.logger.error(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
       return JobStatus.FAILED;
     }
 
     const face = await this.repository.getFaceByIdWithAssets(person.faceAssetId);
     if (face === null) {
+      this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
       return JobStatus.FAILED;
     }
 
@@ -496,19 +510,29 @@ export class PersonService {
       imageHeight,
     } = face;
 
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset?.previewPath) {
+    const asset = await this.assetRepository.getById(assetId, { exifInfo: true });
+    if (!asset?.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
+      this.logger.error(`Could not generate person thumbnail: asset ${assetId} dimensions are unknown`);
       return JobStatus.FAILED;
     }
+
     this.logger.verbose(`Cropping face for person: ${person.id}`);
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
-    const halfWidth = (x2 - x1) / 2;
-    const halfHeight = (y2 - y1) / 2;
+    const { width: exifWidth, height: exifHeight } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
+      width: asset.exifInfo.exifImageWidth,
+      height: asset.exifInfo.exifImageHeight,
+    });
 
-    const middleX = Math.round(x1 + halfWidth);
-    const middleY = Math.round(y1 + halfHeight);
+    const widthScale = exifWidth / imageWidth;
+    const heightScale = exifHeight / imageHeight;
+
+    const halfWidth = (widthScale * (x2 - x1)) / 2;
+    const halfHeight = (heightScale * (y2 - y1)) / 2;
+
+    const middleX = Math.round(widthScale * x1 + halfWidth);
+    const middleY = Math.round(heightScale * y1 + halfHeight);
 
     // zoom out 10%
     const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
@@ -517,8 +541,8 @@ export class PersonService {
     const newHalfSize = Math.min(
       middleX - Math.max(0, middleX - targetHalfSize),
       middleY - Math.max(0, middleY - targetHalfSize),
-      Math.min(imageWidth - 1, middleX + targetHalfSize) - middleX,
-      Math.min(imageHeight - 1, middleY + targetHalfSize) - middleY,
+      Math.min(exifWidth - 1, middleX + targetHalfSize) - middleX,
+      Math.min(exifHeight - 1, middleY + targetHalfSize) - middleY,
     );
 
     const cropOptions: CropOptions = {
@@ -528,15 +552,15 @@ export class PersonService {
       height: newHalfSize * 2,
     };
 
-    const croppedOutput = await this.mediaRepository.crop(asset.previewPath, cropOptions);
     const thumbnailOptions = {
       format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
       colorspace: image.colorspace,
       quality: image.quality,
+      crop: cropOptions,
     } as const;
 
-    await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
+    await this.mediaRepository.generateThumbnail(asset.originalPath, thumbnailPath, thumbnailOptions);
     await this.repository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
@@ -602,5 +626,19 @@ export class PersonService {
       throw new BadRequestException('Person not found');
     }
     return person;
+  }
+
+  private withOrientation(orientation: Orientation, { width, height }: ImageDimensions): ImageDimensions {
+    switch (orientation) {
+      case Orientation.MirrorHorizontalRotate270CW:
+      case Orientation.Rotate90CW:
+      case Orientation.MirrorHorizontalRotate90CW:
+      case Orientation.Rotate270CW: {
+        return { width: height, height: width };
+      }
+      default: {
+        return { width, height };
+      }
+    }
   }
 }

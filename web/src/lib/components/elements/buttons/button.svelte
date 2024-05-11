@@ -27,6 +27,7 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+  export let form: string | undefined = undefined;
 
   let className = '';
   export { className as class };
@@ -65,6 +66,7 @@
   {type}
   {disabled}
   {title}
+  {form}
   on:click
   on:focus
   on:blur

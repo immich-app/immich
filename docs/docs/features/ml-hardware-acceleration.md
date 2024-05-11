@@ -10,15 +10,14 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 ## Supported Backends
 
 - ARM NN (Mali)
-- CUDA (NVIDIA)
-- OpenVINO (Intel)
+- CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
+- OpenVINO (Intel discrete GPUs such as Iris Xe and Arc)
 
 ## Limitations
 
 - The instructions and configurations here are specific to Docker Compose. Other container engines may require different configuration.
 - Only Linux and Windows (through WSL2) servers are supported.
 - ARM NN is only supported on devices with Mali GPUs. Other Arm devices are not supported.
-- There is currently an upstream issue with OpenVINO, so whether it will work is device-dependent.
 - Some models may not be compatible with certain backends. CUDA is the most reliable.
 
 ## Prerequisites
@@ -36,14 +35,22 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### CUDA
 
-- You must have the official NVIDIA driver installed on the server.
+- The GPU must have compute capability 5.2 or greater.
+- The server must have the official NVIDIA driver installed.
+- The installed driver must be >= 535 (it must support CUDA 12.2).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+
+#### OpenVINO
+
+- The server must have a discrete GPU, i.e. Iris Xe or Arc. Expect issues when attempting to use integrated graphics.
+- Ensure the server's kernel version is new enough to use the device for hardware accceleration.
 
 ## Setup
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
-3. Redeploy the `immich-machine-learning` container with these updated settings.
+3. Still in `immich-machine-learning`, add one of -[armnn, cuda, openvino] to the `image` section's tag at the end of the line.
+4. Redeploy the `immich-machine-learning` container with these updated settings.
 
 #### Single Compose File
 
@@ -60,8 +67,6 @@ deploy:
           count: 1
           capabilities:
             - gpu
-            - compute
-            - video
 ```
 
 You can add this to the `immich-machine-learning` service instead of extending from `hwaccel.ml.yml`:
@@ -69,6 +74,7 @@ You can add this to the `immich-machine-learning` service instead of extending f
 ```yaml
 immich-machine-learning:
   container_name: immich_machine_learning
+  # Note the `-cuda` at the end
   image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda
   # Note the lack of an `extends` section
   deploy:
@@ -79,8 +85,6 @@ immich-machine-learning:
             count: 1
             capabilities:
               - gpu
-              - compute
-              - video
   volumes:
     - model-cache:/cache
   env_file:

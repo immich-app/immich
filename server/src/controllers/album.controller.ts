@@ -8,35 +8,38 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
+  UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')
 @Controller('album')
-@Authenticated()
 export class AlbumController {
   constructor(private service: AlbumService) {}
 
   @Get('count')
+  @Authenticated()
   getAlbumCount(@Auth() auth: AuthDto): Promise<AlbumCountResponseDto> {
     return this.service.getCount(auth);
   }
 
   @Get()
+  @Authenticated()
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query);
   }
 
   @Post()
+  @Authenticated()
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
-  @SharedLinkRoute()
+  @Authenticated({ sharedLink: true })
   @Get(':id')
   getAlbumInfo(
     @Auth() auth: AuthDto,
@@ -47,6 +50,7 @@ export class AlbumController {
   }
 
   @Patch(':id')
+  @Authenticated()
   updateAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -56,12 +60,13 @@ export class AlbumController {
   }
 
   @Delete(':id')
+  @Authenticated()
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 
-  @SharedLinkRoute()
   @Put(':id/assets')
+  @Authenticated({ sharedLink: true })
   addAssetsToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -71,6 +76,7 @@ export class AlbumController {
   }
 
   @Delete(':id/assets')
+  @Authenticated()
   removeAssetFromAlbum(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
@@ -80,6 +86,7 @@ export class AlbumController {
   }
 
   @Put(':id/users')
+  @Authenticated()
   addUsersToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -88,7 +95,19 @@ export class AlbumController {
     return this.service.addUsers(auth, id, dto);
   }
 
+  @Put(':id/user/:userId')
+  @Authenticated()
+  updateAlbumUser(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Body() dto: UpdateAlbumUserDto,
+  ): Promise<void> {
+    return this.service.updateUser(auth, id, userId, dto);
+  }
+
   @Delete(':id/user/:userId')
+  @Authenticated()
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

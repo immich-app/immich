@@ -1,22 +1,30 @@
 <script lang="ts">
-  import { getMyUserInfo, removeUserFromAlbum, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
+  import {
+    getMyUserInfo,
+    removeUserFromAlbum,
+    type AlbumResponseDto,
+    type UserResponseDto,
+    updateAlbumUser,
+    AlbumUserRole,
+  } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import BaseModal from '../shared-components/base-modal.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let album: AlbumResponseDto;
+  export let onClose: () => void;
 
   const dispatch = createEventDispatcher<{
     remove: string;
-    close: void;
+    refreshAlbum: void;
   }>();
 
   let currentUser: UserResponseDto;
@@ -63,10 +71,23 @@
       selectedRemoveUser = null;
     }
   };
+
+  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
+    try {
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      const message = `Set ${user.name} as ${role}`;
+      dispatch('refreshAlbum');
+      notificationController.show({ type: NotificationType.Info, message });
+    } catch (error) {
+      handleError(error, 'Unable to set user role');
+    } finally {
+      selectedRemoveUser = null;
+    }
+  };
 </script>
 
 {#if !selectedRemoveUser}
-  <BaseModal id="share-info-modal" title="Options" on:close>
+  <FullScreenModal id="share-info-modal" title="Options" {onClose}>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -78,29 +99,42 @@
           <p class="text-sm">Owner</p>
         </div>
       </div>
-      {#each album.sharedUsers as user}
+      {#each album.albumUsers as { user, role }}
         <div
-          class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" />
             <p class="text-sm font-medium">{user.name}</p>
           </div>
 
-          <div id="icon-{user.id}" class="flex place-items-center">
+          <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
+            <div>
+              {#if role === AlbumUserRole.Viewer}
+                Viewer
+              {:else}
+                Editor
+              {/if}
+            </div>
             {#if isOwned}
               <div>
                 <CircleIconButton
                   title="Options"
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
-                  backgroundColor="transparent"
-                  hoverColor="#e2e7e9"
                   size="20"
                 />
 
                 {#if selectedMenuUser === user}
                   <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                    {#if role === AlbumUserRole.Viewer}
+                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
+                    {:else}
+                      <MenuOption
+                        on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                        text="Disallow edits"
+                      />
+                    {/if}
                     <MenuOption on:click={handleMenuRemove} text="Remove" />
                   </ContextMenu>
                 {/if}
@@ -116,7 +150,7 @@
         </div>
       {/each}
     </section>
-  </BaseModal>
+  </FullScreenModal>
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
@@ -134,7 +168,7 @@
   <ConfirmDialogue
     id="remove-user-modal"
     title="Remove user?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
+    prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"
     onConfirm={handleRemoveUser}
     onClose={() => (selectedRemoveUser = null)}

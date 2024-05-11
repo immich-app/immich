@@ -7,12 +7,11 @@ import {
   VectorIndex,
   extName,
 } from 'src/interfaces/database.interface';
-import { ImmichLogger } from 'src/utils/logger';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Version, VersionType } from 'src/utils/version';
 
 @Injectable()
 export class DatabaseService {
-  private logger = new ImmichLogger(DatabaseService.name);
   private vectorExt: VectorExtension;
   minPostgresVersion = 14;
   minVectorsVersion = new Version(0, 2, 0);
@@ -20,7 +19,11 @@ export class DatabaseService {
   minVectorVersion = new Version(0, 5, 0);
   vectorVersionPin = VersionType.MAJOR;
 
-  constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {
+  constructor(
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(DatabaseService.name);
     this.vectorExt = this.databaseRepository.getPreferredVectorExtension();
   }
 
@@ -46,7 +49,9 @@ export class DatabaseService {
         throw error;
       }
 
-      await this.databaseRepository.runMigrations();
+      if (process.env.DB_SKIP_MIGRATIONS !== 'true') {
+        await this.databaseRepository.runMigrations();
+      }
     });
   }
 

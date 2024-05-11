@@ -3,6 +3,8 @@
   import type { DateTime } from 'luxon';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
+  import { clamp } from 'lodash-es';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let timelineY = 0;
   export let height = 0;
@@ -12,8 +14,10 @@
   let isDragging = false;
   let isAnimating = false;
   let hoverLabel = '';
+  let hoverY = 0;
   let clientY = 0;
   let windowHeight = 0;
+  let scrollBar: HTMLElement | undefined;
 
   const toScrollY = (timelineY: number) => (timelineY / $assetStore.timelineHeight) * height;
   const toTimelineY = (scrollY: number) => Math.round((scrollY * $assetStore.timelineHeight) / height);
@@ -21,7 +25,16 @@
   const HOVER_DATE_HEIGHT = 30;
   const MIN_YEAR_LABEL_DISTANCE = 16;
 
-  $: hoverY = height - windowHeight + clientY;
+  $: {
+    hoverY = clamp(height - windowHeight + clientY, 0, height);
+    if (scrollBar) {
+      const rect = scrollBar.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + Math.min(hoverY, height - 1);
+      updateLabel(x, y);
+    }
+  }
+
   $: scrollY = toScrollY(timelineY);
 
   class Segment {
@@ -58,6 +71,22 @@
   const dispatch = createEventDispatcher<{ scrollTimeline: number }>();
   const scrollTimeline = () => dispatch('scrollTimeline', toTimelineY(hoverY));
 
+  const updateLabel = (cursorX: number, cursorY: number) => {
+    const segment = document.elementsFromPoint(cursorX, cursorY).find(({ id }) => id === 'time-segment');
+    if (!segment) {
+      return;
+    }
+    const attr = (segment as HTMLElement).dataset.date;
+    if (!attr) {
+      return;
+    }
+    hoverLabel = new Date(attr).toLocaleString($locale, {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+  };
+
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
     const wasDragging = isDragging;
 
@@ -81,7 +110,12 @@
   };
 </script>
 
-<svelte:window bind:innerHeight={windowHeight} />
+<svelte:window
+  bind:innerHeight={windowHeight}
+  on:mousemove={({ clientY }) => (isDragging || isHover) && handleMouseEvent({ clientY })}
+  on:mousedown={({ clientY }) => isHover && handleMouseEvent({ clientY, isDragging: true })}
+  on:mouseup={({ clientY }) => handleMouseEvent({ clientY, isDragging: false })}
+/>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
@@ -93,20 +127,15 @@
     style:height={height + 'px'}
     style:background-color={isDragging ? 'transparent' : 'transparent'}
     draggable="false"
+    bind:this={scrollBar}
     on:mouseenter={() => (isHover = true)}
-    on:mouseleave={() => {
-      isHover = false;
-      isDragging = false;
-    }}
-    on:mouseenter={({ clientY, buttons }) => handleMouseEvent({ clientY, isDragging: !!buttons })}
-    on:mousemove={({ clientY }) => handleMouseEvent({ clientY })}
-    on:mousedown={({ clientY }) => handleMouseEvent({ clientY, isDragging: true })}
-    on:mouseup={({ clientY }) => handleMouseEvent({ clientY, isDragging: false })}
+    on:mouseleave={() => (isHover = false)}
   >
-    {#if isHover}
+    {#if isHover || isDragging}
       <div
-        class="pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 pl-1 pr-6 text-sm font-medium shadow-lg dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
-        style:top="{Math.max(hoverY - HOVER_DATE_HEIGHT, 0)}px"
+        id="time-label"
+        class="pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+        style:top="{clamp(hoverY - HOVER_DATE_HEIGHT, 0, height - HOVER_DATE_HEIGHT - 2)}px"
       >
         {hoverLabel}
       </div>
@@ -121,15 +150,12 @@
     {/if}
     <!-- Time Segment -->
     {#each segments as segment}
-      {@const label = `${segment.date.toLocaleString({ month: 'short' })} ${segment.date.year}`}
-
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         id="time-segment"
         class="relative"
+        data-date={segment.date}
         style:height={segment.height + 'px'}
         aria-label={segment.timeGroup + ' ' + segment.count}
-        on:mousemove={() => (hoverLabel = label)}
       >
         {#if segment.hasLabel}
           <div

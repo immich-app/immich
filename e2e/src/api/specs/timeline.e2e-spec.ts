@@ -34,7 +34,6 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken, {
         isFavorite: true,
-        isReadOnly: true,
         fileCreatedAt: yesterday.toISO(),
         fileModifiedAt: yesterday.toISO(),
         assetData: { filename: 'example.mp4' },

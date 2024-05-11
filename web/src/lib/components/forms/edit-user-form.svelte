@@ -7,10 +7,13 @@
   import { updateUser, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { mdiAccountEditOutline } from '@mdi/js';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
+  export let onClose: () => void;
 
   let error: string;
   let success: string;
@@ -87,59 +90,63 @@
   }
 </script>
 
-<form on:submit|preventDefault={editUser} autocomplete="off">
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="email">Email</label>
-    <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
-  </div>
+<FullScreenModal id="edit-user-modal" title="Edit user" icon={mdiAccountEditOutline} {onClose}>
+  <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="email">Email</label>
+      <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
+    </div>
 
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="name">Name</label>
-    <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
-  </div>
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="name">Name</label>
+      <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
+    </div>
 
-  <div class="my-4 flex flex-col gap-2">
-    <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
-      >Quota Size (GiB) {#if quotaSizeWarning}
-        <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
-      {/if}</label
-    >
-    <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
-    <p>Note: Enter 0 for unlimited quota</p>
-  </div>
+    <div class="my-4 flex flex-col gap-2">
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
+        >Quota Size (GiB) {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
+        {/if}</label
+      >
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+      <p>Note: Enter 0 for unlimited quota</p>
+    </div>
 
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="storage-label">Storage Label</label>
-    <input
-      class="immich-form-input"
-      id="storage-label"
-      name="storage-label"
-      type="text"
-      bind:value={user.storageLabel}
-    />
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="storage-label">Storage Label</label>
+      <input
+        class="immich-form-input"
+        id="storage-label"
+        name="storage-label"
+        type="text"
+        bind:value={user.storageLabel}
+      />
 
-    <p>
-      Note: To apply the Storage Label to previously uploaded assets, run the
-      <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"> Storage Migration Job</a>
-    </p>
-  </div>
+      <p>
+        Note: To apply the Storage Label to previously uploaded assets, run the
+        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+          Storage Migration Job</a
+        >
+      </p>
+    </div>
 
-  {#if error}
-    <p class="ml-4 text-sm text-red-400">{error}</p>
-  {/if}
+    {#if error}
+      <p class="ml-4 text-sm text-red-400">{error}</p>
+    {/if}
 
-  {#if success}
-    <p class="ml-4 text-sm text-immich-primary">{success}</p>
-  {/if}
-  <div class="mt-8 flex w-full gap-4">
+    {#if success}
+      <p class="ml-4 text-sm text-immich-primary">{success}</p>
+    {/if}
+  </form>
+  <svelte:fragment slot="sticky-bottom">
     {#if canResetPassword}
       <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
         >Reset password</Button
       >
     {/if}
-    <Button type="submit" fullwidth>Confirm</Button>
-  </div>
-</form>
+    <Button type="submit" fullwidth form="edit-user-form">Confirm</Button>
+  </svelte:fragment>
+</FullScreenModal>
 
 {#if isShowResetPasswordConfirmation}
   <ConfirmDialogue

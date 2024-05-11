@@ -9,7 +9,6 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -21,17 +20,11 @@
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { copyToClipboard } from '$lib/utils';
   import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import {
-    mdiAccountEditOutline,
-    mdiClose,
-    mdiContentCopy,
-    mdiDeleteRestore,
-    mdiPencilOutline,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let data: PageData;
 
@@ -123,32 +116,22 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          id="create-new-user-modal"
-          title="Create new user"
-          showLogo
+        <CreateUserForm
+          on:submit={onUserCreated}
+          on:cancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
-        >
-          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          id="edit-user-modal"
-          title="Edit user"
-          icon={mdiAccountEditOutline}
+        <EditUserForm
+          user={selectedUser}
+          bind:newPassword
+          canResetPassword={selectedUser?.id !== $user.id}
+          on:editSuccess={onEditUserSuccess}
+          on:resetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
-        >
-          <EditUserForm
-            user={selectedUser}
-            bind:newPassword
-            canResetPassword={selectedUser?.id !== $user.id}
-            on:editSuccess={onEditUserSuccess}
-            on:resetPasswordSuccess={onEditPasswordSuccess}
-            on:close={() => (shouldShowEditUserForm = false)}
-          />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowDeleteConfirmDialog}
@@ -216,7 +199,7 @@
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
         </thead>
-        <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
             {#each allUsers as immichUser, index}
               <tr
@@ -239,31 +222,35 @@
                     {/if}
                   </div>
                 </td>
-                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
+                <td
+                  class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
+                >
                   {#if !immichUser.deletedAt}
-                    <button
+                    <CircleIconButton
+                      icon={mdiPencilOutline}
+                      title="Edit user"
+                      color="primary"
+                      size="16"
                       on:click={() => editUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1"
-                    >
-                      <Icon path={mdiPencilOutline} size="16" />
-                    </button>
+                    />
                     {#if immichUser.id !== $user.id}
-                      <button
+                      <CircleIconButton
+                        icon={mdiTrashCanOutline}
+                        title="Delete user"
+                        color="primary"
+                        size="16"
                         on:click={() => deleteUserHandler(immichUser)}
-                        class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      >
-                        <Icon path={mdiTrashCanOutline} size="16" />
-                      </button>
+                      />
                     {/if}
                   {/if}
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
-                    <button
+                    <CircleIconButton
+                      icon={mdiDeleteRestore}
+                      title="Restore user - scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
+                      color="primary"
+                      size="16"
                       on:click={() => restoreUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      title="scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
-                    >
-                      <Icon path={mdiDeleteRestore} size="16" />
-                    </button>
+                    />
                   {/if}
                 </td>
               </tr>

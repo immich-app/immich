@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -19,6 +20,7 @@ import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
+@Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
@@ -101,6 +103,9 @@ export class PersonRepository implements IPersonRepository {
       where: { assetId },
       relations: {
         person: true,
+      },
+      order: {
+        boundingBoxX1: 'ASC',
       },
     });
   }

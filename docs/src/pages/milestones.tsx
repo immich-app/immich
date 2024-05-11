@@ -51,12 +51,60 @@ import {
   mdiVideo,
   mdiWeb,
   mdiScaleBalance,
+  mdiMagnifyScan,
+  mdiChartBoxMultipleOutline,
+  mdiAccountGroupOutline,
+  mdiFlowerPoppy,
+  mdiHandshakeOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiHandshakeOutline,
+    description: 'Joined Futo and Immich core team goes full-time',
+    title: 'Immich joins FUTO!',
+    date: new Date(2024, 4, 1),
+    dateType: DateType.DATE,
+  },
+  {
+    icon: mdiStar,
+    description: 'Reached 30K Stars on GitHub!',
+    title: '30,000 Stars',
+    release: 'v1.102.0',
+    tag: 'v1.102.0',
+    date: new Date(2024, 3, 15),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiChartBoxMultipleOutline,
+    description: 'OpenTelemetry metrics for local evaluation and advanced debugging',
+    title: 'OpenTelemetry metrics',
+    release: 'v1.99.0',
+    tag: 'v1.99.0',
+    date: new Date(2024, 2, 20),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiFlowerPoppy,
+    description: 'Immich got its new logo',
+    title: 'New logo',
+    release: 'v1.98.0',
+    tag: 'v1.98.0',
+    date: new Date(2024, 2, 7),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiMagnifyScan,
+    description: 'Advanced search with filters by date, location and more',
+    title: 'Search enhancement with advanced filters',
+    release: 'v1.95.0',
+    tag: 'v1.95.0',
+    date: new Date(2024, 1, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiScaleBalance,
     description: 'Immich switches to AGPLv3 license',
@@ -82,6 +130,15 @@ const items: Item[] = [
     release: 'v1.94.0',
     tag: 'v1.94.0',
     date: new Date(2024, 0, 31),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiAccountGroupOutline,
+    description: '250 amazing people contributed to Immich',
+    title: '250 unique contributors',
+    release: 'v1.93.0',
+    tag: 'v1.93.0',
+    date: new Date(2024, 0, 19),
     dateType: DateType.RELEASE,
   },
   {
@@ -132,7 +189,7 @@ const items: Item[] = [
   },
   {
     icon: mdiStar,
-    description: 'Reach 20K Stars on GitHub!',
+    description: 'Reached 20K Stars on GitHub!',
     title: '20,000 Stars',
     release: 'v1.83.0',
     tag: 'v1.83.0',
@@ -393,7 +450,7 @@ const items: Item[] = [
   },
   {
     icon: mdiStar,
-    description: 'Reach 10K Stars on GitHub!',
+    description: 'Reached 10K Stars on GitHub!',
     title: '10,000 Stars',
     release: 'v1.54.0',
     tag: 'v1.54.0',

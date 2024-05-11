@@ -67,7 +67,7 @@ export function searchAssetBuilder(
     });
   }
 
-  const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
+  const status = _.pick(options, ['isFavorite', 'isOffline', 'isVisible', 'type']);
   const {
     isArchived,
     isEncoded,

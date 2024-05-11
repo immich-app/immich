@@ -83,7 +83,7 @@
 </section>
 
 {#if editSharedLink}
-  <CreateSharedLinkModal editingLink={editSharedLink} on:close={handleEditDone} />
+  <CreateSharedLinkModal editingLink={editSharedLink} onClose={handleEditDone} />
 {/if}
 
 {#if deleteLinkId}

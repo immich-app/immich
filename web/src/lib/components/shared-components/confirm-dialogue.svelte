@@ -9,7 +9,7 @@
   export let confirmText = 'Confirm';
   export let confirmColor: Color = 'red';
   export let cancelText = 'Cancel';
-  export let cancelColor: Color = 'primary';
+  export let cancelColor: Color = 'secondary';
   export let hideCancelButton = false;
   export let disabled = false;
   export let width: 'wide' | 'narrow' = 'narrow';
@@ -31,7 +31,7 @@
     </slot>
   </div>
 
-  <div class="mt-4 flex flex-col sm:flex-row w-full gap-4">
+  <svelte:fragment slot="sticky-bottom">
     {#if !hideCancelButton}
       <Button color={cancelColor} fullwidth on:click={onClose}>
         {cancelText}
@@ -40,5 +40,5 @@
     <Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={disabled || isConfirmButtonDisabled}>
       {confirmText}
     </Button>
-  </div>
+  </svelte:fragment>
 </FullScreenModal>

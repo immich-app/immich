@@ -25,6 +25,7 @@
   <form
     on:submit|preventDefault={() => dispatch('save', settings)}
     class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
+    id="map-settings-form"
   >
     <SettingSwitch id="allow-dark-mode" title="Allow dark mode" bind:checked={settings.allowDarkMode} />
     <SettingSwitch id="only-favorites" title="Only favorites" bind:checked={settings.onlyFavorites} />
@@ -103,10 +104,9 @@
         </div>
       </div>
     {/if}
-
-    <div class="mt-4 flex w-full gap-4">
-      <Button color="gray" size="sm" fullwidth on:click={handleClose}>Cancel</Button>
-      <Button type="submit" size="sm" fullwidth>Save</Button>
-    </div>
   </form>
+  <svelte:fragment slot="sticky-bottom">
+    <Button color="gray" size="sm" fullwidth on:click={handleClose}>Cancel</Button>
+    <Button type="submit" size="sm" fullwidth form="map-settings-form">Save</Button>
+  </svelte:fragment>
 </FullScreenModal>

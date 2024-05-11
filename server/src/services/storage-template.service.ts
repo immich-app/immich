@@ -24,13 +24,13 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { usePagination } from 'src/utils/pagination';
 
 export interface MoveAssetMetadata {
@@ -47,7 +47,6 @@ interface RenderMetadata {
 
 @Injectable()
 export class StorageTemplateService {
-  private logger = new ImmichLogger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
   private _template: {
@@ -73,16 +72,19 @@ export class StorageTemplateService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(StorageTemplateService.name);
+    this.configCore = SystemConfigCore.create(configRepository, this.logger);
     this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       personRepository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      configRepository,
+      this.logger,
     );
   }
 
@@ -168,7 +170,7 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly || asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
+    if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;

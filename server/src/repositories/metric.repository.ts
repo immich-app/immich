@@ -6,7 +6,7 @@ import { apiMetrics, hostMetrics, jobMetrics, repoMetrics } from 'src/utils/inst
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
-  constructor(private readonly metricService: MetricService) {}
+  constructor(private metricService: MetricService) {}
 
   addToCounter(name: string, value: number, options?: MetricOptions): void {
     if (this.enabled) {
