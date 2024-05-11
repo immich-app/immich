@@ -23,7 +23,7 @@ import { UUIDParamDto } from 'src/validation';
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(private service: AssetService) { }
 
   @Get('map-marker')
   @Authenticated()
@@ -112,6 +112,7 @@ export class AssetController {
     required: false,
     schema: { type: 'string' },
   })
+  @Authenticated()
   getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     return this.service.getAllAssets(auth, dto);
   }
