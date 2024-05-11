@@ -417,6 +417,7 @@ A result of `on` means that checksums are enabled.
 
 <details>
 <summary>Check if checksums are enabled</summary>
+
 ```bash
 docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="show data_checksums"
  data_checksums
@@ -424,6 +425,7 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
  on
 (1 row)
 ```
+
 </details>
 
 If checksums are enabled, you can check the status of the database with the following command. A normal result is all zeroes.
