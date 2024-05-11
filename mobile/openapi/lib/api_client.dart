@@ -206,6 +206,8 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AlbumUserAddDto':
           return AlbumUserAddDto.fromJson(value);
+        case 'AlbumUserCreateDto':
+          return AlbumUserCreateDto.fromJson(value);
         case 'AlbumUserResponseDto':
           return AlbumUserResponseDto.fromJson(value);
         case 'AlbumUserRole':

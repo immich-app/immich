@@ -239,6 +239,7 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
+ - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
  - [AlbumUserRole](doc//AlbumUserRole.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
