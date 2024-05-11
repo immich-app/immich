@@ -148,7 +148,7 @@ export class PersonRepository implements IPersonRepository {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
-      .set({ personId: newPersonId })
+      .set({ personId: newPersonId, isEdited: true })
       .where({ id: assetFaceId })
       .execute();
 

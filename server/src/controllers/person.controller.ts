@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -81,6 +81,11 @@ export class PersonController {
   @Authenticated()
   getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
+  }
+
+  @Delete()
+  unassignFaces(@Auth() auth: AuthDto, @Body() dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.unassignFaces(auth, dto);
   }
 
   @Put(':id/reassign')

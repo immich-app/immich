@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque';
+  type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque' | 'blue' | 'red' | 'green';
 
   export let type: 'button' | 'submit' | 'reset' = 'button';
   export let icon: string;
@@ -14,6 +14,7 @@
    * viewBox attribute for the SVG icon.
    */
   export let viewBox: string | undefined = undefined;
+  export let disableHover = false;
 
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
@@ -29,6 +30,9 @@
     gray: 'bg-[#d3d3d3] hover:bg-[#e2e7e9] text-immich-dark-gray hover:text-black',
     primary:
       'bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 hover:dark:bg-immich-dark-primary/80 text-white dark:text-immich-dark-gray',
+    blue: 'bg-blue-700',
+    red: 'bg-red-700',
+    green: 'bg-green-700',
   };
 
   $: colorClass = colorClasses[color];
@@ -40,7 +44,9 @@
   {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all {disableHover
+    ? ''
+    : 'hover:dark:text-immich-dark-gray'}  {className} {mobileClass}"
   on:click
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />

@@ -72,7 +72,7 @@ class AssetService {
       final AssetResponseDto? dto =
           await _apiService.assetApi.getAssetInfo(remoteId);
 
-      return dto?.people;
+      return dto?.people?.faces;
     } catch (error, stack) {
       log.severe(
         'Error while getting remote asset info: ${error.toString()}',

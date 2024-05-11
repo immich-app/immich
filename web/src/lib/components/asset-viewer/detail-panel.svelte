@@ -72,7 +72,7 @@
     // Get latest description from server
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
-      people = data?.people || [];
+      people = data?.people || undefined;
 
       description = data.exifInfo?.description || '';
     }
@@ -90,7 +90,7 @@
     }
   })();
 
-  $: people = asset.people || [];
+  $: people = asset?.people || undefined;
   $: showingHiddenPeople = false;
 
   onMount(() => {
@@ -118,7 +118,7 @@
 
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
-      people = data?.people || [];
+      people = data?.people || undefined;
       textArea.value = data?.exifInfo?.description || '';
     });
     showEditFaces = false;
@@ -213,12 +213,12 @@
     <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   {/if}
 
-  {#if !isSharedLink() && people.length > 0}
+  {#if !isSharedLink() && people?.numberOfFaces && people?.numberOfFaces > 0}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
         <div class="flex gap-2 items-center">
-          {#if people.some((person) => person.isHidden)}
+          {#if people.faces.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
@@ -239,16 +239,16 @@
       </div>
 
       <div class="mt-2 flex flex-wrap gap-2">
-        {#each people as person, index (person.id)}
+        {#each people.faces as person (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:focus={() => ($boundingBoxesArray = person.faces)}
               on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
+              on:mouseover={() => ($boundingBoxesArray = person.faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
@@ -614,9 +614,9 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
+    onClose={() => {
       showEditFaces = false;
     }}
-    on:refresh={handleRefreshPeople}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

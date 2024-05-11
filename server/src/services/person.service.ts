@@ -101,6 +101,22 @@ export class PersonService {
     };
   }
 
+  async unassignFace(auth: AuthDto, id: string): Promise<AssetFaceResponseDto> {
+    let face = await this.repository.getFaceById(id);
+    await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
+
+    if (face.personId) {
+      await this.access.requirePermission(auth, Permission.PERSON_WRITE, face.personId);
+    }
+
+    await this.repository.reassignFace(face.id, null);
+    if (face.person && face.person.faceAssetId === face.id) {
+      await this.createNewFeaturePhoto([face.person.id]);
+    }
+    face = await this.repository.getFaceById(id);
+    return mapFaces(face, auth);
+  }
+
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
     const person = await this.findOrFail(personId);
@@ -128,6 +144,34 @@ export class PersonService {
       await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
     }
     return result;
+  }
+
+  async unassignFaces(auth: AuthDto, dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+    const changeFeaturePhoto: string[] = [];
+    const results: BulkIdResponseDto[] = [];
+
+    for (const data of dto.data) {
+      const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
+
+      for (const face of faces) {
+        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
+        if (face.personId) {
+          await this.access.requirePermission(auth, Permission.PERSON_WRITE, face.personId);
+        }
+
+        await this.repository.reassignFace(face.id, null);
+        if (face.person && face.person.faceAssetId === face.id) {
+          changeFeaturePhoto.push(face.person.id);
+        }
+        results.push({ id: face.id, success: true });
+      }
+    }
+    if (changeFeaturePhoto.length > 0) {
+      // Remove duplicates
+      await this.createNewFeaturePhoto([...changeFeaturePhoto]);
+    }
+
+    return results;
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
@@ -386,7 +430,7 @@ export class PersonService {
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
+      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull(), isEdited: false } }),
     );
 
     for await (const page of facePagination) {

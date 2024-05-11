@@ -23,7 +23,7 @@ export interface AssetFaceId {
 export interface UpdateFacesData {
   oldPersonId?: string;
   faceIds?: string[];
-  newPersonId: string;
+  newPersonId: string | null;
 }
 
 export interface PersonStatistics {
@@ -60,7 +60,7 @@ export interface IPersonRepository {
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   getStatistics(personId: string): Promise<PersonStatistics>;
-  reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
+  reassignFace(assetFaceId: string, newPersonId: string | null): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

@@ -17,6 +17,7 @@ Method | HTTP request | Description
 [**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 [**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
 [**reassignFaces**](PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
+[**unassignFaces**](PersonApi.md#unassignfaces) | **DELETE** /person | 
 [**updatePeople**](PersonApi.md#updatepeople) | **PUT** /person | 
 [**updatePerson**](PersonApi.md#updateperson) | **PUT** /person/{id} | 
 
@@ -457,6 +458,47 @@ Name | Type | Description  | Notes
 ### Authorization
 
 [cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **unassignFaces**
+> List<BulkIdResponseDto> unassignFaces(assetFaceUpdateDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = PersonApi();
+final assetFaceUpdateDto = AssetFaceUpdateDto(); // AssetFaceUpdateDto | 
+
+try {
+    final result = api_instance.unassignFaces(assetFaceUpdateDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling PersonApi->unassignFaces: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetFaceUpdateDto** | [**AssetFaceUpdateDto**](AssetFaceUpdateDto.md)|  | 
+
+### Return type
+
+[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
+
+### Authorization
+
+No authorization required
 
 ### HTTP request headers
 

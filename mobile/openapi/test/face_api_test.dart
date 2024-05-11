@@ -27,5 +27,10 @@ void main() {
       // TODO
     });
 
+    //Future<AssetFaceResponseDto> unassignFace(String id) async
+    test('test unassignFace', () async {
+      // TODO
+    });
+
   });
 }

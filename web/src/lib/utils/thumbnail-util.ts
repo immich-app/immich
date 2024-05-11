@@ -45,7 +45,7 @@ export function getAltText(asset: AssetResponseDto) {
     altText += ` in ${asset.exifInfo.city}, ${asset.exifInfo.country}`;
   }
 
-  const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
+  const names = asset.people?.faces.filter((p) => p.name).map((p) => p.name) ?? [];
   if (names.length == 1) {
     altText += ` with ${names[0]}`;
   }

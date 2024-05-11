@@ -2,7 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import {
+  PeopleWithFacesResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -43,7 +48,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
-  people?: PersonWithFacesResponseDto[];
+  people?: PeopleWithFacesResponseDto;
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
@@ -58,7 +63,7 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
+const peopleWithFaces = (faces: AssetFaceEntity[]): PeopleWithFacesResponseDto => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
     for (const face of faces) {
@@ -73,7 +78,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
     }
   }
 
-  return result;
+  return { faces: result, numberOfFaces: faces.length };
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
@@ -117,7 +122,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: peopleWithFaces(entity.faces),
+    people: entity.faces ? peopleWithFaces(entity.faces) : undefined,
     checksum: entity.checksum.toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack

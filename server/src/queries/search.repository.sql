@@ -207,6 +207,7 @@ WITH
       "faces"."boundingBoxY1" AS "boundingBoxY1",
       "faces"."boundingBoxX2" AS "boundingBoxX2",
       "faces"."boundingBoxY2" AS "boundingBoxY2",
+      "faces"."isEdited" AS "isEdited",
       "faces"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"

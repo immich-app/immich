@@ -213,15 +213,18 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id: user1Assets[0].id,
         isFavorite: false,
-        people: [
-          {
-            birthDate: null,
-            id: expect.any(String),
-            isHidden: false,
-            name: 'Test Person',
-            thumbnailPath: '/my/awesome/thumbnail.jpg',
-          },
-        ],
+        people: {
+          faces: [
+            {
+              birthDate: null,
+              id: expect.any(String),
+              isHidden: false,
+              name: 'Test Person',
+              thumbnailPath: '/my/awesome/thumbnail.jpg',
+            },
+          ],
+          numberOfFaces: 1,
+        },
       });
 
       const sharedLink = await utils.createSharedLink(user1.accessToken, {
@@ -231,7 +234,7 @@ describe('/asset', () => {
 
       const data = await request(app).get(`/asset/${user1Assets[0].id}?key=${sharedLink.key}`);
       expect(data.status).toBe(200);
-      expect(data.body).toMatchObject({ people: [] });
+      expect(data.body).not.toHaveProperty('people');
     });
   });
 
@@ -480,15 +483,18 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id: user1Assets[0].id,
         isFavorite: true,
-        people: [
-          {
-            birthDate: null,
-            id: expect.any(String),
-            isHidden: false,
-            name: 'Test Person',
-            thumbnailPath: '/my/awesome/thumbnail.jpg',
-          },
-        ],
+        people: {
+          faces: [
+            {
+              birthDate: null,
+              id: expect.any(String),
+              isHidden: false,
+              name: 'Test Person',
+              thumbnailPath: '/my/awesome/thumbnail.jpg',
+            },
+          ],
+          numberOfFaces: 1,
+        },
       });
     });
   });

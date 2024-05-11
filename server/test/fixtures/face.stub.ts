@@ -18,6 +18,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
   }),
   primaryFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId2',
@@ -32,6 +33,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
   }),
   mergeFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId3',
@@ -46,6 +48,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
   }),
   mergeFace2: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId4',
@@ -60,6 +63,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
   }),
   start: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId5',
@@ -74,6 +78,7 @@ export const faceStub = {
     boundingBoxY2: 505,
     imageHeight: 1000,
     imageWidth: 1000,
+    isEdited: false,
   }),
   middle: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId6',
@@ -88,6 +93,7 @@ export const faceStub = {
     boundingBoxY2: 200,
     imageHeight: 500,
     imageWidth: 400,
+    isEdited: false,
   }),
   end: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId7',
@@ -102,6 +108,7 @@ export const faceStub = {
     boundingBoxY2: 495,
     imageHeight: 500,
     imageWidth: 500,
+    isEdited: false,
   }),
   noPerson1: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId8',
@@ -116,6 +123,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
   }),
   noPerson2: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId9',
@@ -130,5 +138,21 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    isEdited: false,
+  }),
+  unassignedFace: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
+    assetId: assetStub.image.id,
+    asset: assetStub.image,
+    personId: null,
+    person: null,
+    embedding: [1, 2, 3, 4],
+    boundingBoxX1: 0,
+    boundingBoxY1: 0,
+    boundingBoxX2: 1,
+    boundingBoxY2: 1,
+    imageHeight: 1024,
+    imageWidth: 1024,
+    isEdited: false,
   }),
 };
