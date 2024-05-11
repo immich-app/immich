@@ -440,7 +440,7 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getBaseInputOptions() {
-    return ['-hwaccel cuda', '-hwaccel_output_format cuda'];
+    return ['-hwaccel cuda', '-hwaccel_output_format cuda', ...this.getThreadOptions()];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -464,10 +464,9 @@ export class NVENCConfig extends BaseHWConfig {
   getToneMapping() {
     const colors = this.getColors();
 
-    // https://stackoverflow.com/a/65542002
     return [
       'hwupload=derive_device=vulkan',
-      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:preset=high_quality:downscaler=lanczos`,
+      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:range=pc:downscaler=lanczos:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
       'hwupload=derive_device=cuda',
     ];
   }
