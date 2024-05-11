@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 # Configurations for hardware-accelerated transcoding
 
@@ -12,6 +12,9 @@ services:
   cpu: {}
 
   nvenc:
+    runtime: nvidia
+    environment:
+      - DISPLAY:$DISPLAY
     deploy:
       resources:
         reservations:
@@ -22,6 +25,8 @@ services:
                 - gpu
                 - compute
                 - video
+                - display
+                - graphics
 
   quicksync:
     devices:
