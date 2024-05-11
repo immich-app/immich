@@ -58,7 +58,7 @@
   };
 
   const handleRemoveAllFaces = () => {
-    for (const [id, _] of Object.entries(selectedFaceToRemove)) {
+    for (const [id] of Object.entries(selectedFaceToRemove)) {
       delete selectedFaceToRemove[id];
     }
 
