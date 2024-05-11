@@ -17,8 +17,8 @@
   export let selectedFaceToRemove: Record<string, AssetFaceResponseDto>;
   export let assetType: AssetTypeEnum;
   export let assetId: string;
-  export let onResetFacesToBeRemoved = () => {};
-  export let onClose = () => {};
+  export let onResetFacesToBeRemoved: () => void;
+  export let onClose: () => void;
   export let onCreatePerson: (face: FaceWithGeneratedThumbnail) => void;
   export let onReassign: (face: FaceWithGeneratedThumbnail) => void;
   export let onAbortRemove: (id: string) => void;
