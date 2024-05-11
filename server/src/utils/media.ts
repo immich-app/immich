@@ -440,7 +440,7 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getBaseInputOptions() {
-    return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
+    return ['-hwaccel cuda', '-hwaccel_output_format cuda'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -461,11 +461,25 @@ export class NVENCConfig extends BaseHWConfig {
     return options;
   }
 
+  getToneMapping() {
+    const colors = this.getColors();
+
+    // https://stackoverflow.com/a/65542002
+    return [
+      'hwupload=derive_device=vulkan',
+      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:preset=high_quality:downscaler=lanczos`,
+      'hwupload=derive_device=cuda',
+    ];
+  }
+
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
-    options.push('format=nv12', 'hwupload_cuda');
+    const options = [];
     if (this.shouldScale(videoStream)) {
       options.push(`scale_cuda=${this.getScaling(videoStream)}`);
+    }
+
+    if (this.shouldToneMap(videoStream)) {
+      options.push(...this.getToneMapping());
     }
 
     return options;
@@ -501,7 +515,7 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getThreadOptions() {
-    return [];
+    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
   }
 
   getRefs() {
