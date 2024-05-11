@@ -491,10 +491,10 @@
 </UserPageLayout>
 {#if selectHidden}
   <ShowHide
-    on:done={handleDoneClick}
-    on:close={handleCloseClick}
-    on:reset={handleResetVisibility}
-    on:change={handleToggleVisibility}
+    onDone={handleDoneClick}
+    onClose={handleCloseClick}
+    onReset={handleResetVisibility}
+    onChange={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
     {countTotalPeople}
