@@ -96,8 +96,7 @@ export class DownloadService {
 
       const { originalPath, originalFileName } = asset;
 
-      const extension = parse(originalPath).ext;
-      let filename = `${parse(originalFileName).name}${extension}`;
+      let filename = originalFileName;
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {

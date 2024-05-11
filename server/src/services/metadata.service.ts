@@ -438,7 +438,7 @@ export class MetadataService {
           checksum,
           ownerId: asset.ownerId,
           originalPath: motionPath,
-          originalFileName: asset.originalFileName,
+          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
           isVisible: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
