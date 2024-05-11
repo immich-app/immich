@@ -55,7 +55,7 @@ docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres    # Restore Backup
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
