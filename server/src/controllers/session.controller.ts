@@ -8,23 +8,25 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Sessions')
 @Controller('sessions')
-@Authenticated()
 export class SessionController {
   constructor(private service: SessionService) {}
 
   @Get()
+  @Authenticated()
   getSessions(@Auth() auth: AuthDto): Promise<SessionResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
   deleteAllSessions(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteAll(auth);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
   deleteSession(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

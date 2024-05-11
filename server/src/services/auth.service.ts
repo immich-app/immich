@@ -149,7 +149,7 @@ export class AuthService {
   }
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_TOKEN] || params.key) as string;
+    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || params.key) as string;
     const session = (headers[ImmichHeader.USER_TOKEN] ||
       headers[ImmichHeader.SESSION_TOKEN] ||
       params.sessionKey ||

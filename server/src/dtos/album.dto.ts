@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { PropertyLifecycle } from 'src/decorators';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -25,12 +26,20 @@ export class AlbumUserAddDto {
 
 export class AddUsersDto {
   @ValidateUUID({ each: true, optional: true })
-  @ArrayNotEmpty()
   @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
   sharedUserIds?: string[];
 
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
+}
+
+class AlbumUserCreateDto {
+  @ValidateUUID()
+  userId!: string;
+
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
 }
 
 export class CreateAlbumDto {
@@ -42,7 +51,15 @@ export class CreateAlbumDto {
   @Optional()
   description?: string;
 
+  @Optional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AlbumUserCreateDto)
+  @PropertyLifecycle({ addedAt: 'v1.104.0' })
+  albumUsers?: AlbumUserCreateDto[];
+
   @ValidateUUID({ optional: true, each: true })
+  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
   sharedWithUserIds?: string[];
 
   @ValidateUUID({ optional: true, each: true })

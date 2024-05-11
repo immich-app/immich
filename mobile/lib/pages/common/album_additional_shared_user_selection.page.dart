@@ -8,7 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage<List<String>?>()
 class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {

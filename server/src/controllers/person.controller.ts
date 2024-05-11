@@ -22,31 +22,35 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Person')
 @Controller('person')
-@Authenticated()
 export class PersonController {
   constructor(private service: PersonService) {}
 
   @Get()
+  @Authenticated()
   getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(auth, withHidden);
   }
 
   @Post()
+  @Authenticated()
   createPerson(@Auth() auth: AuthDto, @Body() dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Put()
+  @Authenticated()
   updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     return this.service.updateAll(auth, dto);
   }
 
   @Get(':id')
+  @Authenticated()
   getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
+  @Authenticated()
   updatePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -56,12 +60,14 @@ export class PersonController {
   }
 
   @Get(':id/statistics')
+  @Authenticated()
   getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
 
   @Get(':id/thumbnail')
   @FileResponse()
+  @Authenticated()
   async getPersonThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -72,11 +78,13 @@ export class PersonController {
   }
 
   @Get(':id/assets')
+  @Authenticated()
   getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(auth, id);
   }
 
   @Put(':id/reassign')
+  @Authenticated()
   reassignFaces(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -86,6 +94,7 @@ export class PersonController {
   }
 
   @Post(':id/merge')
+  @Authenticated()
   mergePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

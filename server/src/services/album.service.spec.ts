@@ -194,7 +194,7 @@ describe(AlbumService.name, () => {
         ownerId: authStub.admin.user.id,
         albumName: albumStub.empty.albumName,
         description: albumStub.empty.description,
-        albumUsers: [{ user: { id: 'user-id' } }],
+        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
         assets: [{ id: '123' }],
         albumThumbnailAssetId: '123',
       });

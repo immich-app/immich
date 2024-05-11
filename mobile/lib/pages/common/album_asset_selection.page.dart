@@ -7,8 +7,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 
@@ -30,10 +30,6 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
     final renderList = ref.watch(renderListQueryProvider(query));
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
-
-    String buildAssetCountText() {
-      return selected.value.length.toString();
-    }
 
     Widget buildBody(RenderList renderList) {
       return ImmichAssetGrid(
@@ -63,10 +59,10 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
                 'share_add_photos',
                 style: TextStyle(fontSize: 18),
               ).tr()
-            : Text(
-                buildAssetCountText(),
-                style: const TextStyle(fontSize: 18),
-              ),
+            : const Text(
+                'share_assets_selected',
+                style: TextStyle(fontSize: 18),
+              ).tr(args: [selected.value.length.toString()]),
         centerTitle: false,
         actions: [
           if (selected.value.isNotEmpty || canDeselect)

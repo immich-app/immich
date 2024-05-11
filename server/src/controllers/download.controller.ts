@@ -4,35 +4,34 @@ import { NextFunction, Response } from 'express';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { DownloadService } from 'src/services/download.service';
 import { asStreamableFile, sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Download')
 @Controller('download')
-@Authenticated()
 export class DownloadController {
   constructor(private service: DownloadService) {}
 
-  @SharedLinkRoute()
   @Post('info')
+  @Authenticated({ sharedLink: true })
   getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     return this.service.getDownloadInfo(auth, dto);
   }
 
-  @SharedLinkRoute()
   @Post('archive')
   @HttpCode(HttpStatus.OK)
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
     return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }
 
-  @SharedLinkRoute()
   @Post('asset/:id')
   @HttpCode(HttpStatus.OK)
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   async downloadFile(
     @Res() res: Response,
     @Next() next: NextFunction,
