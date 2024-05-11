@@ -7,7 +7,7 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
-  import ShowHide, { changeVisibility, ToggleVisibilty } from '$lib/components/faces-page/show-hide.svelte';
+  import ShowHide, { ToggleVisibilty } from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
@@ -116,8 +116,7 @@
     people = people;
   };
 
-  const handleToggleVisibility = () => {
-    toggleVisibility = changeVisibility(toggleVisibility);
+  const handleToggleVisibility = (toggleVisibility: ToggleVisibilty) => {
     for (const person of people) {
       if (toggleVisibility == ToggleVisibilty.HIDE_ALL) {
         person.isHidden = true;

@@ -4,16 +4,6 @@
     HIDE_UNNANEMD = 'hide-unnamed',
     VIEW_ALL = 'view-all',
   }
-
-  export const changeVisibility = (toggleVisibility: ToggleVisibilty) => {
-    if (toggleVisibility === ToggleVisibilty.VIEW_ALL) {
-      return ToggleVisibilty.HIDE_UNNANEMD;
-    } else if (toggleVisibility === ToggleVisibilty.HIDE_UNNANEMD) {
-      return ToggleVisibilty.HIDE_ALL;
-    } else {
-      return ToggleVisibilty.VIEW_ALL;
-    }
-  };
 </script>
 
 <script lang="ts">
@@ -29,10 +19,20 @@
   export let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
   export let screenHeight: number;
   export let countTotalPeople: number;
-  export let onClose = () => {};
-  export let onReset = () => {};
-  export let onChange = () => {};
-  export let onDone = () => {};
+  export let onClose: () => void;
+  export let onReset: () => void;
+  export let onChange: (toggleVisibility: ToggleVisibilty) => void;
+  export let onDone: () => void;
+
+  const getNextVisibility = (toggleVisibility: ToggleVisibilty) => {
+    if (toggleVisibility === ToggleVisibilty.VIEW_ALL) {
+      return ToggleVisibilty.HIDE_UNNANEMD;
+    } else if (toggleVisibility === ToggleVisibilty.HIDE_UNNANEMD) {
+      return ToggleVisibilty.HIDE_ALL;
+    } else {
+      return ToggleVisibilty.VIEW_ALL;
+    }
+  };
 
   const toggleIconOptions: Record<ToggleVisibilty, string> = {
     [ToggleVisibilty.HIDE_ALL]: mdiEyeOff,
@@ -60,7 +60,11 @@
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
         <CircleIconButton title="Reset people visibility" icon={mdiRestart} on:click={onReset} />
-        <CircleIconButton title="Toggle visibility" icon={toggleIcon} on:click={onChange} />
+        <CircleIconButton
+          title="Toggle visibility"
+          icon={toggleIcon}
+          on:click={() => onChange(getNextVisibility(toggleVisibility))}
+        />
       </div>
       {#if !showLoadingSpinner}
         <Button on:click={onDone} size="sm" rounded="lg">Done</Button>
