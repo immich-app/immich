@@ -6,8 +6,8 @@ import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class PartnerDetailPage extends HookConsumerWidget {

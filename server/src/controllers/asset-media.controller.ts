@@ -33,7 +33,7 @@ import {
 
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
-import { Auth, Authenticated, FileResponse, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
 import { AssetMediaService } from 'src/services/asset-media.service';
 
@@ -42,14 +42,12 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)
-@Authenticated()
 export class AssetMediaController {
   constructor(private service: AssetMediaService) {}
 
   /**
    * POST /api/asset
    */
-  @SharedLinkRoute()
   @Post()
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
@@ -62,6 +60,7 @@ export class AssetMediaController {
     description: 'Asset Upload Information',
     type: CreateAssetMediaDto,
   })
+  @Authenticated({ sharedLink: true })
   async createAssetMedia(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
@@ -74,9 +73,9 @@ export class AssetMediaController {
   /**
    * GET /api/asset/:id/file
    */
-  @SharedLinkRoute()
   @Get('/:id/file')
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   async getAsssetMedia(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -90,7 +89,6 @@ export class AssetMediaController {
   /**
    * PUT /api/asset/:id/file
    */
-  @SharedLinkRoute()
   @Put(':id/file')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
@@ -98,6 +96,7 @@ export class AssetMediaController {
     description: 'Asset Upload Information',
     type: UpdateAssetMediaDto,
   })
+  @Authenticated({ sharedLink: true })
   async updateAssetMedia(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -113,9 +112,9 @@ export class AssetMediaController {
   /**
    * GET /api/asset/:id/thumbnail
    */
-  @SharedLinkRoute()
   @Get('/:id/thumbnail')
   @FileResponse()
+  @Authenticated({ sharedLink: true })
   async getAssetMediaThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -132,6 +131,7 @@ export class AssetMediaController {
    */
   @Post('/exist')
   @HttpCode(HttpStatus.OK)
+  @Authenticated()
   checkExistingAssets(
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
@@ -145,6 +145,7 @@ export class AssetMediaController {
    */
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
+  @Authenticated()
   checkBulkUpload(
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,

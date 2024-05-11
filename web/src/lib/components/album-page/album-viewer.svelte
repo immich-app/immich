@@ -23,6 +23,7 @@
   export let user: UserResponseDto | undefined = undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
+  let innerWidth: number;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -47,6 +48,7 @@
       }
     },
   }}
+  bind:innerWidth
 />
 
 <header>
@@ -65,7 +67,7 @@
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
         <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
-          <ImmichLogo class="h-10" />
+          <ImmichLogo class="h-[24px] w-[24px] max-w-none md:w-auto md:h-10 md:max-w-full" noText={innerWidth < 768} />
         </a>
       </svelte:fragment>
 

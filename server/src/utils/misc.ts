@@ -103,10 +103,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         continue;
       }
 
-      if ((operation.security || []).some((item) => !!item[Metadata.PUBLIC_SECURITY])) {
-        delete operation.security;
-      }
-
       if (operation.summary === '') {
         delete operation.summary;
       }

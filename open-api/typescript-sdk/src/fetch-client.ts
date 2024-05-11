@@ -169,10 +169,17 @@ export type AlbumResponseDto = {
     startDate?: string;
     updatedAt: string;
 };
+export type AlbumUserCreateDto = {
+    role: AlbumUserRole;
+    userId: string;
+};
 export type CreateAlbumDto = {
     albumName: string;
+    /** This property was added in v1.104.0 */
+    albumUsers?: AlbumUserCreateDto[];
     assetIds?: string[];
     description?: string;
+    /** This property was deprecated in v1.104.0 */
     sharedWithUserIds?: string[];
 };
 export type AlbumCountResponseDto = {

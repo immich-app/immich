@@ -52,7 +52,6 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         .putBoolean(ContentObserverWorker.SHARED_PREF_SERVICE_ENABLED, true)
                         .putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args.get(0) as Long)
                         .putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, args.get(1) as String)
-                        .putString(BackupWorker.SHARED_PREF_SERVER_URL, args.get(3) as String)
                         .apply()
                 ContentObserverWorker.enable(ctx, immediate = args.get(2) as Boolean)
                 result.success(true)

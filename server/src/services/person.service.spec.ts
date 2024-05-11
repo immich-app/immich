@@ -45,8 +45,6 @@ const responseDto: PersonResponseDto = {
 
 const statistics = { assets: 3 };
 
-const croppedFace = Buffer.from('Cropped Face');
-
 const detectFaceMock = {
   assetId: 'asset-1',
   personId: 'person-1',
@@ -104,8 +102,6 @@ describe(PersonService.name, () => {
       cryptoMock,
       loggerMock,
     );
-
-    mediaMock.crop.mockResolvedValue(croppedFace);
   });
 
   it('should be defined', () => {
@@ -862,20 +858,20 @@ describe(PersonService.name, () => {
     it('should skip a person not found', async () => {
       personMock.getById.mockResolvedValue(null);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.crop).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should skip a person without a face asset id', async () => {
       personMock.getById.mockResolvedValue(personStub.noThumbnail);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.crop).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should skip a person with a face asset id not found', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.id });
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.crop).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should skip a person with a face asset id without a thumbnail', async () => {
@@ -883,30 +879,34 @@ describe(PersonService.name, () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.crop).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should generate a thumbnail', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.middle);
-      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      assetMock.getById.mockResolvedValue(assetStub.primaryImage);
 
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([faceStub.middle.assetId]);
+      expect(assetMock.getById).toHaveBeenCalledWith(faceStub.middle.assetId, { exifInfo: true });
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
-        left: 95,
-        top: 95,
-        width: 110,
-        height: 110,
-      });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
-        format: 'jpeg',
-        size: 250,
-        quality: 80,
-        colorspace: Colorspace.P3,
-      });
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.primaryImage.originalPath,
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        {
+          format: 'jpeg',
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+          crop: {
+            left: 238,
+            top: 163,
+            width: 274,
+            height: 274,
+          },
+        },
+      );
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
         thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
@@ -916,43 +916,51 @@ describe(PersonService.name, () => {
     it('should generate a thumbnail without going negative', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.start.assetId });
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.start);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.getById.mockResolvedValue(assetStub.image);
 
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
-        left: 0,
-        top: 0,
-        width: 510,
-        height: 510,
-      });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
-        format: 'jpeg',
-        size: 250,
-        quality: 80,
-        colorspace: Colorspace.P3,
-      });
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.image.originalPath,
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        {
+          format: 'jpeg',
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+          crop: {
+            left: 0,
+            top: 428,
+            width: 1102,
+            height: 1102,
+          },
+        },
+      );
     });
 
     it('should generate a thumbnail without overflowing', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.end);
-      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      assetMock.getById.mockResolvedValue(assetStub.primaryImage);
 
-      await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
+      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
-        left: 297,
-        top: 297,
-        width: 202,
-        height: 202,
-      });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
-        format: 'jpeg',
-        size: 250,
-        quality: 80,
-        colorspace: Colorspace.P3,
-      });
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.primaryImage.originalPath,
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        {
+          format: 'jpeg',
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+          crop: {
+            left: 591,
+            top: 591,
+            width: 408,
+            height: 408,
+          },
+        },
+      );
     });
   });
 

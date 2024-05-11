@@ -63,11 +63,11 @@
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center w-20 rounded-3xl border-2 border-transparent hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
+            class="flex flex-col items-center w-20 rounded-3xl border-2 hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
               person.id,
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
-              : ''}"
+              : 'border-transparent'}"
             on:click={() => togglePersonSelection(person.id)}
           >
             <ImageThumbnail

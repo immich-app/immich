@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/album/suggested_shared_users.provider.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage<List<String>>()
 class AlbumSharedUserSelectionPage extends HookConsumerWidget {

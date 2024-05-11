@@ -294,17 +294,29 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (final album in state.selectedBackupAlbums) {
+      final assetCount = await album.albumEntity.assetCountAsync;
+
+      if (assetCount == 0) {
+        continue;
+      }
+
       final assets = await album.albumEntity.getAssetListRange(
         start: 0,
-        end: await album.albumEntity.assetCountAsync,
+        end: assetCount,
       );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
     for (final album in state.excludedBackupAlbums) {
+      final assetCount = await album.albumEntity.assetCountAsync;
+
+      if (assetCount == 0) {
+        continue;
+      }
+
       final assets = await album.albumEntity.getAssetListRange(
         start: 0,
-        end: await album.albumEntity.assetCountAsync,
+        end: assetCount,
       );
       assetsFromExcludedAlbums.addAll(assets);
     }

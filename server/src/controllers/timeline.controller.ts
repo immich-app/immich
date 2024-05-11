@@ -8,17 +8,16 @@ import { TimelineService } from 'src/services/timeline.service';
 
 @ApiTags('Timeline')
 @Controller('timeline')
-@Authenticated()
 export class TimelineController {
   constructor(private service: TimelineService) {}
 
-  @Authenticated({ isShared: true })
+  @Authenticated({ sharedLink: true })
   @Get('buckets')
   getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     return this.service.getTimeBuckets(auth, dto);
   }
 
-  @Authenticated({ isShared: true })
+  @Authenticated({ sharedLink: true })
   @Get('bucket')
   getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
     return this.service.getTimeBucket(auth, dto) as Promise<AssetResponseDto[]>;
