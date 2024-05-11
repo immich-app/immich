@@ -62,7 +62,7 @@
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
   let showPeople: PersonResponseDto[] = [];
   let countVisiblePeople: number;
-
+  let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
   for (const person of people) {
@@ -245,6 +245,8 @@
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
+
+    setTimeout(() => changeNameInputEl?.focus(), 100);
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
@@ -456,7 +458,14 @@
       <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
+          <input
+            class="immich-form-input"
+            id="name"
+            name="name"
+            type="text"
+            bind:value={personName}
+            bind:this={changeNameInputEl}
+          />
         </div>
       </form>
       <svelte:fragment slot="sticky-bottom">
