@@ -41,7 +41,7 @@
         });
       } else if ($successCounter > 0) {
         notificationController.show({
-          message: `Uploaded ${$successCounter} assets successfully, refresh the page to see new upload assets.`,
+          message: `Uploaded ${$successCounter} asset${$successCounter > 1 ? 's' : ''} successfully, refresh the page to see new upload assets.`,
           type: NotificationType.Info,
         });
       }
