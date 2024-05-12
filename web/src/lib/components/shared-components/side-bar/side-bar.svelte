@@ -14,6 +14,7 @@
     mdiImageMultipleOutline,
     mdiMagnify,
     mdiMap,
+    mdiToolbox,
     mdiToolboxOutline,
     mdiTrashCanOutline,
   } from '@mdi/js';
@@ -35,6 +36,7 @@
   let isFavoritesSelected: boolean;
   let isPhotosSelected: boolean;
   let isSharingSelected: boolean;
+  let isUtilitiesSelected: boolean;
 </script>
 
 <SideBarSection>
@@ -119,7 +121,12 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title="Utilities" routeId="/(user)/utilities" icon={mdiToolboxOutline}></SideBarLink>
+    <SideBarLink
+      title="Utilities"
+      routeId="/(user)/utilities"
+      bind:isSelected={isUtilitiesSelected}
+      icon={isUtilitiesSelected ? mdiToolbox : mdiToolboxOutline}
+    ></SideBarLink>
 
     <SideBarLink title="Archive" routeId="/(user)/archive" icon={mdiArchiveArrowDownOutline}>
       <svelte:fragment slot="moreInformation">
