@@ -29,8 +29,7 @@
 
 <div
   transition:fade={{ duration: 150 }}
-  class="flex select-none place-content-center place-items-center"
-  style="height: calc(100% - 64px)"
+  class="flex h-full pb-[64px] select-none place-content-center place-items-center"
 >
   <video
     bind:this={element}
