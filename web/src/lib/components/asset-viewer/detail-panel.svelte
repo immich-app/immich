@@ -218,7 +218,7 @@
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
         <div class="flex gap-2 items-center">
-          {#if people.faces.some((person) => person.isHidden)}
+          {#if people.visiblePeople.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
@@ -239,7 +239,7 @@
       </div>
 
       <div class="mt-2 flex flex-wrap gap-2">
-        {#each people.faces as person (person.id)}
+        {#each people.visiblePeople as person (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"

@@ -16,13 +16,13 @@ void main() {
   // final instance = PeopleWithFacesResponseDto();
 
   group('test PeopleWithFacesResponseDto', () {
-    // List<PersonWithFacesResponseDto> faces (default value: const [])
-    test('to test the property `faces`', () async {
+    // int numberOfFaces
+    test('to test the property `numberOfFaces`', () async {
       // TODO
     });
 
-    // int numberOfFaces
-    test('to test the property `numberOfFaces`', () async {
+    // List<PersonWithFacesResponseDto> visiblePeople (default value: const [])
+    test('to test the property `visiblePeople`', () async {
       // TODO
     });
 

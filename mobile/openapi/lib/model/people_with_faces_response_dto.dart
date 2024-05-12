@@ -13,32 +13,32 @@ part of openapi.api;
 class PeopleWithFacesResponseDto {
   /// Returns a new [PeopleWithFacesResponseDto] instance.
   PeopleWithFacesResponseDto({
-    this.faces = const [],
     required this.numberOfFaces,
+    this.visiblePeople = const [],
   });
-
-  List<PersonWithFacesResponseDto> faces;
 
   int numberOfFaces;
 
+  List<PersonWithFacesResponseDto> visiblePeople;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleWithFacesResponseDto &&
-    _deepEquality.equals(other.faces, faces) &&
-    other.numberOfFaces == numberOfFaces;
+    other.numberOfFaces == numberOfFaces &&
+    _deepEquality.equals(other.visiblePeople, visiblePeople);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (faces.hashCode) +
-    (numberOfFaces.hashCode);
+    (numberOfFaces.hashCode) +
+    (visiblePeople.hashCode);
 
   @override
-  String toString() => 'PeopleWithFacesResponseDto[faces=$faces, numberOfFaces=$numberOfFaces]';
+  String toString() => 'PeopleWithFacesResponseDto[numberOfFaces=$numberOfFaces, visiblePeople=$visiblePeople]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'faces'] = this.faces;
       json[r'numberOfFaces'] = this.numberOfFaces;
+      json[r'visiblePeople'] = this.visiblePeople;
     return json;
   }
 
@@ -50,8 +50,8 @@ class PeopleWithFacesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PeopleWithFacesResponseDto(
-        faces: PersonWithFacesResponseDto.listFromJson(json[r'faces']),
         numberOfFaces: mapValueOfType<int>(json, r'numberOfFaces')!,
+        visiblePeople: PersonWithFacesResponseDto.listFromJson(json[r'visiblePeople']),
       );
     }
     return null;
@@ -99,8 +99,8 @@ class PeopleWithFacesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'faces',
     'numberOfFaces',
+    'visiblePeople',
   };
 }
 

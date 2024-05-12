@@ -78,7 +78,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PeopleWithFacesResponseDto =
     }
   }
 
-  return { faces: result, numberOfFaces: faces.length };
+  return { visiblePeople: result, numberOfFaces: faces.length };
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {

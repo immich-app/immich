@@ -64,6 +64,10 @@
   let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
   let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
+  $: mapFacesToBeCreated = Object.entries(selectedPersonToAdd)
+    .filter(([_, value]) => value.person === null)
+    .map(([key, _]) => key);
+
   const thumbnailWidth = '90px';
 
   const generatePeopleWithoutFaces = async () => {
@@ -94,9 +98,23 @@
     isShowLoadingPeople = false;
   }
 
+  /*
+   * we wait for the server to create the feature photo for:
+   * - people which has been reassigned to a new person
+   * - faces removed assigned to a new person
+   *
+   * if after 15 seconds the server has not generated the feature photos,
+   * we go back to the detail-panel
+   */
   const onPersonThumbnail = (personId: string) => {
     assetFaceGenerated.push(personId);
-    if (isEqual(assetFaceGenerated, peopleToCreate) && loaderLoadingDoneTimeout && automaticRefreshTimeout) {
+
+    if (
+      isEqual(assetFaceGenerated, peopleToCreate) &&
+      isEqual(assetFaceGenerated, mapFacesToBeCreated) &&
+      loaderLoadingDoneTimeout &&
+      automaticRefreshTimeout
+    ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
       onRefresh();

@@ -78,7 +78,7 @@ export class PersonWithFacesResponseDto extends PersonResponseDto {
 }
 
 export class PeopleWithFacesResponseDto {
-  faces!: PersonWithFacesResponseDto[];
+  visiblePeople!: PersonWithFacesResponseDto[];
   @ApiProperty({ type: 'integer' })
   numberOfFaces!: number;
 }

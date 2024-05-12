@@ -214,7 +214,7 @@ describe('/asset', () => {
         id: user1Assets[0].id,
         isFavorite: false,
         people: {
-          faces: [
+          visiblePeople: [
             {
               birthDate: null,
               id: expect.any(String),
@@ -484,7 +484,7 @@ describe('/asset', () => {
         id: user1Assets[0].id,
         isFavorite: true,
         people: {
-          faces: [
+          visiblePeople: [
             {
               birthDate: null,
               id: expect.any(String),

@@ -101,8 +101,8 @@ export type PersonWithFacesResponseDto = {
     thumbnailPath: string;
 };
 export type PeopleWithFacesResponseDto = {
-    faces: PersonWithFacesResponseDto[];
     numberOfFaces: number;
+    visiblePeople: PersonWithFacesResponseDto[];
 };
 export type SmartInfoResponseDto = {
     objects?: string[] | null;

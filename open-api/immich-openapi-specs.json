@@ -9014,19 +9014,19 @@
       },
       "PeopleWithFacesResponseDto": {
         "properties": {
-          "faces": {
+          "numberOfFaces": {
+            "type": "integer"
+          },
+          "visiblePeople": {
             "items": {
               "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
             "type": "array"
-          },
-          "numberOfFaces": {
-            "type": "integer"
           }
         },
         "required": [
-          "faces",
-          "numberOfFaces"
+          "numberOfFaces",
+          "visiblePeople"
         ],
         "type": "object"
       },
