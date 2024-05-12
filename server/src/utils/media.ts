@@ -245,7 +245,7 @@ class BaseConfig implements VideoCodecSWConfig {
   getDeviceOptions() {
     return [
       `-init_hw_device ${this.getAccel()}=${this.getDevice()}`,
-      `-filter_hw_device ${this.getDevice()}`,
+      `-filter_hw_device ${this.getAccel()}`,
       `-hwaccel ${this.getAccel()}`,
       `-hwaccel_output_format ${this.getOutputFormat()}`,
     ];
@@ -253,14 +253,14 @@ class BaseConfig implements VideoCodecSWConfig {
 
   getDevice() {
     let device = this.getAccel();
-    if (this.getDevicePath() !== null) {
-      device += `:${this.getDevicePath()}`;
+    if (this.getDeviceSpecifier() !== null) {
+      device += `:${this.getDeviceSpecifier()}`;
     }
 
     return device;
   }
 
-  getDevicePath(): string | null {
+  getDeviceSpecifier(): string | null {
     return null;
   }
 
@@ -491,6 +491,10 @@ export class NVENCConfig extends BaseHWConfig {
     return 'cuda';
   }
 
+  getDeviceSpecifier() {
+    return '0';
+  }
+
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
@@ -560,15 +564,17 @@ export class QSVConfig extends BaseHWConfig {
     return 'qsv';
   }
 
-  getDevice() {
+  getDeviceSpecifier() {
     if (this.devices.length === 0) {
-      throw new Error('No QSV device found');
+      throw new Error('No VAAPI device found');
     }
 
-    const hwDevice = this.getPreferredDevice();
-    const device = hwDevice === null ? '' : `,child_device=${hwDevice}`;
+    let hwDevice = this.getPreferredDevice();
+    if (hwDevice === null) {
+      hwDevice = `/dev/dri/${this.devices[0]}`;
+    }
 
-    return device;
+    return hwDevice;
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -624,7 +630,11 @@ export class QSVConfig extends BaseHWConfig {
 }
 
 export class VAAPIConfig extends BaseHWConfig {
-  getDevicePath() {
+  getAccel() {
+    return 'vaapi';
+  }
+
+  getDeviceSpecifier() {
     if (this.devices.length === 0) {
       throw new Error('No VAAPI device found');
     }
