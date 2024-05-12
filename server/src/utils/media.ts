@@ -85,17 +85,11 @@ class BaseConfig implements VideoCodecSWConfig {
       options.push(`scale_vulkan=w=${width}:h=${height}`);
     }
 
-    if (this.shouldToneMap(videoStream)) {
-      options.push(...this.getToneMapping());
-    }
+    const colors = this.getColors();
+    const tonemapping = this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip';
+    const libplacebo = `libplacebo=format=yuv420p:tonemapping=${tonemapping}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:upscaler=none:downscaler=none:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`;
 
-    if (options.length > 1) {
-      options[options.length - 1] = `${options.at(-1)}:format=yuv420p`;
-      options.push(this.getFilterEnd());
-    } else {
-      options.push(this.getFilterEnd(), 'format=yuv420p');
-    }
-
+    options.push(libplacebo, this.getFilterEnd(), 'format=yuv420p');
     return options;
   }
 
@@ -234,14 +228,6 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  getToneMapping() {
-    const colors = this.getColors();
-
-    return [
-      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:range=pc:downscaler=lanczos:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
-    ];
-  }
-
   getDeviceOptions() {
     return [
       `-init_hw_device ${this.getAccel()}=${this.getDevice()}`,
@@ -376,14 +362,6 @@ export class ThumbnailConfig extends BaseConfig {
 
   eligibleForTwoPass() {
     return false;
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    const options = super.getFilterOptions(videoStream);
-    if (options.at(-1) !== 'format=yuv420p') {
-      options.push('format=yuv420p');
-    }
-    return options;
   }
 
   getFilterEnd() {
