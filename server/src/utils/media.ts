@@ -86,15 +86,30 @@ class BaseConfig implements VideoCodecSWConfig {
     }
 
     const colors = this.getColors();
-    const tonemapping = this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip';
-    const libplacebo = `libplacebo=format=yuv420p:tonemapping=${tonemapping}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:upscaler=none:downscaler=none:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`;
+    const libplaceboOptions = [
+      'format=yuv420p',
+      'upscaler=none',
+      'downscaler=none',
+      `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
+      `colorspace=${colors.matrix}`,
+      `color_primaries=${colors.primaries}`,
+      `color_trc=${colors.transfer}`,
+    ];
 
+    // use faster settings on cpu, nicer settings on gpu
+    if (this.config.accel === TranscodeHWAccel.DISABLED) {
+      libplaceboOptions.push('peak_detect=false');
+    } else {
+      libplaceboOptions.push('deband=true', 'deband_iterations=3', 'deband_radius=8', 'deband_threshold=6');
+    }
+
+    const libplacebo = `libplacebo=${libplaceboOptions.join(':')}`;
     options.push(libplacebo, this.getFilterEnd(), 'format=yuv420p');
     return options;
   }
 
   getFilterEnd(): string {
-    return this.config.accel === TranscodeHWAccel.DISABLED ? 'hwdownload' : `hwupload=derive_device=${this.getAccel()}`;
+    return 'hwdownload';
   }
 
   getPresetOptions() {
@@ -340,6 +355,14 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
   getInputThreadOptions() {
     return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+  }
+
+  getOutputThreadOptions() {
+    return [];
+  }
+
+  getFilterEnd(): string {
+    return `hwupload=derive_device=${this.getAccel()}`;
   }
 }
 
