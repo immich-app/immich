@@ -1,4 +1,3 @@
-import { Stats } from 'node:fs';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import {
@@ -6,7 +5,6 @@ import {
   Colorspace,
   ImageFormat,
   SystemConfigKey,
-  ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
