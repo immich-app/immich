@@ -11,8 +11,6 @@
     mdiArchiveArrowDownOutline,
     mdiHeart,
     mdiHeartOutline,
-    mdiHeartMultiple,
-    mdiHeartMultipleOutline,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
@@ -37,7 +35,6 @@
     }
   };
 
-  let isAlbumsSelected: boolean;
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
   let isMapSelected: boolean;
