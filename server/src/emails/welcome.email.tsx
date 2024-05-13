@@ -132,7 +132,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
 WelcomeEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app/auth/login',
   displayName: 'Alan Turing',
-  username: 'alanturing',
+  username: 'alanturing@immich.app',
   password: 'mysuperpassword',
 } as WelcomeEmailProps;
 
