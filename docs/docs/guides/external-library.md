@@ -8,17 +8,17 @@ in a directory on the same machine.
 
 Edit `docker-compose.yml` to add two new mount points in the sections `immich-server:` and `immich-microservices:` under `volumes:`
 
-```yaml
+```diff
 immich-server:
     volumes:
-        - ${EXTERNAL_PATH}:/usr/src/app/external
++       - ${EXTERNAL_PATH}:/usr/src/app/external
 
 immich-microservices:
     volumes:
-        - ${EXTERNAL_PATH}:/usr/src/app/external
++       - ${EXTERNAL_PATH}:/usr/src/app/external
 ```
 
-Be sure to add exactly the same path.
+Be sure to add exactly the same path to both services.
 
 Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
 
