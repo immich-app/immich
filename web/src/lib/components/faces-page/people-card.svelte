@@ -18,6 +18,7 @@
 
   export let person: PersonResponseDto;
   export let preload = false;
+  export let now: number | undefined = undefined;
 
   type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-people' | 'hide-person';
   let dispatch = createEventDispatcher<{
@@ -50,7 +51,7 @@
       <ImageThumbnail
         shadow
         {preload}
-        url={getPeopleThumbnailUrl(person.id)}
+        url={`${getPeopleThumbnailUrl(person.id)}${now ? `?now=${now}` : ''}`}
         altText={person.name}
         title={person.name}
         widthStyle="100%"
