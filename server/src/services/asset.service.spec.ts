@@ -162,7 +162,7 @@ describe(AssetService.name, () => {
   let configMock: Mocked<ISystemConfigRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
-  let albumMock: jest.Mocked<IAlbumRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
