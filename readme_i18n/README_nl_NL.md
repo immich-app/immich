@@ -80,7 +80,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 |-----------------------------------------------------|--------|-----|
 | Upload en bekijk video's en foto's                  | Ja     | Ja  |
 | Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
-| Preventieve duplicatie van bestanden                | Ja     | Ja  |
+| Duplicatie van bestanden voorkomen                  | Ja     | Ja  |
 | Selectieve album(s) voor back-up                    | Ja     | NVT |
 | Download foto's en video's naar een lokaal apparaat | Ja     | Ja  |
 | Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
