@@ -25,12 +25,27 @@ import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
-  await addAssets({
+  const result = await addAssets({
     id: albumId,
     bulkIdsDto: {
       ids: assetIds,
     },
     key: getKey(),
+  });
+  const count = result.filter(({ success }) => success).length;
+  notificationController.show({
+    type: NotificationType.Info,
+    timeout: 5000,
+    message:
+      count > 0
+        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
+    button: {
+      text: 'View Album',
+      onClick() {
+        return goto(`${AppRoute.ALBUMS}/${albumId}`);
+      },
+    },
   });
 };
 

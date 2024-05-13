@@ -60,11 +60,17 @@ export const fileUploadHandler = async (files: File[], albumId: string | undefin
     const name = file.name.toLowerCase();
     if (extensions.some((extension) => name.endsWith(extension))) {
       uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file)));
     }
   }
 
   const results = await Promise.all(promises);
+  const assetIds = results.filter((result): result is string => !!result);
+
+  if (albumId && assetIds.length > 0) {
+    await addAssetsToAlbum(albumId, assetIds);
+  }
+
   return results.filter((result): result is string => !!result);
 };
 
@@ -73,7 +79,7 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
+async function fileUploader(asset: File): Promise<string | undefined> {
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(asset);
 
@@ -134,12 +140,6 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
-    }
-
-    if (albumId && assetId) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-      await addAssetsToAlbum(albumId, [assetId]);
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
     }
 
     uploadAssetsStore.updateAsset(deviceAssetId, { state: duplicate ? UploadState.DUPLICATED : UploadState.DONE });

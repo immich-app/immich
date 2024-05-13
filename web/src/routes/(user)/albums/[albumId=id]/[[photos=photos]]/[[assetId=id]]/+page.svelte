@@ -291,7 +291,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Added ${count} asset${count > 1 ? 's' : ''} successfully, refresh the page to see newly added asset${count > 1 ? 's' : ''}.`,
       });
 
       await refreshAlbum();
