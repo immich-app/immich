@@ -39,7 +39,7 @@ alt="Dot Env Example"
 />
 
 - Change the default `DB_PASSWORD`, and add custom database information if necessary.
-- Populate `UPLOAD_LOCATION` and `DB_DATA_LOCATION` with your preferred location for storing backup assets.
+- Populate `UPLOAD_LOCATION` and `DB_DATA_LOCATION` with your preferred location for storing backup assets and database files.
 
 11. Click on "**Deploy the stack**".
 
