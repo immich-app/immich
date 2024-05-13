@@ -5,6 +5,7 @@ export const newLoggerRepositoryMock = (): Mocked<ILoggerRepository> => {
   return {
     setLogLevel: vitest.fn(),
     setContext: vitest.fn(),
+    setAppName: vitest.fn(),
 
     verbose: vitest.fn(),
     debug: vitest.fn(),
