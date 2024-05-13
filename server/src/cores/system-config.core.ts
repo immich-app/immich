@@ -321,7 +321,7 @@ export class SystemConfigCore {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
 
-    const config = await this.getConfig();
+    const config = await this.getConfig(true);
 
     this.config$.next(config);
 
