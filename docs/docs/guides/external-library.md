@@ -6,15 +6,19 @@ in a directory on the same machine.
 
 # Mount the directory into the containers.
 
-Edit `docker-compose.yml` to add two new mount points under `volumes:`
+Edit `docker-compose.yml` to add two new mount points in the sections `immich-server:` and `immich-microservices:` under `volumes:`
 
-```
-  immich-server:
+```diff
+immich-server:
     volumes:
-      - ${EXTERNAL_PATH}:/usr/src/app/external
++       - ${EXTERNAL_PATH}:/usr/src/app/external
+
+immich-microservices:
+    volumes:
++       - ${EXTERNAL_PATH}:/usr/src/app/external
 ```
 
-Be sure to add exactly the same line to both `immich-server:` and `immich-microservices:`.
+Be sure to add exactly the same path to both services.
 
 Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
 

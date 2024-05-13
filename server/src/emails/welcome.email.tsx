@@ -105,8 +105,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
               </Link>
               <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
                 <Img
-                  // TODO get this as a png
-                  src={`https://immich.app/img/ios-app-store-badge.svg`}
+                  src={`https://immich.app/img/ios-app-store-badge.png`}
                   alt="Immich"
                   style={{ height: '68px', padding: '14px' }}
                 />
@@ -133,7 +132,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
 WelcomeEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app/auth/login',
   displayName: 'Alan Turing',
-  username: 'alanturing',
+  username: 'alanturing@immich.app',
   password: 'mysuperpassword',
 } as WelcomeEmailProps;
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.103.1
+ * 1.104.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1442,12 +1442,13 @@ export function runAssetJobs({ assetJobsDto }: {
         body: assetJobsDto
     })));
 }
-export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners }: {
+export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums }: {
     fileCreatedAfter?: string;
     fileCreatedBefore?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     withPartners?: boolean;
+    withSharedAlbums?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -1457,7 +1458,8 @@ export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived,
         fileCreatedBefore,
         isArchived,
         isFavorite,
-        withPartners
+        withPartners,
+        withSharedAlbums
     }))}`, {
         ...opts
     }));
