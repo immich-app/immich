@@ -1,8 +1,8 @@
-import { ActivityEntity } from '@app/infra/entities';
-import { albumStub } from './album.stub';
-import { assetStub } from './asset.stub';
-import { authStub } from './auth.stub';
-import { userStub } from './user.stub';
+import { ActivityEntity } from 'src/entities/activity.entity';
+import { albumStub } from 'test/fixtures/album.stub';
+import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const activityStub = {
   oneComment: Object.freeze<ActivityEntity>({

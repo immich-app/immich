@@ -20,15 +20,16 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4">
         <SettingSwitch
+          id="enable-new-version-check"
           title="ENABLED"
-          subtitle="Enable period requests to GitHub to check for new releases"
+          subtitle="Enable periodic requests to GitHub to check for new releases"
           bind:checked={config.newVersionCheck.enabled}
           {disabled}
         />
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['newVersionCheck'] })}
           on:save={() => dispatch('save', { newVersionCheck: config.newVersionCheck })}
-          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          showResetToDefault={!isEqual(savedConfig.newVersionCheck, defaultConfig.newVersionCheck)}
           {disabled}
         />
       </div>

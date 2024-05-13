@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // AssetOrder order
+    test('to test the property `order`', () async {
+      // TODO
+    });
+
 
   });
 

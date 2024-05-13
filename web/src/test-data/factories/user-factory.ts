@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { UserAvatarColor, type UserResponseDto } from '@immich/sdk';
+import { UserAvatarColor, UserStatus, type UserResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const userFactory = Sync.makeFactory<UserResponseDto>({
@@ -18,4 +18,5 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   avatarColor: UserAvatarColor.Primary,
   quotaUsageInBytes: 0,
   quotaSizeInBytes: null,
+  status: UserStatus.Active,
 });

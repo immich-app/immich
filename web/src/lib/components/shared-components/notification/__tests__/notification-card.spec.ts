@@ -10,7 +10,7 @@ describe('NotificationCard component', () => {
     vi.spyOn(window, 'clearTimeout');
 
     sut = render(NotificationCard, {
-      notificationInfo: {
+      notification: {
         id: 1234,
         message: 'Notification message',
         timeout: 1000,
@@ -25,7 +25,7 @@ describe('NotificationCard component', () => {
 
   it('shows message and title', () => {
     sut = render(NotificationCard, {
-      notificationInfo: {
+      notification: {
         id: 1234,
         message: 'Notification message',
         timeout: 1000,

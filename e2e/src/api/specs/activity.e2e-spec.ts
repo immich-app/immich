@@ -1,6 +1,7 @@
 import {
   ActivityCreateDto,
   AlbumResponseDto,
+  AlbumUserRole,
   AssetFileUploadResponseDto,
   LoginResponseDto,
   ReactionType,
@@ -9,7 +10,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { apiUtils, app, asBearerAuth, dbUtils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -23,18 +24,17 @@ describe('/activity', () => {
     create({ activityCreateDto: dto }, { headers: asBearerAuth(accessToken || admin.accessToken) });
 
   beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
+    await utils.resetDatabase();
 
-    admin = await apiUtils.adminSetup();
-    nonOwner = await apiUtils.userSetup(admin.accessToken, createUserDto.user1);
-    asset = await apiUtils.createAsset(admin.accessToken);
+    admin = await utils.adminSetup();
+    nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
+    asset = await utils.createAsset(admin.accessToken);
     album = await createAlbum(
       {
         createAlbumDto: {
           albumName: 'Album 1',
           assetIds: [asset.id],
-          sharedWithUserIds: [nonOwner.userId],
+          albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
         },
       },
       { headers: asBearerAuth(admin.accessToken) },
@@ -42,7 +42,7 @@ describe('/activity', () => {
   });
 
   beforeEach(async () => {
-    await dbUtils.reset(['activity']);
+    await utils.resetDatabase(['activity']);
   });
 
   describe('GET /activity', () => {
@@ -149,7 +149,7 @@ describe('/activity', () => {
     });
 
     it('should filter by userId', async () => {
-      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
+      const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
 
       const response1 = await request(app)
         .get('/activity')
@@ -251,8 +251,7 @@ describe('/activity', () => {
     });
 
     it('should return a 200 for a duplicate like on the album', async () => {
-      const [reaction] = await Promise.all([createActivity({ albumId: album.id, type: ReactionType.Like })]);
-
+      const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -262,13 +261,11 @@ describe('/activity', () => {
     });
 
     it('should not confuse an album like with an asset like', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({
-          albumId: album.id,
-          assetId: asset.id,
-          type: ReactionType.Like,
-        }),
-      ]);
+      const reaction = await createActivity({
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.Like,
+      });
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
@@ -315,13 +312,11 @@ describe('/activity', () => {
     });
 
     it('should return a 200 for a duplicate like on an asset', async () => {
-      const [reaction] = await Promise.all([
-        createActivity({
-          albumId: album.id,
-          assetId: asset.id,
-          type: ReactionType.Like,
-        }),
-      ]);
+      const reaction = await createActivity({
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.Like,
+      });
 
       const { status, body } = await request(app)
         .post('/activity')

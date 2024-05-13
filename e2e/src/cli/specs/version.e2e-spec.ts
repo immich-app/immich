@@ -1,14 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { apiUtils, immichCli } from 'src/utils';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { immichCli } from 'src/utils';
+import { describe, expect, it } from 'vitest';
 
 const pkg = JSON.parse(readFileSync('../cli/package.json', 'utf8'));
 
 describe(`immich --version`, () => {
-  beforeAll(() => {
-    apiUtils.setup();
-  });
-
   describe('immich --version', () => {
     it('should print the cli version', async () => {
       const { stdout, stderr, exitCode } = await immichCli(['--version']);

@@ -1,5 +1,5 @@
-import { AuditEntity, DatabaseAction, EntityType } from '@app/infra/entities';
-import { authStub } from './auth.stub';
+import { AuditEntity, DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { authStub } from 'test/fixtures/auth.stub';
 
 export const auditStub = {
   create: Object.freeze<AuditEntity>({

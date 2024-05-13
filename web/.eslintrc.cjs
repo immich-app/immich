@@ -50,6 +50,7 @@ module.exports = {
     'unicorn/no-nested-ternary': 'off',
     'unicorn/consistent-function-scoping': 'off',
     'unicorn/prefer-top-level-await': 'off',
+    'unicorn/import-style': 'off',
     // TODO: set recommended-type-checked and remove these rules
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',

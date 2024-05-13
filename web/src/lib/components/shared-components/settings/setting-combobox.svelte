@@ -3,6 +3,7 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
 
+  export let id: string;
   export let title: string;
   export let comboboxPlaceholder: string;
   export let subtitle = '';
@@ -32,6 +33,9 @@
   </div>
   <div class="flex items-center">
     <Combobox
+      {id}
+      label={title}
+      hideLabel={true}
       {selectedOption}
       {options}
       placeholder={comboboxPlaceholder}

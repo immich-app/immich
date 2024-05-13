@@ -23,7 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.16.9"
+          flutter-version: "3.19.3"
 
       - name: Install dependencies
         run: dart pub get

@@ -3,7 +3,14 @@ import { uploadAssetsStore } from '$lib/stores/upload';
 import { getKey, uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
-import { defaults, getSupportedMediaTypes, type AssetFileUploadResponseDto } from '@immich/sdk';
+import {
+  Action,
+  checkBulkUpload,
+  defaults,
+  getSupportedMediaTypes,
+  type AssetFileUploadResponseDto,
+} from '@immich/sdk';
+import { tick } from 'svelte';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -70,59 +77,82 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
   const fileCreatedAt = new Date(asset.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(asset);
 
-  return new Promise((resolve) => resolve(uploadAssetsStore.markStarted(deviceAssetId)))
-    .then(() => {
-      const formData = new FormData();
-      for (const [key, value] of Object.entries({
-        deviceAssetId,
-        deviceId: 'WEB',
-        fileCreatedAt,
-        fileModifiedAt: new Date(asset.lastModified).toISOString(),
-        isFavorite: 'false',
-        duration: '0:00:00.000000',
-        assetData: new File([asset], asset.name),
-      })) {
-        formData.append(key, value);
+  uploadAssetsStore.markStarted(deviceAssetId);
+
+  try {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries({
+      deviceAssetId,
+      deviceId: 'WEB',
+      fileCreatedAt,
+      fileModifiedAt: new Date(asset.lastModified).toISOString(),
+      isFavorite: 'false',
+      duration: '0:00:00.000000',
+      assetData: new File([asset], asset.name),
+    })) {
+      formData.append(key, value);
+    }
+
+    let responseData: AssetFileUploadResponseDto | undefined;
+    const key = getKey();
+    if (crypto?.subtle?.digest && !key) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
+      await tick();
+      try {
+        const bytes = await asset.arrayBuffer();
+        const hash = await crypto.subtle.digest('SHA-1', bytes);
+        const checksum = Array.from(new Uint8Array(hash))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const {
+          results: [checkUploadResult],
+        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] } });
+        if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
+          responseData = { duplicate: true, id: checkUploadResult.assetId };
+        }
+      } catch (error) {
+        console.error(`Error calculating sha1 file=${asset.name})`, error);
       }
+    }
 
-      const key = getKey();
-
-      return uploadRequest<AssetFileUploadResponseDto>({
+    if (!responseData) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
+      const response = await uploadRequest<AssetFileUploadResponseDto>({
         url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
         data: formData,
         onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
       });
-    })
-    .then(async (response) => {
-      if (response.status == 200 || response.status == 201) {
-        const res: AssetFileUploadResponseDto = response.data;
-
-        if (res.duplicate) {
-          uploadAssetsStore.duplicateCounter.update((count) => count + 1);
-        }
-
-        if (albumId && res.id) {
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-          await addAssetsToAlbum(albumId, [res.id]);
-          uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
-        }
-
-        uploadAssetsStore.updateAsset(deviceAssetId, {
-          state: res.duplicate ? UploadState.DUPLICATED : UploadState.DONE,
-        });
-        uploadAssetsStore.successCounter.update((c) => c + 1);
-
-        setTimeout(() => {
-          uploadAssetsStore.removeUploadAsset(deviceAssetId);
-        }, 1000);
-
-        return res.id;
+      if (![200, 201].includes(response.status)) {
+        throw new Error('Failed to upload file');
       }
-    })
-    .catch((error) => {
-      handleError(error, 'Unable to upload file');
-      const reason = getServerErrorMessage(error) || error;
-      uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
-      return undefined;
-    });
+      responseData = response.data;
+    }
+    const { duplicate, id: assetId } = responseData;
+
+    if (duplicate) {
+      uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+    } else {
+      uploadAssetsStore.successCounter.update((c) => c + 1);
+    }
+
+    if (albumId && assetId) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+      await addAssetsToAlbum(albumId, [assetId]);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+    }
+
+    uploadAssetsStore.updateAsset(deviceAssetId, { state: duplicate ? UploadState.DUPLICATED : UploadState.DONE });
+
+    setTimeout(() => {
+      uploadAssetsStore.removeUploadAsset(deviceAssetId);
+    }, 1000);
+
+    return assetId;
+  } catch (error) {
+    handleError(error, 'Unable to upload file');
+    const reason = getServerErrorMessage(error) || error;
+    uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
+    return;
+  }
 }

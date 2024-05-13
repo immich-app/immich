@@ -30,9 +30,7 @@
   }>();
 
   $: hasSelection = selectedPeople.length > 0;
-  $: unselectedPeople = people.filter(
-    (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
-  );
+  $: peopleToNotShow = [...selectedPeople, person];
 
   onMount(async () => {
     const data = await getAllPeople({ withHidden: false });
@@ -135,7 +133,12 @@
                 </div>
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
-                    <CircleIconButton icon={mdiSwapHorizontal} size="24" on:click={handleSwapPeople} />
+                    <CircleIconButton
+                      title="Swap merge direction"
+                      icon={mdiSwapHorizontal}
+                      size="24"
+                      on:click={handleSwapPeople}
+                    />
                   </div>
                 {/if}
               </div>
@@ -145,21 +148,16 @@
         </div>
       </div>
 
-      <PeopleList
-        people={unselectedPeople}
-        peopleCopy={unselectedPeople}
-        unselectedPeople={selectedPeople}
-        {screenHeight}
-        on:select={({ detail }) => onSelect(detail)}
-      />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
     </section>
 
     {#if isShowConfirmation}
       <ConfirmDialogue
+        id="merge-people-modal"
         title="Merge people"
         confirmText="Merge"
-        on:confirm={handleMerge}
-        on:cancel={() => (isShowConfirmation = false)}
+        onConfirm={handleMerge}
+        onClose={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
           <p>Are you sure you want merge these people ?</p></svelte:fragment

@@ -7,7 +7,7 @@ import {
   createAlbum,
 } from '@immich/sdk';
 import { test } from '@playwright/test';
-import { apiUtils, asBearerAuth, dbUtils } from 'src/utils';
+import { asBearerAuth, utils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
@@ -17,10 +17,10 @@ test.describe('Shared Links', () => {
   let sharedLinkPassword: SharedLinkResponseDto;
 
   test.beforeAll(async () => {
-    apiUtils.setup();
-    await dbUtils.reset();
-    admin = await apiUtils.adminSetup();
-    asset = await apiUtils.createAsset(admin.accessToken);
+    utils.setApiEndpoint();
+    await utils.resetDatabase();
+    admin = await utils.adminSetup();
+    asset = await utils.createAsset(admin.accessToken);
     album = await createAlbum(
       {
         createAlbumDto: {
@@ -30,19 +30,15 @@ test.describe('Shared Links', () => {
       },
       { headers: asBearerAuth(admin.accessToken) },
     );
-    sharedLink = await apiUtils.createSharedLink(admin.accessToken, {
+    sharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,
       albumId: album.id,
     });
-    sharedLinkPassword = await apiUtils.createSharedLink(admin.accessToken, {
+    sharedLinkPassword = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,
       albumId: album.id,
       password: 'test-password',
     });
-  });
-
-  test.afterAll(async () => {
-    await dbUtils.teardown();
   });
 
   test('download from a shared link', async ({ page }) => {

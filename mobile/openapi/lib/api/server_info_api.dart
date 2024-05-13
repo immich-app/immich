@@ -343,37 +343,4 @@ class ServerInfoApi {
     }
     return null;
   }
-
-  /// Performs an HTTP 'POST /server-info/admin-onboarding' operation and returns the [Response].
-  Future<Response> setAdminOnboardingWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/server-info/admin-onboarding';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<void> setAdminOnboarding() async {
-    final response = await setAdminOnboardingWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
 }

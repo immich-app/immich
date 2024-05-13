@@ -27,8 +27,6 @@ services:
               count: 1
               capabilities:
                 - gpu
-                - compute
-                - video
 
   openvino:
     device_cgroup_rules:

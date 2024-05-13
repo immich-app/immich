@@ -1,7 +1,8 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import type { AuthDeviceResponseDto } from '@immich/sdk';
+  import type { SessionResponseDto } from '@immich/sdk';
   import {
     mdiAndroid,
     mdiApple,
@@ -15,7 +16,7 @@
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
 
-  export let device: AuthDeviceResponseDto;
+  export let device: SessionResponseDto;
 
   const dispatcher = createEventDispatcher<{
     delete: void;
@@ -28,7 +29,6 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <!-- TODO: Device Image -->
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
@@ -58,17 +58,21 @@
       <div class="text-sm">
         <span class="">Last seen</span>
         <span>{DateTime.fromISO(device.updatedAt, { locale: $locale }).toRelativeCalendar(options)}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400"> - </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          {DateTime.fromISO(device.updatedAt, { locale: $locale }).toLocaleString(DateTime.DATETIME_MED)}
+        </span>
       </div>
     </div>
     {#if !device.current}
-      <div class="flex flex-col justify-center text-sm">
-        <button
-          on:click={() => dispatcher('delete')}
-          class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+      <div>
+        <CircleIconButton
+          color="primary"
+          icon={mdiTrashCanOutline}
           title="Log out"
-        >
-          <Icon path={mdiTrashCanOutline} size="16" />
-        </button>
+          size="16"
+          on:click={() => dispatcher('delete')}
+        />
       </div>
     {/if}
   </div>

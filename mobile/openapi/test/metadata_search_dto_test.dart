@@ -71,11 +71,6 @@ void main() {
       // TODO
     });
 
-    // bool isExternal
-    test('to test the property `isExternal`', () async {
-      // TODO
-    });
-
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
@@ -93,11 +88,6 @@ void main() {
 
     // bool isOffline
     test('to test the property `isOffline`', () async {
-      // TODO
-    });
-
-    // bool isReadOnly
-    test('to test the property `isReadOnly`', () async {
       // TODO
     });
 
@@ -151,6 +141,12 @@ void main() {
       // TODO
     });
 
+    // String previewPath
+    test('to test the property `previewPath`', () async {
+      // TODO
+    });
+
+    // This property was deprecated in v1.100.0
     // String resizePath
     test('to test the property `resizePath`', () async {
       // TODO
@@ -173,6 +169,11 @@ void main() {
 
     // DateTime takenBefore
     test('to test the property `takenBefore`', () async {
+      // TODO
+    });
+
+    // String thumbnailPath
+    test('to test the property `thumbnailPath`', () async {
       // TODO
     });
 
@@ -201,6 +202,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.100.0
     // String webpPath
     test('to test the property `webpPath`', () async {
       // TODO

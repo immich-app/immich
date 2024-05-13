@@ -12,25 +12,25 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
-import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
-import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
-import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
+import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
-import 'package:immich_mobile/shared/cache/widgets_binding.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/android_device_asset.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/etag.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/ios_device_asset.dart';
-import 'package:immich_mobile/shared/models/logger_message.model.dart';
-import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/providers/app_state.provider.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/services/immich_logger.service.dart';
-import 'package:immich_mobile/shared/services/local_notification.service.dart';
+import 'package:immich_mobile/utils/cache/widgets_binding.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/android_device_asset.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/etag.entity.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/entities/logger_message.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:isar/isar.dart';
@@ -215,10 +215,10 @@ class MainWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyLocalization(
-      supportedLocales: locales,
+      supportedLocales: locales.values.toList(),
       path: translationsPath,
       useFallbackTranslations: true,
-      fallbackLocale: locales.first,
+      fallbackLocale: locales.values.first,
       child: const ImmichApp(),
     );
   }

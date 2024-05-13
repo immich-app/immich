@@ -1,5 +1,5 @@
-import { PersonEntity } from '@app/infra/entities';
-import { userStub } from './user.stub';
+import { PersonEntity } from 'src/entities/person.entity';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const personStub = {
   noName: Object.freeze<PersonEntity>({

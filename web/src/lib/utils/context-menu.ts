@@ -1,6 +1,8 @@
 export type Align = 'middle' | 'top-left' | 'top-right';
 
-export const getContextMenuPosition = (event: MouseEvent, align: Align = 'middle') => {
+export type ContextMenuPosition = { x: number; y: number };
+
+export const getContextMenuPosition = (event: MouseEvent, align: Align = 'middle'): ContextMenuPosition => {
   const { x, y, currentTarget, target } = event;
   const box = ((currentTarget || target) as HTMLElement)?.getBoundingClientRect();
   if (box) {

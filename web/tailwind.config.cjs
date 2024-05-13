@@ -30,6 +30,9 @@ module.exports = {
       spacing: {
         18: '4.5rem',
       },
+      screens: {
+        tall: { raw: '(min-height: 800px)' },
+      },
     },
   },
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
@@ -34,17 +35,16 @@
       {desc}
     </p>
   {/if}
-
-  {#each options as option}
-    <label class="flex items-center mb-2">
-      <input
-        type="checkbox"
-        class="form-checkbox h-5 w-5 color"
-        {disabled}
+  <div class="flex flex-col gap-2">
+    {#each options as option}
+      <Checkbox
+        id="{option.value}-checkbox"
+        label={option.text}
         checked={value.includes(option.value)}
+        {disabled}
+        labelClass="text-gray-500 dark:text-gray-300"
         on:change={() => handleCheckboxChange(option.value)}
       />
-      <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 pt-1">{option.text}</span>
-    </label>
-  {/each}
+    {/each}
+  </div>
 </div>

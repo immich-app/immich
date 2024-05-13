@@ -1,6 +1,7 @@
 <script lang="ts">
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let id: string;
   export let albumName: string;
@@ -29,7 +30,7 @@
 </script>
 
 <input
-  on:keydown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+  use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
   on:blur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
     ? 'hover:border-gray-400'

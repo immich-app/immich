@@ -8,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { delay, getAssetFilename } from '$lib/utils/asset-utils';
+  import { delay } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -41,6 +41,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -105,20 +106,6 @@
     closeViewer: void;
   }>();
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textArea) {
-      return;
-    }
-    const ctrl = event.ctrlKey;
-    switch (event.key) {
-      case 'Enter': {
-        if (ctrl && event.target === textArea) {
-          await handleFocusOut();
-        }
-      }
-    }
-  };
-
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -180,17 +167,9 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeypress} />
-
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <button
-      class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-      on:click={() => dispatch('close')}
-    >
-      <Icon path={mdiClose} size="24" />
-    </button>
-
+    <CircleIconButton icon={mdiClose} title="Close" on:click={() => dispatch('close')} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
@@ -215,7 +194,7 @@
           disabled={!isOwner || isSharedLink()}
           bind:this={textArea}
           class="max-h-[500px]
-      w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
+      w-full resize-none border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
           placeholder={isOwner ? 'Add a description' : ''}
           on:focusout={handleFocusOut}
           on:input={() => autoGrowHeight(textArea)}
@@ -223,6 +202,10 @@
           use:autoGrowHeight
           use:clickOutside
           on:outclick={handleFocusOut}
+          use:shortcut={{
+            shortcut: { key: 'Enter', ctrl: true },
+            onShortcut: () => handlePromiseError(handleFocusOut()),
+          }}
         />
       {/key}
     </section>
@@ -258,62 +241,59 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
-            <div
+            <a
               class="w-[90px]"
-              role="button"
-              tabindex={index}
+              href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
+                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
+                : AppRoute.PHOTOS}"
               on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
-              <a
-                href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                  ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                  : AppRoute.PHOTOS}"
-                on:click={() => dispatch('closeViewer')}
-              >
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                {#if person.birthDate}
-                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  {@const ageInMonths = Math.floor(
-                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
-                  )}
-                  {#if age >= 0}
-                    <p
-                      class="font-light"
-                      title={personBirthDate.toLocaleString(
-                        {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        },
-                        { locale: $locale },
-                      )}
-                    >
-                      {#if ageInMonths <= 11}
-                        Age {ageInMonths} months
-                      {:else}
-                        Age {age}
-                      {/if}
-                    </p>
-                  {/if}
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+              {#if person.birthDate}
+                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const ageInMonths = Math.floor(
+                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                )}
+                {#if age >= 0}
+                  <p
+                    class="font-light"
+                    title={personBirthDate.toLocaleString(
+                      {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    )}
+                  >
+                    {#if ageInMonths <= 11}
+                      Age {ageInMonths} months
+                    {:else if ageInMonths > 12 && ageInMonths <= 23}
+                      Age 1 year, {ageInMonths - 12} months
+                    {:else}
+                      Age {age}
+                    {/if}
+                  </p>
                 {/if}
-              </a>
-            </div>
+              {/if}
+            </a>
           {/if}
         {/each}
       </div>
@@ -321,32 +301,22 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo && !asset.isExternal}
-      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
-    {:else if !asset.exifInfo && asset.isExternal}
-      <div class="flex gap-4 py-4">
-        <div>
-          <p class="break-all">
-            Metadata not loaded for {asset.originalPath}
-          </p>
-        </div>
-      </div>
-    {:else}
+    {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
         <h2>DETAILS</h2>
       </div>
+    {:else}
+      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {#if asset.exifInfo?.dateTimeOriginal}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
-        tabindex="0"
-        role="button"
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
         title={isOwner ? 'Edit date' : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -384,57 +354,20 @@
         </div>
 
         {#if isOwner}
-          <button class="focus:outline-none p-1">
+          <div class="p-1">
             <Icon path={mdiPencil} size="20" />
-          </button>
+          </div>
         {/if}
-      </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
+      </button>
+    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
             <Icon path={mdiCalendar} size="24" />
           </div>
         </div>
-        <button class="focus:outline-none p-1">
+        <div class="p-1">
           <Icon path={mdiPencil} size="20" />
-        </button>
-      </div>
-    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon path={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {assetDateTimeOriginal.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {assetDateTimeOriginal.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    timeZoneName: 'longOffset',
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     {/if}
@@ -459,13 +392,15 @@
 
         <div>
           <p class="break-all flex place-items-center gap-2">
+            {asset.originalFileName}
             {#if isOwner}
-              {asset.originalFileName}
-              <button title="Show File Location" on:click={toggleAssetPath}>
-                <Icon path={mdiInformationOutline} />
-              </button>
-            {:else}
-              {getAssetFilename(asset)}
+              <CircleIconButton
+                icon={mdiInformationOutline}
+                title="Show file location"
+                size="16"
+                padding="2"
+                on:click={toggleAssetPath}
+              />
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
@@ -518,14 +453,12 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city && !asset.isReadOnly}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4"
+    {#if asset.exifInfo?.city}
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
         on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
-        tabindex="0"
         title={isOwner ? 'Edit location' : ''}
-        role="button"
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
       >
@@ -552,14 +485,12 @@
             <Icon path={mdiPencil} size="20" />
           </div>
         {/if}
-      </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
+      </button>
+    {:else if !asset.exifInfo?.city && isOwner}
+      <button
+        type="button"
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
-        tabindex="0"
-        role="button"
         title="Add location"
       >
         <div class="flex gap-4">
@@ -572,27 +503,7 @@
         <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </div>
-      </div>
-    {:else if asset.exifInfo?.city && asset.isReadOnly}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-          <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
+      </button>
     {/if}
     {#if isShowChangeLocation}
       <ChangeLocation
@@ -616,7 +527,16 @@
     {:then component}
       <svelte:component
         this={component.default}
-        mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+        mapMarkers={[
+          {
+            lat: latlng.lat,
+            lon: latlng.lng,
+            id: asset.id,
+            city: asset.exifInfo?.city ?? null,
+            state: asset.exifInfo?.state ?? null,
+            country: asset.exifInfo?.country ?? null,
+          },
+        ]}
         center={latlng}
         zoom={15}
         simplified
@@ -641,7 +561,7 @@
 {/if}
 
 {#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
-  <section class="px-6 dark:text-immich-dark-fg">
+  <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
@@ -662,7 +582,7 @@
     <p class="pb-4 text-sm">APPEARS IN</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer">
+        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -675,11 +595,13 @@
 
           <div class="mb-auto mt-auto">
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-            <div class="flex gap-2 text-sm">
-              <p>{album.assetCount} items</p>
-              {#if album.shared}
-                <p>· Shared</p>
-              {/if}
+            <div class="flex flex-col gap-0 text-sm">
+              <div>
+                <span>{album.assetCount} items</span>
+                {#if album.shared}
+                  <span> • Shared</span>
+                {/if}
+              </div>
             </div>
           </div>
         </div>

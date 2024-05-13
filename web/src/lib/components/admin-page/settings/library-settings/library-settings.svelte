@@ -37,6 +37,7 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
+            id="watch-filesystem"
             title="Watch filesystem"
             {disabled}
             subtitle="Watch external libraries for file changes"
@@ -64,6 +65,7 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
+            id="periodic-library-scan"
             title="ENABLED"
             {disabled}
             subtitle="Enable periodic library scanning"

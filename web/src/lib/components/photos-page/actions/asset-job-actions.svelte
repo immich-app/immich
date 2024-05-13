@@ -4,7 +4,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { getAssetJobMessage, getAssetJobName } from '$lib/utils';
+  import { getAssetJobIcon, getAssetJobMessage, getAssetJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, AssetTypeEnum, runAssetJobs } from '@immich/sdk';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
@@ -33,6 +33,6 @@
 
 {#each jobs as job}
   {#if isAllVideos || job !== AssetJobName.TranscodeVideo}
-    <MenuOption text={getAssetJobName(job)} on:click={() => handleRunJob(job)} />
+    <MenuOption text={getAssetJobName(job)} icon={getAssetJobIcon(job)} on:click={() => handleRunJob(job)} />
   {/if}
 {/each}

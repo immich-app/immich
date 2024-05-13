@@ -16,9 +16,8 @@ class CreateLibraryDto {
     this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
-    this.isWatched,
     this.name,
-    this.ownerId,
+    required this.ownerId,
     required this.type,
   });
 
@@ -40,23 +39,9 @@ class CreateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isWatched;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? name;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? ownerId;
+  String ownerId;
 
   LibraryType type;
 
@@ -65,7 +50,6 @@ class CreateLibraryDto {
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     _deepEquality.equals(other.importPaths, importPaths) &&
     other.isVisible == isVisible &&
-    other.isWatched == isWatched &&
     other.name == name &&
     other.ownerId == ownerId &&
     other.type == type;
@@ -76,13 +60,12 @@ class CreateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (ownerId == null ? 0 : ownerId!.hashCode) +
+    (ownerId.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name, ownerId=$ownerId, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, ownerId=$ownerId, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -93,21 +76,12 @@ class CreateLibraryDto {
     } else {
     //  json[r'isVisible'] = null;
     }
-    if (this.isWatched != null) {
-      json[r'isWatched'] = this.isWatched;
-    } else {
-    //  json[r'isWatched'] = null;
-    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
     }
-    if (this.ownerId != null) {
       json[r'ownerId'] = this.ownerId;
-    } else {
-    //  json[r'ownerId'] = null;
-    }
       json[r'type'] = this.type;
     return json;
   }
@@ -127,9 +101,8 @@ class CreateLibraryDto {
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
-        ownerId: mapValueOfType<String>(json, r'ownerId'),
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         type: LibraryType.fromJson(json[r'type'])!,
       );
     }
@@ -178,6 +151,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'ownerId',
     'type',
   };
 }

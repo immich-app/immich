@@ -1,6 +1,6 @@
 # The Immich CLI
 
-Immich has a CLI that allows you to perform certain actions from the command line. This CLI replaces the [legacy CLI](https://github.com/immich-app/CLI) that was previously available. The CLI is hosted in the [cli folder of the the main Immich github repository](https://github.com/immich-app/immich/tree/main/cli).
+Immich has a command line interface (CLI) that allows you to perform certain actions from the command line.
 
 ## Features
 
@@ -44,66 +44,72 @@ Please modify the `IMMICH_INSTANCE_URL` and `IMMICH_API_KEY` environment variabl
 
 ## Usage
 
-```
-immich
-```
+<details>
+<summary>Usage</summary>
 
 ```
+$ immich
 Usage: immich [options] [command]
 
 Command line interface for Immich
 
 Options:
-  -V, --version                     output the version number
-  -d, --config                      Configuration directory (env: IMMICH_CONFIG_DIR)
-  -h, --help                        display help for command
+  -V, --version                       output the version number
+  -d, --config-directory <directory>  Configuration directory where auth.yml will be stored (default: "~/.config/immich/", env:
+                                      IMMICH_CONFIG_DIR)
+  -u, --url [url]                     Immich server URL (env: IMMICH_INSTANCE_URL)
+  -k, --key [key]                     Immich API key (env: IMMICH_API_KEY)
+  -h, --help                          display help for command
 
 Commands:
-  upload [options] [paths...]       Upload assets
-  server-info                       Display server information
-  login-key [instanceUrl] [apiKey]  Login using an API key
-  logout                            Remove stored credentials
-  help [command]                    display help for command
+  login|login-key <url> <key>         Login using an API key
+  logout                              Remove stored credentials
+  server-info                         Display server information
+  upload [options] [paths...]         Upload assets
+  help [command]                      display help for command
 ```
+
+</details>
 
 ## Commands
 
 The upload command supports the following options:
 
+<details>
+<summary>Options</summary>
+
 ```
-Usage: immich upload [options] [paths...]
+Usage: immich upload [paths...] [options]
 
 Upload assets
 
 Arguments:
-  paths                    One or more paths to assets to be uploaded
+paths                       One or more paths to assets to be uploaded
 
 Options:
-  -r, --recursive          Recursive (default: false, env: IMMICH_RECURSIVE)
-  -i, --ignore [paths...]  Paths to ignore (env: IMMICH_IGNORE_PATHS)
-  -h, --skip-hash          Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
-  -H, --include-hidden     Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
-  -a, --album              Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
-  -A, --album-name <name>  Add all assets to specified album (env: IMMICH_ALBUM_NAME)
-  -n, --dry-run            Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
-  --delete                 Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
-  --help                   display help for command
+-r, --recursive             Recursive (default: false, env: IMMICH_RECURSIVE)
+-i, --ignore [paths...]     Paths to ignore (default: [], env: IMMICH_IGNORE_PATHS)
+-h, --skip-hash             Don't hash files before upload (default: false, env: IMMICH_SKIP_HASH)
+-H, --include-hidden        Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
+-a, --album                 Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
+-A, --album-name <name>     Add all assets to specified album (env: IMMICH_ALBUM_NAME)
+-n, --dry-run               Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
+-c, --concurrency <number>  Number of assets to upload at the same time (default: 4, env: IMMICH_UPLOAD_CONCURRENCY)
+--delete                    Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
+--help                      display help for command
 ```
+
+</details>
 
 Note that the above options can read from environment variables as well.
 
 ## Quick Start
 
-You begin by authenticating to your Immich server.
+You begin by authenticating to your Immich server. For instance:
 
 ```bash
-immich login-key [instanceUrl] [apiKey]
-```
-
-For instance,
-
-```bash
-immich login-key http://192.168.1.216:2283/api HFEJ38DNSDUEG
+# immich login [url] [key]
+immich login http://192.168.1.216:2283/api HFEJ38DNSDUEG
 ```
 
 This will store your credentials in a `auth.yml` file in the configuration directory which defaults to `~/.config/`. The directory can be set with the `-d` option or the environment variable `IMMICH_CONFIG_DIR`. Please keep the file secure, either by performing the logout command after you are done, or deleting it manually.

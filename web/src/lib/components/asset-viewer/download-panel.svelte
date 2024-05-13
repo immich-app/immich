@@ -39,7 +39,13 @@
             </div>
           </div>
           <div class="absolute right-2">
-            <CircleIconButton on:click={() => abort(downloadKey, download)} size="20" icon={mdiClose} forceDark />
+            <CircleIconButton
+              title="Close"
+              on:click={() => abort(downloadKey, download)}
+              size="20"
+              icon={mdiClose}
+              class="dark:text-immich-dark-gray"
+            />
           </div>
         </div>
       {/each}

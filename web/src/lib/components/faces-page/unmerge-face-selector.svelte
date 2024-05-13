@@ -31,9 +31,7 @@
   let hasSelection = false;
   let screenHeight: number;
 
-  $: unselectedPeople = selectedPerson
-    ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id && personAssets.id !== person.id)
-    : people;
+  $: peopleToNotShow = selectedPerson ? [personAssets, selectedPerson] : [personAssets];
 
   let dispatch = createEventDispatcher<{
     confirm: void;
@@ -74,7 +72,7 @@
 
     try {
       disableButtons = true;
-      const data = await createPerson();
+      const data = await createPerson({ personCreateDto: {} });
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({
@@ -178,13 +176,7 @@
           </div>
         </div>
       {/if}
-      <PeopleList
-        people={unselectedPeople}
-        peopleCopy={unselectedPeople}
-        unselectedPeople={selectedPerson ? [selectedPerson, personAssets] : [personAssets]}
-        {screenHeight}
-        on:select={({ detail }) => handleSelectedPerson(detail)}
-      />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => handleSelectedPerson(detail)} />
     </section>
   </section>
 </section>

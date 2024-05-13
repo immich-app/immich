@@ -5,7 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
-  import { isSelectAllCancelled } from '$lib/stores/assets.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets.store';
 
   export let showBackButton = true;
   export let backIcon = mdiClose;
@@ -31,7 +31,7 @@
   };
 
   const handleClose = () => {
-    $isSelectAllCancelled = true;
+    $isSelectingAllAssets = false;
     dispatch('close');
   };
 
@@ -46,6 +46,8 @@
       document.removeEventListener('scroll', onScroll);
     }
   });
+
+  $: buttonClass = forceDark ? 'hover:text-immich-dark-gray' : undefined;
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
@@ -57,14 +59,7 @@
   >
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton
-          on:click={handleClose}
-          icon={backIcon}
-          backgroundColor={'transparent'}
-          hoverColor={'#e2e7e9'}
-          size={'24'}
-          forceDark
-        />
+        <CircleIconButton title="Close" on:click={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
       {/if}
       <slot name="leading" />
     </div>

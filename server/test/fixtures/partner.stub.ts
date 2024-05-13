@@ -1,5 +1,5 @@
-import { PartnerEntity } from '@app/infra/entities';
-import { userStub } from './user.stub';
+import { PartnerEntity } from 'src/entities/partner.entity';
+import { userStub } from 'test/fixtures/user.stub';
 
 export const partnerStub = {
   adminToUser1: Object.freeze<PartnerEntity>({

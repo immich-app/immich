@@ -7,6 +7,7 @@
   import { DateTime } from 'luxon';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiCalendarEditOutline } from '@mdi/js';
   export let menuItem = false;
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -26,7 +27,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Change date" on:click={() => (isShowChangeDate = true)} />
+  <MenuOption text="Change date" icon={mdiCalendarEditOutline} on:click={() => (isShowChangeDate = true)} />
 {/if}
 {#if isShowChangeDate}
   <ChangeDate

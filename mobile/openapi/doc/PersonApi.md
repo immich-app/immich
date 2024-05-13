@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **createPerson**
-> PersonResponseDto createPerson()
+> PersonResponseDto createPerson(personCreateDto)
 
 
 
@@ -45,9 +45,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
+final personCreateDto = PersonCreateDto(); // PersonCreateDto | 
 
 try {
-    final result = api_instance.createPerson();
+    final result = api_instance.createPerson(personCreateDto);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->createPerson: $e\n');
@@ -55,7 +56,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **personCreateDto** | [**PersonCreateDto**](PersonCreateDto.md)|  | 
 
 ### Return type
 
@@ -67,7 +71,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -110,7 +114,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **withHidden** | **bool**|  | [optional] [default to false]
+ **withHidden** | **bool**|  | [optional] 
 
 ### Return type
 

@@ -8,6 +8,8 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 | `reset-admin-password`   | Reset the password for the admin user |
 | `disable-password-login` | Disable password login                |
 | `enable-password-login`  | Enable password login                 |
+| `enable-oauth-login`     | Enable OAuth login                    |
+| `disable-oauth-login`    | Disable OAuth login                   |
 | `list-users`             | List Immich users                     |
 
 ## How to run a command
@@ -36,11 +38,25 @@ immich-admin disable-password-login
 Password login has been disabled.
 ```
 
-Enabled Password Login
+Enable Password Login
 
 ```
 immich-admin enable-password-login
 Password login has been enabled.
+```
+
+Enable OAuth login
+
+```
+immich-admin enable-oauth-login
+OAuth login has been enabled.
+```
+
+Disable OAuth login
+
+```
+immich-admin disable-oauth-login
+OAuth login has been disabled.
 ```
 
 List Users

@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumId** | **String** |  | [optional] 
 **allowDownload** | **bool** |  | [optional] [default to true]
-**allowUpload** | **bool** |  | [optional] [default to false]
+**allowUpload** | **bool** |  | [optional] 
 **assetIds** | **List<String>** |  | [optional] [default to const []]
 **description** | **String** |  | [optional] 
 **expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 

@@ -5,7 +5,7 @@
   import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { setAdminOnboarding } from '@immich/sdk';
+  import { updateAdminOnboarding } from '@immich/sdk';
 
   let index = 0;
 
@@ -28,7 +28,7 @@
 
   const handleDoneClicked = async () => {
     if (index >= onboardingSteps.length - 1) {
-      await setAdminOnboarding();
+      await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
       await goto(AppRoute.PHOTOS);
     } else {
       index++;

@@ -17,18 +17,21 @@ class PersonApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'POST /person' operation and returns the [Response].
-  Future<Response> createPersonWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [PersonCreateDto] personCreateDto (required):
+  Future<Response> createPersonWithHttpInfo(PersonCreateDto personCreateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/person';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = personCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -42,8 +45,11 @@ class PersonApi {
     );
   }
 
-  Future<PersonResponseDto?> createPerson() async {
-    final response = await createPersonWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [PersonCreateDto] personCreateDto (required):
+  Future<PersonResponseDto?> createPerson(PersonCreateDto personCreateDto,) async {
+    final response = await createPersonWithHttpInfo(personCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

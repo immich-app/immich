@@ -1,8 +1,9 @@
-import { IAuditRepository } from '@app/domain';
+import { IAuditRepository } from 'src/interfaces/audit.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newAuditRepositoryMock = (): jest.Mocked<IAuditRepository> => {
+export const newAuditRepositoryMock = (): Mocked<IAuditRepository> => {
   return {
-    getAfter: jest.fn(),
-    removeBefore: jest.fn(),
+    getAfter: vitest.fn(),
+    removeBefore: vitest.fn(),
   };
 };

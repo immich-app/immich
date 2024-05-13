@@ -1,19 +1,21 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { mdiLink } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import BaseModal from '../base-modal.svelte';
+  import { mdiContentCopy, mdiLink } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
   import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
+  export let onClose: () => void;
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
@@ -26,42 +28,35 @@
   let expirationTime = '';
   let password = '';
   let shouldChangeExpirationTime = false;
-  let canCopyImagesToClipboard = true;
   let enablePassword = false;
 
   const dispatch = createEventDispatcher<{
-    close: void;
-    escape: void;
+    created: void;
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',
-    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
+    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days', '3 months', '1 year'],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
 
-  onMount(async () => {
-    if (editingLink) {
-      if (editingLink.description) {
-        description = editingLink.description;
-      }
-      if (editingLink.password) {
-        password = editingLink.password;
-      }
-      allowUpload = editingLink.allowUpload;
-      allowDownload = editingLink.allowDownload;
-      showMetadata = editingLink.showMetadata;
-
-      albumId = editingLink.album?.id;
-      assetIds = editingLink.assets.map(({ id }) => id);
-
-      enablePassword = !!editingLink.password;
+  if (editingLink) {
+    if (editingLink.description) {
+      description = editingLink.description;
     }
+    if (editingLink.password) {
+      password = editingLink.password;
+    }
+    allowUpload = editingLink.allowUpload;
+    allowDownload = editingLink.allowDownload;
+    showMetadata = editingLink.showMetadata;
 
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
-  });
+    albumId = editingLink.album?.id;
+    assetIds = editingLink.assets.map(({ id }) => id);
+
+    enablePassword = !!editingLink.password;
+  }
 
   const handleCreateSharedLink = async () => {
     const expirationTime = getExpirationTimeInMillisecond();
@@ -83,17 +78,10 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      dispatch('created');
     } catch (error) {
       handleError(error, 'Failed to create shared link');
     }
-  };
-
-  const handleCopy = async () => {
-    if (!sharedLink) {
-      return;
-    }
-
-    await copyToClipboard(sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
@@ -115,6 +103,12 @@
       }
       case '30 days': {
         return 30 * 24 * 60 * 60 * 1000;
+      }
+      case '3 months': {
+        return 30 * 24 * 60 * 60 * 3 * 1000;
+      }
+      case '1 year': {
+        return 30 * 24 * 60 * 60 * 12 * 1000;
       }
       default: {
         return 0;
@@ -151,26 +145,22 @@
         message: 'Edited',
       });
 
-      dispatch('close');
+      onClose();
     } catch (error) {
       handleError(error, 'Failed to edit shared link');
     }
   };
+
+  const getTitle = () => {
+    if (editingLink) {
+      return 'Edit link';
+    }
+    return 'Create link to share';
+  };
 </script>
 
-<BaseModal on:close={() => dispatch('close')} on:escape={() => dispatch('escape')}>
-  <svelte:fragment slot="title">
-    <span class="flex place-items-center gap-2">
-      <Icon path={mdiLink} size={24} />
-      {#if editingLink}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
-      {:else}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
-      {/if}
-    </span>
-  </svelte:fragment>
-
-  <section class="mx-6 mb-6">
+<FullScreenModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} {onClose}>
+  <section>
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
         <div>Let anyone with the link see photos and people in this album.</div>
@@ -214,25 +204,33 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch id="require-password" bind:checked={enablePassword} title={'Require password'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch id="show-metadata" bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
+          <SettingSwitch
+            id="allow-public-download"
+            bind:checked={allowDownload}
+            title={'Allow public user to download'}
+          />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch id="allow-public-upload" bind:checked={allowUpload} title={'Allow public user to upload'} />
         </div>
 
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
+              <SettingSwitch
+                id="change-expiration-time"
+                bind:checked={shouldChangeExpirationTime}
+                title={'Change expiration time'}
+              />
             </p>
           {:else}
             <p class="immich-form-label my-2">Expire after</p>
@@ -248,27 +246,22 @@
     </div>
   </section>
 
-  <hr />
-
-  <section slot="sticky-bottom">
+  <svelte:fragment slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}
-        <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
-        </div>
+        <Button size="sm" fullwidth on:click={handleEditLink}>Confirm</Button>
       {:else}
-        <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
-        </div>
+        <Button size="sm" fullwidth on:click={handleCreateSharedLink}>Create link</Button>
       {/if}
     {:else}
-      <div class="flex w-full gap-4">
+      <div class="flex w-full gap-2">
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
-
-        {#if canCopyImagesToClipboard}
-          <Button on:click={() => handleCopy()}>Copy</Button>
-        {/if}
+        <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiContentCopy} ariaLabel="Copy link to clipboard" size="18" />
+          </div>
+        </LinkButton>
       </div>
     {/if}
-  </section>
-</BaseModal>
+  </svelte:fragment>
+</FullScreenModal>

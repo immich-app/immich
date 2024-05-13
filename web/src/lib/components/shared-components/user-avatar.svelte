@@ -22,6 +22,7 @@
   export let interactive = false;
   export let showTitle = true;
   export let showProfileImage = true;
+  export let label: string | undefined = undefined;
 
   let img: HTMLImageElement;
   let showFallback = true;
@@ -61,7 +62,7 @@
 
   $: colorClass = colorClasses[color];
   $: sizeClass = sizeClasses[size];
-  $: title = `${user.name} (${user.email})`;
+  $: title = label ?? `${user.name} (${user.email})`;
   $: interactiveClass = interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
     : '';

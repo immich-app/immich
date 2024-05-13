@@ -28,6 +28,10 @@ On my computer, for example, I use this path:
 EXTERNAL_PATH=/home/tenino/photos
 ```
 
+:::info EXTERNAL_PATH design
+The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file in order to make everything easier, so if you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything will break mysteriously.
+:::
+
 Restart Immich.
 
 ```
@@ -35,47 +39,26 @@ docker compose down
 docker compose up -d
 ```
 
-# Set the External Path
+# Create the library
 
 In the Immich web UI:
 
 - click the **Administration** link in the upper right corner.
   <img src={require('./img/administration-link.png').default} width="50%" title="Administration link" />
 
-- Select the **Users** tab
-  <img src={require('./img/users-tab.png').default} width="50%" title="Users tab" />
+- Select the **External Libraries** tab
+  <img src={require('./img/external-libraries.png').default} width="50%" title="External Libraries tab" />
 
-- Select the **pencil** next to your user ID
-  <img src={require('./img/pencil.png').default} width="50%" title="Pencil" />
+- Click the **Create Library** button
+  <img src={require('./img/create-external-library.png').default} width="50%" title="Create Library button" />
 
-- Fill in the **External Path** field with `/usr/src/app/external`
-  <img src={require('./img/external-path.png').default} width="50%" title="External Path field" />
-
-Notice this matches the path _inside the container_ where we mounted your photos.
-The purpose of the external path field is for administrators who have multiple users
-on their Immich instance. It lets you prevent other authorized users from
-navigating to your external library.
-
-# Import the library
-
-In the Immich web UI:
-
-- Click your user avatar in the upper-right corner (circle with your initials)
-  <img src={require('./img/user-avatar.png').default} width="50%" title="User avatar" />
-
-- Click **Account Settings**
-  <img src={require('./img/account-settings.png').default} width="50%" title="Account Settings button" />
-
-- Click to expand **Libraries**
-  <img src={require('./img/libraries-dropdown.png').default} width="50%" title="Libraries dropdown" />
-
-- Click the **Create External Library** button
-  <img src={require('./img/create-external-library-button.png').default} width="50%" title="Create External Library button" />
+- In the dialog, select which user should own the new library
+  <img src={require('./img/library-owner.png').default} width="50%" title="Library owner diaglog" />
 
 - Click the three-dots menu and select **Edit Import Paths**
   <img src={require('./img/edit-import-paths.png').default} width="50%" title="Edit Import Paths menu option" />
 
-- Click \*_Add path_
+- Click Add path
   <img src={require('./img/add-path-button.png').default} width="50%" title="Add Path button" />
 
 - Enter **/usr/src/app/external** as the path and click Add

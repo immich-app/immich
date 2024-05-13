@@ -17,6 +17,7 @@ class UpdateAlbumDto {
     this.albumThumbnailAssetId,
     this.description,
     this.isActivityEnabled,
+    this.order,
   });
 
   ///
@@ -51,12 +52,21 @@ class UpdateAlbumDto {
   ///
   bool? isActivityEnabled;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetOrder? order;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
     other.albumName == albumName &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
     other.description == description &&
-    other.isActivityEnabled == isActivityEnabled;
+    other.isActivityEnabled == isActivityEnabled &&
+    other.order == order;
 
   @override
   int get hashCode =>
@@ -64,10 +74,11 @@ class UpdateAlbumDto {
     (albumName == null ? 0 : albumName!.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode);
+    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
+    (order == null ? 0 : order!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +102,11 @@ class UpdateAlbumDto {
     } else {
     //  json[r'isActivityEnabled'] = null;
     }
+    if (this.order != null) {
+      json[r'order'] = this.order;
+    } else {
+    //  json[r'order'] = null;
+    }
     return json;
   }
 
@@ -106,6 +122,7 @@ class UpdateAlbumDto {
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         description: mapValueOfType<String>(json, r'description'),
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
+        order: AssetOrder.fromJson(json[r'order']),
       );
     }
     return null;

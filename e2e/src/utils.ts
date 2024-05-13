@@ -1,11 +1,13 @@
 import {
+  AllJobStatusResponseDto,
   AssetFileUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
   CreateAssetDto,
   CreateLibraryDto,
   CreateUserDto,
-  PersonUpdateDto,
+  MetadataSearchDto,
+  PersonCreateDto,
   SharedLinkCreateDto,
   ValidateLibraryDto,
   createAlbum,
@@ -16,18 +18,25 @@ import {
   createUser,
   defaults,
   deleteAssets,
+  getAllAssets,
+  getAllJobsStatus,
   getAssetInfo,
+  getConfigDefaults,
   login,
-  setAdminOnboarding,
+  searchMetadata,
   signUpAdmin,
-  updatePerson,
+  updateAdminOnboarding,
+  updateAlbumUser,
+  updateConfig,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
-import { access } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
@@ -35,125 +44,32 @@ import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
-const execPromise = promisify(exec);
+type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
+type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
+type AdminSetupOptions = { onboarding?: boolean };
+type AssetData = { bytes?: Buffer; filename: string };
 
-export const app = 'http://127.0.0.1:2283/api';
+const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
+const baseUrl = 'http://127.0.0.1:2283';
 
-const directoryExists = (directory: string) =>
-  access(directory)
-    .then(() => true)
-    .catch(() => false);
-
+export const shareUrl = `${baseUrl}/share`;
+export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
-export const testAssetDir = path.resolve(`./../server/test/assets/`);
-export const testAssetDirInternal = '/data/assets';
+export const testAssetDir = path.resolve('./test-assets');
+export const testAssetDirInternal = '/test-assets';
 export const tempDir = tmpdir();
-
-const serverContainerName = 'immich-e2e-server';
-const mediaDir = '/usr/src/app/upload';
-const dirs = [
-  `"${mediaDir}/thumbs"`,
-  `"${mediaDir}/upload"`,
-  `"${mediaDir}/library"`,
-  `"${mediaDir}/encoded-video"`,
-].join(' ');
-
-if (!(await directoryExists(`${testAssetDir}/albums`))) {
-  throw new Error(
-    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
-  );
-}
-
-export const asBearerAuth = (accessToken: string) => ({
-  Authorization: `Bearer ${accessToken}`,
-});
-
+export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
+export const immichCli = (args: string[]) =>
+  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]);
+export const immichAdmin = (args: string[]) =>
+  executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 
-let client: pg.Client | null = null;
-
-export const fileUtils = {
-  reset: async () => {
-    await execPromise(`docker exec -i "${serverContainerName}" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
-  },
-};
-
-export const dbUtils = {
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
-    if (!client) {
-      return;
-    }
-
-    const vector = Array.from({ length: 512 }, Math.random);
-    const embedding = `[${vector.join(',')}]`;
-
-    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
-      assetId,
-      personId,
-      embedding,
-    ]);
-  },
-  setPersonThumbnail: async (personId: string) => {
-    if (!client) {
-      return;
-    }
-
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
-  },
-  reset: async (tables?: string[]) => {
-    try {
-      if (!client) {
-        client = new pg.Client('postgres://postgres:postgres@127.0.0.1:5433/immich');
-        await client.connect();
-      }
-
-      tables = tables || [
-        'libraries',
-        'shared_links',
-        'person',
-        'albums',
-        'assets',
-        'asset_faces',
-        'activity',
-        'api_keys',
-        'user_token',
-        'users',
-        'system_metadata',
-      ];
-
-      for (const table of tables) {
-        await client.query(`DELETE FROM ${table} CASCADE;`);
-      }
-    } catch (error) {
-      console.error('Failed to reset database', error);
-      throw error;
-    }
-  },
-  teardown: async () => {
-    try {
-      if (client) {
-        await client.end();
-        client = null;
-      }
-    } catch (error) {
-      console.error('Failed to teardown database', error);
-      throw error;
-    }
-  },
-};
-export interface CliResponse {
-  stdout: string;
-  stderr: string;
-  exitCode: number | null;
-}
-
-export const immichCli = async (args: string[]) => {
-  let _resolve: (value: CliResponse) => void;
-  const deferred = new Promise<CliResponse>((resolve) => (_resolve = resolve));
-  const _args = ['node_modules/.bin/immich', '-d', '/tmp/immich/', ...args];
-  const child = spawn('node', _args, {
-    stdio: 'pipe',
-  });
+const executeCommand = (command: string, args: string[]) => {
+  let _resolve: (value: CommandResponse) => void;
+  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
   let stderr = '';
@@ -171,41 +87,109 @@ export const immichCli = async (args: string[]) => {
   return deferred;
 };
 
-export interface AdminSetupOptions {
-  onboarding?: boolean;
-}
-
-export enum SocketEvent {
-  UPLOAD = 'upload',
-  DELETE = 'delete',
-}
-
-export type EventType = 'upload' | 'delete';
-export interface WaitOptions {
-  event: EventType;
-  assetId: string;
-  timeout?: number;
-}
+let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
-  upload: new Set<string>(),
-  delete: new Set<string>(),
+  assetUpload: new Set<string>(),
+  assetUpdate: new Set<string>(),
+  assetDelete: new Set<string>(),
+  userDelete: new Set<string>(),
 };
 
-const callbacks: Record<string, () => void> = {};
+const idCallbacks: Record<string, () => void> = {};
+const countCallbacks: Record<string, { count: number; callback: () => void }> = {};
 
-const onEvent = ({ event, assetId }: { event: EventType; assetId: string }) => {
-  events[event].add(assetId);
-  const callback = callbacks[assetId];
-  if (callback) {
-    callback();
-    delete callbacks[assetId];
+const execPromise = promisify(exec);
+
+const onEvent = ({ event, id }: { event: EventType; id: string }) => {
+  // console.log(`Received event: ${event} [id=${id}]`);
+  const set = events[event];
+  set.add(id);
+
+  const idCallback = idCallbacks[id];
+  if (idCallback) {
+    idCallback();
+    delete idCallbacks[id];
+  }
+
+  const item = countCallbacks[event];
+  if (item) {
+    const { count, callback: countCallback } = item;
+
+    if (set.size >= count) {
+      countCallback();
+      delete countCallbacks[event];
+    }
   }
 };
 
-export const wsUtils = {
-  connect: async (accessToken: string) => {
-    const websocket = io('http://127.0.0.1:2283', {
+export const utils = {
+  resetDatabase: async (tables?: string[]) => {
+    try {
+      if (!client) {
+        client = new pg.Client(dbUrl);
+        await client.connect();
+      }
+
+      tables = tables || [
+        // TODO e2e test for deleting a stack, since it is quite complex
+        'asset_stack',
+        'libraries',
+        'shared_links',
+        'person',
+        'albums',
+        'assets',
+        'asset_faces',
+        'activity',
+        'api_keys',
+        'sessions',
+        'users',
+        'system_metadata',
+        'system_config',
+      ];
+
+      const sql: string[] = [];
+
+      if (tables.includes('asset_stack')) {
+        sql.push('UPDATE "assets" SET "stackId" = NULL;');
+      }
+
+      for (const table of tables) {
+        if (table === 'system_metadata') {
+          // prevent reverse geocoder from being re-initialized
+          sql.push(`DELETE FROM "system_metadata" where "key" != 'reverse-geocoding-state';`);
+        } else {
+          sql.push(`DELETE FROM ${table} CASCADE;`);
+        }
+      }
+
+      await client.query(sql.join('\n'));
+    } catch (error) {
+      console.error('Failed to reset database', error);
+      throw error;
+    }
+  },
+
+  resetFilesystem: async () => {
+    const mediaInternal = '/usr/src/app/upload';
+    const dirs = [
+      `"${mediaInternal}/thumbs"`,
+      `"${mediaInternal}/upload"`,
+      `"${mediaInternal}/library"`,
+      `"${mediaInternal}/encoded-video"`,
+    ].join(' ');
+
+    await execPromise(`docker exec -i "immich-e2e-server" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
+  },
+
+  unzip: async (input: string, output: string) => {
+    await execPromise(`unzip -o -d "${output}" "${input}"`);
+  },
+
+  sha1: (bytes: Buffer) => createHash('sha1').update(bytes).digest('base64'),
+
+  connectWebsocket: async (accessToken: string) => {
+    const websocket = io(baseUrl, {
       path: '/api/socket.io',
       transports: ['websocket'],
       extraHeaders: { Authorization: `Bearer ${accessToken}` },
@@ -216,12 +200,15 @@ export const wsUtils = {
     return new Promise<Socket>((resolve) => {
       websocket
         .on('connect', () => resolve(websocket))
-        .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'upload', assetId: data.id }))
-        .on('on_asset_delete', (assetId: string) => onEvent({ event: 'delete', assetId }))
+        .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
+        .on('on_asset_update', (data: AssetResponseDto) => onEvent({ event: 'assetUpdate', id: data.id }))
+        .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
+        .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
         .connect();
     });
   },
-  disconnect: (ws: Socket) => {
+
+  disconnectWebsocket: (ws: Socket) => {
     if (ws?.connected) {
       ws.disconnect();
     }
@@ -230,27 +217,46 @@ export const wsUtils = {
       set.clear();
     }
   },
-  waitForEvent: async ({ event, assetId, timeout: ms }: WaitOptions): Promise<void> => {
-    const set = events[event];
-    if (set.has(assetId)) {
-      return;
+
+  resetEvents: () => {
+    for (const set of Object.values(events)) {
+      set.clear();
     }
+  },
 
+  waitForWebsocketEvent: ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 5000);
+      if (!id && !count) {
+        reject(new Error('id or count must be provided for waitForWebsocketEvent'));
+      }
 
-      callbacks[assetId] = () => {
+      const timeout = setTimeout(() => reject(new Error(`Timed out waiting for ${event} event`)), ms || 10_000);
+      const type = id ? `id=${id}` : `count=${count}`;
+      console.log(`Waiting for ${event} [${type}]`);
+      const set = events[event];
+      const onId = () => {
         clearTimeout(timeout);
         resolve();
       };
+      if ((id && set.has(id)) || (count && set.size >= count)) {
+        onId();
+        return;
+      }
+
+      if (id) {
+        idCallbacks[id] = onId;
+      }
+
+      if (count) {
+        countCallbacks[event] = {
+          count,
+          callback: onId,
+        };
+      }
     });
   },
-};
 
-type AssetData = { bytes?: Buffer; filename: string };
-
-export const apiUtils = {
-  setup: () => {
+  setApiEndpoint: () => {
     defaults.baseUrl = app;
   },
 
@@ -260,21 +266,31 @@ export const apiUtils = {
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
     if (options.onboarding) {
-      await setAdminOnboarding({ headers: asBearerAuth(response.accessToken) });
+      await updateAdminOnboarding(
+        { adminOnboardingUpdateDto: { isOnboarded: true } },
+        { headers: asBearerAuth(response.accessToken) },
+      );
     }
     return response;
   },
+
   userSetup: async (accessToken: string, dto: CreateUserDto) => {
     await createUser({ createUserDto: dto }, { headers: asBearerAuth(accessToken) });
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
     });
   },
+
   createApiKey: (accessToken: string) => {
     return createApiKey({ apiKeyCreateDto: { name: 'e2e' } }, { headers: asBearerAuth(accessToken) });
   },
+
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
     createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
+    updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),
+
   createAsset: async (
     accessToken: string,
     dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
@@ -290,6 +306,10 @@ export const apiUtils = {
     const assetData = dto?.assetData?.bytes || makeRandomImage();
     const filename = dto?.assetData?.filename || 'example.png';
 
+    if (dto?.assetData?.bytes) {
+      console.log(`Uploading ${filename}`);
+    }
+
     const builder = request(app)
       .post(`/asset/upload`)
       .attach('assetData', assetData, filename)
@@ -303,38 +323,72 @@ export const apiUtils = {
 
     return body as AssetFileUploadResponseDto;
   },
-  getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-  deleteAssets: (accessToken: string, ids: string[]) =>
-    deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
-  createPerson: async (accessToken: string, dto?: PersonUpdateDto) => {
-    // TODO fix createPerson to accept a body
-    const person = await createPerson({ headers: asBearerAuth(accessToken) });
-    await dbUtils.setPersonThumbnail(person.id);
 
-    if (!dto) {
-      return person;
+  createImageFile: (path: string) => {
+    if (!existsSync(dirname(path))) {
+      mkdirSync(dirname(path), { recursive: true });
+    }
+    writeFileSync(path, makeRandomImage());
+  },
+
+  removeImageFile: (path: string) => {
+    if (!existsSync(path)) {
+      return;
     }
 
-    return updatePerson({ id: person.id, personUpdateDto: dto }, { headers: asBearerAuth(accessToken) });
+    rmSync(path);
   },
+
+  getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
+
+  getAllAssets: (accessToken: string) => getAllAssets({}, { headers: asBearerAuth(accessToken) }),
+
+  metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
+    return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  },
+
+  deleteAssets: (accessToken: string, ids: string[]) =>
+    deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
+
+  createPerson: async (accessToken: string, dto?: PersonCreateDto) => {
+    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(accessToken) });
+    await utils.setPersonThumbnail(person.id);
+
+    return person;
+  },
+
+  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+    if (!client) {
+      return;
+    }
+
+    const vector = Array.from({ length: 512 }, Math.random);
+    const embedding = `[${vector.join(',')}]`;
+
+    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
+      assetId,
+      personId,
+      embedding,
+    ]);
+  },
+
+  setPersonThumbnail: async (personId: string) => {
+    if (!client) {
+      return;
+    }
+
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+  },
+
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>
     createSharedLink({ sharedLinkCreateDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   createLibrary: (accessToken: string, dto: CreateLibraryDto) =>
     createLibrary({ createLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
-};
 
-export const cliUtils = {
-  login: async () => {
-    const admin = await apiUtils.adminSetup();
-    const key = await apiUtils.createApiKey(admin.accessToken);
-    await immichCli(['login-key', app, `${key.secret}`]);
-    return key.secret;
-  },
-};
-
-export const webUtils = {
   setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([
       {
@@ -368,4 +422,51 @@ export const webUtils = {
         sameSite: 'Lax',
       },
     ]),
+
+  resetTempFolder: () => {
+    rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
+    mkdirSync(`${testAssetDir}/temp`, { recursive: true });
+  },
+
+  resetAdminConfig: async (accessToken: string) => {
+    const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
+    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+  },
+
+  isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {
+    const queues = await getAllJobsStatus({ headers: asBearerAuth(accessToken) });
+    const jobCounts = queues[queue].jobCounts;
+    return !jobCounts.active && !jobCounts.waiting;
+  },
+
+  waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+    return new Promise<void>(async (resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);
+
+      while (true) {
+        const done = await utils.isQueueEmpty(accessToken, queue);
+        if (done) {
+          break;
+        }
+        await setAsyncTimeout(200);
+      }
+
+      clearTimeout(timeout);
+      resolve();
+    });
+  },
+
+  cliLogin: async (accessToken: string) => {
+    const key = await utils.createApiKey(accessToken);
+    await immichCli(['login', app, `${key.secret}`]);
+    return key.secret;
+  },
 };
+
+utils.setApiEndpoint();
+
+if (!existsSync(`${testAssetDir}/albums`)) {
+  throw new Error(
+    `Test assets not found. Please checkout https://github.com/immich-app/test-assets into ${testAssetDir} before testing`,
+  );
+}

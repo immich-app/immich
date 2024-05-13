@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool notify
+    test('to test the property `notify`', () async {
+      // TODO
+    });
+
     // String password
     test('to test the property `password`', () async {
       // TODO
@@ -38,6 +43,11 @@ void main() {
 
     // int quotaSizeInBytes
     test('to test the property `quotaSizeInBytes`', () async {
+      // TODO
+    });
+
+    // bool shouldChangePassword
+    test('to test the property `shouldChangePassword`', () async {
       // TODO
     });
 

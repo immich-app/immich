@@ -1,0 +1,31 @@
+name: Update Immich SDK
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  packages: write
+
+jobs:
+  publish:
+    name: Publish `@immich/sdk`
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./open-api/typescript-sdk
+    steps:
+      - uses: actions/checkout@v4
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install deps
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

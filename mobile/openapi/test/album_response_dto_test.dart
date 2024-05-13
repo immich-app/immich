@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // List<AlbumUserResponseDto> albumUsers (default value: const [])
+    test('to test the property `albumUsers`', () async {
+      // TODO
+    });
+
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO
@@ -71,6 +76,11 @@ void main() {
       // TODO
     });
 
+    // AssetOrder order
+    test('to test the property `order`', () async {
+      // TODO
+    });
+
     // UserResponseDto owner
     test('to test the property `owner`', () async {
       // TODO
@@ -86,6 +96,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.102.0
     // List<UserResponseDto> sharedUsers (default value: const [])
     test('to test the property `sharedUsers`', () async {
       // TODO

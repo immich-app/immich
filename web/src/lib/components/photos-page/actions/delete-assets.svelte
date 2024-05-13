@@ -21,6 +21,8 @@
   let isShowConfirmation = false;
   let loading = false;
 
+  $: label = force ? 'Permanently delete' : 'Delete';
+
   const handleTrash = async () => {
     if (force) {
       isShowConfirmation = true;
@@ -32,7 +34,7 @@
 
   const handleDelete = async () => {
     loading = true;
-    const ids = [...getOwnedAssets()].filter((a) => !a.isExternal).map((a) => a.id);
+    const ids = [...getOwnedAssets()].map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);
     clearSelect();
     isShowConfirmation = false;
@@ -46,11 +48,11 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={force ? 'Permanently Delete' : 'Delete'} on:click={handleTrash} />
+  <MenuOption text={label} icon={mdiDeleteOutline} on:click={handleTrash} />
 {:else if loading}
   <CircleIconButton title="Loading" icon={mdiTimerSand} />
 {:else}
-  <CircleIconButton title="Delete" icon={mdiDeleteOutline} on:click={handleTrash} />
+  <CircleIconButton title={label} icon={mdiDeleteOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}

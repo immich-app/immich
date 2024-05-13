@@ -2,6 +2,7 @@
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
+  import { shortcut } from '$lib/utils/shortcut';
 
   export let id: string;
   export let description: string;
@@ -31,12 +32,16 @@
 
 {#if isOwned}
   <textarea
-    class="w-full mt-2 resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+    class="w-full mt-2 resize-none text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
     bind:value={newDescription}
     on:input={(e) => autoGrowHeight(e.currentTarget)}
     on:focusout={handleUpdateDescription}
     use:autoGrowHeight
-    placeholder="Add description"
+    placeholder="Add a description"
+    use:shortcut={{
+      shortcut: { key: 'Enter', ctrl: true },
+      onShortcut: (e) => e.currentTarget.blur(),
+    }}
   />
 {:else if description}
   <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">

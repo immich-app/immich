@@ -16,7 +16,7 @@ void main() {
   // final instance = ScanLibraryDto();
 
   group('test ScanLibraryDto', () {
-    // bool refreshAllFiles (default value: false)
+    // bool refreshAllFiles
     test('to test the property `refreshAllFiles`', () async {
       // TODO
     });

@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       serverBump:
-        description: "Bump server version"
+        description: 'Bump server version'
         required: true
-        default: "false"
+        default: 'false'
         type: choice
         options:
-          - "false"
+          - 'false'
           - minor
           - patch
       mobileBump:
-        description: "Bump mobile build number"
+        description: 'Bump mobile build number'
         required: false
         type: boolean
 
@@ -46,8 +46,8 @@ jobs:
         with:
           author_name: Alex The Bot
           author_email: alex.tran1502@gmail.com
-          default_author: user_info 
-          message: "Version ${{ env.IMMICH_VERSION }}"
+          default_author: user_info
+          message: 'Version ${{ env.IMMICH_VERSION }}'
           tag: ${{ env.IMMICH_VERSION }}
           push: true
 
@@ -74,7 +74,7 @@ jobs:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
@@ -85,4 +85,5 @@ jobs:
             docker/example.env
             docker/hwaccel.ml.yml
             docker/hwaccel.transcoding.yml
+            docker/prometheus.yml
             *.apk

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -18,12 +17,13 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let showUploadButton = true;
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
-
+  let innerWidth: number;
   const dispatch = createEventDispatcher<{
     uploadClicked: void;
   }>();
@@ -39,19 +39,18 @@
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink>Skip to content</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
-    <a data-sveltekit-preload-data="hover" class="mx-4 flex place-items-center gap-2 md:mx-6" href={AppRoute.PHOTOS}>
-      <ImmichLogo height="35" width="35" />
-      <h1 class="hidden font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary md:block">
-        IMMICH
-      </h1>
+    <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
+      <ImmichLogo width="55%" noText={innerWidth < 768} />
     </a>
     <div class="flex justify-between gap-16 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 pl-4 sm:block">
+      <div class="hidden w-full max-w-5xl flex-1 pl-4 tall:pl-0 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}
@@ -59,12 +58,8 @@
 
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
         {#if $featureFlags.search}
-          <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
-            <IconButton title="Search">
-              <div class="flex gap-2">
-                <Icon path={mdiMagnify} size="1.5em" />
-              </div>
-            </IconButton>
+          <a href={AppRoute.SEARCH} id="search-button" class="ml-4 sm:hidden">
+            <CircleIconButton title="Go to search" icon={mdiMagnify} />
           </a>
         {/if}
 

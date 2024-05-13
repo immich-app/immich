@@ -18,10 +18,10 @@ Name | Type | Description | Notes
 **hasMetadata** | **bool** |  | 
 **id** | **String** |  | 
 **isArchived** | **bool** |  | 
-**isExternal** | **bool** |  | 
+**isExternal** | **bool** | This property was deprecated in v1.104.0 | [optional] 
 **isFavorite** | **bool** |  | 
 **isOffline** | **bool** |  | 
-**isReadOnly** | **bool** |  | 
+**isReadOnly** | **bool** | This property was deprecated in v1.104.0 | [optional] 
 **isTrashed** | **bool** |  | 
 **libraryId** | **String** |  | 
 **livePhotoVideoId** | **String** |  | [optional] 

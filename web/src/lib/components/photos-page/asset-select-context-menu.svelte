@@ -29,9 +29,7 @@
   <CircleIconButton {title} {icon} on:click={handleShowMenu} />
   {#if showContextMenu}
     <ContextMenu {...contextMenuPosition}>
-      <div class="flex flex-col rounded-lg">
-        <slot />
-      </div>
+      <slot />
     </ContextMenu>
   {/if}
 </div>

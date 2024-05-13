@@ -10,8 +10,10 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -27,7 +29,7 @@ interface UploadRequestOptions {
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-class AbortError extends Error {
+export class AbortError extends Error {
   name = 'AbortError';
 }
 
@@ -59,7 +61,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     if (onProgress) {
-      xhr.addEventListener('progress', (event) => onProgress(event));
+      xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
     xhr.open('POST', url);
@@ -122,20 +124,19 @@ export const getJobName = (jobName: JobName) => {
     [JobName.BackgroundTask]: 'Background Tasks',
     [JobName.Search]: 'Search',
     [JobName.Library]: 'Library',
+    [JobName.Notifications]: 'Notifications',
   };
 
   return names[jobName];
 };
 
 let _key: string | undefined;
+let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setKey = (key: string) => {
-  _key = key;
-};
-
-export const getKey = (): string | undefined => {
-  return _key;
-};
+export const setKey = (key: string) => (_key = key);
+export const getKey = (): string | undefined => _key;
+export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
+export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
 
 export const isSharedLink = () => {
   return !!_key;
@@ -194,6 +195,16 @@ export const getAssetJobMessage = (job: AssetJobName) => {
   };
 
   return messages[job];
+};
+
+export const getAssetJobIcon = (job: AssetJobName) => {
+  const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
+    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
+    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
+  };
+
+  return names[job];
 };
 
 export const copyToClipboard = async (secret: string) => {
@@ -266,3 +277,5 @@ export const asyncTimeout = (ms: number) => {
 export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
+
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} ${yearsAgo ? 'years' : 'year'} ago`;

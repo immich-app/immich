@@ -7,7 +7,8 @@ import ExampleEnv from '!!raw-loader!../../../docker/example.env';
 
 # Docker Compose [Recommended]
 
-Docker Compose is the recommended method to run Immich in production. Below are the steps to deploy Immich with Docker Compose.
+Docker Compose is the recommended method to run Immich in production. Below are the steps to deploy Immich with Docker Compose.  
+Immich requires Docker Compose version 2.x.
 
 ### Step 1 - Download the required files
 
@@ -21,7 +22,7 @@ cd ./immich-app
 Download [`docker-compose.yml`][compose-file] and [`example.env`][env-file], either by running the following commands:
 
 ```bash title="Get docker-compose.yml file"
-wget https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 ```
 
 ```bash title="Get .env file"
@@ -29,11 +30,11 @@ wget -O .env https://github.com/immich-app/immich/releases/latest/download/examp
 ```
 
 ```bash title="(Optional) Get hwaccel.transcoding.yml file"
-wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
+wget -O hwaccel.transcoding.yml https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
 ```
 
 ```bash title="(Optional) Get hwaccel.ml.yml file"
-wget https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
+wget -O hwaccel.ml.yml https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
 ```
 
 or by downloading from your browser and moving the files to the directory that you created.
@@ -65,8 +66,8 @@ From the directory you created in Step 1, (which should now contain your customi
 docker compose up -d
 ```
 
-:::tip
-If you get an error `unknown shorthand flag: 'd' in -d`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by `apt remove`ing Ubuntu's docker.io package and installing docker and docker-compose via [Docker's official repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
+:::info Docker version
+If you get an error `unknown shorthand flag: 'd' in -d`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by `apt remove`ing Ubuntu's docker.io package and installing docker and docker-compose via [Docker's official repository][docker-repo].
 
 Note that the correct command really is `docker compose`, not `docker-compose`. If you try the latter on vanilla Ubuntu 22.04 it will fail in a different way:
 
@@ -82,24 +83,32 @@ See the previous paragraph about installing from the official docker repository.
 For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.mdx) guide.
 :::
 
-:::tip
-Note that downloading container images might require you to authenticate to the GitHub Container Registry ([steps here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)).
+:::note GitHub Authentication
+Downloading container images might require you to authenticate to the GitHub Container Registry ([steps here][container-auth]).
 :::
 
 ### Step 4 - Upgrading
 
+:::danger Breaking Changes
+It is important to follow breaking updates to avoid problems. You can see versions that had breaking changes [here][breaking].
+:::
+
 If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
 
-When a new version of Immich is [released](https://github.com/immich-app/immich/releases), the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
+When a new version of Immich is [released][releases], the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
 
 ```bash title="Upgrade Immich"
 docker compose pull && docker compose up -d
 ```
 
 :::caution Automatic Updates
-Immich is currently under heavy development, which means you can expect breaking changes and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
+Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
 :::
 
 [compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 [env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
 [watchtower]: https://containrrr.dev/watchtower/
+[breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Abreaking-change+sort%3Adate_created
+[container-auth]: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
+[releases]: https://github.com/immich-app/immich/releases
+[docker-repo]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository

@@ -1,2 +1,2 @@
-export * from './fetch-client';
-export * from './fetch-errors';
+export * from './fetch-client.js';
+export * from './fetch-errors.js';

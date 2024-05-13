@@ -5,8 +5,8 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "build",
-    "module": "esnext",
-    "moduleResolution": "Bundler",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "lib": ["esnext", "dom"]
   },
   "include": ["src/**/*.ts"]

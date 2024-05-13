@@ -6,15 +6,20 @@
   import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { shortcuts } from '$lib/utils/shortcut';
+  import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+
+  const { slideshowState, slideshowLook } = slideshowStore;
 
   export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] | null = null;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
@@ -24,6 +29,9 @@
   let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+  let imageLoaded: boolean = false;
+
+  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
   $: if (imgElement) {
     createZoomImageWheel(imgElement, {
@@ -38,6 +46,9 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
+
+    imageLoaded = false;
+    await loadAssetData({ loadOriginal: loadOriginalByDefault });
   });
 
   onDestroy(() => {
@@ -57,20 +68,22 @@
       });
 
       assetData = URL.createObjectURL(data);
-    } catch {
-      // Do nothing
-    }
-  };
+      imageLoaded = true;
 
-  const handleKeypress = async (event: KeyboardEvent) => {
-    if (shouldIgnoreShortcut(event)) {
-      return;
-    }
-    if (window.getSelection()?.type === 'Range') {
-      return;
-    }
-    if ((event.metaKey || event.ctrlKey) && event.key === 'c') {
-      await doCopy();
+      if (!preloadAssets) {
+        return;
+      }
+
+      for (const preloadAsset of preloadAssets) {
+        if (preloadAsset.type === AssetTypeEnum.Image) {
+          await downloadRequest({
+            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            signal: abortController.signal,
+          });
+        }
+      }
+    } catch {
+      imageLoaded = false;
     }
   };
 
@@ -116,25 +129,50 @@
       handlePromiseError(loadAssetData({ loadOriginal: true }));
     }
   });
+
+  const onCopyShortcut = () => {
+    if (window.getSelection()?.type === 'Range') {
+      return;
+    }
+    handlePromiseError(doCopy());
+  };
 </script>
 
-<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
+<svelte:window
+  on:copyImage={doCopy}
+  on:zoomImage={doZoomImage}
+  use:shortcuts={[
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+  ]}
+/>
 
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="flex h-full select-none place-content-center place-items-center"
+  class="relative h-full select-none"
 >
-  {#await loadAssetData({ loadOriginal: $alwaysLoadOriginalFile ? isWebCompatibleImage(asset) : false })}
-    <LoadingSpinner />
-  {:then}
-    <div bind:this={imgElement} class="h-full w-full">
+  {#if !imageLoaded}
+    <div class="flex h-full items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  {:else}
+    <div bind:this={imgElement} class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+        <img
+          src={assetData}
+          alt={getAltText(asset)}
+          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
+          draggable="false"
+        />
+      {/if}
       <img
         bind:this={$photoViewer}
-        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
-        alt={asset.id}
-        class="h-full w-full object-contain"
+        alt={getAltText(asset)}
+        class="h-full w-full {$slideshowState === SlideshowState.None
+          ? 'object-contain'
+          : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
@@ -144,5 +182,5 @@
         />
       {/each}
     </div>
-  {/await}
+  {/if}
 </div>

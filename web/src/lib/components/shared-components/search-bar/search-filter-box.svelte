@@ -11,6 +11,7 @@
 
   export type SearchFilter = {
     context?: string;
+    filename?: string;
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -32,6 +33,7 @@
   import SearchMediaSection from './search-media-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
+  import SearchTextSection from './search-text-section.svelte';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
@@ -41,6 +43,7 @@
 
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
+    filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: searchQuery.country,
@@ -91,6 +94,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.context || undefined,
+      originalFileName: filter.filename,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -120,24 +124,12 @@
     on:submit|preventDefault={search}
     on:reset|preventDefault={resetForm}
   >
-    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar">
+    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar" tabindex="-1">
       <!-- PEOPLE -->
       <SearchPeopleSection width={filterBoxWidth} bind:selectedPeople={filter.personIds} />
 
-      <!-- CONTEXT -->
-      <div>
-        <label class="immich-form-label" for="context">
-          <span>CONTEXT</span>
-          <input
-            class="immich-form-input hover:cursor-text w-full mt-1"
-            type="text"
-            id="context"
-            name="context"
-            placeholder="Sunrise on the beach"
-            bind:value={filter.context}
-          />
-        </label>
-      </div>
+      <!-- TEXT -->
+      <SearchTextSection bind:filename={filter.filename} bind:context={filter.context} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />
@@ -161,8 +153,8 @@
       id="button-row"
       class="flex justify-end gap-4 border-t dark:border-gray-800 dark:bg-immich-dark-gray px-4 sm:py-6 py-4 mt-2 rounded-b-3xl"
     >
-      <Button type="reset" color="gray">CLEAR ALL</Button>
-      <Button type="submit">SEARCH</Button>
+      <Button type="reset" color="gray">Clear all</Button>
+      <Button type="submit">Search</Button>
     </div>
   </form>
 </div>
