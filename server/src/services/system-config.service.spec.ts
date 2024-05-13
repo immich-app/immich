@@ -66,6 +66,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
     tonemap: ToneMapping.HABLE,
   },
   logging: {
