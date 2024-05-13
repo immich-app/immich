@@ -111,8 +111,6 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
-      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = element.scrollHeight) },
     ];
 
     if ($isMultiSelectState) {
@@ -407,6 +405,7 @@
 <section
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  tabindex="0"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
