@@ -634,7 +634,7 @@
             <VideoViewer
               assetId={previewStackedAsset.id}
               projectionType={previewStackedAsset.exifInfo?.projectionType}
-              isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
+              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -656,7 +656,7 @@
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
                 projectionType={asset.exifInfo?.projectionType}
-                isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
+                loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -671,7 +671,7 @@
             <VideoViewer
               assetId={asset.id}
               projectionType={asset.exifInfo?.projectionType}
-              isSlideshowPlaying={$slideshowState === SlideshowState.PlaySlideshow}
+              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
