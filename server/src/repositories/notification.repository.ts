@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React from 'react';
+import AlbumInviteEmail from 'src/emails/album-invite.email';
+import AlbumUpdateEmail from 'src/emails/album-update.email';
 import { WelcomeEmail } from 'src/emails/welcome.email';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -51,6 +53,14 @@ export class NotificationRepository implements INotificationRepository {
     switch (template) {
       case EmailTemplate.WELCOME: {
         return React.createElement(WelcomeEmail, data);
+      }
+
+      case EmailTemplate.ALBUM_INVITE: {
+        return React.createElement(AlbumInviteEmail, data);
+      }
+
+      case EmailTemplate.ALBUM_UPDATE: {
+        return React.createElement(AlbumUpdateEmail, data);
       }
     }
   }

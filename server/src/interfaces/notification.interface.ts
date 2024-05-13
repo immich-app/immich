@@ -19,8 +19,13 @@ export type SmtpOptions = {
 };
 
 export enum EmailTemplate {
+  // COMMON
   WELCOME = 'welcome',
   RESET_PASSWORD = 'reset-password',
+
+  // ALBUM
+  ALBUM_INVITE = 'album-invite',
+  ALBUM_UPDATE = 'album-update',
 }
 
 export interface WelcomeEmailProps {
@@ -30,7 +35,33 @@ export interface WelcomeEmailProps {
   password?: string;
 }
 
-export type EmailRenderRequest = { template: EmailTemplate.WELCOME; data: WelcomeEmailProps };
+export interface AlbumInviteEmailProps {
+  baseUrl: string;
+  albumName: string;
+  ownerName: string;
+  guestName: string;
+}
+
+export interface AlbumUpdateEmailProps {
+  baseUrl: string;
+  albumName: string;
+  ownerName: string;
+  guestName: string;
+}
+
+export type EmailRenderRequest =
+  | {
+      template: EmailTemplate.WELCOME;
+      data: WelcomeEmailProps;
+    }
+  | {
+      template: EmailTemplate.ALBUM_INVITE;
+      data: AlbumInviteEmailProps;
+    }
+  | {
+      template: EmailTemplate.ALBUM_UPDATE;
+      data: AlbumUpdateEmailProps;
+    };
 
 export type SendEmailResponse = {
   messageId: string;

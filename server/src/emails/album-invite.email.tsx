@@ -15,9 +15,9 @@ import {
 } from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
-import { AlbumUpdateEmailProps } from 'src/interfaces/notification.interface';
+import { AlbumInviteEmailProps, WelcomeEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: AlbumUpdateEmailProps) => (
+export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: AlbumInviteEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -119,14 +119,14 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: A
   </Html>
 );
 
-AlbumUpdateEmail.PreviewProps = {
+AlbumInviteEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app/auth/login',
   albumName: 'Trip to Europe',
   ownerName: 'Owner User',
   guestName: 'Guest User',
-} as AlbumUpdateEmailProps;
+} as AlbumInviteEmailProps;
 
-export default AlbumUpdateEmail;
+export default AlbumInviteEmail;
 
 const text = {
   margin: '0 0 24px 0',
