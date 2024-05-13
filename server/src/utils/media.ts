@@ -466,7 +466,7 @@ export class NVENCConfig extends BaseHWConfig {
 
     return [
       'hwupload=derive_device=vulkan',
-      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:range=pc:downscaler=lanczos:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
+      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:upscaler=none:downscaler=none:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
       'hwupload=derive_device=cuda',
     ];
   }
