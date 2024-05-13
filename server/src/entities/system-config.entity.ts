@@ -43,6 +43,7 @@ export const SystemConfigKey = {
   FFMPEG_PREFERRED_HW_DEVICE: 'ffmpeg.preferredHwDevice',
   FFMPEG_TRANSCODE: 'ffmpeg.transcode',
   FFMPEG_ACCEL: 'ffmpeg.accel',
+  FFMPEG_ACCEL_DECODE: 'ffmpeg.accelDecode',
   FFMPEG_TONEMAP: 'ffmpeg.tonemap',
 
   JOB_THUMBNAIL_GENERATION_CONCURRENCY: 'job.thumbnailGeneration.concurrency',
