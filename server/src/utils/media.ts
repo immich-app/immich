@@ -476,7 +476,7 @@ export class NVENCConfig extends BaseHWConfig {
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     if (!this.config.accelDecode) {
-      options.push('format=nv12', 'hwupload_cuda');
+      options.push(...this.getToneMapping(videoStream), 'format=nv12', 'hwupload_cuda');
       if (this.shouldScale(videoStream)) {
         options.push(`scale_cuda=${this.getScaling(videoStream)}`);
       }
