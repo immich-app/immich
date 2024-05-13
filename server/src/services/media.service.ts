@@ -50,7 +50,8 @@ import { usePagination } from 'src/utils/pagination';
 export class MediaService {
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private hasOpenCL?: boolean = undefined;
+  private openCL: boolean | null = null;
+  private devices: string[] | null = null;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -492,36 +493,21 @@ export class MediaService {
 
   private async getHWCodecConfig(config: SystemConfigFFmpegDto) {
     let handler: VideoCodecHWConfig;
-    let devices: string[];
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
         handler = new NVENCConfig(config);
         break;
       }
       case TranscodeHWAccel.QSV: {
-        devices = await this.storageRepository.readdir('/dev/dri');
-        handler = new QSVConfig(config, devices);
+        handler = new QSVConfig(config, await this.getDevices());
         break;
       }
       case TranscodeHWAccel.VAAPI: {
-        devices = await this.storageRepository.readdir('/dev/dri');
-        handler = new VAAPIConfig(config, devices);
+        handler = new VAAPIConfig(config, await this.getDevices());
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        if (this.hasOpenCL === undefined) {
-          try {
-            const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
-            const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
-            this.hasOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
-          } catch {
-            this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
-            this.hasOpenCL = false;
-          }
-        }
-
-        devices = await this.storageRepository.readdir('/dev/dri');
-        handler = new RKMPPConfig(config, devices, this.hasOpenCL);
+        handler = new RKMPPConfig(config, await this.getDevices(), await this.hasOpenCL());
         break;
       }
       default: {
@@ -571,5 +557,28 @@ export class MediaService {
     const extractedSize = Math.min(width, height);
 
     return extractedSize >= targetSize;
+  }
+
+  private async getDevices() {
+    if (!this.devices) {
+      this.devices = await this.storageRepository.readdir('/dev/dri');
+    }
+
+    return this.devices;
+  }
+
+  private async hasOpenCL() {
+    if (this.openCL === null) {
+      try {
+        const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
+        const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
+        this.openCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+      } catch {
+        this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
+        this.openCL = false;
+      }
+    }
+
+    return this.openCL;
   }
 }

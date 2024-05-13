@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { videoViewerVolume } from '$lib/stores/preferences.store';
+  import { videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
@@ -17,9 +17,7 @@
   const handleCanPlay = async (event: Event) => {
     try {
       const video = event.currentTarget as HTMLVideoElement;
-      video.muted = true;
       await video.play();
-      video.muted = false;
       dispatch('onVideoStarted');
     } catch (error) {
       handleError(error, 'Unable to play video');
@@ -42,6 +40,7 @@
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
+    bind:muted={$videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
   >
