@@ -70,10 +70,9 @@ export enum Orientation {
   Rotate270CW = '8',
 }
 
-type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
-  ExifEntity,
-  'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
-> & { dateTimeOriginal: Date };
+type ExifEntityWithoutGeocodeAndTypeOrm = Omit<ExifEntity, 'city' | 'state' | 'country' | 'description'> & {
+  dateTimeOriginal: Date;
+};
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
