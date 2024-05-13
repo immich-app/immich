@@ -169,7 +169,7 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
-    const albumIds: string[] = [];
+    // TODO convert to SQL join
     if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
@@ -177,10 +177,17 @@ export class AssetService {
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
+
+    // TODO convert to SQL join
+    const albumIds: string[] = [];
     if (options.withSharedAlbums) {
-      const sharedAlbums = await this.albumRepository.getShared(auth.user.id);
-      albumIds.push(...sharedAlbums.map((album) => album.id));
+      const [ownedAlbums, sharedAlbums] = await Promise.all([
+        this.albumRepository.getOwned(auth.user.id),
+        this.albumRepository.getShared(auth.user.id),
+      ]);
+      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
     }
+
     return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 

@@ -507,6 +507,7 @@ export class AssetRepository implements IAssetRepository {
       isFavorite,
       fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
     };
+
     const assets = await this.repository.find({
       select: {
         id: true,
@@ -519,20 +520,11 @@ export class AssetRepository implements IAssetRepository {
         },
       },
       where: [
-        {
-          ownerId: In([...ownerIds]),
-          ...where,
-        },
-        {
-          albums: {
-            id: In([...albumIds]),
-          },
-          ...where,
-        },
+        { ...where, ownerId: In([...ownerIds]) },
+        { ...where, albums: { id: In([...albumIds]) } },
       ],
       relations: {
         exifInfo: true,
-        albums: true,
       },
       order: {
         fileCreatedAt: 'DESC',
