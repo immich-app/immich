@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
+import shell, { ShellString } from 'shelljs';
 import { Colorspace } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -13,11 +14,14 @@ import {
   ThumbnailOptions,
   TranscodeOptions,
   VideoInfo,
+  VulkanDevice,
+  VulkanDeviceType,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
+const exec = promisify<string, ShellString>(shell.exec);
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
 
@@ -148,6 +152,31 @@ export class MediaRepository implements IMediaRepository {
   async getImageDimensions(input: string): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
+  }
+
+  async getVulkanDevices(): Promise<VulkanDevice[]> {
+    return [
+      { index: 0, type: VulkanDeviceType.DISCRETE_GPU },
+      { index: 1, type: VulkanDeviceType.CPU },
+    ];
+    const devices = [];
+    let i = 0;
+    while (true) {
+      try {
+        const vulkanInfo = JSON.parse(await exec(`vulkaninfo --json=${i} -o /dev/tty`));
+        const deviceType =
+          vulkanInfo['capabilities']['device']['properties']['VkPhysicalDeviceProperties']['deviceType'];
+        devices.push({
+          index: i,
+          type: deviceType.replace('VK_PHYSICAL_DEVICE_TYPE_', ''),
+        });
+        i++;
+      } catch {
+        break;
+      }
+    }
+
+    return devices;
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {

@@ -66,6 +66,25 @@ export interface BitrateDistribution {
   unit: string;
 }
 
+export enum VulkanDeviceType {
+  OTHER = 'OTHER',
+  INTEGRATED_GPU = 'INTEGRATED_GPU',
+  DISCRETE_GPU = 'DISCRETE_GPU',
+  VIRTUAL_GPU = 'VIRTUAL_GPU',
+  CPU = 'CPU',
+}
+
+export interface VulkanDevice {
+  index: number;
+  type: VulkanDeviceType;
+}
+
+export interface DeviceSummary {
+  driDevices: string[];
+  hasOpenCL: boolean;
+  vulkanDevices: VulkanDevice[];
+}
+
 export interface VideoCodecSWConfig {
   getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
 }
@@ -84,4 +103,5 @@ export interface IMediaRepository {
   // video
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void>;
+  getVulkanDevices(): Promise<VulkanDevice[]>;
 }

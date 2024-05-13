@@ -27,7 +27,13 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
+import {
+  AudioStreamInfo,
+  DeviceSummary,
+  IMediaRepository,
+  VideoCodecHWConfig,
+  VideoStreamInfo,
+} from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -50,8 +56,7 @@ import { usePagination } from 'src/utils/pagination';
 export class MediaService {
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private openCL: boolean | null = null;
-  private devices: string[] | null = null;
+  private deviceSummary: DeviceSummary | null = null;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -492,22 +497,23 @@ export class MediaService {
   }
 
   private async getHWCodecConfig(config: SystemConfigFFmpegDto) {
+    const deviceSummary = await this.getDeviceSummary();
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
-        handler = new NVENCConfig(config);
+        handler = new NVENCConfig(config, deviceSummary);
         break;
       }
       case TranscodeHWAccel.QSV: {
-        handler = new QSVConfig(config, await this.getDevices());
+        handler = new QSVConfig(config, deviceSummary);
         break;
       }
       case TranscodeHWAccel.VAAPI: {
-        handler = new VAAPIConfig(config, await this.getDevices());
+        handler = new VAAPIConfig(config, deviceSummary);
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler = new RKMPPConfig(config, await this.getDevices());
+        handler = new RKMPPConfig(config, deviceSummary);
         break;
       }
       default: {
@@ -559,26 +565,42 @@ export class MediaService {
     return extractedSize >= targetSize;
   }
 
-  private async getDevices() {
-    if (!this.devices) {
-      this.devices = await this.storageRepository.readdir('/dev/dri');
+  private async getDeviceSummary(): Promise<DeviceSummary> {
+    if (!this.deviceSummary) {
+      this.deviceSummary = {
+        driDevices: await this.getDriDevices(),
+        hasOpenCL: await this.hasOpenCL(),
+        vulkanDevices: await this.mediaRepository.getVulkanDevices(),
+      };
     }
 
-    return this.devices;
+    return this.deviceSummary;
+  }
+
+  private async getDriDevices() {
+    const devices = await this.storageRepository.readdir('/dev/dri');
+    return devices
+      .filter((device) => device.startsWith('renderD') || device.startsWith('card'))
+      .sort((a, b) => {
+        // order GPU devices first
+        if (a.startsWith('card') && b.startsWith('renderD')) {
+          return -1;
+        }
+        if (a.startsWith('renderD') && b.startsWith('card')) {
+          return 1;
+        }
+        return -a.localeCompare(b);
+      });
   }
 
   private async hasOpenCL() {
-    if (this.openCL === null) {
-      try {
-        const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
-        const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
-        this.openCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
-      } catch {
-        this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
-        this.openCL = false;
-      }
+    try {
+      const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
+      const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
+      return maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+    } catch {
+      this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
+      return false;
     }
-
-    return this.openCL;
   }
 }
