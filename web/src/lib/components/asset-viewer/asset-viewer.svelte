@@ -634,7 +634,7 @@
             <VideoViewer
               assetId={previewStackedAsset.id}
               projectionType={previewStackedAsset.exifInfo?.projectionType}
-              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+              loopVideo={true}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
