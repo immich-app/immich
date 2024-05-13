@@ -461,26 +461,30 @@ export class NVENCConfig extends BaseHWConfig {
     return options;
   }
 
-  getToneMapping() {
-    const colors = this.getColors();
-
-    return [
-      'hwupload=derive_device=vulkan',
-      `libplacebo=tonemapping=${this.config.tonemap}:colorspace=${colors.matrix}:color_primaries=${colors.primaries}:color_trc=${colors.transfer}:format=yuv420p:upscaler=none:downscaler=none:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6`,
-      'hwupload=derive_device=cuda',
-    ];
-  }
-
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = [];
+    const options = ['hwupload=derive_device=vulkan'];
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
+      const { width, height } = this.getSize(videoStream);
+      options.push(`scale_vulkan=w=${width}:h=${height}`);
     }
 
-    if (this.shouldToneMap(videoStream)) {
-      options.push(...this.getToneMapping());
-    }
+    const colors = this.getColors();
+    const libplaceboOptions = [
+      `color_primaries=${colors.primaries}`,
+      `color_trc=${colors.transfer}`,
+      `colorspace=${colors.matrix}`,
+      'deband=true',
+      'deband_iterations=3',
+      'deband_radius=8',
+      'deband_threshold=6',
+      'downscaler=none',
+      'format=yuv420p',
+      `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
+      'upscaler=none',
+    ];
 
+    const libplacebo = `libplacebo=${libplaceboOptions.join(':')}`;
+    options.push(libplacebo, 'hwupload=derive_device=cuda');
     return options;
   }
 
