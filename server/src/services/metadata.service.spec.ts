@@ -459,9 +459,13 @@ describe(MetadataService.name, () => {
       storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
+      expect(jobMock.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
         data: { id: assetStub.livePhotoStillAsset.livePhotoVideoId },
+      });
+      expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
+        name: JobName.METADATA_EXTRACTION,
+        data: { id: 'random-uuid' },
       });
     });
 
@@ -477,6 +481,7 @@ describe(MetadataService.name, () => {
       assetMock.getByChecksum.mockResolvedValue(assetStub.livePhotoMotionAsset);
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
+      storageMock.checkFileExists.mockResolvedValue(true);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.create).toHaveBeenCalledTimes(0);
