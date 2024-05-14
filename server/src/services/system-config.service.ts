@@ -67,6 +67,10 @@ export class SystemConfigService {
   }
 
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+    if (this.core.isUsingConfigFile()) {
+      throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
+    }
+
     const oldConfig = await this.core.getConfig();
 
     try {

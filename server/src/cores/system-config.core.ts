@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -13,23 +13,6 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
-
-export enum FeatureFlag {
-  SMART_SEARCH = 'smartSearch',
-  FACIAL_RECOGNITION = 'facialRecognition',
-  MAP = 'map',
-  REVERSE_GEOCODING = 'reverseGeocoding',
-  SIDECAR = 'sidecar',
-  SEARCH = 'search',
-  OAUTH = 'oauth',
-  OAUTH_AUTO_LAUNCH = 'oauthAutoLaunch',
-  PASSWORD_LOGIN = 'passwordLogin',
-  CONFIG_FILE = 'configFile',
-  TRASH = 'trash',
-  EMAIL = 'email',
-}
-
-export type FeatureFlags = Record<FeatureFlag, boolean>;
 
 let instance: SystemConfigCore | null;
 
@@ -57,63 +40,6 @@ export class SystemConfigCore {
     instance = null;
   }
 
-  async requireFeature(feature: FeatureFlag) {
-    const hasFeature = await this.hasFeature(feature);
-    if (!hasFeature) {
-      switch (feature) {
-        case FeatureFlag.SMART_SEARCH: {
-          throw new BadRequestException('Smart search is not enabled');
-        }
-        case FeatureFlag.FACIAL_RECOGNITION: {
-          throw new BadRequestException('Facial recognition is not enabled');
-        }
-        case FeatureFlag.SIDECAR: {
-          throw new BadRequestException('Sidecar is not enabled');
-        }
-        case FeatureFlag.SEARCH: {
-          throw new BadRequestException('Search is not enabled');
-        }
-        case FeatureFlag.OAUTH: {
-          throw new BadRequestException('OAuth is not enabled');
-        }
-        case FeatureFlag.PASSWORD_LOGIN: {
-          throw new BadRequestException('Password login is not enabled');
-        }
-        case FeatureFlag.CONFIG_FILE: {
-          throw new BadRequestException('Config file is not set');
-        }
-        default: {
-          throw new ForbiddenException(`Missing required feature: ${feature}`);
-        }
-      }
-    }
-  }
-
-  async hasFeature(feature: FeatureFlag) {
-    const features = await this.getFeatures();
-    return features[feature] ?? false;
-  }
-
-  async getFeatures(): Promise<FeatureFlags> {
-    const config = await this.getConfig();
-    const mlEnabled = config.machineLearning.enabled;
-
-    return {
-      [FeatureFlag.SMART_SEARCH]: mlEnabled && config.machineLearning.clip.enabled,
-      [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
-      [FeatureFlag.MAP]: config.map.enabled,
-      [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
-      [FeatureFlag.SIDECAR]: true,
-      [FeatureFlag.SEARCH]: true,
-      [FeatureFlag.TRASH]: config.trash.enabled,
-      [FeatureFlag.OAUTH]: config.oauth.enabled,
-      [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
-      [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
-      [FeatureFlag.CONFIG_FILE]: !!process.env.IMMICH_CONFIG_FILE,
-      [FeatureFlag.EMAIL]: config.notifications.smtp.enabled,
-    };
-  }
-
   async getConfig(force = false): Promise<SystemConfig> {
     if (force || !this.config) {
       const lastUpdated = this.lastUpdated;
@@ -129,10 +55,6 @@ export class SystemConfigCore {
   }
 
   async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
-    if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
-      throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
-    }
-
     const updates: SystemConfigEntity[] = [];
     const deletes: SystemConfigEntity[] = [];
 
@@ -176,10 +98,14 @@ export class SystemConfigCore {
     this.config$.next(newConfig);
   }
 
+  isUsingConfigFile() {
+    return !!process.env.IMMICH_CONFIG_FILE;
+  }
+
   private async buildConfig() {
     const config = _.cloneDeep(defaults);
-    const overrides = process.env.IMMICH_CONFIG_FILE
-      ? await this.loadFromFile(process.env.IMMICH_CONFIG_FILE)
+    const overrides = this.isUsingConfigFile()
+      ? await this.loadFromFile(process.env.IMMICH_CONFIG_FILE as string)
       : await this.repository.load();
 
     for (const { key, value } of overrides) {
@@ -189,7 +115,7 @@ export class SystemConfigCore {
 
     const errors = await validate(plainToInstance(SystemConfigDto, config));
     if (errors.length > 0) {
-      if (process.env.IMMICH_CONFIG_FILE) {
+      if (this.isUsingConfigFile()) {
         throw new Error(`Invalid value(s) in file: ${errors}`);
       } else {
         this.logger.error('Validation error', errors);
