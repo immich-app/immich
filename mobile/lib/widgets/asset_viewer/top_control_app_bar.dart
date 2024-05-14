@@ -161,7 +161,7 @@ class TopControlAppBar extends HookConsumerWidget {
     Widget buildBackButton() {
       return IconButton(
         onPressed: () {
-          context.popRoute();
+          context.maybePop();
         },
         icon: Icon(
           Icons.arrow_back_ios_new_rounded,
