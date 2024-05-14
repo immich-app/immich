@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
+import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/config';
 
 export const IMediaRepository = 'IMediaRepository';
 
