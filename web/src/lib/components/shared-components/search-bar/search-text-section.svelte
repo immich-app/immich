@@ -57,7 +57,7 @@
     type="text"
     id="file-name-input"
     name="file-name"
-    placeholder="i.e. IMG_1234.JPG or PNG"
+    placeholder="i.e. IMG_1234.JPG or *.PNG"
     bind:value={filename}
     aria-labelledby="file-name-label"
   />
