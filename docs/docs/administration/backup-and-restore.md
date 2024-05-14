@@ -17,8 +17,12 @@ Refer to the official [postgres documentation](https://www.postgresql.org/docs/c
 
 The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if it exists) to reset the database.
 
+:::caution
+It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
+:::
+
 <Tabs>
-  <TabItem value="Linux system based Backup" label="Linux system based Backup" default>
+  <TabItem value="Linux system" label="Linux system" default>
 
 ```bash title='Backup'
 docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | gzip > "/path/to/backup/dump.sql.gz"
@@ -38,7 +42,7 @@ docker compose up -d    # Start remainder of Immich apps
 ```
 
 </TabItem>
-  <TabItem value="Windows system based Backup" label="Windows system based Backup">
+  <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
 docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "\path\to\backup\dump.sql"
@@ -51,7 +55,7 @@ docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres    # Restore Backup
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 

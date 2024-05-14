@@ -12,6 +12,7 @@ import {
   SanitizedAssetResponseDto,
   mapAsset,
 } from 'src/dtos/asset-response.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -28,11 +29,12 @@ import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
-  IAssetDeletionJob,
+  IEntityJob,
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
@@ -47,6 +49,7 @@ import { ISystemConfigRepository } from 'src/interfaces/system-config.interface'
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
+import { fromChecksum } from 'src/utils/request';
 
 export interface UploadRequest {
   auth: AuthDto | null;
@@ -76,11 +79,25 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository, this.logger);
+  }
+
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
+    if (!checksum) {
+      return;
+    }
+
+    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
+    if (!assetId) {
+      return;
+    }
+
+    return { id: assetId, duplicate: true };
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
@@ -152,6 +169,7 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
+    // TODO convert to SQL join
     if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
@@ -159,7 +177,18 @@ export class AssetService {
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
-    return this.assetRepository.getMapMarkers(userIds, options);
+
+    // TODO convert to SQL join
+    const albumIds: string[] = [];
+    if (options.withSharedAlbums) {
+      const [ownedAlbums, sharedAlbums] = await Promise.all([
+        this.albumRepository.getOwned(auth.user.id),
+        this.albumRepository.getShared(auth.user.id),
+      ]);
+      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
+    }
+
+    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -212,21 +241,29 @@ export class AssetService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, id);
 
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      tags: true,
-      sharedLinks: true,
-      smartInfo: true,
-      owner: true,
-      faces: {
-        person: true,
-      },
-      stack: {
-        assets: {
-          exifInfo: true,
+    const asset = await this.assetRepository.getById(
+      id,
+      {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        owner: true,
+        faces: {
+          person: true,
+        },
+        stack: {
+          assets: {
+            exifInfo: true,
+          },
         },
       },
-    });
+      {
+        faces: {
+          boundingBoxX1: 'ASC',
+        },
+      },
+    );
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -356,8 +393,8 @@ export class AssetService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
-    const { id, fromExternal } = job;
+  async handleAssetDeletion(job: IEntityJob): Promise<JobStatus> {
+    const { id } = job;
 
     const asset = await this.assetRepository.getById(id, {
       faces: {
@@ -370,11 +407,6 @@ export class AssetService {
 
     if (!asset) {
       return JobStatus.FAILED;
-    }
-
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
-      return JobStatus.SKIPPED;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -399,18 +431,15 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.livePhotoVideoId, fromExternal },
-      });
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
-      files.push(asset.sidecarPath, asset.originalPath);
-    }
-
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({
+      name: JobName.DELETE_FILES,
+      data: {
+        files: [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath],
+      },
+    });
 
     return JobStatus.SUCCESS;
   }

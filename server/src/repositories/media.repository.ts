@@ -8,10 +8,9 @@ import sharp from 'sharp';
 import { Colorspace } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
-  CropOptions,
   IMediaRepository,
   ImageDimensions,
-  ResizeOptions,
+  ThumbnailOptions,
   TranscodeOptions,
   VideoInfo,
 } from 'src/interfaces/media.interface';
@@ -45,23 +44,17 @@ export class MediaRepository implements IMediaRepository {
     return true;
   }
 
-  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOn: 'none' })
-      .pipelineColorspace('rgb16')
-      .extract({
-        left: options.left,
-        top: options.top,
-        width: options.width,
-        height: options.height,
-      })
-      .toBuffer();
-  }
-
-  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
+  async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+    const pipeline = sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .rotate();
+
+    if (options.crop) {
+      pipeline.extract(options.crop);
+    }
+
+    await pipeline
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
       .withIccProfile(options.colorspace)
       .toFormat(options.format, {
         quality: options.quality,

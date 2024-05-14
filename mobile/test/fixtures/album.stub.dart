@@ -1,4 +1,4 @@
-import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 
 import 'asset.stub.dart';
 import 'user.stub.dart';

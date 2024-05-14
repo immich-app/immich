@@ -1,13 +1,25 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
+import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { LogLevel } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ImmichLogger } from 'src/utils/logger';
+
+const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
 @Injectable({ scope: Scope.TRANSIENT })
-export class LoggerRepository extends ImmichLogger implements ILoggerRepository {
+export class LoggerRepository extends ConsoleLogger implements ILoggerRepository {
+  private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
+
   constructor(private cls: ClsService) {
     super(LoggerRepository.name);
+  }
+
+  isLevelEnabled(level: LogLevel) {
+    return isLogLevelEnabled(level, LoggerRepository.logLevels);
+  }
+
+  setLogLevel(level: LogLevel): void {
+    LoggerRepository.logLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(level));
   }
 
   protected formatContext(context: string): string {
@@ -19,9 +31,5 @@ export class LoggerRepository extends ImmichLogger implements ILoggerRepository 
     }
 
     return formattedContext;
-  }
-
-  setLogLevel(level: LogLevel): void {
-    ImmichLogger.setLogLevel(level);
   }
 }

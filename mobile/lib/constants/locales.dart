@@ -28,6 +28,7 @@ const Map<String, Locale> locales = {
   'Mongolian (mn_MN)': Locale('mn', 'MN'),
   'Norwegian Bokmål (nb_NO)': Locale('nb', 'NO'),
   'Polish (pl_PL)': Locale('pl', 'PL'),
+  'Brazilian Portuguese (pt_BR)': Locale('pt', 'BR'),
   'Portuguese (pt_PT)': Locale('pt', 'PT'),
   'Romanian (ro_RO)': Locale('ro', 'RO'),
   'Russian (ru_RU)': Locale('ru', 'RU'),

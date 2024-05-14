@@ -28,6 +28,8 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
 ## Disclaimer
@@ -38,15 +40,14 @@
 - ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
 
 ## Inhoud
-
+s
 - [Officiële documentatie](https://immich.app/docs)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
+- [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Functies](#functies)
 - [Introductie](https://immich.app/docs/overview/introduction)
 - [Installatie](https://immich.app/docs/install/requirements)
 - [Richtlijnen voor bijdragen](https://immich.app/docs/overview/support-the-project)
-- [Steun het project](#steun-het-project)
 
 ## Documentatie
 
@@ -58,7 +59,7 @@ De demo is te bekijken op https://demo.immich.app.
 
 Voor de mobiele app kunt u gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
 
-```bash title="Demo Credential"
+```bash title="Demo inloggegevens"
 De inloggegevens
 email: demo@immich.app
 wachtwoord: demo
@@ -68,12 +69,18 @@ wachtwoord: demo
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
+## Activiteit
+
+![Activiteit](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image"
+
+
 # Functies
 
 | Functies                                            | Mobiel | Web |
 |-----------------------------------------------------|--------|-----|
 | Upload en bekijk video's en foto's                  | Ja     | Ja  |
 | Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
+| Duplicatie van bestanden voorkomen                  | Ja     | Ja  |
 | Selectieve album(s) voor back-up                    | Ja     | NVT |
 | Download foto's en video's naar een lokaal apparaat | Ja     | Ja  |
 | Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
@@ -88,6 +95,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | OAuth-ondersteuning                                 | Ja     | Ja  |
 | API-sleutels                                        | NVT    | Ja  |
 | LivePhoto-back-up en weergave                       | iOS    | Ja  |
+| Ondersteuning 360 Graden foto weergave              | Nee    | Ja  |
 | Door de gebruiker gedefinieerde opslagstructuur     | Ja     | Ja  |
 | Openbaar delen                                      | Nee    | Ja  |
 | Archief en Favorieten                               | Ja     | Ja  |
@@ -98,19 +106,18 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
 
-# Steun het project
+## Contributie-leden
 
-Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp nodig om mij extra motivatie te geven om door te gaan.
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
 
-Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een enorme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
+## Ster geschiedenis
 
-Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel lang ziet gebruiken, overweeg dan om het project te steunen met de onderstaande optie.
-
-## Doneren
-
-- [Maandelijkse donatie](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Eenmalige donatie](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>

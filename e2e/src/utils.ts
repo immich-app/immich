@@ -56,8 +56,8 @@ const baseUrl = 'http://127.0.0.1:2283';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
-export const testAssetDir = path.resolve(`./../server/test/assets/`);
-export const testAssetDirInternal = '/data/assets';
+export const testAssetDir = path.resolve('./test-assets');
+export const testAssetDirInternal = '/test-assets';
 export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });

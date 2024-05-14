@@ -17,7 +17,12 @@ export enum ImmichHeader {
   API_KEY = 'x-api-key',
   USER_TOKEN = 'x-immich-user-token',
   SESSION_TOKEN = 'x-immich-session-token',
-  SHARED_LINK_TOKEN = 'x-immich-share-key',
+  SHARED_LINK_KEY = 'x-immich-share-key',
+  CHECKSUM = 'x-immich-checksum',
+}
+
+export enum ImmichQuery {
+  SHARED_LINK_KEY = 'key',
 }
 
 export type CookieResponse = {

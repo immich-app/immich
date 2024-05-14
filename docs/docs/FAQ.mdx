@@ -36,6 +36,22 @@ If you still cannot log in to the app, try the following:
 - Check the mobile logs
 - Make sure login credentials are correct by logging in on the web app
 
+### Why does foreground backup stop when I navigate away from the app? Shouldn't it transfer the job to background backup?
+
+Foreground backup and background backup are two separate mechanisms. They don't communicate or interact with each other.
+
+Foreground backup is controlled by the user's action, while background backup is controlled by your device's operating system. When the app is put in the background, the invocation of background tasks is delegated to the device's operating system scheduler. It decides when the background task can run and how long it can run.
+
+The behaviors differ based on your device manufacturer and operating system, but most are related to battery-saving policies.
+
+### Why is background backup on iOS not working?
+
+On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
+
+- Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
+- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
+- Use the Immich app more often.
+
 ---
 
 ## Assets
@@ -383,24 +399,47 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 
 If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
 
-### Why does Immich log migration errors on startup?
+## Database
 
-Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
+### Why am I getting database ownership errors?
 
-### Why does foreground backup stop when I navigate away from the app? Shouldn't it transfer the job to background backup?
+If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
+NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/environment-variables#supported-filesystems) for more details.
 
-Foreground backup and background backup are two separate mechanisms. They don't communicate or interact with each other.
+### How can I verify the integrity of my database?
 
-Foreground backup is controlled by the user's action, while background backup is controlled by your device's operating system. When the app is put in the background, the invocation of background tasks is delegated to the device's operating system scheduler. It decides when the background task can run and how long it can run.
+If you installed Immich using v1.104.0 or later, you likely have database checksums enabled by default. You can check this by running the following command.
+A result of `on` means that checksums are enabled.
 
-The behaviors differ based on your device manufacturer and operating system, but most are related to battery-saving policies.
+<details>
+<summary>Check if checksums are enabled</summary>
 
-### Why is background backup on iOS not working?
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="show data_checksums"
+ data_checksums
+----------------
+ on
+(1 row)
+```
 
-On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
+</details>
 
-- Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
-- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
-- Use the Immich app more often.
+If checksums are enabled, you can check the status of the database with the following command. A normal result is all zeroes.
+
+<details>
+<summary>Check for database corruption</summary>
+
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="SELECT datname, checksum_failures, checksum_last_failure FROM pg_stat_database WHERE datname IS NOT NULL"
+  datname  | checksum_failures | checksum_last_failure
+-----------+-------------------+-----------------------
+ postgres  |                 0 |
+ immich    |                 0 |
+ template1 |                 0 |
+ template0 |                 0 |
+(4 rows)
+```
+
+</details>
 
 [huggingface]: https://huggingface.co/immich-app

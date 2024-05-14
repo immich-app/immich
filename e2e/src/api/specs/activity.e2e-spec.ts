@@ -1,6 +1,7 @@
 import {
   ActivityCreateDto,
   AlbumResponseDto,
+  AlbumUserRole,
   AssetFileUploadResponseDto,
   LoginResponseDto,
   ReactionType,
@@ -33,7 +34,7 @@ describe('/activity', () => {
         createAlbumDto: {
           albumName: 'Album 1',
           assetIds: [asset.id],
-          sharedWithUserIds: [nonOwner.userId],
+          albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
         },
       },
       { headers: asBearerAuth(admin.accessToken) },

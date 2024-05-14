@@ -102,7 +102,6 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken, {
         isFavorite: true,
-        isReadOnly: true,
         fileCreatedAt: yesterday.toISO(),
         fileModifiedAt: yesterday.toISO(),
         assetData: { filename: 'example.mp4' },

@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>Opps! Error - Immich</title>
+  <title>Oops! Error - Immich</title>
 </svelte:head>
 
 <section class="flex flex-col px-4 h-screen w-screen place-content-center place-items-center">

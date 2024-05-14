@@ -368,7 +368,6 @@ describe(LibraryService.name, () => {
             type: AssetType.IMAGE,
             originalFileName: 'photo.jpg',
             sidecarPath: null,
-            isReadOnly: true,
             isExternal: true,
           },
         ],
@@ -416,7 +415,6 @@ describe(LibraryService.name, () => {
             type: AssetType.IMAGE,
             originalFileName: 'photo.jpg',
             sidecarPath: '/data/user1/photo.jpg.xmp',
-            isReadOnly: true,
             isExternal: true,
           },
         ],
@@ -463,7 +461,6 @@ describe(LibraryService.name, () => {
             type: AssetType.VIDEO,
             originalFileName: 'video.mp4',
             sidecarPath: null,
-            isReadOnly: true,
             isExternal: true,
           },
         ],
@@ -1458,10 +1455,7 @@ describe(LibraryService.name, () => {
       await expect(sut.handleOfflineRemoval({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.ASSET_DELETION,
-          data: { id: assetStub.image1.id, fromExternal: true },
-        },
+        { name: JobName.ASSET_DELETION, data: { id: assetStub.image1.id } },
       ]);
     });
   });

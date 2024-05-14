@@ -2,6 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -18,6 +19,7 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -28,6 +30,8 @@ import { newStorageRepositoryMock } from 'test/repositories/storage.repository.m
 import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
+
+const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
@@ -158,6 +162,7 @@ describe(AssetService.name, () => {
   let configMock: Mocked<ISystemConfigRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
@@ -180,6 +185,7 @@ describe(AssetService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
     sut = new AssetService(
@@ -192,10 +198,36 @@ describe(AssetService.name, () => {
       eventMock,
       partnerMock,
       assetStackMock,
+      albumMock,
       loggerMock,
     );
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
+  });
+
+  describe('getUploadAssetIdByChecksum', () => {
+    it('should handle a non-existent asset', async () => {
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset by base64', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
+        id: 'asset-id',
+        duplicate: true,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
   });
 
   describe('canUpload', () => {
@@ -656,61 +688,6 @@ describe(AssetService.name, () => {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });
-    });
-
-    it('should only delete generated files for readonly assets', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.readOnly);
-
-      await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.readOnly.thumbnailPath,
-                assetStub.readOnly.previewPath,
-                assetStub.readOnly.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.readOnly);
-    });
-
-    it('should not process assets from external library without fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id });
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(assetMock.remove).not.toHaveBeenCalled();
-    });
-
-    it('should process assets from external library with fromExternal flag', async () => {
-      assetMock.getById.mockResolvedValue(assetStub.external);
-
-      await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
-
-      expect(assetMock.remove).toHaveBeenCalledWith(assetStub.external);
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.DELETE_FILES,
-            data: {
-              files: [
-                assetStub.external.thumbnailPath,
-                assetStub.external.previewPath,
-                assetStub.external.encodedVideoPath,
-              ],
-            },
-          },
-        ],
-      ]);
     });
 
     it('should delete a live photo', async () => {

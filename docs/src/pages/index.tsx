@@ -34,14 +34,12 @@ function HomepageHeader() {
             Demo portal
           </Link>
 
-          <a
-            href="https://github.com/sponsors/immich-app"
-            target="_blank"
-            rel="noreferrer"
-            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-sponsor rounded-full no-underline hover:no-underline text-white dark:text-immich-dark-bg dark:bg-immich-sponsor hover:text-white font-bold uppercase"
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-dark-primary dark:bg-immich-primary  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
+            to="https://discord.gg/D8JsnBEuKb"
           >
-            Sponsor
-          </a>
+            Discord
+          </Link>
         </div>
         <img src="/img/immich-screenshots.png" alt="screenshots" width={'70%'} />
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
