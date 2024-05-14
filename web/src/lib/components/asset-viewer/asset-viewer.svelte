@@ -600,7 +600,7 @@
     {/if}
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 justify-self-start">
+      <div class="z-[1001] flex column-span-1 col-start-1 row-span-1 row-start-2 justify-self-start">
         <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
@@ -691,7 +691,7 @@
     </div>
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 justify-self-end">
+      <div class="z-[1001] flex col-span-1 col-start-4 row-span-1 row-start-2 justify-self-end">
         <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
