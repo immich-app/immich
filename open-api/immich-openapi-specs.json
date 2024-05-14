@@ -1386,6 +1386,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -5814,15 +5822,6 @@
           },
           {
             "api_key": []
-          },
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
           }
         ],
         "tags": [
@@ -5942,15 +5941,6 @@
           }
         },
         "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          },
           {
             "bearer": []
           },
@@ -6456,7 +6446,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.103.1",
+    "version": "1.104.0",
     "contact": {}
   },
   "tags": [],
@@ -6775,6 +6765,22 @@
           }
         },
         "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "AlbumUserCreateDto": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/AlbumUserRole"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
           "userId"
         ],
         "type": "object"
@@ -7599,6 +7605,13 @@
           "albumName": {
             "type": "string"
           },
+          "albumUsers": {
+            "description": "This property was added in v1.104.0",
+            "items": {
+              "$ref": "#/components/schemas/AlbumUserCreateDto"
+            },
+            "type": "array"
+          },
           "assetIds": {
             "items": {
               "format": "uuid",
@@ -7610,6 +7623,8 @@
             "type": "string"
           },
           "sharedWithUserIds": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.104.0",
             "items": {
               "format": "uuid",
               "type": "string"

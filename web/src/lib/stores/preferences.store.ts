@@ -47,6 +47,7 @@ export interface MapSettings {
   includeArchived: boolean;
   onlyFavorites: boolean;
   withPartners: boolean;
+  withSharedAlbums: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -57,12 +58,14 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   includeArchived: false,
   onlyFavorites: false,
   withPartners: false,
+  withSharedAlbums: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
 });
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
+export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
 
 export const isShowDetail = persisted<boolean>('info-opened', false, {});
 

@@ -49,72 +49,50 @@ describe('/album', () => {
       utils.createAsset(user1.accessToken),
     ]);
 
-    const albums = await Promise.all([
-      // user 1
-      /* 0 */
+    user1Albums = await Promise.all([
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedEditorUser,
-        sharedWithUserIds: [user2.userId],
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }],
         assetIds: [user1Asset1.id],
       }),
-      /* 1 */
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedLink,
         assetIds: [user1Asset1.id],
       }),
-      /* 2 */
       utils.createAlbum(user1.accessToken, {
         albumName: user1NotShared,
         assetIds: [user1Asset1.id, user1Asset2.id],
       }),
-
-      // user 2
-      /* 3 */
-      utils.createAlbum(user2.accessToken, {
-        albumName: user2SharedUser,
-        sharedWithUserIds: [user1.userId, user3.userId],
-      }),
-      /* 4 */
-      utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
-      /* 5 */
-      utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
-
-      // user 3
-      /* 6 */
-      utils.createAlbum(user3.accessToken, {
-        albumName: 'Deleted',
-        sharedWithUserIds: [user1.userId],
-      }),
-
-      // user1 shared with an editor
-      /* 7 */
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedViewerUser,
-        sharedWithUserIds: [user2.userId],
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
         assetIds: [user1Asset1.id],
       }),
     ]);
 
-    // Make viewer
-    await utils.updateAlbumUser(user1.accessToken, {
-      id: albums[7].id,
-      userId: user2.userId,
-      updateAlbumUserDto: { role: AlbumUserRole.Viewer },
+    user2Albums = await Promise.all([
+      utils.createAlbum(user2.accessToken, {
+        albumName: user2SharedUser,
+        albumUsers: [
+          { userId: user1.userId, role: AlbumUserRole.Editor },
+          { userId: user3.userId, role: AlbumUserRole.Editor },
+        ],
+      }),
+      utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
+      utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
+    ]);
+
+    await utils.createAlbum(user3.accessToken, {
+      albumName: 'Deleted',
+      albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }],
     });
 
-    albums[0].albumUsers[0].role = AlbumUserRole.Editor;
-    albums[3].albumUsers[0].role = AlbumUserRole.Editor;
-    albums[6].albumUsers[0].role = AlbumUserRole.Editor;
-
     await addAssetsToAlbum(
-      { id: albums[3].id, bulkIdsDto: { ids: [user1Asset1.id] } },
+      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id] } },
       { headers: asBearerAuth(user1.accessToken) },
     );
 
-    albums[3] = await getAlbumInfo({ id: albums[3].id }, { headers: asBearerAuth(user2.accessToken) });
-
-    user1Albums = [...albums.slice(0, 3), albums[7]];
-    user2Albums = albums.slice(3, 6);
+    user2Albums[0] = await getAlbumInfo({ id: user2Albums[0].id }, { headers: asBearerAuth(user2.accessToken) });
 
     await Promise.all([
       // add shared link to user1SharedLink album
@@ -456,6 +434,20 @@ describe('/album', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
     });
+
+    it('should add duplicate assets only once', async () => {
+      const asset = await utils.createAsset(user1.accessToken);
+      const { status, body } = await request(app)
+        .put(`/album/${user1Albums[0].id}/assets`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [asset.id, asset.id] });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        expect.objectContaining({ id: asset.id, success: true }),
+        expect.objectContaining({ id: asset.id, success: false, error: 'duplicate' }),
+      ]);
+    });
   });
 
   describe('PATCH /album/:id', () => {
@@ -579,6 +571,19 @@ describe('/album', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.removeAsset access'));
     });
+
+    it('should remove duplicate assets only once', async () => {
+      const { status, body } = await request(app)
+        .delete(`/album/${user1Albums[1].id}/assets`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [user1Asset1.id, user1Asset1.id] });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        expect.objectContaining({ id: user1Asset1.id, success: true }),
+        expect.objectContaining({ id: user1Asset1.id, success: false, error: 'not_found' }),
+      ]);
+    });
   });
 
   describe('PUT :id/users', () => {
@@ -641,8 +646,10 @@ describe('/album', () => {
     it('should allow the album owner to change the role of a shared user', async () => {
       const album = await utils.createAlbum(user1.accessToken, {
         albumName: 'testAlbum',
-        sharedWithUserIds: [user2.userId],
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
       });
+
+      expect(album.albumUsers[0].role).toEqual(AlbumUserRole.Viewer);
 
       const { status } = await request(app)
         .put(`/album/${album.id}/user/${user2.userId}`)
@@ -663,8 +670,10 @@ describe('/album', () => {
     it('should not allow a shared user to change the role of another shared user', async () => {
       const album = await utils.createAlbum(user1.accessToken, {
         albumName: 'testAlbum',
-        sharedWithUserIds: [user2.userId],
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
       });
+
+      expect(album.albumUsers[0].role).toEqual(AlbumUserRole.Viewer);
 
       const { status, body } = await request(app)
         .put(`/album/${album.id}/user/${user2.userId}`)

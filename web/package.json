@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.103.1",
+  "version": "1.104.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -74,10 +74,10 @@
     "luxon": "^3.4.4",
     "socket.io-client": "^4.7.4",
     "svelte-local-storage-store": "^0.6.4",
-    "svelte-maplibre": "^0.8.1",
+    "svelte-maplibre": "^0.9.0",
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "20.12.2"
+    "node": "20.13.1"
   }
 }

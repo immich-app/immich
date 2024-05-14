@@ -399,8 +399,47 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 
 If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
 
-### Why does Immich log migration errors on startup?
+## Database
 
-Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
+### Why am I getting database ownership errors?
+
+If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
+NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/environment-variables#supported-filesystems) for more details.
+
+### How can I verify the integrity of my database?
+
+If you installed Immich using v1.104.0 or later, you likely have database checksums enabled by default. You can check this by running the following command.
+A result of `on` means that checksums are enabled.
+
+<details>
+<summary>Check if checksums are enabled</summary>
+
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="show data_checksums"
+ data_checksums
+----------------
+ on
+(1 row)
+```
+
+</details>
+
+If checksums are enabled, you can check the status of the database with the following command. A normal result is all zeroes.
+
+<details>
+<summary>Check for database corruption</summary>
+
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="SELECT datname, checksum_failures, checksum_last_failure FROM pg_stat_database WHERE datname IS NOT NULL"
+  datname  | checksum_failures | checksum_last_failure
+-----------+-------------------+-----------------------
+ postgres  |                 0 |
+ immich    |                 0 |
+ template1 |                 0 |
+ template0 |                 0 |
+(4 rows)
+```
+
+</details>
 
 [huggingface]: https://huggingface.co/immich-app

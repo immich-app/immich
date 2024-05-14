@@ -29,6 +29,7 @@ import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -78,6 +79,7 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
@@ -167,6 +169,7 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
+    // TODO convert to SQL join
     if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
@@ -174,7 +177,18 @@ export class AssetService {
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
-    return this.assetRepository.getMapMarkers(userIds, options);
+
+    // TODO convert to SQL join
+    const albumIds: string[] = [];
+    if (options.withSharedAlbums) {
+      const [ownedAlbums, sharedAlbums] = await Promise.all([
+        this.albumRepository.getOwned(auth.user.id),
+        this.albumRepository.getShared(auth.user.id),
+      ]);
+      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
+    }
+
+    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {

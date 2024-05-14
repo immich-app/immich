@@ -11,8 +11,8 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
+import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ForegroundInfo
@@ -30,16 +30,6 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.InetAddress
-import java.net.URL
 import java.util.concurrent.TimeUnit
 
 /**
@@ -52,6 +42,7 @@ import java.util.concurrent.TimeUnit
  */
 class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ctx, params), MethodChannel.MethodCallHandler {
 
+    private val resolvableFuture = ResolvableFuture.create<Result>()
     private var engine: FlutterEngine? = null
     private lateinit var backgroundChannel: MethodChannel
     private val notificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -61,80 +52,35 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     private var notificationDetailBuilder: NotificationCompat.Builder? = null
     private var fgFuture: ListenableFuture<Void>? = null
 
-    private val job = Job()
-    private lateinit var completer: CallbackToFutureAdapter.Completer<Result>
-    private val resolvableFuture = CallbackToFutureAdapter.getFuture { completer ->
-        this.completer = completer
-        null
-    }
-
-    init {
-        resolvableFuture.addListener(
-            Runnable {
-                if (resolvableFuture.isCancelled) {
-                    job.cancel()
-                }
-            },
-            taskExecutor.serialTaskExecutor
-        )
-    }
-
     override fun startWork(): ListenableFuture<ListenableWorker.Result> {
+
         Log.d(TAG, "startWork")
 
         val ctx = applicationContext
-        val prefs = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
 
-        prefs.getString(SHARED_PREF_SERVER_URL, null)
-            ?.takeIf { it.isNotEmpty() }
-            ?.let { serverUrl -> doCoroutineWork(serverUrl) }
-            ?: doWork()
-        return resolvableFuture
-    }
-
-    /**
-     * This function is used to check if server URL is reachable before starting the backup work.
-     * Check must be done in a background to avoid blocking the main thread.
-     */
-    private fun doCoroutineWork(serverUrl : String) {
-        CoroutineScope(Dispatchers.Default + job).launch {
-            val isReachable = isUrlReachableHttp(serverUrl)
-            withContext(Dispatchers.Main) {
-                if (isReachable) {
-                    doWork()
-                } else {
-                    // Fail when the URL is not reachable
-                    completer.set(Result.failure())
-                }
-            }
+        if (!flutterLoader.initialized()) {
+            flutterLoader.startInitialization(ctx)
         }
-    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create a Notification channel if necessary
+            createChannel()
+        }
+        if (isIgnoringBatteryOptimizations) {
+            // normal background services can only up to 10 minutes
+            // foreground services are allowed to run indefinitely
+            // requires battery optimizations to be disabled (either manually by the user
+            // or by the system learning that immich is important to the user)
+            val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
+            showInfo(getInfoBuilder(title, indeterminate=true).build())
+        }
+        engine = FlutterEngine(ctx)
 
-    private fun doWork() {
-      Log.d(TAG, "doWork")
-      val ctx = applicationContext
+        flutterLoader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
+            runDart()
+        }
 
-      if (!flutterLoader.initialized()) {
-        flutterLoader.startInitialization(ctx)
-      }
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        // Create a Notification channel if necessary
-        createChannel()
-      }
-      if (isIgnoringBatteryOptimizations) {
-        // normal background services can only up to 10 minutes
-        // foreground services are allowed to run indefinitely
-        // requires battery optimizations to be disabled (either manually by the user
-        // or by the system learning that immich is important to the user)
-        val title = ctx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-          .getString(SHARED_PREF_NOTIFICATION_TITLE, NOTIFICATION_DEFAULT_TITLE)!!
-        showInfo(getInfoBuilder(title, indeterminate=true).build())
-      }
-      engine = FlutterEngine(ctx)
-
-      flutterLoader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
-        runDart()
-      }
+        return resolvableFuture
     }
 
     /**
@@ -193,7 +139,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         engine = null
         if (result != null) {
             Log.d(TAG, "stopEngine result=${result}")
-            this.completer.set(result)
+            resolvableFuture.set(result)
         }
         waitOnSetForegroundAsync()
     }
@@ -324,7 +270,6 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
         const val SHARED_PREF_CALLBACK_KEY = "callbackDispatcherHandle"
         const val SHARED_PREF_NOTIFICATION_TITLE = "notificationTitle"
         const val SHARED_PREF_LAST_CHANGE = "lastChange"
-        const val SHARED_PREF_SERVER_URL = "serverUrl"
 
         private const val TASK_NAME_BACKUP = "immich/BackupWorker"
         private const val NOTIFICATION_CHANNEL_ID = "immich/backgroundService"
@@ -415,26 +360,3 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 }
 
 private const val TAG = "BackupWorker"
-
-/**
- * Check if the given URL is reachable via HTTP
- */
-suspend fun isUrlReachableHttp(url: String, timeoutMillis: Long = 5000L): Boolean {
-    return withTimeoutOrNull(timeoutMillis) {
-        var httpURLConnection: HttpURLConnection? = null
-        try {
-            httpURLConnection = (URL(url).openConnection() as HttpURLConnection).apply {
-                requestMethod = "HEAD"
-                connectTimeout = timeoutMillis.toInt()
-                readTimeout = timeoutMillis.toInt()
-            }
-            httpURLConnection.connect()
-            httpURLConnection.responseCode == HttpURLConnection.HTTP_OK
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to reach server URL: $e")
-            false
-        } finally {
-            httpURLConnection?.disconnect()
-        }
-    } == true
-}

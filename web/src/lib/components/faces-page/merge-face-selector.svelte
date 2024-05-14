@@ -30,9 +30,7 @@
   }>();
 
   $: hasSelection = selectedPeople.length > 0;
-  $: unselectedPeople = people.filter(
-    (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
-  );
+  $: peopleToNotShow = [...selectedPeople, person];
 
   onMount(async () => {
     const data = await getAllPeople({ withHidden: false });
@@ -150,13 +148,7 @@
         </div>
       </div>
 
-      <PeopleList
-        people={unselectedPeople}
-        peopleCopy={unselectedPeople}
-        unselectedPeople={selectedPeople}
-        {screenHeight}
-        on:select={({ detail }) => onSelect(detail)}
-      />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
     </section>
 
     {#if isShowConfirmation}

@@ -7,7 +7,7 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
-  import ShowHide from '$lib/components/faces-page/show-hide.svelte';
+  import ShowHide, { ToggleVisibilty } from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
@@ -48,7 +48,7 @@
   let searchName = '';
 
   let showLoadingSpinner = false;
-  let toggleVisibility = false;
+  let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
 
   let showChangeNameModal = false;
   let showSetBirthDateModal = false;
@@ -60,14 +60,23 @@
   let edittingPerson: PersonResponseDto | null = null;
   let searchedPeopleLocal: PersonResponseDto[] = [];
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
-
+  let showPeople: PersonResponseDto[] = [];
+  let countVisiblePeople: number;
+  let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
-  $: showPeople = searchName ? searchedPeopleLocal : people.filter((person) => !person.isHidden);
-  $: countVisiblePeople = countTotalPeople - countHiddenPeople;
+  $: {
+    if (searchName) {
+      showPeople = searchedPeopleLocal;
+      countVisiblePeople = searchedPeopleLocal.length;
+    } else {
+      showPeople = people.filter((person) => !person.isHidden);
+      countVisiblePeople = countTotalPeople - countHiddenPeople;
+    }
+  }
 
   onMount(async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -95,7 +104,7 @@
     // Reset variables used on the "Show & hide people"   modal
     showLoadingSpinner = false;
     selectHidden = false;
-    toggleVisibility = false;
+    toggleVisibility = ToggleVisibilty.VIEW_ALL;
   };
 
   const handleResetVisibility = () => {
@@ -107,10 +116,17 @@
     people = people;
   };
 
-  const handleToggleVisibility = () => {
-    toggleVisibility = !toggleVisibility;
+  const handleToggleVisibility = (toggleVisibility: ToggleVisibilty) => {
     for (const person of people) {
-      person.isHidden = toggleVisibility;
+      if (toggleVisibility == ToggleVisibilty.HIDE_ALL) {
+        person.isHidden = true;
+      }
+      if (toggleVisibility == ToggleVisibilty.VIEW_ALL) {
+        person.isHidden = false;
+      }
+      if (toggleVisibility == ToggleVisibilty.HIDE_UNNANEMD && !person.name) {
+        person.isHidden = true;
+      }
     }
 
     // trigger reactivity
@@ -163,7 +179,7 @@
     // Reset variables used on the "Show & hide people" modal
     showLoadingSpinner = false;
     selectHidden = false;
-    toggleVisibility = false;
+    toggleVisibility = ToggleVisibilty.VIEW_ALL;
   };
 
   const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
@@ -228,6 +244,8 @@
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
+
+    setTimeout(() => changeNameInputEl?.focus(), 100);
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
@@ -382,7 +400,7 @@
 
 <UserPageLayout
   title="People"
-  description={countVisiblePeople === 0 ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
@@ -439,7 +457,14 @@
       <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
-          <input class="immich-form-input" id="name" name="name" type="text" bind:value={personName} />
+          <input
+            class="immich-form-input"
+            id="name"
+            name="name"
+            type="text"
+            bind:value={personName}
+            bind:this={changeNameInputEl}
+          />
         </div>
       </form>
       <svelte:fragment slot="sticky-bottom">
@@ -465,10 +490,10 @@
 </UserPageLayout>
 {#if selectHidden}
   <ShowHide
-    on:done={handleDoneClick}
-    on:close={handleCloseClick}
-    on:reset={handleResetVisibility}
-    on:change={handleToggleVisibility}
+    onDone={handleDoneClick}
+    onClose={handleCloseClick}
+    onReset={handleResetVisibility}
+    onChange={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
     {countTotalPeople}

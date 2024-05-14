@@ -16,7 +16,7 @@ x-server-build: &server-common
     - IMMICH_METRICS=true
   volumes:
     - upload:/usr/src/app/upload
-    - ../server/test/assets:/data/assets
+    - ./test-assets:/test-assets
   depends_on:
     - redis
     - database

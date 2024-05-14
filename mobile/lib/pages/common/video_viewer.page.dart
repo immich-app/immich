@@ -6,9 +6,9 @@ import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart
 import 'package:immich_mobile/providers/asset_viewer/video_player_controller_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/video_player.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_player.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/shared/ui/delayed_loading_indicator.dart';
+import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()

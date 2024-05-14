@@ -490,8 +490,23 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  async getMapMarkers(
+    ownerIds: string[],
+    albumIds: string[],
+    options: MapMarkerSearchOptions = {},
+  ): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
+
+    const where = {
+      isVisible: true,
+      isArchived,
+      exifInfo: {
+        latitude: Not(IsNull()),
+        longitude: Not(IsNull()),
+      },
+      isFavorite,
+      fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
+    };
 
     const assets = await this.repository.find({
       select: {
@@ -504,17 +519,10 @@ export class AssetRepository implements IAssetRepository {
           longitude: true,
         },
       },
-      where: {
-        ownerId: In([...ownerIds]),
-        isVisible: true,
-        isArchived,
-        exifInfo: {
-          latitude: Not(IsNull()),
-          longitude: Not(IsNull()),
-        },
-        isFavorite,
-        fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-      },
+      where: [
+        { ...where, ownerId: In([...ownerIds]) },
+        { ...where, albums: { id: In([...albumIds]) } },
+      ],
       relations: {
         exifInfo: true,
       },
@@ -571,15 +579,14 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
-    // can't use queryBuilder because of custom OFFSET clause
-    return this.repository.query(
-      `SELECT *
-       FROM assets
-       WHERE "ownerId" = $1
-       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
-      [ownerId, count],
-    );
+    const builder = this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: true,
+    });
+
+    return builder.orderBy('RANDOM()').limit(count).getMany();
   }
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
