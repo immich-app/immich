@@ -25,7 +25,6 @@ download_dot_env_file() {
 
 generate_random_password() {
   echo "Generate random password for .env file..."
-  # rand_pass=$(openssl rand -base64 20 | tr -dc A-Za-z0-9 | head -c10)
   rand_pass=$(echo "$RANDOM$(date)$RANDOM" | sha256sum | base64 | head -c10)
   if [ -z "$rand_pass" ]; then
     sed -i -e "s/DB_PASSWORD=postgres/DB_PASSWORD=postgres${RANDOM}${RANDOM}/" ./.env
