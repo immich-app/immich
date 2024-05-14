@@ -4,10 +4,11 @@ import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { CommandFactory } from 'nest-commander';
 import { existsSync } from 'node:fs';
+import { Worker } from 'node:worker_threads';
 import sirv from 'sirv';
-import { ApiModule, ImmichAdminModule, MicroservicesModule } from 'src/app.module';
+import { ApiModule, ImmichAdminModule } from 'src/app.module';
+import { LogLevel } from 'src/config';
 import { WEB_ROOT, envName, excludePaths, isDev, serverVersion } from 'src/constants';
-import { LogLevel } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
@@ -16,21 +17,6 @@ import { useSwagger } from 'src/utils/misc';
 
 const host = process.env.HOST;
 
-async function bootstrapMicroservices() {
-  otelSDK.start();
-
-  const port = Number(process.env.MICROSERVICES_PORT) || 3002;
-  const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
-  const logger = await app.resolve(ILoggerRepository);
-  logger.setContext('ImmichMicroservice');
-  app.useLogger(logger);
-  app.useWebSocketAdapter(new WebSocketAdapter(app));
-
-  await (host ? app.listen(port, host) : app.listen(port));
-
-  logger.log(`Immich Microservices is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
-}
-
 async function bootstrapApi() {
   otelSDK.start();
 
@@ -38,6 +24,7 @@ async function bootstrapApi() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
 
+  logger.setAppName('ImmichServer');
   logger.setContext('ImmichServer');
   app.useLogger(logger);
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
@@ -86,15 +73,28 @@ async function bootstrapImmichAdmin() {
   await CommandFactory.run(ImmichAdminModule);
 }
 
+function bootstrapMicroservicesWorker() {
+  const worker = new Worker('./dist/workers/microservices.js');
+  worker.on('exit', (exitCode) => {
+    if (exitCode !== 0) {
+      console.error(`Microservices worker exited with code ${exitCode}`);
+      process.exit(exitCode);
+    }
+  });
+}
+
 function bootstrap() {
   switch (immichApp) {
     case 'immich': {
       process.title = 'immich_server';
+      if (process.env.INTERNAL_MICROSERVICES === 'true') {
+        bootstrapMicroservicesWorker();
+      }
       return bootstrapApi();
     }
     case 'microservices': {
       process.title = 'immich_microservices';
-      return bootstrapMicroservices();
+      return bootstrapMicroservicesWorker();
     }
     case 'immich-admin': {
       process.title = 'immich_admin_cli';

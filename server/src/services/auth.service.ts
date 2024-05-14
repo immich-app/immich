@@ -10,6 +10,7 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { SystemConfig } from 'src/config';
 import { AuthType, LOGIN_URL, MOBILE_REDIRECT } from 'src/constants';
 import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -28,7 +29,6 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { SystemConfig } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';

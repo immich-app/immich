@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import { SystemConfig } from 'src/config';
 import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
+import { SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {

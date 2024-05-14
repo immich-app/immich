@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.104.0",
+  "version": "1.105.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -31,6 +31,7 @@
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/svelte": "^5.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/dom-to-image": "^2.6.7",
     "@types/justified-layout": "^4.1.4",
     "@types/lodash-es": "^4.17.12",
@@ -78,6 +79,6 @@
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "20.12.2"
+    "node": "20.13.1"
   }
 }

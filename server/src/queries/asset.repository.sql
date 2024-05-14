@@ -1059,8 +1059,4 @@ FROM
 WHERE
   "asset"."isVisible" = true
   AND "asset"."ownerId" IN ($1)
-  AND (
-    "stack"."primaryAssetId" = "asset"."id"
-    OR "asset"."stackId" IS NULL
-  )
   AND "asset"."updatedAt" > $2

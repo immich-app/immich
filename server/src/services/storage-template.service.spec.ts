@@ -1,8 +1,9 @@
 import { Stats } from 'node:fs';
-import { SystemConfigCore, defaults } from 'src/cores/system-config.core';
+import { SystemConfig, defaults } from 'src/config';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
-import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
