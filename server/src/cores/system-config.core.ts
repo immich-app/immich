@@ -1,171 +1,18 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
 import AsyncLock from 'async-lock';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
+import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import {
-  AudioCodec,
-  CQMode,
-  Colorspace,
-  ImageFormat,
-  LogLevel,
-  SystemConfig,
-  SystemConfigEntity,
-  SystemConfigKey,
-  SystemConfigValue,
-  ToneMapping,
-  TranscodeHWAccel,
-  TranscodePolicy,
-  VideoCodec,
-} from 'src/entities/system-config.entity';
+import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from 'src/entities/system-config.entity';
 import { DatabaseLock } from 'src/interfaces/database.interface';
-import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
-
-export const defaults = Object.freeze<SystemConfig>({
-  ffmpeg: {
-    crf: 23,
-    threads: 0,
-    preset: 'ultrafast',
-    targetVideoCodec: VideoCodec.H264,
-    acceptedVideoCodecs: [VideoCodec.H264],
-    targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
-    targetResolution: '720',
-    maxBitrate: '0',
-    bframes: -1,
-    refs: 0,
-    gopSize: 0,
-    npl: 0,
-    temporalAQ: false,
-    cqMode: CQMode.AUTO,
-    twoPass: false,
-    preferredHwDevice: 'auto',
-    transcode: TranscodePolicy.REQUIRED,
-    tonemap: ToneMapping.HABLE,
-    accel: TranscodeHWAccel.DISABLED,
-  },
-  job: {
-    [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.SMART_SEARCH]: { concurrency: 2 },
-    [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.FACE_DETECTION]: { concurrency: 2 },
-    [QueueName.SEARCH]: { concurrency: 5 },
-    [QueueName.SIDECAR]: { concurrency: 5 },
-    [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.MIGRATION]: { concurrency: 5 },
-    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
-    [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
-    [QueueName.NOTIFICATION]: { concurrency: 5 },
-  },
-  logging: {
-    enabled: true,
-    level: LogLevel.LOG,
-  },
-  machineLearning: {
-    enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
-    url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
-    clip: {
-      enabled: true,
-      modelName: 'ViT-B-32__openai',
-    },
-    facialRecognition: {
-      enabled: true,
-      modelName: 'buffalo_l',
-      minScore: 0.7,
-      maxDistance: 0.5,
-      minFaces: 3,
-    },
-  },
-  map: {
-    enabled: true,
-    lightStyle: '',
-    darkStyle: '',
-  },
-  reverseGeocoding: {
-    enabled: true,
-  },
-  oauth: {
-    autoLaunch: false,
-    autoRegister: true,
-    buttonText: 'Login with OAuth',
-    clientId: '',
-    clientSecret: '',
-    defaultStorageQuota: 0,
-    enabled: false,
-    issuerUrl: '',
-    mobileOverrideEnabled: false,
-    mobileRedirectUri: '',
-    scope: 'openid email profile',
-    signingAlgorithm: 'RS256',
-    storageLabelClaim: 'preferred_username',
-    storageQuotaClaim: 'immich_quota',
-  },
-  passwordLogin: {
-    enabled: true,
-  },
-  storageTemplate: {
-    enabled: false,
-    hashVerificationEnabled: true,
-    template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-  },
-  image: {
-    thumbnailFormat: ImageFormat.WEBP,
-    thumbnailSize: 250,
-    previewFormat: ImageFormat.JPEG,
-    previewSize: 1440,
-    quality: 80,
-    colorspace: Colorspace.P3,
-    extractEmbedded: false,
-  },
-  newVersionCheck: {
-    enabled: true,
-  },
-  trash: {
-    enabled: true,
-    days: 30,
-  },
-  theme: {
-    customCss: '',
-  },
-  library: {
-    scan: {
-      enabled: true,
-      cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
-    },
-    watch: {
-      enabled: false,
-    },
-  },
-  server: {
-    externalDomain: '',
-    loginPageMessage: '',
-  },
-  notifications: {
-    smtp: {
-      enabled: false,
-      from: '',
-      replyTo: '',
-      transport: {
-        ignoreCert: false,
-        host: '',
-        port: 587,
-        username: '',
-        password: '',
-      },
-    },
-  },
-  user: {
-    deleteDelay: 7,
-  },
-});
 
 export enum FeatureFlag {
   SMART_SEARCH = 'smartSearch',
@@ -192,7 +39,7 @@ export class SystemConfigCore {
   private config: SystemConfig | null = null;
   private lastUpdated: number | null = null;
 
-  public config$ = new Subject<SystemConfig>();
+  config$ = new Subject<SystemConfig>();
 
   private constructor(
     private repository: ISystemConfigRepository,
@@ -267,11 +114,7 @@ export class SystemConfigCore {
     };
   }
 
-  public getDefaults(): SystemConfig {
-    return defaults;
-  }
-
-  public async getConfig(force = false): Promise<SystemConfig> {
+  async getConfig(force = false): Promise<SystemConfig> {
     if (force || !this.config) {
       const lastUpdated = this.lastUpdated;
       await this.asyncLock.acquire(DatabaseLock[DatabaseLock.GetSystemConfig], async () => {
@@ -285,7 +128,7 @@ export class SystemConfigCore {
     return this.config!;
   }
 
-  public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
+  async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
     if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
@@ -328,9 +171,8 @@ export class SystemConfigCore {
     return config;
   }
 
-  public async refreshConfig() {
+  async refreshConfig() {
     const newConfig = await this.getConfig(true);
-
     this.config$.next(newConfig);
   }
 

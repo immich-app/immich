@@ -1,4 +1,4 @@
-import { LogLevel } from 'src/entities/system-config.entity';
+import { LogLevel } from 'src/config';
 
 export const ILoggerRepository = 'ILoggerRepository';
 
