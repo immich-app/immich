@@ -1,6 +1,6 @@
+import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
-import { SystemConfig } from 'src/entities/system-config.entity';
 
 export const IEventRepository = 'IEventRepository';
 

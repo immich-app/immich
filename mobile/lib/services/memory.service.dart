@@ -37,12 +37,16 @@ class MemoryService {
 
       List<Memory> memories = [];
       for (final MemoryLaneResponseDto(:title, :assets) in data) {
-        memories.add(
-          Memory(
-            title: title,
-            assets: await _db.assets.getAllByRemoteId(assets.map((e) => e.id)),
-          ),
-        );
+        final dbAssets =
+            await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
+        if (dbAssets.isNotEmpty) {
+          memories.add(
+            Memory(
+              title: title,
+              assets: dbAssets,
+            ),
+          );
+        }
       }
 
       return memories.isNotEmpty ? memories : null;

@@ -1,16 +1,16 @@
 import { Stats } from 'node:fs';
-import { AssetType } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import {
   AudioCodec,
   Colorspace,
   ImageFormat,
-  SystemConfigKey,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+} from 'src/config';
+import { AssetType } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
+import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';

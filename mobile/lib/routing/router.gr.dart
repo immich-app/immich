@@ -21,6 +21,29 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const ActivitiesPage(),
       );
     },
+    AlbumAdditionalSharedUserSelectionRoute.name: (routeData) {
+      final args =
+          routeData.argsAs<AlbumAdditionalSharedUserSelectionRouteArgs>();
+      return AutoRoutePage<List<String>?>(
+        routeData: routeData,
+        child: AlbumAdditionalSharedUserSelectionPage(
+          key: args.key,
+          album: args.album,
+        ),
+      );
+    },
+    AlbumAssetSelectionRoute.name: (routeData) {
+      final args = routeData.argsAs<AlbumAssetSelectionRouteArgs>();
+      return AutoRoutePage<AssetSelectionPageResult?>(
+        routeData: routeData,
+        child: AlbumAssetSelectionPage(
+          key: args.key,
+          existingAssets: args.existingAssets,
+          canDeselect: args.canDeselect,
+          query: args.query,
+        ),
+      );
+    },
     AlbumOptionsRoute.name: (routeData) {
       final args = routeData.argsAs<AlbumOptionsRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -38,6 +61,16 @@ abstract class _$AppRouter extends RootStackRouter {
         child: AlbumPreviewPage(
           key: args.key,
           album: args.album,
+        ),
+      );
+    },
+    AlbumSharedUserSelectionRoute.name: (routeData) {
+      final args = routeData.argsAs<AlbumSharedUserSelectionRouteArgs>();
+      return AutoRoutePage<List<String>>(
+        routeData: routeData,
+        child: AlbumSharedUserSelectionPage(
+          key: args.key,
+          assets: args.assets,
         ),
       );
     },
@@ -95,18 +128,6 @@ abstract class _$AppRouter extends RootStackRouter {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const ArchivePage(),
-      );
-    },
-    AlbumAssetSelectionRoute.name: (routeData) {
-      final args = routeData.argsAs<AssetSelectionRouteArgs>();
-      return AutoRoutePage<AssetSelectionPageResult?>(
-        routeData: routeData,
-        child: AlbumAssetSelectionPage(
-          key: args.key,
-          existingAssets: args.existingAssets,
-          canDeselect: args.canDeselect,
-          query: args.query,
-        ),
       );
     },
     BackupAlbumSelectionRoute.name: (routeData) {
@@ -168,12 +189,6 @@ abstract class _$AppRouter extends RootStackRouter {
           heroOffset: args.heroOffset,
           showStack: args.showStack,
         ),
-      );
-    },
-    PhotosRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const PhotosPage(),
       );
     },
     LibraryRoute.name: (routeData) {
@@ -249,6 +264,12 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    PhotosRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const PhotosPage(),
+      );
+    },
     RecentlyAddedRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -270,26 +291,6 @@ abstract class _$AppRouter extends RootStackRouter {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const SearchPage(),
-      );
-    },
-    AlbumAdditionalSharedUserSelectionRoute.name: (routeData) {
-      final args = routeData.argsAs<SelectAdditionalUserForSharingRouteArgs>();
-      return AutoRoutePage<List<String>?>(
-        routeData: routeData,
-        child: AlbumAdditionalSharedUserSelectionPage(
-          key: args.key,
-          album: args.album,
-        ),
-      );
-    },
-    AlbumSharedUserSelectionRoute.name: (routeData) {
-      final args = routeData.argsAs<SelectUserForSharingRouteArgs>();
-      return AutoRoutePage<List<String>>(
-        routeData: routeData,
-        child: AlbumSharedUserSelectionPage(
-          key: args.key,
-          assets: args.assets,
-        ),
       );
     },
     SettingsRoute.name: (routeData) {
@@ -351,21 +352,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const TrashPage(),
       );
     },
-    VideoViewerRoute.name: (routeData) {
-      final args = routeData.argsAs<VideoViewerRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: VideoViewerPage(
-          key: args.key,
-          asset: args.asset,
-          isMotionVideo: args.isMotionVideo,
-          placeholder: args.placeholder,
-          showControls: args.showControls,
-          hideControlsTimer: args.hideControlsTimer,
-          showDownloadingIndicator: args.showDownloadingIndicator,
-        ),
-      );
-    },
   };
 }
 
@@ -381,6 +367,94 @@ class ActivitiesRoute extends PageRouteInfo<void> {
   static const String name = 'ActivitiesRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [AlbumAdditionalSharedUserSelectionPage]
+class AlbumAdditionalSharedUserSelectionRoute
+    extends PageRouteInfo<AlbumAdditionalSharedUserSelectionRouteArgs> {
+  AlbumAdditionalSharedUserSelectionRoute({
+    Key? key,
+    required Album album,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AlbumAdditionalSharedUserSelectionRoute.name,
+          args: AlbumAdditionalSharedUserSelectionRouteArgs(
+            key: key,
+            album: album,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AlbumAdditionalSharedUserSelectionRoute';
+
+  static const PageInfo<AlbumAdditionalSharedUserSelectionRouteArgs> page =
+      PageInfo<AlbumAdditionalSharedUserSelectionRouteArgs>(name);
+}
+
+class AlbumAdditionalSharedUserSelectionRouteArgs {
+  const AlbumAdditionalSharedUserSelectionRouteArgs({
+    this.key,
+    required this.album,
+  });
+
+  final Key? key;
+
+  final Album album;
+
+  @override
+  String toString() {
+    return 'AlbumAdditionalSharedUserSelectionRouteArgs{key: $key, album: $album}';
+  }
+}
+
+/// generated route for
+/// [AlbumAssetSelectionPage]
+class AlbumAssetSelectionRoute
+    extends PageRouteInfo<AlbumAssetSelectionRouteArgs> {
+  AlbumAssetSelectionRoute({
+    Key? key,
+    required Set<Asset> existingAssets,
+    bool canDeselect = false,
+    required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AlbumAssetSelectionRoute.name,
+          args: AlbumAssetSelectionRouteArgs(
+            key: key,
+            existingAssets: existingAssets,
+            canDeselect: canDeselect,
+            query: query,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AlbumAssetSelectionRoute';
+
+  static const PageInfo<AlbumAssetSelectionRouteArgs> page =
+      PageInfo<AlbumAssetSelectionRouteArgs>(name);
+}
+
+class AlbumAssetSelectionRouteArgs {
+  const AlbumAssetSelectionRouteArgs({
+    this.key,
+    required this.existingAssets,
+    this.canDeselect = false,
+    required this.query,
+  });
+
+  final Key? key;
+
+  final Set<Asset> existingAssets;
+
+  final bool canDeselect;
+
+  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
+
+  @override
+  String toString() {
+    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect, query: $query}';
+  }
 }
 
 /// generated route for
@@ -456,6 +530,45 @@ class AlbumPreviewRouteArgs {
   @override
   String toString() {
     return 'AlbumPreviewRouteArgs{key: $key, album: $album}';
+  }
+}
+
+/// generated route for
+/// [AlbumSharedUserSelectionPage]
+class AlbumSharedUserSelectionRoute
+    extends PageRouteInfo<AlbumSharedUserSelectionRouteArgs> {
+  AlbumSharedUserSelectionRoute({
+    Key? key,
+    required Set<Asset> assets,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AlbumSharedUserSelectionRoute.name,
+          args: AlbumSharedUserSelectionRouteArgs(
+            key: key,
+            assets: assets,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AlbumSharedUserSelectionRoute';
+
+  static const PageInfo<AlbumSharedUserSelectionRouteArgs> page =
+      PageInfo<AlbumSharedUserSelectionRouteArgs>(name);
+}
+
+class AlbumSharedUserSelectionRouteArgs {
+  const AlbumSharedUserSelectionRouteArgs({
+    this.key,
+    required this.assets,
+  });
+
+  final Key? key;
+
+  final Set<Asset> assets;
+
+  @override
+  String toString() {
+    return 'AlbumSharedUserSelectionRouteArgs{key: $key, assets: $assets}';
   }
 }
 
@@ -617,54 +730,6 @@ class ArchiveRoute extends PageRouteInfo<void> {
   static const String name = 'ArchiveRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [AlbumAssetSelectionPage]
-class AlbumAssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
-  AlbumAssetSelectionRoute({
-    Key? key,
-    required Set<Asset> existingAssets,
-    bool canDeselect = false,
-    required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
-    List<PageRouteInfo>? children,
-  }) : super(
-          AlbumAssetSelectionRoute.name,
-          args: AssetSelectionRouteArgs(
-            key: key,
-            existingAssets: existingAssets,
-            canDeselect: canDeselect,
-            query: query,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'AlbumAssetSelectionRoute';
-
-  static const PageInfo<AssetSelectionRouteArgs> page =
-      PageInfo<AssetSelectionRouteArgs>(name);
-}
-
-class AssetSelectionRouteArgs {
-  const AssetSelectionRouteArgs({
-    this.key,
-    required this.existingAssets,
-    this.canDeselect = false,
-    required this.query,
-  });
-
-  final Key? key;
-
-  final Set<Asset> existingAssets;
-
-  final bool canDeselect;
-
-  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
-
-  @override
-  String toString() {
-    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect, query: $query}';
-  }
 }
 
 /// generated route for
@@ -850,20 +915,6 @@ class GalleryViewerRouteArgs {
   String toString() {
     return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset, showStack: $showStack}';
   }
-}
-
-/// generated route for
-/// [PhotosPage]
-class PhotosRoute extends PageRouteInfo<void> {
-  const PhotosRoute({List<PageRouteInfo>? children})
-      : super(
-          PhotosRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'PhotosRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for
@@ -1098,6 +1149,20 @@ class PersonResultRouteArgs {
 }
 
 /// generated route for
+/// [PhotosPage]
+class PhotosRoute extends PageRouteInfo<void> {
+  const PhotosRoute({List<PageRouteInfo>? children})
+      : super(
+          PhotosRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'PhotosRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [RecentlyAddedPage]
 class RecentlyAddedRoute extends PageRouteInfo<void> {
   const RecentlyAddedRoute({List<PageRouteInfo>? children})
@@ -1161,84 +1226,6 @@ class SearchRoute extends PageRouteInfo<void> {
   static const String name = 'SearchRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [AlbumAdditionalSharedUserSelectionPage]
-class AlbumAdditionalSharedUserSelectionRoute
-    extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
-  AlbumAdditionalSharedUserSelectionRoute({
-    Key? key,
-    required Album album,
-    List<PageRouteInfo>? children,
-  }) : super(
-          AlbumAdditionalSharedUserSelectionRoute.name,
-          args: SelectAdditionalUserForSharingRouteArgs(
-            key: key,
-            album: album,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'AlbumAdditionalSharedUserSelectionRoute';
-
-  static const PageInfo<SelectAdditionalUserForSharingRouteArgs> page =
-      PageInfo<SelectAdditionalUserForSharingRouteArgs>(name);
-}
-
-class SelectAdditionalUserForSharingRouteArgs {
-  const SelectAdditionalUserForSharingRouteArgs({
-    this.key,
-    required this.album,
-  });
-
-  final Key? key;
-
-  final Album album;
-
-  @override
-  String toString() {
-    return 'SelectAdditionalUserForSharingRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
-/// [AlbumSharedUserSelectionPage]
-class AlbumSharedUserSelectionRoute
-    extends PageRouteInfo<SelectUserForSharingRouteArgs> {
-  AlbumSharedUserSelectionRoute({
-    Key? key,
-    required Set<Asset> assets,
-    List<PageRouteInfo>? children,
-  }) : super(
-          AlbumSharedUserSelectionRoute.name,
-          args: SelectUserForSharingRouteArgs(
-            key: key,
-            assets: assets,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'AlbumSharedUserSelectionRoute';
-
-  static const PageInfo<SelectUserForSharingRouteArgs> page =
-      PageInfo<SelectUserForSharingRouteArgs>(name);
-}
-
-class SelectUserForSharingRouteArgs {
-  const SelectUserForSharingRouteArgs({
-    this.key,
-    required this.assets,
-  });
-
-  final Key? key;
-
-  final Set<Asset> assets;
-
-  @override
-  String toString() {
-    return 'SelectUserForSharingRouteArgs{key: $key, assets: $assets}';
-  }
 }
 
 /// generated route for
@@ -1409,67 +1396,4 @@ class TrashRoute extends PageRouteInfo<void> {
   static const String name = 'TrashRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [VideoViewerPage]
-class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
-  VideoViewerRoute({
-    Key? key,
-    required Asset asset,
-    bool isMotionVideo = false,
-    Widget? placeholder,
-    bool showControls = true,
-    Duration hideControlsTimer = const Duration(seconds: 5),
-    bool showDownloadingIndicator = true,
-    List<PageRouteInfo>? children,
-  }) : super(
-          VideoViewerRoute.name,
-          args: VideoViewerRouteArgs(
-            key: key,
-            asset: asset,
-            isMotionVideo: isMotionVideo,
-            placeholder: placeholder,
-            showControls: showControls,
-            hideControlsTimer: hideControlsTimer,
-            showDownloadingIndicator: showDownloadingIndicator,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'VideoViewerRoute';
-
-  static const PageInfo<VideoViewerRouteArgs> page =
-      PageInfo<VideoViewerRouteArgs>(name);
-}
-
-class VideoViewerRouteArgs {
-  const VideoViewerRouteArgs({
-    this.key,
-    required this.asset,
-    this.isMotionVideo = false,
-    this.placeholder,
-    this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
-    this.showDownloadingIndicator = true,
-  });
-
-  final Key? key;
-
-  final Asset asset;
-
-  final bool isMotionVideo;
-
-  final Widget? placeholder;
-
-  final bool showControls;
-
-  final Duration hideControlsTimer;
-
-  final bool showDownloadingIndicator;
-
-  @override
-  String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer, showDownloadingIndicator: $showDownloadingIndicator}';
-  }
 }

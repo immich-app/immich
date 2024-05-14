@@ -41,7 +41,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
     }
 
     void onClose([LatLng? selected]) {
-      context.popRoute(selected);
+      context.maybePop(selected);
     }
 
     Future<void> getCurrentLocation() async {

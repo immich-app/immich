@@ -18,7 +18,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -30,7 +29,8 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+} from 'src/config';
+import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 

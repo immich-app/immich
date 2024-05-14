@@ -79,7 +79,7 @@ class _LocationPicker extends HookWidget {
           ).tr(),
         ),
         TextButton(
-          onPressed: () => context.popRoute(latlng),
+          onPressed: () => context.maybePop(latlng),
           child: Text(
             "action_common_update",
             style: context.textTheme.bodyMedium?.copyWith(

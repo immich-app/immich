@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
+import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

@@ -50,7 +50,7 @@ class _NonSelectionRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ElevatedButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
           ),

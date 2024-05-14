@@ -82,7 +82,7 @@ export class ServerInfoService {
     return serverVersion;
   }
 
-  getFeatures(): Promise<ServerFeaturesDto> {
+  async getFeatures(): Promise<ServerFeaturesDto> {
     return this.configCore.getFeatures();
   }
 
