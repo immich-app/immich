@@ -22,7 +22,7 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(assetProvider.notifier).getPartnerAssets(partner);
+        ref.read(assetProvider.notifier).getAllAsset();
         return null;
       },
       [],
@@ -78,8 +78,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             ),
       body: MultiselectGrid(
         renderListProvider: assetsProvider(partner.isarId),
-        onRefresh: () =>
-            ref.read(assetProvider.notifier).getPartnerAssets(partner),
+        onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,
         favoriteEnabled: false,
       ),

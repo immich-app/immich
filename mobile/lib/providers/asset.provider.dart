@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
@@ -23,10 +23,10 @@ class AssetNotifier extends StateNotifier<bool> {
   final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
+  final StateNotifierProviderRef _ref;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
-  bool _getPartnerAssetsInProgress = false;
 
   AssetNotifier(
     this._assetService,
@@ -34,6 +34,7 @@ class AssetNotifier extends StateNotifier<bool> {
     this._userService,
     this._syncService,
     this._db,
+    this._ref,
   ) : super(false);
 
   Future<void> getAllAsset({bool clear = false}) async {
@@ -49,35 +50,20 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
+      final bool changedUsers = await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
-      debugPrint("newRemote: $newRemote, newLocal: $newLocal");
+      debugPrint(
+        "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal",
+      );
+      if (newRemote) {
+        _ref.invalidate(memoryFutureProvider);
+      }
 
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
       state = false;
-    }
-  }
-
-  Future<void> getPartnerAssets([User? partner]) async {
-    if (_getPartnerAssetsInProgress) return;
-    try {
-      final stopwatch = Stopwatch()..start();
-      _getPartnerAssetsInProgress = true;
-      if (partner == null) {
-        await _userService.refreshUsers();
-        final List<User> partners =
-            await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
-        for (User u in partners) {
-          await _assetService.refreshRemoteAssets(u);
-        }
-      } else {
-        await _assetService.refreshRemoteAssets(partner);
-      }
-      log.info("Load partner assets: ${stopwatch.elapsedMilliseconds}ms");
-    } finally {
-      _getPartnerAssetsInProgress = false;
     }
   }
 
@@ -321,6 +307,7 @@ final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
+    ref,
   );
 });
 
