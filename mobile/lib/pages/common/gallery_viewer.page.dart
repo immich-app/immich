@@ -60,6 +60,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
+    final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
     final localPosition = useState<Offset?>(null);
@@ -102,6 +103,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
+        shouldLoopVideo.value =
+            settings.getSetting<bool>(AppSettingsEnum.loopVideo);
         return null;
       },
       [],
@@ -368,6 +371,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       key: ValueKey(a),
                       asset: a,
                       isMotionVideo: a.livePhotoVideoId != null,
+                      loopVideo: shouldLoopVideo.value,
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.contain,

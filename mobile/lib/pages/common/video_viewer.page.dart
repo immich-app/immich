@@ -17,6 +17,7 @@ class VideoViewerPage extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool loopVideo;
 
   const VideoViewerPage({
     super.key,
@@ -26,6 +27,7 @@ class VideoViewerPage extends HookConsumerWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.loopVideo = false,
   });
 
   @override
@@ -73,7 +75,9 @@ class VideoViewerPage extends HookConsumerWidget {
     // Also sets the error if there is an error in the playback
     void updateVideoPlayback() {
       final videoPlayback = VideoPlaybackValue.fromController(controller);
-      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      if (!loopVideo) {
+        ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      }
       final state = videoPlayback.state;
 
       // Enable the WakeLock while the video is playing
@@ -153,6 +157,7 @@ class VideoViewerPage extends HookConsumerWidget {
                   hideControlsTimer: hideControlsTimer,
                   showControls: showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
+                  loopVideo: loopVideo,
                 ),
               ),
           ],
