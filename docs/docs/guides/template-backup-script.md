@@ -22,16 +22,16 @@ _init_setup(){
     if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
         mkdir "$UPLOAD_LOCATION/database-backup" || return 1
     fi
-    if [ ! -d "$BACKUP_PATH/immich-borg" ]; then
-        borg init --encryption=none "$BACKUP_PATH/immich-borg" || return 1
+    if [ ! -d "$BACKUP_PATH" ]; then
+        borg init --encryption=none "$BACKUP_PATH" || return 1
     fi
     if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "true"; then
         echo "OK. ssh remote host $REMOTE_HOST"
-        if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\"/immich-borg"
-            echo "OK. Found $REMOTE_BACKUP_PATH/immich-borg on remote host."
+        if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\""; then
+            echo "OK. Found $REMOTE_BACKUP_PATH on remote host."
         else
-            echo "Not found $REMOTE_BACKUP_PATH/immich-borg on remote host, borg init begin..."
-            borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg" || return 1
+            echo "Not found $REMOTE_BACKUP_PATH on remote host, borg init begin..."
+            borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH" || return 1
         fi
     else
         echo "FAIL. ssh remote host $REMOTE_HOST"
@@ -47,22 +47,22 @@ _backup() {
     # docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
     ### Append to local Borg repository
-    borg create "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
-    borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
-    borg compact "$BACKUP_PATH"/immich-borg
+    borg create "$BACKUP_PATH::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+    borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"
+    borg compact "$BACKUP_PATH"
 
     ### Append to remote Borg repository
-    borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
-    borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
-    borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
+    borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+    borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"
+    borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"
 }
 
 _restore() {
     tmp_dir=$(mktemp -d)
     if [ "$1" = local ]; then
-        borg mount "$BACKUP_PATH"/immich-borg $tmp_dir
+        borg mount "$BACKUP_PATH" $tmp_dir
     elif [ "$1" = remote ]; then
-        borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg $tmp_dir
+        borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH" $tmp_dir
     fi
     echo "You can find available snapshots in seperate sub-directories at directory: $tmp_dir"
     echo "    cd $tmp_dir"
@@ -72,9 +72,9 @@ _restore() {
 
 # Paths
 UPLOAD_LOCATION="/path/to/immich/directory"
-BACKUP_PATH="/path/to/local/backup/directory"
+BACKUP_PATH="/path/to/local/backup/immich-borg"
 REMOTE_HOST="remote_host@IP"
-REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
+REMOTE_BACKUP_PATH="/path/to/remote/backup/immich-borg"
 
 case "$1" in
 init)
