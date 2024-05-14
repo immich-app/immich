@@ -88,6 +88,16 @@ body:
       required: true
 
   - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant logs below. (code formatting is
+        enabled, no need for backticks)
+      render: shell
+    validations:
+      required: false
+      
+  - type: textarea
     attributes:
       label: Additional information
       description: >

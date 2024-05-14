@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
   import { clickOutside } from '$lib/utils/click-outside';
@@ -12,7 +12,6 @@
   import SearchBar from '../elements/search-bar.svelte';
   import { listNavigation } from '$lib/utils/list-navigation';
 
-  export const title = 'Change Location';
   export let asset: AssetResponseDto | undefined = undefined;
 
   interface Point {
@@ -23,8 +22,8 @@
   let places: PlacesResponseDto[] = [];
   let suggestedPlaces: PlacesResponseDto[] = [];
   let searchWord: string;
-  let isSearching = false;
-  let showSpinner = false;
+  let latestSearchTimeout: number;
+  let showLoadingSpinner = false;
   let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
@@ -67,24 +66,34 @@
     return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
   };
 
-  const handleSearchPlaces = async () => {
-    if (searchWord === '' || isSearching) {
+  const handleSearchPlaces = () => {
+    if (searchWord === '') {
       return;
     }
 
-    // TODO: refactor setTimeout/clearTimeout logic - there are no less than 12 places that duplicate this code
-    isSearching = true;
-    const timeout = setTimeout(() => (showSpinner = true), timeBeforeShowLoadingSpinner);
-    try {
-      places = await searchPlaces({ name: searchWord });
-    } catch (error) {
-      places = [];
-      handleError(error, "Can't search places");
-    } finally {
-      clearTimeout(timeout);
-      isSearching = false;
-      showSpinner = false;
+    if (latestSearchTimeout) {
+      clearTimeout(latestSearchTimeout);
     }
+    showLoadingSpinner = true;
+    const searchTimeout = window.setTimeout(() => {
+      searchPlaces({ name: searchWord })
+        .then((searchResult) => {
+          // skip result when a newer search is happening
+          if (latestSearchTimeout === searchTimeout) {
+            places = searchResult;
+            showLoadingSpinner = false;
+          }
+        })
+        .catch((error) => {
+          // skip error when a newer search is happening
+          if (latestSearchTimeout === searchTimeout) {
+            places = [];
+            handleError(error, "Can't search places");
+            showLoadingSpinner = false;
+          }
+        });
+    }, timeDebounceOnSearch);
+    latestSearchTimeout = searchTimeout;
   };
 
   const handleUseSuggested = (latitude: number, longitude: number) => {
@@ -95,10 +104,10 @@
 </script>
 
 <ConfirmDialogue
+  id="change-location-modal"
   confirmColor="primary"
-  cancelColor="secondary"
-  title="Change Location"
-  width={800}
+  title="Change location"
+  width="wide"
   onConfirm={handleConfirm}
   onClose={handleCancel}
 >
@@ -112,7 +121,7 @@
         <SearchBar
           placeholder="Search places"
           bind:name={searchWord}
-          isSearching={showSpinner}
+          {showLoadingSpinner}
           on:reset={() => {
             suggestedPlaces = [];
           }}

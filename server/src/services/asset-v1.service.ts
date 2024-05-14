@@ -13,8 +13,6 @@ import {
   AssetRejectReason,
   AssetUploadAction,
   CheckExistingAssetsResponseDto,
-  CuratedLocationsResponseDto,
-  CuratedObjectsResponseDto,
 } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkUploadCheckDto,
@@ -33,18 +31,18 @@ import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UploadFile } from 'src/services/asset.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
+import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 /** @deprecated */
 export class AssetServiceV1 {
-  readonly logger = new ImmichLogger(AssetServiceV1.name);
   private access: AccessCore;
 
   constructor(
@@ -55,8 +53,10 @@ export class AssetServiceV1 {
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.logger.setContext(AssetServiceV1.name);
   }
 
   public async uploadFile(
@@ -155,48 +155,6 @@ export class AssetServiceV1 {
     });
   }
 
-  async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
-    const possibleSearchTerm = new Set<string>();
-
-    const rows = await this.assetRepositoryV1.getSearchPropertiesByUserId(auth.user.id);
-
-    for (const row of rows) {
-      // tags
-      row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
-
-      // objects
-      row.objects?.map((object: string) => possibleSearchTerm.add(object?.toLowerCase()));
-
-      // asset's tyoe
-      possibleSearchTerm.add(row.assetType?.toLowerCase() || '');
-
-      // image orientation
-      possibleSearchTerm.add(row.orientation?.toLowerCase() || '');
-
-      // Lens model
-      possibleSearchTerm.add(row.lensModel?.toLowerCase() || '');
-
-      // Make and model
-      possibleSearchTerm.add(row.make?.toLowerCase() || '');
-      possibleSearchTerm.add(row.model?.toLowerCase() || '');
-
-      // Location
-      possibleSearchTerm.add(row.city?.toLowerCase() || '');
-      possibleSearchTerm.add(row.state?.toLowerCase() || '');
-      possibleSearchTerm.add(row.country?.toLowerCase() || '');
-    }
-
-    return [...possibleSearchTerm].filter((x) => x != null && x != '');
-  }
-
-  async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this.assetRepositoryV1.getLocationsByUserId(auth.user.id);
-  }
-
-  async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this.assetRepositoryV1.getDetectedObjectsByUserId(auth.user.id);
-  }
-
   async checkExistingAssets(
     auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
@@ -207,14 +165,7 @@ export class AssetServiceV1 {
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
-    // support base64 and hex checksums
-    for (const asset of dto.assets) {
-      if (asset.checksum.length === 28) {
-        asset.checksum = Buffer.from(asset.checksum, 'base64').toString('hex');
-      }
-    }
-
-    const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
+    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
@@ -224,7 +175,7 @@ export class AssetServiceV1 {
 
     return {
       results: dto.assets.map(({ id, checksum }) => {
-        const duplicate = checksumMap[checksum];
+        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
         if (duplicate) {
           return {
             id,
@@ -344,7 +295,6 @@ export class AssetServiceV1 {
       livePhotoVideo: livePhotoAssetId === null ? null : ({ id: livePhotoAssetId } as AssetEntity),
       originalFileName: file.originalName,
       sidecarPath: sidecarPath || null,
-      isReadOnly: dto.isReadOnly ?? false,
       isOffline: dto.isOffline ?? false,
     });
 

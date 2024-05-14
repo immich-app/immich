@@ -1,6 +1,8 @@
 import mockfs from 'mock-fs';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 
 interface Test {
   test: string;
@@ -72,17 +74,6 @@ const tests: Test[] = [
       '/photos/image1.jpg': true,
       '/images/image2.jpg': true,
       '/albums/image3.jpg': true,
-    },
-  },
-  {
-    test: 'should support globbing paths',
-    options: {
-      pathsToCrawl: ['/photos*'],
-    },
-    files: {
-      '/photos1/image1.jpg': true,
-      '/photos2/image2.jpg': true,
-      '/images/image3.jpg': false,
     },
   },
   {
@@ -177,13 +168,24 @@ const tests: Test[] = [
       [`/photos/3.jpg`]: false,
     },
   },
+  {
+    test: 'should support special characters in paths',
+    options: {
+      pathsToCrawl: ['/photos (new)'],
+    },
+    files: {
+      ['/photos (new)/1.jpg']: true,
+    },
+  },
 ];
 
 describe(StorageRepository.name, () => {
   let sut: StorageRepository;
+  let logger: ILoggerRepository;
 
   beforeEach(() => {
-    sut = new StorageRepository();
+    logger = newLoggerRepositoryMock();
+    sut = new StorageRepository(logger);
   });
 
   afterEach(() => {

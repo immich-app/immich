@@ -18,6 +18,7 @@
 </a>
 <br/>
 <p align="center">
+
   <a href="readme_i18n/README_ca_ES.md">Català</a>
   <a href="readme_i18n/README_es_ES.md">Español</a>
   <a href="readme_i18n/README_fr_FR.md">Français</a>
@@ -29,6 +30,8 @@
   <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
   <a href="readme_i18n/README_zh_CN.md">中文</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
+  <a href="readme_i18n/README_ar_JO.md">العربية</a>
 </p>
 
 ## Disclaimer
@@ -47,7 +50,6 @@
 - [Introduction](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
-- [Support The Project](#support-the-project)
 
 ## Documentation
 
@@ -70,6 +72,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 ## Activities
+
 ![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Features
@@ -105,23 +108,6 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
-
-## Support the project
-
-I've committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone. So I need your help to give me additional motivation to keep going.
-
-As our hosts in the [selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) said, this is a massive undertaking of what the team and I are doing. And I would love to someday be able to do this full-time, and I am asking for your help to make that happen.
-
-If you feel like this is the right cause and the app is something you are seeing yourself using for a long time, please consider supporting the project with the option below.
-
-### Donation
-
-- [Monthly donation](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [One-time donation](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Liberapay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Contributors
 

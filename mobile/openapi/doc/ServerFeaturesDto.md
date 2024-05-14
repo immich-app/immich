@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **configFile** | **bool** |  | 
+**email** | **bool** |  | 
 **facialRecognition** | **bool** |  | 
 **map** | **bool** |  | 
 **oauth** | **bool** |  | 

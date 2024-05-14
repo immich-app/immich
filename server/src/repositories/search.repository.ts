@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { vectorExt } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -8,6 +8,7 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetSearchOptions,
   FaceEmbeddingSearch,
@@ -18,7 +19,6 @@ import {
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -27,7 +27,6 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
-  private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
@@ -36,8 +35,10 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)

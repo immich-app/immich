@@ -10,7 +10,6 @@ module.exports = {
   root: true,
   env: {
     node: true,
-    jest: true,
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
@@ -25,6 +24,7 @@ module.exports = {
     'unicorn/prefer-top-level-await': 'off',
     'unicorn/prefer-event-target': 'off',
     'unicorn/no-thenable': 'off',
+    'unicorn/import-style': 'off',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-misused-promises': 'error',

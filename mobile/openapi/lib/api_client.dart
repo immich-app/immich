@@ -198,10 +198,20 @@ class ApiClient {
           return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
+        case 'AdminOnboardingUpdateDto':
+          return AdminOnboardingUpdateDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AlbumUserAddDto':
+          return AlbumUserAddDto.fromJson(value);
+        case 'AlbumUserCreateDto':
+          return AlbumUserCreateDto.fromJson(value);
+        case 'AlbumUserResponseDto':
+          return AlbumUserResponseDto.fromJson(value);
+        case 'AlbumUserRole':
+          return AlbumUserRoleTypeTransformer().decode(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
@@ -216,6 +226,10 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
+        case 'AssetDeltaSyncDto':
+          return AssetDeltaSyncDto.fromJson(value);
+        case 'AssetDeltaSyncResponseDto':
+          return AssetDeltaSyncResponseDto.fromJson(value);
         case 'AssetFaceResponseDto':
           return AssetFaceResponseDto.fromJson(value);
         case 'AssetFaceUpdateDto':
@@ -226,6 +240,8 @@ class ApiClient {
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
+        case 'AssetFullSyncDto':
+          return AssetFullSyncDto.fromJson(value);
         case 'AssetIdsDto':
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
@@ -246,8 +262,6 @@ class ApiClient {
           return AudioCodecTypeTransformer().decode(value);
         case 'AuditDeletesResponseDto':
           return AuditDeletesResponseDto.fromJson(value);
-        case 'AuthDeviceResponseDto':
-          return AuthDeviceResponseDto.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -276,10 +290,6 @@ class ApiClient {
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
           return CreateUserDto.fromJson(value);
-        case 'CuratedLocationsResponseDto':
-          return CuratedLocationsResponseDto.fromJson(value);
-        case 'CuratedObjectsResponseDto':
-          return CuratedObjectsResponseDto.fromJson(value);
         case 'DeleteUserDto':
           return DeleteUserDto.fromJson(value);
         case 'DownloadArchiveInfo':
@@ -392,6 +402,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
+        case 'ReverseGeocodingStateResponseDto':
+          return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'ScanLibraryDto':
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
@@ -426,6 +438,8 @@ class ApiClient {
           return ServerThemeDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
+        case 'SessionResponseDto':
+          return SessionResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -462,6 +476,8 @@ class ApiClient {
           return SystemConfigMapDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':
           return SystemConfigNewVersionCheckDto.fromJson(value);
+        case 'SystemConfigNotificationsDto':
+          return SystemConfigNotificationsDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
@@ -470,6 +486,10 @@ class ApiClient {
           return SystemConfigReverseGeocodingDto.fromJson(value);
         case 'SystemConfigServerDto':
           return SystemConfigServerDto.fromJson(value);
+        case 'SystemConfigSmtpDto':
+          return SystemConfigSmtpDto.fromJson(value);
+        case 'SystemConfigSmtpTransportDto':
+          return SystemConfigSmtpTransportDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
@@ -498,6 +518,8 @@ class ApiClient {
           return TranscodePolicyTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
+        case 'UpdateAlbumUserDto':
+          return UpdateAlbumUserDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':

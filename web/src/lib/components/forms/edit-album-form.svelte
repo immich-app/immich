@@ -3,10 +3,12 @@
   import { handleError } from '$lib/utils/handle-error';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 
   export let album: AlbumResponseDto;
   export let onEditSuccess: ((album: AlbumResponseDto) => unknown) | undefined = undefined;
   export let onCancel: (() => unknown) | undefined = undefined;
+  export let onClose: () => void;
 
   let albumName = album.albumName;
   let description = album.description;
@@ -34,16 +36,8 @@
   };
 </script>
 
-<div
-  class="max-h-screen w-[700px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
->
-  <div
-    class="flex flex-col place-content-center place-items-center gap-4 px-4 mb-4 text-immich-primary dark:text-immich-dark-primary"
-  >
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit Album</h1>
-  </div>
-
-  <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off">
+<FullScreenModal id="edit-album-modal" title="Edit album" width="wide" {onClose}>
+  <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">
         <AlbumCover {album} css="h-[200px] w-[200px] m-4 shadow-lg" />
@@ -61,12 +55,9 @@
         </div>
       </div>
     </div>
-
-    <div class="flex justify-center">
-      <div class="mt-8 flex w-full sm:w-2/3 gap-4 px-4">
-        <Button color="gray" fullwidth on:click={() => onCancel?.()}>Cancel</Button>
-        <Button type="submit" fullwidth disabled={isSubmitting}>OK</Button>
-      </div>
-    </div>
   </form>
-</div>
+  <svelte:fragment slot="sticky-bottom">
+    <Button color="gray" fullwidth on:click={() => onCancel?.()}>Cancel</Button>
+    <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">OK</Button>
+  </svelte:fragment>
+</FullScreenModal>

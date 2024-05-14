@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
 
   export let size: number;
 
@@ -12,10 +13,6 @@
     cancel: void;
   }>();
 
-  const onToggle = () => {
-    checked = !checked;
-  };
-
   const handleConfirm = () => {
     if (checked) {
       $showDeleteModal = false;
@@ -25,7 +22,8 @@
 </script>
 
 <ConfirmDialogue
-  title="Permanently Delete Asset{size > 1 ? 's' : ''}"
+  id="permanently-delete-asset-modal"
+  title="Permanently delete asset{size > 1 ? 's' : ''}"
   confirmText="Delete"
   onConfirm={handleConfirm}
   onClose={() => dispatch('cancel')}
@@ -41,16 +39,8 @@
     </p>
     <p><b>You cannot undo this action!</b></p>
 
-    <div class="flex gap-2 items-center justify-center pt-4">
-      <label id="confirm-label" for="confirm-input">Do not show this message again</label>
-      <input
-        id="confirm-input"
-        aria-labelledby="confirm-input"
-        class="disabled::cursor-not-allowed h-3 w-3 opacity-1"
-        type="checkbox"
-        bind:checked
-        on:click={onToggle}
-      />
+    <div class="pt-4 flex justify-center items-center">
+      <Checkbox id="confirm-deletion-input" label="Do not show this message again" bind:checked />
     </div>
   </svelte:fragment>
 </ConfirmDialogue>

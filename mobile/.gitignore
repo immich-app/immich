@@ -54,5 +54,5 @@ default.isar
 default.isar.lock
 libisar.so
 
-# FVM Version Cache
-.fvm/flutter_sdk
+# FVM Version
+.fvm/

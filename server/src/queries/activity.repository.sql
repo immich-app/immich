@@ -32,8 +32,28 @@ FROM
   AND (
     "ActivityEntity__ActivityEntity_user"."deletedAt" IS NULL
   )
+  LEFT JOIN "assets" "ActivityEntity__ActivityEntity_asset" ON "ActivityEntity__ActivityEntity_asset"."id" = "ActivityEntity"."assetId"
+  AND (
+    "ActivityEntity__ActivityEntity_asset"."deletedAt" IS NULL
+  )
 WHERE
-  (("ActivityEntity"."albumId" = $1))
+  (
+    ("ActivityEntity"."albumId" = $1)
+    AND (
+      (
+        (
+          "ActivityEntity__ActivityEntity_asset"."deletedAt" IS NULL
+        )
+      )
+    )
+    AND (
+      (
+        (
+          "ActivityEntity__ActivityEntity_user"."deletedAt" IS NULL
+        )
+      )
+    )
+  )
 ORDER BY
   "ActivityEntity"."createdAt" ASC
 
@@ -43,12 +63,24 @@ SELECT
 FROM
   "activity" "ActivityEntity"
   LEFT JOIN "users" "ActivityEntity__ActivityEntity_user" ON "ActivityEntity__ActivityEntity_user"."id" = "ActivityEntity"."userId"
-  AND (
-    "ActivityEntity__ActivityEntity_user"."deletedAt" IS NULL
-  )
+  LEFT JOIN "assets" "ActivityEntity__ActivityEntity_asset" ON "ActivityEntity__ActivityEntity_asset"."id" = "ActivityEntity"."assetId"
 WHERE
   (
     ("ActivityEntity"."assetId" = $1)
     AND ("ActivityEntity"."albumId" = $2)
     AND ("ActivityEntity"."isLiked" = $3)
+    AND (
+      (
+        (
+          "ActivityEntity__ActivityEntity_asset"."deletedAt" IS NULL
+        )
+      )
+    )
+    AND (
+      (
+        (
+          "ActivityEntity__ActivityEntity_user"."deletedAt" IS NULL
+        )
+      )
+    )
   )

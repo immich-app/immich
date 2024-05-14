@@ -21,6 +21,7 @@ module.exports = {
     'unicorn/prefer-module': 'off',
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-process-exit': 'off',
+    'unicorn/import-style': 'off',
     curly: 2,
     'prettier/prettier': 0,
   },

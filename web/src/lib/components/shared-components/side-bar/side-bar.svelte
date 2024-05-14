@@ -4,16 +4,20 @@
   import { getAlbumCount, getAssetStatistics } from '@immich/sdk';
   import {
     mdiAccount,
+    mdiAccountOutline,
     mdiAccountMultiple,
     mdiAccountMultipleOutline,
+    mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
-    mdiHeartMultiple,
-    mdiHeartMultipleOutline,
+    mdiHeart,
+    mdiHeartOutline,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
     mdiMagnify,
     mdiMap,
+    mdiMapOutline,
+    mdiTrashCan,
     mdiTrashCanOutline,
   } from '@mdi/js';
   import LoadingSpinner from '../loading-spinner.svelte';
@@ -31,9 +35,13 @@
     }
   };
 
+  let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
+  let isMapSelected: boolean;
+  let isPeopleSelected: boolean;
   let isPhotosSelected: boolean;
   let isSharingSelected: boolean;
+  let isTrashSelected: boolean;
 </script>
 
 <SideBarSection>
@@ -60,11 +68,21 @@
     {/if}
 
     {#if $featureFlags.map}
-      <SideBarLink title="Map" routeId="/(user)/map" icon={mdiMap} />
+      <SideBarLink
+        title="Map"
+        routeId="/(user)/map"
+        bind:isSelected={isMapSelected}
+        icon={isMapSelected ? mdiMap : mdiMapOutline}
+      />
     {/if}
 
     {#if $sidebarSettings.people}
-      <SideBarLink title="People" routeId="/(user)/people" icon={mdiAccount} />
+      <SideBarLink
+        title="People"
+        routeId="/(user)/people"
+        bind:isSelected={isPeopleSelected}
+        icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
+      />
     {/if}
     {#if $sidebarSettings.sharing}
       <SideBarLink
@@ -92,7 +110,7 @@
     <SideBarLink
       title="Favorites"
       routeId="/(user)/favorites"
-      icon={isFavoritesSelected ? mdiHeartMultiple : mdiHeartMultipleOutline}
+      icon={isFavoritesSelected ? mdiHeart : mdiHeartOutline}
       bind:isSelected={isFavoritesSelected}
     >
       <svelte:fragment slot="moreInformation">
@@ -118,7 +136,12 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title="Archive" routeId="/(user)/archive" icon={mdiArchiveArrowDownOutline}>
+    <SideBarLink
+      title="Archive"
+      routeId="/(user)/archive"
+      bind:isSelected={isArchiveSelected}
+      icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
+    >
       <svelte:fragment slot="moreInformation">
         {#await getStats({ isArchived: true })}
           <LoadingSpinner />
@@ -132,7 +155,12 @@
     </SideBarLink>
 
     {#if $featureFlags.trash}
-      <SideBarLink title="Trash" routeId="/(user)/trash" icon={mdiTrashCanOutline}>
+      <SideBarLink
+        title="Trash"
+        routeId="/(user)/trash"
+        bind:isSelected={isTrashSelected}
+        icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}
+      >
         <svelte:fragment slot="moreInformation">
           {#await getStats({ isTrashed: true })}
             <LoadingSpinner />

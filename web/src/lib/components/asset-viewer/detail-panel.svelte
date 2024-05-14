@@ -8,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { delay } from '$lib/utils/asset-utils';
+  import { delay, isFlipped } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -17,6 +17,7 @@
     updateAsset,
     type AlbumResponseDto,
     type AssetResponseDto,
+    type ExifResponseDto,
   } from '@immich/sdk';
   import {
     mdiCalendar,
@@ -46,6 +47,15 @@
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let currentAlbum: AlbumResponseDto | null = null;
+
+  const getDimensions = (exifInfo: ExifResponseDto) => {
+    const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+    if (isFlipped(exifInfo.orientation)) {
+      return { width: height, height: width };
+    }
+
+    return { width, height };
+  };
 
   let showAssetPath = false;
   let textArea: HTMLTextAreaElement;
@@ -169,13 +179,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <button
-      class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-      on:click={() => dispatch('close')}
-    >
-      <Icon path={mdiClose} size="24" />
-    </button>
-
+    <CircleIconButton icon={mdiClose} title="Close" on:click={() => dispatch('close')} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
   </div>
 
@@ -256,7 +260,6 @@
               on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
               on:mouseleave={() => ($boundingBoxesArray = [])}
-              on:click={() => dispatch('closeViewer')}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -292,6 +295,8 @@
                   >
                     {#if ageInMonths <= 11}
                       Age {ageInMonths} months
+                    {:else if ageInMonths > 12 && ageInMonths <= 23}
+                      Age 1 year, {ageInMonths - 12} months
                     {:else}
                       Age {age}
                     {/if}
@@ -306,23 +311,15 @@
   {/if}
 
   <div class="px-4 py-4">
-    {#if !asset.exifInfo && !asset.isExternal}
-      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
-    {:else if !asset.exifInfo && asset.isExternal}
-      <div class="flex gap-4 py-4">
-        <div>
-          <p class="break-all">
-            Metadata not loaded for {asset.originalPath}
-          </p>
-        </div>
-      </div>
-    {:else}
+    {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
         <h2>DETAILS</h2>
       </div>
+    {:else}
+      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {#if asset.exifInfo?.dateTimeOriginal}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
@@ -372,7 +369,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
+    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -381,43 +378,6 @@
         </div>
         <div class="p-1">
           <Icon path={mdiPencil} size="20" />
-        </div>
-      </div>
-    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon path={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {assetDateTimeOriginal.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {assetDateTimeOriginal.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    timeZoneName: 'longOffset',
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     {/if}
@@ -444,9 +404,13 @@
           <p class="break-all flex place-items-center gap-2">
             {asset.originalFileName}
             {#if isOwner}
-              <button title="Show File Location" on:click={toggleAssetPath} class="-translate-y-[2px]">
-                <Icon path={mdiInformationOutline} />
-              </button>
+              <CircleIconButton
+                icon={mdiInformationOutline}
+                title="Show file location"
+                size="16"
+                padding="2"
+                on:click={toggleAssetPath}
+              />
             {/if}
           </p>
           <div class="flex gap-2 text-sm">
@@ -456,8 +420,8 @@
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
               {/if}
-
-              <p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
+              {@const { width, height } = getDimensions(asset.exifInfo)}
+              <p>{width} x {height}</p>
             {/if}
             <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>
@@ -499,7 +463,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city && !asset.isReadOnly}
+    {#if asset.exifInfo?.city}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -532,7 +496,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
+    {:else if !asset.exifInfo?.city && isOwner}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
@@ -550,26 +514,6 @@
           <Icon path={mdiPencil} size="20" />
         </div>
       </button>
-    {:else if asset.exifInfo?.city && asset.isReadOnly}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-          <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
     {/if}
     {#if isShowChangeLocation}
       <ChangeLocation

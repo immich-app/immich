@@ -1,5 +1,5 @@
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
@@ -15,8 +15,8 @@ import {
   QueueName,
   QueueStatus,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
@@ -26,6 +26,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
+  [JobName.CLEAN_OLD_SESSION_TOKENS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
@@ -77,18 +78,24 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
+
+  // Notification
+  [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
 };
 
 @Instrumentation()
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
-  private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
     private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
-  ) {}
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(JobRepository.name);
+  }
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);

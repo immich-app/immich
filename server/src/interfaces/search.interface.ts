@@ -5,29 +5,6 @@ import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
 
-export enum SearchStrategy {
-  SMART = 'SMART',
-  TEXT = 'TEXT',
-}
-
-export interface SearchFilter {
-  id?: string;
-  userId: string;
-  type?: AssetType;
-  isFavorite?: boolean;
-  isArchived?: boolean;
-  city?: string;
-  state?: string;
-  country?: string;
-  make?: string;
-  model?: string;
-  objects?: string[];
-  tags?: string[];
-  recent?: boolean;
-  motion?: boolean;
-  debug?: boolean;
-}
-
 export interface SearchResult<T> {
   /** total matches */
   total: number;
@@ -79,11 +56,9 @@ export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
 export interface SearchStatusOptions {
   isArchived?: boolean;
   isEncoded?: boolean;
-  isExternal?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isReadOnly?: boolean;
   isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;

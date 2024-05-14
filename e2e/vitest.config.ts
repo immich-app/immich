@@ -10,9 +10,9 @@ try {
 
 export default defineConfig({
   test: {
-    include: ['src/{api,cli}/specs/*.e2e-spec.ts'],
+    include: ['src/{api,cli,immich-admin}/specs/*.e2e-spec.ts'],
     globalSetup,
-    testTimeout: 10_000,
+    testTimeout: 15_000,
     poolOptions: {
       threads: {
         singleThread: true,

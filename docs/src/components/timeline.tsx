@@ -7,7 +7,7 @@ export interface Item {
   icon: string;
   title: string;
   description?: string;
-  release: string;
+  release?: string;
   tag?: string;
   date: Date;
   dateType: DateType;
@@ -70,10 +70,10 @@ export default function Timeline({ items }: Props): JSX.Element {
                       target="_blank"
                       rel="noopener"
                     >
-                      [{item.release}]{' '}
+                      [{item.release ?? item.tag}]{' '}
                     </a>
                   ) : (
-                    <span>[{item.release}]</span>
+                    item.release && <span>[{item.release}]</span>
                   )}
                 </span>
               </div>

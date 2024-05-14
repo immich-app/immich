@@ -34,7 +34,7 @@
 
   const handleDelete = async () => {
     loading = true;
-    const ids = [...getOwnedAssets()].filter((a) => !a.isExternal).map((a) => a.id);
+    const ids = [...getOwnedAssets()].map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);
     clearSelect();
     isShowConfirmation = false;

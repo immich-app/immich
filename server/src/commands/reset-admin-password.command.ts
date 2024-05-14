@@ -9,7 +9,7 @@ import { UserService } from 'src/services/user.service';
 export class ResetAdminPasswordCommand extends CommandRunner {
   constructor(
     private userService: UserService,
-    private readonly inquirer: InquirerService,
+    private inquirer: InquirerService,
   ) {
     super();
   }
