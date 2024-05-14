@@ -1,16 +1,8 @@
-<script lang="ts" context="module">
-  export enum SettingInputFieldType {
-    EMAIL = 'email',
-    TEXT = 'text',
-    NUMBER = 'number',
-    PASSWORD = 'password',
-  }
-</script>
-
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
+  import { SettingInputFieldType } from './setting-input-field';
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
