@@ -1346,10 +1346,15 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel cuda',
+            '-hwaccel_output_format cuda',
+            '-noautorotate',
+            '-threads 1',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'hwupload=derive_device=vulkan,scale_vulkan=w=1280:h=720,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
+              'scale_cuda=-2:720,hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
             ),
           ]),
           twoPass: false,
@@ -1721,6 +1726,7 @@ describe(MediaService.name, () => {
 
     it('should set options for rkmpp', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
@@ -1751,6 +1757,7 @@ describe(MediaService.name, () => {
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       systemMock.get.mockResolvedValue({
         ffmpeg: {
@@ -1775,6 +1782,7 @@ describe(MediaService.name, () => {
 
     it('should set cqp options for rkmpp when max bitrate is disabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, crf: 30, maxBitrate: '0' },
@@ -1821,6 +1829,33 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: false, crf: 30, maxBitrate: '0' },
       });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            ),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use software decoding and tone-mapping if opencl is not available', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => false, isCharacterDevice: () => false });
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
+        { key: SystemConfigKey.FFMPEG_ACCEL_DECODE, value: true },
+        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
+      ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(

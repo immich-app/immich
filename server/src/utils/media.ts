@@ -442,17 +442,13 @@ export class AV1Config extends BaseConfig {
   }
 }
 
-export class NVENCConfig extends BaseHWConfig {
+export class NvencSwDecodeConfig extends BaseHWConfig {
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseInputOptions() {
-    if (!this.config.accelDecode) {
-      return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda', ...this.getInputThreadOptions()];
-    }
-
-    return ['-hwaccel cuda', '-hwaccel_output_format cuda', ...this.getInputThreadOptions()];
+    return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -474,46 +470,13 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = [];
-    if (!this.config.accelDecode) {
-      options.push(...this.getToneMapping(videoStream), 'format=nv12', 'hwupload_cuda');
-      if (this.shouldScale(videoStream)) {
-        options.push(`scale_cuda=${this.getScaling(videoStream)}`);
-      }
-      return options;
-    }
-
-    options.push('hwupload=derive_device=vulkan');
+    const options = this.getToneMapping(videoStream);
+    options.push('format=nv12', 'hwupload_cuda');
     if (this.shouldScale(videoStream)) {
-      const { width, height } = this.getSize(videoStream);
-      options.push(`scale_vulkan=w=${width}:h=${height}`);
+      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
     }
 
-    options.push(...this.getToneMapping(videoStream), 'hwupload=derive_device=cuda');
     return options;
-  }
-
-  getToneMapping(videoStream: VideoStreamInfo) {
-    if (!this.config.accelDecode) {
-      return super.getToneMapping(videoStream);
-    }
-
-    const colors = this.getColors();
-    const libplaceboOptions = [
-      `color_primaries=${colors.primaries}`,
-      `color_trc=${colors.transfer}`,
-      `colorspace=${colors.matrix}`,
-      'deband=true',
-      'deband_iterations=3',
-      'deband_radius=8',
-      'deband_threshold=6',
-      'downscaler=none',
-      'format=yuv420p',
-      `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
-      'upscaler=none',
-    ];
-
-    return [`libplacebo=${libplaceboOptions.join(':')}`];
   }
 
   getPresetOptions() {
@@ -545,11 +508,7 @@ export class NVENCConfig extends BaseHWConfig {
     }
   }
 
-  getInputThreadOptions() {
-    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
-  }
-
-  getOutputThreadOptions() {
+  getThreadOptions() {
     return [];
   }
 
@@ -559,6 +518,48 @@ export class NVENCConfig extends BaseHWConfig {
       return 0;
     }
     return this.config.refs;
+  }
+}
+
+export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
+  getBaseInputOptions() {
+    return ['-hwaccel cuda', '-hwaccel_output_format cuda', '-noautorotate', ...this.getInputThreadOptions()];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = [];
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
+    }
+    options.push('hwupload=derive_device=vulkan', ...this.getToneMapping(videoStream), 'hwupload=derive_device=cuda');
+    return options;
+  }
+
+  getToneMapping(videoStream: VideoStreamInfo) {
+    const colors = this.getColors();
+    const libplaceboOptions = [
+      `color_primaries=${colors.primaries}`,
+      `color_trc=${colors.transfer}`,
+      `colorspace=${colors.matrix}`,
+      'deband=true',
+      'deband_iterations=3',
+      'deband_radius=8',
+      'deband_threshold=6',
+      'downscaler=none',
+      'format=yuv420p',
+      `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
+      'upscaler=none',
+    ];
+
+    return [`libplacebo=${libplaceboOptions.join(':')}`];
+  }
+
+  getInputThreadOptions() {
+    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+  }
+
+  getOutputThreadOptions() {
+    return [];
   }
 }
 
@@ -705,50 +706,21 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 }
 
-export class RKMPPConfig extends BaseHWConfig {
-  private hasOpenCL: boolean;
-
+export class RkmppSwDecodeConfig extends BaseHWConfig {
   constructor(
     protected config: SystemConfigFFmpegDto,
     devices: string[] = [],
-    hasOpenCL: boolean = false,
   ) {
     super(config, devices);
-    this.hasOpenCL = hasOpenCL;
   }
 
   eligibleForTwoPass(): boolean {
     return false;
   }
 
-  getBaseInputOptions(videoStream: VideoStreamInfo) {
+  getBaseInputOptions(): string[] {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
-    }
-    return !this.config.accelDecode || (this.shouldToneMap(videoStream) && !this.hasOpenCL)
-      ? [] // disable hardware decoding & filters
-      : ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    if (!this.config.accelDecode) {
-      return super.getFilterOptions(videoStream);
-    }
-
-    if (this.shouldToneMap(videoStream)) {
-      if (!this.hasOpenCL) {
-        return super.getFilterOptions(videoStream);
-      }
-      const colors = this.getColors();
-      return [
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
-        'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
-        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
-        'format=drm_prime',
-      ];
-    } else if (this.shouldScale(videoStream)) {
-      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
   }
@@ -785,5 +757,31 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getVideoCodec(): string {
     return `${this.config.targetVideoCodec}_rkmpp`;
+  }
+}
+
+export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
+  getBaseInputOptions() {
+    if (this.devices.length === 0) {
+      throw new Error('No RKMPP device found');
+    }
+
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    if (this.shouldToneMap(videoStream)) {
+      const colors = this.getColors();
+      return [
+        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
+        'hwmap=derive_device=opencl:mode=read',
+        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+        'format=drm_prime',
+      ];
+    } else if (this.shouldScale(videoStream)) {
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
+    }
+    return [];
   }
 }
