@@ -1,4 +1,4 @@
-import { TLSSocketOptions, TlsOptions, rootCertificates } from 'node:tls';
+import { TlsOptions, rootCertificates } from 'node:tls';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
@@ -15,7 +15,6 @@ const urlOrParts = url
     };
 
 // Database TLS
-const enableTLS = process.env.DB_TLS === 'true';
 const ssl: TlsOptions = {
   rejectUnauthorized: process.env.DB_TLS_SKIP_VERIFY !== 'true',
 };
@@ -44,7 +43,7 @@ export const databaseConfig: PostgresConnectionOptions = {
   connectTimeoutMS: 10_000, // 10 seconds
   parseInt8: true,
   ...urlOrParts,
-  ssl: enableTLS ? ssl : false,
+  ssl: process.env.DB_TLS === 'true' ? ssl : false,
 };
 
 /**
