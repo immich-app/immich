@@ -1,7 +1,7 @@
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { SettingInputFieldType } from './setting-input-field';
-import SettingInputField from './setting-input-field.svelte';
+// @ts-expect-error the import works but tsc check errors
+import SettingInputField, { SettingInputFieldType } from './setting-input-field.svelte';
 
 describe('SettingInputField component', () => {
   it('validates number input on blur', async () => {
