@@ -18,7 +18,7 @@ class AllMotionPhotosPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text('motion_photos_page_title').tr(),
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),

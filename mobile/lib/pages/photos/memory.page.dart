@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/memories/memory_bottom_info.dart';
 import 'package:immich_mobile/widgets/memories/memory_card.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_image.dart';
 
 @RoutePage()
 class MemoryPage extends HookConsumerWidget {
@@ -153,7 +153,7 @@ class MemoryPage extends HookConsumerWidget {
           final offset = notification.metrics.pixels;
           if (isEpiloguePage &&
               (offset > notification.metrics.maxScrollExtent + 150)) {
-            context.popRoute();
+            context.maybePop();
             return true;
           }
         }
@@ -256,7 +256,7 @@ class MemoryPage extends HookConsumerWidget {
                               // auto_route doesn't invoke pop scope, so
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                              context.popRoute();
+                              context.maybePop();
                               SystemChrome.setEnabledSystemUIMode(
                                 SystemUiMode.edgeToEdge,
                               );
