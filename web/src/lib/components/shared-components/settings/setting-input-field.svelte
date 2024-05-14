@@ -25,9 +25,7 @@
   export let isEdited = false;
   export let passwordAutocomplete: string = 'current-password';
 
-  const handleInput = (e: Event) => {
-    value = (e.target as HTMLInputElement).value;
-
+  const validateInput = () => {
     if (inputType === SettingInputFieldType.NUMBER) {
       let newValue = Number(value) || 0;
       if (newValue < min) {
@@ -79,7 +77,8 @@
       {step}
       {required}
       {value}
-      on:input={handleInput}
+      on:input={(e) => (value = e.currentTarget.value)}
+      on:blur={validateInput}
       {disabled}
       {title}
     />

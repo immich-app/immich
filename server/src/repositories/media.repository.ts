@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Colorspace } from 'src/entities/system-config.entity';
+import { Colorspace } from 'src/config';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   IMediaRepository,

@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
+import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { SystemConfig, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';

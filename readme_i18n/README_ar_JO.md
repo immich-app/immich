@@ -18,6 +18,7 @@
 </a>
 <br/>
 <p align="center">
+  <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
   <a href="README_fr_FR.md">Français</a>
@@ -30,6 +31,7 @@
   <a href="README_zh_CN.md">中文</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
 </p>
 

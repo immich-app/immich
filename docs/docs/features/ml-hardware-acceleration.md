@@ -38,7 +38,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - The GPU must have compute capability 5.2 or greater.
 - The server must have the official NVIDIA driver installed.
 - The installed driver must be >= 535 (it must support CUDA 12.2).
-- On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+- On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### OpenVINO
 
@@ -99,7 +99,7 @@ You can confirm the device is being recognized and used by checking its utilizat
 :::
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
-[nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
+[nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 ## Tips
 

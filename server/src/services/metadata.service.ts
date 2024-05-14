@@ -7,7 +7,7 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { StorageCore } from 'src/cores/storage.core';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -331,7 +331,8 @@ export class MetadataService {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
-    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    if (!reverseGeocoding.enabled || !longitude || !latitude) {
       return;
     }
 

@@ -434,12 +434,13 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    await this.jobRepository.queue({
-      name: JobName.DELETE_FILES,
-      data: {
-        files: [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath],
-      },
-    });
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
+    // skip originals if the user deleted the whole library
+    if (!asset.library.deletedAt) {
+      files.push(asset.sidecarPath, asset.originalPath);
+    }
+
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }

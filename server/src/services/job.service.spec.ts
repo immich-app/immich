@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
+import { SystemConfig } from 'src/config';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -365,33 +365,6 @@ describe(JobService.name, () => {
         await jobMock.addHandler.mock.calls[0][2](item);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();
-      });
-    }
-
-    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKeyPaths }> = [
-      {
-        queue: QueueName.SMART_SEARCH,
-        feature: FeatureFlag.SMART_SEARCH,
-        configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
-      },
-      {
-        queue: QueueName.FACE_DETECTION,
-        feature: FeatureFlag.FACIAL_RECOGNITION,
-        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
-      },
-      {
-        queue: QueueName.FACIAL_RECOGNITION,
-        feature: FeatureFlag.FACIAL_RECOGNITION,
-        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
-      },
-    ];
-
-    for (const { queue, feature, configKey } of featureTests) {
-      it(`should throw an error if attempting to queue ${queue} when ${feature} is disabled`, async () => {
-        configMock.load.mockResolvedValue([{ key: configKey, value: false }]);
-        jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
-
-        await expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
       });
     }
   });

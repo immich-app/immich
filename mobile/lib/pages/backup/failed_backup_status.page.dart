@@ -23,7 +23,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
         ),
         leading: IconButton(
           onPressed: () {
-            context.popRoute(true);
+            context.maybePop(true);
           },
           splashRadius: 24,
           icon: const Icon(

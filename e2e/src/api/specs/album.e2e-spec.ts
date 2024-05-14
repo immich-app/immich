@@ -434,6 +434,20 @@ describe('/album', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
     });
+
+    it('should add duplicate assets only once', async () => {
+      const asset = await utils.createAsset(user1.accessToken);
+      const { status, body } = await request(app)
+        .put(`/album/${user1Albums[0].id}/assets`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [asset.id, asset.id] });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        expect.objectContaining({ id: asset.id, success: true }),
+        expect.objectContaining({ id: asset.id, success: false, error: 'duplicate' }),
+      ]);
+    });
   });
 
   describe('PATCH /album/:id', () => {
@@ -556,6 +570,19 @@ describe('/album', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.removeAsset access'));
+    });
+
+    it('should remove duplicate assets only once', async () => {
+      const { status, body } = await request(app)
+        .delete(`/album/${user1Albums[1].id}/assets`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [user1Asset1.id, user1Asset1.id] });
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        expect.objectContaining({ id: user1Asset1.id, success: true }),
+        expect.objectContaining({ id: user1Asset1.id, success: false, error: 'not_found' }),
+      ]);
     });
   });
 

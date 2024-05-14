@@ -15,6 +15,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -50,7 +51,7 @@ export class SmartInfoService {
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -75,7 +76,7 @@ export class SmartInfoService {
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 

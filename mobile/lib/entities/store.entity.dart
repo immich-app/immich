@@ -182,6 +182,7 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>(114, type: bool),
   logLevel<int>(115, type: int),
   preferRemoteImage<bool>(116, type: bool),
+  loopVideo<bool>(117, type: bool),
   // map related settings
   mapShowFavoriteOnly<bool>(118, type: bool),
   mapRelativeDate<int>(119, type: int),

@@ -3,6 +3,7 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { SystemConfig } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -17,7 +18,6 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
-import { SystemConfig } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
