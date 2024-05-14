@@ -3,6 +3,7 @@ import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-en
 import { ClsService } from 'nestjs-cls';
 import { LogLevel } from 'src/entities/system-config.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { LogColor } from 'src/utils/logger-colors';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
@@ -12,6 +13,12 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
 
   constructor(private cls: ClsService) {
     super(LoggerRepository.name);
+  }
+
+  private static appName?: string = undefined;
+
+  setAppName(name: string): void {
+    LoggerRepository.appName = name;
   }
 
   isLevelEnabled(level: LogLevel) {
@@ -28,6 +35,10 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
     const correlationId = this.cls?.getId();
     if (correlationId && this.isLevelEnabled(LogLevel.VERBOSE)) {
       formattedContext += `[${correlationId}] `;
+    }
+
+    if (LoggerRepository.appName) {
+      formattedContext = LogColor.blue(`[${LoggerRepository.appName}] `) + formattedContext;
     }
 
     return formattedContext;
