@@ -252,7 +252,6 @@ export const sharedLinkStub = {
             exposureTime: '1/16',
             fps: 100,
             asset: null as any,
-            exifTextSearchableColumn: '',
             profileDescription: 'sRGB',
             bitsPerSample: 8,
             colorspace: 'sRGB',
