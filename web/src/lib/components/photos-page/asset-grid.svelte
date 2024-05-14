@@ -402,6 +402,7 @@
 />
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <section
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
