@@ -362,8 +362,7 @@ export class MediaService {
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
         );
       }
-      config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = await this.getCodecConfig(config).then((c) =>
+      transcodeOptions = await this.getCodecConfig({ ...config, accel: TranscodeHWAccel.DISABLED }).then((c) =>
         c.getOptions(target, mainVideoStream, mainAudioStream),
       );
       await this.mediaRepository.transcode(input, output, transcodeOptions);
