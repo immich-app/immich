@@ -442,7 +442,6 @@ export type LibraryResponseDto = {
 export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -450,7 +449,6 @@ export type CreateLibraryDto = {
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
 };
 export type ScanLibraryDto = {

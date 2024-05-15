@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // bool isVisible
-    test('to test the property `isVisible`', () async {
-      // TODO
-    });
-
     // String name
     test('to test the property `name`', () async {
       // TODO

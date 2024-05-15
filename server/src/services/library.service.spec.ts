@@ -830,7 +830,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: [],
-            isVisible: true,
           }),
         );
       });
@@ -860,37 +859,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: [],
-            isVisible: true,
-          }),
-        );
-      });
-
-      it('should create invisible', async () => {
-        libraryMock.create.mockResolvedValue(libraryStub.externalLibrary1);
-        await expect(
-          sut.create({ ownerId: authStub.admin.user.id, type: LibraryType.EXTERNAL, isVisible: false }),
-        ).resolves.toEqual(
-          expect.objectContaining({
-            id: libraryStub.externalLibrary1.id,
-            type: LibraryType.EXTERNAL,
-            name: libraryStub.externalLibrary1.name,
-            ownerId: libraryStub.externalLibrary1.ownerId,
-            assetCount: 0,
-            importPaths: [],
-            exclusionPatterns: [],
-            createdAt: libraryStub.externalLibrary1.createdAt,
-            updatedAt: libraryStub.externalLibrary1.updatedAt,
-            refreshedAt: null,
-          }),
-        );
-
-        expect(libraryMock.create).toHaveBeenCalledWith(
-          expect.objectContaining({
-            name: expect.any(String),
-            type: LibraryType.EXTERNAL,
-            importPaths: [],
-            exclusionPatterns: [],
-            isVisible: false,
           }),
         );
       });
@@ -924,7 +892,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.EXTERNAL,
             importPaths: ['/data/images', '/data/videos'],
             exclusionPatterns: [],
-            isVisible: true,
           }),
         );
       });
@@ -972,7 +939,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: ['*.tmp', '*.bak'],
-            isVisible: true,
           }),
         );
       });
@@ -1002,7 +968,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.UPLOAD,
             importPaths: [],
             exclusionPatterns: [],
-            isVisible: true,
           }),
         );
       });
@@ -1032,7 +997,6 @@ describe(LibraryService.name, () => {
             type: LibraryType.UPLOAD,
             importPaths: [],
             exclusionPatterns: [],
-            isVisible: true,
           }),
         );
       });
