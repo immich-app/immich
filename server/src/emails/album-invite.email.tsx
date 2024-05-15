@@ -34,7 +34,7 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
     >
       <Container
         style={{
-          width: '480px',
+          width: '540px',
           maxWidth: '100%',
           padding: '10px',
           margin: '0 auto',
@@ -66,15 +66,17 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
             Hey <strong>{guestName}</strong>!
           </Text>
 
-          <Text style={text}>{ownerName} has invited you to album <strong>{albumName}</strong>.</Text>
+          <Text style={text}>
+            {ownerName} has invited you to album <strong>{albumName}</strong>.
+          </Text>
 
           <Row>
             <Text style={{ ...text, marginBottom: '36px' }}>
-              To login, open the link in a browser, or click the button below.
+              To view the album, open the link in a browser, or click the button below.
             </Text>
           </Row>
           <Row>
-            <Link style={{ marginTop: '50px' }} href={baseUrl}>
+            <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
               {baseUrl}/albums/{albumId}
             </Link>
           </Row>
@@ -124,7 +126,7 @@ AlbumInviteEmail.PreviewProps = {
   albumName: 'Trip to Europe',
   ownerName: 'Owner User',
   guestName: 'Guest User',
-  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539'
+  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
 } as AlbumInviteEmailProps;
 
 export default AlbumInviteEmail;

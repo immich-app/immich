@@ -17,7 +17,7 @@ import * as CSS from 'csstype';
 import * as React from 'react';
 import { AlbumUpdateEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: AlbumUpdateEmailProps) => (
+export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName, albumId }: AlbumUpdateEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -26,7 +26,7 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: A
         margin: 0,
         padding: 0,
         backgroundColor: '#ffffff',
-        color: 'rgb(66, 80, 175)',
+        color: 'rgb(28,28,28)',
         fontFamily: 'Overpass, sans-serif',
         fontSize: '18px',
         lineHeight: '24px',
@@ -34,7 +34,7 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: A
     >
       <Container
         style={{
-          width: '480px',
+          width: '540px',
           maxWidth: '100%',
           padding: '10px',
           margin: '0 auto',
@@ -66,21 +66,23 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName }: A
             Hey <strong>{guestName}</strong>!
           </Text>
 
-          <Text style={text}>A new account has been created for you.</Text>
+          <Text style={text}>
+            {ownerName} has invited you to album <strong>{albumName}</strong>.
+          </Text>
 
           <Row>
             <Text style={{ ...text, marginBottom: '36px' }}>
-              To login, open the link in a browser, or click the button below.
+              To view the album, open the link in a browser, or click the button below.
             </Text>
           </Row>
           <Row>
-            <Link style={{ marginTop: '50px' }} href={baseUrl}>
-              {baseUrl}
+            <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
+              {baseUrl}/albums/{albumId}
             </Link>
           </Row>
           <Row>
-            <Button style={button} href={`${baseUrl}/auth/login`}>
-              Login
+            <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
+              View album
             </Button>
           </Row>
         </Section>
