@@ -59,7 +59,7 @@ export class NotificationRepository implements INotificationRepository {
     return createTransport({
       host: options.host,
       port: options.port,
-      tls: { rejectUnauthorized: options.ignoreCert },
+      tls: { rejectUnauthorized: !options.ignoreCert },
       auth:
         options.username || options.password
           ? {
