@@ -62,9 +62,7 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
             }}
           />
 
-          <Text style={text}>
-            Hey <strong>{guestName}</strong>!
-          </Text>
+          <Text style={text}>Hey {guestName}!</Text>
 
           <Text style={text}>
             {ownerName} has invited you to album <strong>{albumName}</strong>.
@@ -124,9 +122,9 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
 AlbumInviteEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app',
   albumName: 'Trip to Europe',
+  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
   ownerName: 'Owner User',
   guestName: 'Guest User',
-  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
 } as AlbumInviteEmailProps;
 
 export default AlbumInviteEmail;

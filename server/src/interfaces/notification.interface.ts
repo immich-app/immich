@@ -47,8 +47,7 @@ export interface AlbumUpdateEmailProps {
   baseUrl: string;
   albumName: string;
   albumId: string;
-  ownerName: string;
-  guestName: string;
+  userName: string;
 }
 
 export type EmailRenderRequest =

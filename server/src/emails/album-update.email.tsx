@@ -17,7 +17,7 @@ import * as CSS from 'csstype';
 import * as React from 'react';
 import { AlbumUpdateEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName, albumId }: AlbumUpdateEmailProps) => (
+export const AlbumUpdateEmail = ({ baseUrl, albumName, userName, albumId }: AlbumUpdateEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -63,11 +63,7 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName, alb
           />
 
           <Text style={text}>
-            Hey <strong>{guestName}</strong>!
-          </Text>
-
-          <Text style={text}>
-            {ownerName} has invited you to album <strong>{albumName}</strong>.
+            {userName} has added new media to <strong>{albumName}</strong>, check it out!
           </Text>
 
           <Row>
@@ -122,10 +118,10 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, guestName, ownerName, alb
 );
 
 AlbumUpdateEmail.PreviewProps = {
-  baseUrl: 'https://demo.immich.app/auth/login',
+  baseUrl: 'https://demo.immich.app',
   albumName: 'Trip to Europe',
-  ownerName: 'Owner User',
-  guestName: 'Guest User',
+  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
+  userName: 'Alex Tran',
 } as AlbumUpdateEmailProps;
 
 export default AlbumUpdateEmail;
