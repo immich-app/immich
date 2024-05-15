@@ -97,7 +97,7 @@ export interface SystemConfig {
     preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
-    accelDecode: false;
+    accelDecode: boolean;
     tonemap: ToneMapping;
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
