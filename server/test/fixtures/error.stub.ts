@@ -49,9 +49,4 @@ export const errorStub = {
     statusCode: 400,
     message: 'The server already has an admin',
   },
-  noDeleteUploadLibrary: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: 'Cannot delete the last upload library',
-  },
 };
