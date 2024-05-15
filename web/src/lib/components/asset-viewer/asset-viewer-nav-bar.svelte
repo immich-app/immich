@@ -70,7 +70,7 @@
     showDetail: void;
     favorite: void;
     delete: void;
-    toggleArchive: void;
+    toggleArchive: AssetResponseDto;
     addToAlbum: void;
     restoreAsset: void;
     addToSharedAlbum: void;
@@ -239,7 +239,7 @@
                 />
               {/if}
               <MenuOption
-                on:click={() => dispatch('toggleArchive')}
+                on:click={() => dispatch('toggleArchive', { asset })}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />

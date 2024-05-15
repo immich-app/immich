@@ -12,6 +12,7 @@ import {
   addAssetsToAlbum as addAssets,
   defaults,
   getDownloadInfo,
+  updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
@@ -376,6 +377,52 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     handleError(error, 'Error selecting all assets');
     isSelectingAllAssets.set(false);
   }
+};
+
+export const toggleArchive = async (asset: AssetResponseDto) => {
+  try {
+    const data = await updateAsset({
+      id: asset.id,
+      updateAssetDto: {
+        isArchived: !asset.isArchived,
+      },
+    });
+
+    asset.isArchived = data.isArchived;
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: asset.isArchived ? `Added to archive` : `Removed from archive`,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${asset.isArchived ? `remove asset from` : `add asset to`} archive`);
+  }
+
+  return asset;
+};
+
+export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
+  const isArchived = archive;
+  const ids = assets.map(({ id }) => id);
+
+  try {
+    if (ids.length > 0) {
+      await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+    }
+
+    for (const asset of assets) {
+      asset.isArchived = isArchived;
+    }
+
+    notificationController.show({
+      message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
+      type: NotificationType.Info,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+  }
+
+  return ids;
 };
 
 export const delay = async (ms: number) => {

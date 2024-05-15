@@ -1,15 +1,10 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import type { OnArchive } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAssets } from '@immich/sdk';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { archiveAssets } from '$lib/utils/asset-utils';
 
   export let onArchive: OnArchive;
 
@@ -25,33 +20,14 @@
 
   const handleArchive = async () => {
     const isArchived = !unarchive;
+    const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
     loading = true;
-
-    try {
-      const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
-      const ids = assets.map(({ id }) => id);
-
-      if (ids.length > 0) {
-        await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
-      }
-
-      for (const asset of assets) {
-        asset.isArchived = isArchived;
-      }
-
+    const ids = await archiveAssets(assets, isArchived);
+    if (ids) {
       onArchive(ids, isArchived);
-
-      notificationController.show({
-        message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
-        type: NotificationType.Info,
-      });
-
       clearSelect();
-    } catch (error) {
-      handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
-    } finally {
-      loading = false;
     }
+    loading = false;
   };
 </script>
 
