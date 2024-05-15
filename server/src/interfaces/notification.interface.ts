@@ -9,7 +9,7 @@ export type SendEmailOptions = {
   subject: string;
   html: string;
   text: string;
-  attachments?: Attachment[] | undefined;
+  attachments?: Attachment[];
   smtp: SmtpOptions;
 };
 
@@ -44,7 +44,7 @@ export interface AlbumInviteEmailProps {
   albumId: string;
   ownerName: string;
   guestName: string;
-  thumbnailData?: string;
+  cid?: string;
 }
 
 export interface AlbumUpdateEmailProps {

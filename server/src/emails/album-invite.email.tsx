@@ -17,14 +17,7 @@ import * as CSS from 'csstype';
 import * as React from 'react';
 import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumInviteEmail = ({
-  baseUrl,
-  albumName,
-  guestName,
-  ownerName,
-  albumId,
-  thumbnailData,
-}: AlbumInviteEmailProps) => (
+export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, albumId, cid }: AlbumInviteEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -75,9 +68,8 @@ export const AlbumInviteEmail = ({
             {ownerName} has added you to the album <strong>{albumName}</strong>.
           </Text>
 
-          <Img src={`data:image/png;base64,${thumbnailData}`} width="300" height="300" />
+          {cid && <Img src={`cid:${cid}`} width="300" />}
 
-          {thumbnailData && <Img src={`data:image/png;base64,${thumbnailData}`} width="300" height="300" />}
           <Row>
             <Text style={{ ...text, marginBottom: '36px' }}>
               To view the album, open the link in a browser, or click the button below.
@@ -139,7 +131,7 @@ AlbumInviteEmail.PreviewProps = {
   albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
   ownerName: 'Owner User',
   guestName: 'Guest User',
-  thubmnailData: '',
+  cid: '',
 } as AlbumInviteEmailProps;
 
 export default AlbumInviteEmail;

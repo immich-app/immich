@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Attachment } from 'nodemailer/lib/mailer';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -83,22 +84,28 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async _getAlbumThumbnailBase64(album: AlbumEntity) {
+  async _getAlbumThumbnailPath(album: AlbumEntity) {
     if (!album.albumThumbnailAssetId) {
       return null;
     }
 
     const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail?.previewPath) {
-      return null;
-    }
 
-    const buffer = await this.storageRepository.readFile(albumThumbnail.previewPath);
-    return buffer.toString('base64');
+    return albumThumbnail?.previewPath;
   }
 
   async handleAlbumInvite({ album, guestUser }: INotifyAlbumInviteJob) {
-    const thumbnailData = (await this._getAlbumThumbnailBase64(album)) || undefined;
+    const thumbnailPath = await this._getAlbumThumbnailPath(album);
+    const cid = thumbnailPath ? 'album-thumbnail' : undefined;
+    let attachement: Attachment | undefined;
+
+    if (thumbnailPath) {
+      attachement = {
+        filename: 'album-thumbnail.jpg',
+        path: thumbnailPath,
+        cid,
+      };
+    }
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -109,7 +116,7 @@ export class NotificationService {
         albumName: album.albumName,
         ownerName: album.owner.name,
         guestName: guestUser.name,
-        thumbnailData,
+        cid,
       },
     });
 
@@ -120,6 +127,7 @@ export class NotificationService {
         subject: `You have been added to a shared album - ${album.albumName}`,
         html,
         text,
+        attachments: attachement ? [attachement] : undefined,
       },
     });
 
@@ -150,6 +158,7 @@ export class NotificationService {
       from: notifications.smtp.from,
       replyTo: notifications.smtp.replyTo || notifications.smtp.from,
       smtp: notifications.smtp.transport,
+      attachments: data.attachments,
     });
 
     if (!response) {

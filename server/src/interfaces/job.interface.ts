@@ -1,3 +1,4 @@
+import { Attachment } from 'nodemailer/lib/mailer';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
@@ -147,6 +148,7 @@ export interface IEmailJob {
   subject: string;
   html: string;
   text: string;
+  attachments?: Attachment[];
 }
 
 export interface INotifySignupJob extends IEntityJob {
