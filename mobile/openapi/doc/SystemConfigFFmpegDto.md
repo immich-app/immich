@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accel** | [**TranscodeHWAccel**](TranscodeHWAccel.md) |  | 
+**accelDecode** | **bool** |  | 
 **acceptedAudioCodecs** | [**List<AudioCodec>**](AudioCodec.md) |  | [default to const []]
 **acceptedVideoCodecs** | [**List<VideoCodec>**](VideoCodec.md) |  | [default to const []]
 **bframes** | **int** |  | 

@@ -9999,6 +9999,9 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "accelDecode": {
+            "type": "boolean"
+          },
           "acceptedAudioCodecs": {
             "items": {
               "$ref": "#/components/schemas/AudioCodec"
@@ -10074,6 +10077,7 @@
         },
         "required": [
           "accel",
+          "accelDecode",
           "acceptedAudioCodecs",
           "acceptedVideoCodecs",
           "bframes",
