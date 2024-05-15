@@ -863,6 +863,7 @@ export type AssetFullSyncDto = {
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
+    accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
