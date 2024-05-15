@@ -18,16 +18,20 @@ Edit the following script as necessary and add it to your crontab. Note that thi
 #!/bin/sh
 
 ### init Borg setup
-_init_setup(){
+#!/bin/sh
+
+### init Borg setup
+_init_setup() {
     if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
         mkdir "$UPLOAD_LOCATION/database-backup" || return 1
     fi
     if [ ! -d "$BACKUP_PATH" ]; then
         borg init --encryption=none "$BACKUP_PATH" || return 1
     fi
-    if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "true"; then
+    ssh_opt="ssh -o StrictHostKeyChecking=no -oConnectTimeout=10"
+    if ${ssh_opt} "$REMOTE_HOST" "true"; then
         echo "OK. ssh remote host $REMOTE_HOST"
-        if ssh -o StrictHostKeyChecking=no -oConnectTimeout=10 "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\""; then
+        if ${ssh_opt} "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\""; then
             echo "OK. Found $REMOTE_BACKUP_PATH on remote host."
         else
             echo "Not found $REMOTE_BACKUP_PATH on remote host, borg init begin..."
@@ -42,7 +46,7 @@ _init_setup(){
 _backup() {
     ### Local
     # Backup Immich database
-    docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "$UPLOAD_LOCATION"/database-backup/immich-database.sql
+    docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres >"$UPLOAD_LOCATION"/database-backup/immich-database.sql
     # For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
     # docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
 
@@ -60,9 +64,9 @@ _backup() {
 _restore() {
     tmp_dir=$(mktemp -d)
     if [ "$1" = local ]; then
-        borg mount "$BACKUP_PATH" $tmp_dir
+        borg mount "$BACKUP_PATH" "$tmp_dir"
     elif [ "$1" = remote ]; then
-        borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH" $tmp_dir
+        borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH" "$tmp_dir"
     fi
     echo "You can find available snapshots in seperate sub-directories at directory: $tmp_dir"
     echo "    cd $tmp_dir"
@@ -100,6 +104,7 @@ restore_remote)
     echo "    $0 backup, borg backup"
     echo "    $0 restore_local, borg restore from local"
     echo "    $0 restore_remote, borg restore from remote"
+    ;;
 esac
 ```
 
