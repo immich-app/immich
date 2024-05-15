@@ -1,33 +1,74 @@
-import { SystemConfigEntity, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemConfig } from 'src/config';
+import { DeepPartial } from 'typeorm';
 
-export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
-  defaults: [],
-  enabled: [
-    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
-    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
-    { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: false },
-    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
-  ],
-  disabled: [{ key: SystemConfigKey.PASSWORD_LOGIN_ENABLED, value: false }],
-  noAutoRegister: [
-    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
-    { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: false },
-    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: false },
-    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
-  ],
-  override: [
-    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
-    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
-    { key: SystemConfigKey.OAUTH_MOBILE_OVERRIDE_ENABLED, value: true },
-    { key: SystemConfigKey.OAUTH_MOBILE_REDIRECT_URI, value: 'http://mobile-redirect' },
-    { key: SystemConfigKey.OAUTH_BUTTON_TEXT, value: 'OAuth' },
-  ],
-  withDefaultStorageQuota: [
-    { key: SystemConfigKey.OAUTH_ENABLED, value: true },
-    { key: SystemConfigKey.OAUTH_AUTO_REGISTER, value: true },
-    { key: SystemConfigKey.OAUTH_DEFAULT_STORAGE_QUOTA, value: 1 },
-  ],
-  deleteDelay30: [{ key: SystemConfigKey.USER_DELETE_DELAY, value: 30 }],
-  libraryWatchEnabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: true }],
-  libraryWatchDisabled: [{ key: SystemConfigKey.LIBRARY_WATCH_ENABLED, value: false }],
-};
+export const systemConfigStub = {
+  enabled: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+    },
+  },
+  disabled: {
+    passwordLogin: {
+      enabled: false,
+    },
+  },
+  noAutoRegister: {
+    oauth: {
+      enabled: true,
+      autoRegister: false,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+    },
+  },
+  override: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      mobileOverrideEnabled: true,
+      mobileRedirectUri: 'http://mobile-redirect',
+      buttonText: 'OAuth',
+    },
+  },
+  withDefaultStorageQuota: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      defaultStorageQuota: 1,
+    },
+  },
+  deleteDelay30: {
+    user: {
+      deleteDelay: 30,
+    },
+  },
+  libraryWatchEnabled: {
+    library: {
+      watch: {
+        enabled: true,
+      },
+    },
+  },
+  libraryWatchDisabled: {
+    library: {
+      watch: {
+        enabled: false,
+      },
+    },
+  },
+  libraryScan: {
+    library: {
+      scan: {
+        enabled: true,
+        cronExpression: '0 0 * * *',
+      },
+    },
+  },
+  machineLearningDisabled: {
+    machineLearning: {
+      enabled: false,
+    },
+  },
+} satisfies Record<string, DeepPartial<SystemConfig>>;

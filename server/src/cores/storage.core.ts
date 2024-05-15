@@ -12,7 +12,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -49,10 +49,10 @@ export class StorageCore {
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(systemConfigRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   static create(
@@ -61,7 +61,7 @@ export class StorageCore {
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
     storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     logger: ILoggerRepository,
   ) {
     if (!instance) {
@@ -71,7 +71,7 @@ export class StorageCore {
         moveRepository,
         personRepository,
         storageRepository,
-        systemConfigRepository,
+        systemMetadataRepository,
         logger,
       );
     }
