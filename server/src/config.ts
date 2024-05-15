@@ -111,6 +111,10 @@ export interface SystemConfig {
       enabled: boolean;
       modelName: string;
     };
+    duplicateDetection: {
+      enabled: boolean;
+      maxDistance: number;
+    };
     facialRecognition: {
       enabled: boolean;
       modelName: string;
@@ -248,6 +252,10 @@ export const defaults = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+    },
+    duplicateDetection: {
+      enabled: false,
+      maxDistance: 0.03,
     },
     facialRecognition: {
       enabled: true,

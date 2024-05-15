@@ -33,7 +33,7 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { AssetDuplicateResult, ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { isSmartSearchEnabled } from 'src/utils/misc';
+import { isDuplicateDetectionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -160,7 +160,8 @@ export class SearchService {
   }
 
   async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
-    if (!(await this.configCore.hasFeature(FeatureFlag.DUPLICATE_DETECTION))) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -181,7 +182,7 @@ export class SearchService {
 
   async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!(await this.configCore.hasFeature(FeatureFlag.DUPLICATE_DETECTION))) {
+    if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 

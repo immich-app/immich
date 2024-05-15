@@ -22,7 +22,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
+import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 import { Version } from 'src/utils/version';
 
 @Injectable()
@@ -88,6 +88,7 @@ export class ServerInfoService {
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
       facialRecognition: isFacialRecognitionEnabled(machineLearning),
+      duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
       reverseGeocoding: reverseGeocoding.enabled,
       sidecar: true,
