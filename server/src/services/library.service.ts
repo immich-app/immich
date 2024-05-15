@@ -271,7 +271,6 @@ export class LibraryService {
       type: dto.type,
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
-      isVisible: dto.isVisible ?? true,
     });
 
     this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);

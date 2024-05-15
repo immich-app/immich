@@ -67,7 +67,6 @@ export class LibraryRepository implements ILibraryRepository {
     return this.repository.find({
       where: {
         ownerId,
-        isVisible: true,
         type,
       },
       relations: {
@@ -97,7 +96,6 @@ export class LibraryRepository implements ILibraryRepository {
   getAllDeleted(): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
-        isVisible: true,
         deletedAt: Not(IsNull()),
       },
       relations: {
