@@ -15,9 +15,9 @@ import {
 } from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
-import { AlbumInviteEmailProps, WelcomeEmailProps } from 'src/interfaces/notification.interface';
+import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: AlbumInviteEmailProps) => (
+export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, albumId }: AlbumInviteEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -26,7 +26,7 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: A
         margin: 0,
         padding: 0,
         backgroundColor: '#ffffff',
-        color: 'rgb(66, 80, 175)',
+        color: 'rgb(28,28,28)',
         fontFamily: 'Overpass, sans-serif',
         fontSize: '18px',
         lineHeight: '24px',
@@ -66,7 +66,7 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: A
             Hey <strong>{guestName}</strong>!
           </Text>
 
-          <Text style={text}>A new account has been created for you.</Text>
+          <Text style={text}>{ownerName} has invited you to album <strong>{albumName}</strong>.</Text>
 
           <Row>
             <Text style={{ ...text, marginBottom: '36px' }}>
@@ -75,12 +75,12 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: A
           </Row>
           <Row>
             <Link style={{ marginTop: '50px' }} href={baseUrl}>
-              {baseUrl}
+              {baseUrl}/albums/{albumId}
             </Link>
           </Row>
           <Row>
-            <Button style={button} href={`${baseUrl}/auth/login`}>
-              Login
+            <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
+              View album
             </Button>
           </Row>
         </Section>
@@ -120,10 +120,11 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName }: A
 );
 
 AlbumInviteEmail.PreviewProps = {
-  baseUrl: 'https://demo.immich.app/auth/login',
+  baseUrl: 'https://demo.immich.app',
   albumName: 'Trip to Europe',
   ownerName: 'Owner User',
   guestName: 'Guest User',
+  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539'
 } as AlbumInviteEmailProps;
 
 export default AlbumInviteEmail;

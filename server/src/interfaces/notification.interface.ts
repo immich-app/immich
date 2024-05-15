@@ -38,6 +38,7 @@ export interface WelcomeEmailProps {
 export interface AlbumInviteEmailProps {
   baseUrl: string;
   albumName: string;
+  albumId: string;
   ownerName: string;
   guestName: string;
 }
@@ -45,6 +46,7 @@ export interface AlbumInviteEmailProps {
 export interface AlbumUpdateEmailProps {
   baseUrl: string;
   albumName: string;
+  albumId: string;
   ownerName: string;
   guestName: string;
 }
