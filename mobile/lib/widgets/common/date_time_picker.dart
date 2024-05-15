@@ -164,7 +164,7 @@ class _DateTimePicker extends HookWidget {
               color: context.primaryColor,
             ),
             menuStyle: const MenuStyle(
-              fixedSize: MaterialStatePropertyAll(Size.fromWidth(350)),
+              fixedSize: WidgetStatePropertyAll(Size.fromWidth(350)),
               alignment: Alignment(-1.25, 0.5),
             ),
             onSelected: (value) => tzOffset.value = value!,
@@ -175,7 +175,7 @@ class _DateTimePicker extends HookWidget {
                     value: t,
                     label: t.display,
                     style: ButtonStyle(
-                      textStyle: MaterialStatePropertyAll(
+                      textStyle: WidgetStatePropertyAll(
                         context.textTheme.bodyMedium,
                       ),
                     ),
