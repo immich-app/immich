@@ -208,7 +208,7 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
-    builder.innerJoin('asset.smartSearch', 'smartSearch');
+    builder.leftJoin('asset.smartSearch', 'smartSearch');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,
