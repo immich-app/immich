@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.104.0",
+  "version": "1.105.1",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -47,6 +47,6 @@
     "vitest": "^1.3.0"
   },
   "volta": {
-    "node": "20.12.2"
+    "node": "20.13.1"
   }
 }

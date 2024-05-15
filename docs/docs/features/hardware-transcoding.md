@@ -33,7 +33,7 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
 #### NVENC
 
 - You must have the official NVIDIA driver installed on the server.
-- On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+- On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### QSV
 
@@ -122,7 +122,7 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 - While you can use VAAPI with NVIDIA and Intel devices, prefer the more specific APIs since they're more optimized for their respective devices
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
-[nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
+[nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 [jellyfin-lp]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#configure-and-verify-lp-mode-on-linux
 [jellyfin-kernel-bug]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#known-issues-and-limitations
 [libmali-rockchip]: https://github.com/tsukumijima/libmali-rockchip/releases

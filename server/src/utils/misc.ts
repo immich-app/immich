@@ -10,10 +10,17 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
+
+const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
+export const isSmartSearchEnabled = (machineLearning: SystemConfig['machineLearning']) =>
+  isMachineLearningEnabled(machineLearning) && machineLearning.clip.enabled;
+export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
+  isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 

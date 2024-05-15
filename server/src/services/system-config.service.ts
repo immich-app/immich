@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
+import { LogLevel, SystemConfig, defaults } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -14,7 +15,6 @@ import {
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import { LogLevel, SystemConfig } from 'src/entities/system-config.entity';
 import {
   ClientEvent,
   IEventRepository,
@@ -56,8 +56,7 @@ export class SystemConfigService {
   }
 
   getDefaults(): SystemConfigDto {
-    const config = this.core.getDefaults();
-    return mapConfig(config);
+    return mapConfig(defaults);
   }
 
   @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
@@ -68,6 +67,10 @@ export class SystemConfigService {
   }
 
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+    if (this.core.isUsingConfigFile()) {
+      throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
+    }
+
     const oldConfig = await this.core.getConfig();
 
     try {

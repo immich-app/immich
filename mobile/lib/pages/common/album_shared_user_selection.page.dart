@@ -36,7 +36,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        context.popRoute(true);
+        context.maybePop(true);
         context
             .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       }
@@ -152,7 +152,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () async {
-            context.popRoute();
+            context.maybePop();
           },
         ),
         actions: [

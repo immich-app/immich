@@ -3,8 +3,8 @@ import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ImmichReadStream } from 'src/interfaces/storage.interface';
-import { ImmichLogger } from 'src/utils/logger';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {
@@ -33,12 +33,11 @@ export class ImmichFileResponse {
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
-const logger = new ImmichLogger('SendFile');
-
 export const sendFile = async (
   res: Response,
   next: NextFunction,
   handler: () => Promise<ImmichFileResponse>,
+  logger: ILoggerRepository,
 ): Promise<void> => {
   const _sendFile = (path: string, options: SendFileOptions) =>
     promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);

@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType } from 'src/entities/asset.entity';
@@ -112,7 +112,6 @@ export class JobService {
       }
 
       case QueueName.SMART_SEARCH: {
-        await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
         return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
       }
 
@@ -121,7 +120,6 @@ export class JobService {
       }
 
       case QueueName.SIDECAR: {
-        await this.configCore.requireFeature(FeatureFlag.SIDECAR);
         return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
       }
 
@@ -130,12 +128,10 @@ export class JobService {
       }
 
       case QueueName.FACE_DETECTION: {
-        await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_FACE_DETECTION, data: { force } });
       }
 
       case QueueName.FACIAL_RECOGNITION: {
-        await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
       }
 

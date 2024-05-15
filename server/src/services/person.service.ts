@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
@@ -23,7 +24,6 @@ import {
 } from 'src/dtos/person.dto';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -49,6 +49,7 @@ import { ISystemConfigRepository } from 'src/interfaces/system-config.interface'
 import { Orientation } from 'src/services/metadata.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
+import { isFacialRecognitionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
@@ -282,7 +283,7 @@ export class PersonService {
 
   async handleQueueDetectFaces({ force }: IBaseJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+    if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -313,7 +314,7 @@ export class PersonService {
 
   async handleDetectFaces({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+    if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -369,7 +370,7 @@ export class PersonService {
 
   async handleQueueRecognizeFaces({ force }: IBaseJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+    if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -400,7 +401,7 @@ export class PersonService {
 
   async handleRecognizeFaces({ id, deferred }: IDeferrableJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+    if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -484,7 +485,7 @@ export class PersonService {
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
     const { machineLearning, image } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+    if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 

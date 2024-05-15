@@ -33,7 +33,6 @@ class PhotosPage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        ref.read(assetProvider.notifier).getPartnerAssets();
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
@@ -85,9 +84,6 @@ class PhotosPage extends HookConsumerWidget {
     Future<void> refreshAssets() async {
       final fullRefresh = refreshCount.value > 0;
       await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
-      if (timelineUsers.length > 1) {
-        await ref.read(assetProvider.notifier).getPartnerAssets();
-      }
       if (fullRefresh) {
         // refresh was forced: user requested another refresh within 2 seconds
         refreshCount.value = 0;
