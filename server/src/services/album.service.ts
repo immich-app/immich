@@ -21,6 +21,7 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -33,6 +34,7 @@ export class AlbumService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IAlbumUserRepository) private albumUserRepository: IAlbumUserRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -245,6 +247,8 @@ export class AlbumService {
       }
 
       await this.albumUserRepository.create({ userId: userId, albumId: id, role });
+
+      await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { album, guestUser: user } });
     }
 
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);

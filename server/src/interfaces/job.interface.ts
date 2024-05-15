@@ -1,3 +1,6 @@
+import { AlbumEntity } from 'src/entities/album.entity';
+import { UserEntity } from 'src/entities/user.entity';
+
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
@@ -94,6 +97,8 @@ export enum JobName {
 
   // Notification
   NOTIFY_SIGNUP = 'notify-signup',
+  NOTIFY_ALBUM_INVITE = 'notify-album-invite',
+  NOTIFY_ALBUM_UPDATE = 'notify-album-update',
   SEND_EMAIL = 'notification-send-email',
 }
 
@@ -147,6 +152,13 @@ export interface IEmailJob {
 export interface INotifySignupJob extends IEntityJob {
   tempPassword?: string;
 }
+
+export interface INotifyAlbumInviteJob {
+  album: AlbumEntity;
+  guestUser: UserEntity;
+}
+
+export interface INotifyAlbumUpdateJob extends IEntityJob {}
 
 export interface JobCounts {
   active: number;
@@ -234,6 +246,8 @@ export type JobItem =
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
+  | { name: JobName.NOTIFY_ALBUM_INVITE; data: INotifyAlbumInviteJob }
+  | { name: JobName.NOTIFY_ALBUM_UPDATE; data: INotifyAlbumUpdateJob }
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
 
 export enum JobStatus {

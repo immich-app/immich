@@ -39,11 +39,11 @@ export class NotificationRepository implements INotificationRepository {
     return { html, text };
   }
 
-  sendEmail({ to, from, subject, html, text, smtp }: SendEmailOptions): Promise<SendEmailResponse> {
+  sendEmail({ to, from, subject, html, text, smtp, attachments }: SendEmailOptions): Promise<SendEmailResponse> {
     this.logger.debug(`Sending email to ${to} with subject: ${subject}`);
     const transport = this.createTransport(smtp);
     try {
-      return transport.sendMail({ to, from, subject, html, text });
+      return transport.sendMail({ to, from, subject, html, text, attachments });
     } finally {
       transport.close();
     }

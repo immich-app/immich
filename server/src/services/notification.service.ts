@@ -1,10 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
-import { IEmailJob, IJobRepository, INotifySignupJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import {
+  IEmailJob,
+  IJobRepository,
+  INotifyAlbumInviteJob,
+  INotifyAlbumUpdateJob,
+  INotifySignupJob,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
@@ -18,6 +29,8 @@ export class NotificationService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
   ) {
     this.logger.setContext(NotificationService.name);
     this.configCore = SystemConfigCore.create(configRepository, logger);
@@ -67,6 +80,58 @@ export class NotificationService {
       },
     });
 
+    return JobStatus.SUCCESS;
+  }
+
+  async _getAlbumThumbnailBase64(album: AlbumEntity) {
+    if (!album.albumThumbnailAssetId) {
+      return null;
+    }
+
+    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
+    if (!albumThumbnail?.previewPath) {
+      return null;
+    }
+
+    const buffer = await this.storageRepository.readFile(albumThumbnail.previewPath);
+    return buffer.toString('base64');
+  }
+
+  async handleAlbumInvite({ album, guestUser }: INotifyAlbumInviteJob) {
+    const thumbnailData = (await this._getAlbumThumbnailBase64(album)) || undefined;
+
+    const { server } = await this.configCore.getConfig();
+    const { html, text } = this.notificationRepository.renderEmail({
+      template: EmailTemplate.ALBUM_INVITE,
+      data: {
+        baseUrl: server.externalDomain || 'http://localhost:2283',
+        albumId: album.id,
+        albumName: album.albumName,
+        ownerName: album.owner.name,
+        guestName: guestUser.name,
+        thumbnailData,
+      },
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.SEND_EMAIL,
+      data: {
+        to: guestUser.email,
+        subject: `You have been added to a shared album - ${album.albumName}`,
+        html,
+        text,
+      },
+    });
+
+    return JobStatus.SUCCESS;
+  }
+
+  async handleAlbumUpdate({ id }: INotifyAlbumUpdateJob) {
+    const user = await this.userRepository.get(id, { withDeleted: false });
+    if (!user) {
+      return JobStatus.SKIPPED;
+    }
+    // TODO
     return JobStatus.SUCCESS;
   }
 

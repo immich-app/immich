@@ -1,3 +1,5 @@
+import { Attachment } from 'nodemailer/lib/mailer';
+
 export const INotificationRepository = 'INotificationRepository';
 
 export type SendEmailOptions = {
@@ -7,6 +9,7 @@ export type SendEmailOptions = {
   subject: string;
   html: string;
   text: string;
+  attachments?: Attachment[] | undefined;
   smtp: SmtpOptions;
 };
 
@@ -41,6 +44,7 @@ export interface AlbumInviteEmailProps {
   albumId: string;
   ownerName: string;
   guestName: string;
+  thumbnailData?: string;
 }
 
 export interface AlbumUpdateEmailProps {
