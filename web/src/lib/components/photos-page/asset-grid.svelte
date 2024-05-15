@@ -101,6 +101,12 @@
     }
   };
 
+  const focusElement = () => {
+    if (document.activeElement === document.body) {
+      element.focus();
+    }
+  };
+
   $: shortcutList = (() => {
     if ($isSearchEnabled || $showAssetViewer) {
       return [];
@@ -111,6 +117,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
+      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
     ];
 
     if ($isMultiSelectState) {
@@ -402,15 +410,16 @@
 />
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <section
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
-  tabindex="0"
+  tabindex="-1"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
   on:scroll={handleTimelineScroll}
+  on:keydown
 >
   <!-- skeleton -->
   {#if showSkeleton}
@@ -490,5 +499,6 @@
   #asset-grid {
     contain: layout;
     scrollbar-width: none;
+    outline: none;
   }
 </style>
