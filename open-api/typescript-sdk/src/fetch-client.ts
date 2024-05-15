@@ -170,7 +170,7 @@ export type AlbumResponseDto = {
     updatedAt: string;
 };
 export type AlbumUserCreateDto = {
-    role: Role;
+    role: AlbumUserRole;
     userId: string;
 };
 export type CreateAlbumDto = {
@@ -2856,10 +2856,6 @@ export enum AssetTypeEnum {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
-}
-export enum Role {
-    Editor = "editor",
-    Viewer = "viewer"
 }
 export enum Error {
     Duplicate = "duplicate",

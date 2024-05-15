@@ -1213,17 +1213,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
         "tags": [
           "Asset"
         ]
@@ -6807,11 +6796,7 @@
       "AlbumUserCreateDto": {
         "properties": {
           "role": {
-            "enum": [
-              "editor",
-              "viewer"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/AlbumUserRole"
           },
           "userId": {
             "format": "uuid",
@@ -7924,7 +7909,7 @@
           "maxDistance": {
             "format": "float",
             "maximum": 0.1,
-            "minimum": 0.01,
+            "minimum": 0.001,
             "type": "number"
           }
         },

@@ -19,7 +19,7 @@ class DuplicateDetectionConfig {
 
   bool enabled;
 
-  /// Minimum value: 0.01
+  /// Minimum value: 0.001
   /// Maximum value: 0.1
   double maxDistance;
 
