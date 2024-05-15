@@ -37,7 +37,7 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
 
@@ -67,7 +67,7 @@ export class AuthService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -77,7 +77,7 @@ export class AuthService {
   ) {
     this.logger.setContext(AuthService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });

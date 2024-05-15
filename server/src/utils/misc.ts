@@ -16,6 +16,47 @@ import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
 
+/**
+ * @returns a list of strings representing the keys of the object in dot notation
+ */
+export const getKeysDeep = (target: unknown, path: string[] = []) => {
+  if (!target || typeof target !== 'object') {
+    return [];
+  }
+
+  const obj = target as object;
+
+  const properties: string[] = [];
+  for (const key of Object.keys(obj as object)) {
+    const value = obj[key as keyof object];
+    if (value === undefined) {
+      continue;
+    }
+
+    if (_.isObject(value) && !_.isArray(value)) {
+      properties.push(...getKeysDeep(value, [...path, key]));
+      continue;
+    }
+
+    properties.push([...path, key].join('.'));
+  }
+
+  return properties;
+};
+
+export const unsetDeep = (object: unknown, key: string) => {
+  const parts = key.split('.');
+  while (parts.length > 0) {
+    _.unset(object, parts);
+    parts.pop();
+    if (!_.isEmpty(_.get(object, parts))) {
+      break;
+    }
+  }
+
+  return _.isEmpty(object) ? undefined : object;
+};
+
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
 export const isSmartSearchEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.clip.enabled;

@@ -20,7 +20,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 @Injectable()
 export class JobService {
@@ -30,13 +30,13 @@ export class JobService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IMetricRepository) private metricRepository: IMetricRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(JobService.name);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {

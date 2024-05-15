@@ -24,14 +24,14 @@ import {
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 @Injectable()
 export class SystemConfigService {
   private core: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) private repository: ISystemMetadataRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,

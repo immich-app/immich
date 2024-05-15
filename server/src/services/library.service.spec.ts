@@ -5,7 +5,6 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
-import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -14,7 +13,7 @@ import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, JobName, JobStatus
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { LibraryService } from 'src/services/library.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -28,14 +27,14 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
 
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
@@ -44,7 +43,7 @@ describe(LibraryService.name, () => {
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
@@ -55,7 +54,7 @@ describe(LibraryService.name, () => {
 
     sut = new LibraryService(
       assetMock,
-      configMock,
+      systemMock,
       cryptoMock,
       jobMock,
       libraryMock,
@@ -73,16 +72,13 @@ describe(LibraryService.name, () => {
 
   describe('init', () => {
     it('should init cron job and subscribe to config changes', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.LIBRARY_SCAN_ENABLED, value: true },
-        { key: SystemConfigKey.LIBRARY_SCAN_CRON_EXPRESSION, value: '0 0 * * *' },
-      ]);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryScan);
 
       await sut.init();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
       expect(jobMock.addCronJob).toHaveBeenCalled();
 
-      SystemConfigCore.create(newSystemConfigRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
+      SystemConfigCore.create(newSystemMetadataRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
         library: {
           scan: {
             enabled: true,
@@ -101,7 +97,7 @@ describe(LibraryService.name, () => {
         libraryStub.externalLibraryWithImportPaths2,
       ]);
 
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockImplementation((id) =>
         Promise.resolve(
           [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
@@ -121,7 +117,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should not initialize watcher when watching is disabled', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
 
       await sut.init();
 
@@ -129,7 +125,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should not initialize watcher when lock is taken', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       databaseMock.tryLock.mockResolvedValue(false);
 
       await sut.init();
@@ -757,7 +753,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
 
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
 
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
@@ -930,7 +926,7 @@ describe(LibraryService.name, () => {
       });
 
       it('should create watched with import paths', async () => {
-        configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.create.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([]);
@@ -1077,7 +1073,7 @@ describe(LibraryService.name, () => {
 
   describe('update', () => {
     beforeEach(async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.getAll.mockResolvedValue([]);
 
       await sut.init();
@@ -1094,7 +1090,7 @@ describe(LibraryService.name, () => {
   describe('watchAll', () => {
     describe('watching disabled', () => {
       beforeEach(async () => {
-        configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
 
         await sut.init();
       });
@@ -1110,7 +1106,7 @@ describe(LibraryService.name, () => {
 
     describe('watching enabled', () => {
       beforeEach(async () => {
-        configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.getAll.mockResolvedValue([]);
         await sut.init();
       });
@@ -1265,7 +1261,7 @@ describe(LibraryService.name, () => {
         libraryStub.externalLibraryWithImportPaths2,
       ]);
 
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
       libraryMock.get.mockImplementation((id) =>
