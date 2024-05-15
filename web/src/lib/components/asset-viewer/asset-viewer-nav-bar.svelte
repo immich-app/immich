@@ -239,7 +239,7 @@
                 />
               {/if}
               <MenuOption
-                on:click={() => dispatch('toggleArchive')}
+                on:click={() => onMenuClick('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
