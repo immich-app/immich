@@ -40,7 +40,7 @@ describe('/trash', () => {
       await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
 
       const after = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
-      expect(after).toBe([]);
+      expect(after.length).toBe(0);
     });
   });
 
