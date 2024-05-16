@@ -16,7 +16,6 @@ export const libraryStub = {
     createdAt: new Date('2022-01-01'),
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: [],
   }),
   externalLibrary1: Object.freeze<LibraryEntity>({
@@ -30,7 +29,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: [],
   }),
   externalLibrary2: Object.freeze<LibraryEntity>({
@@ -44,7 +42,6 @@ export const libraryStub = {
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2022-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: [],
   }),
   externalLibraryWithImportPaths1: Object.freeze<LibraryEntity>({
@@ -58,7 +55,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: [],
   }),
   externalLibraryWithImportPaths2: Object.freeze<LibraryEntity>({
@@ -72,7 +68,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: [],
   }),
   externalLibraryWithExclusionPattern: Object.freeze<LibraryEntity>({
@@ -86,7 +81,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
   patternPath: Object.freeze<LibraryEntity>({
@@ -100,7 +94,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
   hasImmichPaths: Object.freeze<LibraryEntity>({
@@ -114,7 +107,6 @@ export const libraryStub = {
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,
-    isVisible: true,
     exclusionPatterns: ['**/dir1/**'],
   }),
 };

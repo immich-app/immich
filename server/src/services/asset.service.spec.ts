@@ -10,7 +10,7 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
 import { assetStackStub, assetStub } from 'test/fixtures/asset.stub';
@@ -27,7 +27,7 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
@@ -159,7 +159,7 @@ describe(AssetService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
   let albumMock: Mocked<IAlbumRepository>;
@@ -182,7 +182,7 @@ describe(AssetService.name, () => {
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
     albumMock = newAlbumRepositoryMock();
@@ -192,7 +192,7 @@ describe(AssetService.name, () => {
       accessMock,
       assetMock,
       jobMock,
-      configMock,
+      systemMock,
       storageMock,
       userMock,
       eventMock,

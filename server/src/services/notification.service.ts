@@ -16,8 +16,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachement, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
 @Injectable()
@@ -25,17 +24,16 @@ export class NotificationService {
   private configCore: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
     this.logger.setContext(NotificationService.name);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   init() {

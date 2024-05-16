@@ -7708,9 +7708,6 @@
             },
             "type": "array"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -10740,9 +10737,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "isVisible": {
-            "type": "boolean"
           },
           "name": {
             "type": "string"
