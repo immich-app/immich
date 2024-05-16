@@ -14,7 +14,6 @@ function dart {
   # Post generate patches
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./patch/api_client.dart.patch
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api.dart <./patch/api.dart.patch
-  patch --no-backup-if-mismatch -u ../mobile/openapi/pubspec.yaml <./patch/pubspec_intl.dart.patch
   # Don't include analysis_options.yaml for the generated openapi files
   # so that language servers can properly exclude the mobile/openapi directory
   rm ../mobile/openapi/analysis_options.yaml
