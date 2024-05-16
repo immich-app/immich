@@ -1,6 +1,10 @@
-import { Attachment } from 'nodemailer/lib/mailer';
-
 export const INotificationRepository = 'INotificationRepository';
+
+export type EmailImageAttachement = {
+  filename: string;
+  path: string;
+  cid: string;
+};
 
 export type SendEmailOptions = {
   from: string;
@@ -9,7 +13,7 @@ export type SendEmailOptions = {
   subject: string;
   html: string;
   text: string;
-  attachments?: Attachment[];
+  imageAttachements?: EmailImageAttachement[];
   smtp: SmtpOptions;
 };
 
@@ -31,15 +35,17 @@ export enum EmailTemplate {
   ALBUM_UPDATE = 'album-update',
 }
 
-export interface WelcomeEmailProps {
+interface BaseEmailProps {
   baseUrl: string;
+}
+
+export interface WelcomeEmailProps extends BaseEmailProps {
   displayName: string;
   username: string;
   password?: string;
 }
 
-export interface AlbumInviteEmailProps {
-  baseUrl: string;
+export interface AlbumInviteEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
   ownerName: string;
@@ -47,8 +53,7 @@ export interface AlbumInviteEmailProps {
   cid?: string;
 }
 
-export interface AlbumUpdateEmailProps {
-  baseUrl: string;
+export interface AlbumUpdateEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
   userName: string;

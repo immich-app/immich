@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Attachment } from 'nodemailer/lib/mailer';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import {
@@ -15,7 +15,7 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
+import { EmailImageAttachement, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -32,6 +32,7 @@ export class NotificationService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
     this.logger.setContext(NotificationService.name);
     this.configCore = SystemConfigCore.create(configRepository, logger);
@@ -90,14 +91,27 @@ export class NotificationService {
     }
 
     const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
+    if (!albumThumbnail) {
+      return null;
+    }
 
-    return albumThumbnail?.previewPath;
+    return albumThumbnail.previewPath;
   }
 
-  async handleAlbumInvite({ album, guestUser }: INotifyAlbumInviteJob) {
+  async handleAlbumInvite({ id, userId }: INotifyAlbumInviteJob) {
+    const album = await this.albumRepository.getById(id, { withAssets: false });
+    if (!album) {
+      return JobStatus.SKIPPED;
+    }
+
+    const guestUser = await this.userRepository.get(userId, { withDeleted: false });
+    if (!guestUser) {
+      return JobStatus.SKIPPED;
+    }
+
     const thumbnailPath = await this._getAlbumThumbnailPath(album);
-    const cid = thumbnailPath ? 'album-thumbnail' : undefined;
-    let attachement: Attachment | undefined;
+    const cid = thumbnailPath ? 'album-thumbnail' : '';
+    let attachement: EmailImageAttachement | undefined;
 
     if (thumbnailPath) {
       attachement = {
@@ -127,7 +141,7 @@ export class NotificationService {
         subject: `You have been added to a shared album - ${album.albumName}`,
         html,
         text,
-        attachments: attachement ? [attachement] : undefined,
+        imageAttachements: attachement ? [attachement] : undefined,
       },
     });
 
@@ -158,7 +172,7 @@ export class NotificationService {
       from: notifications.smtp.from,
       replyTo: notifications.smtp.replyTo || notifications.smtp.from,
       smtp: notifications.smtp.transport,
-      attachments: data.attachments,
+      imageAttachements: data.imageAttachements,
     });
 
     if (!response) {

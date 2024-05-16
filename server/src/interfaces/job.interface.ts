@@ -1,6 +1,4 @@
-import { Attachment } from 'nodemailer/lib/mailer';
-import { AlbumEntity } from 'src/entities/album.entity';
-import { UserEntity } from 'src/entities/user.entity';
+import { EmailImageAttachement } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
@@ -148,16 +146,15 @@ export interface IEmailJob {
   subject: string;
   html: string;
   text: string;
-  attachments?: Attachment[];
+  imageAttachements?: EmailImageAttachement[];
 }
 
 export interface INotifySignupJob extends IEntityJob {
   tempPassword?: string;
 }
 
-export interface INotifyAlbumInviteJob {
-  album: AlbumEntity;
-  guestUser: UserEntity;
+export interface INotifyAlbumInviteJob extends IEntityJob {
+  userId: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob {}

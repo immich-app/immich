@@ -248,7 +248,7 @@ export class AlbumService {
 
       await this.albumUserRepository.create({ userId: userId, albumId: id, role });
 
-      await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { album, guestUser: user } });
+      await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id: album.id, userId: user.id } });
     }
 
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
