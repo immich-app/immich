@@ -78,6 +78,40 @@
       </SettingAccordion>
 
       <SettingAccordion
+        key="duplicate-detection"
+        title="Duplicate Detection"
+        subtitle="Use CLIP embeddings to find very similar images that are likely duplicates"
+      >
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            id="enable-duplicate-detection"
+            title="ENABLED"
+            subtitle="If disabled, images will not be checked to see if they are duplicates."
+            bind:checked={config.machineLearning.duplicateDetection.enabled}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label="MAX DETECTION DISTANCE"
+            bind:value={config.machineLearning.duplicateDetection.maxDistance}
+            step="0.01"
+            min={0.001}
+            max={0.1}
+            desc="Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives."
+            disabled={disabled ||
+              !config.machineLearning.enabled ||
+              !config.machineLearning.clip.enabled ||
+              !config.machineLearning.duplicateDetection.enabled}
+            isEdited={config.machineLearning.duplicateDetection.maxDistance !==
+              savedConfig.machineLearning.duplicateDetection.maxDistance}
+          />
+        </div>
+      </SettingAccordion>
+
+      <SettingAccordion
         key="facial-recognition"
         title="Facial Recognition"
         subtitle="Detect, recognize and group faces in images"
