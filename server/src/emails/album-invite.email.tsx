@@ -27,7 +27,7 @@ export const AlbumInviteEmail = ({
 }: AlbumInviteEmailProps) => (
   <Html>
     <Head />
-    <Preview>You have added to a shared album.</Preview>
+    <Preview>You have been added to a shared album.</Preview>
     <Body
       style={{
         margin: 0,
