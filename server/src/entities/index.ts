@@ -18,7 +18,6 @@ import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { SystemConfigEntity } from 'src/entities/system-config.entity';
 import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -42,7 +41,6 @@ export const entities = [
   SharedLinkEntity,
   SmartInfoEntity,
   SmartSearchEntity,
-  SystemConfigEntity,
   SystemMetadataEntity,
   TagEntity,
   UserEntity,

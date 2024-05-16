@@ -101,7 +101,6 @@ export class UserCore {
       type: LibraryType.UPLOAD,
       importPaths: [],
       exclusionPatterns: [],
-      isVisible: true,
     });
 
     return userEntity;

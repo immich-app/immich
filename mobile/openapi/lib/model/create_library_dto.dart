@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -15,7 +15,6 @@ class CreateLibraryDto {
   CreateLibraryDto({
     this.exclusionPatterns = const [],
     this.importPaths = const [],
-    this.isVisible,
     this.name,
     required this.ownerId,
     required this.type,
@@ -24,14 +23,6 @@ class CreateLibraryDto {
   List<String> exclusionPatterns;
 
   List<String> importPaths;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isVisible;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,7 +40,6 @@ class CreateLibraryDto {
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     _deepEquality.equals(other.importPaths, importPaths) &&
-    other.isVisible == isVisible &&
     other.name == name &&
     other.ownerId == ownerId &&
     other.type == type;
@@ -59,23 +49,17 @@ class CreateLibraryDto {
     // ignore: unnecessary_parenthesis
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (ownerId.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name, ownerId=$ownerId, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, name=$name, ownerId=$ownerId, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'importPaths'] = this.importPaths;
-    if (this.isVisible != null) {
-      json[r'isVisible'] = this.isVisible;
-    } else {
-    //  json[r'isVisible'] = null;
-    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -100,7 +84,6 @@ class CreateLibraryDto {
         importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
         name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         type: LibraryType.fromJson(json[r'type'])!,

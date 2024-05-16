@@ -31,7 +31,7 @@ import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interfa
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -113,19 +113,19 @@ export class MetadataService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
       storageRepository,
-      configRepository,
+      systemMetadataRepository,
       this.logger,
     );
   }

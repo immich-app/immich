@@ -3,7 +3,6 @@ import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
-import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -13,7 +12,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -26,7 +25,7 @@ import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.moc
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
@@ -34,13 +33,13 @@ describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
   let moveMock: Mocked<IMoveRepository>;
   let personMock: Mocked<IPersonRepository>;
   let storageMock: Mocked<IStorageRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let userMock: Mocked<IUserRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let databaseMock: Mocked<IDatabaseRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
@@ -48,23 +47,23 @@ describe(StorageTemplateService.name, () => {
   });
 
   beforeEach(() => {
-    configMock = newSystemConfigRepositoryMock();
     assetMock = newAssetRepositoryMock();
     albumMock = newAlbumRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
+    databaseMock = newDatabaseRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     userMock = newUserRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-    databaseMock = newDatabaseRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
+    systemMock.get.mockResolvedValue({ storageTemplate: { enabled: true } });
 
     sut = new StorageTemplateService(
       albumMock,
       assetMock,
-      configMock,
+      systemMock,
       moveMock,
       personMock,
       storageMock,
@@ -74,7 +73,7 @@ describe(StorageTemplateService.name, () => {
       loggerMock,
     );
 
-    SystemConfigCore.create(configMock, loggerMock).config$.next(defaults);
+    SystemConfigCore.create(systemMock, loggerMock).config$.next(defaults);
   });
 
   describe('onValidateConfig', () => {
@@ -108,7 +107,7 @@ describe(StorageTemplateService.name, () => {
 
   describe('handleMigrationSingle', () => {
     it('should skip when storage template is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue({ storageTemplate: { enabled: false } });
       await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();

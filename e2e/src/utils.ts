@@ -145,7 +145,6 @@ export const utils = {
         'sessions',
         'users',
         'system_metadata',
-        'system_config',
       ];
 
       const sql: string[] = [];
