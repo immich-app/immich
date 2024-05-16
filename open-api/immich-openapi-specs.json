@@ -1073,7 +1073,6 @@
         ]
       },
       "post": {
-        "description": "POST /api/asset",
         "operationId": "createAssetMedia",
         "parameters": [
           {
@@ -1130,7 +1129,10 @@
         ],
         "tags": [
           "Asset"
-        ]
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
       },
       "put": {
         "operationId": "updateAssets",
@@ -1168,7 +1170,7 @@
     },
     "/asset/bulk-upload-check": {
       "post": {
-        "description": "POST /api/asset/bulk-upload-check\nChecks if assets exist by checksums",
+        "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1256,7 +1258,7 @@
     },
     "/asset/exist": {
       "post": {
-        "description": "POST /api/asset/exist\nChecks if multiple assets exist on the server and returns all existing - used by background backup",
+        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
         "parameters": [],
         "requestBody": {
@@ -1299,6 +1301,8 @@
     },
     "/asset/file/{id}": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.106.0",
         "operationId": "serveFile",
         "parameters": [
           {
@@ -1362,8 +1366,12 @@
           }
         ],
         "tags": [
-          "Asset"
-        ]
+          "Asset",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.106.0"
+        }
       }
     },
     "/asset/jobs": {
@@ -1674,6 +1682,8 @@
     },
     "/asset/thumbnail/{id}": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.106.0",
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
@@ -1727,12 +1737,18 @@
           }
         ],
         "tags": [
-          "Asset"
-        ]
+          "Asset",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.106.0"
+        }
       }
     },
     "/asset/upload": {
       "post": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.106.0",
         "operationId": "uploadFile",
         "parameters": [
           {
@@ -1788,8 +1804,12 @@
           }
         ],
         "tags": [
-          "Asset"
-        ]
+          "Asset",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.106.0"
+        }
       }
     },
     "/asset/{id}": {
@@ -1894,7 +1914,6 @@
     },
     "/asset/{id}/file": {
       "get": {
-        "description": "GET /api/asset/:id/file",
         "operationId": "getAsssetMedia",
         "parameters": [
           {
@@ -1959,10 +1978,12 @@
         ],
         "tags": [
           "Asset"
-        ]
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
       },
       "put": {
-        "description": "PUT /api/asset/:id/file",
         "operationId": "updateAssetMedia",
         "parameters": [
           {
@@ -2019,12 +2040,14 @@
         ],
         "tags": [
           "Asset"
-        ]
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
       }
     },
     "/asset/{id}/thumbnail": {
       "get": {
-        "description": "GET /api/asset/:id/thumbnail",
         "operationId": "getAssetMediaThumbnail",
         "parameters": [
           {
@@ -2079,7 +2102,10 @@
         ],
         "tags": [
           "Asset"
-        ]
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
       }
     },
     "/audit/deletes": {

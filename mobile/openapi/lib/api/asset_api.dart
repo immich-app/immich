@@ -16,7 +16,7 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// POST /api/asset/bulk-upload-check Checks if assets exist by checksums
+  /// Checks if assets exist by checksums
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +48,7 @@ class AssetApi {
     );
   }
 
-  /// POST /api/asset/bulk-upload-check Checks if assets exist by checksums
+  /// Checks if assets exist by checksums
   ///
   /// Parameters:
   ///
@@ -68,7 +68,7 @@ class AssetApi {
     return null;
   }
 
-  /// POST /api/asset/exist Checks if multiple assets exist on the server and returns all existing - used by background backup
+  /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -100,7 +100,7 @@ class AssetApi {
     );
   }
 
-  /// POST /api/asset/exist Checks if multiple assets exist on the server and returns all existing - used by background backup
+  /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
   /// Parameters:
   ///
@@ -120,10 +120,7 @@ class AssetApi {
     return null;
   }
 
-  /// POST /api/asset
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -242,8 +239,6 @@ class AssetApi {
     );
   }
 
-  /// POST /api/asset
-  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -551,10 +546,7 @@ class AssetApi {
     return null;
   }
 
-  /// GET /api/asset/:id/thumbnail
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/{id}/thumbnail' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -595,8 +587,6 @@ class AssetApi {
     );
   }
 
-  /// GET /api/asset/:id/thumbnail
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -684,7 +674,10 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/thumbnail/{id}' operation and returns the [Response].
+  /// This property was deprecated in v1.106.0
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -725,6 +718,8 @@ class AssetApi {
     );
   }
 
+  /// This property was deprecated in v1.106.0
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -747,10 +742,7 @@ class AssetApi {
     return null;
   }
 
-  /// GET /api/asset/:id/file
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/{id}/file' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -796,8 +788,6 @@ class AssetApi {
     );
   }
 
-  /// GET /api/asset/:id/file
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1054,7 +1044,10 @@ class AssetApi {
     }
   }
 
-  /// Performs an HTTP 'GET /asset/file/{id}' operation and returns the [Response].
+  /// This property was deprecated in v1.106.0
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1100,6 +1093,8 @@ class AssetApi {
     );
   }
 
+  /// This property was deprecated in v1.106.0
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1176,10 +1171,7 @@ class AssetApi {
     return null;
   }
 
-  /// PUT /api/asset/:id/file
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PUT /asset/{id}/file' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1257,8 +1249,6 @@ class AssetApi {
     );
   }
 
-  /// PUT /api/asset/:id/file
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1369,7 +1359,10 @@ class AssetApi {
     }
   }
 
-  /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
+  /// This property was deprecated in v1.106.0
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -1495,6 +1488,8 @@ class AssetApi {
     );
   }
 
+  /// This property was deprecated in v1.106.0
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):

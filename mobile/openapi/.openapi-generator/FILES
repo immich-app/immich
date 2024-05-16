@@ -65,6 +65,7 @@ doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/DeleteUserDto.md
+doc/DeprecatedApi.md
 doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
@@ -223,6 +224,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/deprecated_api.dart
 lib/api/download_api.dart
 lib/api/face_api.dart
 lib/api/file_report_api.dart
@@ -500,6 +502,7 @@ test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/delete_user_dto_test.dart
+test/deprecated_api_test.dart
 test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart

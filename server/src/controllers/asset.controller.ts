@@ -46,7 +46,7 @@ export class AssetController {
   /**
    * Get all asset of a device that are in the database, ID only.
    */
-  @Get('/device/:deviceId')
+  @Get('device/:deviceId')
   @Authenticated()
   getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
     return this.service.getUserAssetsByDeviceId(auth, deviceId);
@@ -63,6 +63,21 @@ export class AssetController {
   @Authenticated()
   runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {
     return this.service.run(auth, dto);
+  }
+
+  /**
+   * Get all AssetEntity belong to the user
+   */
+  @Get()
+  @ApiHeader({
+    name: 'if-none-match',
+    description: 'ETag of data already cached on the client',
+    required: false,
+    schema: { type: 'string' },
+  })
+  @Authenticated()
+  getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.getAllAssets(auth, dto);
   }
 
   @Put()
@@ -100,20 +115,5 @@ export class AssetController {
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
-  }
-
-  /**
-   * Get all AssetEntity belong to the user
-   */
-  @Get('/')
-  @ApiHeader({
-    name: 'if-none-match',
-    description: 'ETag of data already cached on the client',
-    required: false,
-    schema: { type: 'string' },
-  })
-  @Authenticated()
-  getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.getAllAssets(auth, dto);
   }
 }

@@ -1392,9 +1392,6 @@ export function getAllAssets({ ifNoneMatch, isArchived, isFavorite, skip, take, 
         })
     }));
 }
-/**
- * POST /api/asset
- */
 export function createAssetMedia({ key, xImmichChecksum, createAssetMediaDto }: {
     key?: string;
     xImmichChecksum?: string;
@@ -1424,7 +1421,6 @@ export function updateAssets({ assetBulkUpdateDto }: {
     })));
 }
 /**
- * POST /api/asset/bulk-upload-check
  * Checks if assets exist by checksums
  */
 export function checkBulkUpload({ assetBulkUploadCheckDto }: {
@@ -1453,7 +1449,6 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
     }));
 }
 /**
- * POST /api/asset/exist
  * Checks if multiple assets exist on the server and returns all existing - used by background backup
  */
 export function checkExistingAssets({ checkExistingAssetsDto }: {
@@ -1468,6 +1463,9 @@ export function checkExistingAssets({ checkExistingAssetsDto }: {
         body: checkExistingAssetsDto
     })));
 }
+/**
+ * This property was deprecated in v1.106.0
+ */
 export function serveFile({ id, isThumb, isWeb, key }: {
     id: string;
     isThumb?: boolean;
@@ -1565,6 +1563,9 @@ export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.106.0
+ */
 export function getAssetThumbnail({ format, id, key }: {
     format?: ThumbnailFormat;
     id: string;
@@ -1580,6 +1581,9 @@ export function getAssetThumbnail({ format, id, key }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.106.0
+ */
 export function uploadFile({ key, xImmichChecksum, createAssetDto }: {
     key?: string;
     xImmichChecksum?: string;
@@ -1625,9 +1629,6 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-/**
- * GET /api/asset/:id/file
- */
 export function getAsssetMedia({ id, isThumb, isWeb, key }: {
     id: string;
     isThumb?: boolean;
@@ -1645,9 +1646,6 @@ export function getAsssetMedia({ id, isThumb, isWeb, key }: {
         ...opts
     }));
 }
-/**
- * PUT /api/asset/:id/file
- */
 export function updateAssetMedia({ id, key, updateAssetMediaDto }: {
     id: string;
     key?: string;
@@ -1664,9 +1662,6 @@ export function updateAssetMedia({ id, key, updateAssetMediaDto }: {
         body: updateAssetMediaDto
     })));
 }
-/**
- * GET /api/asset/:id/thumbnail
- */
 export function getAssetMediaThumbnail({ format, id, key }: {
     format?: ThumbnailFormat;
     id: string;

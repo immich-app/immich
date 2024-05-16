@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { EndpointLifecycle } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaUploadResponseDto,
@@ -30,13 +31,11 @@ import {
   UpdateAssetMediaDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
-
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
 import { AssetMediaService } from 'src/services/asset-media.service';
-
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
@@ -45,9 +44,6 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 export class AssetMediaController {
   constructor(private service: AssetMediaService) {}
 
-  /**
-   * POST /api/asset
-   */
   @Post()
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
@@ -61,21 +57,20 @@ export class AssetMediaController {
     type: CreateAssetMediaDto,
   })
   @Authenticated({ sharedLink: true })
-  async createAssetMedia(
+  @EndpointLifecycle({ addedAt: 'v1.106.0' })
+  createAssetMedia(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: CreateAssetMediaDto,
   ): Promise<AssetMediaUploadResponseDto> {
     const { file, sidecarFile } = getFiles(files);
-    return await this.service.uploadFile(auth, dto, file, sidecarFile);
+    return this.service.uploadFile(auth, dto, file, sidecarFile);
   }
 
-  /**
-   * GET /api/asset/:id/file
-   */
-  @Get('/:id/file')
+  @Get(':id/file')
   @FileResponse()
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ addedAt: 'v1.106.0' })
   async getAsssetMedia(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -86,9 +81,6 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
   }
 
-  /**
-   * PUT /api/asset/:id/file
-   */
   @Put(':id/file')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
@@ -97,6 +89,7 @@ export class AssetMediaController {
     type: UpdateAssetMediaDto,
   })
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ addedAt: 'v1.106.0' })
   async updateAssetMedia(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -109,12 +102,10 @@ export class AssetMediaController {
     return responseDto;
   }
 
-  /**
-   * GET /api/asset/:id/thumbnail
-   */
-  @Get('/:id/thumbnail')
+  @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ addedAt: 'v1.106.0' })
   async getAssetMediaThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -126,10 +117,9 @@ export class AssetMediaController {
   }
 
   /**
-   * POST /api/asset/exist
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
-  @Post('/exist')
+  @Post('exist')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
   checkExistingAssets(
@@ -140,10 +130,9 @@ export class AssetMediaController {
   }
 
   /**
-   * POST /api/asset/bulk-upload-check
    * Checks if assets exist by checksums
    */
-  @Post('/bulk-upload-check')
+  @Post('bulk-upload-check')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
   checkBulkUpload(

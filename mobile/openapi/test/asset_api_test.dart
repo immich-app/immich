@@ -17,22 +17,20 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    // POST /api/asset/bulk-upload-check Checks if assets exist by checksums
+    // Checks if assets exist by checksums
     //
     //Future<AssetBulkUploadCheckResponseDto> checkBulkUpload(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
     test('test checkBulkUpload', () async {
       // TODO
     });
 
-    // POST /api/asset/exist Checks if multiple assets exist on the server and returns all existing - used by background backup
+    // Checks if multiple assets exist on the server and returns all existing - used by background backup
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
     test('test checkExistingAssets', () async {
       // TODO
     });
 
-    // POST /api/asset
-    //
     //Future<AssetMediaUploadResponseDto> createAssetMedia(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
     test('test createAssetMedia', () async {
       // TODO
@@ -62,8 +60,6 @@ void main() {
       // TODO
     });
 
-    // GET /api/asset/:id/thumbnail
-    //
     //Future<MultipartFile> getAssetMediaThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetMediaThumbnail', () async {
       // TODO
@@ -74,13 +70,13 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.106.0
+    //
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
 
-    // GET /api/asset/:id/file
-    //
     //Future<MultipartFile> getAsssetMedia(String id, { bool isThumb, bool isWeb, String key }) async
     test('test getAsssetMedia', () async {
       // TODO
@@ -106,6 +102,8 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.106.0
+    //
     //Future<MultipartFile> serveFile(String id, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
@@ -116,8 +114,6 @@ void main() {
       // TODO
     });
 
-    // PUT /api/asset/:id/file
-    //
     //Future<AssetMediaUploadResponseDto> updateAssetMedia(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
     test('test updateAssetMedia', () async {
       // TODO
@@ -133,6 +129,8 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.106.0
+    //
     //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO

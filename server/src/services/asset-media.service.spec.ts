@@ -3,7 +3,6 @@ import { Stats } from 'node:fs';
 import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { CreateAssetMediaDto, UpdateAssetMediaDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
-
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -12,12 +11,9 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
-
 import { mimeTypes } from 'src/utils/mime-types';
-
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -27,7 +23,6 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
 import { Mocked } from 'vitest';
@@ -211,7 +206,6 @@ describe('AssetMediaService', () => {
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
@@ -222,7 +216,6 @@ describe('AssetMediaService', () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
@@ -233,7 +226,6 @@ describe('AssetMediaService', () => {
       assetMock,
       jobMock,
       libraryMock,
-      configMock,
       storageMock,
       userMock,
       eventMock,

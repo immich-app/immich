@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { EndpointLifecycle } from 'src/decorators';
 import { GetAssetThumbnailDto } from 'src/dtos/asset-media-response.dto';
 import { ServeFileDto } from 'src/dtos/asset-media.dto';
 import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
@@ -51,6 +52,7 @@ export class AssetControllerV1 {
   })
   @ApiBody({ description: 'Asset Upload Information', type: CreateAssetDto })
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
   async uploadFile(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
@@ -66,9 +68,10 @@ export class AssetControllerV1 {
   }
 
   /** @deprecated - renamed to GET /api/asset/:id/thumbnail */
-  @Get('/thumbnail/:id')
+  @Get('thumbnail/:id')
   @FileResponse()
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
   async getAssetThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -80,9 +83,10 @@ export class AssetControllerV1 {
   }
 
   /** @deprecated  - renamed to GET /api/asset/:id/file */
-  @Get('/file/:id')
+  @Get('file/:id')
   @FileResponse()
   @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
   async serveFile(
     @Res() res: Response,
     @Next() next: NextFunction,

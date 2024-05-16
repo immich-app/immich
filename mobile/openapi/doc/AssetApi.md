@@ -37,7 +37,7 @@ Method | HTTP request | Description
 
 
 
-POST /api/asset/bulk-upload-check Checks if assets exist by checksums
+Checks if assets exist by checksums
 
 ### Example
 ```dart
@@ -94,7 +94,7 @@ Name | Type | Description  | Notes
 
 
 
-POST /api/asset/exist Checks if multiple assets exist on the server and returns all existing - used by background backup
+Checks if multiple assets exist on the server and returns all existing - used by background backup
 
 ### Example
 ```dart
@@ -150,8 +150,6 @@ Name | Type | Description  | Notes
 > AssetMediaUploadResponseDto createAssetMedia(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
 
 
-
-POST /api/asset
 
 ### Example
 ```dart
@@ -473,8 +471,6 @@ Name | Type | Description  | Notes
 
 
 
-GET /api/asset/:id/thumbnail
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -593,6 +589,8 @@ Name | Type | Description  | Notes
 
 
 
+This property was deprecated in v1.106.0
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -651,8 +649,6 @@ Name | Type | Description  | Notes
 > MultipartFile getAsssetMedia(id, isThumb, isWeb, key)
 
 
-
-GET /api/asset/:id/file
 
 ### Example
 ```dart
@@ -944,6 +940,8 @@ void (empty response body)
 
 
 
+This property was deprecated in v1.106.0
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -1061,8 +1059,6 @@ Name | Type | Description  | Notes
 > AssetMediaUploadResponseDto updateAssetMedia(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration)
 
 
-
-PUT /api/asset/:id/file
 
 ### Example
 ```dart
@@ -1240,6 +1236,8 @@ void (empty response body)
 > AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, livePhotoData, sidecarData)
 
 
+
+This property was deprecated in v1.106.0
 
 ### Example
 ```dart

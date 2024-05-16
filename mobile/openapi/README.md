@@ -119,6 +119,9 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DeprecatedApi* | [**getAssetThumbnail**](doc//DeprecatedApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
+*DeprecatedApi* | [**serveFile**](doc//DeprecatedApi.md#servefile) | **GET** /asset/file/{id} | 
+*DeprecatedApi* | [**uploadFile**](doc//DeprecatedApi.md#uploadfile) | **POST** /asset/upload | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
