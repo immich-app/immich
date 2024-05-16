@@ -18,6 +18,7 @@ import {
   AssetStats,
   AssetStatsOptions,
   AssetUpdateAllOptions,
+  AssetUpdateDuplicateOptions,
   AssetUpdateOptions,
   IAssetRepository,
   LivePhotoSearchOptions,
@@ -73,7 +74,7 @@ export class AssetRepository implements IAssetRepository {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
-  async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
+  async upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 
@@ -257,6 +258,21 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.update({ id: In(ids) }, options);
   }
 
+  @GenerateSql({
+    params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
+  })
+  async updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ duplicateId: options.targetDuplicateId })
+      .where({
+        duplicateId: In(options.duplicateIds),
+      })
+      .orWhere({ id: In(options.assetIds) })
+      .execute();
+  }
+
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
     await this.repository.softDelete({ id: In(ids) });
@@ -370,6 +386,18 @@ export class AssetRepository implements IAssetRepository {
           previewPath: Not(IsNull()),
           smartSearch: {
             embedding: IsNull(),
+          },
+        };
+        break;
+      }
+
+      case WithoutProperty.DUPLICATE: {
+        where = {
+          previewPath: Not(IsNull()),
+          isVisible: true,
+          smartSearch: true,
+          jobStatus: {
+            duplicatesDetectedAt: IsNull(),
           },
         };
         break;
@@ -614,6 +642,13 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @GenerateSql({ params: [{ userIds: [DummyValue.UUID, DummyValue.UUID] }] })
+  getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]> {
+    return this.getBuilder({ ...options, isDuplicate: true })
+      .orderBy('asset.duplicateId')
+      .getMany();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByCity(
     ownerId: string,
@@ -673,16 +708,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
-
     const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
-    if (assetType !== undefined) {
-      builder.andWhere('asset.type = :assetType', { assetType });
+    if (options.assetType !== undefined) {
+      builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
     }
 
     let stackJoined = false;
 
-    if (exifInfo !== false) {
+    if (options.exifInfo !== false) {
       stackJoined = true;
       builder
         .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
@@ -690,34 +723,38 @@ export class AssetRepository implements IAssetRepository {
         .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
-    if (albumId) {
-      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    if (options.albumId) {
+      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId: options.albumId });
     }
 
-    if (userIds) {
-      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
+    if (options.userIds) {
+      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds: options.userIds });
     }
 
-    if (isArchived !== undefined) {
-      builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+    if (options.isArchived !== undefined) {
+      builder.andWhere('asset.isArchived = :isArchived', { isArchived: options.isArchived });
     }
 
-    if (isFavorite !== undefined) {
-      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    if (options.isFavorite !== undefined) {
+      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite: options.isFavorite });
     }
 
-    if (isTrashed !== undefined) {
-      builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+    if (options.isTrashed !== undefined) {
+      builder.andWhere(`asset.deletedAt ${options.isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
-    if (personId !== undefined) {
+    if (options.isDuplicate !== undefined) {
+      builder.andWhere(`asset.duplicateId ${options.isDuplicate ? 'IS NOT NULL' : 'IS NULL'}`);
+    }
+
+    if (options.personId !== undefined) {
       builder
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
-        .andWhere('person.id = :personId', { personId });
+        .andWhere('person.id = :personId', { personId: options.personId });
     }
 
-    if (withStacked) {
+    if (options.withStacked) {
       if (!stackJoined) {
         builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
       }

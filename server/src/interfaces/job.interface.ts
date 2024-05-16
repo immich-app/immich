@@ -5,6 +5,7 @@ export enum QueueName {
   FACE_DETECTION = 'faceDetection',
   FACIAL_RECOGNITION = 'facialRecognition',
   SMART_SEARCH = 'smartSearch',
+  DUPLICATE_DETECTION = 'duplicateDetection',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   MIGRATION = 'migration',
@@ -16,7 +17,7 @@ export enum QueueName {
 
 export type ConcurrentQueueName = Exclude<
   QueueName,
-  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION | QueueName.DUPLICATE_DETECTION
 >;
 
 export enum JobCommand {
@@ -85,6 +86,10 @@ export enum JobName {
   // smart search
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
+
+  // duplicate detection
+  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
+  DUPLICATE_DETECTION = 'duplicate-detection',
 
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
@@ -211,6 +216,10 @@ export type JobItem =
   // Smart Search
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
+
+  // Duplicate Detection
+  | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
+  | { name: JobName.DUPLICATE_DETECTION; data: IEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }

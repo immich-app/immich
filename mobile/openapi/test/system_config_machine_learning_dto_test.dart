@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // DuplicateDetectionConfig duplicateDetection
+    test('to test the property `duplicateDetection`', () async {
+      // TODO
+    });
+
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO

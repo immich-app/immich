@@ -115,6 +115,10 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
       }
 
+      case QueueName.DUPLICATE_DETECTION: {
+        return this.jobRepository.queue({ name: JobName.QUEUE_DUPLICATE_DETECTION, data: { force } });
+      }
+
       case QueueName.METADATA_EXTRACTION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
       }
@@ -191,7 +195,11 @@ export class JobService {
   }
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
-    return ![QueueName.FACIAL_RECOGNITION, QueueName.STORAGE_TEMPLATE_MIGRATION].includes(name);
+    return ![
+      QueueName.FACIAL_RECOGNITION,
+      QueueName.STORAGE_TEMPLATE_MIGRATION,
+      QueueName.DUPLICATE_DETECTION,
+    ].includes(name);
   }
 
   async handleNightlyJobs() {
@@ -290,6 +298,13 @@ export class JobService {
         // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
         if (asset && asset.isVisible) {
           this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+        }
+        break;
+      }
+
+      case JobName.SMART_SEARCH: {
+        if (item.data.source === 'upload') {
+          await this.jobRepository.queue({ name: JobName.DUPLICATE_DETECTION, data: item.data });
         }
         break;
       }

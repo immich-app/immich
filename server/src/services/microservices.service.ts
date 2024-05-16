@@ -9,6 +9,7 @@ import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PersonService } from 'src/services/person.service';
+import { SearchService } from 'src/services/search.service';
 import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
@@ -35,6 +36,7 @@ export class MicroservicesService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
+    private searchService: SearchService,
   ) {}
 
   async init() {
@@ -53,6 +55,8 @@ export class MicroservicesService {
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.QUEUE_DUPLICATE_DETECTION]: (data) => this.searchService.handleQueueSearchDuplicates(data),
+      [JobName.DUPLICATE_DETECTION]: (data) => this.searchService.handleSearchDuplicates(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),

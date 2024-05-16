@@ -109,6 +109,7 @@ describe(JobService.name, () => {
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
+        [QueueName.DUPLICATE_DETECTION]: expectedJobStatus,
         [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,

@@ -410,6 +410,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
     library: JobStatusDto;
@@ -748,6 +749,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
     map: boolean;
@@ -927,6 +929,10 @@ export type ClipConfig = {
     modelName: string;
     modelType?: ModelType;
 };
+export type DuplicateDetectionConfig = {
+    enabled: boolean;
+    maxDistance: number;
+};
 export type RecognitionConfig = {
     enabled: boolean;
     maxDistance: number;
@@ -937,6 +943,7 @@ export type RecognitionConfig = {
 };
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
+    duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: RecognitionConfig;
     url: string;
@@ -1396,6 +1403,14 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
         status: 200;
         data: string[];
     }>(`/asset/device/${encodeURIComponent(deviceId)}`, {
+        ...opts
+    }));
+}
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/asset/duplicates", {
         ...opts
     }));
 }
@@ -2876,6 +2891,7 @@ export enum JobName {
     FaceDetection = "faceDetection",
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
+    DuplicateDetection = "duplicateDetection",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",

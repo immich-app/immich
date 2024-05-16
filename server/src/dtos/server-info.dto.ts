@@ -97,6 +97,7 @@ export class ServerConfigDto {
 
 export class ServerFeaturesDto {
   smartSearch!: boolean;
+  duplicateDetection!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;

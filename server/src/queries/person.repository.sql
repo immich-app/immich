@@ -174,7 +174,8 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
       "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+      "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -272,6 +273,7 @@ FROM
       "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
       "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
       "AssetEntity"."stackId" AS "AssetEntity_stackId",
+      "AssetEntity"."duplicateId" AS "AssetEntity_duplicateId",
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -400,7 +402,8 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
   "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+  "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"

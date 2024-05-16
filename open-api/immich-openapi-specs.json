@@ -1194,6 +1194,30 @@
         ]
       }
     },
+    "/asset/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/exist": {
       "post": {
         "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
@@ -6812,6 +6836,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6851,6 +6878,7 @@
         },
         "required": [
           "backgroundTask",
+          "duplicateDetection",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -7873,6 +7901,24 @@
         ],
         "type": "object"
       },
+      "DuplicateDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 0.1,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
+        ],
+        "type": "object"
+      },
       "EntityType": {
         "enum": [
           "ASSET",
@@ -8167,6 +8213,7 @@
           "faceDetection",
           "facialRecognition",
           "smartSearch",
+          "duplicateDetection",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -9379,6 +9426,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9415,6 +9465,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",
@@ -10247,6 +10298,9 @@
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/DuplicateDetectionConfig"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -10259,6 +10313,7 @@
         },
         "required": [
           "clip",
+          "duplicateDetection",
           "enabled",
           "facialRecognition",
           "url"
