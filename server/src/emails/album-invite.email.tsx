@@ -68,12 +68,23 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
             {ownerName} has added you to the album <strong>{albumName}</strong>.
           </Text>
 
-          {cid && <Img src={`cid:${cid}`} width="300" />}
+          {cid && (
+            <Row>
+              <Column align="center">
+                <Img
+                  src={`cid:${cid}`}
+                  width="300"
+                  style={{
+                    borderRadius: '20px',
+                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;',
+                  }}
+                />
+              </Column>
+            </Row>
+          )}
 
-          <Row>
-            <Text style={{ ...text, marginBottom: '36px' }}>
-              To view the album, open the link in a browser, or click the button below.
-            </Text>
+          <Row style={{ marginBottom: '36px', marginTop: '36px' }}>
+            <Text style={{ ...text }}>To view the album, open the link in a browser, or click the button below.</Text>
           </Row>
           <Row>
             <Column align="center">
