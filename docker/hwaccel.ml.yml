@@ -33,6 +33,9 @@ services:
       - /dev/dri:/dev/dri
     volumes:
       - /dev/bus/usb:/dev/bus/usb
+    environment:
+      - NEOReadDebugKeys=1
+      - OverrideGpuAddressSpace=48
 
   openvino-wsl:
     devices:
@@ -41,3 +44,6 @@ services:
     volumes:
       - /dev/bus/usb:/dev/bus/usb
       - /usr/lib/wsl:/usr/lib/wsl
+    environment:
+      - NEOReadDebugKeys=1
+      - OverrideGpuAddressSpace=48
