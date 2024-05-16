@@ -8,6 +8,7 @@ import { AuditService } from 'src/services/audit.service';
 import { AuthService } from 'src/services/auth.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
+import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
@@ -44,6 +45,7 @@ export const services = [
   AuthService,
   DatabaseService,
   DownloadService,
+  DuplicateService,
   JobService,
   LibraryService,
   MediaService,
