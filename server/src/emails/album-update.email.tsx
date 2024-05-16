@@ -65,7 +65,7 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, recipientName, albumId, c
           <Text style={text}>Hey {recipientName}!</Text>
 
           <Text style={text}>
-            New media have been added to <strong>{albumName}</strong>, check it out!
+            New media has been added to <strong>{albumName}</strong>, check it out!
           </Text>
 
           {cid && (
