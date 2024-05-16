@@ -547,6 +547,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
       'deband_threshold=6',
       'downscaler=none',
       'format=yuv420p',
+      `peak_detect=${this.config.temporalAQ ? 'false' : 'true'}`, // colors are distorted before a scene change when both temporal AQ and peak detection are enabled
       `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
       'upscaler=none',
     ];

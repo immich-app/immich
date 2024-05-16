@@ -1354,7 +1354,7 @@ describe(MediaService.name, () => {
           ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'scale_cuda=-2:720,hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
+              'scale_cuda=-2:720,hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:peak_detect=true:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
             ),
           ]),
           twoPass: false,
@@ -1376,7 +1376,7 @@ describe(MediaService.name, () => {
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=hable:upscaler=none,hwupload=derive_device=cuda',
+              'hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:peak_detect=true:tonemapping=hable:upscaler=none,hwupload=derive_device=cuda',
             ),
           ]),
           twoPass: false,
@@ -1387,7 +1387,7 @@ describe(MediaService.name, () => {
     it('should use hardware decoding for nvenc if enabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true, crf: 30 },
+        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -1398,7 +1398,7 @@ describe(MediaService.name, () => {
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'hwupload=derive_device=vulkan,scale_vulkan=w=1280:h=720,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
+              'scale_cuda=-2:720,hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:peak_detect=true:tonemapping=clip:upscaler=none,hwupload=derive_device=cuda',
             ),
           ]),
           twoPass: false,
@@ -1409,7 +1409,7 @@ describe(MediaService.name, () => {
     it('should use hardware tone-mapping for nvenc if hardware decoding is enabled and should tone map', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
       systemMock.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true, crf: 30 },
+        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -1420,9 +1420,27 @@ describe(MediaService.name, () => {
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:tonemapping=hable:upscaler=none,hwupload=derive_device=cuda',
+              'hwupload=derive_device=vulkan,libplacebo=color_primaries=bt709:color_trc=bt709:colorspace=bt709:deband=true:deband_iterations=3:deband_radius=8:deband_threshold=6:downscaler=none:format=yuv420p:peak_detect=true:tonemapping=hable:upscaler=none,hwupload=derive_device=cuda',
             ),
           ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use disable peak detection for nvenc when tone mapping and temporal AQ is enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true, temporalAQ: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+          outputOptions: expect.arrayContaining([expect.stringContaining('peak_detect=false')]),
           twoPass: false,
         },
       );
@@ -1785,7 +1803,7 @@ describe(MediaService.name, () => {
       storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHWAccel.RKMPP, crf: 30, maxBitrate: '0' },
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -1804,7 +1822,9 @@ describe(MediaService.name, () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, crf: 30, maxBitrate: '0' } });
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
+      });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -1850,12 +1870,9 @@ describe(MediaService.name, () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => false, isCharacterDevice: () => false });
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
-        { key: SystemConfigKey.FFMPEG_ACCEL_DECODE, value: true },
-        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
-        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
-      ]);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
+      });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
