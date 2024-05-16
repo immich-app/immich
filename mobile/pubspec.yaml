@@ -21,7 +21,7 @@ dependencies:
   riverpod_annotation: ^2.3.3
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
-  intl: ^0.18.0
+  intl: ^0.19.0
   auto_route: ^8.0.2
   fluttertoast: ^8.2.4
   video_player: ^2.8.2
