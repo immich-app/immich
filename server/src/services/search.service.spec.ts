@@ -1,5 +1,4 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -24,7 +23,7 @@ import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.m
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { Mocked, vitest } from 'vitest';
+import { Mocked, beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
 
@@ -109,34 +108,46 @@ describe(SearchService.name, () => {
 
   describe('handleQueueSearchDuplicates', () => {
     beforeEach(() => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          duplicateDetection: {
+            enabled: true,
+          },
+        },
+      });
     });
 
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: false,
+          duplicateDetection: {
+            enabled: true,
+          },
+        },
+      });
 
       await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should skip if duplicate detection is disabled', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: false },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          duplicateDetection: {
+            enabled: false,
+          },
+        },
+      });
 
       await expect(sut.handleQueueSearchDuplicates({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should queue missing assets', async () => {
@@ -180,17 +191,25 @@ describe(SearchService.name, () => {
 
   describe('handleSearchDuplicates', () => {
     beforeEach(() => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          duplicateDetection: {
+            enabled: true,
+          },
+        },
+      });
     });
 
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: true },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: false,
+          duplicateDetection: {
+            enabled: true,
+          },
+        },
+      });
       const id = assetStub.livePhotoMotionAsset.id;
       assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
@@ -200,10 +219,14 @@ describe(SearchService.name, () => {
     });
 
     it('should skip if duplicate detection is disabled', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: true },
-        { key: SystemConfigKey.MACHINE_LEARNING_DUPLICATE_DETECTION_ENABLED, value: false },
-      ]);
+      systemMock.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          duplicateDetection: {
+            enabled: false,
+          },
+        },
+      });
       const id = assetStub.livePhotoMotionAsset.id;
       assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
