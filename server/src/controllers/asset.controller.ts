@@ -57,11 +57,6 @@ export class AssetController {
     return this.service.getStatistics(auth, dto);
   }
 
-  @Get('duplicates')
-  getAssetDuplicates(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
-    return this.service.getDuplicates(auth);
-  }
-
   @Post('jobs')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated()
