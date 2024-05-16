@@ -1,6 +1,6 @@
 export const INotificationRepository = 'INotificationRepository';
 
-export type EmailImageAttachement = {
+export type EmailImageAttachment = {
   filename: string;
   path: string;
   cid: string;
@@ -13,7 +13,7 @@ export type SendEmailOptions = {
   subject: string;
   html: string;
   text: string;
-  imageAttachements?: EmailImageAttachement[];
+  imageAttachments?: EmailImageAttachment[];
   smtp: SmtpOptions;
 };
 

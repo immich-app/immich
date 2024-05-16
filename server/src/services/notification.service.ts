@@ -15,7 +15,7 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { EmailImageAttachement, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
+import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
@@ -83,7 +83,7 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async _getAlbumThumbnailAttachement(album: AlbumEntity): Promise<EmailImageAttachement | undefined> {
+  async _getAlbumThumbnailAttachment(album: AlbumEntity): Promise<EmailImageAttachment | undefined> {
     if (!album.albumThumbnailAssetId) {
       return;
     }
@@ -111,7 +111,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const attachement = await this._getAlbumThumbnailAttachement(album);
+    const attachment = await this._getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -122,7 +122,7 @@ export class NotificationService {
         albumName: album.albumName,
         senderName: album.owner.name,
         recipientName: recipient.name,
-        cid: attachement ? attachement.cid : undefined,
+        cid: attachment ? attachment.cid : undefined,
       },
     });
 
@@ -133,7 +133,7 @@ export class NotificationService {
         subject: `You have been added to a shared album - ${album.albumName}`,
         html,
         text,
-        imageAttachements: attachement ? [attachement] : undefined,
+        imageAttachments: attachment ? [attachment] : undefined,
       },
     });
 
@@ -153,7 +153,7 @@ export class NotificationService {
     }
 
     const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
-    const attachement = await this._getAlbumThumbnailAttachement(album);
+    const attachment = await this._getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
 
@@ -165,7 +165,7 @@ export class NotificationService {
           albumId: album.id,
           albumName: album.albumName,
           recipientName: recipient.name,
-          cid: attachement ? attachement.cid : undefined,
+          cid: attachment ? attachment.cid : undefined,
         },
       });
 
@@ -176,7 +176,7 @@ export class NotificationService {
           subject: `New media have been added to an album - ${album.albumName}`,
           html,
           text,
-          imageAttachements: attachement ? [attachement] : undefined,
+          imageAttachments: attachment ? [attachment] : undefined,
         },
       });
     }
@@ -199,7 +199,7 @@ export class NotificationService {
       from: notifications.smtp.from,
       replyTo: notifications.smtp.replyTo || notifications.smtp.from,
       smtp: notifications.smtp.transport,
-      imageAttachements: data.imageAttachements,
+      imageAttachments: data.imageAttachments,
     });
 
     if (!response) {

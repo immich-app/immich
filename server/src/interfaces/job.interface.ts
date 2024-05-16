@@ -1,4 +1,4 @@
-import { EmailImageAttachement } from 'src/interfaces/notification.interface';
+import { EmailImageAttachment } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
@@ -146,7 +146,7 @@ export interface IEmailJob {
   subject: string;
   html: string;
   text: string;
-  imageAttachements?: EmailImageAttachement[];
+  imageAttachments?: EmailImageAttachment[];
 }
 
 export interface INotifySignupJob extends IEntityJob {
