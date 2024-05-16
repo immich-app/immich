@@ -51,6 +51,7 @@
 - [路线图](https://github.com/orgs/immich-app/projects/1)
 - [示例](#示例)
 - [功能特性](#功能特性)
+- [本地优化](#本地优化)
 - [介绍](https://immich.app/docs/overview/introduction)
 - [安装](https://immich.app/docs/install/requirements)
 - [贡献指南](https://immich.app/docs/overview/support-the-project)
@@ -111,6 +112,26 @@
 | 离线支持                                    | 是     | 否     |
 | 只读相册                                    | 是     | 是     |
 | 照片堆叠                                    | 是     | 是     |
+
+## 本地优化
+
+### 为下载识别模型添加代理
+
+为 immich-machine-learning 容器添加以下环境变量
+
+```yaml
+    environment:
+      # ...
+      - HTTP_PROXY=http://172.17.0.1:10809
+      - HTTPS_PROXY=http://172.17.0.1:10809
+```
+> 其中 `http://172.17.0.1:10809` 为你自己的HTTP代理地址
+
+### 更换支持中文搜索的CLIP大模型
+
+登录网页：Settings - Machine Learning Settings - Smart Search - CLIP MODEL
+
+更改默认的 `ViT-B-32__openai` 不支持中文，更改为 `XLM-Roberta-Large-Vit-B-16Plus`
 
 ## 贡献者
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
