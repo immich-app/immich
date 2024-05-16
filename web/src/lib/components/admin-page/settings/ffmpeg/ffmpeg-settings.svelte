@@ -280,7 +280,7 @@
               id="hardware-decoding"
               title="HARDWARE DECODING"
               {disabled}
-              subtitle="Applies only to NVENC and RKMPP. Whether to use hardware decoding for transcoding. May not work on all devices or videos."
+              subtitle="Applies only to NVENC and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos."
               bind:checked={config.ffmpeg.accelDecode}
               isEdited={config.ffmpeg.accelDecode !== savedConfig.ffmpeg.accelDecode}
             />
