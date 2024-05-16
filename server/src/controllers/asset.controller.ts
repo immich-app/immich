@@ -58,6 +58,7 @@ export class AssetController {
   }
 
   @Get('duplicates')
+  @Authenticated()
   getAssetDuplicates(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
     return this.service.getDuplicates(auth);
   }
