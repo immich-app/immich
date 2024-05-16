@@ -577,7 +577,7 @@ describe(AlbumService.name, () => {
         [
           {
             name: JobName.NOTIFY_ALBUM_UPDATE,
-            data: { id: albumStub.oneAsset.id, senderId: authStub.admin.user.id },
+            data: { id: 'album-123', senderId: authStub.admin.user.id },
           },
         ],
       ]);
@@ -625,7 +625,7 @@ describe(AlbumService.name, () => {
         [
           {
             name: JobName.NOTIFY_ALBUM_UPDATE,
-            data: { id: albumStub.sharedWithUser.id, senderId: authStub.user1.user.id },
+            data: { id: 'album-123', senderId: authStub.user1.user.id },
           },
         ],
       ]);
