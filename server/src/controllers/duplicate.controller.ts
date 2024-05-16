@@ -6,11 +6,11 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
 
 @ApiTags('Duplicate')
-@Controller('duplicate')
+@Controller('duplicates')
 export class DuplicateController {
   constructor(private service: DuplicateService) {}
 
-  @Get('duplicates')
+  @Get()
   @Authenticated()
   getAssetDuplicates(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
     return this.service.getDuplicates(auth);
