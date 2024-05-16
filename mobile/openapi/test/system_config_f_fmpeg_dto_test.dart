@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool accelDecode
+    test('to test the property `accelDecode`', () async {
+      // TODO
+    });
+
     // List<AudioCodec> acceptedAudioCodecs (default value: const [])
     test('to test the property `acceptedAudioCodecs`', () async {
       // TODO

@@ -97,6 +97,7 @@ export interface SystemConfig {
     preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
+    accelDecode: boolean;
     tonemap: ToneMapping;
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
@@ -228,6 +229,7 @@ export const defaults = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },

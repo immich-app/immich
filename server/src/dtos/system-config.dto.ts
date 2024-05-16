@@ -132,6 +132,9 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
   accel!: TranscodeHWAccel;
 
+  @ValidateBoolean()
+  accelDecode!: boolean;
+
   @IsEnum(ToneMapping)
   @ApiProperty({ enumName: 'ToneMapping', enum: ToneMapping })
   tonemap!: ToneMapping;
