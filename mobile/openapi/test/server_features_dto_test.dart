@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool duplicateDetection
+    test('to test the property `duplicateDetection`', () async {
+      // TODO
+    });
+
     // bool email
     test('to test the property `email`', () async {
       // TODO

@@ -98,6 +98,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
+*AssetApi* | [**getAssetDuplicates**](doc//AssetApi.md#getassetduplicates) | **GET** /asset/duplicates | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
@@ -282,6 +283,7 @@ Class | Method | HTTP request | Description
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
+ - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
