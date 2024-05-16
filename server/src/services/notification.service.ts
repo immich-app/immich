@@ -100,14 +100,14 @@ export class NotificationService {
     };
   }
 
-  async handleAlbumInvite({ id, userId }: INotifyAlbumInviteJob) {
+  async handleAlbumInvite({ id, recipientId }: INotifyAlbumInviteJob) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
       return JobStatus.SKIPPED;
     }
 
-    const guestUser = await this.userRepository.get(userId, { withDeleted: false });
-    if (!guestUser) {
+    const recipient = await this.userRepository.get(recipientId, { withDeleted: false });
+    if (!recipient) {
       return JobStatus.SKIPPED;
     }
 
@@ -121,7 +121,7 @@ export class NotificationService {
         albumId: album.id,
         albumName: album.albumName,
         senderName: album.owner.name,
-        recipientName: guestUser.name,
+        recipientName: recipient.name,
         cid: attachement ? attachement.cid : undefined,
       },
     });
@@ -129,7 +129,7 @@ export class NotificationService {
     await this.jobRepository.queue({
       name: JobName.SEND_EMAIL,
       data: {
-        to: guestUser.email,
+        to: recipient.email,
         subject: `You have been added to a shared album - ${album.albumName}`,
         html,
         text,

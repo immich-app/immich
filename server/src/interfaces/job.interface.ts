@@ -154,7 +154,7 @@ export interface INotifySignupJob extends IEntityJob {
 }
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
-  userId: string;
+  recipientId: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob {
