@@ -83,17 +83,21 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async _getAlbumThumbnailPath(album: AlbumEntity) {
+  async _getAlbumThumbnailAttachement(album: AlbumEntity): Promise<EmailImageAttachement | undefined> {
     if (!album.albumThumbnailAssetId) {
-      return null;
+      return;
     }
 
     const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail) {
-      return null;
+    if (!albumThumbnail || !albumThumbnail.thumbnailPath) {
+      return;
     }
 
-    return albumThumbnail.previewPath;
+    return {
+      filename: 'album-thumbnail.jpg',
+      path: albumThumbnail.thumbnailPath,
+      cid: 'album-thumbnail',
+    };
   }
 
   async handleAlbumInvite({ id, userId }: INotifyAlbumInviteJob) {
@@ -107,17 +111,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const thumbnailPath = await this._getAlbumThumbnailPath(album);
-    const cid = thumbnailPath ? 'album-thumbnail' : '';
-    let attachement: EmailImageAttachement | undefined;
-
-    if (thumbnailPath) {
-      attachement = {
-        filename: 'album-thumbnail.jpg',
-        path: thumbnailPath,
-        cid,
-      };
-    }
+    const attachement = await this._getAlbumThumbnailAttachement(album);
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -126,9 +120,9 @@ export class NotificationService {
         baseUrl: server.externalDomain || 'http://localhost:2283',
         albumId: album.id,
         albumName: album.albumName,
-        ownerName: album.owner.name,
-        guestName: guestUser.name,
-        cid,
+        senderName: album.owner.name,
+        recipientName: guestUser.name,
+        cid: attachement ? attachement.cid : undefined,
       },
     });
 
@@ -146,12 +140,47 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAlbumUpdate({ id }: INotifyAlbumUpdateJob) {
-    const user = await this.userRepository.get(id, { withDeleted: false });
-    if (!user) {
+  async handleAlbumUpdate({ id, senderId }: INotifyAlbumUpdateJob) {
+    const album = await this.albumRepository.getById(id, { withAssets: false });
+
+    if (!album) {
       return JobStatus.SKIPPED;
     }
-    // TODO
+
+    const owner = await this.userRepository.get(album.ownerId, { withDeleted: false });
+    if (!owner) {
+      return JobStatus.SKIPPED;
+    }
+
+    const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
+    const attachement = await this._getAlbumThumbnailAttachement(album);
+
+    const { server } = await this.configCore.getConfig();
+
+    for (const recipient of recipients) {
+      const { html, text } = this.notificationRepository.renderEmail({
+        template: EmailTemplate.ALBUM_UPDATE,
+        data: {
+          baseUrl: server.externalDomain || 'http://localhost:2283',
+          albumId: album.id,
+          albumName: album.albumName,
+          recipientName: recipient.name,
+          cid: attachement ? attachement.cid : undefined,
+        },
+      });
+
+      await this.jobRepository.queue({
+        name: JobName.SEND_EMAIL,
+        data: {
+          to: recipient.email,
+          subject: `New media have been added to an album - ${album.albumName}`,
+          html,
+          text,
+          imageAttachements: attachement ? [attachement] : undefined,
+        },
+      });
+    }
+
     return JobStatus.SUCCESS;
   }
 

@@ -157,7 +157,9 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
   userId: string;
 }
 
-export interface INotifyAlbumUpdateJob extends IEntityJob {}
+export interface INotifyAlbumUpdateJob extends IEntityJob {
+  senderId: string;
+}
 
 export interface JobCounts {
   active: number;

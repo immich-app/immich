@@ -17,7 +17,7 @@ import * as CSS from 'csstype';
 import * as React from 'react';
 import { AlbumUpdateEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumUpdateEmail = ({ baseUrl, albumName, userName, albumId }: AlbumUpdateEmailProps) => (
+export const AlbumUpdateEmail = ({ baseUrl, albumName, recipientName, albumId, cid }: AlbumUpdateEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -62,24 +62,43 @@ export const AlbumUpdateEmail = ({ baseUrl, albumName, userName, albumId }: Albu
             }}
           />
 
+          <Text style={text}>Hey {recipientName}!</Text>
+
           <Text style={text}>
-            {userName} has added new media to <strong>{albumName}</strong>, check it out!
+            New media have been added to <strong>{albumName}</strong>, check it out!
           </Text>
 
-          <Row>
-            <Text style={{ ...text, marginBottom: '36px' }}>
-              To view the album, open the link in a browser, or click the button below.
-            </Text>
+          {cid && (
+            <Row>
+              <Column align="center">
+                <Img
+                  src={`cid:${cid}`}
+                  width="300"
+                  style={{
+                    borderRadius: '20px',
+                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
+                  }}
+                />
+              </Column>
+            </Row>
+          )}
+
+          <Row style={{ marginBottom: '36px', marginTop: '36px' }}>
+            <Text style={{ ...text }}>To view the album, open the link in a browser, or click the button below.</Text>
           </Row>
           <Row>
-            <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
-              {baseUrl}/albums/{albumId}
-            </Link>
+            <Column align="center">
+              <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
+                {baseUrl}/albums/{albumId}
+              </Link>
+            </Column>
           </Row>
           <Row>
-            <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
-              View album
-            </Button>
+            <Column align="center">
+              <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
+                View album
+              </Button>
+            </Column>
           </Row>
         </Section>
 
@@ -121,7 +140,7 @@ AlbumUpdateEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app',
   albumName: 'Trip to Europe',
   albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
-  userName: 'Alex Tran',
+  recipientName: 'Alex Tran',
 } as AlbumUpdateEmailProps;
 
 export default AlbumUpdateEmail;

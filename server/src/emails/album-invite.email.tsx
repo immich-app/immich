@@ -17,7 +17,14 @@ import * as CSS from 'csstype';
 import * as React from 'react';
 import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
 
-export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, albumId, cid }: AlbumInviteEmailProps) => (
+export const AlbumInviteEmail = ({
+  baseUrl,
+  albumName,
+  recipientName,
+  senderName,
+  albumId,
+  cid,
+}: AlbumInviteEmailProps) => (
   <Html>
     <Head />
     <Preview>You have added to a shared album.</Preview>
@@ -62,10 +69,10 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
             }}
           />
 
-          <Text style={text}>Hey {guestName}!</Text>
+          <Text style={text}>Hey {recipientName}!</Text>
 
           <Text style={text}>
-            {ownerName} has added you to the album <strong>{albumName}</strong>.
+            {senderName} has added you to the album <strong>{albumName}</strong>.
           </Text>
 
           {cid && (
@@ -76,7 +83,7 @@ export const AlbumInviteEmail = ({ baseUrl, albumName, guestName, ownerName, alb
                   width="300"
                   style={{
                     borderRadius: '20px',
-                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;',
+                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
                   }}
                 />
               </Column>
@@ -140,8 +147,8 @@ AlbumInviteEmail.PreviewProps = {
   baseUrl: 'https://demo.immich.app',
   albumName: 'Trip to Europe',
   albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
-  ownerName: 'Owner User',
-  guestName: 'Guest User',
+  senderName: 'Owner User',
+  recipientName: 'Guest User',
   cid: '',
 } as AlbumInviteEmailProps;
 

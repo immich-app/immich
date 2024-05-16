@@ -193,6 +193,11 @@ export class AlbumService {
       });
     }
 
+    await this.jobRepository.queue({
+      name: JobName.NOTIFY_ALBUM_UPDATE,
+      data: { id: album.id, senderId: auth.user.id },
+    });
+
     return results;
   }
 

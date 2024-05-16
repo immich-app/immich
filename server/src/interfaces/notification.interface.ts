@@ -48,15 +48,16 @@ export interface WelcomeEmailProps extends BaseEmailProps {
 export interface AlbumInviteEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
-  ownerName: string;
-  guestName: string;
+  senderName: string;
+  recipientName: string;
   cid?: string;
 }
 
 export interface AlbumUpdateEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
-  userName: string;
+  recipientName: string;
+  cid?: string;
 }
 
 export type EmailRenderRequest =
