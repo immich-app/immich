@@ -18,9 +18,6 @@ Edit the following script as necessary and add it to your crontab. Note that thi
 #!/bin/sh
 
 ### init Borg setup
-#!/bin/sh
-
-### init Borg setup
 _init_setup() {
     if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
         mkdir "$UPLOAD_LOCATION/database-backup" || return 1
