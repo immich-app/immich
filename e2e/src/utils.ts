@@ -311,7 +311,7 @@ export const utils = {
     }
 
     const builder = request(app)
-      .post(`/asset/upload`)
+      .post(`/asset`)
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 

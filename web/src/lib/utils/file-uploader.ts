@@ -144,7 +144,7 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
         responseData = response.data;
       } else {
         const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
+          url: defaults.baseUrl + '/asset' + (key ? `?key=${key}` : ''),
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });

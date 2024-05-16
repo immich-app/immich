@@ -1392,7 +1392,7 @@ export function getAllAssets({ ifNoneMatch, isArchived, isFavorite, skip, take, 
         })
     }));
 }
-export function createAssetMedia({ key, xImmichChecksum, createAssetMediaDto }: {
+export function createAsset({ key, xImmichChecksum, createAssetMediaDto }: {
     key?: string;
     xImmichChecksum?: string;
     createAssetMediaDto: CreateAssetMediaDto;
@@ -1629,7 +1629,7 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function getAsssetMedia({ id, isThumb, isWeb, key }: {
+export function getOriginalBytes({ id, isThumb, isWeb, key }: {
     id: string;
     isThumb?: boolean;
     isWeb?: boolean;
@@ -1646,7 +1646,7 @@ export function getAsssetMedia({ id, isThumb, isWeb, key }: {
         ...opts
     }));
 }
-export function updateAssetMedia({ id, key, updateAssetMediaDto }: {
+export function replaceAsset({ id, key, updateAssetMediaDto }: {
     id: string;
     key?: string;
     updateAssetMediaDto: UpdateAssetMediaDto;
@@ -1662,7 +1662,7 @@ export function updateAssetMedia({ id, key, updateAssetMediaDto }: {
         body: updateAssetMediaDto
     })));
 }
-export function getAssetMediaThumbnail({ format, id, key }: {
+export function getThumbnailBytes({ format, id, key }: {
     format?: ThumbnailFormat;
     id: string;
     key?: string;

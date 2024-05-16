@@ -250,7 +250,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(assetEntity);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+      await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
         asset: mapAsset(assetEntity),
         duplicate: false,
         duplicateId: undefined,
@@ -282,7 +282,7 @@ describe('AssetMediaService', () => {
       assetMock.getByChecksum.mockResolvedValue(_getAsset_1());
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+      await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
         asset: undefined,
         duplicate: true,
         duplicateId: 'id_1',
@@ -344,7 +344,7 @@ describe('AssetMediaService', () => {
       const dto = _getUpdateAssetDto();
       assetMock.getById.mockResolvedValueOnce(null);
 
-      await expect(sut.updateFile(authStub.user1, 'id', dto, fileStub.photo)).rejects.toThrow(
+      await expect(sut.replaceAsset(authStub.user1, 'id', dto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
       );
 
@@ -364,7 +364,7 @@ describe('AssetMediaService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
         asset: mapAsset(updatedAsset),
@@ -397,7 +397,7 @@ describe('AssetMediaService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
         asset: mapAsset(updatedAsset),
@@ -428,7 +428,7 @@ describe('AssetMediaService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
         asset: mapAsset(updatedAsset),
@@ -461,7 +461,7 @@ describe('AssetMediaService', () => {
       // this is for the clone call
       assetMock.create.mockResolvedValue(_getClonedAsset as AssetEntity);
 
-      await expect(sut.updateFile(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: true,
         duplicateId: existingAsset.id,
         asset: undefined,

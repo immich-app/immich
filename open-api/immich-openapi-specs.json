@@ -1073,7 +1073,7 @@
         ]
       },
       "post": {
-        "operationId": "createAssetMedia",
+        "operationId": "createAsset",
         "parameters": [
           {
             "name": "key",
@@ -1914,7 +1914,7 @@
     },
     "/asset/{id}/file": {
       "get": {
-        "operationId": "getAsssetMedia",
+        "operationId": "getOriginalBytes",
         "parameters": [
           {
             "name": "id",
@@ -1984,7 +1984,7 @@
         }
       },
       "put": {
-        "operationId": "updateAssetMedia",
+        "operationId": "replaceAsset",
         "parameters": [
           {
             "name": "id",
@@ -2048,7 +2048,7 @@
     },
     "/asset/{id}/thumbnail": {
       "get": {
-        "operationId": "getAssetMediaThumbnail",
+        "operationId": "getThumbnailBytes",
         "parameters": [
           {
             "name": "format",

@@ -79,7 +79,7 @@ export class AssetControllerV1 {
     @Param() { id }: UUIDParamDto,
     @Query() dto: GetAssetThumbnailDto,
   ) {
-    await sendFile(res, next, () => this.assetMediaService.serveThumbnail(auth, id, dto));
+    await sendFile(res, next, () => this.assetMediaService.getThumbnailBytes(auth, id, dto));
   }
 
   /** @deprecated  - renamed to GET /api/asset/:id/file */
@@ -94,6 +94,6 @@ export class AssetControllerV1 {
     @Param() { id }: UUIDParamDto,
     @Query() dto: ServeFileDto,
   ) {
-    await sendFile(res, next, () => this.assetMediaService.serveFile(auth, id, dto));
+    await sendFile(res, next, () => this.assetMediaService.getOriginalBytes(auth, id, dto));
   }
 }

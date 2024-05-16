@@ -90,7 +90,7 @@ export class AssetMediaService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  public async uploadFile(
+  public async createAsset(
     auth: AuthDto,
     dto: CreateAssetMediaDto,
     file: UploadFile,
@@ -130,7 +130,7 @@ export class AssetMediaService {
     return library.id;
   }
 
-  public async updateFile(
+  public async replaceAsset(
     auth: AuthDto,
     id: string,
     dto: UpdateAssetMediaDto,
@@ -347,7 +347,7 @@ export class AssetMediaService {
     }
   }
 
-  public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
+  public async getOriginalBytes(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
     // this is not quite right as sometimes this returns the original still
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
@@ -387,7 +387,7 @@ export class AssetMediaService {
     }
   }
 
-  async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
+  async getThumbnailBytes(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
     const asset = await this.assetRepository.getById(assetId);

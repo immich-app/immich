@@ -5,7 +5,8 @@
   import { getAssetJobName } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiAccountCircleOutline,
     mdiAlertOutline,
@@ -22,7 +23,6 @@
     mdiHeartOutline,
     mdiHistory,
     mdiImageAlbum,
-    mdiUpload,
     mdiImageMinusOutline,
     mdiImageOutline,
     mdiImageRefreshOutline,
@@ -33,11 +33,11 @@
     mdiPlaySpeed,
     mdiPresentationPlay,
     mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;

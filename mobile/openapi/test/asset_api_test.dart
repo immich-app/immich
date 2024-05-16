@@ -31,8 +31,8 @@ void main() {
       // TODO
     });
 
-    //Future<AssetMediaUploadResponseDto> createAssetMedia(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
-    test('test createAssetMedia', () async {
+    //Future<AssetMediaUploadResponseDto> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
+    test('test createAsset', () async {
       // TODO
     });
 
@@ -60,11 +60,6 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> getAssetMediaThumbnail(String id, { ThumbnailFormat format, String key }) async
-    test('test getAssetMediaThumbnail', () async {
-      // TODO
-    });
-
     //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
     test('test getAssetStatistics', () async {
       // TODO
@@ -74,11 +69,6 @@ void main() {
     //
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> getAsssetMedia(String id, { bool isThumb, bool isWeb, String key }) async
-    test('test getAsssetMedia', () async {
       // TODO
     });
 
@@ -92,8 +82,23 @@ void main() {
       // TODO
     });
 
+    //Future<MultipartFile> getOriginalBytes(String id, { bool isThumb, bool isWeb, String key }) async
+    test('test getOriginalBytes', () async {
+      // TODO
+    });
+
     //Future<List<AssetResponseDto>> getRandom({ num count }) async
     test('test getRandom', () async {
+      // TODO
+    });
+
+    //Future<MultipartFile> getThumbnailBytes(String id, { ThumbnailFormat format, String key }) async
+    test('test getThumbnailBytes', () async {
+      // TODO
+    });
+
+    //Future<AssetMediaUploadResponseDto> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
+    test('test replaceAsset', () async {
       // TODO
     });
 
@@ -111,11 +116,6 @@ void main() {
 
     //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
-      // TODO
-    });
-
-    //Future<AssetMediaUploadResponseDto> updateAssetMedia(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
-    test('test updateAssetMedia', () async {
       // TODO
     });
 

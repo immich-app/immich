@@ -58,27 +58,27 @@ export class AssetMediaController {
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  createAssetMedia(
+  createAsset(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: CreateAssetMediaDto,
   ): Promise<AssetMediaUploadResponseDto> {
     const { file, sidecarFile } = getFiles(files);
-    return this.service.uploadFile(auth, dto, file, sidecarFile);
+    return this.service.createAsset(auth, dto, file, sidecarFile);
   }
 
   @Get(':id/file')
   @FileResponse()
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  async getAsssetMedia(
+  async getOriginalBytes(
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: ServeFileDto,
   ) {
-    await sendFile(res, next, () => this.service.serveFile(auth, id, dto));
+    await sendFile(res, next, () => this.service.getOriginalBytes(auth, id, dto));
   }
 
   @Put(':id/file')
@@ -90,7 +90,7 @@ export class AssetMediaController {
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  async updateAssetMedia(
+  async replaceAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
@@ -98,7 +98,7 @@ export class AssetMediaController {
     @Body() dto: UpdateAssetMediaDto,
   ): Promise<AssetMediaUploadResponseDto> {
     const { file } = getFiles(files);
-    const responseDto = await this.service.updateFile(auth, id, dto, file);
+    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
     return responseDto;
   }
 
@@ -106,14 +106,14 @@ export class AssetMediaController {
   @FileResponse()
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  async getAssetMediaThumbnail(
+  async getThumbnailBytes(
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: GetAssetThumbnailDto,
   ) {
-    await sendFile(res, next, () => this.service.serveThumbnail(auth, id, dto));
+    await sendFile(res, next, () => this.service.getThumbnailBytes(auth, id, dto));
   }
 
   /**

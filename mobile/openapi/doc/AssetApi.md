@@ -11,22 +11,22 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**checkBulkUpload**](AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-[**createAssetMedia**](AssetApi.md#createassetmedia) | **POST** /asset | 
+[**createAsset**](AssetApi.md#createasset) | **POST** /asset | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetInfo**](AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
-[**getAssetMediaThumbnail**](AssetApi.md#getassetmediathumbnail) | **GET** /asset/{id}/thumbnail | 
 [**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-[**getAsssetMedia**](AssetApi.md#getasssetmedia) | **GET** /asset/{id}/file | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
+[**getOriginalBytes**](AssetApi.md#getoriginalbytes) | **GET** /asset/{id}/file | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
+[**getThumbnailBytes**](AssetApi.md#getthumbnailbytes) | **GET** /asset/{id}/thumbnail | 
+[**replaceAsset**](AssetApi.md#replaceasset) | **PUT** /asset/{id}/file | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
-[**updateAssetMedia**](AssetApi.md#updateassetmedia) | **PUT** /asset/{id}/file | 
 [**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
 [**updateStackParent**](AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
@@ -146,8 +146,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **createAssetMedia**
-> AssetMediaUploadResponseDto createAssetMedia(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
+# **createAsset**
+> AssetMediaUploadResponseDto createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
 
 
 
@@ -186,10 +186,10 @@ final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.createAssetMedia(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData);
+    final result = api_instance.createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->createAssetMedia: $e\n');
+    print('Exception when calling AssetApi->createAsset: $e\n');
 }
 ```
 
@@ -466,65 +466,6 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAssetMediaThumbnail**
-> MultipartFile getAssetMediaThumbnail(id, format, key)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final format = ; // ThumbnailFormat | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.getAssetMediaThumbnail(id, format, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getAssetMediaThumbnail: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
- **format** | [**ThumbnailFormat**](.md)|  | [optional] 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**MultipartFile**](MultipartFile.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/octet-stream
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **getAssetStatistics**
 > AssetStatsResponseDto getAssetStatistics(isArchived, isFavorite, isTrashed)
 
@@ -628,67 +569,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
  **format** | [**ThumbnailFormat**](.md)|  | [optional] 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**MultipartFile**](MultipartFile.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/octet-stream
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getAsssetMedia**
-> MultipartFile getAsssetMedia(id, isThumb, isWeb, key)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final isThumb = true; // bool | 
-final isWeb = true; // bool | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.getAsssetMedia(id, isThumb, isWeb, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getAsssetMedia: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
- **isThumb** | **bool**|  | [optional] 
- **isWeb** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -826,6 +706,67 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getOriginalBytes**
+> MultipartFile getOriginalBytes(id, isThumb, isWeb, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final isThumb = true; // bool | 
+final isWeb = true; // bool | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.getOriginalBytes(id, isThumb, isWeb, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getOriginalBytes: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **isThumb** | **bool**|  | [optional] 
+ **isWeb** | **bool**|  | [optional] 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**MultipartFile**](MultipartFile.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/octet-stream
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getRandom**
 > List<AssetResponseDto> getRandom(count)
 
@@ -877,6 +818,134 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getThumbnailBytes**
+> MultipartFile getThumbnailBytes(id, format, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final format = ; // ThumbnailFormat | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.getThumbnailBytes(id, format, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getThumbnailBytes: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **format** | [**ThumbnailFormat**](.md)|  | [optional] 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**MultipartFile**](MultipartFile.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/octet-stream
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **replaceAsset**
+> AssetMediaUploadResponseDto replaceAsset(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
+final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
+final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
+final key = key_example; // String | 
+final duration = duration_example; // String | 
+
+try {
+    final result = api_instance.replaceAsset(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->replaceAsset: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **assetData** | **MultipartFile**|  | 
+ **deviceAssetId** | **String**|  | 
+ **deviceId** | **String**|  | 
+ **fileCreatedAt** | **DateTime**|  | 
+ **fileModifiedAt** | **DateTime**|  | 
+ **key** | **String**|  | [optional] 
+ **duration** | **String**|  | [optional] 
+
+### Return type
+
+[**AssetMediaUploadResponseDto**](AssetMediaUploadResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1051,75 +1120,6 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **updateAssetMedia**
-> AssetMediaUploadResponseDto updateAssetMedia(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final assetData = BINARY_DATA_HERE; // MultipartFile | 
-final deviceAssetId = deviceAssetId_example; // String | 
-final deviceId = deviceId_example; // String | 
-final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
-final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
-final key = key_example; // String | 
-final duration = duration_example; // String | 
-
-try {
-    final result = api_instance.updateAssetMedia(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->updateAssetMedia: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
- **assetData** | **MultipartFile**|  | 
- **deviceAssetId** | **String**|  | 
- **deviceId** | **String**|  | 
- **fileCreatedAt** | **DateTime**|  | 
- **fileModifiedAt** | **DateTime**|  | 
- **key** | **String**|  | [optional] 
- **duration** | **String**|  | [optional] 
-
-### Return type
-
-[**AssetMediaUploadResponseDto**](AssetMediaUploadResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
