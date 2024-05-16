@@ -6,7 +6,7 @@ export class SystemMetadataEntity<T extends keyof SystemMetadata = SystemMetadat
   @PrimaryColumn({ type: 'varchar' })
   key!: T;
 
-  @Column({ type: 'jsonb', default: '{}', transformer: { to: JSON.stringify, from: JSON.parse } })
+  @Column({ type: 'jsonb' })
   value!: SystemMetadata[T];
 }
 
