@@ -531,28 +531,31 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     if (this.shouldScale(videoStream)) {
       options.push(`scale_cuda=${this.getScaling(videoStream)}`);
     }
-    options.push('hwupload=derive_device=vulkan', ...this.getToneMapping(videoStream), 'hwupload=derive_device=cuda');
+    options.push(...this.getToneMapping(videoStream));
+    if (options.length > 0) {
+      options[options.length - 1] += ':format=nv12';
+    } else {
+      options.push('format=nv12');
+    }
     return options;
   }
 
   getToneMapping(videoStream: VideoStreamInfo) {
+    if (!this.shouldToneMap(videoStream)) {
+      return [];
+    }
+
     const colors = this.getColors();
-    const libplaceboOptions = [
-      `color_primaries=${colors.primaries}`,
-      `color_trc=${colors.transfer}`,
-      `colorspace=${colors.matrix}`,
-      'deband=true',
-      'deband_iterations=3',
-      'deband_radius=8',
-      'deband_threshold=6',
-      'downscaler=none',
-      'format=yuv420p',
-      `peak_detect=${this.config.temporalAQ ? 'false' : 'true'}`, // colors are distorted before a scene change when both temporal AQ and peak detection are enabled
-      `tonemapping=${this.shouldToneMap(videoStream) ? this.config.tonemap : 'clip'}`,
-      'upscaler=none',
+    const tonemapOptions = [
+      'desat=0',
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
+      'range=pc',
+      `tonemap=${this.config.tonemap}`,
+      `transfer=${colors.transfer}`,
     ];
 
-    return [`libplacebo=${libplaceboOptions.join(':')}`];
+    return [`tonemap_cuda=${tonemapOptions.join(':')}`];
   }
 
   getInputThreadOptions() {

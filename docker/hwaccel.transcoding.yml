@@ -10,9 +10,6 @@ services:
   cpu: {}
 
   nvenc:
-    runtime: nvidia
-    environment:
-      - DISPLAY:$DISPLAY
     deploy:
       resources:
         reservations:
@@ -23,8 +20,6 @@ services:
                 - gpu
                 - compute
                 - video
-                - display
-                - graphics
 
   quicksync:
     devices:
