@@ -48,7 +48,7 @@ If the import paths are edited in a way that an external file is no longer in an
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if Immichcan't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if Immich can't access the files. Here are some things to check:
 
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes also mounted to any worker containers?
