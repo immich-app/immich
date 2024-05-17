@@ -16,6 +16,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
+import { VersionService } from 'src/services/version.service';
 import { otelSDK } from 'src/utils/instrumentation';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class MicroservicesService {
     private storageService: StorageService,
     private userService: UserService,
     private duplicateService: DuplicateService,
+    private versionService: VersionService,
   ) {}
 
   async init() {
@@ -89,6 +91,7 @@ export class MicroservicesService {
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
+      [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });
 
     await this.metadataService.init();

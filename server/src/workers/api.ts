@@ -29,11 +29,11 @@ async function bootstrap() {
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
-  if (isDev) {
+  if (isDev()) {
     app.enableCors();
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
-  useSwagger(app, isDev);
+  useSwagger(app);
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
   if (existsSync(WEB_ROOT)) {
