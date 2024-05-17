@@ -18,7 +18,7 @@ const host = process.env.HOST;
 async function bootstrap() {
   otelSDK.start();
 
-  const port = Number(process.env.SERVER_PORT) || 3001;
+  const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
 

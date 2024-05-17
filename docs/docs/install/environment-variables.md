@@ -59,13 +59,10 @@ It only need to be set if the Immich deployment method is changing.
 
 ## Ports
 
-| Variable                | Description           |  Default  | Services              |
-| :---------------------- | :-------------------- | :-------: | :-------------------- |
-| `HOST`                  | Host                  | `0.0.0.0` | server, microservices |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server                |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices         |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning      |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning      |
+| Variable      | Description    |                Default                 |
+| :------------ | :------------- | :------------------------------------: |
+| `IMMICH_HOST` | Listening host |               `0.0.0.0`                |
+| `IMMICH_PORT` | Listening port | 3001 (server), 3003 (machine learning) |
 
 ## Database
 
