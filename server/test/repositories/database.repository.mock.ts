@@ -1,14 +1,12 @@
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { Version } from 'src/utils/version';
 import { Mocked, vitest } from 'vitest';
 
 export const newDatabaseRepositoryMock = (): Mocked<IDatabaseRepository> => {
   return {
     getExtensionVersion: vitest.fn(),
     getAvailableExtensionVersion: vitest.fn(),
-    getPreferredVectorExtension: vitest.fn(),
-    getPostgresVersion: vitest.fn().mockResolvedValue(new Version(14, 0, 0)),
-    createExtension: vitest.fn().mockImplementation(() => Promise.resolve()),
+    getPostgresVersion: vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)'),
+    createExtension: vitest.fn().mockResolvedValue(void 0),
     updateExtension: vitest.fn(),
     updateVectorExtension: vitest.fn(),
     reindex: vitest.fn(),
