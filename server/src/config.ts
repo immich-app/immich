@@ -372,8 +372,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
     DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
-    MACHINE_LEARNING_PORT: Joi.number().optional(),
-    MICROSERVICES_PORT: Joi.number().optional(),
+    IMMICH_PORT: Joi.number().optional(),
     IMMICH_METRICS_PORT: Joi.number().optional(),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
