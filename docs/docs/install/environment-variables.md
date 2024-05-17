@@ -70,7 +70,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 ## Ports
 
-| Variable                | Description           |  Default  | Containers       | Worker             |
+| Variable                | Description           |  Default  | Containers       | Workers            |
 | :---------------------- | :-------------------- | :-------: | :--------------- | :----------------- |
 | `HOST`                  | Host                  | `0.0.0.0` | server           | api, microservices |
 | `SERVER_PORT`           | Server Port           |  `3001`   | server           | api                |
@@ -181,7 +181,7 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Prometheus
 
-| Variable                       | Description                                                                                   | Default | Containers | Worker             |
+| Variable                       | Description                                                                                   | Default | Containers | Workers            |
 | :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
 | `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server     | api, microservices |
 | `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server     | api, microservices |
