@@ -3,7 +3,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -16,6 +16,7 @@
   let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
   let password = '';
+  let innerWidth: number;
 
   const handlePasswordSubmit = async () => {
     try {
@@ -31,6 +32,8 @@
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <svelte:head>
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -39,9 +42,7 @@
   <header>
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
-          <ImmichLogo class="h-10" />
-        </a>
+        <ImmichLogoSmallLink width={innerWidth} />
       </svelte:fragment>
 
       <svelte:fragment slot="trailing">
