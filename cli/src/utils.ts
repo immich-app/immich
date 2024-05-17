@@ -1,4 +1,4 @@
-import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
+import { getMyUserInfo, init, isHttpError } from '@immich/sdk';
 import { glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -46,8 +46,7 @@ export const connect = async (url: string, key: string) => {
     // noop
   }
 
-  defaults.baseUrl = url;
-  defaults.headers = { 'x-api-key': key };
+  init({ baseUrl: url, apiKey: key });
 
   const [error] = await withError(getMyUserInfo());
   if (isHttpError(error)) {
