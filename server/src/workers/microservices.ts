@@ -8,7 +8,7 @@ import { otelSDK } from 'src/utils/instrumentation';
 
 const host = process.env.HOST;
 
-export async function bootstrapMicroservices() {
+export async function bootstrap() {
   otelSDK.start();
 
   const port = Number(process.env.MICROSERVICES_PORT) || 3002;
@@ -25,7 +25,7 @@ export async function bootstrapMicroservices() {
 }
 
 if (!isMainThread) {
-  bootstrapMicroservices().catch((error) => {
+  bootstrap().catch((error) => {
     console.error(error);
     process.exit(1);
   });
