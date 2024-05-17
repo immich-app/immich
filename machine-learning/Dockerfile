@@ -74,8 +74,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production \
-    TRANSFORMERS_CACHE=/cache \
+ENV TRANSFORMERS_CACHE=/cache \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \

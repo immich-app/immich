@@ -360,7 +360,7 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    NODE_ENV: Joi.string().optional().valid('development', 'production', 'staging').default('development'),
+    IMMICH_ENV: Joi.string().optional().valid('development', 'production').default('production'),
     IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
