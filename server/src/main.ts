@@ -33,11 +33,15 @@ function bootstrap() {
     }
     case 'immich': {
       process.title = 'immich_server';
-      return bootstrapWorker('api');
+      if (!process.env.IMMICH_WORKERS_INCLUDE) {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api';
+      }
     }
     case 'microservices': {
       process.title = 'immich_microservices';
-      return bootstrapWorker('microservices');
+      if (!process.env.IMMICH_WORKERS_INCLUDE) {
+        process.env.IMMICH_WORKERS_INCLUDE = 'microservices';
+      }
     }
     default: {
       for (const worker of getWorkers()) {
