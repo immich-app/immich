@@ -10,7 +10,7 @@ import { createAlbum } from '$lib/utils/album-utils';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
-  defaults,
+  getBaseUrl,
   getDownloadInfo,
   updateAssets,
   type AlbumResponseDto,
@@ -121,7 +121,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + '/download/archive' + (key ? `?key=${key}` : ''),
         data: { assetIds: archive.assetIds },
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
@@ -177,7 +177,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });

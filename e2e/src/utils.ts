@@ -16,7 +16,6 @@ import {
   createPerson,
   createSharedLink,
   createUser,
-  defaults,
   deleteAssets,
   getAllAssets,
   getAllJobsStatus,
@@ -24,6 +23,7 @@ import {
   getConfigDefaults,
   login,
   searchMetadata,
+  setBaseUrl,
   signUpAdmin,
   updateAdminOnboarding,
   updateAlbumUser,
@@ -255,8 +255,8 @@ export const utils = {
     });
   },
 
-  setApiEndpoint: () => {
-    defaults.baseUrl = app;
+  initSdk: () => {
+    setBaseUrl(app);
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
@@ -462,7 +462,7 @@ export const utils = {
   },
 };
 
-utils.setApiEndpoint();
+utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {
   throw new Error(
