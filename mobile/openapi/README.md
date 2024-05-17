@@ -119,6 +119,7 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
+*DuplicateApi* | [**getAssetDuplicates**](doc//DuplicateApi.md#getassetduplicates) | **GET** /duplicates | 
 *FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
 *FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
 *FileReportApi* | [**fixAuditFiles**](doc//FileReportApi.md#fixauditfiles) | **POST** /report/fix | 

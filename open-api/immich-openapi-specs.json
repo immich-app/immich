@@ -2221,6 +2221,41 @@
         ]
       }
     },
+    "/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicate"
+        ]
+      }
+    },
     "/face": {
       "get": {
         "operationId": "getFaces",
