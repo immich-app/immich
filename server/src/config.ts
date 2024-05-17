@@ -361,7 +361,7 @@ export const immichAppConfig: ConfigModuleOptions = {
   isGlobal: true,
   validationSchema: Joi.object({
     NODE_ENV: Joi.string().optional().valid('development', 'production', 'staging').default('development'),
-    LOG_LEVEL: Joi.string()
+    IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
 
