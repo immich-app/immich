@@ -8,6 +8,8 @@
 
 <UserPageLayout title={data.meta.title}>
   <div class="w-full max-w-xl m-auto">
-    <UtilitiesMenu />
+    <div class="mt-5">
+      <UtilitiesMenu />
+    </div>
   </div>
 </UserPageLayout>
