@@ -17,11 +17,11 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable           | Description                     |  Default  | Services                                |
-| :----------------- | :------------------------------ | :-------: | :-------------------------------------- |
-| `IMMICH_VERSION`   | Image tags                      | `release` | server, microservices, machine learning |
-| `UPLOAD_LOCATION`  | Host Path for uploads           |           | server, microservices                   |
-| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                                |
+| Variable           | Description                     |  Default  | Services                 |
+| :----------------- | :------------------------------ | :-------: | :----------------------- |
+| `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
+| `UPLOAD_LOCATION`  | Host Path for uploads           |           | server                   |
+| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                 |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
@@ -38,15 +38,15 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 
 ## General
 
-| Variable                        | Description                                  |         Default          | Services                                |
-| :------------------------------ | :------------------------------------------- | :----------------------: | :-------------------------------------- |
-| `TZ`                            | Timezone                                     |                          | microservices                           |
-| `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, microservices, machine learning |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |          `log`           | server, microservices, machine learning |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server, microservices                   |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server, microservices                   |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |    `/usr/src/app/www`    | server                                  |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     |   `/usr/src/resources`   | microservices                           |
+| Variable                        | Description                                  |         Default          | Services                 | Workers            |
+| :------------------------------ | :------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
+| `TZ`                            | Timezone                                     |                          | server                   | microservices      |
+| `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, machine learning | api, microservices |
+| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error) |          `log`           | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server                   | api, microservices |
+| `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server                   | api, microservices |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                      |    `/usr/src/app/www`    | server                   | api                |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     |   `/usr/src/resources`   | server                   | microservices      |
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
@@ -54,31 +54,31 @@ It only need to be set if the Immich deployment method is changing.
 :::tip
 `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 
-`TZ` is only used by `exiftool`, which is present in the microservices container, as a fallback in case the timezone cannot be determined from the image metadata.
+`TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
 ## Ports
 
-| Variable                | Description           |  Default  | Services              |
-| :---------------------- | :-------------------- | :-------: | :-------------------- |
-| `HOST`                  | Host                  | `0.0.0.0` | server, microservices |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server                |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices         |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning      |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning      |
+| Variable                | Description           |  Default  | Services         | Worker             |
+| :---------------------- | :-------------------- | :-------: | :--------------- | :----------------- |
+| `HOST`                  | Host                  | `0.0.0.0` | server           | api, microservices |
+| `SERVER_PORT`           | Server Port           |  `3001`   | server           | server             |
+| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | server           | microservices      |
+| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
+| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
 
 ## Database
 
-| Variable                            | Description                                                              |   Default    | Services                                      |
-| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :-------------------------------------------- |
-| `DB_URL`                            | Database URL                                                             |              | server, microservices                         |
-| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server, microservices                         |
-| `DB_PORT`                           | Database Port                                                            |    `5432`    | server, microservices                         |
-| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, microservices, database<sup>\*1</sup> |
-| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, microservices, database<sup>\*1</sup> |
-| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, microservices, database<sup>\*1</sup> |
-| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server, microservices                         |
-| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server, microservices                         |
+| Variable                            | Description                                                              |   Default    | Services                       |
+| :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :----------------------------- |
+| `DB_URL`                            | Database URL                                                             |              | server                         |
+| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server                         |
+| `DB_PORT`                           | Database Port                                                            |    `5432`    | server                         |
+| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, database<sup>\*1</sup> |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server                         |
+| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server                         |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
@@ -86,23 +86,27 @@ It only need to be set if the Immich deployment method is changing.
 
 :::info
 
+All `DB_` variables must be provided to all Immich workers, including `api` and `microservices`.
+
 When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE_NAME` database variables are ignored.
 
 :::
 
 ## Redis
 
-| Variable         | Description    | Default | Services              |
-| :--------------- | :------------- | :-----: | :-------------------- |
-| `REDIS_URL`      | Redis URL      |         | server, microservices |
-| `REDIS_HOSTNAME` | Redis Host     | `redis` | server, microservices |
-| `REDIS_PORT`     | Redis Port     | `6379`  | server, microservices |
-| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server, microservices |
-| `REDIS_USERNAME` | Redis Username |         | server, microservices |
-| `REDIS_PASSWORD` | Redis Password |         | server, microservices |
-| `REDIS_SOCKET`   | Redis Socket   |         | server, microservices |
+| Variable         | Description    | Default | Services |
+| :--------------- | :------------- | :-----: | :------- |
+| `REDIS_URL`      | Redis URL      |         | server   |
+| `REDIS_HOSTNAME` | Redis Host     | `redis` | server   |
+| `REDIS_PORT`     | Redis Port     | `6379`  | server   |
+| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server   |
+| `REDIS_USERNAME` | Redis Username |         | server   |
+| `REDIS_PASSWORD` | Redis Password |         | server   |
+| `REDIS_SOCKET`   | Redis Socket   |         | server   |
 
 :::info
+
+All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
 More info can be found in the upstream [ioredis][redis-api] documentation.
@@ -166,13 +170,13 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Prometheus
 
-| Variable                       | Description                                                                                   | Default | Services              |
-| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :-------------------- |
-| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server, microservices |
-| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server, microservices |
-| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server, microservices |
-| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server, microservices |
-| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server, microservices |
+| Variable                       | Description                                                                                   | Default | Services | Worker             |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :------- | :----------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server   | api, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server   | api, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server   | api, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server   | api, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server   | api, microservices |
 
 \*1: Overridden for a metric group when its corresponding environmental variable is set.
 
