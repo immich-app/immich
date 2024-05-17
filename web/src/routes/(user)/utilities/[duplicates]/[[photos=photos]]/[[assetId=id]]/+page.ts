@@ -3,6 +3,7 @@ import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
+  console.log(params);
   await authenticate();
   const asset = await getAssetInfoFromParam(params);
 
