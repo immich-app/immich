@@ -73,10 +73,10 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | Variable                | Description           |  Default  | Services         | Worker             |
 | :---------------------- | :-------------------- | :-------: | :--------------- | :----------------- |
 | `HOST`                  | Host                  | `0.0.0.0` | server           | api, microservices |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server           | server             |
+| `SERVER_PORT`           | Server Port           |  `3001`   | server           | api                |
 | `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | server           | microservices      |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
+| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning | N/A                |
+| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning | N/A                |
 
 ## Database
 
