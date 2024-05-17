@@ -32,18 +32,21 @@ function bootstrap() {
       return bootstrapImmichAdmin();
     }
     case 'immich': {
-      process.title = 'immich_server';
-      return bootstrapWorker('api');
+      if (!process.env.IMMICH_WORKERS_INCLUDE) {
+        process.env.IMMICH_WORKERS_INCLUDE = 'api';
+      }
+      break;
     }
     case 'microservices': {
-      process.title = 'immich_microservices';
-      return bootstrapWorker('microservices');
-    }
-    default: {
-      for (const worker of getWorkers()) {
-        bootstrapWorker(worker);
+      if (!process.env.IMMICH_WORKERS_INCLUDE) {
+        process.env.IMMICH_WORKERS_INCLUDE = 'microservices';
       }
+      break;
     }
+  }
+  process.title = 'immich';
+  for (const worker of getWorkers()) {
+    bootstrapWorker(worker);
   }
 }
 
