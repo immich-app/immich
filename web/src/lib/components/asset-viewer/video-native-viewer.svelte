@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
+  import { loopVideo as loopVideoPreference, videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
@@ -8,22 +8,20 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
+  export let loopVideo: boolean;
   export let checksum: string;
-
-  let assetFileUrl: string;
-  $: {
-    let prev = assetFileUrl;
-    const next = getAssetFileUrl(assetId, false, true, checksum);
-    if (prev !== next) {
-      assetFileUrl = getAssetFileUrl(assetId, false, true, checksum);
-      if (element) {
-        element.load();
-      }
-    }
-  }
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+  let assetFileUrl: string;
+
+  $: {
+    const next = getAssetFileUrl(assetId, false, true, checksum);
+    if (assetFileUrl !== next) {
+      assetFileUrl = next;
+      element && element.load();
+    }
+  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
@@ -47,6 +45,7 @@
 >
   <video
     bind:this={element}
+    loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
     controls

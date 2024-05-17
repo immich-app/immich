@@ -3,14 +3,12 @@ import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -19,31 +17,21 @@ import { Mocked } from 'vitest';
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
   let eventMock: Mocked<IEventRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
   let serverInfoMock: Mocked<IServerInfoRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
-  let systemMetadataMock: Mocked<ISystemMetadataRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    configMock = newSystemConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
     serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
-    systemMetadataMock = newSystemMetadataRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new ServerInfoService(
-      eventMock,
-      configMock,
-      userMock,
-      serverInfoMock,
-      storageMock,
-      systemMetadataMock,
-      loggerMock,
-    );
+    sut = new ServerInfoService(eventMock, userMock, serverInfoMock, storageMock, systemMock, loggerMock);
   });
 
   it('should work', () => {
@@ -176,6 +164,7 @@ describe(ServerInfoService.name, () => {
     it('should respond the server features', async () => {
       await expect(sut.getFeatures()).resolves.toEqual({
         smartSearch: true,
+        duplicateDetection: false,
         facialRecognition: true,
         map: true,
         reverseGeocoding: true,
@@ -188,7 +177,7 @@ describe(ServerInfoService.name, () => {
         trash: true,
         email: false,
       });
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
   });
 
@@ -203,7 +192,7 @@ describe(ServerInfoService.name, () => {
         isOnboarded: false,
         externalDomain: '',
       });
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
   });
 

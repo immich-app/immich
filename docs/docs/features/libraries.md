@@ -10,7 +10,7 @@ Immich comes preconfigured with an upload library for each user. All assets uplo
 
 ## External Libraries
 
-External libraries tracks assets stored outside of immich, i.e. in the file system. Immich will only read data from the files, and will not modify them in any way. Therefore, the delete button is disabled for external assets. When the external library is scanned, immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
+External libraries tracks assets stored outside of Immich, i.e. in the file system. When the external library is scanned, Immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
 
 If a file is modified outside of Immich, the changes will not be reflected in immich until the library is scanned again. There are different ways to scan a library depending on the use case:
 

@@ -66,6 +66,7 @@ describe('/server-info', () => {
       expect(body).toEqual({
         smartSearch: false,
         configFile: false,
+        duplicateDetection: false,
         facialRecognition: false,
         map: true,
         reverseGeocoding: true,

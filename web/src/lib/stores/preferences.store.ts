@@ -47,6 +47,7 @@ export interface MapSettings {
   includeArchived: boolean;
   onlyFavorites: boolean;
   withPartners: boolean;
+  withSharedAlbums: boolean;
   relativeDate: string;
   dateAfter: string;
   dateBefore: string;
@@ -57,6 +58,7 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   includeArchived: false,
   onlyFavorites: false,
   withPartners: false,
+  withSharedAlbums: false,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
@@ -136,3 +138,5 @@ export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true,
 export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});
 
 export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});
+
+export const loopVideo = persisted<boolean>('loop-video', true, {});

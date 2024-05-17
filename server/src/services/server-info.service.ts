@@ -18,11 +18,11 @@ import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
+import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 import { Version } from 'src/utils/version';
 
 @Injectable()
@@ -33,7 +33,6 @@ export class ServerInfoService {
 
   constructor(
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -41,7 +40,7 @@ export class ServerInfoService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(ServerInfoService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   onConnect() {}
@@ -82,8 +81,25 @@ export class ServerInfoService {
     return serverVersion;
   }
 
-  getFeatures(): Promise<ServerFeaturesDto> {
-    return this.configCore.getFeatures();
+  async getFeatures(): Promise<ServerFeaturesDto> {
+    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+      await this.configCore.getConfig();
+
+    return {
+      smartSearch: isSmartSearchEnabled(machineLearning),
+      facialRecognition: isFacialRecognitionEnabled(machineLearning),
+      duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
+      map: map.enabled,
+      reverseGeocoding: reverseGeocoding.enabled,
+      sidecar: true,
+      search: true,
+      trash: trash.enabled,
+      oauth: oauth.enabled,
+      oauthAutoLaunch: oauth.autoLaunch,
+      passwordLogin: passwordLogin.enabled,
+      configFile: this.configCore.isUsingConfigFile(),
+      email: notifications.smtp.enabled,
+    };
   }
 
   async getTheme() {

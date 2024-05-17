@@ -4,51 +4,35 @@
 
 name: immich-dev
 
-x-server-build: &server-common
-  image: immich-server-dev:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-    target: dev
-  restart: always
-  volumes:
-    - ../server:/usr/src/app
-    - ../open-api:/usr/src/open-api
-    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-    - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
-    - /usr/src/app/node_modules
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ulimits:
-    nofile:
-      soft: 1048576
-      hard: 1048576
-
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev', 'immich']
-    <<: *server-common
+    command: ['/usr/src/app/bin/immich-dev']
+    image: immich-server-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
+    restart: always
+    volumes:
+      - ../server:/usr/src/app
+      - ../open-api:/usr/src/open-api
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
+      - /usr/src/app/node_modules
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     ports:
       - 3001:3001
       - 9230:9230
     depends_on:
       - redis
       - database
-
-  immich-microservices:
-    container_name: immich_microservices
-    command: ['/usr/src/app/bin/immich-dev', 'microservices']
-    <<: *server-common
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    ports:
-      - 9231:9230
-    depends_on:
-      - database
-      - immich-server
 
   immich-web:
     container_name: immich_web
@@ -108,11 +92,13 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-  
+    command: ["postgres", "-c" ,"shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
+
   # set IMMICH_METRICS=true in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus

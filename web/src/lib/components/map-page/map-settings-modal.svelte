@@ -30,7 +30,12 @@
     <SettingSwitch id="allow-dark-mode" title="Allow dark mode" bind:checked={settings.allowDarkMode} />
     <SettingSwitch id="only-favorites" title="Only favorites" bind:checked={settings.onlyFavorites} />
     <SettingSwitch id="include-archived" title="Include archived" bind:checked={settings.includeArchived} />
-    <SettingSwitch id="include-shared-with-me" title="Include shared with me" bind:checked={settings.withPartners} />
+    <SettingSwitch
+      id="include-shared-partner-assets"
+      title="Include shared partner assets"
+      bind:checked={settings.withPartners}
+    />
+    <SettingSwitch id="include-shared-albums" title="Include shared albums" bind:checked={settings.withSharedAlbums} />
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
         <div class="flex items-center justify-between gap-8">

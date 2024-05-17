@@ -328,7 +328,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               alignment: Alignment.bottomRight,
               child: ElevatedButton(
                 onPressed: () {
-                  context.popRoute();
+                  context.maybePop();
                 },
                 child: const Text(
                   "share_done",
@@ -431,7 +431,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
-      context.popRoute();
+      context.maybePop();
     }
 
     return Scaffold(

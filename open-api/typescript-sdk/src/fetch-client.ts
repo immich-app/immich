@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.103.1
+ * 1.105.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -438,6 +438,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
     library: JobStatusDto;
@@ -470,7 +471,6 @@ export type LibraryResponseDto = {
 export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
     ownerId: string;
     "type": LibraryType;
@@ -478,7 +478,6 @@ export type CreateLibraryDto = {
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
 };
 export type ScanLibraryDto = {
@@ -778,6 +777,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
     map: boolean;
@@ -891,6 +891,7 @@ export type AssetFullSyncDto = {
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
+    accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
@@ -957,6 +958,10 @@ export type ClipConfig = {
     modelName: string;
     modelType?: ModelType;
 };
+export type DuplicateDetectionConfig = {
+    enabled: boolean;
+    maxDistance: number;
+};
 export type RecognitionConfig = {
     enabled: boolean;
     maxDistance: number;
@@ -967,6 +972,7 @@ export type RecognitionConfig = {
 };
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
+    duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: RecognitionConfig;
     url: string;
@@ -1448,6 +1454,14 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
         ...opts
     }));
 }
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/asset/duplicates", {
+        ...opts
+    }));
+}
 /**
  * Checks if multiple assets exist on the server and returns all existing - used by background backup
  */
@@ -1492,12 +1506,13 @@ export function runAssetJobs({ assetJobsDto }: {
         body: assetJobsDto
     })));
 }
-export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners }: {
+export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums }: {
     fileCreatedAfter?: string;
     fileCreatedBefore?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
     withPartners?: boolean;
+    withSharedAlbums?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -1507,7 +1522,8 @@ export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived,
         fileCreatedBefore,
         isArchived,
         isFavorite,
-        withPartners
+        withPartners,
+        withSharedAlbums
     }))}`, {
         ...opts
     }));
@@ -2980,6 +2996,7 @@ export enum JobName {
     FaceDetection = "faceDetection",
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
+    DuplicateDetection = "duplicateDetection",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",

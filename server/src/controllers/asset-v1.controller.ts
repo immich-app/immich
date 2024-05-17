@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Inject,
   Next,
   Param,
   ParseFilePipe,
@@ -20,6 +21,7 @@ import { ServeFileDto } from 'src/dtos/asset-media.dto';
 import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
@@ -37,6 +39,7 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 @Controller(Route.ASSET)
 export class AssetControllerV1 {
   constructor(
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     private service: AssetServiceV1,
     private assetMediaService: AssetMediaService,
   ) {}
@@ -67,21 +70,6 @@ export class AssetControllerV1 {
     return responseDto;
   }
 
-  /** @deprecated - renamed to GET /api/asset/:id/thumbnail */
-  @Get('thumbnail/:id')
-  @FileResponse()
-  @Authenticated({ sharedLink: true })
-  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
-  async getAssetThumbnail(
-    @Res() res: Response,
-    @Next() next: NextFunction,
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Query() dto: GetAssetThumbnailDto,
-  ) {
-    await sendFile(res, next, () => this.assetMediaService.getThumbnailBytes(auth, id, dto));
-  }
-
   /** @deprecated  - renamed to GET /api/asset/:id/file */
   @Get('file/:id')
   @FileResponse()
@@ -94,6 +82,21 @@ export class AssetControllerV1 {
     @Param() { id }: UUIDParamDto,
     @Query() dto: ServeFileDto,
   ) {
-    await sendFile(res, next, () => this.assetMediaService.getOriginalBytes(auth, id, dto));
+    await sendFile(res, next, () => this.assetMediaService.getOriginalBytes(auth, id, dto), this.logger);
+  }
+
+  /** @deprecated - renamed to GET /api/asset/:id/thumbnail */
+  @Get('thumbnail/:id')
+  @FileResponse()
+  @Authenticated({ sharedLink: true })
+  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
+  async getAssetThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: GetAssetThumbnailDto,
+  ) {
+    await sendFile(res, next, () => this.assetMediaService.getThumbnailBytes(auth, id, dto), this.logger);
   }
 }

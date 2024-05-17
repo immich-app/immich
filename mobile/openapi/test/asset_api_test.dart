@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -55,6 +55,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getAssetDuplicates() async
+    test('test getAssetDuplicates', () async {
+      // TODO
+    });
+
     //Future<AssetResponseDto> getAssetInfo(String id, { String key }) async
     test('test getAssetInfo', () async {
       // TODO
@@ -72,7 +77,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite, bool withPartners }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ DateTime fileCreatedAfter, DateTime fileCreatedBefore, bool isArchived, bool isFavorite, bool withPartners, bool withSharedAlbums }) async
     test('test getMapMarkers', () async {
       // TODO
     });

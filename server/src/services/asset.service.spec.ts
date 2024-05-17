@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
@@ -10,7 +11,7 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
 import { assetStackStub, assetStub } from 'test/fixtures/asset.stub';
@@ -19,6 +20,7 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -26,7 +28,7 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
@@ -52,9 +54,10 @@ describe(AssetService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
@@ -74,9 +77,10 @@ describe(AssetService.name, () => {
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
     assetRepositoryMockV1 = {
@@ -92,12 +96,13 @@ describe(AssetService.name, () => {
       assetMock,
       assetRepositoryMockV1,
       jobMock,
-      configMock,
+      systemMock,
       storageMock,
       userMock,
       eventMock,
       partnerMock,
       assetStackMock,
+      albumMock,
       loggerMock,
     );
 

@@ -22,7 +22,8 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
 - WSL2 does not support Quick Sync.
 - Raspberry Pi is currently not supported.
 - Two-pass mode is only supported for NVENC. Other APIs will ignore this setting.
-- Only encoding is currently hardware accelerated, so the CPU is still used for software decoding and tone-mapping.
+- By default, only encoding is currently hardware accelerated. This means the CPU is still used for software decoding and tone-mapping.
+  - NVENC and RKMPP can be fully accelerated by enabling hardware decoding in the video transcoding settings.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
     - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
@@ -33,7 +34,7 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
 #### NVENC
 
 - You must have the official NVIDIA driver installed on the server.
-- On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+- On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### QSV
 
@@ -65,6 +66,7 @@ For RKMPP to work:
 
 3. Redeploy the `immich-microservices` container with these updated settings.
 4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
+5. (Optional) If using a compatible backend, you may enable hardware decoding for optimal performance.
 
 #### Single Compose File
 
@@ -122,7 +124,7 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 - While you can use VAAPI with NVIDIA and Intel devices, prefer the more specific APIs since they're more optimized for their respective devices
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
-[nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
+[nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 [jellyfin-lp]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#configure-and-verify-lp-mode-on-linux
 [jellyfin-kernel-bug]: https://jellyfin.org/docs/general/administration/hardware-acceleration/intel/#known-issues-and-limitations
 [libmali-rockchip]: https://github.com/tsukumijima/libmali-rockchip/releases

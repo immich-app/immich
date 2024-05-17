@@ -3,16 +3,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_outlined_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
 import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 
 @RoutePage()
 // ignore: must_be_immutable
@@ -216,7 +216,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             selectedAssets.value = {};
-            context.popRoute();
+            context.maybePop();
           },
           icon: const Icon(Icons.close_rounded),
         ),

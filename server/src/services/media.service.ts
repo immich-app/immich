@@ -1,10 +1,5 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { dirname } from 'node:path';
-import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/entities/move.entity';
 import {
   AudioCodec,
   Colorspace,
@@ -13,7 +8,12 @@ import {
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+} from 'src/config';
+import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetPathType } from 'src/entities/move.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
@@ -31,14 +31,16 @@ import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo 
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import {
   AV1Config,
   H264Config,
   HEVCConfig,
-  NVENCConfig,
+  NvencHwDecodeConfig,
+  NvencSwDecodeConfig,
   QSVConfig,
-  RKMPPConfig,
+  RkmppHwDecodeConfig,
+  RkmppSwDecodeConfig,
   ThumbnailConfig,
   VAAPIConfig,
   VP9Config,
@@ -59,20 +61,20 @@ export class MediaService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MediaService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
       storageRepository,
-      configRepository,
+      systemMetadataRepository,
       this.logger,
     );
   }
@@ -329,7 +331,6 @@ export class MediaService {
     }
 
     const { ffmpeg: config } = await this.configCore.getConfig();
-
     const target = this.getTranscodeTarget(config, mainVideoStream, mainAudioStream);
     if (target === TranscodeTarget.NONE) {
       if (asset.encodedVideoPath) {
@@ -361,8 +362,7 @@ export class MediaService {
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
         );
       }
-      config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = await this.getCodecConfig(config).then((c) =>
+      transcodeOptions = await this.getCodecConfig({ ...config, accel: TranscodeHWAccel.DISABLED }).then((c) =>
         c.getOptions(target, mainVideoStream, mainAudioStream),
       );
       await this.mediaRepository.transcode(input, output, transcodeOptions);
@@ -495,7 +495,7 @@ export class MediaService {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
-        handler = new NVENCConfig(config);
+        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
         break;
       }
       case TranscodeHWAccel.QSV: {
@@ -507,7 +507,10 @@ export class MediaService {
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler = new RKMPPConfig(config, await this.getDevices(), await this.hasOpenCL());
+        handler =
+          config.accelDecode && (await this.hasOpenCL())
+            ? new RkmppHwDecodeConfig(config, await this.getDevices())
+            : new RkmppSwDecodeConfig(config, await this.getDevices());
         break;
       }
       default: {

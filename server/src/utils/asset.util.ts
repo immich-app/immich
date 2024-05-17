@@ -36,6 +36,7 @@ export const addAssets = async (
       continue;
     }
 
+    existingAssetIds.add(assetId);
     results.push({ id: assetId, success: true });
   }
 
@@ -79,6 +80,7 @@ export const removeAssets = async (
       continue;
     }
 
+    existingAssetIds.delete(assetId);
     results.push({ id: assetId, success: true });
   }
 

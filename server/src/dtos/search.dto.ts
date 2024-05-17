@@ -317,6 +317,9 @@ export class MapMarkerDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withSharedAlbums?: boolean;
 }
 
 export class MemoryLaneDto {

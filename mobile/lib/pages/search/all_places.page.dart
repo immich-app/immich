@@ -22,7 +22,7 @@ class AllPlacesPage extends HookConsumerWidget {
           'curated_location_page_title',
         ).tr(),
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),

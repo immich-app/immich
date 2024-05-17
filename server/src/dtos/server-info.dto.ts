@@ -1,6 +1,5 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import type { DateTime } from 'luxon';
-import { FeatureFlags } from 'src/cores/system-config.core';
 import { SystemConfigThemeDto } from 'src/dtos/system-config.dto';
 import { IVersion, VersionType } from 'src/utils/version';
 
@@ -96,8 +95,9 @@ export class ServerConfigDto {
   externalDomain!: string;
 }
 
-export class ServerFeaturesDto implements FeatureFlags {
+export class ServerFeaturesDto {
   smartSearch!: boolean;
+  duplicateDetection!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;

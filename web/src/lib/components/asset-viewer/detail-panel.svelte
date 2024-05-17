@@ -8,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
-  import { delay } from '$lib/utils/asset-utils';
+  import { delay, isFlipped } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/utils/autogrow';
   import { clickOutside } from '$lib/utils/click-outside';
   import {
@@ -17,6 +17,7 @@
     updateAsset,
     type AlbumResponseDto,
     type AssetResponseDto,
+    type ExifResponseDto,
   } from '@immich/sdk';
   import {
     mdiCalendar,
@@ -46,6 +47,15 @@
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let currentAlbum: AlbumResponseDto | null = null;
+
+  const getDimensions = (exifInfo: ExifResponseDto) => {
+    const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+    if (isFlipped(exifInfo.orientation)) {
+      return { width: height, height: width };
+    }
+
+    return { width, height };
+  };
 
   let showAssetPath = false;
   let textArea: HTMLTextAreaElement;
@@ -410,8 +420,8 @@
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
               {/if}
-
-              <p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
+              {@const { width, height } = getDimensions(asset.exifInfo)}
+              <p>{width} x {height}</p>
             {/if}
             <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>

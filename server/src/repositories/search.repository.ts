@@ -10,6 +10,8 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
+  AssetDuplicateResult,
+  AssetDuplicateSearch,
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
@@ -143,6 +145,44 @@ export class SearchRepository implements ISearchRepository {
     });
 
     return results;
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        embedding: Array.from({ length: 512 }, Math.random),
+        maxDistance: 0.6,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchDuplicates({
+    assetId,
+    embedding,
+    maxDistance,
+    userIds,
+  }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
+    const cte = this.assetRepository.createQueryBuilder('asset');
+    cte
+      .select('search.assetId', 'assetId')
+      .addSelect('asset.duplicateId', 'duplicateId')
+      .addSelect(`search.embedding <=> :embedding`, 'distance')
+      .innerJoin('asset.smartSearch', 'search')
+      .where('asset.ownerId IN (:...userIds )')
+      .andWhere('asset.id != :assetId')
+      .andWhere('asset.isVisible = :isVisible')
+      .orderBy('search.embedding <=> :embedding')
+      .limit(64)
+      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, userIds });
+
+    const builder = this.assetRepository.manager
+      .createQueryBuilder()
+      .addCommonTableExpression(cte, 'cte')
+      .from('cte', 'res')
+      .select('res.*')
+      .where('res.distance <= :maxDistance', { maxDistance });
+
+    return builder.getRawMany() as any as Promise<AssetDuplicateResult[]>;
   }
 
   @GenerateSql({

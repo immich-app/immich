@@ -16,9 +16,6 @@ export class CreateLibraryDto {
   @IsNotEmpty()
   name?: string;
 
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
-
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -39,9 +36,6 @@ export class UpdateLibraryDto {
   @IsString()
   @IsNotEmpty()
   name?: string;
-
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
 
   @Optional()
   @IsString({ each: true })

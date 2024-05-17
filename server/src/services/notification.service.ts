@@ -5,7 +5,7 @@ import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.inte
 import { IEmailJob, IJobRepository, INotifySignupJob, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
 @Injectable()
@@ -13,14 +13,14 @@ export class NotificationService {
   private configCore: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(NotificationService.name);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   init() {

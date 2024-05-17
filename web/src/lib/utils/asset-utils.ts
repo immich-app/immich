@@ -218,14 +218,18 @@ function isRotated270CW(orientation: number) {
   return orientation === 7 || orientation === 8 || orientation === -90;
 }
 
+export function isFlipped(orientation?: string | null) {
+  const value = Number(orientation);
+  return value && (isRotated270CW(value) || isRotated90CW(value));
+}
+
 /**
  * Returns aspect ratio for the asset
  */
 export function getAssetRatio(asset: AssetResponseDto) {
   let height = asset.exifInfo?.exifImageHeight || 235;
   let width = asset.exifInfo?.exifImageWidth || 235;
-  const orientation = Number(asset.exifInfo?.orientation);
-  if (orientation && (isRotated90CW(orientation) || isRotated270CW(orientation))) {
+  if (isFlipped(asset.exifInfo?.orientation)) {
     [width, height] = [height, width];
   }
   return { width, height };

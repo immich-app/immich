@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -116,6 +116,7 @@ part 'model/delete_user_dto.dart';
 part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';
+part 'model/duplicate_detection_config.dart';
 part 'model/entity_type.dart';
 part 'model/exif_response_dto.dart';
 part 'model/face_dto.dart';

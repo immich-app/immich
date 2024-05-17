@@ -100,7 +100,6 @@ export class AssetServiceV1 {
         type: LibraryType.UPLOAD,
         importPaths: [],
         exclusionPatterns: [],
-        isVisible: true,
       });
     }
 
