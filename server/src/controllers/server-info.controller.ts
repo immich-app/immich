@@ -12,11 +12,15 @@ import {
 } from 'src/dtos/server-info.dto';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { ServerInfoService } from 'src/services/server-info.service';
+import { VersionService } from 'src/services/version.service';
 
 @ApiTags('Server Info')
 @Controller('server-info')
 export class ServerInfoController {
-  constructor(private service: ServerInfoService) {}
+  constructor(
+    private service: ServerInfoService,
+    private versionService: VersionService,
+  ) {}
 
   @Get()
   @Authenticated()
@@ -31,7 +35,7 @@ export class ServerInfoController {
 
   @Get('version')
   getServerVersion(): ServerVersionResponseDto {
-    return this.service.getVersion();
+    return this.versionService.getVersion();
   }
 
   @Get('features')

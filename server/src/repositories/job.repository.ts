@@ -86,6 +86,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // Notification
   [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
   [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
+
+  // Version check
+  [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()
