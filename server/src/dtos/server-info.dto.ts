@@ -1,7 +1,6 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import type { DateTime } from 'luxon';
 import { SystemConfigThemeDto } from 'src/dtos/system-config.dto';
-import { IVersion, VersionType } from 'src/utils/version';
+import { IVersion } from 'src/utils/version';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
@@ -112,8 +111,9 @@ export class ServerFeaturesDto {
 }
 
 export interface ReleaseNotification {
-  isAvailable: VersionType;
-  checkedAt: DateTime<boolean> | null;
+  isAvailable: boolean;
+  /** ISO8601 */
+  checkedAt: string;
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }

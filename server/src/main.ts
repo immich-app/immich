@@ -10,7 +10,7 @@ if (process.argv[2] === immichApp) {
 }
 
 async function bootstrapImmichAdmin() {
-  process.env.LOG_LEVEL = LogLevel.WARN;
+  process.env.IMMICH_LOG_LEVEL = LogLevel.WARN;
   await CommandFactory.run(ImmichAdminModule);
 }
 

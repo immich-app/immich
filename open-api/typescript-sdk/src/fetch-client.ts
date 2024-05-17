@@ -1695,6 +1695,14 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/duplicates", {
+        ...opts
+    }));
+}
 export function getFaces({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
