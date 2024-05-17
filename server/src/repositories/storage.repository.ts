@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob, globStream } from 'fast-glob';
+import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -186,7 +186,8 @@ export class StorageRepository implements IStorageRepository {
   }
 
   private asGlob(pathsToCrawl: string[]): string {
-    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const escapedPaths = pathsToCrawl.map((path) => escapePath(path));
+    const base = escapedPaths.length === 1 ? escapedPaths[0] : `{${escapedPaths.join(',')}}`;
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${base}/**/${extensions}`;
   }

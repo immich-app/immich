@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "machine-learning"
-version = "1.103.1"
+version = "1.105.1"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
@@ -11,7 +11,7 @@ python = ">=3.10,<3.12"
 insightface = ">=0.7.3,<1.0"
 opencv-python-headless = ">=4.7.0.72,<5.0"
 pillow = ">=9.5.0,<11.0"
-fastapi = ">=0.95.2,<1.0"
+fastapi-slim = ">=0.95.2,<1.0"
 uvicorn = {extras = ["standard"], version = ">=0.22.0,<1.0"}
 pydantic = "^1.10.8"
 aiocache = ">=0.12.1,<1.0"

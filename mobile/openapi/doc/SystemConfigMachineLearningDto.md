@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **clip** | [**CLIPConfig**](CLIPConfig.md) |  | 
+**duplicateDetection** | [**DuplicateDetectionConfig**](DuplicateDetectionConfig.md) |  | 
 **enabled** | **bool** |  | 
 **facialRecognition** | [**RecognitionConfig**](RecognitionConfig.md) |  | 
 **url** | **String** |  | 

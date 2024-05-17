@@ -12,6 +12,7 @@ import { ServerInfoService } from 'src/services/server-info.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
 
 const render = (index: string, meta: OpenGraphTags) => {
@@ -44,6 +45,7 @@ export class ApiService {
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
     private databaseService: DatabaseService,
+    private versionService: VersionService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(ApiService.name);
@@ -51,7 +53,7 @@ export class ApiService {
 
   @Interval(ONE_HOUR.as('milliseconds'))
   async onVersionCheck() {
-    await this.serverService.handleVersionCheck();
+    await this.versionService.handleQueueVersionCheck();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -64,6 +66,7 @@ export class ApiService {
     await this.configService.init();
     this.storageService.init();
     await this.serverService.init();
+    await this.versionService.init();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
 

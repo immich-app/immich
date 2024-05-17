@@ -6,10 +6,11 @@
 
   export let assetId: string;
   export let projectionType: string | null | undefined;
+  export let loopVideo: boolean;
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
   <PanoramaViewer asset={{ id: assetId, type: AssetTypeEnum.Video }} />
 {:else}
-  <VideoNativeViewer {assetId} on:onVideoEnded on:onVideoStarted />
+  <VideoNativeViewer {loopVideo} {assetId} on:onVideoEnded on:onVideoStarted />
 {/if}

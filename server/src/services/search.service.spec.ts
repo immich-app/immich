@@ -6,7 +6,7 @@ import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -18,15 +18,15 @@ import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
-import { Mocked, vitest } from 'vitest';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { Mocked, beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let machineMock: Mocked<IMachineLearningRepository>;
   let personMock: Mocked<IPersonRepository>;
   let searchMock: Mocked<ISearchRepository>;
@@ -36,7 +36,7 @@ describe(SearchService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
@@ -45,7 +45,7 @@ describe(SearchService.name, () => {
     loggerMock = newLoggerRepositoryMock();
 
     sut = new SearchService(
-      configMock,
+      systemMock,
       machineMock,
       personMock,
       searchMock,
@@ -76,15 +76,15 @@ describe(SearchService.name, () => {
 
   describe('getExploreData', () => {
     it('should get assets by city and tag', async () => {
-      assetMock.getAssetIdByCity.mockResolvedValueOnce({
+      assetMock.getAssetIdByCity.mockResolvedValue({
         fieldName: 'exifInfo.city',
         items: [{ value: 'Paris', data: assetStub.image.id }],
       });
-      assetMock.getAssetIdByTag.mockResolvedValueOnce({
+      assetMock.getAssetIdByTag.mockResolvedValue({
         fieldName: 'smartInfo.tags',
         items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
       });
-      assetMock.getByIdsWithAllRelations.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
+      assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },
         { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },

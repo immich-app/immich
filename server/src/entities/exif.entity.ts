@@ -98,20 +98,4 @@ export class ExifEntity {
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
-
-  @Index('exif_text_searchable', { synchronize: false })
-  @Column({
-    type: 'tsvector',
-    generatedType: 'STORED',
-    select: false,
-    asExpression: `TO_TSVECTOR('english',
-                         COALESCE(make, '') || ' ' ||
-                         COALESCE(model, '') || ' ' ||
-                         COALESCE(orientation, '') || ' ' ||
-                         COALESCE("lensModel", '') || ' ' ||
-                         COALESCE("city", '') || ' ' ||
-                         COALESCE("state", '') || ' ' ||
-                         COALESCE("country", ''))`,
-  })
-  exifTextSearchableColumn!: string;
 }

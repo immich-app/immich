@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -522,7 +522,9 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] withPartners:
-  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
+  ///
+  /// * [bool] withSharedAlbums:
+  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -547,6 +549,9 @@ class AssetApi {
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
+    }
+    if (withSharedAlbums != null) {
+      queryParams.addAll(_queryParams('', 'withSharedAlbums', withSharedAlbums));
     }
 
     const contentTypes = <String>[];
@@ -574,8 +579,10 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] withPartners:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, }) async {
-    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, );
+  ///
+  /// * [bool] withSharedAlbums:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
+    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, withSharedAlbums: withSharedAlbums, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

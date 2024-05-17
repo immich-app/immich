@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
@@ -23,14 +23,15 @@ import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class SearchService {
   private configCore: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
@@ -40,7 +41,7 @@ export class SearchService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(SearchService.name);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
@@ -53,7 +54,6 @@ export class SearchService {
   }
 
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
-    await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const results = await Promise.all([
       this.assetRepository.getAssetIdByCity(auth.user.id, options),
@@ -98,8 +98,11 @@ export class SearchService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    await this.configCore.requireFeature(FeatureFlag.SMART_SEARCH);
     const { machineLearning } = await this.configCore.getConfig();
+    if (!isSmartSearchEnabled(machineLearning)) {
+      throw new BadRequestException('Smart search is not enabled');
+    }
+
     const userIds = await this.getUserIdsToSearch(auth);
 
     const embedding = await this.machineLearning.encodeText(

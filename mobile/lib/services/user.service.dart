@@ -70,7 +70,7 @@ class UserService {
     }
   }
 
-  Future<bool> refreshUsers() async {
+  Future<List<User>?> getUsersFromServer() async {
     final List<User>? users = await _getAllUsers(isAll: true);
     final List<User>? sharedBy =
         await _partnerService.getPartners(PartnerDirection.sharedBy);
@@ -79,7 +79,7 @@ class UserService {
 
     if (users == null || sharedBy == null || sharedWith == null) {
       _log.warning("Failed to refresh users");
-      return false;
+      return null;
     }
 
     users.sortBy((u) => u.id);
@@ -108,6 +108,12 @@ class UserService {
       onlySecond: (_) {},
     );
 
+    return users;
+  }
+
+  Future<bool> refreshUsers() async {
+    final users = await getUsersFromServer();
+    if (users == null) return false;
     return _syncService.syncUsersFromServer(users);
   }
 }

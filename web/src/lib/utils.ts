@@ -116,6 +116,7 @@ export const getJobName = (jobName: JobName) => {
     [JobName.MetadataExtraction]: 'Extract Metadata',
     [JobName.Sidecar]: 'Sidecar Metadata',
     [JobName.SmartSearch]: 'Smart Search',
+    [JobName.DuplicateDetection]: 'Duplicate Detection',
     [JobName.FaceDetection]: 'Face Detection',
     [JobName.FacialRecognition]: 'Facial Recognition',
     [JobName.VideoConversion]: 'Transcode Videos',

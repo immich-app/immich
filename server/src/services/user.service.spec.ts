@@ -12,7 +12,7 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserService } from 'src/services/user.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
@@ -25,7 +25,7 @@ import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
 
@@ -44,12 +44,12 @@ describe(UserService.name, () => {
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
@@ -63,7 +63,7 @@ describe(UserService.name, () => {
       jobMock,
       libraryMock,
       storageMock,
-      configMock,
+      systemMock,
       userMock,
       loggerMock,
     );
@@ -486,7 +486,7 @@ describe(UserService.name, () => {
     });
 
     it('should skip users not ready for deletion - deleteDelay30', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.deleteDelay30);
+      systemMock.get.mockResolvedValue(systemConfigStub.deleteDelay30);
       userMock.getDeletedUsers.mockResolvedValue([
         {},
         { deletedAt: undefined },

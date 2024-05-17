@@ -1386,6 +1386,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2210,6 +2218,41 @@
         ],
         "tags": [
           "Download"
+        ]
+      }
+    },
+    "/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicate"
         ]
       }
     },
@@ -6438,7 +6481,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.103.1",
+    "version": "1.105.1",
     "contact": {}
   },
   "tags": [],
@@ -6804,6 +6847,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6843,6 +6889,7 @@
         },
         "required": [
           "backgroundTask",
+          "duplicateDetection",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -7700,9 +7747,6 @@
             },
             "type": "array"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -7865,6 +7909,24 @@
         "required": [
           "archives",
           "totalSize"
+        ],
+        "type": "object"
+      },
+      "DuplicateDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 0.1,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
         ],
         "type": "object"
       },
@@ -8162,6 +8224,7 @@
           "faceDetection",
           "facialRecognition",
           "smartSearch",
+          "duplicateDetection",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -9374,6 +9437,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9410,6 +9476,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",
@@ -9994,6 +10061,9 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "accelDecode": {
+            "type": "boolean"
+          },
           "acceptedAudioCodecs": {
             "items": {
               "$ref": "#/components/schemas/AudioCodec"
@@ -10069,6 +10139,7 @@
         },
         "required": [
           "accel",
+          "accelDecode",
           "acceptedAudioCodecs",
           "acceptedVideoCodecs",
           "bframes",
@@ -10242,6 +10313,9 @@
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/DuplicateDetectionConfig"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -10254,6 +10328,7 @@
         },
         "required": [
           "clip",
+          "duplicateDetection",
           "enabled",
           "facialRecognition",
           "url"
@@ -10732,9 +10807,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "isVisible": {
-            "type": "boolean"
           },
           "name": {
             "type": "string"
