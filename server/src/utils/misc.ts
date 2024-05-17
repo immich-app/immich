@@ -63,7 +63,7 @@ export const isSmartSearchEnabled = (machineLearning: SystemConfig['machineLearn
 export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
 export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
-  isMachineLearningEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
+  isMachineLearningEnabled(machineLearning) && isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
