@@ -116,16 +116,13 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 | `REDIS_SOCKET`   | Redis Socket   |         | server     |
 
 :::info
-
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
 More info can be found in the upstream [ioredis][redis-api] documentation.
 
-- When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
-- When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
-
-:::
+- When `REDIS_URL` or `REDIS_SOCKET` are defined, the other redis (`REDIS_*`) variables are ignored.
+  :::
 
 Redis (Sentinel) URL example JSON before encoding:
 
