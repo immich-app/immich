@@ -123,7 +123,6 @@ export class AssetMediaService {
         type: LibraryType.UPLOAD,
         importPaths: [],
         exclusionPatterns: [],
-        isVisible: true,
       });
     }
 

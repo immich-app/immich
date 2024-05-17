@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Next,
   Param,
   ParseFilePipe,
@@ -32,6 +33,7 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
@@ -42,7 +44,10 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 export class AssetMediaController {
-  constructor(private service: AssetMediaService) {}
+  constructor(
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private service: AssetMediaService,
+  ) {}
 
   @Post()
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
@@ -78,7 +83,7 @@ export class AssetMediaController {
     @Param() { id }: UUIDParamDto,
     @Query() dto: ServeFileDto,
   ) {
-    await sendFile(res, next, () => this.service.getOriginalBytes(auth, id, dto));
+    await sendFile(res, next, () => this.service.getOriginalBytes(auth, id, dto), this.logger);
   }
 
   @Put(':id/file')
@@ -113,7 +118,7 @@ export class AssetMediaController {
     @Param() { id }: UUIDParamDto,
     @Query() dto: GetAssetThumbnailDto,
   ) {
-    await sendFile(res, next, () => this.service.getThumbnailBytes(auth, id, dto));
+    await sendFile(res, next, () => this.service.getThumbnailBytes(auth, id, dto), this.logger);
   }
 
   /**
