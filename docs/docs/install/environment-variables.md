@@ -17,7 +17,7 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable           | Description                     |  Default  | Services                 |
+| Variable           | Description                     |  Default  | Containers               |
 | :----------------- | :------------------------------ | :-------: | :----------------------- |
 | `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
 | `UPLOAD_LOCATION`  | Host Path for uploads           |           | server                   |
@@ -38,7 +38,7 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 
 ## General
 
-| Variable                        | Description                                  |         Default          | Services                 | Workers            |
+| Variable                        | Description                                  |         Default          | Containers               | Workers            |
 | :------------------------------ | :------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
 | `TZ`                            | Timezone                                     |                          | server                   | microservices      |
 | `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, machine learning | api, microservices |
@@ -59,10 +59,10 @@ It only need to be set if the Immich deployment method is changing.
 
 ## Workers
 
-| Variable                 | Description                        | Default | Services |
-| :----------------------- | :--------------------------------- | :-----: | :------- |
-| `IMMICH_WORKERS_INCLUDE` | Only run these workers.            |         | server   |
-| `IMMICH_WORKERS_EXCLUDE` | Run all workers, except for these. |         | server   |
+| Variable                 | Description                        | Default | Containers |
+| :----------------------- | :--------------------------------- | :-----: | :--------- |
+| `IMMICH_WORKERS_INCLUDE` | Only run these workers.            |         | server     |
+| `IMMICH_WORKERS_EXCLUDE` | Run all workers, except for these. |         | server     |
 
 :::info
 Information on the current workers can be found [here](/docs/administration/jobs-workers).
@@ -70,7 +70,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 ## Ports
 
-| Variable                | Description           |  Default  | Services         | Worker             |
+| Variable                | Description           |  Default  | Containers       | Worker             |
 | :---------------------- | :-------------------- | :-------: | :--------------- | :----------------- |
 | `HOST`                  | Host                  | `0.0.0.0` | server           | api, microservices |
 | `SERVER_PORT`           | Server Port           |  `3001`   | server           | api                |
@@ -80,7 +80,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 ## Database
 
-| Variable                            | Description                                                              |   Default    | Services                       |
+| Variable                            | Description                                                              |   Default    | Containers                     |
 | :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :----------------------------- |
 | `DB_URL`                            | Database URL                                                             |              | server                         |
 | `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server                         |
@@ -105,15 +105,15 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 
 ## Redis
 
-| Variable         | Description    | Default | Services |
-| :--------------- | :------------- | :-----: | :------- |
-| `REDIS_URL`      | Redis URL      |         | server   |
-| `REDIS_HOSTNAME` | Redis Host     | `redis` | server   |
-| `REDIS_PORT`     | Redis Port     | `6379`  | server   |
-| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server   |
-| `REDIS_USERNAME` | Redis Username |         | server   |
-| `REDIS_PASSWORD` | Redis Password |         | server   |
-| `REDIS_SOCKET`   | Redis Socket   |         | server   |
+| Variable         | Description    | Default | Containers |
+| :--------------- | :------------- | :-----: | :--------- |
+| `REDIS_URL`      | Redis URL      |         | server     |
+| `REDIS_HOSTNAME` | Redis Host     | `redis` | server     |
+| `REDIS_PORT`     | Redis Port     | `6379`  | server     |
+| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server     |
+| `REDIS_USERNAME` | Redis Username |         | server     |
+| `REDIS_PASSWORD` | Redis Password |         | server     |
+| `REDIS_SOCKET`   | Redis Socket   |         | server     |
 
 :::info
 
@@ -156,7 +156,7 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                          |       Default       | Services         |
+| Variable                                         | Description                                                          |       Default       | Containers       |
 | :----------------------------------------------- | :------------------------------------------------------------------- | :-----------------: | :--------------- |
 | `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)   |        `300`        | machine learning |
 | `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)    |        `10`         | machine learning |
@@ -181,13 +181,13 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Prometheus
 
-| Variable                       | Description                                                                                   | Default | Services | Worker             |
-| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :------- | :----------------- |
-| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server   | api, microservices |
-| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server   | api, microservices |
-| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server   | api, microservices |
-| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server   | api, microservices |
-| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server   | api, microservices |
+| Variable                       | Description                                                                                   | Default | Containers | Worker             |
+| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
+| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server     | api, microservices |
+| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server     | api, microservices |
+| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server     | api, microservices |
+| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server     | api, microservices |
+| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server     | api, microservices |
 
 \*1: Overridden for a metric group when its corresponding environmental variable is set.
 
