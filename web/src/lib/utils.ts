@@ -15,6 +15,8 @@ import {
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
+defaults.baseUrl = 'http://192.168.10.242:2283/api';
+
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;

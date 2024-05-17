@@ -23,6 +23,7 @@
     "prepare": "svelte-kit sync"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
     "@faker-js/faker": "^8.4.1",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
@@ -60,6 +61,9 @@
   },
   "type": "module",
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.7.1",

@@ -70,7 +70,10 @@
         await onFirstLogin();
         return;
       }
-      await onSuccess();
+      console.log('Awaiting success');
+      const route = await onSuccess();
+      console.log('Success', route)
+      console.log('Login successful');
       return;
     } catch (error) {
       errorMessage = getServerErrorMessage(error) || 'Incorrect email or password';

@@ -17,7 +17,10 @@
     </p>
 
     <LoginForm
-      onSuccess={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
+      onSuccess={() => {
+        console.log('test');
+        return goto(AppRoute.ADMIN_USER_MANAGEMENT, { invalidateAll: true })
+      }}
       onFirstLogin={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
       onOnboarding={() => goto(AppRoute.AUTH_ONBOARDING)}
     />
