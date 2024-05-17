@@ -57,6 +57,17 @@ It only need to be set if the Immich deployment method is changing.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
 :::
 
+## Workers
+
+| Variable                 | Description                        | Default | Services |
+| :----------------------- | :--------------------------------- | :-----: | :------- |
+| `IMMICH_WORKERS_INCLUDE` | Only run these workers.            |         | server   |
+| `IMMICH_WORKERS_EXCLUDE` | Run all workers, except for these. |         | server   |
+
+:::info
+Information on the current workers can be found [here](/docs/administration/jobs-workers).
+:::
+
 ## Ports
 
 | Variable                | Description           |  Default  | Services         | Worker             |
