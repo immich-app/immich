@@ -173,7 +173,7 @@ export class NotificationService {
         name: JobName.SEND_EMAIL,
         data: {
           to: recipient.email,
-          subject: `New media have been added to an album - ${album.albumName}`,
+          subject: `New media has been added to an album - ${album.albumName}`,
           html,
           text,
           imageAttachments: attachment ? [attachment] : undefined,
