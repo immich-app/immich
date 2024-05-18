@@ -412,18 +412,6 @@
     class="bg-immich-dark-gray z-[1000] col-span-1 col-start-4 row-span-1 row-start-1 flex justify-evenly pb-[16px] transition-transform"
   >
     <button
-      title="Suggestions"
-      on:click={() => editor.setMode('autofix')}
-      class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
-      class:active={mode === 'autofix'}
-    >
-      <Icon path={mdiAutoFix} size="1.5em" />
-      <div
-        class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
-        class:active={mode == 'autofix'}
-      />
-    </button>
-    <button
       title="Crop & Rotate"
       on:click={() => editor.setMode('crop')}
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
@@ -434,7 +422,8 @@
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={mode == 'crop'}
       />
-    </button><button
+    </button>
+    <button
       title="Adjust"
       on:click={() => editor.setMode('adjust')}
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
@@ -460,32 +449,7 @@
   </div>
   <div class="bg-immich-dark-gray col-span-1 col-start-4 row-span-full row-start-2 overflow-auto">
     {#if isLoaded}
-      {#if mode === 'autofix'}
-        <div class="grid gap-y-2 px-6 pt-2">
-          <!-- Suggestions -->
-          <div class="text-immich-gray/60 mb-4">Suggestions</div>
-          <SuggestionsButton
-            buttonName="Enhanced"
-            isActive={activeEdit === 'optimized'}
-            on:click={() => navigateEdit('optimized')}
-          >
-            <Icon path={mdiAutoFix} size="1.5em" />
-          </SuggestionsButton>
-          <SuggestionsButton
-            buttonName="Dynamic"
-            isActive={activeEdit === 'dynamic'}
-            on:click={() => navigateEdit('dynamic')}
-          >
-            <Icon path={mdiImageFilterHdr} size="1.5em" />
-          </SuggestionsButton>
-          <SuggestionsButton buttonName="Warm" isActive={activeEdit === 'warm'} on:click={() => navigateEdit('warm')}>
-            <Icon path={mdiWeatherSunny} size="1.5em" />
-          </SuggestionsButton>
-          <SuggestionsButton buttonName="Cold" isActive={activeEdit === 'cold'} on:click={() => navigateEdit('cold')}>
-            <Icon path={mdiWeatherCloudy} size="1.5em" />
-          </SuggestionsButton>
-        </div>
-      {:else if mode === 'crop'}
+      {#if mode === 'crop'}
         <div class="grid gap-y-2 px-6 pt-2">
           <!-- Crop & Rotate -->
           <div class="text-immich-gray/60 mb-4">Aspect Ratio</div>
