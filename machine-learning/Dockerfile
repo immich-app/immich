@@ -40,6 +40,9 @@ FROM python:3.11-slim-bookworm@sha256:fc39d2e68b554c3f0a5cb8a776280c0b3d73b4c04b
 
 FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as prod-openvino
 USER root
+# TODO: remove this once the image has the fix for https://github.com/intel/compute-runtime/issues/710
+ENV NEOReadDebugKeys=1 \
+    OverrideGpuAddressSpace=48
 
 FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04@sha256:2d913b09e6be8387e1a10976933642c73c840c0b735f0bf3c28d97fc9bc422e0 as prod-cuda
 
