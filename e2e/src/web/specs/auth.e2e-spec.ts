@@ -3,7 +3,7 @@ import { utils } from 'src/utils';
 
 test.describe('Registration', () => {
   test.beforeAll(() => {
-    utils.setApiEndpoint();
+    utils.initSdk();
   });
 
   test.beforeEach(async () => {

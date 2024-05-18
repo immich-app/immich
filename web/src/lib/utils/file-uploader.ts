@@ -6,7 +6,7 @@ import { ExecutorQueue } from '$lib/utils/executor-queue';
 import {
   Action,
   checkBulkUpload,
-  defaults,
+  getBaseUrl,
   getSupportedMediaTypes,
   type AssetFileUploadResponseDto,
 } from '@immich/sdk';
@@ -119,7 +119,7 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       const response = await uploadRequest<AssetFileUploadResponseDto>({
-        url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + '/asset/upload' + (key ? `?key=${key}` : ''),
         data: formData,
         onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
       });

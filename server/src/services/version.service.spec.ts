@@ -61,11 +61,11 @@ describe(VersionService.name, () => {
 
   describe('handVersionCheck', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      process.env.IMMICH_ENV = 'production';
     });
 
     it('should not run in dev mode', async () => {
-      process.env.NODE_ENV = 'development';
+      process.env.IMMICH_ENV = 'development';
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 
