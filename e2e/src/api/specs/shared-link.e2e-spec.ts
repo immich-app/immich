@@ -1,6 +1,6 @@
 import {
   AlbumResponseDto,
-  AssetFileUploadResponseDto,
+  AssetResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
@@ -15,8 +15,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/shared-link', () => {
   let admin: LoginResponseDto;
-  let asset1: AssetFileUploadResponseDto;
-  let asset2: AssetFileUploadResponseDto;
+  let asset1: AssetResponseDto;
+  let asset2: AssetResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let album: AlbumResponseDto;
@@ -39,8 +39,11 @@ describe('/shared-link', () => {
       utils.userSetup(admin.accessToken, createUserDto.user2),
     ]);
 
-    [asset1, asset2] = await Promise.all([utils.createAsset(user1.accessToken), utils.createAsset(user1.accessToken)]);
-
+    const stackAssetResponses = await Promise.all([
+      utils.createAsset(user1.accessToken),
+      utils.createAsset(user1.accessToken),
+    ]);
+    [asset1, asset2] = stackAssetResponses.map((response) => response.asset!);
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
       createAlbum({ createAlbumDto: { albumName: 'album' } }, { headers: asBearerAuth(user1.accessToken) }),
       createAlbum({ createAlbumDto: { albumName: 'deleted album' } }, { headers: asBearerAuth(user2.accessToken) }),

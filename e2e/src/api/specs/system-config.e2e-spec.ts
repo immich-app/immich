@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
+import { AssetResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -10,14 +10,15 @@ const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAu
 describe('/system-config', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
 
-    asset = await utils.createAsset(admin.accessToken);
+    const response = await utils.createAsset(admin.accessToken);
+    asset = response.asset!;
   });
 
   describe('GET /system-config/map/style.json', () => {

@@ -1,4 +1,4 @@
-import { LoginResponseDto, PersonResponseDto } from '@immich/sdk';
+import { AssetResponseDto, LoginResponseDto, PersonResponseDto } from '@immich/sdk';
 import { uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
@@ -35,8 +35,10 @@ describe('/person', () => {
       }),
     ]);
 
-    const asset1 = await utils.createAsset(admin.accessToken);
-    const asset2 = await utils.createAsset(admin.accessToken);
+    const asset1Response = (await utils.createAsset(admin.accessToken)) as { asset: AssetResponseDto };
+    const { asset: asset1 } = asset1Response;
+    const asset2Response = (await utils.createAsset(admin.accessToken)) as { asset: AssetResponseDto };
+    const { asset: asset2 } = asset2Response;
 
     await Promise.all([
       utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),

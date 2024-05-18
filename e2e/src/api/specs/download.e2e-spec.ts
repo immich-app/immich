@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto } from '@immich/sdk';
+import { AssetResponseDto, LoginResponseDto } from '@immich/sdk';
 import { readFile, writeFile } from 'node:fs/promises';
 import { errorDto } from 'src/responses';
 import { app, tempDir, utils } from 'src/utils';
@@ -7,13 +7,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/download', () => {
   let admin: LoginResponseDto;
-  let asset1: AssetFileUploadResponseDto;
-  let asset2: AssetFileUploadResponseDto;
+  let asset1: AssetResponseDto;
+  let asset2: AssetResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    [asset1, asset2] = await Promise.all([utils.createAsset(admin.accessToken), utils.createAsset(admin.accessToken)]);
+    const responses = await Promise.all([utils.createAsset(admin.accessToken), utils.createAsset(admin.accessToken)]);
+    [asset1, asset2] = responses.map((response) => response.asset!);
   });
 
   describe('POST /download/info', () => {

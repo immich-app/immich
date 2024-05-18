@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
+import { AssetResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -13,25 +13,25 @@ describe('/search', () => {
   let admin: LoginResponseDto;
   let websocket: Socket;
 
-  let assetFalcon: AssetFileUploadResponseDto;
-  let assetDenali: AssetFileUploadResponseDto;
-  let assetCyclamen: AssetFileUploadResponseDto;
-  let assetNotocactus: AssetFileUploadResponseDto;
-  let assetSilver: AssetFileUploadResponseDto;
-  let assetDensity: AssetFileUploadResponseDto;
+  let assetFalcon: AssetResponseDto;
+  let assetDenali: AssetResponseDto;
+  let assetCyclamen: AssetResponseDto;
+  let assetNotocactus: AssetResponseDto;
+  let assetSilver: AssetResponseDto;
+  let assetDensity: AssetResponseDto;
   // let assetPhiladelphia: AssetFileUploadResponseDto;
   // let assetOrychophragmus: AssetFileUploadResponseDto;
   // let assetRidge: AssetFileUploadResponseDto;
   // let assetPolemonium: AssetFileUploadResponseDto;
   // let assetWood: AssetFileUploadResponseDto;
   // let assetGlarus: AssetFileUploadResponseDto;
-  let assetHeic: AssetFileUploadResponseDto;
-  let assetRocks: AssetFileUploadResponseDto;
-  let assetOneJpg6: AssetFileUploadResponseDto;
-  let assetOneHeic6: AssetFileUploadResponseDto;
-  let assetOneJpg5: AssetFileUploadResponseDto;
-  let assetSprings: AssetFileUploadResponseDto;
-  let assetLast: AssetFileUploadResponseDto;
+  let assetHeic: AssetResponseDto;
+  let assetRocks: AssetResponseDto;
+  let assetOneJpg6: AssetResponseDto;
+  let assetOneHeic6: AssetResponseDto;
+  let assetOneJpg5: AssetResponseDto;
+  let assetSprings: AssetResponseDto;
+  let assetLast: AssetResponseDto;
   let cities: string[];
   let states: string[];
   let countries: string[];
@@ -66,16 +66,15 @@ describe('/search', () => {
       // last asset
       { filename: '/albums/nature/wood_anemones.jpg' },
     ];
-    const assets: AssetFileUploadResponseDto[] = [];
+    const assets: AssetResponseDto[] = [];
     for (const { filename, dto } of files) {
       const bytes = await readFile(join(testAssetDir, filename));
-      assets.push(
-        await utils.createAsset(admin.accessToken, {
-          deviceAssetId: `test-${filename}`,
-          assetData: { bytes, filename },
-          ...dto,
-        }),
-      );
+      const assetResponse = await utils.createAsset(admin.accessToken, {
+        deviceAssetId: `test-${filename}`,
+        assetData: { bytes, filename },
+        ...dto,
+      });
+      assets.push(assetResponse.asset!);
     }
 
     for (const asset of assets) {
@@ -134,7 +133,7 @@ describe('/search', () => {
       // assetWood,
     ] = assets;
 
-    assetLast = assets.at(-1) as AssetFileUploadResponseDto;
+    assetLast = assets.at(-1) as AssetResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
 

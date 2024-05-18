@@ -2,8 +2,8 @@ import {
   addAssetsToAlbum,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetFileUploadResponseDto,
   AssetOrder,
+  AssetResponseDto,
   deleteUser,
   getAlbumInfo,
   LoginResponseDto,
@@ -26,8 +26,8 @@ const user2NotShared = 'user2NotShared';
 describe('/album', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
-  let user1Asset1: AssetFileUploadResponseDto;
-  let user1Asset2: AssetFileUploadResponseDto;
+  let user1Asset1: AssetResponseDto;
+  let user1Asset2: AssetResponseDto;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
@@ -44,10 +44,11 @@ describe('/album', () => {
       utils.userSetup(admin.accessToken, createUserDto.user3),
     ]);
 
-    [user1Asset1, user1Asset2] = await Promise.all([
+    const responses = await Promise.all([
       utils.createAsset(user1.accessToken, { isFavorite: true }),
       utils.createAsset(user1.accessToken),
     ]);
+    [user1Asset1, user1Asset2] = responses.map((response) => response.asset!);
 
     user1Albums = await Promise.all([
       utils.createAlbum(user1.accessToken, {
@@ -403,49 +404,50 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to own album', async () => {
-      const asset = await utils.createAsset(user1.accessToken);
+      const { asset } = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset.id] });
+        .send({ ids: [asset!.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: asset.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: asset!.id, success: true })]);
     });
 
     it('should be able to add own asset to shared album', async () => {
-      const asset = await utils.createAsset(user1.accessToken);
+      const { asset } = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset.id] });
+        .send({ ids: [asset!.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: asset.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: asset!.id, success: true })]);
     });
 
     it('should not be able to add assets to album as a viewer', async () => {
-      const asset = await utils.createAsset(user2.accessToken);
+      const { asset } = await utils.createAsset(user2.accessToken);
+      expect(asset).toHaveProperty('id');
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[3].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [asset.id] });
+        .send({ ids: [asset!.id] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
     });
 
     it('should add duplicate assets only once', async () => {
-      const asset = await utils.createAsset(user1.accessToken);
+      const { asset } = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset.id, asset.id] });
+        .send({ ids: [asset!.id, asset!.id] });
 
       expect(status).toBe(200);
       expect(body).toEqual([
-        expect.objectContaining({ id: asset.id, success: true }),
-        expect.objectContaining({ id: asset.id, success: false, error: 'duplicate' }),
+        expect.objectContaining({ id: asset!.id, success: true }),
+        expect.objectContaining({ id: asset!.id, success: false, error: 'duplicate' }),
       ]);
     });
   });

@@ -28,7 +28,8 @@ describe('/trash', () => {
     });
 
     it('should empty the trash', async () => {
-      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      const { asset } = await utils.createAsset(admin.accessToken);
+      const { id: assetId } = asset!;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
@@ -53,7 +54,8 @@ describe('/trash', () => {
     });
 
     it('should restore all trashed assets', async () => {
-      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      const { asset } = await utils.createAsset(admin.accessToken);
+      const { id: assetId } = asset!;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
@@ -76,7 +78,8 @@ describe('/trash', () => {
     });
 
     it('should restore a trashed asset by id', async () => {
-      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      const { asset } = await utils.createAsset(admin.accessToken);
+      const { id: assetId } = asset!;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await utils.getAssetInfo(admin.accessToken, assetId);

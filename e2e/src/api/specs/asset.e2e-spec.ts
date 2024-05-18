@@ -1,5 +1,4 @@
 import {
-  AssetFileUploadResponseDto,
   AssetResponseDto,
   AssetTypeEnum,
   LibraryResponseDto,
@@ -68,10 +67,10 @@ describe('/asset', () => {
   let statsUser: LoginResponseDto;
   let stackUser: LoginResponseDto;
 
-  let user1Assets: AssetFileUploadResponseDto[];
-  let user2Assets: AssetFileUploadResponseDto[];
-  let stackAssets: AssetFileUploadResponseDto[];
-  let locationAsset: AssetFileUploadResponseDto;
+  let user1Assets: AssetResponseDto[];
+  let user2Assets: AssetResponseDto[];
+  let stackAssets: AssetResponseDto[];
+  let locationAsset: AssetResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -88,16 +87,17 @@ describe('/asset', () => {
     ]);
 
     // asset location
-    locationAsset = await utils.createAsset(admin.accessToken, {
+    const locationAssetResponse = await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
     });
+    locationAsset = locationAssetResponse.asset!;
 
-    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset.id });
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset!.id });
 
-    user1Assets = await Promise.all([
+    const user1responses = await Promise.all([
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken, {
@@ -109,8 +109,10 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
+    user1Assets = user1responses.map((response) => response.asset!);
 
-    user2Assets = [await utils.createAsset(user2.accessToken)];
+    const user2responses = [await utils.createAsset(user2.accessToken)];
+    user2Assets = user2responses.map((response) => response.asset!);
 
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
@@ -119,7 +121,7 @@ describe('/asset', () => {
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-11').toISOString() }),
     ]);
 
-    for (const asset of [...user1Assets, ...user2Assets]) {
+    for (const asset of [...user1responses, ...user2responses]) {
       expect(asset.duplicate).toBe(false);
     }
 
@@ -136,13 +138,14 @@ describe('/asset', () => {
     ]);
 
     // stacks
-    stackAssets = await Promise.all([
+    stackAssetResponses = await Promise.all([
       utils.createAsset(stackUser.accessToken),
       utils.createAsset(stackUser.accessToken),
       utils.createAsset(stackUser.accessToken),
       utils.createAsset(stackUser.accessToken),
       utils.createAsset(stackUser.accessToken),
     ]);
+    stackAssets = convertResponseToAsset(stackAssetResponses);
 
     await updateAssets(
       { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
@@ -524,8 +527,10 @@ describe('/asset', () => {
     });
 
     it('should move an asset to the trash', async () => {
-      const { id: assetId } = await utils.createAsset(admin.accessToken);
-
+      const assetResponse = (await utils.createAsset(admin.accessToken)) as { asset: AssetResponseDto };
+      const {
+        asset: { id: assetId },
+      } = assetResponse;
       const before = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(false);
 
@@ -791,10 +796,13 @@ describe('/asset', () => {
     for (const { input, expected } of tests) {
       it(`should upload and generate a thumbnail for ${input}`, async () => {
         const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await utils.createAsset(admin.accessToken, {
+        const assetResponse = (await utils.createAsset(admin.accessToken, {
           assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-        });
-
+        })) as { asset: AssetResponseDto; duplicate: boolean };
+        const {
+          asset: { id },
+          duplicate,
+        } = assetResponse;
         expect(duplicate).toBe(false);
 
         await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
@@ -892,18 +900,18 @@ describe('/asset', () => {
 
     for (const { filepath, checksum } of motionTests) {
       it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await utils.createAsset(admin.accessToken, {
+        const response = (await utils.createAsset(admin.accessToken, {
           assetData: {
             bytes: await readFile(join(testAssetDir, filepath)),
             filename: basename(filepath),
           },
-        });
+        })) as { asset: AssetResponseDto; duplicate: boolean };
 
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.asset.id });
 
         expect(response.duplicate).toBe(false);
 
-        const asset = await utils.getAssetInfo(admin.accessToken, response.id);
+        const asset = await utils.getAssetInfo(admin.accessToken, response.asset.id);
         expect(asset.livePhotoVideoId).toBeDefined();
 
         const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);

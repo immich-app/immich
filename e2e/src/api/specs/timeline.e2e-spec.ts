@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
+import { AssetResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -19,7 +19,7 @@ describe('/timeline', () => {
   let user: LoginResponseDto;
   let timeBucketUser: LoginResponseDto;
 
-  let userAssets: AssetFileUploadResponseDto[];
+  let userAssets: AssetResponseDto[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -29,7 +29,7 @@ describe('/timeline', () => {
       utils.userSetup(admin.accessToken, createUserDto.create('time-bucket')),
     ]);
 
-    userAssets = await Promise.all([
+    const responses = await Promise.all([
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken, {
@@ -41,7 +41,7 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
-
+    userAssets = responses.map((response) => response.asset!);
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-10').toISOString() }),

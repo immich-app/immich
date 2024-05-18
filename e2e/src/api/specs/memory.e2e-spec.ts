@@ -1,5 +1,5 @@
 import {
-  AssetFileUploadResponseDto,
+  AssetResponseDto,
   LoginResponseDto,
   MemoryResponseDto,
   MemoryType,
@@ -15,9 +15,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe('/memories', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
-  let adminAsset: AssetFileUploadResponseDto;
-  let userAsset1: AssetFileUploadResponseDto;
-  let userAsset2: AssetFileUploadResponseDto;
+  let adminAsset: AssetResponseDto;
+  let userAsset1: AssetResponseDto;
+  let userAsset2: AssetResponseDto;
   let userMemory: MemoryResponseDto;
 
   beforeAll(async () => {
@@ -25,11 +25,12 @@ describe('/memories', () => {
 
     admin = await utils.adminSetup();
     user = await utils.userSetup(admin.accessToken, createUserDto.user1);
-    [adminAsset, userAsset1, userAsset2] = await Promise.all([
+    const responses = await Promise.all([
       utils.createAsset(admin.accessToken),
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
+    [adminAsset, userAsset1, userAsset2] = responses.map((response) => response.asset!);
     userMemory = await createMemory(
       {
         memoryCreateDto: {

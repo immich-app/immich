@@ -2,7 +2,7 @@ import {
   ActivityCreateDto,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetFileUploadResponseDto,
+  AssetResponseDto,
   LoginResponseDto,
   ReactionType,
   createActivity as create,
@@ -17,7 +17,8 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 describe('/activity', () => {
   let admin: LoginResponseDto;
   let nonOwner: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+
+  let asset: AssetResponseDto;
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>
@@ -28,7 +29,8 @@ describe('/activity', () => {
 
     admin = await utils.adminSetup();
     nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
-    asset = await utils.createAsset(admin.accessToken);
+    const assetMediaResponse = await utils.createAsset(admin.accessToken);
+    asset = assetMediaResponse.asset!;
     album = await createAlbum(
       {
         createAlbumDto: {

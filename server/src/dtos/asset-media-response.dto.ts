@@ -1,7 +1,7 @@
-import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { Optional } from 'src/validation';
 
 export class CheckExistingAssetsResponseDto {
   existingIds!: string[];

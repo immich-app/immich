@@ -1,8 +1,7 @@
-import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',

@@ -1,9 +1,9 @@
 import {
   AllJobStatusResponseDto,
-  AssetFileUploadResponseDto,
+  AssetMediaUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
-  CreateAssetDto,
+  CreateAssetMediaDto,
   CreateLibraryDto,
   CreateUserDto,
   MetadataSearchDto,
@@ -292,7 +292,7 @@ export const utils = {
 
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<CreateAssetMediaDto, 'assetData'>> & { assetData?: AssetData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -320,7 +320,7 @@ export const utils = {
 
     const { body } = await builder;
 
-    return body as AssetFileUploadResponseDto;
+    return body as AssetMediaUploadResponseDto;
   },
 
   createImageFile: (path: string) => {
