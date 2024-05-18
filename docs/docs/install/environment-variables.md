@@ -59,10 +59,10 @@ It only need to be set if the Immich deployment method is changing.
 
 ## Workers
 
-| Variable                 | Description                        | Default | Containers |
-| :----------------------- | :--------------------------------- | :-----: | :--------- |
-| `IMMICH_WORKERS_INCLUDE` | Only run these workers.            |         | server     |
-| `IMMICH_WORKERS_EXCLUDE` | Run all workers, except for these. |         | server     |
+| Variable                 | Description                                                                                          | Default | Containers |
+| :----------------------- | :--------------------------------------------------------------------------------------------------- | :-----: | :--------- |
+| `IMMICH_WORKERS_INCLUDE` | Only run these workers.                                                                              |         | server     |
+| `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
 
 :::info
 Information on the current workers can be found [here](/docs/administration/jobs-workers).
@@ -70,13 +70,10 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 ## Ports
 
-| Variable                | Description           |  Default  | Containers       | Workers            |
-| :---------------------- | :-------------------- | :-------: | :--------------- | :----------------- |
-| `HOST`                  | Host                  | `0.0.0.0` | server           | api, microservices |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server           | api                |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | server           | microservices      |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning | N/A                |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning | N/A                |
+| Variable      | Description    |                  Default                   |
+| :------------ | :------------- | :----------------------------------------: |
+| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
+| `IMMICH_PORT` | Listening port | `3001` (server), `3003` (machine learning) |
 
 ## Database
 
