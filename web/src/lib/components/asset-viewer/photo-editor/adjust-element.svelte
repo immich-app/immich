@@ -1,72 +1,79 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
   export let title = 'Free';
-  export let type = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
+  export let min = 0;
+  export let max = 100;
   export let value = 0;
+  export let baseValue = 0;
 
   let dispatch = createEventDispatcher();
-  let progressBar: HTMLDivElement;
 
-  let rangeValue = 0;
+  // When min is negative, we need to offset all values so that
+  // the range is always positive for rendering purposes
+  const renderOffset = min < 0 ? Math.abs(min) : 0;
 
-  $: type ? (rangeValue = (value / 2) * 100) : (rangeValue = value * 100);
+  const calculateGradientBounds = () => {
+    // Our fill will always be from the baseValue to the current value
+    // Calculate the percentage of baseValue in the range between min and max
+    // min may be less than 0, so we need to offset the range to always be positive
+    const baseValuePercentage = (baseValue + renderOffset) / (max + renderOffset);
+    const percentage = (value + renderOffset) / (max + renderOffset);
 
-  $: value, renderProgress();
-
-  onMount(() => {
-    renderProgress();
-  });
-
-  const renderProgress = () => {
-    if (!progressBar) {
-      return;
-    }
-
-    const progress = rangeValue;
-    type ? (value = (progress * 2) / 100) : (value = Number(progress) / 100);
-
-    const progressPercent = (progress / 100) * 100;
-    let progressColor;
-
-    if (type) {
-      progress <= 50
-        ? (progressColor = `linear-gradient(90deg, #373737 ${progressPercent}%, #adcbfa ${progressPercent}%, #adcbfa 50%,#373737 50%)`)
-        : (progressColor = `linear-gradient(90deg, #373737 50%, #adcbfa 50%, #adcbfa ${progressPercent}%, #373737 ${progressPercent}%)`);
+    // Behaviour will be different depending on the direction of the range relative
+    // to the baseValue. If the range is to the right of the baseValue, the fill will
+    // be from the baseValue to the current value. If the range is to the left of the
+    // baseValue, the fill will be from the current value to the baseValue.
+    if (value > baseValue) {
+      return {
+        left: `${baseValuePercentage * 100}%`,
+        right: `${percentage * 100}%`,
+      };
+    } else if (value < baseValue) {
+      return {
+        left: `${percentage * 100}%`,
+        right: `${baseValuePercentage * 100}%`,
+      };
     } else {
-      progressColor = `linear-gradient(90deg, #adcbfa ${progressPercent}%,#373737 ${progressPercent}%)`;
+      return {
+        left: `${baseValuePercentage * 100}%`,
+        right: `${baseValuePercentage * 100}%`,
+      };
     }
-    progressBar.style.background = '#373737';
-    progressBar.style.background = progressColor;
+  };
+
+  const getTrackStyle = () => {
+    const { left, right } = calculateGradientBounds();
+
+    return `background: linear-gradient(to right, #373737 ${left}, #adcbfa ${left} ${right}, #373737 ${right})`;
+  };
+
+  let style = getTrackStyle();
+
+  const handleInput = () => {
+    style = getTrackStyle();
     dispatch('update', value);
   };
 </script>
 
 <div class="flex w-full text-white">
   <button
-    class="{(type && value != 1) || (!type && value != 0)
+    class="{value !== baseValue
       ? 'active-edit'
       : ''} bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl"
     on:click={() => {
-      if (type) {
-        value = 1;
-        rangeValue = 50;
-      } else {
-        value = 0;
-        rangeValue = 0;
-      }
-      renderProgress();
-      dispatch('save');
+      value = baseValue;
+      handleInput();
     }}
   >
     <slot />
   </button>
   <div class="relative grid w-full">
     <span>{title}</span>
-    <input bind:value={rangeValue} type="range" on:input={renderProgress} on:change={() => dispatch('save')} />
+    <input bind:value type="range" {min} {max} step={0.05} on:input={handleInput} />
     <div
-      bind:this={progressBar}
       class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[22px] h-[3px] w-full rounded-full"
+      {style}
     />
   </div>
 </div>
@@ -80,8 +87,13 @@
     background-color: #adcbfa;
   }
 
+  .progress-bar {
+    z-index: 0;
+  }
+
   input[type='range'] {
     font-size: 1.5rem;
+    z-index: 1;
   }
 
   input[type='range'] {
@@ -148,6 +160,7 @@
       var(--clip-edges) 100%,
       var(--clip-further) var(--clip-further)
     );
+    z-index: 1;
   }
 
   input[type='range']:hover::-webkit-slider-thumb {

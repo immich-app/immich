@@ -228,7 +228,7 @@
         {isRendering && !isUploading ? 'Rendering' : isUploading ? 'Uploading' : 'Save'}
       </button>
       <div use:clickOutside on:outclick={() => (isShowEditOptions = false)}>
-        <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
+        <CircleIconButton icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowEditOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
             <MenuOption on:click={() => editor.clear()} text="Clear History" />
@@ -575,7 +575,9 @@
           <div class="grid gap-y-8">
             <AdjustElement
               title="Brightness"
-              type={true}
+              min={0}
+              max={2}
+              baseValue={1}
               value={filter.brightness}
               on:update={(e) => editor.filter({ brightness: e.detail })}
               on:save={() => editor.save()}
@@ -584,7 +586,9 @@
             </AdjustElement>
             <AdjustElement
               title="Contrast"
-              type={true}
+              min={0}
+              max={2}
+              baseValue={1}
               value={filter.contrast}
               on:update={(e) => editor.filter({ contrast: e.detail })}
               on:save={() => editor.save()}
@@ -593,7 +597,9 @@
             </AdjustElement>
             <AdjustElement
               title="Saturation"
-              type={true}
+              min={0}
+              max={2}
+              baseValue={1}
               value={filter.saturation}
               on:update={(e) => editor.filter({ saturation: e.detail })}
               on:save={() => editor.save()}
@@ -602,7 +608,9 @@
             </AdjustElement>
             <AdjustElement
               title="Blur"
-              type={false}
+              min={0}
+              max={1}
+              baseValue={0}
               value={filter.blur}
               on:update={(e) => editor.filter({ blur: e.detail })}
               on:save={() => editor.save()}
@@ -611,7 +619,9 @@
             </AdjustElement>
             <AdjustElement
               title="Grayscale"
-              type={false}
+              min={0}
+              max={1}
+              baseValue={0}
               value={filter.grayscale}
               on:update={(e) => editor.filter({ grayscale: e.detail })}
               on:save={() => editor.save()}
@@ -620,7 +630,9 @@
             </AdjustElement>
             <AdjustElement
               title="Hue Rotate"
-              type={true}
+              min={0}
+              max={2}
+              baseValue={1}
               value={filter.hueRotate}
               on:update={(e) => editor.filter({ hueRotate: e.detail })}
               on:save={() => editor.save()}
@@ -629,7 +641,9 @@
             </AdjustElement>
             <AdjustElement
               title="Invert"
-              type={false}
+              min={0}
+              max={1}
+              baseValue={0}
               value={filter.invert}
               on:update={(e) => editor.filter({ invert: e.detail })}
               on:save={() => editor.save()}
@@ -638,7 +652,9 @@
             </AdjustElement>
             <AdjustElement
               title="Sepia"
-              type={false}
+              min={0}
+              max={1}
+              baseValue={0}
               value={filter.sepia}
               on:update={(e) => editor.filter({ sepia: e.detail })}
               on:save={() => editor.save()}
