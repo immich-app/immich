@@ -13,4 +13,4 @@
   });
 </script>
 
-<UserPageLayout title={data.meta.title} scrollbar={false}>OK</UserPageLayout>
+<UserPageLayout title={data.meta.title} scrollbar={false}></UserPageLayout>
