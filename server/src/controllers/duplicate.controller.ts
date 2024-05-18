@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto } from 'src/dtos/duplicate-response.dto';
+import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
 
