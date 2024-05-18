@@ -31,7 +31,7 @@ All the services are packaged to run as with single Docker Compose command.
 ### Server and web apps
 
 1. Clone the project repo.
-2. Run `cp docker/example.env docker/.env`.
+2. Run `cp docker/example.dev.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
 4. From the root directory, run:
 
