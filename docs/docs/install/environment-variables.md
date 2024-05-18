@@ -41,7 +41,7 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | Variable                        | Description                                  |         Default          | Containers               | Workers            |
 | :------------------------------ | :------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
 | `TZ`                            | Timezone                                     |                          | server                   | microservices      |
-| `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, machine learning | api, microservices |
+| `IMMICH_ENV`                    | Environment (production, development)        |       `production`       | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error) |          `log`           | server, machine learning | api, microservices |
 | `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server                   | api, microservices |
