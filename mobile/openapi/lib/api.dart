@@ -116,6 +116,7 @@ part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';
 part 'model/duplicate_detection_config.dart';
+part 'model/duplicate_response_dto.dart';
 part 'model/entity_type.dart';
 part 'model/exif_response_dto.dart';
 part 'model/face_dto.dart';

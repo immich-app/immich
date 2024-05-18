@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 
 # **getAssetDuplicates**
-> List<AssetResponseDto> getAssetDuplicates()
+> List<DuplicateResponseDto> getAssetDuplicates()
 
 
 
@@ -50,7 +50,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**List<AssetResponseDto>**](AssetResponseDto.md)
+[**List<DuplicateResponseDto>**](DuplicateResponseDto.md)
 
 ### Authorization
 

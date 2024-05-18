@@ -284,6 +284,7 @@ Class | Method | HTTP request | Description
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
+ - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
