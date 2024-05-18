@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    // String duplicateId
+    test('to test the property `duplicateId`', () async {
+      // TODO
+    });
+
     // String duration
     test('to test the property `duration`', () async {
       // TODO

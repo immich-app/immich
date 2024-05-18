@@ -17,7 +17,7 @@ void main() {
   // final instance = DuplicateApi();
 
   group('tests for DuplicateApi', () {
-    //Future<List<AssetResponseDto>> getAssetDuplicates() async
+    //Future<List<DuplicateResponseDto>> getAssetDuplicates() async
     test('test getAssetDuplicates', () async {
       // TODO
     });
