@@ -18,6 +18,7 @@
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
     "check:all": "npm run check:code && npm run test:cov",
+    "healthcheck": "node ./dist/utils/healthcheck.js",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage",
