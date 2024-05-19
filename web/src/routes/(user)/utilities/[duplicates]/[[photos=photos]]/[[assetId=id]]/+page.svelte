@@ -9,7 +9,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
-  <div class="flex gap-4 flex-wrap mt-6">
+  <div class="mt-6">
     {#each data.duplicates as duplicate (duplicate.duplicateId)}
       <DuplicatesCompareControl {duplicate} />
     {/each}
