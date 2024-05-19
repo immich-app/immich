@@ -360,6 +360,111 @@ cap_drop:
 
 </details>
 
+### How can I monitor the health of the Immich containers?
+
+All of the containers have health monitoring scripts that are not enabled by default. To enable them, add the following to your `docker-compose.yml`.
+
+```diff
+services:
+  immich-server:
+    ...
++   healthcheck:
++     test: npm run healthcheck
+
+  immich-machine-learning:
+    ...
++   healthcheck:
++     test: python3 healthcheck.py
+
+  redis:
+    ...
++   healthcheck:
++     test: redis-cli ping
+
+  database:
+    ...
++   healthcheck:
++     test: ["CMD-SHELL", "pg_isready", "--dbname=${DB_DATABASE_NAME}"]
+```
+
+### How can I monitor the health of the Immich containers?
+
+All of the containers have health monitoring scripts that are not enabled by default. To enable them, add the following to your `docker-compose.yml`.
+
+```diff
+🐋 What is a docker healthcheck
+the docker spec has a way to determine if a service is healthy. This is useful for servers. The command docker ps can be used to get a quick summary of if a container is responding positively.
+
+Platforms like AWS have built in integration for this spec and show the health status in their UI when running containers in ECS Fargate.
+
+There probably are other benefits but I only know of those. I personally like to use the lazydocker cli to manage my docker services. Which also displays if they are passing healthchecks
+
+lazy
+
+🏗️ My solution
+One thing to know about the docker healthcheck is it uses CLI on the image to perform it. This can be tricky to accomplish in an era of distroless images. The images that Immich puts out seem to be in that category (which is a good thing). The following common CLI that allow docker healthchecks to easily be done are absent on the image for both immich_server and immich_machine_learning
+
+common commands used for Docker healthchecks
+
+curl
+wget
+netcat or nc
+pgrep
+This means to support docker healthchecks you have to go one of two routes. Add wget from the busybox image. Or use a programming language to script a healthcheck command.
+
+If the end image has node or python, like is the case here, then the later is the most slim and secure way to do this.
+
+So, that's what I've added for the two images
+
+🧪 Tests
+Lint
+I ran npm run lint but got the following error
+
+ignore_lint
+
+Healthchecks do need to follow the Docker spec and return exactly what Docker wants.
+
+0: success - the container is healthy and ready for use
+1: unhealthy - the container isn't working correctly
+2: reserved - don't use this exit code
+So, since using process.exit() is a requirement. I added this to the ignore patterns of eslint instead of resolving it.
+
+Tests
+passing
+pass
+
+Something I haven't tested
+Healthchecks by default will run every 30 seconds. This in some apps could cause an excess of logs. I did not check for this. If anyone wants to give that concern a look. That would be appreciated.
+
+😶‍🌫️Keep Optional
+It would be possible to add these to the installation docker-compose.yml file. But I don't think it would be good to force this out (by adding it to /docker/docker-compose.yml). It can always be something that people optionally add onto their compose file if they want it (it's more for people who know what they are doing anyways). For example postgres and redis have a built in way to do healthchecks. Which I'm adding to my docker compose file.
+
+I guess something in the docs would be useful for this. But curious what the maintainers think on this.
+
+An example of what my compose file looks like with healthchecks
+
+services:
+  immich-server:
+    ...
++   healthcheck:
++     test: npm run healthcheck
+
+  immich-machine-learning:
+    ...
++   healthcheck:
++     test: python3 healthcheck.py
+
+  redis:
+    ...
++   healthcheck:
++     test: redis-cli ping
+
+  database:
+    ...
++   healthcheck:
++     test: ["CMD-SHELL", "pg_isready", "--dbname=${DB_DATABASE_NAME}"]
+```
+
 ### How can I purge data from Immich?
 
 Data for Immich comes in two forms:
