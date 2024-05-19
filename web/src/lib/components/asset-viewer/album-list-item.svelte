@@ -50,7 +50,7 @@
       {#if variant === 'simple'}
         <span>{album.shared ? 'Shared' : ''}</span>
       {:else}
-        <span>{album.assetCount} items{album.shared ? ' - Shared' : '' }</span>
+        <span>{album.assetCount} items{album.shared ? ' - Shared' : ''}</span>
       {/if}
     </span>
   </div>
