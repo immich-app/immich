@@ -83,9 +83,9 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(asset: File, albumId?: string, assetId?: string): Promise<string | undefined> {
-  const fileCreatedAt = new Date(asset.lastModified).toISOString();
-  const deviceAssetId = getDeviceAssetId(asset);
+async function fileUploader(assetFile: File, albumId?: string, assetId?: string): Promise<string | undefined> {
+  const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
+  const deviceAssetId = getDeviceAssetId(assetFile);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -95,10 +95,10 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
       deviceAssetId,
       deviceId: 'WEB',
       fileCreatedAt,
-      fileModifiedAt: new Date(asset.lastModified).toISOString(),
+      fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
       duration: '0:00:00.000000',
-      assetData: new File([asset], asset.name),
+      assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
     }
@@ -109,7 +109,7 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
       await tick();
       try {
-        const bytes = await asset.arrayBuffer();
+        const bytes = await assetFile.arrayBuffer();
         const hash = await crypto.subtle.digest('SHA-1', bytes);
         const checksum = Array.from(new Uint8Array(hash))
           .map((b) => b.toString(16).padStart(2, '0'))
@@ -117,12 +117,12 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
 
         const {
           results: [checkUploadResult],
-        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] } });
+        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } });
         if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
-          responseData = { duplicate: true, id: checkUploadResult.assetId };
+          responseData = { duplicate: true, duplicateId: checkUploadResult.assetId };
         }
       } catch (error) {
-        console.error(`Error calculating sha1 file=${asset.name})`, error);
+        console.error(`Error calculating sha1 file=${assetFile.name})`, error);
       }
     }
 
@@ -148,7 +148,11 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
         responseData = response.data;
       }
     }
-    const { duplicate, id } = responseData;
+    const { duplicate, asset } = responseData;
+    let id;
+    if (asset) {
+      id = asset.id;
+    }
 
     if (duplicate) {
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
