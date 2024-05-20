@@ -50,6 +50,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
   stackCount!: number | null;
+  duplicateId?: string | null;
 }
 
 export type AssetMapOptions = {
@@ -130,6 +131,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isExternal: false,
     isReadOnly: false,
     hasMetadata: true,
+    duplicateId: entity.duplicateId,
   };
 }
 

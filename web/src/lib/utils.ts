@@ -5,8 +5,8 @@ import {
   AssetJobName,
   JobName,
   ThumbnailFormat,
-  defaults,
   finishOAuth,
+  getBaseUrl,
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
@@ -156,7 +156,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const url = new URL(path, 'https://example.com');
   url.search = searchParameters.toString();
 
-  return defaults.baseUrl + url.pathname + url.search + url.hash;
+  return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
 export const getAssetFileUrl = (

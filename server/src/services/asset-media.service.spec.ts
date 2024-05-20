@@ -367,6 +367,7 @@ describe('AssetMediaService', () => {
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
+        backupId: 'cloned-copy',
         asset: mapAsset(updatedAsset),
       });
 
@@ -400,6 +401,7 @@ describe('AssetMediaService', () => {
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
+        backupId: 'cloned-copy',
         asset: mapAsset(updatedAsset),
       });
 
@@ -431,6 +433,7 @@ describe('AssetMediaService', () => {
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         duplicate: false,
         duplicateId: undefined,
+        backupId: 'cloned-copy',
         asset: mapAsset(updatedAsset),
       });
 
@@ -514,7 +517,7 @@ describe('AssetMediaService', () => {
     it('should find an existing asset', async () => {
       assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
-        id: 'asset-id',
+        duplicateId: 'asset-id',
         duplicate: true,
       });
       expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
@@ -523,7 +526,7 @@ describe('AssetMediaService', () => {
     it('should find an existing asset by base64', async () => {
       assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
-        id: 'asset-id',
+        duplicateId: 'asset-id',
         duplicate: true,
       });
       expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);

@@ -62,7 +62,7 @@ export class SystemConfigService {
   @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
   onValidateConfig({ newConfig, oldConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
-      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
+      throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }
 
@@ -135,10 +135,10 @@ export class SystemConfigService {
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
-    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
+    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
   }
 
   private getEnvLogLevel() {
-    return process.env.LOG_LEVEL as LogLevel;
+    return process.env.IMMICH_LOG_LEVEL as LogLevel;
   }
 }

@@ -8,6 +8,7 @@ import { AssetController } from 'src/controllers/asset.controller';
 import { AuditController } from 'src/controllers/audit.controller';
 import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
+import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
 import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
@@ -39,6 +40,7 @@ export const controllers = [
   AuditController,
   AuthController,
   DownloadController,
+  DuplicateController,
   FaceController,
   JobController,
   LibraryController,

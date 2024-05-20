@@ -3,13 +3,7 @@ import { uploadAssetsStore } from '$lib/stores/upload';
 import { getKey, uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
-import {
-  Action,
-  checkBulkUpload,
-  defaults,
-  getSupportedMediaTypes,
-  type AssetFileUploadResponseDto,
-} from '@immich/sdk';
+import { Action, checkBulkUpload, getBaseUrl, getSupportedMediaTypes, type AssetMediaResponseDto } from '@immich/sdk';
 import { tick } from 'svelte';
 import { getServerErrorMessage, handleError } from './handle-error';
 
@@ -109,7 +103,7 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
       formData.append(key, value);
     }
 
-    let responseData: AssetFileUploadResponseDto | undefined;
+    let responseData: AssetMediaResponseDto | undefined;
     const key = getKey();
     if (crypto?.subtle?.digest && !key) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
@@ -135,16 +129,16 @@ async function fileUploader(asset: File, albumId?: string, assetId?: string): Pr
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       if (assetId) {
-        const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: defaults.baseUrl + '/asset/' + assetId + '/file' + (key ? `?key=${key}` : ''),
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/asset/' + assetId + '/file' + (key ? `?key=${key}` : ''),
           method: 'PUT',
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
         responseData = response.data;
       } else {
-        const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: defaults.baseUrl + '/asset' + (key ? `?key=${key}` : ''),
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/asset' + (key ? `?key=${key}` : ''),
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });

@@ -115,6 +115,7 @@ export type AssetResponseDto = {
     checksum: string;
     deviceAssetId: string;
     deviceId: string;
+    duplicateId?: string | null;
     duration: string;
     exifInfo?: ExifResponseDto;
     fileCreatedAt: string;
@@ -400,6 +401,10 @@ export type DownloadArchiveInfo = {
 export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
+};
+export type DuplicateResponseDto = {
+    assets: AssetResponseDto[];
+    duplicateId: string;
 };
 export type PersonResponseDto = {
     birthDate: string | null;
@@ -1799,6 +1804,14 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         method: "POST",
         body: downloadInfoDto
     })));
+}
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateResponseDto[];
+    }>("/duplicates", {
+        ...opts
+    }));
 }
 export function getFaces({ id }: {
     id: string;

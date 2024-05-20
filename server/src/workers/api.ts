@@ -18,7 +18,7 @@ const host = process.env.HOST;
 async function bootstrap() {
   otelSDK.start();
 
-  const port = Number(process.env.SERVER_PORT) || 3001;
+  const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
 
@@ -29,11 +29,11 @@ async function bootstrap() {
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
-  if (isDev) {
+  if (isDev()) {
     app.enableCors();
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
-  useSwagger(app, isDev);
+  useSwagger(app);
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
   if (existsSync(WEB_ROOT)) {

@@ -11,7 +11,7 @@ import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { CLIP_MODEL_INFO, isDev, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
@@ -63,7 +63,7 @@ export const isSmartSearchEnabled = (machineLearning: SystemConfig['machineLearn
 export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
 export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
-  isMachineLearningEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
+  isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
@@ -174,7 +174,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   return document;
 };
 
-export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
+export const useSwagger = (app: INestApplication) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -211,7 +211,7 @@ export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
 
   SwaggerModule.setup('doc', app, specification, customOptions);
 
-  if (isDevelopment) {
+  if (isDev()) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });

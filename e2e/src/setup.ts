@@ -17,7 +17,7 @@ const setup = async () => {
   child.stdout.on('data', (data) => {
     const input = data.toString();
     console.log(input);
-    if (input.includes('Immich Microservices is listening')) {
+    if (input.includes('Immich Microservices is running')) {
       _resolve();
     }
   });

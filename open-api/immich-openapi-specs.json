@@ -2497,6 +2497,41 @@
         ]
       }
     },
+    "/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicate"
+        ]
+      }
+    },
     "/face": {
       "get": {
         "operationId": "getFaces",
@@ -7580,6 +7615,10 @@
           "deviceId": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "duration": {
             "type": "string"
           },
@@ -8242,6 +8281,24 @@
         "required": [
           "enabled",
           "maxDistance"
+        ],
+        "type": "object"
+      },
+      "DuplicateResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "duplicateId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assets",
+          "duplicateId"
         ],
         "type": "object"
       },

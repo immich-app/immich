@@ -360,8 +360,8 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    NODE_ENV: Joi.string().optional().valid('development', 'production', 'staging').default('development'),
-    LOG_LEVEL: Joi.string()
+    IMMICH_ENV: Joi.string().optional().valid('development', 'production').default('production'),
+    IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
 
@@ -372,8 +372,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
     DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
-    MACHINE_LEARNING_PORT: Joi.number().optional(),
-    MICROSERVICES_PORT: Joi.number().optional(),
+    IMMICH_PORT: Joi.number().optional(),
     IMMICH_METRICS_PORT: Joi.number().optional(),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
