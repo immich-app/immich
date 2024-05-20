@@ -1,6 +1,7 @@
 import {
   AlbumResponseDto,
   AssetFileUploadResponseDto,
+  AssetResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
@@ -11,7 +12,7 @@ import { asBearerAuth, utils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
   let sharedLinkPassword: SharedLinkResponseDto;
@@ -20,7 +21,8 @@ test.describe('Shared Links', () => {
     utils.initSdk();
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    asset = await utils.createAsset(admin.accessToken);
+    const assetResponse = await utils.createAsset(admin.accessToken);
+    asset = assetResponse.asset!;
     album = await createAlbum(
       {
         createAlbumDto: {
