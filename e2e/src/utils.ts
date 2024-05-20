@@ -1,5 +1,6 @@
 import {
   AllJobStatusResponseDto,
+  AssetMediaResponseDto,
   AssetMediaUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
@@ -9,6 +10,7 @@ import {
   MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UpdateAssetMediaDto,
   ValidateLibraryDto,
   createAlbum,
   createApiKey,
@@ -290,9 +292,28 @@ export const utils = {
   updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
     updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),
 
+  replaceAsset: async (
+    assetId: string,
+    accessToken: string,
+    dto?: Partial<Omit<UpdateAssetMediaDto, 'assetData'>> & { assetData?: AssetData },
+  ) => {
+    const endpoint = `/asset/${assetId}/file`;
+    const method = 'put';
+    return utils.upload(accessToken, dto, method, endpoint);
+  },
+
   createAsset: async (
     accessToken: string,
     dto?: Partial<Omit<CreateAssetMediaDto, 'assetData'>> & { assetData?: AssetData },
+  ) => {
+    return utils.upload(accessToken, dto);
+  },
+
+  upload: async (
+    accessToken: string,
+    dto?: Partial<Omit<CreateAssetMediaDto, 'assetData'>> & { assetData?: AssetData },
+    method: 'post' | 'put' = 'post',
+    endpoint: string = '/asset',
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -310,7 +331,7 @@ export const utils = {
     }
 
     const builder = request(app)
-      .post(`/asset`)
+      [method](endpoint)
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
@@ -320,7 +341,7 @@ export const utils = {
 
     const { body } = await builder;
 
-    return body as AssetMediaUploadResponseDto;
+    return body as AssetMediaResponseDto;
   },
 
   createImageFile: (path: string) => {

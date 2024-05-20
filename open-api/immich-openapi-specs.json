@@ -1109,7 +1109,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaUploadResponseDto"
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
                 }
               }
             },
@@ -2028,7 +2028,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaUploadResponseDto"
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
                 }
               }
             },
@@ -7540,10 +7540,13 @@
         ],
         "type": "object"
       },
-      "AssetMediaUploadResponseDto": {
+      "AssetMediaResponseDto": {
         "properties": {
           "asset": {
             "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "backupId": {
+            "type": "string"
           },
           "duplicate": {
             "type": "boolean"

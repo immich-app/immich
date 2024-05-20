@@ -46,8 +46,9 @@ export class GetAssetThumbnailDto {
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }
 
-export class AssetMediaUploadResponseDto {
+export class AssetMediaResponseDto {
   asset?: AssetResponseDto | undefined;
+  backupId?: string | undefined;
   duplicateId!: string | undefined;
   duplicate!: boolean;
 }

@@ -147,7 +147,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **createAsset**
-> AssetMediaUploadResponseDto createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
+> AssetMediaResponseDto createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
 
 
 
@@ -214,7 +214,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AssetMediaUploadResponseDto**](AssetMediaUploadResponseDto.md)
+[**AssetMediaResponseDto**](AssetMediaResponseDto.md)
 
 ### Authorization
 
@@ -884,7 +884,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **replaceAsset**
-> AssetMediaUploadResponseDto replaceAsset(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration)
+> AssetMediaResponseDto replaceAsset(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, duration)
 
 
 
@@ -939,7 +939,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AssetMediaUploadResponseDto**](AssetMediaUploadResponseDto.md)
+[**AssetMediaResponseDto**](AssetMediaResponseDto.md)
 
 ### Authorization
 

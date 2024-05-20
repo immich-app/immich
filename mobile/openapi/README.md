@@ -265,7 +265,7 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
- - [AssetMediaUploadResponseDto](doc//AssetMediaUploadResponseDto.md)
+ - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)

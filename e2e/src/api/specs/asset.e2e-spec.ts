@@ -1,4 +1,5 @@
 import {
+  AssetMediaUploadResponseDto,
   AssetResponseDto,
   AssetTypeEnum,
   LibraryResponseDto,
@@ -72,7 +73,7 @@ describe('/asset', () => {
   let stackAssets: AssetResponseDto[];
   let locationAsset: AssetResponseDto;
 
-  beforeAll(async () => {
+  const setupTest = async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
@@ -159,7 +160,8 @@ describe('/asset', () => {
       assetId: user1Assets[0].id,
       personId: person1.id,
     });
-  }, 30_000);
+  };
+  beforeAll(setupTest, 30_000);
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
@@ -545,37 +547,93 @@ describe('/asset', () => {
     });
   });
 
-  describe('POST /asset', () => {
+  describe.only.each([
+    { method: 'PUT', description: '/asset/:id/file' },
+    { method: 'POST', description: '/asset' },
+  ])('$method $description', ({ method }) => {
+    let methodLower: 'put' | 'post';
+    let endpoint: string;
+    let createOrReplaceFn: (...params: Parameters<typeof utils.createAsset>) => Promise<AssetMediaUploadResponseDto>;
+    beforeAll(async () => {
+      await setupTest();
+      methodLower = method.toLocaleLowerCase() as 'put' | 'post';
+      endpoint = method === 'PUT' ? `/asset/${locationAsset.id}/file` : '/asset';
+      createOrReplaceFn = method === 'PUT' ? utils.replaceAsset.bind(undefined, locationAsset.id) : utils.createAsset;
+    }, 30_000);
+
+    if (method === 'PUT') {
+      it('should error if asset id does not exist', async () => {
+        const dto = { ...makeUploadDto() };
+        const { status, body } = await request(app)
+          .put(`/asset/${uuidDto.notFound}/file`)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .attach('assetData', makeRandomImage(), 'example.png')
+          .field(dto);
+
+        expect(status).toBe(400);
+        expect(body).toMatchObject({
+          error: 'Bad Request',
+          message: 'Not found or no asset.update access',
+          statusCode: 400,
+        });
+      });
+      it('should trash old photo after replacing it', async () => {
+        // asset location
+        const original = makeRandomImage();
+        const originalResponse = await utils.createAsset(user1.accessToken, {
+          assetData: {
+            filename: 'random-test-1.png',
+            bytes: original,
+          },
+        });
+        const origId = originalResponse.asset!.id;
+
+        const replaced = makeRandomImage();
+        const replacedResponse = await utils.replaceAsset(origId, user1.accessToken, {
+          assetData: {
+            filename: 'random-test-2.png',
+            bytes: replaced,
+          },
+        });
+        const a = await utils.getAssetInfo(user1.accessToken, replacedResponse.backupId!);
+
+        expect(a.originalPath).toEqual(originalResponse.asset?.originalPath);
+        expect(a.isTrashed);
+      });
+    }
+
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/asset`);
+      const { status, body } = await request(app)[methodLower](endpoint);
       expect(body).toEqual(errorDto.unauthorized);
       expect(status).toBe(401);
     });
 
-    const invalid = [
+    it.each([
       { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
       { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
       { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
       { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
       { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
-      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
+      {
+        should: 'throw if `isFavorite` is not a boolean',
+        dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' },
+      },
       { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
-      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
-    ];
+      {
+        should: 'throw if `isArchived` is not a boolean',
+        dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' },
+      },
+    ])(`should $should`, async ({ dto }) => {
+      const { status, body } = await request(app)
+        [methodLower](endpoint)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .attach('assetData', makeRandomImage(), 'example.png')
+        .field(dto);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
 
-    for (const { should, dto } of invalid) {
-      it(`should ${should}`, async () => {
-        const { status, body } = await request(app)
-          .post('/asset')
-          .set('Authorization', `Bearer ${user1.accessToken}`)
-          .attach('assetData', makeRandomImage(), 'example.png')
-          .field(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-    }
-
-    const tests = [
+    it.each([
       {
         input: 'formats/avif/8bit-sRGB.avif',
         expected: {
@@ -791,29 +849,27 @@ describe('/asset', () => {
           },
         },
       },
-    ];
+    ])('should upload and generate a thumbnail for $input', async ({ input, expected }) => {
+      utils.resetEvents();
+      const filepath = join(testAssetDir, input);
+      const assetResponse = (await createOrReplaceFn(admin.accessToken, {
+        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+      })) as { asset: AssetResponseDto; duplicate: boolean };
+      const {
+        asset: { id },
+        duplicate,
+      } = assetResponse;
 
-    for (const { input, expected } of tests) {
-      it(`should upload and generate a thumbnail for ${input}`, async () => {
-        const filepath = join(testAssetDir, input);
-        const assetResponse = (await utils.createAsset(admin.accessToken, {
-          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-        })) as { asset: AssetResponseDto; duplicate: boolean };
-        const {
-          asset: { id },
-          duplicate,
-        } = assetResponse;
-        expect(duplicate).toBe(false);
+      expect(duplicate).toBe(false);
 
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
 
-        const asset = await utils.getAssetInfo(admin.accessToken, id);
+      const asset = await utils.getAssetInfo(admin.accessToken, id);
 
-        expect(asset.exifInfo).toBeDefined();
-        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-        expect(asset).toMatchObject(expected);
-      });
-    }
+      expect(asset.exifInfo).toBeDefined();
+      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+      expect(asset).toMatchObject(expected);
+    });
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
@@ -919,7 +975,6 @@ describe('/asset', () => {
       });
     }
   });
-
   describe('GET /asset/:id/thumbnail', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get(`/asset/${locationAsset.id}/thumbnail`);

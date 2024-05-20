@@ -248,8 +248,9 @@ export type CreateAssetMediaDto = {
     libraryId?: string;
     sidecarData?: Blob;
 };
-export type AssetMediaUploadResponseDto = {
+export type AssetMediaResponseDto = {
     asset?: AssetResponseDto;
+    backupId?: string;
     duplicate: boolean;
     duplicateId: string;
 };
@@ -1405,7 +1406,7 @@ export function createAsset({ key, xImmichChecksum, createAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: AssetMediaUploadResponseDto;
+        data: AssetMediaResponseDto;
     }>(`/asset${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
@@ -1661,7 +1662,7 @@ export function replaceAsset({ id, key, updateAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetMediaUploadResponseDto;
+        data: AssetMediaResponseDto;
     }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({

@@ -20,7 +20,7 @@ import { NextFunction, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetMediaUploadResponseDto,
+  AssetMediaResponseDto,
   CheckExistingAssetsResponseDto,
   GetAssetThumbnailDto,
 } from 'src/dtos/asset-media-response.dto';
@@ -67,7 +67,7 @@ export class AssetMediaController {
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: CreateAssetMediaDto,
-  ): Promise<AssetMediaUploadResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     const { file, sidecarFile } = getFiles(files);
     return this.service.createAsset(auth, dto, file, sidecarFile);
   }
@@ -101,7 +101,7 @@ export class AssetMediaController {
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
     files: UploadFiles,
     @Body() dto: UpdateAssetMediaDto,
-  ): Promise<AssetMediaUploadResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     const { file } = getFiles(files);
     const responseDto = await this.service.replaceAsset(auth, id, dto, file);
     return responseDto;

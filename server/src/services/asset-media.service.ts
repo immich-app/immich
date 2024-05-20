@@ -11,7 +11,7 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetMediaUploadResponseDto,
+  AssetMediaResponseDto,
   AssetRejectReason,
   AssetUploadAction,
   CheckExistingAssetsResponseDto,
@@ -95,7 +95,7 @@ export class AssetMediaService {
     dto: CreateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaUploadResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     try {
       const libraryId = await this.getLibraryId(auth, dto.libraryId);
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
@@ -135,13 +135,10 @@ export class AssetMediaService {
     dto: UpdateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaUploadResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
-      const existingAssetEntity = await this.assetRepository.getById(id);
-      if (!existingAssetEntity) {
-        throw new BadRequestException('Asset not found');
-      }
+      const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
 
       const libraryId = existingAssetEntity.libraryId;
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
@@ -159,7 +156,7 @@ export class AssetMediaService {
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       const asset = await this.assetRepository.getById(id);
-      return { asset: mapAsset(asset!), duplicateId: undefined, duplicate: false };
+      return { asset: mapAsset(asset!), backupId: copiedPhoto.id, duplicateId: undefined, duplicate: false };
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -170,7 +167,7 @@ export class AssetMediaService {
     auth: AuthDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaUploadResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     // clean up files
     await this.jobRepository.queue({
       name: JobName.DELETE_FILES,
@@ -180,8 +177,10 @@ export class AssetMediaService {
     // handle duplicates with a success response
     if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
       const asset = await this.assetRepository.getByChecksum(auth.user.id, file.checksum);
+      const ui = file.checksum.toString('hex');
+      console.log(ui);
       const duplicateId = asset?.id;
-      return { asset: undefined, duplicateId, duplicate: true };
+      return { duplicateId, duplicate: true };
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -436,7 +435,7 @@ export class AssetMediaService {
     return asset.previewPath;
   }
 
-  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
     if (!checksum) {
       return;
     }
@@ -446,7 +445,7 @@ export class AssetMediaService {
       return;
     }
 
-    return { id: assetId, duplicate: true };
+    return { duplicateId: assetId, duplicate: true };
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
