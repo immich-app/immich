@@ -5,7 +5,7 @@ import { SemVer } from 'semver';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORS_VERSION_RANGE = '0.2.x';
-export const VECTOR_VERSION_RANGE = '0.5 - 1';
+export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const NEXT_RELEASE = 'NEXT_RELEASE';
 export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
