@@ -279,7 +279,7 @@ describe('AssetMediaService', () => {
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.create.mockRejectedValue(error);
-      assetMock.getByChecksum.mockResolvedValue(_getAsset_1());
+      assetMock.getByChecksums.mockResolvedValue([_getAsset_1()]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
@@ -456,7 +456,7 @@ describe('AssetMediaService', () => {
 
       assetMock.update.mockRejectedValue(error);
       assetMock.getById.mockResolvedValueOnce(existingAsset);
-      assetMock.getByChecksum.mockResolvedValue(existingAsset);
+      assetMock.getByChecksums.mockResolvedValue([existingAsset]);
       accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
