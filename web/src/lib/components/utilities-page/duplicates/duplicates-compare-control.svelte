@@ -8,6 +8,9 @@
   import { mdiDelete, mdiImageCheckOutline, mdiImagePlusOutline } from '@mdi/js';
 
   export let duplicate: DuplicateResponseDto;
+  export let onResolve: (keepIds: string[], trashIds: string[]) => void;
+  export let onTrashAll: (ids: string[]) => void;
+  export let onKeepAll: (ids: string[]) => void;
 
   let selectedAsset = duplicate.assets.sort((a, b) => b.exifInfo!.fileSizeInByte! - a.exifInfo!.fileSizeInByte!)[0];
 
