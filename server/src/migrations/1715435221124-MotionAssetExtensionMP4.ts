@@ -7,7 +7,5 @@ export class MotionAssetExtensionMP41715435221124 implements MigrationInterface 
     );
   }
 
-  public async down(): Promise<void> {
-    // TODO
-  }
+  public async down(): Promise<void> {}
 }
