@@ -1,39 +1,23 @@
 name: immich-prod
 
-x-server-build: &server-common
-  image: immich-server:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-  volumes:
-    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  restart: always
-
 services:
   immich-server:
     container_name: immich_server
-    command: ['start.sh', 'immich']
-    <<: *server-common
+    image: immich-server:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+    volumes:
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    restart: always
     ports:
       - 2283:3001
     depends_on:
       - redis
       - database
-
-  immich-microservices:
-    container_name: immich_microservices
-    command: ['start.sh', 'microservices']
-    <<: *server-common
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    depends_on:
-      - redis
-      - database
-      - immich-server
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -66,10 +50,12 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    command: ["postgres", "-c" ,"shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
 
   # set IMMICH_METRICS=true in .env to enable metrics
   immich-prometheus:

@@ -75,8 +75,12 @@ void main() {
         makeAsset(checksum: "c", remoteId: "1-1"),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c1, isFalse);
       expect(db.assets.countSync(), 5);
     });
@@ -92,8 +96,12 @@ void main() {
         makeAsset(checksum: "g", remoteId: "3-1"),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c1, isTrue);
       expect(db.assets.countSync(), 7);
     });
@@ -109,23 +117,39 @@ void main() {
         makeAsset(checksum: "j", remoteId: "2-1d"),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c1, isTrue);
       expect(db.assets.countSync(), 8);
-      final bool c2 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c2 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c2, isFalse);
       expect(db.assets.countSync(), 8);
       remoteAssets.removeAt(4);
-      final bool c3 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c3 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c3, isTrue);
       expect(db.assets.countSync(), 7);
       remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
       remoteAssets.add(makeAsset(checksum: "l", remoteId: "2-2"));
-      final bool c4 =
-          await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
+      final bool c4 = await s.syncRemoteAssetsToDb(
+        users: [owner],
+        getChangedAssets: _failDiff,
+        loadAssets: (u, d) => remoteAssets,
+        refreshUsers: () => [owner],
+      );
       expect(c4, isTrue);
       expect(db.assets.countSync(), 9);
     });
@@ -140,9 +164,10 @@ void main() {
       toUpsert[0].isFavorite = true;
       final List<String> toDelete = ["2-1", "1-1"];
       final bool c = await s.syncRemoteAssetsToDb(
-        owner,
-        (user, since) async => (toUpsert, toDelete),
-        (user) => throw Exception(),
+        users: [owner],
+        getChangedAssets: (user, since) async => (toUpsert, toDelete),
+        loadAssets: (user, date) => throw Exception(),
+        refreshUsers: () => throw Exception(),
       );
       expect(c, isTrue);
       expect(db.assets.countSync(), 6);
@@ -150,5 +175,8 @@ void main() {
   });
 }
 
-Future<(List<Asset>?, List<String>?)> _failDiff(User user, DateTime time) =>
+Future<(List<Asset>?, List<String>?)> _failDiff(
+  List<User> user,
+  DateTime time,
+) =>
     Future.value((null, null));

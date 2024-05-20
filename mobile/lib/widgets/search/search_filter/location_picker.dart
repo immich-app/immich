@@ -56,7 +56,7 @@ class LocationPicker extends HookConsumerWidget {
     );
 
     final menuStyle = MenuStyle(
-      shape: MaterialStatePropertyAll<OutlinedBorder>(
+      shape: WidgetStatePropertyAll<OutlinedBorder>(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),

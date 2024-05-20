@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.103.1+137
+version: 1.105.1+140
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -21,8 +21,8 @@ dependencies:
   riverpod_annotation: ^2.3.3
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
-  intl: ^0.18.0
-  auto_route: ^7.8.4
+  intl: ^0.19.0
+  auto_route: ^8.0.2
   fluttertoast: ^8.2.4
   video_player: ^2.8.2
   chewie: ^1.7.4
@@ -86,9 +86,9 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
   build_runner: ^2.4.8
-  auto_route_generator: ^7.3.2
+  auto_route_generator: ^8.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.9
   isar_generator: ^3.1.0+1

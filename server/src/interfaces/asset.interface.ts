@@ -40,6 +40,7 @@ export enum WithoutProperty {
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
   SMART_SEARCH = 'smart-search',
+  DUPLICATE = 'duplicate',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
   PERSON = 'person',
@@ -60,6 +61,7 @@ export interface AssetBuilderOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
+  isDuplicate?: boolean;
   albumId?: string;
   personId?: string;
   userIds?: string[];
@@ -134,8 +136,6 @@ export interface AssetFullSyncOptions {
   lastCreationDate?: Date;
   lastId?: string;
   updatedUntil: Date;
-  isArchived?: false;
-  withStacked?: true;
   limit: number;
 }
 
@@ -143,6 +143,12 @@ export interface AssetDeltaSyncOptions {
   userIds: string[];
   updatedAfter: Date;
   limit: number;
+}
+
+export interface AssetUpdateDuplicateOptions {
+  targetDuplicateId: string | null;
+  assetIds: string[];
+  duplicateIds: string[];
 }
 
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
@@ -178,19 +184,21 @@ export interface IAssetRepository {
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
+  updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
   softDeleteAll(ids: string[]): Promise<void>;
   restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
-  getMapMarkers(ownerIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getMapMarkers(ownerIds: string[], albumIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
-  upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
+  upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
 }

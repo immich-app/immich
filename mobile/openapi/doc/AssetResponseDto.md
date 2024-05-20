@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **checksum** | **String** | base64 encoded sha1 hash | 
 **deviceAssetId** | **String** |  | 
 **deviceId** | **String** |  | 
+**duplicateId** | **String** |  | [optional] 
 **duration** | **String** |  | 
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 

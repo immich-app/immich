@@ -121,12 +121,12 @@ final ThemeData immichLightTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: Colors.indigo.withOpacity(0.15),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.grey[700]),
     ),
     backgroundColor: immichBackgroundColor,
     surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,
@@ -249,12 +249,12 @@ final ThemeData immichDarkTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.grey[500]),
     ),
     backgroundColor: Colors.grey[900],
     surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,

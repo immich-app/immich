@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -23,11 +23,6 @@ void main() {
 
     // List<String> importPaths (default value: const [])
     test('to test the property `importPaths`', () async {
-      // TODO
-    });
-
-    // bool isVisible
-    test('to test the property `isVisible`', () async {
       // TODO
     });
 

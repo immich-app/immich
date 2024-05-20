@@ -2,32 +2,33 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
+import 'package:immich_mobile/pages/common/video_viewer.page.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/bottom_gallery_bar.dart';
 import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/gallery_app_bar.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/pages/common/video_viewer.page.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart';
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
@@ -59,6 +60,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
+    final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
     final localPosition = useState<Offset?>(null);
@@ -101,6 +103,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             settings.getSetting<bool>(AppSettingsEnum.loadPreview);
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
+        shouldLoopVideo.value =
+            settings.getSetting<bool>(AppSettingsEnum.loopVideo);
         return null;
       },
       [],
@@ -174,7 +178,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        context.popRoute();
+        context.maybePop();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
@@ -261,12 +265,9 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     return PopScope(
-      canPop: false,
-      onPopInvoked: (_) {
-        // Change immersive mode back to normal "edgeToEdge" mode
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        context.pop();
-      },
+      // Change immersive mode back to normal "edgeToEdge" mode
+      onPopInvoked: (_) =>
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
@@ -370,6 +371,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       key: ValueKey(a),
                       asset: a,
                       isMotionVideo: a.livePhotoVideoId != null,
+                      loopVideo: shouldLoopVideo.value,
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.contain,

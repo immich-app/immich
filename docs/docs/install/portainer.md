@@ -38,8 +38,9 @@ style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
 />
 
-- Populate custom database information if necessary.
-- Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
+- Change the default `DB_PASSWORD`, and add custom database connection information if necessary.
+- Change `DB_DATA_LOCATION` to a folder where the database will be saved to disk.
+- Change `UPLOAD_LOCATION` to a folder where media (uploaded and generated) will be stored.
 
 11. Click on "**Deploy the stack**".
 

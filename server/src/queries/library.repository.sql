@@ -16,7 +16,6 @@ FROM
       "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
       "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
       "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-      "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
       "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
       "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
       "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -89,8 +88,7 @@ SELECT
   "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
   "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
-  "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible"
+  "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt"
 FROM
   "libraries" "LibraryEntity"
 WHERE
@@ -132,7 +130,6 @@ SELECT
   "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -156,12 +153,7 @@ FROM
     "LibraryEntity__LibraryEntity_owner"."deletedAt" IS NULL
   )
 WHERE
-  (
-    (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."isVisible" = $2)
-    )
-  )
+  ((("LibraryEntity"."ownerId" = $1)))
   AND ("LibraryEntity"."deletedAt" IS NULL)
 ORDER BY
   "LibraryEntity"."createdAt" ASC
@@ -178,7 +170,6 @@ SELECT
   "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -218,7 +209,6 @@ SELECT
   "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
   "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
-  "LibraryEntity"."isVisible" AS "LibraryEntity_isVisible",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
   "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
@@ -239,10 +229,7 @@ FROM
   "libraries" "LibraryEntity"
   LEFT JOIN "users" "LibraryEntity__LibraryEntity_owner" ON "LibraryEntity__LibraryEntity_owner"."id" = "LibraryEntity"."ownerId"
 WHERE
-  (
-    ("LibraryEntity"."isVisible" = $1)
-    AND (NOT ("LibraryEntity"."deletedAt" IS NULL))
-  )
+  ((NOT ("LibraryEntity"."deletedAt" IS NULL)))
 ORDER BY
   "LibraryEntity"."createdAt" ASC
 
@@ -258,7 +245,6 @@ SELECT
   "libraries"."updatedAt" AS "libraries_updatedAt",
   "libraries"."deletedAt" AS "libraries_deletedAt",
   "libraries"."refreshedAt" AS "libraries_refreshedAt",
-  "libraries"."isVisible" AS "libraries_isVisible",
   COUNT("assets"."id") FILTER (
     WHERE
       "assets"."type" = 'IMAGE'

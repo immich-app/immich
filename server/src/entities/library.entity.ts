@@ -50,9 +50,6 @@ export class LibraryEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   refreshedAt!: Date | null;
-
-  @Column({ type: 'boolean', default: true })
-  isVisible!: boolean;
 }
 
 export enum LibraryType {

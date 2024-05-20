@@ -500,7 +500,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapMarkers**
-> List<MapMarkerResponseDto> getMapMarkers(fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners)
+> List<MapMarkerResponseDto> getMapMarkers(fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums)
 
 
 
@@ -528,9 +528,10 @@ final fileCreatedBefore = 2013-10-20T19:20:30+01:00; // DateTime |
 final isArchived = true; // bool | 
 final isFavorite = true; // bool | 
 final withPartners = true; // bool | 
+final withSharedAlbums = true; // bool | 
 
 try {
-    final result = api_instance.getMapMarkers(fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners);
+    final result = api_instance.getMapMarkers(fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMapMarkers: $e\n');
@@ -546,6 +547,7 @@ Name | Type | Description  | Notes
  **isArchived** | **bool**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
  **withPartners** | **bool**|  | [optional] 
+ **withSharedAlbums** | **bool**|  | [optional] 
 
 ### Return type
 

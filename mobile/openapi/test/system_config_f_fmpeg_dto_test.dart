@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -18,6 +18,11 @@ void main() {
   group('test SystemConfigFFmpegDto', () {
     // TranscodeHWAccel accel
     test('to test the property `accel`', () async {
+      // TODO
+    });
+
+    // bool accelDecode
+    test('to test the property `accelDecode`', () async {
       // TODO
     });
 

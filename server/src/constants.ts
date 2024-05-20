@@ -16,8 +16,8 @@ export const serverVersion = Version.fromString(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
-export const isDev = process.env.NODE_ENV === 'development';
+export const envName = (process.env.IMMICH_ENV || 'production').toUpperCase();
+export const isDev = () => process.env.IMMICH_ENV === 'development';
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 

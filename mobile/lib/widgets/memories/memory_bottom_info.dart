@@ -43,7 +43,7 @@ class MemoryBottomInfo extends StatelessWidget {
         MaterialButton(
           minWidth: 0,
           onPressed: () {
-            context.popRoute();
+            context.maybePop();
             scrollToDateNotifierProvider
                 .scrollToDate(memory.assets[0].fileCreatedAt);
           },

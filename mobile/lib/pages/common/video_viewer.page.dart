@@ -1,18 +1,15 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controller_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_player.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-@RoutePage()
-// ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
@@ -20,6 +17,7 @@ class VideoViewerPage extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool loopVideo;
 
   const VideoViewerPage({
     super.key,
@@ -29,6 +27,7 @@ class VideoViewerPage extends HookConsumerWidget {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 5),
     this.showDownloadingIndicator = true,
+    this.loopVideo = false,
   });
 
   @override
@@ -76,7 +75,9 @@ class VideoViewerPage extends HookConsumerWidget {
     // Also sets the error if there is an error in the playback
     void updateVideoPlayback() {
       final videoPlayback = VideoPlaybackValue.fromController(controller);
-      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      if (!loopVideo) {
+        ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      }
       final state = videoPlayback.state;
 
       // Enable the WakeLock while the video is playing
@@ -156,6 +157,7 @@ class VideoViewerPage extends HookConsumerWidget {
                   hideControlsTimer: hideControlsTimer,
                   showControls: showControls,
                   showDownloadingIndicator: showDownloadingIndicator,
+                  loopVideo: loopVideo,
                 ),
               ),
           ],

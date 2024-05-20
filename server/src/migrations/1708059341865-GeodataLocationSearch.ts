@@ -49,30 +49,6 @@ export class GeodataLocationSearch1708059341865 implements MigrationInterface {
         CREATE INDEX idx_geodata_places_admin2_name
             ON geodata_places
         USING gin (f_unaccent("admin2Name") gin_trgm_ops)`);
-
-    await queryRunner.query(
-      `
-        DELETE FROM "typeorm_metadata"
-        WHERE
-            "type" = $1 AND
-            "name" = $2 AND
-            "database" = $3 AND
-            "schema" = $4 AND
-            "table" = $5`,
-      ['GENERATED_COLUMN', 'admin1Key', 'immich', 'public', 'geodata_places'],
-    );
-
-    await queryRunner.query(
-      `
-        DELETE FROM "typeorm_metadata"
-        WHERE
-            "type" = $1 AND 
-            "name" = $2 AND
-            "database" = $3 AND
-            "schema" = $4 AND
-            "table" = $5`,
-      ['GENERATED_COLUMN', 'admin2Key', 'immich', 'public', 'geodata_places'],
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -91,7 +67,7 @@ export class GeodataLocationSearch1708059341865 implements MigrationInterface {
         )`);
 
     await queryRunner.query(`
-        ALTER TABLE geodata_places 
+        ALTER TABLE geodata_places
             ADD COLUMN "admin1Key" character varying
                 GENERATED ALWAYS AS ("countryCode" || '.' || "admin1Code") STORED,
             ADD COLUMN "admin2Key" character varying
@@ -128,25 +104,5 @@ export class GeodataLocationSearch1708059341865 implements MigrationInterface {
             SET "admin2Name" = admin2.name
             FROM geodata_admin2 admin2
             WHERE admin2.key = "admin2Key";`);
-
-    await queryRunner.query(
-      `
-        INSERT INTO "typeorm_metadata"("database", "schema", "table", "type", "name", "value")
-        VALUES ($1, $2, $3, $4, $5, $6)`,
-      ['immich', 'public', 'geodata_places', 'GENERATED_COLUMN', 'admin1Key', '"countryCode" || \'.\' || "admin1Code"'],
-    );
-
-    await queryRunner.query(
-      `INSERT INTO "typeorm_metadata"("database", "schema", "table", "type", "name", "value")
-        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        'immich',
-        'public',
-        'geodata_places',
-        'GENERATED_COLUMN',
-        'admin2Key',
-        '"countryCode" || \'.\' || "admin1Code" || \'.\' || "admin2Code"',
-      ],
-    );
   }
 }
