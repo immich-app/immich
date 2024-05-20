@@ -179,7 +179,6 @@ export class AssetMediaService {
       let duplicateId;
       if (asset.length === 1) {
         duplicateId = asset[0].id;
-        x;
       }
       return { duplicateId, duplicate: true };
     }
