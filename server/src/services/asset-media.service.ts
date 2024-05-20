@@ -27,7 +27,6 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { LibraryType } from 'src/entities/library.entity';
@@ -176,10 +175,12 @@ export class AssetMediaService {
 
     // handle duplicates with a success response
     if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-      const asset = await this.assetRepository.getByChecksum(auth.user.id, file.checksum);
-      const ui = file.checksum.toString('hex');
-      console.log(ui);
-      const duplicateId = asset?.id;
+      const asset = await this.assetRepository.getByChecksums(auth.user.id, [file.checksum]);
+      let duplicateId;
+      if (asset.length === 1) {
+        duplicateId = asset[0].id;
+        x;
+      }
       return { duplicateId, duplicate: true };
     }
 

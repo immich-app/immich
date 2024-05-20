@@ -1,7 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
 import { AssetMediaResponseDto } from 'src/dtos/asset-media-response.dto';
-import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import { ImmichHeader } from 'src/dtos/auth.dto';
 import { AuthenticatedRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
