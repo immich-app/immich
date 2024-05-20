@@ -38,15 +38,16 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 
 ## General
 
-| Variable                        | Description                                  |         Default          | Containers               | Workers            |
-| :------------------------------ | :------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
-| `TZ`                            | Timezone                                     |                          | server                   | microservices      |
-| `IMMICH_ENV`                    | Environment (production, development)        |       `production`       | server, machine learning | api, microservices |
-| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error) |          `log`           | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server                   | api, microservices |
-| `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server                   | api, microservices |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                      |    `/usr/src/app/www`    | server                   | api                |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory     |   `/usr/src/resources`   | server                   | microservices      |
+| Variable                        | Description                                     |         Default          | Containers               | Workers            |
+| :------------------------------ | :---------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
+| `TZ`                            | Timezone                                        |                          | server                   | microservices      |
+| `IMMICH_ENV`                    | Environment (production, development)           |       `production`       | server, machine learning | api, microservices |
+| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error)    |          `log`           | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                                  | `./upload`<sup>\*1</sup> | server                   | api, microservices |
+| `IMMICH_CONFIG_FILE`            | Path to config file                             |                          | server                   | api, microservices |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                         |    `/usr/src/app/www`    | server                   | api                |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory        |   `/usr/src/resources`   | server                   | microservices      |
+| `NO_COLOR`                      | Set to `true` to disable color-coded log output |         `false`          | server, machine learning |                    |
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
@@ -96,6 +97,9 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 All `DB_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
+`DB_URL` must be in the format `postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename`.
+You can require SSL by adding `?sslmode=require` to the end of the `DB_URL` string, or require SSL and skip certificate verification by adding `?sslmode=require&sslmode=no-verify`.
+
 When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` and `DB_DATABASE_NAME` database variables are ignored.
 
 :::
@@ -105,12 +109,12 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 | Variable         | Description    | Default | Containers |
 | :--------------- | :------------- | :-----: | :--------- |
 | `REDIS_URL`      | Redis URL      |         | server     |
+| `REDIS_SOCKET`   | Redis Socket   |         | server     |
 | `REDIS_HOSTNAME` | Redis Host     | `redis` | server     |
 | `REDIS_PORT`     | Redis Port     | `6379`  | server     |
-| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server     |
 | `REDIS_USERNAME` | Redis Username |         | server     |
 | `REDIS_PASSWORD` | Redis Password |         | server     |
-| `REDIS_SOCKET`   | Redis Socket   |         | server     |
+| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server     |
 
 :::info
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
@@ -118,8 +122,8 @@ All `REDIS_` variables must be provided to all Immich workers, including `api` a
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
 More info can be found in the upstream [ioredis][redis-api] documentation.
 
-- When `REDIS_URL` or `REDIS_SOCKET` are defined, the other redis (`REDIS_*`) variables are ignored.
-  :::
+When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
+:::
 
 Redis (Sentinel) URL example JSON before encoding:
 
