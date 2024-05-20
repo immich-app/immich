@@ -43,7 +43,7 @@
       'text-immich-primary dark:text-immich-dark-primary enabled:dark:hover:bg-immich-dark-primary/10 enabled:hover:bg-immich-primary/10',
     'light-red': 'bg-[#F9DEDC] text-[#410E0B] enabled:hover:bg-red-50',
     red: 'bg-red-500 text-white enabled:hover:bg-red-400',
-    green: 'bg-green-500 text-gray-800 enabled:hover:bg-green-400/90',
+    green: 'bg-green-400 text-gray-800 enabled:hover:bg-green-400/90',
     gray: 'bg-gray-500 dark:bg-gray-200 enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 text-white dark:text-immich-dark-gray',
     'transparent-gray':
       'dark:text-immich-dark-fg enabled:hover:bg-immich-primary/5 enabled:hover:text-gray-700 enabled:hover:dark:text-immich-dark-fg enabled:dark:hover:bg-immich-dark-primary/25',
