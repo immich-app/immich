@@ -31,7 +31,6 @@ const parseError = (error: unknown, status: number, message: string) => {
 };
 
 export const handleError: HandleClientError = ({ error, status, message }) => {
-  console.log(error);
   const result = parseError(error, status, message);
   console.error(`[hooks.client.ts]:handleError ${result.message}`);
   return result;

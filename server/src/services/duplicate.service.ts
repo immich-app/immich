@@ -42,15 +42,15 @@ export class DuplicateService {
   }
 
   async resolveDuplicates(auth: AuthDto, dto: ResolveDuplicatesDto): Promise<void> {
-    const { ids, duplicateId } = dto;
+    const { assetIds, duplicateId } = dto;
 
-    await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
+    await this.access.requirePermission(auth, Permission.ASSET_DELETE, assetIds);
 
-    await this.assetRepository.softDeleteAll(dto.ids);
+    await this.assetRepository.softDeleteAll(assetIds);
 
     await this.assetRepository.updateDuplicates({
       targetDuplicateId: null,
-      assetIds: ids,
+      assetIds,
       duplicateIds: [duplicateId],
     });
   }

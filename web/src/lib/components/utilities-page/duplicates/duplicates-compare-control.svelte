@@ -11,30 +11,30 @@
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (trashIds: string[]) => void;
 
-  let selectedAsset = new Set<string>();
-  $: trashCount = duplicate ? duplicate.assets.length - selectedAsset.size : 0;
+  let selectedAssetIds = new Set<string>();
+  $: trashCount = duplicate.assets.length - selectedAssetIds.size;
 
   onMount(() => {
     const suggestedAsset = duplicate.assets.sort(
       (a, b) => b.exifInfo!.fileSizeInByte! - a.exifInfo!.fileSizeInByte!,
     )[0];
 
-    selectedAsset.add(suggestedAsset.id);
-    selectedAsset = new Set(selectedAsset);
+    selectedAssetIds.add(suggestedAsset.id);
+    selectedAssetIds = new Set(selectedAssetIds);
   });
 
   const onSelectAsset = (asset: AssetResponseDto) => {
-    if (selectedAsset.has(asset.id)) {
-      selectedAsset.delete(asset.id);
+    if (selectedAssetIds.has(asset.id)) {
+      selectedAssetIds.delete(asset.id);
     } else {
-      selectedAsset.add(asset.id);
+      selectedAssetIds.add(asset.id);
     }
 
-    selectedAsset = new Set(selectedAsset);
+    selectedAssetIds = selectedAssetIds;
   };
 
-  const handleOnResolve = () => {
-    const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !selectedAsset.has(id));
+  const handleResolve = () => {
+    const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
 
     onResolve(trashIds);
   };
@@ -43,7 +43,7 @@
 <div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-[900px] m-auto mb-16">
   <div class="flex flex-wrap gap-1 place-items-center place-content-center px-4 pt-4">
     {#each duplicate.assets as asset, index (index)}
-      {@const isSelected = selectedAsset.has(asset.id)}
+      {@const isSelected = selectedAssetIds.has(asset.id)}
 
       <div class="relative">
         <button on:click={() => onSelectAsset(asset)} class="block relative">
@@ -96,7 +96,7 @@
           >
             <td>
               {#await getAllAlbums({ assetId: asset.id })}
-                Scan for album...
+                Scanning for album...
               {:then albums}
                 {#if albums.length === 0}
                   Not in any album
@@ -119,11 +119,11 @@
     </div>
 
     {#if trashCount === 0}
-      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleOnResolve}
+      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
         ><Icon path={mdiCheck} size="20" />Keep All
       </Button>
     {:else}
-      <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleOnResolve}
+      <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
         ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
           ? 'Trash All'
           : `Trash ${trashCount}`}

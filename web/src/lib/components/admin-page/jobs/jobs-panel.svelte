@@ -92,7 +92,7 @@
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: 'Run machine learning on assets to detect similar images',
+      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {

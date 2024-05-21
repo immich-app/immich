@@ -12,7 +12,7 @@ export class ResolveDuplicatesDto {
   duplicateId!: string;
 
   @IsNotEmpty()
-  ids!: string[];
+  assetIds!: string[];
 }
 
 export function mapDuplicateResponse(assets: AssetResponseDto[]): DuplicateResponseDto[] {
