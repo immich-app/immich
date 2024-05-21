@@ -23,7 +23,7 @@ if (process.env.DB_TLS_CA) {
   ssl.ca = process.env.DB_TLS_CA.split(String.raw`\n`).join('\n');
 }
 if (process.env.DB_TLS_SERVERNAME) {
-  //@ts-expect-error ConnectionOptions for clients in node:tls actuallycontainthis property
+  //@ts-expect-error ConnectionOptions for clients in node:tls actually contain this property
   // It will be used to handle some cases where the server credentials do not match the
   // actual connection address used by the client
   ssl.servername = process.env.DB_TLS_SERVERNAME;
