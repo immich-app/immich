@@ -145,8 +145,8 @@ jobs:
     strategy:
       matrix:
         tls:
-          - enable
-          - disable
+          - tls_enable
+          - tls_disable
     defaults:
       run:
         working-directory: ./e2e
@@ -199,7 +199,7 @@ jobs:
       - name: Generate database certificates
         run: ./generate.sh
         working-directory: ./e2e/postgres-tls
-        if: ${{ !cancelled() && matrix.tls=='enable' }}
+        if: ${{ !cancelled() && matrix.tls=='tls_enable' }}
 
       - name: Run e2e tests (api & cli)
         run: npm run test
