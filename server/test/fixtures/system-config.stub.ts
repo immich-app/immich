@@ -15,7 +15,7 @@ export const systemConfigStub = {
       enabled: false,
     },
   },
-  noAutoRegister: {
+  oauthEnabled: {
     oauth: {
       enabled: true,
       autoRegister: false,
@@ -23,7 +23,15 @@ export const systemConfigStub = {
       buttonText: 'OAuth',
     },
   },
-  override: {
+  oauthWithAutoRegister: {
+    oauth: {
+      enabled: true,
+      autoRegister: true,
+      autoLaunch: false,
+      buttonText: 'OAuth',
+    },
+  },
+  oauthWithMobileOverride: {
     oauth: {
       enabled: true,
       autoRegister: true,
@@ -32,7 +40,7 @@ export const systemConfigStub = {
       buttonText: 'OAuth',
     },
   },
-  withDefaultStorageQuota: {
+  oauthWithStorageQuota: {
     oauth: {
       enabled: true,
       autoRegister: true,
