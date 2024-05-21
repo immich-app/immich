@@ -547,6 +547,311 @@ describe('/asset', () => {
     });
   });
 
+  describe('GET /asset/:id/thumbnail', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/asset/${locationAsset.id}/thumbnail`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not include gps data for webp thumbnails', async () => {
+      await utils.waitForWebsocketEvent({
+        event: 'assetUpload',
+        id: locationAsset.id,
+      });
+
+      const { status, body, type } = await request(app)
+        .get(`/asset/${locationAsset.id}/thumbnail?format=WEBP`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toBeDefined();
+      expect(type).toBe('image/webp');
+
+      const exifData = await readTags(body, 'thumbnail.webp');
+      expect(exifData).not.toHaveProperty('GPSLongitude');
+      expect(exifData).not.toHaveProperty('GPSLatitude');
+    });
+
+    it('should not include gps data for jpeg thumbnails', async () => {
+      const { status, body, type } = await request(app)
+        .get(`/asset/${locationAsset.id}/thumbnail?format=JPEG`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toBeDefined();
+      expect(type).toBe('image/jpeg');
+
+      const exifData = await readTags(body, 'thumbnail.jpg');
+      expect(exifData).not.toHaveProperty('GPSLongitude');
+      expect(exifData).not.toHaveProperty('GPSLatitude');
+    });
+  });
+
+  describe('GET /asset/:id/file', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/asset/${locationAsset.id}/file`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should download the original', async () => {
+      const { status, body, type } = await request(app)
+        .get(`/asset/${locationAsset.id}/file`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toBeDefined();
+      expect(type).toBe('image/jpeg');
+
+      const asset = await utils.getAssetInfo(admin.accessToken, locationAsset.id);
+
+      const original = await readFile(locationAssetFilepath);
+      const originalChecksum = utils.sha1(original);
+      const downloadChecksum = utils.sha1(body);
+
+      expect(originalChecksum).toBe(downloadChecksum);
+      expect(downloadChecksum).toBe(asset.checksum);
+    });
+  });
+
+  describe('GET /asset/map-marker', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/asset/map-marker');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    // TODO archive one of these assets
+    it('should get map markers for all non-archived assets', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/map-marker')
+        .query({ isArchived: false })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual([
+        {
+          city: 'Palisade',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(39.115),
+          lon: expect.closeTo(-108.400_968),
+          state: 'Colorado',
+        },
+        {
+          city: 'Ralston',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(41.2203),
+          lon: expect.closeTo(-96.071_625),
+          state: 'Nebraska',
+        },
+      ]);
+    });
+
+    // TODO archive one of these assets
+    it('should get all map markers', async () => {
+      const { status, body } = await request(app)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([
+        {
+          city: 'Palisade',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(39.115),
+          lon: expect.closeTo(-108.400_968),
+          state: 'Colorado',
+        },
+        {
+          city: 'Ralston',
+          country: 'United States of America',
+          id: expect.any(String),
+          lat: expect.closeTo(41.2203),
+          lon: expect.closeTo(-96.071_625),
+          state: 'Nebraska',
+        },
+      ]);
+    });
+  });
+
+  describe('GET /asset', () => {
+    it('should return stack data', async () => {
+      const { status, body } = await request(app).get('/asset').set('Authorization', `Bearer ${stackUser.accessToken}`);
+
+      const stack = body.find((asset: AssetResponseDto) => asset.id === stackAssets[0].id);
+
+      expect(status).toBe(200);
+      expect(stack).toEqual(
+        expect.objectContaining({
+          stackCount: 3,
+          stack:
+            // Response includes children at the root level
+            expect.arrayContaining([
+              expect.objectContaining({ id: stackAssets[1].id }),
+              expect.objectContaining({ id: stackAssets[2].id }),
+            ]),
+        }),
+      );
+    });
+  });
+
+  describe('PUT /asset', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put('/asset');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require a valid parent id', async () => {
+      const { status, body } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: uuidDto.invalid, ids: [stackAssets[0].id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['stackParentId must be a UUID']));
+    });
+
+    it('should require access to the parent', async () => {
+      const { status, body } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ stackParentId: stackAssets[3].id, ids: [user1Assets[0].id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should add stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ stackParentId: stackAssets[0].id, ids: [stackAssets[3].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: stackAssets[3].id })]));
+    });
+
+    it('should remove stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ removeParent: true, ids: [stackAssets[1].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[2].id }),
+          expect.objectContaining({ id: stackAssets[3].id }),
+        ]),
+      );
+    });
+
+    it('should remove all stack children', async () => {
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ removeParent: true, ids: [stackAssets[2].id, stackAssets[3].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).toBeUndefined();
+    });
+
+    it('should merge stack children', async () => {
+      // create stack after previous test removed stack children
+      await updateAssets(
+        { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
+        { headers: asBearerAuth(stackUser.accessToken) },
+      );
+
+      const { status } = await request(app)
+        .put('/asset')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ stackParentId: stackAssets[3].id, ids: [stackAssets[0].id] });
+
+      expect(status).toBe(204);
+
+      const asset = await getAssetInfo({ id: stackAssets[3].id }, { headers: asBearerAuth(stackUser.accessToken) });
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[0].id }),
+          expect.objectContaining({ id: stackAssets[1].id }),
+          expect.objectContaining({ id: stackAssets[2].id }),
+        ]),
+      );
+    });
+  });
+
+  describe('PUT /asset/stack/parent', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put('/asset/stack/parent');
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: uuidDto.invalid, newParentId: uuidDto.invalid });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should make old parent child of new parent', async () => {
+      const { status } = await request(app)
+        .put('/asset/stack/parent')
+        .set('Authorization', `Bearer ${stackUser.accessToken}`)
+        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
+
+      expect(status).toBe(200);
+
+      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
+
+      // new parent
+      expect(asset.stack).not.toBeUndefined();
+      expect(asset.stack).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: stackAssets[1].id }),
+          expect.objectContaining({ id: stackAssets[2].id }),
+          expect.objectContaining({ id: stackAssets[3].id }),
+        ]),
+      );
+    });
+  });
+
+  // Testing note: ensure this describe is last in the file, as these tests run setupTest to
+  // reset the database for each method. If there are any tests after this describe, the
+  // testing context won't be properly established.
   describe.each([
     { method: 'PUT', description: '/asset/:id/file' },
     { method: 'POST', description: '/asset' },
@@ -961,305 +1266,5 @@ describe('/asset', () => {
       });
     }
   });
-  describe('GET /asset/:id/thumbnail', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/asset/${locationAsset.id}/thumbnail`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should not include gps data for webp thumbnails', async () => {
-      await utils.waitForWebsocketEvent({
-        event: 'assetUpload',
-        id: locationAsset.id,
-      });
-
-      const { status, body, type } = await request(app)
-        .get(`/asset/${locationAsset.id}/thumbnail?format=WEBP`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toBeDefined();
-      expect(type).toBe('image/webp');
-
-      const exifData = await readTags(body, 'thumbnail.webp');
-      expect(exifData).not.toHaveProperty('GPSLongitude');
-      expect(exifData).not.toHaveProperty('GPSLatitude');
-    });
-
-    it('should not include gps data for jpeg thumbnails', async () => {
-      const { status, body, type } = await request(app)
-        .get(`/asset/${locationAsset.id}/thumbnail?format=JPEG`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toBeDefined();
-      expect(type).toBe('image/jpeg');
-
-      const exifData = await readTags(body, 'thumbnail.jpg');
-      expect(exifData).not.toHaveProperty('GPSLongitude');
-      expect(exifData).not.toHaveProperty('GPSLatitude');
-    });
-  });
-
-  describe('GET /asset/:id/file', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/asset/${locationAsset.id}/file`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should download the original', async () => {
-      const { status, body, type } = await request(app)
-        .get(`/asset/${locationAsset.id}/file`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toBeDefined();
-      expect(type).toBe('image/jpeg');
-
-      const asset = await utils.getAssetInfo(admin.accessToken, locationAsset.id);
-
-      const original = await readFile(locationAssetFilepath);
-      const originalChecksum = utils.sha1(original);
-      const downloadChecksum = utils.sha1(body);
-
-      expect(originalChecksum).toBe(downloadChecksum);
-      expect(downloadChecksum).toBe(asset.checksum);
-    });
-  });
-
-  describe('GET /asset/map-marker', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/asset/map-marker');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    // TODO archive one of these assets
-    it('should get map markers for all non-archived assets', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/map-marker')
-        .query({ isArchived: false })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toHaveLength(2);
-      expect(body).toEqual([
-        {
-          city: 'Palisade',
-          country: 'United States of America',
-          id: expect.any(String),
-          lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
-          state: 'Colorado',
-        },
-        {
-          city: 'Ralston',
-          country: 'United States of America',
-          id: expect.any(String),
-          lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
-          state: 'Nebraska',
-        },
-      ]);
-    });
-
-    // TODO archive one of these assets
-    it('should get all map markers', async () => {
-      const { status, body } = await request(app)
-        .get('/asset/map-marker')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toEqual([
-        {
-          city: 'Palisade',
-          country: 'United States of America',
-          id: expect.any(String),
-          lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
-          state: 'Colorado',
-        },
-        {
-          city: 'Ralston',
-          country: 'United States of America',
-          id: expect.any(String),
-          lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
-          state: 'Nebraska',
-        },
-      ]);
-    });
-  });
-
-  describe('GET /asset', () => {
-    it('should return stack data', async () => {
-      const { status, body } = await request(app).get('/asset').set('Authorization', `Bearer ${stackUser.accessToken}`);
-
-      const stack = body.find((asset: AssetResponseDto) => asset.id === stackAssets[0].id);
-
-      expect(status).toBe(200);
-      expect(stack).toEqual(
-        expect.objectContaining({
-          stackCount: 3,
-          stack:
-            // Response includes children at the root level
-            expect.arrayContaining([
-              expect.objectContaining({ id: stackAssets[1].id }),
-              expect.objectContaining({ id: stackAssets[2].id }),
-            ]),
-        }),
-      );
-    });
-  });
-
-  describe('PUT /asset', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/asset');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid parent id', async () => {
-      const { status, body } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ stackParentId: uuidDto.invalid, ids: [stackAssets[0].id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['stackParentId must be a UUID']));
-    });
-
-    it('should require access to the parent', async () => {
-      const { status, body } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ stackParentId: stackAssets[3].id, ids: [user1Assets[0].id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should add stack children', async () => {
-      const { status } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ stackParentId: stackAssets[0].id, ids: [stackAssets[3].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: stackAssets[3].id })]));
-    });
-
-    it('should remove stack children', async () => {
-      const { status } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ removeParent: true, ids: [stackAssets[1].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[2].id }),
-          expect.objectContaining({ id: stackAssets[3].id }),
-        ]),
-      );
-    });
-
-    it('should remove all stack children', async () => {
-      const { status } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ removeParent: true, ids: [stackAssets[2].id, stackAssets[3].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).toBeUndefined();
-    });
-
-    it('should merge stack children', async () => {
-      // create stack after previous test removed stack children
-      await updateAssets(
-        { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
-        { headers: asBearerAuth(stackUser.accessToken) },
-      );
-
-      const { status } = await request(app)
-        .put('/asset')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ stackParentId: stackAssets[3].id, ids: [stackAssets[0].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[3].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[0].id }),
-          expect.objectContaining({ id: stackAssets[1].id }),
-          expect.objectContaining({ id: stackAssets[2].id }),
-        ]),
-      );
-    });
-  });
-
-  describe('PUT /asset/stack/parent', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/asset/stack/parent');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .put('/asset/stack/parent')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ oldParentId: uuidDto.invalid, newParentId: uuidDto.invalid });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
-    });
-
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put('/asset/stack/parent')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should make old parent child of new parent', async () => {
-      const { status } = await request(app)
-        .put('/asset/stack/parent')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
-
-      expect(status).toBe(200);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-
-      // new parent
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[1].id }),
-          expect.objectContaining({ id: stackAssets[2].id }),
-          expect.objectContaining({ id: stackAssets[3].id }),
-        ]),
-      );
-    });
-  });
+  // Do not add any tests here - see comment at beginning of this describe block.
 });
