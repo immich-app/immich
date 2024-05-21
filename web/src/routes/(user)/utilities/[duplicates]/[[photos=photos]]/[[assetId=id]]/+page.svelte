@@ -9,6 +9,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+
   export let data: PageData;
 
   const handleOnResolve = async (duplicateId: string, trashIds: string[]) => {
@@ -31,9 +32,21 @@
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length})`} scrollbar={true}>
-  <div class="mt-6">
-    {#each data.duplicates as duplicate (duplicate.duplicateId)}
-      <DuplicatesCompareControl {duplicate} onResolve={(ids) => handleOnResolve(duplicate.duplicateId, ids)} />
-    {/each}
+  <div class="mt-4">
+    {#if data.duplicates && data.duplicates.length > 0}
+      <div class="mb-4 text-sm dark:text-white">
+        <p>Resolve the following duplication by keeping or moving assets to the trash.</p>
+      </div>
+      {#key data.duplicates[0].duplicateId}
+        <DuplicatesCompareControl
+          duplicate={data.duplicates[0]}
+          onResolve={(ids) => handleOnResolve(data.duplicates[0].duplicateId, ids)}
+        />
+      {/key}
+    {:else}
+      <div class="text-center text-lg dark:text-white flex place-items-center place-content-center">
+        No duplication was found on the instance
+      </div>
+    {/if}
   </div>
 </UserPageLayout>

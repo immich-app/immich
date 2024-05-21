@@ -4,7 +4,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { asByteUnitString } from '$lib/utils/byte-units';
-  import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto } from '@immich/sdk';
+  import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
 
@@ -12,7 +12,7 @@
   export let onResolve: (trashIds: string[]) => void;
 
   let selectedAsset = new Set<string>();
-  $: trashCount = duplicate.assets.length - selectedAsset.size;
+  $: trashCount = duplicate ? duplicate.assets.length - selectedAsset.size : 0;
 
   onMount(() => {
     const suggestedAsset = duplicate.assets.sort(
@@ -74,7 +74,7 @@
             <td>{asset.originalFileName}</td>
           </tr>
           <tr
-            class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center `}
+            class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center`}
           >
             <td
               >{asset.exifInfo?.exifImageWidth}x{asset.exifInfo?.exifImageHeight} - {asByteUnitString(
@@ -84,6 +84,28 @@
               )}</td
             >
           </tr>
+
+          <tr
+            class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center `}
+          >
+            <td>{asset.libraryId ? 'In EXTERNAL Library' : 'In UPLOAD Library'}</td>
+          </tr>
+
+          <tr
+            class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center `}
+          >
+            <td>
+              {#await getAllAlbums({ assetId: asset.id })}
+                Scan for album...
+              {:then albums}
+                {#if albums.length === 0}
+                  Not in any album
+                {:else}
+                  In {albums.length} album{albums.length > 1 ? 's' : ''}
+                {/if}
+              {/await}
+            </td>
+          </tr>
         </table>
       </div>
     {/each}
@@ -91,18 +113,18 @@
 
   <!-- CONFIRM BUTTONS -->
   <div class="flex gap-4 my-4 border-transparent w-full justify-between p-4 h-[85px]">
-    <div class="m-4 text-xs font-mono dark:text-white">
+    <div class="m-4 text-xs dark:text-white">
       <p>DUPLICATE ID {duplicate.duplicateId}</p>
       <p>TOTAL {duplicate.assets.length}</p>
     </div>
 
-    {#if trashCount == 0}
+    {#if trashCount === 0}
       <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleOnResolve}
         ><Icon path={mdiCheck} size="20" />Keep All
       </Button>
     {:else}
       <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleOnResolve}
-        ><Icon path={mdiTrashCanOutline} size="20" />{trashCount == duplicate.assets.length
+        ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
           ? 'Trash All'
           : `Trash ${trashCount}`}
       </Button>
