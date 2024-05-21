@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-OPENAPI_GENERATOR_VERSION=v7.2.0
+OPENAPI_GENERATOR_VERSION=v7.5.0
 
 # usage: ./bin/generate-open-api.sh
 

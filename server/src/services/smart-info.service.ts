@@ -14,7 +14,8 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -27,11 +28,11 @@ export class SmartInfoService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private repository: ISearchRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(SmartInfoService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async init() {
@@ -50,7 +51,7 @@ export class SmartInfoService {
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -75,7 +76,7 @@ export class SmartInfoService {
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 

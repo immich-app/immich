@@ -24,7 +24,6 @@
     getAllLibraries,
     getLibraryStatistics,
     getUserById,
-    LibraryType,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
@@ -32,7 +31,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
+  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
@@ -108,7 +107,7 @@
   };
 
   async function readLibraryList() {
-    libraries = await getAllLibraries({ $type: LibraryType.External });
+    libraries = await getAllLibraries();
     dropdownOpen.length = libraries.length;
 
     for (let index = 0; index < libraries.length; index++) {
@@ -119,10 +118,7 @@
 
   const handleCreate = async (ownerId: string) => {
     try {
-      const createdLibrary = await createLibrary({
-        createLibraryDto: { ownerId, type: LibraryType.External },
-      });
-
+      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
         type: NotificationType.Info,
@@ -135,14 +131,14 @@
     }
   };
 
-  const handleUpdate = async (event: Partial<LibraryResponseDto>) => {
+  const handleUpdate = async (library: Partial<LibraryResponseDto>) => {
     if (updateLibraryIndex === null) {
       return;
     }
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-      await updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
+      await updateLibrary({ id: libraryId, updateLibraryDto: library });
       closeAll();
       await readLibraryList();
     } catch (error) {
@@ -177,9 +173,7 @@
   const handleScanAll = async () => {
     try {
       for (const library of libraries) {
-        if (library.type === LibraryType.External) {
-          await scanLibrary({ id: library.id, scanLibraryDto: {} });
-        }
+        await scanLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
         message: `Refreshing all libraries`,
@@ -361,12 +355,8 @@
                 }`}
               >
                 <td class=" px-10 text-sm">
-                  {#if library.type === LibraryType.External}
-                    <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
-                  {:else if library.type === LibraryType.Upload}
-                    <Icon path={mdiUpload} size="40" title="Upload library (created on {library.createdAt})" />
-                  {/if}</td
-                >
+                  <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
+                </td>
 
                 <td class=" text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class=" text-ellipsis px-4 text-sm">
@@ -400,7 +390,7 @@
                       <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 
-                        {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
+                        {#if selectedLibrary}
                           <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
@@ -448,7 +438,7 @@
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
-                    on:submit={({ detail }) => handleUpdate(detail.library)}
+                    on:submit={({ detail: library }) => handleUpdate(library)}
                     on:cancel={() => (editScanSettings = null)}
                   />
                 </div>

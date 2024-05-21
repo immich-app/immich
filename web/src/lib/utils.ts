@@ -5,8 +5,8 @@ import {
   AssetJobName,
   JobName,
   ThumbnailFormat,
-  defaults,
   finishOAuth,
+  getBaseUrl,
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
@@ -116,6 +116,7 @@ export const getJobName = (jobName: JobName) => {
     [JobName.MetadataExtraction]: 'Extract Metadata',
     [JobName.Sidecar]: 'Sidecar Metadata',
     [JobName.SmartSearch]: 'Smart Search',
+    [JobName.DuplicateDetection]: 'Duplicate Detection',
     [JobName.FaceDetection]: 'Face Detection',
     [JobName.FacialRecognition]: 'Facial Recognition',
     [JobName.VideoConversion]: 'Transcode Videos',
@@ -154,7 +155,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const url = new URL(path, 'https://example.com');
   url.search = searchParameters.toString();
 
-  return defaults.baseUrl + url.pathname + url.search + url.hash;
+  return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
 export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {

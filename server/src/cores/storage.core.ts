@@ -1,18 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
+import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -49,10 +49,10 @@ export class StorageCore {
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(systemConfigRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   static create(
@@ -61,7 +61,7 @@ export class StorageCore {
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
     storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     logger: ILoggerRepository,
   ) {
     if (!instance) {
@@ -71,7 +71,7 @@ export class StorageCore {
         moveRepository,
         personRepository,
         storageRepository,
-        systemConfigRepository,
+        systemMetadataRepository,
         logger,
       );
     }

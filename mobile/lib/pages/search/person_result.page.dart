@@ -102,7 +102,7 @@ class PersonResultPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(name.value),
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         actions: [

@@ -34,12 +34,12 @@ class LanguageSettings extends HookConsumerWidget {
                 contentPadding: const EdgeInsets.only(left: 16),
               ),
               menuStyle: MenuStyle(
-                shape: MaterialStatePropertyAll<OutlinedBorder>(
+                shape: WidgetStatePropertyAll<OutlinedBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                backgroundColor: MaterialStatePropertyAll<Color>(
+                backgroundColor: WidgetStatePropertyAll<Color>(
                   context.isDarkTheme
                       ? Colors.grey[900]!
                       : context.scaffoldBackgroundColor,

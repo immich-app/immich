@@ -1,5 +1,5 @@
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/config';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -26,14 +26,18 @@ class BaseConfig implements VideoCodecSWConfig {
       }
     }
 
-    options.outputOptions.push(...this.getPresetOptions(), ...this.getThreadOptions(), ...this.getBitrateOptions());
+    options.outputOptions.push(
+      ...this.getPresetOptions(),
+      ...this.getOutputThreadOptions(),
+      ...this.getBitrateOptions(),
+    );
 
     return options;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
-    return [];
+    return this.getInputThreadOptions();
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -80,11 +84,7 @@ class BaseConfig implements VideoCodecSWConfig {
       options.push(`scale=${this.getScaling(videoStream)}`);
     }
 
-    if (this.shouldToneMap(videoStream)) {
-      options.push(...this.getToneMapping());
-    }
-    options.push('format=yuv420p');
-
+    options.push(...this.getToneMapping(videoStream), 'format=yuv420p');
     return options;
   }
 
@@ -112,7 +112,11 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  getThreadOptions(): Array<string> {
+  getInputThreadOptions(): Array<string> {
+    return [];
+  }
+
+  getOutputThreadOptions(): Array<string> {
     if (this.config.threads <= 0) {
       return [];
     }
@@ -218,7 +222,11 @@ class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  getToneMapping() {
+  getToneMapping(videoStream: VideoStreamInfo) {
+    if (!this.shouldToneMap(videoStream)) {
+      return [];
+    }
+
     const colors = this.getColors();
 
     return [
@@ -348,8 +356,8 @@ export class ThumbnailConfig extends BaseConfig {
 }
 
 export class H264Config extends BaseConfig {
-  getThreadOptions() {
-    const options = super.getThreadOptions();
+  getOutputThreadOptions() {
+    const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
       options.push('-x264-params frame-threads=1:pools=none');
     }
@@ -359,8 +367,8 @@ export class H264Config extends BaseConfig {
 }
 
 export class HEVCConfig extends BaseConfig {
-  getThreadOptions() {
-    const options = super.getThreadOptions();
+  getOutputThreadOptions() {
+    const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
       options.push('-x265-params frame-threads=1:pools=none');
     }
@@ -391,8 +399,8 @@ export class VP9Config extends BaseConfig {
     return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
   }
 
-  getThreadOptions() {
-    return ['-row-mt 1', ...super.getThreadOptions()];
+  getOutputThreadOptions() {
+    return ['-row-mt 1', ...super.getOutputThreadOptions()];
   }
 
   eligibleForTwoPass() {
@@ -425,7 +433,7 @@ export class AV1Config extends BaseConfig {
     return options;
   }
 
-  getThreadOptions() {
+  getOutputThreadOptions() {
     return []; // Already set above with svtav1-params
   }
 
@@ -434,7 +442,7 @@ export class AV1Config extends BaseConfig {
   }
 }
 
-export class NVENCConfig extends BaseHWConfig {
+export class NvencSwDecodeConfig extends BaseHWConfig {
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
@@ -462,7 +470,7 @@ export class NVENCConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
+    const options = this.getToneMapping(videoStream);
     options.push('format=nv12', 'hwupload_cuda');
     if (this.shouldScale(videoStream)) {
       options.push(`scale_cuda=${this.getScaling(videoStream)}`);
@@ -513,6 +521,52 @@ export class NVENCConfig extends BaseHWConfig {
   }
 }
 
+export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
+  getBaseInputOptions() {
+    return ['-hwaccel cuda', '-hwaccel_output_format cuda', '-noautorotate', ...this.getInputThreadOptions()];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = [];
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
+    }
+    options.push(...this.getToneMapping(videoStream));
+    if (options.length > 0) {
+      options[options.length - 1] += ':format=nv12';
+    } else {
+      options.push('format=nv12');
+    }
+    return options;
+  }
+
+  getToneMapping(videoStream: VideoStreamInfo) {
+    if (!this.shouldToneMap(videoStream)) {
+      return [];
+    }
+
+    const colors = this.getColors();
+    const tonemapOptions = [
+      'desat=0',
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
+      'range=pc',
+      `tonemap=${this.config.tonemap}`,
+      `transfer=${colors.transfer}`,
+    ];
+
+    return [`tonemap_cuda=${tonemapOptions.join(':')}`];
+  }
+
+  getInputThreadOptions() {
+    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+  }
+
+  getOutputThreadOptions() {
+    return [];
+  }
+}
+
 export class QSVConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
@@ -538,7 +592,7 @@ export class QSVConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
+    const options = this.getToneMapping(videoStream);
     options.push('format=nv12', 'hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
       options.push(`scale_qsv=${this.getScaling(videoStream)}`);
@@ -604,7 +658,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
+    const options = this.getToneMapping(videoStream);
     options.push('format=nv12', 'hwupload');
     if (this.shouldScale(videoStream)) {
       options.push(`scale_vaapi=${this.getScaling(videoStream)}`);
@@ -656,46 +710,21 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 }
 
-export class RKMPPConfig extends BaseHWConfig {
-  private hasOpenCL: boolean;
-
+export class RkmppSwDecodeConfig extends BaseHWConfig {
   constructor(
     protected config: SystemConfigFFmpegDto,
     devices: string[] = [],
-    hasOpenCL: boolean = false,
   ) {
     super(config, devices);
-    this.hasOpenCL = hasOpenCL;
   }
 
   eligibleForTwoPass(): boolean {
     return false;
   }
 
-  getBaseInputOptions(videoStream: VideoStreamInfo) {
+  getBaseInputOptions(): string[] {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
-    }
-    return this.shouldToneMap(videoStream) && !this.hasOpenCL
-      ? [] // disable hardware decoding & filters
-      : ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
-  }
-
-  getFilterOptions(videoStream: VideoStreamInfo) {
-    if (this.shouldToneMap(videoStream)) {
-      if (!this.hasOpenCL) {
-        return super.getFilterOptions(videoStream);
-      }
-      const colors = this.getColors();
-      return [
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
-        'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
-        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
-        'format=drm_prime',
-      ];
-    } else if (this.shouldScale(videoStream)) {
-      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
   }
@@ -732,5 +761,31 @@ export class RKMPPConfig extends BaseHWConfig {
 
   getVideoCodec(): string {
     return `${this.config.targetVideoCodec}_rkmpp`;
+  }
+}
+
+export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
+  getBaseInputOptions() {
+    if (this.devices.length === 0) {
+      throw new Error('No RKMPP device found');
+    }
+
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    if (this.shouldToneMap(videoStream)) {
+      const colors = this.getColors();
+      return [
+        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
+        'hwmap=derive_device=opencl:mode=read',
+        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+        'format=drm_prime',
+      ];
+    } else if (this.shouldScale(videoStream)) {
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
+    }
+    return [];
   }
 }

@@ -6,7 +6,8 @@ import { user } from './user.store';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
-  checkedAt: Date;
+  /** ISO8601 */
+  checkedAt: string;
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -298,6 +298,10 @@ class ApiClient {
           return DownloadInfoDto.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
+        case 'DuplicateDetectionConfig':
+          return DuplicateDetectionConfig.fromJson(value);
+        case 'DuplicateResponseDto':
+          return DuplicateResponseDto.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
@@ -332,8 +336,6 @@ class ApiClient {
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
           return LibraryStatsResponseDto.fromJson(value);
-        case 'LibraryType':
-          return LibraryTypeTypeTransformer().decode(value);
         case 'LogLevel':
           return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':

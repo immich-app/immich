@@ -7,7 +7,7 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { StorageCore } from 'src/cores/storage.core';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -31,7 +31,7 @@ import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interfa
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -113,19 +113,19 @@ export class MetadataService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
       storageRepository,
-      configRepository,
+      systemMetadataRepository,
       this.logger,
     );
   }
@@ -331,7 +331,8 @@ export class MetadataService {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
-    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    if (!reverseGeocoding.enabled || !longitude || !latitude) {
       return;
     }
 
@@ -408,7 +409,7 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId, checksum);
+      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId ?? null, checksum);
       if (motionAsset) {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(

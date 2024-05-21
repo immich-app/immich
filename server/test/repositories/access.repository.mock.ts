@@ -7,7 +7,6 @@ export interface IAccessRepositoryMock {
   asset: Mocked<IAccessRepository['asset']>;
   album: Mocked<IAccessRepository['album']>;
   authDevice: Mocked<IAccessRepository['authDevice']>;
-  library: Mocked<IAccessRepository['library']>;
   timeline: Mocked<IAccessRepository['timeline']>;
   memory: Mocked<IAccessRepository['memory']>;
   person: Mocked<IAccessRepository['person']>;
@@ -40,10 +39,6 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
     },
 
     authDevice: {
-      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
-    },
-
-    library: {
       checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
     },
 

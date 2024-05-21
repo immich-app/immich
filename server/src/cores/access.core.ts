@@ -274,7 +274,7 @@ export class AccessCore {
       }
 
       case Permission.ASSET_UPLOAD: {
-        return await this.repository.library.checkOwnerAccess(auth.user.id, ids);
+        return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set<string>();
       }
 
       case Permission.ARCHIVE_READ: {

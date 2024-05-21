@@ -276,6 +276,15 @@
               isEdited={config.ffmpeg.accel !== savedConfig.ffmpeg.accel}
             />
 
+            <SettingSwitch
+              id="hardware-decoding"
+              title="HARDWARE DECODING"
+              {disabled}
+              subtitle="Applies only to NVENC and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos."
+              bind:checked={config.ffmpeg.accelDecode}
+              isEdited={config.ffmpeg.accelDecode !== savedConfig.ffmpeg.accelDecode}
+            />
+
             <SettingSelect
               label="CONSTANT QUALITY MODE"
               desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will prefer the specified mode when using quality-based encoding. Ignored by NVENC as it does not support ICQ."
@@ -297,6 +306,7 @@
               bind:checked={config.ffmpeg.temporalAQ}
               isEdited={config.ffmpeg.temporalAQ !== savedConfig.ffmpeg.temporalAQ}
             />
+
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label="PREFERRED HARDWARE DEVICE"

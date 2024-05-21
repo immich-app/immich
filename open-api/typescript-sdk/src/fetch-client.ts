@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.104.0
+ * 1.105.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -115,6 +115,7 @@ export type AssetResponseDto = {
     checksum: string;
     deviceAssetId: string;
     deviceId: string;
+    duplicateId?: string | null;
     duration: string;
     exifInfo?: ExifResponseDto;
     fileCreatedAt: string;
@@ -129,7 +130,8 @@ export type AssetResponseDto = {
     /** This property was deprecated in v1.104.0 */
     isReadOnly?: boolean;
     isTrashed: boolean;
-    libraryId: string;
+    /** This property was deprecated in v1.106.0 */
+    libraryId?: string | null;
     livePhotoVideoId?: string | null;
     localDateTime: string;
     originalFileName: string;
@@ -306,7 +308,6 @@ export type CreateAssetDto = {
     isFavorite?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    libraryId?: string;
     livePhotoData?: Blob;
     sidecarData?: Blob;
 };
@@ -372,6 +373,10 @@ export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
 };
+export type DuplicateResponseDto = {
+    assets: AssetResponseDto[];
+    duplicateId: string;
+};
 export type PersonResponseDto = {
     birthDate: string | null;
     id: string;
@@ -410,6 +415,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
     library: JobStatusDto;
@@ -436,21 +442,17 @@ export type LibraryResponseDto = {
     name: string;
     ownerId: string;
     refreshedAt: string | null;
-    "type": LibraryType;
     updatedAt: string;
 };
 export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
     ownerId: string;
-    "type": LibraryType;
 };
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
-    isVisible?: boolean;
     name?: string;
 };
 export type ScanLibraryDto = {
@@ -750,6 +752,7 @@ export type ServerConfigDto = {
 };
 export type ServerFeaturesDto = {
     configFile: boolean;
+    duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
     map: boolean;
@@ -863,6 +866,7 @@ export type AssetFullSyncDto = {
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
+    accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
@@ -929,6 +933,10 @@ export type ClipConfig = {
     modelName: string;
     modelType?: ModelType;
 };
+export type DuplicateDetectionConfig = {
+    enabled: boolean;
+    maxDistance: number;
+};
 export type RecognitionConfig = {
     enabled: boolean;
     maxDistance: number;
@@ -939,6 +947,7 @@ export type RecognitionConfig = {
 };
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
+    duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: RecognitionConfig;
     url: string;
@@ -1689,6 +1698,14 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateResponseDto[];
+    }>("/duplicates", {
+        ...opts
+    }));
+}
 export function getFaces({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1735,15 +1752,11 @@ export function sendJobCommand({ id, jobCommandDto }: {
         body: jobCommandDto
     })));
 }
-export function getAllLibraries({ $type }: {
-    $type?: LibraryType;
-}, opts?: Oazapfts.RequestOpts) {
+export function getAllLibraries(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: LibraryResponseDto[];
-    }>(`/library${QS.query(QS.explode({
-        "type": $type
-    }))}`, {
+    }>("/library", {
         ...opts
     }));
 }
@@ -2878,6 +2891,7 @@ export enum JobName {
     FaceDetection = "faceDetection",
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
+    DuplicateDetection = "duplicateDetection",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",
@@ -2892,10 +2906,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum LibraryType {
-    Upload = "UPLOAD",
-    External = "EXTERNAL"
 }
 export enum Type2 {
     OnThisDay = "on_this_day"

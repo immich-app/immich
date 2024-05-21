@@ -9,7 +9,6 @@ import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entit
 import { UserEntity } from 'src/entities/user.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 const today = new Date();
@@ -210,8 +209,6 @@ export const sharedLinkStub = {
           isArchived: false,
           isExternal: false,
           isOffline: false,
-          libraryId: 'library-id',
-          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],
@@ -262,6 +259,7 @@ export const sharedLinkStub = {
           faces: [],
           sidecarPath: null,
           deletedAt: null,
+          duplicateId: null,
         },
       ],
     },

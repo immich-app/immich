@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { EntityNotFoundError, IsNull, Not } from 'typeorm';
@@ -40,35 +40,10 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
-    return this.repository.findOne({
-      where: {
-        ownerId: ownerId,
-        type: LibraryType.UPLOAD,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getUploadLibraryCount(ownerId: string): Promise<number> {
-    return this.repository.count({
-      where: {
-        ownerId: ownerId,
-        type: LibraryType.UPLOAD,
-      },
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAllByUserId(ownerId: string, type?: LibraryType): Promise<LibraryEntity[]> {
+  getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
         ownerId,
-        isVisible: true,
-        type,
       },
       relations: {
         owner: true,
@@ -80,9 +55,8 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   @GenerateSql({ params: [] })
-  getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
+  getAll(withDeleted = false): Promise<LibraryEntity[]> {
     return this.repository.find({
-      where: { type },
       relations: {
         owner: true,
       },
@@ -97,7 +71,6 @@ export class LibraryRepository implements ILibraryRepository {
   getAllDeleted(): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
-        isVisible: true,
         deletedAt: Not(IsNull()),
       },
       relations: {
