@@ -31,7 +31,7 @@ export class UserMetadata1716312279245 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "memoriesEnabled"`);
     await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "avatarColor"`);
     await queryRunner.query(
-      `ALTER TABLE "user_metadata" ADD CONSTRAINT "FK_6afb43681a21cf7815932bc38ac" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "user_metadata" ADD CONSTRAINT "FK_6afb43681a21cf7815932bc38ac" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
     );
   }
 
