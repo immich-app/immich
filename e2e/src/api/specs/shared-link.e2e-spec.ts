@@ -1,7 +1,6 @@
 import {
   AlbumResponseDto,
-  AssetMediaCreatedResponse,
-  AssetResponseDto,
+  AssetMediaCreateResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
@@ -16,8 +15,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/shared-link', () => {
   let admin: LoginResponseDto;
-  let asset1: AssetResponseDto;
-  let asset2: AssetResponseDto;
+  let asset1: string;
+  let asset2: string;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let album: AlbumResponseDto;
@@ -44,7 +43,7 @@ describe('/shared-link', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
-    [asset1, asset2] = stackAssetResponses.map((response) => (response as AssetMediaCreatedResponse).asset!);
+    [asset1, asset2] = stackAssetResponses.map((response) => (response as AssetMediaCreateResponseDto).assetId);
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
       createAlbum({ createAlbumDto: { albumName: 'album' } }, { headers: asBearerAuth(user1.accessToken) }),
       createAlbum({ createAlbumDto: { albumName: 'deleted album' } }, { headers: asBearerAuth(user2.accessToken) }),
@@ -52,7 +51,7 @@ describe('/shared-link', () => {
         {
           createAlbumDto: {
             albumName: 'metadata album',
-            assetIds: [asset1.id],
+            assetIds: [asset1],
           },
         },
         { headers: asBearerAuth(user1.accessToken) },
@@ -71,7 +70,7 @@ describe('/shared-link', () => {
         }),
         utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Individual,
-          assetIds: [asset1.id],
+          assetIds: [asset1],
         }),
         utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
@@ -373,7 +372,7 @@ describe('/shared-link', () => {
       const { status, body } = await request(app)
         .put(`/shared-link/${linkWithAlbum.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset2.id] });
+        .send({ assetIds: [asset1] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
@@ -383,9 +382,9 @@ describe('/shared-link', () => {
       const { status, body } = await request(app)
         .put(`/shared-link/${linkWithAssets.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset2.id] });
+        .send({ assetIds: [asset2] });
 
-      expect(body).toEqual([{ assetId: asset2.id, success: true }]);
+      expect(body).toEqual([{ assetId: asset2, success: true }]);
       expect(status).toBe(200);
     });
   });
@@ -395,7 +394,7 @@ describe('/shared-link', () => {
       const { status, body } = await request(app)
         .delete(`/shared-link/${linkWithAlbum.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset2.id] });
+        .send({ assetIds: [asset2] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
@@ -405,9 +404,9 @@ describe('/shared-link', () => {
       const { status, body } = await request(app)
         .delete(`/shared-link/${linkWithAssets.id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset2.id] });
+        .send({ assetIds: [asset2] });
 
-      expect(body).toEqual([{ assetId: asset2.id, success: true }]);
+      expect(body).toEqual([{ assetId: asset2, success: true }]);
       expect(status).toBe(200);
     });
   });

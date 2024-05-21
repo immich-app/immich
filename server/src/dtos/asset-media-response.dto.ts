@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { Optional } from 'src/validation';
 
 export class CheckExistingAssetsResponseDto {
@@ -33,6 +32,12 @@ export enum GetAssetThumbnailFormatEnum {
   WEBP = 'WEBP',
 }
 
+export enum AssetMediaStatusEnum {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  DUPLICATE = 'duplicate',
+}
+
 export class GetAssetThumbnailDto {
   @Optional()
   @IsEnum(GetAssetThumbnailFormatEnum)
@@ -46,53 +51,71 @@ export class GetAssetThumbnailDto {
   format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }
 
-export class AssetMediaResponseDto {
+export class DefaultAssetMediaResponseDto {
   @ApiProperty({
     type: String,
+    enum: AssetMediaStatusEnum,
+    required: true,
+    enumName: 'AssetMediaStatus',
   })
   readonly status?: string;
   @IsOptional()
-  asset?: AssetResponseDto;
+  assetId?: string;
   @IsOptional()
-  backup?: AssetResponseDto;
+  backupId?: string;
   @IsOptional()
-  duplicate?: AssetResponseDto;
+  duplicateId?: string;
 }
 
-export class AssetMediaCreatedResponse {
+export class AssetMediaCreateResponseDto {
   @ApiProperty({
     type: String,
-    default: 'created',
+    required: true,
+    readOnly: true,
+    enum: AssetMediaStatusEnum,
+    enumName: 'AssetMediaStatus',
+    default: AssetMediaStatusEnum.CREATED,
   })
   readonly status = 'created';
-  asset: AssetResponseDto;
-  constructor(asset: AssetResponseDto) {
-    this.asset = asset;
+  assetId: string;
+  constructor(assetId: string) {
+    this.assetId = assetId;
   }
 }
-export class AssetMediaUpdatedResponse {
+export class AssetMediaUpdateResponseDto {
   @ApiProperty({
     type: String,
-    default: 'updated',
+    required: true,
+    readOnly: true,
+    enum: AssetMediaStatusEnum,
+    enumName: 'AssetMediaStatus',
+    default: AssetMediaStatusEnum.UPDATED,
   })
   readonly status = 'updated';
-  asset: AssetResponseDto;
-  backup: AssetResponseDto;
-  constructor(asset: AssetResponseDto, backup: AssetResponseDto) {
-    this.asset = asset;
-    this.backup = backup;
+  assetId: string;
+  backupId: string;
+  constructor(assetId: string, backupId: string) {
+    this.assetId = assetId;
+    this.backupId = backupId;
   }
 }
-export class DuplicateAssetResponse {
+export class DuplicateAssetResponseDto {
   @ApiProperty({
     type: String,
-    default: 'duplicate',
+    required: true,
+    readOnly: true,
+    enum: AssetMediaStatusEnum,
+    enumName: 'AssetMediaStatus',
+    default: AssetMediaStatusEnum.DUPLICATE,
   })
   readonly status = 'duplicate';
-  duplicate: AssetResponseDto;
-  constructor(duplicate: AssetResponseDto) {
-    this.duplicate = duplicate;
+  duplicateId: string;
+  constructor(duplicateId: string) {
+    this.duplicateId = duplicateId;
   }
 }
 
-export type AssetMediaResponse = AssetMediaCreatedResponse | AssetMediaUpdatedResponse | DuplicateAssetResponse;
+export type AssetMediaResponseDto =
+  | AssetMediaCreateResponseDto
+  | AssetMediaUpdateResponseDto
+  | DuplicateAssetResponseDto;

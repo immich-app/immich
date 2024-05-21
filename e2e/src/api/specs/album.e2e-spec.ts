@@ -2,9 +2,8 @@ import {
   addAssetsToAlbum,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetMediaCreatedResponse,
+  AssetMediaCreateResponseDto,
   AssetOrder,
-  AssetResponseDto,
   deleteUser,
   getAlbumInfo,
   LoginResponseDto,
@@ -27,8 +26,8 @@ const user2NotShared = 'user2NotShared';
 describe('/album', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
-  let user1Asset1: AssetResponseDto;
-  let user1Asset2: AssetResponseDto;
+  let user1Asset1: string;
+  let user1Asset2: string;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
@@ -49,26 +48,26 @@ describe('/album', () => {
       utils.createAsset(user1.accessToken, { isFavorite: true }),
       utils.createAsset(user1.accessToken),
     ]);
-    [user1Asset1, user1Asset2] = responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
+    [user1Asset1, user1Asset2] = responses.map((response) => (response as AssetMediaCreateResponseDto).assetId!);
 
     user1Albums = await Promise.all([
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedEditorUser,
         albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }],
-        assetIds: [user1Asset1.id],
+        assetIds: [user1Asset1],
       }),
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedLink,
-        assetIds: [user1Asset1.id],
+        assetIds: [user1Asset1],
       }),
       utils.createAlbum(user1.accessToken, {
         albumName: user1NotShared,
-        assetIds: [user1Asset1.id, user1Asset2.id],
+        assetIds: [user1Asset1, user1Asset2],
       }),
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedViewerUser,
         albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
-        assetIds: [user1Asset1.id],
+        assetIds: [user1Asset1],
       }),
     ]);
 
@@ -90,7 +89,7 @@ describe('/album', () => {
     });
 
     await addAssetsToAlbum(
-      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id] } },
+      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1] } },
       { headers: asBearerAuth(user1.accessToken) },
     );
 
@@ -260,7 +259,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId', async () => {
       const { status, body } = await request(app)
-        .get(`/album?assetId=${user1Asset2.id}`)
+        .get(`/album?assetId=${user1Asset2}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
@@ -268,7 +267,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId and ignores shared=true', async () => {
       const { status, body } = await request(app)
-        .get(`/album?shared=true&assetId=${user1Asset1.id}`)
+        .get(`/album?shared=true&assetId=${user1Asset1}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
@@ -276,7 +275,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId and ignores shared=false', async () => {
       const { status, body } = await request(app)
-        .get(`/album?shared=false&assetId=${user1Asset1.id}`)
+        .get(`/album?shared=false&assetId=${user1Asset1}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
@@ -405,50 +404,49 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to own album', async () => {
-      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
+      const { assetId } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreateResponseDto;
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset!.id] });
+        .send({ ids: [assetId] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: asset!.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: assetId, success: true })]);
     });
 
     it('should be able to add own asset to shared album', async () => {
-      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
+      const { assetId } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreateResponseDto;
       const { status, body } = await request(app)
         .put(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset!.id] });
+        .send({ ids: [assetId] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: asset!.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: assetId, success: true })]);
     });
 
     it('should not be able to add assets to album as a viewer', async () => {
-      const { asset } = (await utils.createAsset(user2.accessToken)) as AssetMediaCreatedResponse;
-      expect(asset).toHaveProperty('id');
+      const { assetId } = (await utils.createAsset(user2.accessToken)) as AssetMediaCreateResponseDto;
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[3].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [asset!.id] });
+        .send({ ids: [assetId] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
     });
 
     it('should add duplicate assets only once', async () => {
-      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
+      const { assetId } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreateResponseDto;
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [asset!.id, asset!.id] });
+        .send({ ids: [assetId, assetId] });
 
       expect(status).toBe(200);
       expect(body).toEqual([
-        expect.objectContaining({ id: asset!.id, success: true }),
-        expect.objectContaining({ id: asset!.id, success: false, error: 'duplicate' }),
+        expect.objectContaining({ id: assetId, success: true }),
+        expect.objectContaining({ id: assetId, success: false, error: 'duplicate' }),
       ]);
     });
   });
@@ -507,7 +505,7 @@ describe('/album', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app)
         .delete(`/album/${user1Albums[0].id}/assets`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -517,12 +515,12 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .delete(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(200);
       expect(body).toEqual([
         expect.objectContaining({
-          id: user1Asset1.id,
+          id: user1Asset1,
           success: false,
           error: 'no_permission',
         }),
@@ -533,12 +531,12 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .delete(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(200);
       expect(body).toEqual([
         expect.objectContaining({
-          id: user1Asset1.id,
+          id: user1Asset1,
           success: false,
           error: 'no_permission',
         }),
@@ -549,27 +547,27 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .delete(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset1, success: true })]);
     });
 
     it('should be able to remove own asset from shared album', async () => {
       const { status, body } = await request(app)
         .delete(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset1, success: true })]);
     });
 
     it('should not be able to remove assets from album as a viewer', async () => {
       const { status, body } = await request(app)
         .delete(`/album/${user1Albums[3].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset1] });
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.removeAsset access'));
@@ -579,12 +577,12 @@ describe('/album', () => {
       const { status, body } = await request(app)
         .delete(`/album/${user1Albums[1].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [user1Asset1.id, user1Asset1.id] });
+        .send({ ids: [user1Asset1, user1Asset1] });
 
       expect(status).toBe(200);
       expect(body).toEqual([
-        expect.objectContaining({ id: user1Asset1.id, success: true }),
-        expect.objectContaining({ id: user1Asset1.id, success: false, error: 'not_found' }),
+        expect.objectContaining({ id: user1Asset1, success: true }),
+        expect.objectContaining({ id: user1Asset1, success: false, error: 'not_found' }),
       ]);
     });
   });

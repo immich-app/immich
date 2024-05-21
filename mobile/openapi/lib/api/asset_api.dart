@@ -269,7 +269,7 @@ class AssetApi {
   /// * [String] libraryId:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<DuplicateAssetResponse?> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? sidecarData, }) async {
+  Future<DefaultAssetMediaResponseDto?> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? sidecarData, }) async {
     final response = await createAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isVisible: isVisible, libraryId: libraryId, sidecarData: sidecarData, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -278,7 +278,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateAssetResponse}',) as DuplicateAssetResponse;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DefaultAssetMediaResponseDto}',) as DefaultAssetMediaResponseDto;
     
     }
     return null;
@@ -1112,7 +1112,7 @@ class AssetApi {
   /// * [String] key:
   ///
   /// * [String] duration:
-  Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, }) async {
+  Future<DefaultAssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, }) async {
     final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -1121,7 +1121,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetMediaResponseDto}',) as AssetMediaResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DefaultAssetMediaResponseDto}',) as DefaultAssetMediaResponseDto;
     
     }
     return null;

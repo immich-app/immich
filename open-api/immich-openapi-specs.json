@@ -1108,7 +1108,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DuplicateAssetResponse"
+                  "$ref": "#/components/schemas/DuplicateAssetResponseDto"
                 }
               }
             },
@@ -1118,11 +1118,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaCreatedResponse"
+                  "$ref": "#/components/schemas/AssetMediaCreateResponseDto"
                 }
               }
             },
             "description": "Asset was successfully uploaded"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultAssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -2037,7 +2047,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DuplicateAssetResponse"
+                  "$ref": "#/components/schemas/DuplicateAssetResponseDto"
                 }
               }
             },
@@ -2047,7 +2057,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaUpdatedResponse"
+                  "$ref": "#/components/schemas/AssetMediaUpdateResponseDto"
                 }
               }
             },
@@ -2057,7 +2067,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                  "$ref": "#/components/schemas/DefaultAssetMediaResponseDto"
                 }
               }
             },
@@ -7595,55 +7605,46 @@
         ],
         "type": "object"
       },
-      "AssetMediaCreatedResponse": {
+      "AssetMediaCreateResponseDto": {
         "properties": {
-          "asset": {
-            "$ref": "#/components/schemas/AssetResponseDto"
+          "assetId": {
+            "type": "string"
           },
           "status": {
-            "default": "created",
-            "type": "string"
+            "$ref": "#/components/schemas/AssetMediaStatus",
+            "readOnly": true
           }
         },
         "required": [
-          "asset",
+          "assetId",
           "status"
         ],
         "type": "object"
       },
-      "AssetMediaResponseDto": {
-        "properties": {
-          "asset": {
-            "$ref": "#/components/schemas/AssetResponseDto"
-          },
-          "backup": {
-            "$ref": "#/components/schemas/AssetResponseDto"
-          },
-          "duplicate": {
-            "$ref": "#/components/schemas/AssetResponseDto"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "type": "object"
+      "AssetMediaStatus": {
+        "enum": [
+          "created",
+          "updated",
+          "duplicate"
+        ],
+        "type": "string"
       },
-      "AssetMediaUpdatedResponse": {
+      "AssetMediaUpdateResponseDto": {
         "properties": {
-          "asset": {
-            "$ref": "#/components/schemas/AssetResponseDto"
+          "assetId": {
+            "type": "string"
           },
-          "backup": {
-            "$ref": "#/components/schemas/AssetResponseDto"
+          "backupId": {
+            "type": "string"
           },
           "status": {
-            "default": "updated",
-            "type": "string"
+            "$ref": "#/components/schemas/AssetMediaStatus",
+            "readOnly": true
           }
         },
         "required": [
-          "asset",
-          "backup",
+          "assetId",
+          "backupId",
           "status"
         ],
         "type": "object"
@@ -8244,6 +8245,26 @@
         ],
         "type": "object"
       },
+      "DefaultAssetMediaResponseDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "backupId": {
+            "type": "string"
+          },
+          "duplicateId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
       "DeleteUserDto": {
         "properties": {
           "force": {
@@ -8312,18 +8333,18 @@
         ],
         "type": "object"
       },
-      "DuplicateAssetResponse": {
+      "DuplicateAssetResponseDto": {
         "properties": {
-          "duplicate": {
-            "$ref": "#/components/schemas/AssetResponseDto"
+          "duplicateId": {
+            "type": "string"
           },
           "status": {
-            "default": "duplicate",
-            "type": "string"
+            "$ref": "#/components/schemas/AssetMediaStatus",
+            "readOnly": true
           }
         },
         "required": [
-          "duplicate",
+          "duplicateId",
           "status"
         ],
         "type": "object"

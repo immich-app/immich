@@ -250,13 +250,19 @@ export type CreateAssetMediaDto = {
     libraryId?: string;
     sidecarData?: Blob;
 };
-export type DuplicateAssetResponse = {
-    duplicate: AssetResponseDto;
-    status: string;
+export type DuplicateAssetResponseDto = {
+    duplicateId: string;
+    status: AssetMediaStatus;
 };
-export type AssetMediaCreatedResponse = {
-    asset: AssetResponseDto;
-    status: string;
+export type AssetMediaCreateResponseDto = {
+    assetId: string;
+    status: AssetMediaStatus;
+};
+export type DefaultAssetMediaResponseDto = {
+    assetId?: string;
+    backupId?: string;
+    duplicateId?: string;
+    status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
@@ -354,16 +360,10 @@ export type UpdateAssetMediaDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
 };
-export type AssetMediaUpdatedResponse = {
-    asset: AssetResponseDto;
-    backup: AssetResponseDto;
-    status: string;
-};
-export type AssetMediaResponseDto = {
-    asset?: AssetResponseDto;
-    backup?: AssetResponseDto;
-    duplicate?: AssetResponseDto;
-    status?: string;
+export type AssetMediaUpdateResponseDto = {
+    assetId: string;
+    backupId: string;
+    status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -1422,10 +1422,13 @@ export function createAsset({ key, xImmichChecksum, createAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DuplicateAssetResponse;
+        data: DuplicateAssetResponseDto;
     } | {
         status: 201;
-        data: AssetMediaCreatedResponse;
+        data: AssetMediaCreateResponseDto;
+    } | {
+        status: number;
+        data: DefaultAssetMediaResponseDto;
     }>(`/asset${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
@@ -1681,13 +1684,13 @@ export function replaceAsset({ id, key, updateAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DuplicateAssetResponse;
+        data: DuplicateAssetResponseDto;
     } | {
         status: 201;
-        data: AssetMediaUpdatedResponse;
+        data: AssetMediaUpdateResponseDto;
     } | {
         status: number;
-        data: AssetMediaResponseDto;
+        data: DefaultAssetMediaResponseDto;
     }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
@@ -2989,6 +2992,11 @@ export enum Error {
     NoPermission = "no_permission",
     NotFound = "not_found",
     Unknown = "unknown"
+}
+export enum AssetMediaStatus {
+    Created = "created",
+    Updated = "updated",
+    Duplicate = "duplicate"
 }
 export enum Action {
     Accept = "accept",

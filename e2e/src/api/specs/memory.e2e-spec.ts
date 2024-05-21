@@ -1,6 +1,5 @@
 import {
-  AssetMediaCreatedResponse,
-  AssetResponseDto,
+  AssetMediaCreateResponseDto,
   LoginResponseDto,
   MemoryResponseDto,
   MemoryType,
@@ -16,9 +15,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe('/memories', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
-  let adminAsset: AssetResponseDto;
-  let userAsset1: AssetResponseDto;
-  let userAsset2: AssetResponseDto;
+  let adminAsset: string;
+  let userAsset1: string;
+  let userAsset2: string;
   let userMemory: MemoryResponseDto;
 
   beforeAll(async () => {
@@ -31,7 +30,9 @@ describe('/memories', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
-    [adminAsset, userAsset1, userAsset2] = responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
+    [adminAsset, userAsset1, userAsset2] = responses.map(
+      (response) => (response as AssetMediaCreateResponseDto).assetId,
+    );
     userMemory = await createMemory(
       {
         memoryCreateDto: {
@@ -112,15 +113,15 @@ describe('/memories', () => {
           type: 'on_this_day',
           data: { year: 2021 },
           memoryAt: new Date(2021).toISOString(),
-          assetIds: [userAsset1.id, userAsset2.id],
+          assetIds: [userAsset1, userAsset2],
         });
 
       expect(status).toBe(201);
       expect(body).toMatchObject({
         id: expect.any(String),
         assets: expect.arrayContaining([
-          expect.objectContaining({ id: userAsset1.id }),
-          expect.objectContaining({ id: userAsset2.id }),
+          expect.objectContaining({ id: userAsset1 }),
+          expect.objectContaining({ id: userAsset2 }),
         ]),
       });
       expect(body.assets).toHaveLength(2);
@@ -134,13 +135,13 @@ describe('/memories', () => {
           type: 'on_this_day',
           data: { year: 2021 },
           memoryAt: new Date(2021).toISOString(),
-          assetIds: [userAsset1.id, adminAsset.id],
+          assetIds: [userAsset1, adminAsset],
         });
 
       expect(status).toBe(201);
       expect(body).toMatchObject({
         id: expect.any(String),
-        assets: [expect.objectContaining({ id: userAsset1.id })],
+        assets: [expect.objectContaining({ id: userAsset1 })],
       });
       expect(body.assets).toHaveLength(1);
     });
@@ -225,7 +226,7 @@ describe('/memories', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] });
+        .send({ ids: [userAsset1] });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -233,7 +234,7 @@ describe('/memories', () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${uuidDto.invalid}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
@@ -242,7 +243,7 @@ describe('/memories', () => {
     it('should require access', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
@@ -260,12 +261,12 @@ describe('/memories', () => {
     it('should require asset access', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [adminAsset.id] })
+        .send({ ids: [adminAsset] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
       expect(body[0]).toEqual({
-        id: adminAsset.id,
+        id: adminAsset,
         success: false,
         error: 'no_permission',
       });
@@ -274,11 +275,11 @@ describe('/memories', () => {
     it('should add assets to the memory', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
-      expect(body[0]).toEqual({ id: userAsset1.id, success: true });
+      expect(body[0]).toEqual({ id: userAsset1, success: true });
     });
   });
 
@@ -286,7 +287,7 @@ describe('/memories', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] });
+        .send({ ids: [userAsset1] });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -294,7 +295,7 @@ describe('/memories', () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${uuidDto.invalid}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
@@ -303,7 +304,7 @@ describe('/memories', () => {
     it('should require access', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
@@ -321,12 +322,12 @@ describe('/memories', () => {
     it('should only remove assets in the memory', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [adminAsset.id] })
+        .send({ ids: [adminAsset] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
       expect(body[0]).toEqual({
-        id: adminAsset.id,
+        id: adminAsset,
         success: false,
         error: 'not_found',
       });
@@ -335,11 +336,11 @@ describe('/memories', () => {
     it('should remove assets from the memory', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
+        .send({ ids: [userAsset1] })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
-      expect(body[0]).toEqual({ id: userAsset1.id, success: true });
+      expect(body[0]).toEqual({ id: userAsset1, success: true });
     });
   });
 

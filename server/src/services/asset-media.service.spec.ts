@@ -2,7 +2,6 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { CreateAssetMediaDto, UpdateAssetMediaDto, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { mapAsset } from 'src/dtos/asset-response.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -250,7 +249,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(assetEntity);
 
       await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
-        asset: mapAsset(assetEntity),
+        assetId: assetEntity.id,
         status: 'created',
       });
 
@@ -281,7 +280,7 @@ describe('AssetMediaService', () => {
 
       await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
         status: 'duplicate',
-        duplicate: mapAsset(_getAsset_1()),
+        duplicateId: _getAsset_1().id,
       });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
@@ -361,8 +360,8 @@ describe('AssetMediaService', () => {
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         status: 'updated',
-        asset: mapAsset(updatedAsset),
-        backup: mapAsset(_getClonedAsset as AssetEntity),
+        assetId: updatedAsset.id,
+        backupId: _getClonedAsset.id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
@@ -393,8 +392,8 @@ describe('AssetMediaService', () => {
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
         status: 'updated',
-        asset: mapAsset(updatedAsset),
-        backup: mapAsset(_getClonedAsset as AssetEntity),
+        assetId: updatedAsset.id,
+        backupId: _getClonedAsset.id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto, undefined, sidecarFile);
@@ -423,8 +422,8 @@ describe('AssetMediaService', () => {
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         status: 'updated',
-        asset: mapAsset(updatedAsset),
-        backup: mapAsset(_getClonedAsset as AssetEntity),
+        assetId: updatedAsset.id,
+        backupId: _getClonedAsset.id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
@@ -455,7 +454,7 @@ describe('AssetMediaService', () => {
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
         status: 'duplicate',
-        duplicate: mapAsset(existingAsset),
+        duplicateId: existingAsset.id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
@@ -506,7 +505,7 @@ describe('AssetMediaService', () => {
     it('should find an existing asset', async () => {
       assetMock.getByChecksums.mockResolvedValue([{ id: 'asset-id' }] as AssetEntity[]);
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
-        duplicate: expect.objectContaining({ id: 'asset-id' }),
+        duplicateId: 'asset-id',
         status: 'duplicate',
       });
       expect(assetMock.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, expect.anything());
@@ -515,7 +514,7 @@ describe('AssetMediaService', () => {
     it('should find an existing asset by base64', async () => {
       assetMock.getByChecksums.mockResolvedValue([{ id: 'asset-id' }] as AssetEntity[]);
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toMatchObject({
-        duplicate: expect.objectContaining({ id: 'asset-id' }),
+        duplicateId: 'asset-id',
         status: 'duplicate',
       });
       expect(assetMock.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, expect.anything());

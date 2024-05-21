@@ -28,12 +28,12 @@ import { NextFunction, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetMediaCreatedResponse,
-  AssetMediaResponse,
+  AssetMediaCreateResponseDto,
   AssetMediaResponseDto,
-  AssetMediaUpdatedResponse,
+  AssetMediaUpdateResponseDto,
   CheckExistingAssetsResponseDto,
-  DuplicateAssetResponse,
+  DefaultAssetMediaResponseDto,
+  DuplicateAssetResponseDto,
   GetAssetThumbnailDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
@@ -74,11 +74,15 @@ export class AssetMediaController {
   })
   @ApiOkResponse({
     description: 'Asset was not uploaded - the file was a duplicate',
-    type: DuplicateAssetResponse,
+    type: DuplicateAssetResponseDto,
   })
   @ApiCreatedResponse({
     description: 'Asset was successfully uploaded',
-    type: AssetMediaCreatedResponse,
+    type: AssetMediaCreateResponseDto,
+  })
+  @ApiResponse({
+    status: 'default',
+    type: DefaultAssetMediaResponseDto,
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
@@ -87,7 +91,7 @@ export class AssetMediaController {
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: CreateAssetMediaDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetMediaResponse> {
+  ): Promise<AssetMediaCreateResponseDto | DuplicateAssetResponseDto> {
     const { file, sidecarFile } = getFiles(files);
     const assetMediaResponse = await this.service.createAsset(auth, dto, file, sidecarFile);
     if (assetMediaResponse.status === 'duplicate') {
@@ -119,15 +123,15 @@ export class AssetMediaController {
   })
   @ApiOkResponse({
     description: 'Asset was not uploaded - the file was a duplicate',
-    type: DuplicateAssetResponse,
+    type: DuplicateAssetResponseDto,
   })
   @ApiCreatedResponse({
     description: 'Asset was successfully uploaded',
-    type: AssetMediaUpdatedResponse,
+    type: AssetMediaUpdateResponseDto,
   })
   @ApiResponse({
     status: 'default',
-    type: AssetMediaResponseDto,
+    type: DefaultAssetMediaResponseDto,
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
@@ -138,7 +142,7 @@ export class AssetMediaController {
     files: UploadFiles,
     @Body() dto: UpdateAssetMediaDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetMediaResponse> {
+  ): Promise<AssetMediaResponseDto> {
     const { file } = getFiles(files);
     const assetMediaResponse = await this.service.replaceAsset(auth, id, dto, file);
     if (assetMediaResponse.status === 'duplicate') {

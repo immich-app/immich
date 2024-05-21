@@ -11,13 +11,12 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetMediaCreatedResponse,
-  AssetMediaResponse,
-  AssetMediaUpdatedResponse,
+  AssetMediaCreateResponseDto,
+  AssetMediaUpdateResponseDto,
   AssetRejectReason,
   AssetUploadAction,
   CheckExistingAssetsResponseDto,
-  DuplicateAssetResponse,
+  DuplicateAssetResponseDto,
   GetAssetThumbnailDto,
   GetAssetThumbnailFormatEnum,
 } from 'src/dtos/asset-media-response.dto';
@@ -29,7 +28,6 @@ import {
   UpdateAssetMediaDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
-import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -96,14 +94,14 @@ export class AssetMediaService {
     dto: CreateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaResponse> {
+  ): Promise<AssetMediaCreateResponseDto | DuplicateAssetResponseDto> {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, auth.user.id);
       this.requireQuota(auth, file.size);
 
       const asset = await this.create(auth, dto, file, sidecarFile?.originalPath);
       await this.userRepository.updateUsage(auth.user.id, file.size);
-      return new AssetMediaCreatedResponse(mapAsset(asset));
+      return new AssetMediaCreateResponseDto(asset.id);
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -115,7 +113,7 @@ export class AssetMediaService {
     dto: UpdateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaResponse> {
+  ): Promise<AssetMediaUpdateResponseDto | DuplicateAssetResponseDto> {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
@@ -133,8 +131,7 @@ export class AssetMediaService {
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
-      const asset = await this.assetRepository.getById(id);
-      return new AssetMediaUpdatedResponse(mapAsset(asset!), mapAsset(copiedPhoto!));
+      return new AssetMediaUpdateResponseDto(id, copiedPhoto.id);
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -145,7 +142,7 @@ export class AssetMediaService {
     auth: AuthDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<DuplicateAssetResponse> {
+  ): Promise<DuplicateAssetResponseDto> {
     // clean up files
     await this.jobRepository.queue({
       name: JobName.DELETE_FILES,
@@ -159,7 +156,7 @@ export class AssetMediaService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
-      return new DuplicateAssetResponse(mapAsset(duplicate[0]));
+      return new DuplicateAssetResponseDto(duplicate[0].id);
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -414,7 +411,7 @@ export class AssetMediaService {
     return asset.previewPath;
   }
 
-  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<DuplicateAssetResponse | undefined> {
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<DuplicateAssetResponseDto | undefined> {
     if (!checksum) {
       return;
     }
@@ -424,7 +421,7 @@ export class AssetMediaService {
       return;
     }
 
-    return new DuplicateAssetResponse(mapAsset(duplicate[0]));
+    return new DuplicateAssetResponseDto(duplicate[0].id);
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {

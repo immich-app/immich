@@ -1,5 +1,5 @@
 import {
-  AssetMediaCreatedResponse,
+  AssetMediaCreateResponseDto,
   deleteAssets,
   getAuditFiles,
   updateAsset,
@@ -29,12 +29,12 @@ describe('/audit', () => {
 
       await Promise.all([
         deleteAssets(
-          { assetBulkDeleteDto: { ids: [(trashedAsset as AssetMediaCreatedResponse).asset.id] } },
+          { assetBulkDeleteDto: { ids: [(trashedAsset as AssetMediaCreateResponseDto).assetId] } },
           { headers: asBearerAuth(admin.accessToken) },
         ),
         updateAsset(
           {
-            id: (archivedAsset as AssetMediaCreatedResponse).asset.id,
+            id: (archivedAsset as AssetMediaCreateResponseDto).assetId,
             updateAssetDto: { isArchived: true },
           },
           { headers: asBearerAuth(admin.accessToken) },

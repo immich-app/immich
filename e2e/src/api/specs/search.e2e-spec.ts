@@ -1,11 +1,4 @@
-import {
-  AssetMediaCreatedResponse,
-  AssetResponseDto,
-  LoginResponseDto,
-  deleteAssets,
-  getMapMarkers,
-  updateAsset,
-} from '@immich/sdk';
+import { AssetMediaCreateResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -20,25 +13,25 @@ describe('/search', () => {
   let admin: LoginResponseDto;
   let websocket: Socket;
 
-  let assetFalcon: AssetResponseDto;
-  let assetDenali: AssetResponseDto;
-  let assetCyclamen: AssetResponseDto;
-  let assetNotocactus: AssetResponseDto;
-  let assetSilver: AssetResponseDto;
-  let assetDensity: AssetResponseDto;
+  let assetFalcon: string;
+  let assetDenali: string;
+  let assetCyclamen: string;
+  let assetNotocactus: string;
+  let assetSilver: string;
+  let assetDensity: string;
   // let assetPhiladelphia: AssetFileUploadResponseDto;
   // let assetOrychophragmus: AssetFileUploadResponseDto;
   // let assetRidge: AssetFileUploadResponseDto;
   // let assetPolemonium: AssetFileUploadResponseDto;
   // let assetWood: AssetFileUploadResponseDto;
   // let assetGlarus: AssetFileUploadResponseDto;
-  let assetHeic: AssetResponseDto;
-  let assetRocks: AssetResponseDto;
-  let assetOneJpg6: AssetResponseDto;
-  let assetOneHeic6: AssetResponseDto;
-  let assetOneJpg5: AssetResponseDto;
-  let assetSprings: AssetResponseDto;
-  let assetLast: AssetResponseDto;
+  let assetHeic: string;
+  let assetRocks: string;
+  let assetOneJpg6: string;
+  let assetOneHeic6: string;
+  let assetOneJpg5: string;
+  let assetSprings: string;
+  let assetLast: string;
   let cities: string[];
   let states: string[];
   let countries: string[];
@@ -73,19 +66,19 @@ describe('/search', () => {
       // last asset
       { filename: '/albums/nature/wood_anemones.jpg' },
     ];
-    const assets: AssetResponseDto[] = [];
+    const assets: string[] = [];
     for (const { filename, dto } of files) {
       const bytes = await readFile(join(testAssetDir, filename));
       const assetResponse = (await utils.createAsset(admin.accessToken, {
         deviceAssetId: `test-${filename}`,
         assetData: { bytes, filename },
         ...dto,
-      })) as AssetMediaCreatedResponse;
-      assets.push(assetResponse.asset!);
+      })) as AssetMediaCreateResponseDto;
+      assets.push(assetResponse.assetId);
     }
 
-    for (const asset of assets) {
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+    for (const assetId of assets) {
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: assetId });
     }
 
     // note: the coordinates here are not the actual coordinates of the images and are random for most of them
@@ -111,12 +104,12 @@ describe('/search', () => {
     ];
 
     const updates = assets.map((asset, i) =>
-      updateAsset({ id: asset.id, updateAssetDto: coordinates[i] }, { headers: asBearerAuth(admin.accessToken) }),
+      updateAsset({ id: asset, updateAssetDto: coordinates[i] }, { headers: asBearerAuth(admin.accessToken) }),
     );
 
     await Promise.all(updates);
     for (const asset of assets) {
-      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
+      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset });
     }
 
     [
@@ -140,12 +133,12 @@ describe('/search', () => {
       // assetWood,
     ] = assets;
 
-    assetLast = assets.at(-1) as AssetResponseDto;
+    assetLast = assets.at(-1) as string;
 
-    await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver] } }, { headers: asBearerAuth(admin.accessToken) });
 
     const mapMarkers = await getMapMarkers({}, { headers: asBearerAuth(admin.accessToken) });
-    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver.id);
+    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver);
     cities = [...new Set(nonTrashed.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
     states = [...new Set(nonTrashed.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
     countries = [...new Set(nonTrashed.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
@@ -236,7 +229,7 @@ describe('/search', () => {
         should: 'should search by checksum (hex)',
         deferred: () => ({ dto: { checksum: 'f485c10cc8e3f4ead06fed58307a6b649819fd44' }, assets: [assetCyclamen] }),
       },
-      { should: 'should search by id', deferred: () => ({ dto: { id: assetCyclamen.id }, assets: [assetCyclamen] }) },
+      { should: 'should search by id', deferred: () => ({ dto: { id: assetCyclamen }, assets: [assetCyclamen] }) },
       {
         should: 'should search by isFavorite (true)',
         deferred: () => ({ dto: { isFavorite: true }, assets: [assetCyclamen] }),
@@ -263,9 +256,9 @@ describe('/search', () => {
           dto: { type: 'VIDEO' },
           assets: [
             // the three live motion photos
-            { id: expect.any(String) },
-            { id: expect.any(String) },
-            { id: expect.any(String) },
+            expect.any(String),
+            expect.any(String),
+            expect.any(String),
           ],
         }),
       },
@@ -358,7 +351,7 @@ describe('/search', () => {
         expect(body.assets).toBeDefined();
         expect(Array.isArray(body.assets.items)).toBe(true);
         for (const [i, asset] of assets.entries()) {
-          expect(body.assets.items[i]).toEqual(expect.objectContaining({ id: asset.id }));
+          expect(body.assets.items[i]).toEqual(expect.objectContaining({ id: asset }));
         }
         expect(body.assets.items).toHaveLength(assets.length);
       });

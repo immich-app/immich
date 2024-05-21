@@ -1,4 +1,4 @@
-import { AssetMediaCreatedResponse, AssetResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
+import { AssetMediaCreateResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -10,15 +10,15 @@ const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAu
 describe('/system-config', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
-  let asset: AssetResponseDto;
+  let asset: string;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
 
-    const response = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
-    asset = response.asset!;
+    const response = (await utils.createAsset(admin.accessToken)) as AssetMediaCreateResponseDto;
+    asset = response.assetId;
   });
 
   describe('GET /system-config/map/style.json', () => {
@@ -31,7 +31,7 @@ describe('/system-config', () => {
     it('should allow shared link access', async () => {
       const sharedLink = await utils.createSharedLink(admin.accessToken, {
         type: SharedLinkType.Individual,
-        assetIds: [asset.id],
+        assetIds: [asset],
       });
       const { status, body } = await request(app)
         .get(`/system-config/map/style.json?key=${sharedLink.key}`)

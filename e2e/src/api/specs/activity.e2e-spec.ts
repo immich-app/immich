@@ -2,8 +2,7 @@ import {
   ActivityCreateDto,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetMediaCreatedResponse,
-  AssetResponseDto,
+  AssetMediaCreateResponseDto,
   LoginResponseDto,
   ReactionType,
   createActivity as create,
@@ -19,7 +18,7 @@ describe('/activity', () => {
   let admin: LoginResponseDto;
   let nonOwner: LoginResponseDto;
 
-  let asset: AssetResponseDto;
+  let assetId: string;
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>
@@ -30,13 +29,13 @@ describe('/activity', () => {
 
     admin = await utils.adminSetup();
     nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
-    const assetMediaResponse = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
-    asset = assetMediaResponse.asset!;
+    const assetMediaResponse = (await utils.createAsset(admin.accessToken)) as AssetMediaCreateResponseDto;
+    assetId = assetMediaResponse.assetId;
     album = await createAlbum(
       {
         createAlbumDto: {
           albumName: 'Album 1',
-          assetIds: [asset.id],
+          assetIds: [assetId],
           albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
         },
       },
@@ -93,7 +92,7 @@ describe('/activity', () => {
         {
           createAlbumDto: {
             albumName: 'Album 2',
-            assetIds: [asset.id],
+            assetIds: [assetId],
           },
         },
         { headers: asBearerAuth(admin.accessToken) },
@@ -176,7 +175,7 @@ describe('/activity', () => {
       const [reaction] = await Promise.all([
         createActivity({
           albumId: album.id,
-          assetId: asset.id,
+          assetId: assetId,
           type: ReactionType.Like,
         }),
         createActivity({ albumId: album.id, type: ReactionType.Like }),
@@ -184,7 +183,7 @@ describe('/activity', () => {
 
       const { status, body } = await request(app)
         .get('/activity')
-        .query({ albumId: album.id, assetId: asset.id })
+        .query({ albumId: album.id, assetId: assetId })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body.length).toBe(1);
@@ -266,7 +265,7 @@ describe('/activity', () => {
     it('should not confuse an album like with an asset like', async () => {
       const reaction = await createActivity({
         albumId: album.id,
-        assetId: asset.id,
+        assetId: assetId,
         type: ReactionType.Like,
       });
       const { status, body } = await request(app)
@@ -283,14 +282,14 @@ describe('/activity', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           albumId: album.id,
-          assetId: asset.id,
+          assetId: assetId,
           type: 'comment',
           comment: 'This is my first comment',
         });
       expect(status).toEqual(201);
       expect(body).toEqual({
         id: expect.any(String),
-        assetId: asset.id,
+        assetId: assetId,
         createdAt: expect.any(String),
         type: 'comment',
         comment: 'This is my first comment',
@@ -302,11 +301,11 @@ describe('/activity', () => {
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ albumId: album.id, assetId: asset.id, type: 'like' });
+        .send({ albumId: album.id, assetId: assetId, type: 'like' });
       expect(status).toEqual(201);
       expect(body).toEqual({
         id: expect.any(String),
-        assetId: asset.id,
+        assetId: assetId,
         createdAt: expect.any(String),
         type: 'like',
         comment: null,
@@ -317,14 +316,14 @@ describe('/activity', () => {
     it('should return a 200 for a duplicate like on an asset', async () => {
       const reaction = await createActivity({
         albumId: album.id,
-        assetId: asset.id,
+        assetId: assetId,
         type: ReactionType.Like,
       });
 
       const { status, body } = await request(app)
         .post('/activity')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ albumId: album.id, assetId: asset.id, type: 'like' });
+        .send({ albumId: album.id, assetId: assetId, type: 'like' });
       expect(status).toEqual(200);
       expect(body).toEqual(reaction);
     });

@@ -1,10 +1,4 @@
-import {
-  AssetMediaCreatedResponse,
-  AssetResponseDto,
-  LoginResponseDto,
-  SharedLinkType,
-  TimeBucketSize,
-} from '@immich/sdk';
+import { AssetMediaCreateResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -25,7 +19,7 @@ describe('/timeline', () => {
   let user: LoginResponseDto;
   let timeBucketUser: LoginResponseDto;
 
-  let userAssets: AssetResponseDto[];
+  let userAssets: string[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -47,7 +41,7 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
-    userAssets = responses.map((response) => (response as AssetMediaCreatedResponse).asset);
+    userAssets = responses.map((response) => (response as AssetMediaCreateResponseDto).assetId);
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-10').toISOString() }),
@@ -81,7 +75,7 @@ describe('/timeline', () => {
     it('should not allow access for unrelated shared links', async () => {
       const sharedLink = await utils.createSharedLink(user.accessToken, {
         type: SharedLinkType.Individual,
-        assetIds: userAssets.map(({ id }) => id),
+        assetIds: userAssets,
       });
 
       const { status, body } = await request(app)

@@ -250,12 +250,12 @@ class ApiClient {
           return AssetJobNameTypeTransformer().decode(value);
         case 'AssetJobsDto':
           return AssetJobsDto.fromJson(value);
-        case 'AssetMediaCreatedResponse':
-          return AssetMediaCreatedResponse.fromJson(value);
-        case 'AssetMediaResponseDto':
-          return AssetMediaResponseDto.fromJson(value);
-        case 'AssetMediaUpdatedResponse':
-          return AssetMediaUpdatedResponse.fromJson(value);
+        case 'AssetMediaCreateResponseDto':
+          return AssetMediaCreateResponseDto.fromJson(value);
+        case 'AssetMediaStatus':
+          return AssetMediaStatusTypeTransformer().decode(value);
+        case 'AssetMediaUpdateResponseDto':
+          return AssetMediaUpdateResponseDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
@@ -296,6 +296,8 @@ class ApiClient {
           return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
           return CreateUserDto.fromJson(value);
+        case 'DefaultAssetMediaResponseDto':
+          return DefaultAssetMediaResponseDto.fromJson(value);
         case 'DeleteUserDto':
           return DeleteUserDto.fromJson(value);
         case 'DownloadArchiveInfo':
@@ -304,8 +306,8 @@ class ApiClient {
           return DownloadInfoDto.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
-        case 'DuplicateAssetResponse':
-          return DuplicateAssetResponse.fromJson(value);
+        case 'DuplicateAssetResponseDto':
+          return DuplicateAssetResponseDto.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':

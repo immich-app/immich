@@ -1,4 +1,4 @@
-import { AssetResponseDto, LoginResponseDto, PersonResponseDto } from '@immich/sdk';
+import { AssetMediaCreateResponseDto, LoginResponseDto, PersonResponseDto } from '@immich/sdk';
 import { uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
@@ -35,17 +35,17 @@ describe('/person', () => {
       }),
     ]);
 
-    const asset1Response = (await utils.createAsset(admin.accessToken)) as { asset: AssetResponseDto };
-    const { asset: asset1 } = asset1Response;
-    const asset2Response = (await utils.createAsset(admin.accessToken)) as { asset: AssetResponseDto };
-    const { asset: asset2 } = asset2Response;
+    const asset1Response = (await utils.createAsset(admin.accessToken)) as AssetMediaCreateResponseDto;
+    const { assetId: asset1 } = asset1Response;
+    const asset2Response = (await utils.createAsset(admin.accessToken)) as AssetMediaCreateResponseDto;
+    const { assetId: asset2 } = asset2Response;
 
     await Promise.all([
-      utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1, personId: visiblePerson.id }),
+      utils.createFace({ assetId: asset1, personId: hiddenPerson.id }),
+      utils.createFace({ assetId: asset1, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset1, personId: multipleAssetsPerson.id }),
+      utils.createFace({ assetId: asset2, personId: multipleAssetsPerson.id }),
     ]);
   });
 
