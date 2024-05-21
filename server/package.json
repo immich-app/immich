@@ -108,6 +108,7 @@
     "@types/node": "^20.5.7",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^2.3.3",
+    "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
