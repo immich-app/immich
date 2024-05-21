@@ -24,6 +24,21 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
 
+  import { Media, type MediaAlbum, type MediaAsset, type MediaResponse } from '@capacitor-community/media';
+
+  let albums: MediaAlbum[] = [];
+
+  const getAlbums = async () => {
+    const { albums: newAlbums } = await Media.getAlbums();
+    albums = newAlbums;
+  };
+
+  let cameraRoll: MediaAsset[] = [];
+  const getCameraRoll = async () => {
+    const { medias: newCameraRoll } = await Media.getMedias({albumIdentifier: 'camera'});
+    cameraRoll = newCameraRoll;
+  };
+
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
@@ -91,6 +106,15 @@
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
+  <button on:click={getAlbums}>Get Albums</button>
+  {#if albums.length > 0}
+    <p>Albums: {albums.map(album => album.name).join(", ")}</p>
+  {/if}
+
+  <button on:click={getCameraRoll}>Get Camera Roll</button>
+  {#if cameraRoll.length > 0}
+    <p>Camera Roll: {cameraRoll.map(asset => asset.identifier)}</p>
+  {/if}
   <AssetGrid
     {assetStore}
     {assetInteractionStore}

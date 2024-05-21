@@ -61,8 +61,10 @@
   },
   "type": "module",
   "dependencies": {
+    "@capacitor-community/media": "^6.0.0",
     "@capacitor/android": "^6.0.0",
     "@capacitor/core": "^6.0.0",
+    "@capacitor/filesystem": "^6.0.0",
     "@capacitor/ios": "^6.0.0",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.4.47",

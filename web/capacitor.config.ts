@@ -12,7 +12,14 @@ const config: CapacitorConfig = {
     cleartext: true,
     allowNavigation: ['http://192.168.10.242:2283/api/*', 'http://localhost/*', 'https://localhost/*'],
   },
-  plugins: {},
+  plugins: {
+    CapacitorCookies: {
+      enabled: true,
+    },
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;
