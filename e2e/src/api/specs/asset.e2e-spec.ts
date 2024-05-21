@@ -638,7 +638,7 @@ describe('/asset', () => {
       };
       const uploads = files.map((f) => uploadFile(f));
       await Promise.all(uploads);
-    });
+    }, 30_000);
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/asset/map-marker');
       expect(status).toBe(401);
