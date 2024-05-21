@@ -732,7 +732,7 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
-export type ServerInfoResponseDto = {
+export type ServerStorageResponseDto = {
     diskAvailable: string;
     diskAvailableRaw: number;
     diskSize: string;
@@ -2245,10 +2245,13 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.106.0
+ */
 export function getServerInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: ServerInfoResponseDto;
+        data: ServerStorageResponseDto;
     }>("/server-info", {
         ...opts
     }));
@@ -2290,6 +2293,14 @@ export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerStatsResponseDto;
     }>("/server-info/statistics", {
+        ...opts
+    }));
+}
+export function getStorage(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerStorageResponseDto;
+    }>("/server-info/storage", {
         ...opts
     }));
 }

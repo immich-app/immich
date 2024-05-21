@@ -428,14 +428,14 @@ class ApiClient {
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':
           return ServerFeaturesDto.fromJson(value);
-        case 'ServerInfoResponseDto':
-          return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
           return ServerMediaTypesResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
+        case 'ServerStorageResponseDto':
+          return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
         case 'ServerVersionResponseDto':
