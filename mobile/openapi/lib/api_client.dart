@@ -406,6 +406,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
+        case 'ResolveDuplicatesDto':
+          return ResolveDuplicatesDto.fromJson(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'ScanLibraryDto':

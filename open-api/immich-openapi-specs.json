@@ -2256,6 +2256,41 @@
         ]
       }
     },
+    "/duplicates/resolve": {
+      "post": {
+        "operationId": "resolveDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDuplicatesDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicate"
+        ]
+      }
+    },
     "/face": {
       "get": {
         "operationId": "getFaces",
@@ -9234,6 +9269,24 @@
           "minFaces",
           "minScore",
           "modelName"
+        ],
+        "type": "object"
+      },
+      "ResolveDuplicatesDto": {
+        "properties": {
+          "duplicateId": {
+            "type": "string"
+          },
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "duplicateId",
+          "ids"
         ],
         "type": "object"
       },

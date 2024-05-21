@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AccessCore, Permission } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
+import { DuplicateResponseDto, ResolveDuplicatesDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
@@ -22,6 +24,7 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class DuplicateService {
+  private access: AccessCore;
   private configCore: SystemConfigCore;
 
   constructor(
@@ -31,9 +34,25 @@ export class DuplicateService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
   ) {
     this.logger.setContext(DuplicateService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+    this.access = AccessCore.create(accessRepository);
+  }
+
+  async resolveDuplicates(auth: AuthDto, dto: ResolveDuplicatesDto): Promise<void> {
+    const { ids, duplicateId } = dto;
+
+    await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
+
+    await this.assetRepository.softDeleteAll(dto.ids);
+
+    await this.assetRepository.updateDuplicates({
+      targetDuplicateId: null,
+      assetIds: ids,
+      duplicateIds: [duplicateId],
+    });
   }
 
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {

@@ -5,18 +5,11 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { asByteUnitString } from '$lib/utils/byte-units';
   import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto } from '@immich/sdk';
-  import {
-    mdiCheck,
-    mdiCheckOutline,
-    mdiImageCheckOutline,
-    mdiImageMultipleOutline,
-    mdiTrashCan,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
 
   export let duplicate: DuplicateResponseDto;
-  export let onResolve: (keepIds: string[], trashIds: string[]) => void;
+  export let onResolve: (trashIds: string[]) => void;
 
   let selectedAsset = new Set<string>();
   $: trashCount = duplicate.assets.length - selectedAsset.size;
@@ -41,10 +34,9 @@
   };
 
   const handleOnResolve = () => {
-    const keepIds = Array.from(selectedAsset);
-    const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !keepIds.includes(id));
+    const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !selectedAsset.has(id));
 
-    onResolve(keepIds, trashIds);
+    onResolve(trashIds);
   };
 </script>
 
