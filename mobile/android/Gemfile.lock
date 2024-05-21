@@ -10,7 +10,7 @@ GEM
     artifactory (3.0.17)
     atomos (0.1.3)
     aws-eventstream (1.3.0)
-    aws-partitions (1.931.0)
+    aws-partitions (1.932.0)
     aws-sdk-core (3.196.1)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.651.0)
