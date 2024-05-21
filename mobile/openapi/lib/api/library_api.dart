@@ -57,7 +57,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto',) as LibraryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto}',) as LibraryResponseDto;
     
     }
     return null;
@@ -148,6 +148,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<LibraryResponseDto>') as List)
         .cast<LibraryResponseDto>()
@@ -199,7 +200,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto',) as LibraryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto}',) as LibraryResponseDto;
     
     }
     return null;
@@ -247,7 +248,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryStatsResponseDto',) as LibraryStatsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryStatsResponseDto}',) as LibraryStatsResponseDto;
     
     }
     return null;
@@ -383,7 +384,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto',) as LibraryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryResponseDto}',) as LibraryResponseDto;
     
     }
     return null;
@@ -435,7 +436,7 @@ class LibraryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ValidateLibraryResponseDto',) as ValidateLibraryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ValidateLibraryResponseDto}',) as ValidateLibraryResponseDto;
     
     }
     return null;

@@ -1,0 +1,32 @@
+--- api.mustache	2024-05-21 02:24:14.643424463 +0000
++++ api1.mustache	2024-05-21 02:23:15.050273885 +0000
+@@ -161,7 +161,7 @@
+   ///
+     {{/-last}}
+   {{/allParams}}
+-  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
++  Future<{{> return_type_result}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+     final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}} {{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} {{/hasOptionalParams}});
+     if (response.statusCode >= HttpStatus.badRequest) {
+       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+@@ -173,6 +173,7 @@
+     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+     {{#native_serialization}}
+     {{#isArray}}
++      {{> return_type_warn}}
+       final responseBody = await _decodeBodyBytes(response);
+       return (await apiClient.deserializeAsync(responseBody, '{{{returnType}}}') as List)
+         .cast<{{{returnBaseType}}}>()
+@@ -180,10 +181,10 @@
+     {{/isArray}}
+     {{^isArray}}
+     {{#isMap}}
+-      return {{{returnType}}}.from(await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{{returnType}}}'),);
++      return {{> return_type}}.from(await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{> return_type}}'),);
+     {{/isMap}}
+     {{^isMap}}
+-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{{returnType}}}',) as {{{returnType}}};
++      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{> return_type}}}',) as {{> return_type}};
+     {{/isMap}}{{/isArray}}{{/native_serialization}}
+     }
+     return null;

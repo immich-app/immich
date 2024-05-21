@@ -249,11 +249,13 @@ export type CreateAssetMediaDto = {
     libraryId?: string;
     sidecarData?: Blob;
 };
-export type AssetMediaResponseDto = {
-    asset?: AssetResponseDto;
-    backupId?: string;
-    duplicate: boolean;
-    duplicateId: string;
+export type DuplicateAssetResponse = {
+    duplicate: AssetResponseDto;
+    status: string;
+};
+export type AssetMediaCreatedResponse = {
+    asset: AssetResponseDto;
+    status: string;
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
@@ -351,6 +353,17 @@ export type UpdateAssetMediaDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+};
+export type AssetMediaUpdatedResponse = {
+    asset: AssetResponseDto;
+    backup: AssetResponseDto;
+    status: string;
+};
+export type AssetMediaResponseDto = {
+    asset?: AssetResponseDto;
+    backup?: AssetResponseDto;
+    duplicate?: AssetResponseDto;
+    status?: string;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -1410,8 +1423,11 @@ export function createAsset({ key, xImmichChecksum, createAssetMediaDto }: {
     createAssetMediaDto: CreateAssetMediaDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateAssetResponse;
+    } | {
         status: 201;
-        data: AssetMediaResponseDto;
+        data: AssetMediaCreatedResponse;
     }>(`/asset${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
@@ -1667,6 +1683,12 @@ export function replaceAsset({ id, key, updateAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
+        data: DuplicateAssetResponse;
+    } | {
+        status: 201;
+        data: AssetMediaUpdatedResponse;
+    } | {
+        status: number;
         data: AssetMediaResponseDto;
     }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
         key

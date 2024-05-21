@@ -51,7 +51,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerConfigDto',) as ServerConfigDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerConfigDto}',) as ServerConfigDto;
     
     }
     return null;
@@ -92,7 +92,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerFeaturesDto',) as ServerFeaturesDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerFeaturesDto}',) as ServerFeaturesDto;
     
     }
     return null;
@@ -133,7 +133,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerInfoResponseDto',) as ServerInfoResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerInfoResponseDto}',) as ServerInfoResponseDto;
     
     }
     return null;
@@ -174,7 +174,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerStatsResponseDto',) as ServerStatsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerStatsResponseDto}',) as ServerStatsResponseDto;
     
     }
     return null;
@@ -215,7 +215,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerVersionResponseDto',) as ServerVersionResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerVersionResponseDto}',) as ServerVersionResponseDto;
     
     }
     return null;
@@ -256,7 +256,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerMediaTypesResponseDto',) as ServerMediaTypesResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerMediaTypesResponseDto}',) as ServerMediaTypesResponseDto;
     
     }
     return null;
@@ -297,7 +297,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto',) as ServerThemeDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto}',) as ServerThemeDto;
     
     }
     return null;
@@ -338,7 +338,7 @@ class ServerInfoApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerPingResponse',) as ServerPingResponse;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerPingResponse}',) as ServerPingResponse;
     
     }
     return null;

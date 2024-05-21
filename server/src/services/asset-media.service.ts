@@ -11,10 +11,13 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetMediaResponseDto,
+  AssetMediaCreatedResponse,
+  AssetMediaResponse,
+  AssetMediaUpdatedResponse,
   AssetRejectReason,
   AssetUploadAction,
   CheckExistingAssetsResponseDto,
+  DuplicateAssetResponse,
   GetAssetThumbnailDto,
   GetAssetThumbnailFormatEnum,
 } from 'src/dtos/asset-media-response.dto';
@@ -94,7 +97,7 @@ export class AssetMediaService {
     dto: CreateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaResponseDto> {
+  ): Promise<AssetMediaResponse> {
     try {
       const libraryId = await this.getLibraryId(auth, dto.libraryId);
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
@@ -102,7 +105,7 @@ export class AssetMediaService {
 
       const asset = await this.create(auth, { ...dto, libraryId }, file, sidecarFile?.originalPath);
       await this.userRepository.updateUsage(auth.user.id, file.size);
-      return { asset: mapAsset(asset), duplicateId: undefined, duplicate: false };
+      return new AssetMediaCreatedResponse(mapAsset(asset));
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -134,7 +137,7 @@ export class AssetMediaService {
     dto: UpdateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaResponseDto> {
+  ): Promise<AssetMediaResponse> {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
@@ -155,7 +158,7 @@ export class AssetMediaService {
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       const asset = await this.assetRepository.getById(id);
-      return { asset: mapAsset(asset!), backupId: copiedPhoto.id, duplicateId: undefined, duplicate: false };
+      return new AssetMediaUpdatedResponse(mapAsset(asset!), mapAsset(copiedPhoto!));
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -166,7 +169,7 @@ export class AssetMediaService {
     auth: AuthDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaResponseDto> {
+  ): Promise<DuplicateAssetResponse> {
     // clean up files
     await this.jobRepository.queue({
       name: JobName.DELETE_FILES,
@@ -175,12 +178,12 @@ export class AssetMediaService {
 
     // handle duplicates with a success response
     if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-      const asset = await this.assetRepository.getByChecksums(auth.user.id, [file.checksum]);
-      let duplicateId;
-      if (asset.length === 1) {
-        duplicateId = asset[0].id;
+      const duplicate = await this.assetRepository.getByChecksums(auth.user.id, [file.checksum]);
+      if (!duplicate || duplicate.length !== 1) {
+        this.logger.error(`Error locating duplicate for checksum constraint`);
+        throw new InternalServerErrorException();
       }
-      return { duplicateId, duplicate: true };
+      return new DuplicateAssetResponse(mapAsset(duplicate[0]));
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -435,17 +438,17 @@ export class AssetMediaService {
     return asset.previewPath;
   }
 
-  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
+  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<DuplicateAssetResponse | undefined> {
     if (!checksum) {
       return;
     }
 
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
-    if (!assetId) {
+    const duplicate = await this.assetRepository.getByChecksums(auth.user.id, [fromChecksum(checksum)]);
+    if (duplicate.length === 0) {
       return;
     }
 
-    return { duplicateId: assetId, duplicate: true };
+    return new DuplicateAssetResponse(mapAsset(duplicate[0]));
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {

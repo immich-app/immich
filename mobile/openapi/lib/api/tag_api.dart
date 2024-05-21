@@ -57,7 +57,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto',) as TagResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto}',) as TagResponseDto;
     
     }
     return null;
@@ -138,6 +138,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<TagResponseDto>') as List)
         .cast<TagResponseDto>()
@@ -189,6 +190,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
@@ -240,7 +242,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto',) as TagResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto}',) as TagResponseDto;
     
     }
     return null;
@@ -292,6 +294,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
@@ -347,6 +350,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
@@ -402,7 +406,7 @@ class TagApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto',) as TagResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto}',) as TagResponseDto;
     
     }
     return null;

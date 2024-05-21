@@ -14,9 +14,9 @@ class AssetMediaResponseDto {
   /// Returns a new [AssetMediaResponseDto] instance.
   AssetMediaResponseDto({
     this.asset,
-    this.backupId,
-    required this.duplicate,
-    required this.duplicateId,
+    this.backup,
+    this.duplicate,
+    this.status,
   });
 
   ///
@@ -33,29 +33,41 @@ class AssetMediaResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? backupId;
+  AssetResponseDto? backup;
 
-  bool duplicate;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetResponseDto? duplicate;
 
-  String duplicateId;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? status;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetMediaResponseDto &&
     other.asset == asset &&
-    other.backupId == backupId &&
+    other.backup == backup &&
     other.duplicate == duplicate &&
-    other.duplicateId == duplicateId;
+    other.status == status;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (asset == null ? 0 : asset!.hashCode) +
-    (backupId == null ? 0 : backupId!.hashCode) +
-    (duplicate.hashCode) +
-    (duplicateId.hashCode);
+    (backup == null ? 0 : backup!.hashCode) +
+    (duplicate == null ? 0 : duplicate!.hashCode) +
+    (status == null ? 0 : status!.hashCode);
 
   @override
-  String toString() => 'AssetMediaResponseDto[asset=$asset, backupId=$backupId, duplicate=$duplicate, duplicateId=$duplicateId]';
+  String toString() => 'AssetMediaResponseDto[asset=$asset, backup=$backup, duplicate=$duplicate, status=$status]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,13 +76,21 @@ class AssetMediaResponseDto {
     } else {
     //  json[r'asset'] = null;
     }
-    if (this.backupId != null) {
-      json[r'backupId'] = this.backupId;
+    if (this.backup != null) {
+      json[r'backup'] = this.backup;
     } else {
-    //  json[r'backupId'] = null;
+    //  json[r'backup'] = null;
     }
+    if (this.duplicate != null) {
       json[r'duplicate'] = this.duplicate;
-      json[r'duplicateId'] = this.duplicateId;
+    } else {
+    //  json[r'duplicate'] = null;
+    }
+    if (this.status != null) {
+      json[r'status'] = this.status;
+    } else {
+    //  json[r'status'] = null;
+    }
     return json;
   }
 
@@ -83,9 +103,9 @@ class AssetMediaResponseDto {
 
       return AssetMediaResponseDto(
         asset: AssetResponseDto.fromJson(json[r'asset']),
-        backupId: mapValueOfType<String>(json, r'backupId'),
-        duplicate: mapValueOfType<bool>(json, r'duplicate')!,
-        duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
+        backup: AssetResponseDto.fromJson(json[r'backup']),
+        duplicate: AssetResponseDto.fromJson(json[r'duplicate']),
+        status: mapValueOfType<String>(json, r'status'),
       );
     }
     return null;
@@ -133,8 +153,6 @@ class AssetMediaResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'duplicate',
-    'duplicateId',
   };
 }
 

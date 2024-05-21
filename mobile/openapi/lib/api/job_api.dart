@@ -51,7 +51,7 @@ class JobApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AllJobStatusResponseDto',) as AllJobStatusResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AllJobStatusResponseDto}',) as AllJobStatusResponseDto;
     
     }
     return null;
@@ -103,7 +103,7 @@ class JobApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'JobStatusDto',) as JobStatusDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'JobStatusDto}',) as JobStatusDto;
     
     }
     return null;

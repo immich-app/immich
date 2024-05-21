@@ -65,7 +65,7 @@ class DownloadApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile}',) as MultipartFile;
     
     }
     return null;
@@ -121,7 +121,7 @@ class DownloadApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile}',) as MultipartFile;
     
     }
     return null;
@@ -176,7 +176,7 @@ class DownloadApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DownloadResponseDto',) as DownloadResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DownloadResponseDto}',) as DownloadResponseDto;
     
     }
     return null;

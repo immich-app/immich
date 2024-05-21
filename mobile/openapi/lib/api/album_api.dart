@@ -70,6 +70,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
@@ -125,7 +126,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto}',) as AlbumResponseDto;
     
     }
     return null;
@@ -172,7 +173,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto}',) as AlbumResponseDto;
     
     }
     return null;
@@ -253,7 +254,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumCountResponseDto',) as AlbumCountResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumCountResponseDto}',) as AlbumCountResponseDto;
     
     }
     return null;
@@ -316,7 +317,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto}',) as AlbumResponseDto;
     
     }
     return null;
@@ -376,6 +377,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AlbumResponseDto>') as List)
         .cast<AlbumResponseDto>()
@@ -431,6 +433,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
@@ -531,7 +534,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto}',) as AlbumResponseDto;
     
     }
     return null;

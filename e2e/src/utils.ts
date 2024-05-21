@@ -1,12 +1,15 @@
 import {
   AllJobStatusResponseDto,
+  AssetMediaCreatedResponse,
   AssetMediaResponseDto,
+  AssetMediaUpdatedResponse,
   AssetMediaUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
   CreateAssetMediaDto,
   CreateLibraryDto,
   CreateUserDto,
+  DuplicateAssetResponse,
   MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
@@ -299,14 +302,16 @@ export const utils = {
   ) => {
     const endpoint = `/asset/${assetId}/file`;
     const method = 'put';
-    return utils.upload(accessToken, dto, method, endpoint);
+    return utils.upload(accessToken, dto, method, endpoint) as Promise<
+      AssetMediaUpdatedResponse | DuplicateAssetResponse
+    >;
   },
 
   createAsset: async (
     accessToken: string,
     dto?: Partial<Omit<CreateAssetMediaDto, 'assetData'>> & { assetData?: AssetData },
   ) => {
-    return utils.upload(accessToken, dto);
+    return utils.upload(accessToken, dto) as Promise<AssetMediaCreatedResponse | DuplicateAssetResponse>;
   },
 
   upload: async (
@@ -341,7 +346,7 @@ export const utils = {
 
     const { body } = await builder;
 
-    return body as AssetMediaResponseDto;
+    return body as AssetMediaUpdatedResponse | AssetMediaCreatedResponse | DuplicateAssetResponse;
   },
 
   createImageFile: (path: string) => {

@@ -58,7 +58,7 @@ class PartnerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto}',) as PartnerResponseDto;
     
     }
     return null;
@@ -107,6 +107,7 @@ class PartnerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PartnerResponseDto>') as List)
         .cast<PartnerResponseDto>()
@@ -202,7 +203,7 @@ class PartnerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto}',) as PartnerResponseDto;
     
     }
     return null;

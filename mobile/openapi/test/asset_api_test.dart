@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetMediaResponseDto> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
+    //Future<DuplicateAssetResponse> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
     test('test createAsset', () async {
       // TODO
     });
@@ -97,7 +97,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetMediaResponseDto> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
+    //Future<DuplicateAssetResponse> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration }) async
     test('test replaceAsset', () async {
       // TODO
     });

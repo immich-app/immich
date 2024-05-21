@@ -1101,19 +1101,28 @@
               }
             }
           },
-          "description": "Asset Upload Information",
           "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateAssetResponse"
+                }
+              }
+            },
+            "description": "Asset was not uploaded - the file was a duplicate"
+          },
           "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                  "$ref": "#/components/schemas/AssetMediaCreatedResponse"
                 }
               }
             },
-            "description": ""
+            "description": "Asset was successfully uploaded"
           }
         },
         "security": [
@@ -2020,11 +2029,31 @@
               }
             }
           },
-          "description": "Asset Upload Information",
+          "description": "Replaces the asset with new file, without changing its id",
           "required": true
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateAssetResponse"
+                }
+              }
+            },
+            "description": "Asset was not uploaded - the file was a duplicate"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaUpdatedResponse"
+                }
+              }
+            },
+            "description": "Asset was successfully uploaded"
+          },
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
@@ -7575,24 +7604,56 @@
         ],
         "type": "object"
       },
+      "AssetMediaCreatedResponse": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "status": {
+            "default": "created",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset",
+          "status"
+        ],
+        "type": "object"
+      },
       "AssetMediaResponseDto": {
         "properties": {
           "asset": {
             "$ref": "#/components/schemas/AssetResponseDto"
           },
-          "backupId": {
-            "type": "string"
+          "backup": {
+            "$ref": "#/components/schemas/AssetResponseDto"
           },
           "duplicate": {
-            "type": "boolean"
+            "$ref": "#/components/schemas/AssetResponseDto"
           },
-          "duplicateId": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetMediaUpdatedResponse": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "backup": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "status": {
+            "default": "updated",
             "type": "string"
           }
         },
         "required": [
-          "duplicate",
-          "duplicateId"
+          "asset",
+          "backup",
+          "status"
         ],
         "type": "object"
       },
@@ -8263,6 +8324,22 @@
         "required": [
           "archives",
           "totalSize"
+        ],
+        "type": "object"
+      },
+      "DuplicateAssetResponse": {
+        "properties": {
+          "duplicate": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          },
+          "status": {
+            "default": "duplicate",
+            "type": "string"
+          }
+        },
+        "required": [
+          "duplicate",
+          "status"
         ],
         "type": "object"
       },

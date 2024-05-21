@@ -1,7 +1,9 @@
 import {
-  AssetMediaUploadResponseDto,
+  AssetMediaCreatedResponse,
+  AssetMediaUpdatedResponse,
   AssetResponseDto,
   AssetTypeEnum,
+  DuplicateAssetResponse,
   LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
@@ -123,7 +125,7 @@ describe('/asset', () => {
     ]);
 
     for (const asset of [...user1responses, ...user2responses]) {
-      expect(asset.duplicate).toBe(false);
+      expect(asset.status).toBe('created');
     }
 
     await Promise.all([
@@ -553,7 +555,9 @@ describe('/asset', () => {
   ])('$method $description', ({ method }) => {
     let methodLower: 'put' | 'post';
     let endpoint: string;
-    let createOrReplaceFn: (...params: Parameters<typeof utils.createAsset>) => Promise<AssetMediaUploadResponseDto>;
+    let createOrReplaceFn: (
+      ...params: Parameters<typeof utils.createAsset>
+    ) => Promise<AssetMediaCreatedResponse | AssetMediaUpdatedResponse | DuplicateAssetResponse>;
     beforeAll(async () => {
       await setupTest();
       methodLower = method.toLocaleLowerCase() as 'put' | 'post';
@@ -580,24 +584,24 @@ describe('/asset', () => {
       it('should trash old photo after replacing it', async () => {
         // asset location
         const original = makeRandomImage();
-        const originalResponse = await utils.createAsset(user1.accessToken, {
+        const originalResponse = (await utils.createAsset(user1.accessToken, {
           assetData: {
             filename: 'random-test-1.png',
             bytes: original,
           },
-        });
-        const origId = originalResponse.asset!.id;
+        })) as AssetMediaUpdatedResponse;
+        const origId = originalResponse.asset.id;
 
         const replaced = makeRandomImage();
-        const replacedResponse = await utils.replaceAsset(origId, user1.accessToken, {
+        const replacedResponse = (await utils.replaceAsset(origId, user1.accessToken, {
           assetData: {
             filename: 'random-test-2.png',
             bytes: replaced,
           },
-        });
-        const a = await utils.getAssetInfo(user1.accessToken, replacedResponse.backupId!);
+        })) as AssetMediaUpdatedResponse;
+        const a = await utils.getAssetInfo(user1.accessToken, replacedResponse.backup.id);
 
-        expect(a.originalPath).toEqual(originalResponse.asset?.originalPath);
+        expect(a.originalPath).toEqual(originalResponse.asset.originalPath);
         expect(a.isTrashed);
       });
     }
@@ -852,15 +856,18 @@ describe('/asset', () => {
     ])('should upload and generate a thumbnail for $input', async ({ input, expected }) => {
       utils.resetEvents();
       const filepath = join(testAssetDir, input);
-      const assetResponse = (await createOrReplaceFn(admin.accessToken, {
+      const assetResponse = await createOrReplaceFn(admin.accessToken, {
         assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-      })) as { asset: AssetResponseDto; duplicate: boolean };
+      });
       const {
         asset: { id },
-        duplicate,
-      } = assetResponse;
-
-      expect(duplicate).toBe(false);
+        status,
+      } = assetResponse as any;
+      if (method === 'PUT') {
+        expect(status).toBe('updated');
+      } else {
+        expect(status).toBe('created');
+      }
 
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
 
@@ -873,14 +880,14 @@ describe('/asset', () => {
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
-      const { duplicate } = await utils.createAsset(admin.accessToken, {
+      const { status } = (await utils.createAsset(admin.accessToken, {
         assetData: {
           bytes: await readFile(join(testAssetDir, filepath)),
           filename: basename(filepath),
         },
-      });
+      })) as any;
 
-      expect(duplicate).toBe(true);
+      expect(status).toBe('duplicate');
     });
 
     it("should not upload to another user's library", async () => {
@@ -912,7 +919,7 @@ describe('/asset', () => {
         .field('fileModifiedAt', new Date().toISOString())
         .attach('assetData', makeRandomImage(), 'example.jpg');
 
-      expect(body).toMatchObject({ asset: { id: expect.any(String) }, duplicate: false });
+      expect(body).toMatchObject({ asset: { id: expect.any(String) }, status: 'created' });
       expect(status).toBe(201);
 
       const { body: user } = await request(app).get('/user/me').set('Authorization', `Bearer ${quotaUser.accessToken}`);
@@ -961,11 +968,11 @@ describe('/asset', () => {
             bytes: await readFile(join(testAssetDir, filepath)),
             filename: basename(filepath),
           },
-        })) as { asset: AssetResponseDto; duplicate: boolean };
+        })) as any;
 
         await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.asset.id });
 
-        expect(response.duplicate).toBe(false);
+        expect(response.status).toBe('created');
 
         const asset = await utils.getAssetInfo(admin.accessToken, response.asset.id);
         expect(asset.livePhotoVideoId).toBeDefined();

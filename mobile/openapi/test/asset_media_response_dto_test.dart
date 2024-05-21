@@ -21,18 +21,18 @@ void main() {
       // TODO
     });
 
-    // String backupId
-    test('to test the property `backupId`', () async {
+    // AssetResponseDto backup
+    test('to test the property `backup`', () async {
       // TODO
     });
 
-    // bool duplicate
+    // AssetResponseDto duplicate
     test('to test the property `duplicate`', () async {
       // TODO
     });
 
-    // String duplicateId
-    test('to test the property `duplicateId`', () async {
+    // String status
+    test('to test the property `status`', () async {
       // TODO
     });
 

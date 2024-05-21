@@ -62,6 +62,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
@@ -112,7 +113,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto',) as MemoryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto}',) as MemoryResponseDto;
     
     }
     return null;
@@ -200,7 +201,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto',) as MemoryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto}',) as MemoryResponseDto;
     
     }
     return null;
@@ -252,6 +253,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
@@ -296,6 +298,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<MemoryResponseDto>') as List)
         .cast<MemoryResponseDto>()
@@ -351,7 +354,7 @@ class MemoryApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto',) as MemoryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryResponseDto}',) as MemoryResponseDto;
     
     }
     return null;

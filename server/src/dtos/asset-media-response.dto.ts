@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { Optional } from 'src/validation';
 
@@ -47,8 +47,52 @@ export class GetAssetThumbnailDto {
 }
 
 export class AssetMediaResponseDto {
-  asset?: AssetResponseDto | undefined;
-  backupId?: string | undefined;
-  duplicateId!: string | undefined;
-  duplicate!: boolean;
+  @ApiProperty({
+    type: String,
+  })
+  readonly status?: string;
+  @IsOptional()
+  asset?: AssetResponseDto;
+  @IsOptional()
+  backup?: AssetResponseDto;
+  @IsOptional()
+  duplicate?: AssetResponseDto;
 }
+
+export class AssetMediaCreatedResponse {
+  @ApiProperty({
+    type: String,
+    default: 'created',
+  })
+  readonly status = 'created';
+  asset: AssetResponseDto;
+  constructor(asset: AssetResponseDto) {
+    this.asset = asset;
+  }
+}
+export class AssetMediaUpdatedResponse {
+  @ApiProperty({
+    type: String,
+    default: 'updated',
+  })
+  readonly status = 'updated';
+  asset: AssetResponseDto;
+  backup: AssetResponseDto;
+  constructor(asset: AssetResponseDto, backup: AssetResponseDto) {
+    this.asset = asset;
+    this.backup = backup;
+  }
+}
+export class DuplicateAssetResponse {
+  @ApiProperty({
+    type: String,
+    default: 'duplicate',
+  })
+  readonly status = 'duplicate';
+  duplicate: AssetResponseDto;
+  constructor(duplicate: AssetResponseDto) {
+    this.duplicate = duplicate;
+  }
+}
+
+export type AssetMediaResponse = AssetMediaCreatedResponse | AssetMediaUpdatedResponse | DuplicateAssetResponse;

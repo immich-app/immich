@@ -41,7 +41,9 @@ doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
 doc/AssetJobName.md
 doc/AssetJobsDto.md
+doc/AssetMediaCreatedResponse.md
 doc/AssetMediaResponseDto.md
+doc/AssetMediaUpdatedResponse.md
 doc/AssetOrder.md
 doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
@@ -71,6 +73,7 @@ doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/DuplicateApi.md
+doc/DuplicateAssetResponse.md
 doc/DuplicateDetectionConfig.md
 doc/DuplicateResponseDto.md
 doc/EntityType.md
@@ -291,7 +294,9 @@ lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
 lib/model/asset_job_name.dart
 lib/model/asset_jobs_dto.dart
+lib/model/asset_media_created_response.dart
 lib/model/asset_media_response_dto.dart
+lib/model/asset_media_updated_response.dart
 lib/model/asset_order.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
@@ -316,6 +321,7 @@ lib/model/delete_user_dto.dart
 lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
+lib/model/duplicate_asset_response.dart
 lib/model/duplicate_detection_config.dart
 lib/model/duplicate_response_dto.dart
 lib/model/entity_type.dart
@@ -484,7 +490,9 @@ test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_job_name_test.dart
 test/asset_jobs_dto_test.dart
+test/asset_media_created_response_test.dart
 test/asset_media_response_dto_test.dart
+test/asset_media_updated_response_test.dart
 test/asset_order_test.dart
 test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
@@ -514,6 +522,7 @@ test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/duplicate_api_test.dart
+test/duplicate_asset_response_test.dart
 test/duplicate_detection_config_test.dart
 test/duplicate_response_dto_test.dart
 test/entity_type_test.dart

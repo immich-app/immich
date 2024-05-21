@@ -51,7 +51,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto}',) as SystemConfigDto;
     
     }
     return null;
@@ -92,7 +92,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto}',) as SystemConfigDto;
     
     }
     return null;
@@ -148,7 +148,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object}',) as Object;
     
     }
     return null;
@@ -189,7 +189,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigTemplateStorageOptionDto',) as SystemConfigTemplateStorageOptionDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigTemplateStorageOptionDto}',) as SystemConfigTemplateStorageOptionDto;
     
     }
     return null;
@@ -236,7 +236,7 @@ class SystemConfigApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto',) as SystemConfigDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SystemConfigDto}',) as SystemConfigDto;
     
     }
     return null;

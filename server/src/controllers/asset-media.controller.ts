@@ -15,13 +15,25 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOkResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
+  AssetMediaCreatedResponse,
+  AssetMediaResponse,
   AssetMediaResponseDto,
+  AssetMediaUpdatedResponse,
   CheckExistingAssetsResponseDto,
+  DuplicateAssetResponse,
   GetAssetThumbnailDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
@@ -58,18 +70,30 @@ export class AssetMediaController {
     required: false,
   })
   @ApiBody({
-    description: 'Asset Upload Information',
     type: CreateAssetMediaDto,
+  })
+  @ApiOkResponse({
+    description: 'Asset was not uploaded - the file was a duplicate',
+    type: DuplicateAssetResponse,
+  })
+  @ApiCreatedResponse({
+    description: 'Asset was successfully uploaded',
+    type: AssetMediaCreatedResponse,
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  createAsset(
+  async createAsset(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body() dto: CreateAssetMediaDto,
-  ): Promise<AssetMediaResponseDto> {
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AssetMediaResponse> {
     const { file, sidecarFile } = getFiles(files);
-    return this.service.createAsset(auth, dto, file, sidecarFile);
+    const assetMediaResponse = await this.service.createAsset(auth, dto, file, sidecarFile);
+    if (assetMediaResponse.status === 'duplicate') {
+      res.status(HttpStatus.OK);
+    }
+    return assetMediaResponse;
   }
 
   @Get(':id/file')
@@ -90,8 +114,20 @@ export class AssetMediaController {
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Asset Upload Information',
+    description: 'Replaces the asset with new file, without changing its id',
     type: UpdateAssetMediaDto,
+  })
+  @ApiOkResponse({
+    description: 'Asset was not uploaded - the file was a duplicate',
+    type: DuplicateAssetResponse,
+  })
+  @ApiCreatedResponse({
+    description: 'Asset was successfully uploaded',
+    type: AssetMediaUpdatedResponse,
+  })
+  @ApiResponse({
+    status: 'default',
+    type: AssetMediaResponseDto,
   })
   @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
@@ -101,10 +137,14 @@ export class AssetMediaController {
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
     files: UploadFiles,
     @Body() dto: UpdateAssetMediaDto,
-  ): Promise<AssetMediaResponseDto> {
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AssetMediaResponse> {
     const { file } = getFiles(files);
-    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
-    return responseDto;
+    const assetMediaResponse = await this.service.replaceAsset(auth, id, dto, file);
+    if (assetMediaResponse.status === 'duplicate') {
+      res.status(HttpStatus.OK);
+    }
+    return assetMediaResponse;
   }
 
   @Get(':id/thumbnail')
