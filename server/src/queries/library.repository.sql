@@ -17,7 +17,6 @@ FROM
       "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
       "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
       "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
-      "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
       "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
       "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
       "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
@@ -28,7 +27,6 @@ FROM
       "LibraryEntity__LibraryEntity_owner"."deletedAt" AS "LibraryEntity__LibraryEntity_owner_deletedAt",
       "LibraryEntity__LibraryEntity_owner"."status" AS "LibraryEntity__LibraryEntity_owner_status",
       "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
-      "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
       "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
       "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
     FROM
@@ -89,7 +87,6 @@ SELECT
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
-  "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
@@ -100,7 +97,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."deletedAt" AS "LibraryEntity__LibraryEntity_owner_deletedAt",
   "LibraryEntity__LibraryEntity_owner"."status" AS "LibraryEntity__LibraryEntity_owner_status",
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
-  "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
   "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
 FROM
@@ -128,7 +124,6 @@ SELECT
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
-  "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
@@ -139,7 +134,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."deletedAt" AS "LibraryEntity__LibraryEntity_owner_deletedAt",
   "LibraryEntity__LibraryEntity_owner"."status" AS "LibraryEntity__LibraryEntity_owner_status",
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
-  "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
   "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
 FROM
@@ -166,7 +160,6 @@ SELECT
   "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt",
   "LibraryEntity__LibraryEntity_owner"."id" AS "LibraryEntity__LibraryEntity_owner_id",
   "LibraryEntity__LibraryEntity_owner"."name" AS "LibraryEntity__LibraryEntity_owner_name",
-  "LibraryEntity__LibraryEntity_owner"."avatarColor" AS "LibraryEntity__LibraryEntity_owner_avatarColor",
   "LibraryEntity__LibraryEntity_owner"."isAdmin" AS "LibraryEntity__LibraryEntity_owner_isAdmin",
   "LibraryEntity__LibraryEntity_owner"."email" AS "LibraryEntity__LibraryEntity_owner_email",
   "LibraryEntity__LibraryEntity_owner"."storageLabel" AS "LibraryEntity__LibraryEntity_owner_storageLabel",
@@ -177,7 +170,6 @@ SELECT
   "LibraryEntity__LibraryEntity_owner"."deletedAt" AS "LibraryEntity__LibraryEntity_owner_deletedAt",
   "LibraryEntity__LibraryEntity_owner"."status" AS "LibraryEntity__LibraryEntity_owner_status",
   "LibraryEntity__LibraryEntity_owner"."updatedAt" AS "LibraryEntity__LibraryEntity_owner_updatedAt",
-  "LibraryEntity__LibraryEntity_owner"."memoriesEnabled" AS "LibraryEntity__LibraryEntity_owner_memoriesEnabled",
   "LibraryEntity__LibraryEntity_owner"."quotaSizeInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaSizeInBytes",
   "LibraryEntity__LibraryEntity_owner"."quotaUsageInBytes" AS "LibraryEntity__LibraryEntity_owner_quotaUsageInBytes"
 FROM
