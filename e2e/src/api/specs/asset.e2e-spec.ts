@@ -4,7 +4,6 @@ import {
   AssetResponseDto,
   AssetTypeEnum,
   DuplicateAssetResponse,
-  LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
   getAssetInfo,
@@ -89,13 +88,13 @@ describe('/asset', () => {
     ]);
 
     // asset location
-    const locationAssetResponse = await utils.createAsset(admin.accessToken, {
+    const locationAssetResponse = (await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'thompson-springs.jpg',
         bytes: await readFile(locationAssetFilepath),
       },
-    });
-    locationAsset = locationAssetResponse.asset!;
+    })) as AssetMediaCreatedResponse;
+    locationAsset = locationAssetResponse.asset;
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset!.id });
 
@@ -111,10 +110,10 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
-    user1Assets = user1responses.map((response) => response.asset!);
+    user1Assets = user1responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
 
     const user2responses = [await utils.createAsset(user2.accessToken)];
-    user2Assets = user2responses.map((response) => response.asset!);
+    user2Assets = user2responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
 
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
@@ -147,7 +146,7 @@ describe('/asset', () => {
       utils.createAsset(stackUser.accessToken),
       utils.createAsset(stackUser.accessToken),
     ]);
-    stackAssets = stackAssetResponses.map((response) => response.asset!);
+    stackAssets = stackAssetResponses.map((response) => (response as AssetMediaCreatedResponse).asset!);
 
     await updateAssets(
       { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },

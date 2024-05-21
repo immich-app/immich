@@ -1,5 +1,6 @@
 import {
   AlbumResponseDto,
+  AssetMediaCreatedResponse,
   AssetResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
@@ -43,7 +44,7 @@ describe('/shared-link', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
-    [asset1, asset2] = stackAssetResponses.map((response) => response.asset!);
+    [asset1, asset2] = stackAssetResponses.map((response) => (response as AssetMediaCreatedResponse).asset!);
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
       createAlbum({ createAlbumDto: { albumName: 'album' } }, { headers: asBearerAuth(user1.accessToken) }),
       createAlbum({ createAlbumDto: { albumName: 'deleted album' } }, { headers: asBearerAuth(user2.accessToken) }),

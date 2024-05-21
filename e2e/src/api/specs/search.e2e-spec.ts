@@ -1,4 +1,11 @@
-import { AssetResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
+import {
+  AssetMediaCreatedResponse,
+  AssetResponseDto,
+  LoginResponseDto,
+  deleteAssets,
+  getMapMarkers,
+  updateAsset,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -69,11 +76,11 @@ describe('/search', () => {
     const assets: AssetResponseDto[] = [];
     for (const { filename, dto } of files) {
       const bytes = await readFile(join(testAssetDir, filename));
-      const assetResponse = await utils.createAsset(admin.accessToken, {
+      const assetResponse = (await utils.createAsset(admin.accessToken, {
         deviceAssetId: `test-${filename}`,
         assetData: { bytes, filename },
         ...dto,
-      });
+      })) as AssetMediaCreatedResponse;
       assets.push(assetResponse.asset!);
     }
 

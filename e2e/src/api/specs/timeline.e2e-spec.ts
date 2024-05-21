@@ -1,4 +1,10 @@
-import { AssetResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
+import {
+  AssetMediaCreatedResponse,
+  AssetResponseDto,
+  LoginResponseDto,
+  SharedLinkType,
+  TimeBucketSize,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -41,7 +47,7 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
-    userAssets = responses.map((response) => response.asset!);
+    userAssets = responses.map((response) => (response as AssetMediaCreatedResponse).asset);
     await Promise.all([
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-01-01').toISOString() }),
       utils.createAsset(timeBucketUser.accessToken, { fileCreatedAt: new Date('1970-02-10').toISOString() }),

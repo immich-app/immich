@@ -1,4 +1,4 @@
-import { LoginResponseDto, getAllAssets } from '@immich/sdk';
+import { AssetMediaCreatedResponse, LoginResponseDto, getAllAssets } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -28,7 +28,7 @@ describe('/trash', () => {
     });
 
     it('should empty the trash', async () => {
-      const { asset } = await utils.createAsset(admin.accessToken);
+      const { asset } = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
       const { id: assetId } = asset!;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
@@ -54,7 +54,7 @@ describe('/trash', () => {
     });
 
     it('should restore all trashed assets', async () => {
-      const { asset } = await utils.createAsset(admin.accessToken);
+      const { asset } = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
       const { id: assetId } = asset!;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
@@ -78,8 +78,8 @@ describe('/trash', () => {
     });
 
     it('should restore a trashed asset by id', async () => {
-      const { asset } = await utils.createAsset(admin.accessToken);
-      const { id: assetId } = asset!;
+      const { asset } = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
+      const { id: assetId } = asset;
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await utils.getAssetInfo(admin.accessToken, assetId);

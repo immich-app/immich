@@ -1,4 +1,4 @@
-import { AssetResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
+import { AssetMediaCreatedResponse, AssetResponseDto, LoginResponseDto, SharedLinkType, getConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -17,7 +17,7 @@ describe('/system-config', () => {
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
 
-    const response = await utils.createAsset(admin.accessToken);
+    const response = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
     asset = response.asset!;
   });
 

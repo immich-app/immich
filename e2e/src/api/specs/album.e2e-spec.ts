@@ -2,6 +2,7 @@ import {
   addAssetsToAlbum,
   AlbumResponseDto,
   AlbumUserRole,
+  AssetMediaCreatedResponse,
   AssetOrder,
   AssetResponseDto,
   deleteUser,
@@ -48,7 +49,7 @@ describe('/album', () => {
       utils.createAsset(user1.accessToken, { isFavorite: true }),
       utils.createAsset(user1.accessToken),
     ]);
-    [user1Asset1, user1Asset2] = responses.map((response) => response.asset!);
+    [user1Asset1, user1Asset2] = responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
 
     user1Albums = await Promise.all([
       utils.createAlbum(user1.accessToken, {
@@ -404,7 +405,7 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to own album', async () => {
-      const { asset } = await utils.createAsset(user1.accessToken);
+      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -415,7 +416,7 @@ describe('/album', () => {
     });
 
     it('should be able to add own asset to shared album', async () => {
-      const { asset } = await utils.createAsset(user1.accessToken);
+      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
       const { status, body } = await request(app)
         .put(`/album/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
@@ -426,7 +427,7 @@ describe('/album', () => {
     });
 
     it('should not be able to add assets to album as a viewer', async () => {
-      const { asset } = await utils.createAsset(user2.accessToken);
+      const { asset } = (await utils.createAsset(user2.accessToken)) as AssetMediaCreatedResponse;
       expect(asset).toHaveProperty('id');
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[3].id}/assets`)
@@ -438,7 +439,7 @@ describe('/album', () => {
     });
 
     it('should add duplicate assets only once', async () => {
-      const { asset } = await utils.createAsset(user1.accessToken);
+      const { asset } = (await utils.createAsset(user1.accessToken)) as AssetMediaCreatedResponse;
       const { status, body } = await request(app)
         .put(`/album/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)

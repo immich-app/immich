@@ -1,4 +1,5 @@
 import {
+  AssetMediaCreatedResponse,
   AssetResponseDto,
   LoginResponseDto,
   MemoryResponseDto,
@@ -30,7 +31,7 @@ describe('/memories', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken),
     ]);
-    [adminAsset, userAsset1, userAsset2] = responses.map((response) => response.asset!);
+    [adminAsset, userAsset1, userAsset2] = responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
     userMemory = await createMemory(
       {
         memoryCreateDto: {

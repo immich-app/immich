@@ -2,6 +2,7 @@ import {
   ActivityCreateDto,
   AlbumResponseDto,
   AlbumUserRole,
+  AssetMediaCreatedResponse,
   AssetResponseDto,
   LoginResponseDto,
   ReactionType,
@@ -29,7 +30,7 @@ describe('/activity', () => {
 
     admin = await utils.adminSetup();
     nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
-    const assetMediaResponse = await utils.createAsset(admin.accessToken);
+    const assetMediaResponse = (await utils.createAsset(admin.accessToken)) as AssetMediaCreatedResponse;
     asset = assetMediaResponse.asset!;
     album = await createAlbum(
       {

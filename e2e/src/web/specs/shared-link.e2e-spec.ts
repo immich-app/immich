@@ -1,6 +1,5 @@
 import {
   AlbumResponseDto,
-  AssetFileUploadResponseDto,
   AssetResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
@@ -21,7 +20,7 @@ test.describe('Shared Links', () => {
     utils.initSdk();
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    const assetResponse = await utils.createAsset(admin.accessToken);
+    const assetResponse = (await utils.createAsset(admin.accessToken)) as any;
     asset = assetResponse.asset!;
     album = await createAlbum(
       {

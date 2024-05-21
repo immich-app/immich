@@ -1,9 +1,7 @@
 import {
   AllJobStatusResponseDto,
   AssetMediaCreatedResponse,
-  AssetMediaResponseDto,
   AssetMediaUpdatedResponse,
-  AssetMediaUploadResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
   CreateAssetMediaDto,

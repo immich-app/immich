@@ -1,4 +1,4 @@
-import { AssetResponseDto, LoginResponseDto } from '@immich/sdk';
+import { AssetMediaCreatedResponse, AssetResponseDto, LoginResponseDto } from '@immich/sdk';
 import { readFile, writeFile } from 'node:fs/promises';
 import { errorDto } from 'src/responses';
 import { app, tempDir, utils } from 'src/utils';
@@ -14,7 +14,7 @@ describe('/download', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     const responses = await Promise.all([utils.createAsset(admin.accessToken), utils.createAsset(admin.accessToken)]);
-    [asset1, asset2] = responses.map((response) => response.asset!);
+    [asset1, asset2] = responses.map((response) => (response as AssetMediaCreatedResponse).asset!);
   });
 
   describe('POST /download/info', () => {
