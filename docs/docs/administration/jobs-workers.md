@@ -13,7 +13,7 @@ The `immich-server` container contains multiple workers:
 
 If you prefer to throttle or distribute the workers, you can do this using the [environment variables](/docs/install/environment-variables) to specify which container should pick up which tasks.
 
-For example, for a simple setup with one container for the web UI and one for all other microservices, you can do the following:
+For example, for a simple setup with one container for the Web/API and one for all other microservices, you can do the following:
 
 Copy the entire `immich-server` block as a new service and make the following changes to the **copy**:
 
