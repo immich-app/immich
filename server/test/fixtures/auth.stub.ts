@@ -3,24 +3,6 @@ import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
-export const adminSignupStub = {
-  name: 'Immich Admin',
-  email: 'admin@immich.app',
-  password: 'Password123',
-};
-
-export const userSignupStub = {
-  ...adminSignupStub,
-  memoriesEnabled: true,
-};
-
-export const loginStub = {
-  admin: {
-    email: 'admin@immich.app',
-    password: 'Password123',
-  },
-};
-
 export const authStub = {
   admin: Object.freeze<AuthDto>({
     user: {
