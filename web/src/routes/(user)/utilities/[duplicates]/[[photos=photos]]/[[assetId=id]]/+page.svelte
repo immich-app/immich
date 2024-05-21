@@ -5,12 +5,25 @@
 
   import type { PageData } from './$types';
   import { handleError } from '$lib/utils/handle-error';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
   export let data: PageData;
 
   const handleOnResolve = async (duplicateId: string, trashIds: string[]) => {
     try {
       await resolveDuplicates({ resolveDuplicatesDto: { duplicateId, ids: trashIds } });
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
+
+      if (trashIds.length === 0) {
+        return;
+      }
+
+      notificationController.show({
+        message: `Moved ${trashIds.length} to trash`,
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to resolve duplicate');
     }
