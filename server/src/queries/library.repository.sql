@@ -9,7 +9,6 @@ FROM
       "LibraryEntity"."id" AS "LibraryEntity_id",
       "LibraryEntity"."name" AS "LibraryEntity_name",
       "LibraryEntity"."ownerId" AS "LibraryEntity_ownerId",
-      "LibraryEntity"."type" AS "LibraryEntity_type",
       "LibraryEntity"."importPaths" AS "LibraryEntity_importPaths",
       "LibraryEntity"."exclusionPatterns" AS "LibraryEntity_exclusionPatterns",
       "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
@@ -77,53 +76,11 @@ WHERE
   ((("LibraryEntity"."ownerId" = $1)))
   AND ("LibraryEntity"."deletedAt" IS NULL)
 
--- LibraryRepository.getDefaultUploadLibrary
-SELECT
-  "LibraryEntity"."id" AS "LibraryEntity_id",
-  "LibraryEntity"."name" AS "LibraryEntity_name",
-  "LibraryEntity"."ownerId" AS "LibraryEntity_ownerId",
-  "LibraryEntity"."type" AS "LibraryEntity_type",
-  "LibraryEntity"."importPaths" AS "LibraryEntity_importPaths",
-  "LibraryEntity"."exclusionPatterns" AS "LibraryEntity_exclusionPatterns",
-  "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
-  "LibraryEntity"."updatedAt" AS "LibraryEntity_updatedAt",
-  "LibraryEntity"."deletedAt" AS "LibraryEntity_deletedAt",
-  "LibraryEntity"."refreshedAt" AS "LibraryEntity_refreshedAt"
-FROM
-  "libraries" "LibraryEntity"
-WHERE
-  (
-    (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."type" = $2)
-    )
-  )
-  AND ("LibraryEntity"."deletedAt" IS NULL)
-ORDER BY
-  "LibraryEntity"."createdAt" ASC
-LIMIT
-  1
-
--- LibraryRepository.getUploadLibraryCount
-SELECT
-  COUNT(1) AS "cnt"
-FROM
-  "libraries" "LibraryEntity"
-WHERE
-  (
-    (
-      ("LibraryEntity"."ownerId" = $1)
-      AND ("LibraryEntity"."type" = $2)
-    )
-  )
-  AND ("LibraryEntity"."deletedAt" IS NULL)
-
 -- LibraryRepository.getAllByUserId
 SELECT
   "LibraryEntity"."id" AS "LibraryEntity_id",
   "LibraryEntity"."name" AS "LibraryEntity_name",
   "LibraryEntity"."ownerId" AS "LibraryEntity_ownerId",
-  "LibraryEntity"."type" AS "LibraryEntity_type",
   "LibraryEntity"."importPaths" AS "LibraryEntity_importPaths",
   "LibraryEntity"."exclusionPatterns" AS "LibraryEntity_exclusionPatterns",
   "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
@@ -163,7 +120,6 @@ SELECT
   "LibraryEntity"."id" AS "LibraryEntity_id",
   "LibraryEntity"."name" AS "LibraryEntity_name",
   "LibraryEntity"."ownerId" AS "LibraryEntity_ownerId",
-  "LibraryEntity"."type" AS "LibraryEntity_type",
   "LibraryEntity"."importPaths" AS "LibraryEntity_importPaths",
   "LibraryEntity"."exclusionPatterns" AS "LibraryEntity_exclusionPatterns",
   "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
@@ -202,7 +158,6 @@ SELECT
   "LibraryEntity"."id" AS "LibraryEntity_id",
   "LibraryEntity"."name" AS "LibraryEntity_name",
   "LibraryEntity"."ownerId" AS "LibraryEntity_ownerId",
-  "LibraryEntity"."type" AS "LibraryEntity_type",
   "LibraryEntity"."importPaths" AS "LibraryEntity_importPaths",
   "LibraryEntity"."exclusionPatterns" AS "LibraryEntity_exclusionPatterns",
   "LibraryEntity"."createdAt" AS "LibraryEntity_createdAt",
@@ -238,7 +193,6 @@ SELECT
   "libraries"."id" AS "libraries_id",
   "libraries"."name" AS "libraries_name",
   "libraries"."ownerId" AS "libraries_ownerId",
-  "libraries"."type" AS "libraries_type",
   "libraries"."importPaths" AS "libraries_importPaths",
   "libraries"."exclusionPatterns" AS "libraries_exclusionPatterns",
   "libraries"."createdAt" AS "libraries_createdAt",

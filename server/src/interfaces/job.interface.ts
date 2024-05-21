@@ -7,6 +7,7 @@ export enum QueueName {
   FACE_DETECTION = 'faceDetection',
   FACIAL_RECOGNITION = 'facialRecognition',
   SMART_SEARCH = 'smartSearch',
+  DUPLICATE_DETECTION = 'duplicateDetection',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   MIGRATION = 'migration',
@@ -18,7 +19,7 @@ export enum QueueName {
 
 export type ConcurrentQueueName = Exclude<
   QueueName,
-  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION | QueueName.DUPLICATE_DETECTION
 >;
 
 export enum JobCommand {
@@ -88,6 +89,10 @@ export enum JobName {
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
 
+  // duplicate detection
+  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
+  DUPLICATE_DETECTION = 'duplicate-detection',
+
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
@@ -99,6 +104,9 @@ export enum JobName {
   NOTIFY_ALBUM_INVITE = 'notify-album-invite',
   NOTIFY_ALBUM_UPDATE = 'notify-album-update',
   SEND_EMAIL = 'notification-send-email',
+
+  // Version check
+  VERSION_CHECK = 'version-check',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -225,6 +233,10 @@ export type JobItem =
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
 
+  // Duplicate Detection
+  | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
+  | { name: JobName.DUPLICATE_DETECTION; data: IEntityJob }
+
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
@@ -249,7 +261,10 @@ export type JobItem =
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
   | { name: JobName.NOTIFY_ALBUM_INVITE; data: INotifyAlbumInviteJob }
   | { name: JobName.NOTIFY_ALBUM_UPDATE; data: INotifyAlbumUpdateJob }
-  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
+  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
+
+  // Version check
+  | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

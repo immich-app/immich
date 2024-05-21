@@ -19,7 +19,7 @@ import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.m
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { Mocked, vitest } from 'vitest';
+import { Mocked, beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
 
@@ -76,15 +76,15 @@ describe(SearchService.name, () => {
 
   describe('getExploreData', () => {
     it('should get assets by city and tag', async () => {
-      assetMock.getAssetIdByCity.mockResolvedValueOnce({
+      assetMock.getAssetIdByCity.mockResolvedValue({
         fieldName: 'exifInfo.city',
         items: [{ value: 'Paris', data: assetStub.image.id }],
       });
-      assetMock.getAssetIdByTag.mockResolvedValueOnce({
+      assetMock.getAssetIdByTag.mockResolvedValue({
         fieldName: 'smartInfo.tags',
         items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
       });
-      assetMock.getByIdsWithAllRelations.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
+      assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },
         { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },

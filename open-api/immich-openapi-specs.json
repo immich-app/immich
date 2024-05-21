@@ -2221,6 +2221,41 @@
         ]
       }
     },
+    "/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicate"
+        ]
+      }
+    },
     "/face": {
       "get": {
         "operationId": "getFaces",
@@ -2404,16 +2439,7 @@
     "/library": {
       "get": {
         "operationId": "getAllLibraries",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LibraryType"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -6812,6 +6838,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6851,6 +6880,7 @@
         },
         "required": [
           "backgroundTask",
+          "duplicateDetection",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -7279,6 +7309,10 @@
           "deviceId": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "duration": {
             "type": "string"
           },
@@ -7322,6 +7356,9 @@
             "type": "boolean"
           },
           "libraryId": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.106.0",
+            "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
@@ -7401,7 +7438,6 @@
           "isFavorite",
           "isOffline",
           "isTrashed",
-          "libraryId",
           "localDateTime",
           "originalFileName",
           "originalPath",
@@ -7672,10 +7708,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
           "livePhotoData": {
             "format": "binary",
             "type": "string"
@@ -7714,14 +7746,10 @@
           "ownerId": {
             "format": "uuid",
             "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
-          "ownerId",
-          "type"
+          "ownerId"
         ],
         "type": "object"
       },
@@ -7870,6 +7898,42 @@
         "required": [
           "archives",
           "totalSize"
+        ],
+        "type": "object"
+      },
+      "DuplicateDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 0.1,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
+        ],
+        "type": "object"
+      },
+      "DuplicateResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "duplicateId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assets",
+          "duplicateId"
         ],
         "type": "object"
       },
@@ -8167,6 +8231,7 @@
           "faceDetection",
           "facialRecognition",
           "smartSearch",
+          "duplicateDetection",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -8239,9 +8304,6 @@
             "nullable": true,
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -8256,7 +8318,6 @@
           "name",
           "ownerId",
           "refreshedAt",
-          "type",
           "updatedAt"
         ],
         "type": "object"
@@ -8288,13 +8349,6 @@
           "videos"
         ],
         "type": "object"
-      },
-      "LibraryType": {
-        "enum": [
-          "UPLOAD",
-          "EXTERNAL"
-        ],
-        "type": "string"
       },
       "LogLevel": {
         "enum": [
@@ -9379,6 +9433,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9415,6 +9472,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",
@@ -9999,6 +10057,9 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "accelDecode": {
+            "type": "boolean"
+          },
           "acceptedAudioCodecs": {
             "items": {
               "$ref": "#/components/schemas/AudioCodec"
@@ -10074,6 +10135,7 @@
         },
         "required": [
           "accel",
+          "accelDecode",
           "acceptedAudioCodecs",
           "acceptedVideoCodecs",
           "bframes",
@@ -10247,6 +10309,9 @@
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/DuplicateDetectionConfig"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -10259,6 +10324,7 @@
         },
         "required": [
           "clip",
+          "duplicateDetection",
           "enabled",
           "facialRecognition",
           "url"

@@ -377,7 +377,7 @@ describe('AuthService', () => {
     });
 
     it('should not allow auto registering', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.noAutoRegister);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       userMock.getByEmail.mockResolvedValue(null);
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
         BadRequestException,
@@ -386,7 +386,7 @@ describe('AuthService', () => {
     });
 
     it('should link an existing user', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.noAutoRegister);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       userMock.getByEmail.mockResolvedValue(userStub.user1);
       userMock.update.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
@@ -397,6 +397,20 @@ describe('AuthService', () => {
 
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { oauthId: sub });
+    });
+
+    it('should not link to a user with a different oauth sub', async () => {
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      userMock.getByEmail.mockResolvedValueOnce({ ...userStub.user1, oauthId: 'existing-sub' });
+      userMock.getAdmin.mockResolvedValue(userStub.user1);
+      userMock.create.mockResolvedValue(userStub.user1);
+
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
+        loginResponseStub.user1oauth,
+      );
+
+      expect(userMock.update).not.toHaveBeenCalled();
+      expect(userMock.create).toHaveBeenCalled();
     });
 
     it('should allow auto registering by default', async () => {
@@ -415,7 +429,7 @@ describe('AuthService', () => {
     });
 
     it('should use the mobile redirect override', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.override);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
       userMock.getByOAuthId.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
 
@@ -425,7 +439,7 @@ describe('AuthService', () => {
     });
 
     it('should use the mobile redirect override for ios urls with multiple slashes', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.override);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
       userMock.getByOAuthId.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
 
@@ -435,7 +449,7 @@ describe('AuthService', () => {
     });
 
     it('should use the default quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
@@ -448,7 +462,7 @@ describe('AuthService', () => {
     });
 
     it('should ignore an invalid storage quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
@@ -462,7 +476,7 @@ describe('AuthService', () => {
     });
 
     it('should ignore a negative quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
@@ -476,7 +490,7 @@ describe('AuthService', () => {
     });
 
     it('should not set quota for 0 quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
@@ -496,7 +510,7 @@ describe('AuthService', () => {
     });
 
     it('should use a valid storage quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.withDefaultStorageQuota);
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       userMock.getByEmail.mockResolvedValue(null);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);

@@ -4,51 +4,35 @@
 
 name: immich-dev
 
-x-server-build: &server-common
-  image: immich-server-dev:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-    target: dev
-  restart: always
-  volumes:
-    - ../server:/usr/src/app
-    - ../open-api:/usr/src/open-api
-    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-    - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
-    - /usr/src/app/node_modules
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ulimits:
-    nofile:
-      soft: 1048576
-      hard: 1048576
-
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev', 'immich']
-    <<: *server-common
+    command: ['/usr/src/app/bin/immich-dev']
+    image: immich-server-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
+    restart: always
+    volumes:
+      - ../server:/usr/src/app
+      - ../open-api:/usr/src/open-api
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
+      - /usr/src/app/node_modules
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     ports:
       - 3001:3001
       - 9230:9230
     depends_on:
       - redis
       - database
-
-  immich-microservices:
-    container_name: immich_microservices
-    command: ['/usr/src/app/bin/immich-dev', 'microservices']
-    <<: *server-common
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    ports:
-      - 9231:9230
-    depends_on:
-      - database
-      - immich-server
 
   immich-web:
     container_name: immich_web
@@ -97,7 +81,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    image: redis:6.2-alpine@sha256:c0634a08e74a4bb576d02d1ee993dc05dba10e8b7b9492dfa28a7af100d46c01
 
   database:
     container_name: immich_postgres

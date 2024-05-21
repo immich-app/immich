@@ -191,20 +191,6 @@ WHERE
     AND ("SessionEntity"."id" IN ($2))
   )
 
--- AccessRepository.library.checkOwnerAccess
-SELECT
-  "LibraryEntity"."id" AS "LibraryEntity_id"
-FROM
-  "libraries" "LibraryEntity"
-WHERE
-  (
-    (
-      ("LibraryEntity"."id" IN ($1))
-      AND ("LibraryEntity"."ownerId" = $2)
-    )
-  )
-  AND ("LibraryEntity"."deletedAt" IS NULL)
-
 -- AccessRepository.memory.checkOwnerAccess
 SELECT
   "MemoryEntity"."id" AS "MemoryEntity_id"

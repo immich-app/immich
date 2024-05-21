@@ -201,7 +201,7 @@ export class AuthService {
     // link existing user
     if (!user) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
-      if (emailUser) {
+      if (emailUser && !emailUser.oauthId) {
         user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }

@@ -1335,6 +1335,51 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use hardware decoding for nvenc if enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining([
+            '-hwaccel cuda',
+            '-hwaccel_output_format cuda',
+            '-noautorotate',
+            '-threads 1',
+          ]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use hardware tone-mapping for nvenc if hardware decoding is enabled and should tone map', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.NVENC, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709:format=nv12',
+            ),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should set options for qsv', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
@@ -1633,8 +1678,9 @@ describe(MediaService.name, () => {
 
     it('should set options for rkmpp', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
-      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP } });
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -1663,10 +1709,12 @@ describe(MediaService.name, () => {
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       systemMock.get.mockResolvedValue({
         ffmpeg: {
           accel: TranscodeHWAccel.RKMPP,
+          accelDecode: true,
           maxBitrate: '10000k',
           targetVideoCodec: VideoCodec.HEVC,
         },
@@ -1686,9 +1734,10 @@ describe(MediaService.name, () => {
 
     it('should set cqp options for rkmpp when max bitrate is disabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHWAccel.RKMPP, crf: 30, maxBitrate: '0' },
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -1707,7 +1756,9 @@ describe(MediaService.name, () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, crf: 30, maxBitrate: '0' } });
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
+      });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -1718,6 +1769,54 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
               'scale_rkrga=-2:720:format=p010:afbc=1,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
+            ),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use software decoding and tone-mapping if hardware decoding is disabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: false, crf: 30, maxBitrate: '0' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            ),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use software decoding and tone-mapping if opencl is not available', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => false, isCharacterDevice: () => false });
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
             ),
           ]),
           twoPass: false,

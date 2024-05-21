@@ -20,7 +20,6 @@ type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
 type IAssetAccess = IAccessRepository['asset'];
 type IAuthDeviceAccess = IAccessRepository['authDevice'];
-type ILibraryAccess = IAccessRepository['library'];
 type ITimelineAccess = IAccessRepository['timeline'];
 type IMemoryAccess = IAccessRepository['memory'];
 type IPersonAccess = IAccessRepository['person'];
@@ -313,28 +312,6 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
   }
 }
 
-class LibraryAccess implements ILibraryAccess {
-  constructor(private libraryRepository: Repository<LibraryEntity>) {}
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
-  @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>> {
-    if (libraryIds.size === 0) {
-      return new Set();
-    }
-
-    return this.libraryRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...libraryIds]),
-          ownerId: userId,
-        },
-      })
-      .then((libraries) => new Set(libraries.map((library) => library.id)));
-  }
-}
-
 class TimelineAccess implements ITimelineAccess {
   constructor(private partnerRepository: Repository<PartnerEntity>) {}
 
@@ -447,7 +424,6 @@ export class AccessRepository implements IAccessRepository {
   album: IAlbumAccess;
   asset: IAssetAccess;
   authDevice: IAuthDeviceAccess;
-  library: ILibraryAccess;
   memory: IMemoryAccess;
   person: IPersonAccess;
   partner: IPartnerAccess;
@@ -469,7 +445,6 @@ export class AccessRepository implements IAccessRepository {
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
     this.authDevice = new AuthDeviceAccess(sessionRepository);
-    this.library = new LibraryAccess(libraryRepository);
     this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);
     this.partner = new PartnerAccess(partnerRepository);

@@ -14,6 +14,7 @@ class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
     required this.configFile,
+    required this.duplicateDetection,
     required this.email,
     required this.facialRecognition,
     required this.map,
@@ -28,6 +29,8 @@ class ServerFeaturesDto {
   });
 
   bool configFile;
+
+  bool duplicateDetection;
 
   bool email;
 
@@ -54,6 +57,7 @@ class ServerFeaturesDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
     other.configFile == configFile &&
+    other.duplicateDetection == duplicateDetection &&
     other.email == email &&
     other.facialRecognition == facialRecognition &&
     other.map == map &&
@@ -70,6 +74,7 @@ class ServerFeaturesDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (configFile.hashCode) +
+    (duplicateDetection.hashCode) +
     (email.hashCode) +
     (facialRecognition.hashCode) +
     (map.hashCode) +
@@ -83,11 +88,12 @@ class ServerFeaturesDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, email=$email, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'configFile'] = this.configFile;
+      json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'email'] = this.email;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'map'] = this.map;
@@ -111,6 +117,7 @@ class ServerFeaturesDto {
 
       return ServerFeaturesDto(
         configFile: mapValueOfType<bool>(json, r'configFile')!,
+        duplicateDetection: mapValueOfType<bool>(json, r'duplicateDetection')!,
         email: mapValueOfType<bool>(json, r'email')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         map: mapValueOfType<bool>(json, r'map')!,
@@ -170,6 +177,7 @@ class ServerFeaturesDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'configFile',
+    'duplicateDetection',
     'email',
     'facialRecognition',
     'map',

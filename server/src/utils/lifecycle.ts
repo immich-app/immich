@@ -3,8 +3,8 @@ import { OpenAPIObject } from '@nestjs/swagger';
 import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { SemVer } from 'semver';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION, NEXT_RELEASE } from 'src/constants';
-import { Version } from 'src/utils/version';
 
 const outputPath = resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
 const spec = JSON.parse(readFileSync(outputPath).toString()) as OpenAPIObject;
@@ -69,9 +69,7 @@ const sortedVersions = Object.keys(metadata).sort((a, b) => {
     return 1;
   }
 
-  const versionA = Version.fromString(a);
-  const versionB = Version.fromString(b);
-  return versionB.compareTo(versionA);
+  return new SemVer(b).compare(new SemVer(a));
 });
 
 for (const version of sortedVersions) {

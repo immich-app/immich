@@ -26,10 +26,6 @@ export interface IAccessRepository {
     checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 
-  library: {
-    checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>>;
-  };
-
   timeline: {
     checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };

@@ -66,6 +66,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
     tonemap: ToneMapping.HABLE,
   },
   logging: {
@@ -78,6 +79,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+    },
+    duplicateDetection: {
+      enabled: false,
+      maxDistance: 0.03,
     },
     facialRecognition: {
       enabled: true,

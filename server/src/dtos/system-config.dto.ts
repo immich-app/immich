@@ -30,7 +30,7 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/config';
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
+import { CLIPConfig, DuplicateDetectionConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 
@@ -131,6 +131,9 @@ export class SystemConfigFFmpegDto {
   @IsEnum(TranscodeHWAccel)
   @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
   accel!: TranscodeHWAccel;
+
+  @ValidateBoolean()
+  accelDecode!: boolean;
 
   @IsEnum(ToneMapping)
   @ApiProperty({ enumName: 'ToneMapping', enum: ToneMapping })
@@ -261,6 +264,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   clip!: CLIPConfig;
+
+  @Type(() => DuplicateDetectionConfig)
+  @ValidateNested()
+  @IsObject()
+  duplicateDetection!: DuplicateDetectionConfig;
 
   @Type(() => RecognitionConfig)
   @ValidateNested()

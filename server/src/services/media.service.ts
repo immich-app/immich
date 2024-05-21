@@ -36,9 +36,11 @@ import {
   AV1Config,
   H264Config,
   HEVCConfig,
-  NVENCConfig,
+  NvencHwDecodeConfig,
+  NvencSwDecodeConfig,
   QSVConfig,
-  RKMPPConfig,
+  RkmppHwDecodeConfig,
+  RkmppSwDecodeConfig,
   ThumbnailConfig,
   VAAPIConfig,
   VP9Config,
@@ -360,8 +362,7 @@ export class MediaService {
           `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
         );
       }
-      config.accel = TranscodeHWAccel.DISABLED;
-      transcodeOptions = await this.getCodecConfig(config).then((c) =>
+      transcodeOptions = await this.getCodecConfig({ ...config, accel: TranscodeHWAccel.DISABLED }).then((c) =>
         c.getOptions(target, mainVideoStream, mainAudioStream),
       );
       await this.mediaRepository.transcode(input, output, transcodeOptions);
@@ -494,7 +495,7 @@ export class MediaService {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
-        handler = new NVENCConfig(config);
+        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
         break;
       }
       case TranscodeHWAccel.QSV: {
@@ -506,7 +507,10 @@ export class MediaService {
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler = new RKMPPConfig(config, await this.getDevices(), await this.hasOpenCL());
+        handler =
+          config.accelDecode && (await this.hasOpenCL())
+            ? new RkmppHwDecodeConfig(config, await this.getDevices())
+            : new RkmppSwDecodeConfig(config, await this.getDevices());
         break;
       }
       default: {
