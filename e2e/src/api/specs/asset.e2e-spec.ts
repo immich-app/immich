@@ -547,7 +547,7 @@ describe('/asset', () => {
     });
   });
 
-  describe.only.each([
+  describe.each([
     { method: 'PUT', description: '/asset/:id/file' },
     { method: 'POST', description: '/asset' },
   ])('$method $description', ({ method }) => {
