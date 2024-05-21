@@ -104,10 +104,7 @@ class LibraryApi {
   }
 
   /// Performs an HTTP 'GET /library' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [LibraryType] type:
-  Future<Response> getAllLibrariesWithHttpInfo({ LibraryType? type, }) async {
+  Future<Response> getAllLibrariesWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/library';
 
@@ -117,10 +114,6 @@ class LibraryApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
 
     const contentTypes = <String>[];
 
@@ -136,11 +129,8 @@ class LibraryApi {
     );
   }
 
-  /// Parameters:
-  ///
-  /// * [LibraryType] type:
-  Future<List<LibraryResponseDto>?> getAllLibraries({ LibraryType? type, }) async {
-    final response = await getAllLibrariesWithHttpInfo( type: type, );
+  Future<List<LibraryResponseDto>?> getAllLibraries() async {
+    final response = await getAllLibrariesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

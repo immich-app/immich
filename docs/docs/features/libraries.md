@@ -4,10 +4,6 @@
 
 Immich supports the creation of libraries which is a top-level asset container. Currently, there are two types of libraries: traditional upload libraries that can sync with a mobile device, and external libraries, that keeps up to date with files on disk. Libraries are different from albums in that an asset can belong to multiple albums but only one library, and deleting a library deletes all assets contained within. As of August 2023, this is a new feature and libraries have a lot of potential for future development beyond what is documented here. This document attempts to describe the current state of libraries.
 
-## The Upload Library
-
-Immich comes preconfigured with an upload library for each user. All assets uploaded to Immich are added to this library. This library can be renamed, but not deleted. The upload library is the only library that can be synced with a mobile device. No items in an upload library is allowed to have the same sha1 hash as another item in the same library in order to prevent duplicates.
-
 ## External Libraries
 
 External libraries tracks assets stored outside of Immich, i.e. in the file system. When the external library is scanned, Immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.

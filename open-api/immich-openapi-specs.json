@@ -2474,16 +2474,7 @@
     "/library": {
       "get": {
         "operationId": "getAllLibraries",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LibraryType"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -7400,6 +7391,9 @@
             "type": "boolean"
           },
           "libraryId": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.106.0",
+            "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
@@ -7479,7 +7473,6 @@
           "isFavorite",
           "isOffline",
           "isTrashed",
-          "libraryId",
           "localDateTime",
           "originalFileName",
           "originalPath",
@@ -7750,10 +7743,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
           "livePhotoData": {
             "format": "binary",
             "type": "string"
@@ -7792,14 +7781,10 @@
           "ownerId": {
             "format": "uuid",
             "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
-          "ownerId",
-          "type"
+          "ownerId"
         ],
         "type": "object"
       },
@@ -8354,9 +8339,6 @@
             "nullable": true,
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -8371,7 +8353,6 @@
           "name",
           "ownerId",
           "refreshedAt",
-          "type",
           "updatedAt"
         ],
         "type": "object"
@@ -8403,13 +8384,6 @@
           "videos"
         ],
         "type": "object"
-      },
-      "LibraryType": {
-        "enum": [
-          "UPLOAD",
-          "EXTERNAL"
-        ],
-        "type": "string"
       },
       "LogLevel": {
         "enum": [

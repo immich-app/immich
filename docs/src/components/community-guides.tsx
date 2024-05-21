@@ -10,17 +10,17 @@ interface CommunityGuidesProps {
 const guides: CommunityGuidesProps[] = [
   {
     title: 'Cloudflare Tunnels with SSO/OAuth',
-    description: `Setting up Cloudflare Tunnels and a SaaS App for immich.`,
+    description: `Setting up Cloudflare Tunnels and a SaaS App for Immich.`,
     url: 'https://github.com/immich-app/immich/discussions/8299',
   },
   {
-    title: 'Database backup in Truenas',
-    description: `Create a database backup with pgAdmin in Truenas.`,
+    title: 'Database backup in TrueNAS',
+    description: `Create a database backup with pgAdmin in TrueNAS.`,
     url: 'https://github.com/immich-app/immich/discussions/8809',
   },
   {
     title: 'Unraid backup scripts',
-    description: `Back up your assets in Unarid with a pre-prepared script.`,
+    description: `Back up your assets in Unraid with a pre-prepared script.`,
     url: 'https://github.com/immich-app/immich/discussions/8416',
   },
   {
