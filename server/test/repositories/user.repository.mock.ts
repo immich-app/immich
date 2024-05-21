@@ -22,5 +22,6 @@ export const newUserRepositoryMock = (reset = true): Mocked<IUserRepository> => 
     hasAdmin: vitest.fn(),
     updateUsage: vitest.fn(),
     syncUsage: vitest.fn(),
+    upsertMetadata: vitest.fn(),
   };
 };
