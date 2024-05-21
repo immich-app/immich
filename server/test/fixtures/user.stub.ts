@@ -1,4 +1,5 @@
-import { UserAvatarColor, UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey } from 'src/entities/user-metadata.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userDto = {
@@ -39,8 +40,14 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
+    metadata: [
+      // {
+      //   user: authStub.user1.user,
+      //   userId: authStub.user1.user.id,
+      //   key: UserMetadataKey.PREFERENCES,
+      //   value: { avatar: { color: UserAvatarColor.PRIMARY } },
+      // },
+    ],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
@@ -57,8 +64,14 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
+    metadata: [
+      {
+        user: authStub.user1.user,
+        userId: authStub.user1.user.id,
+        key: UserMetadataKey.PREFERENCES,
+        value: { avatar: { color: UserAvatarColor.PRIMARY } },
+      },
+    ],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
@@ -75,8 +88,6 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
@@ -93,8 +104,6 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
@@ -111,8 +120,6 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
@@ -129,8 +136,6 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),

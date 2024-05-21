@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
-import { getRandomAvatarColor } from 'src/dtos/user-profile.dto';
-import { UserAvatarColor, UserEntity, UserStatus } from 'src/entities/user.entity';
+import { UserAvatarColor } from 'src/entities/user-metadata.entity';
+import { UserEntity, UserStatus } from 'src/entities/user.entity';
+import { getPreferences } from 'src/utils/preferences';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
 export class CreateUserDto {
@@ -151,7 +152,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: entity.avatarColor ?? getRandomAvatarColor(entity),
+    avatarColor: getPreferences(entity).avatar.color,
   };
 };
 
@@ -165,7 +166,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
-    memoriesEnabled: entity.memoriesEnabled,
+    memoriesEnabled: getPreferences(entity).memories.enabled,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

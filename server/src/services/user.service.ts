@@ -6,6 +6,7 @@ import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -16,6 +17,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService {
@@ -62,6 +64,16 @@ export class UserService {
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.userCore.createUser(dto);
+
+    // TODO remove and replace with entire dto.preferences config
+    if (dto.memoriesEnabled === false) {
+      await this.userRepository.upsertMetadata(user.id, {
+        key: UserMetadataKey.PREFERENCES,
+        value: { memories: { enabled: false } },
+      });
+      delete dto.memoriesEnabled;
+    }
+
     const tempPassword = user.shouldChangePassword ? dto.password : undefined;
     if (dto.notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
@@ -76,7 +88,28 @@ export class UserService {
       await this.userRepository.syncUsage(dto.id);
     }
 
-    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
+    // TODO replace with entire preferences object
+    if (dto.memoriesEnabled !== undefined || dto.avatarColor) {
+      const newPreferences = getPreferences(user);
+      if (dto.memoriesEnabled !== undefined) {
+        newPreferences.memories.enabled = dto.memoriesEnabled;
+        delete dto.memoriesEnabled;
+      }
+
+      if (dto.avatarColor) {
+        newPreferences.avatar.color = dto.avatarColor;
+        delete dto.avatarColor;
+      }
+
+      await this.userRepository.upsertMetadata(dto.id, {
+        key: UserMetadataKey.PREFERENCES,
+        value: getPreferencesPartial(user, newPreferences),
+      });
+    }
+
+    const updatedUser = await this.userCore.updateUser(auth.user, dto.id, dto);
+
+    return mapUser(updatedUser);
   }
 
   async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
