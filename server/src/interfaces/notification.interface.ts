@@ -26,7 +26,7 @@ export type SmtpOptions = {
 };
 
 export enum EmailTemplate {
-  // COMMON
+  // AUTH
   WELCOME = 'welcome',
   RESET_PASSWORD = 'reset-password',
 

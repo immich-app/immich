@@ -83,23 +83,6 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async _getAlbumThumbnailAttachment(album: AlbumEntity): Promise<EmailImageAttachment | undefined> {
-    if (!album.albumThumbnailAssetId) {
-      return;
-    }
-
-    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail || !albumThumbnail.thumbnailPath) {
-      return;
-    }
-
-    return {
-      filename: 'album-thumbnail.jpg',
-      path: albumThumbnail.thumbnailPath,
-      cid: 'album-thumbnail',
-    };
-  }
-
   async handleAlbumInvite({ id, recipientId }: INotifyAlbumInviteJob) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
@@ -111,7 +94,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const attachment = await this._getAlbumThumbnailAttachment(album);
+    const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -153,7 +136,7 @@ export class NotificationService {
     }
 
     const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
-    const attachment = await this._getAlbumThumbnailAttachment(album);
+    const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
 
@@ -209,5 +192,22 @@ export class NotificationService {
     this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
 
     return JobStatus.SUCCESS;
+  }
+
+  private async getAlbumThumbnailAttachment(album: AlbumEntity): Promise<EmailImageAttachment | undefined> {
+    if (!album.albumThumbnailAssetId) {
+      return;
+    }
+
+    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
+    if (!albumThumbnail?.thumbnailPath) {
+      return;
+    }
+
+    return {
+      filename: 'album-thumbnail.jpg',
+      path: albumThumbnail.thumbnailPath,
+      cid: 'album-thumbnail',
+    };
   }
 }
