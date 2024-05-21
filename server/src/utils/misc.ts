@@ -212,7 +212,7 @@ export const useSwagger = (app: INestApplication) => {
   SwaggerModule.setup('doc', app, specification, customOptions);
 
   if (isDev()) {
-    // Generate  API Documentation only in development mode
+    // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }

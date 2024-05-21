@@ -21,12 +21,11 @@ test.describe('Shared Links', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     const assetResponse = (await utils.createAsset(admin.accessToken)) as any;
-    asset = assetResponse.asset!;
     album = await createAlbum(
       {
         createAlbumDto: {
           albumName: 'Test Album',
-          assetIds: [asset.id],
+          assetIds: [assetResponse.assetId],
         },
       },
       { headers: asBearerAuth(admin.accessToken) },
