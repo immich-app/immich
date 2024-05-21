@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 
 /** @deprecated */
 export class AssetBulkUploadCheckItem {
@@ -69,9 +69,6 @@ export class CheckExistingAssetsDto {
 
 /** @deprecated */
 export class CreateAssetDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
-
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;

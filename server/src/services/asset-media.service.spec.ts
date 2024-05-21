@@ -248,7 +248,6 @@ describe('AssetMediaService', () => {
       const dto = _getCreateAssetDto();
       assetMock.getById.mockResolvedValue(assetEntity);
       assetMock.create.mockResolvedValue(assetEntity);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
         asset: mapAsset(assetEntity),
@@ -279,7 +278,6 @@ describe('AssetMediaService', () => {
 
       assetMock.create.mockRejectedValue(error);
       assetMock.getByChecksums.mockResolvedValue([_getAsset_1()]);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.createAsset(authStub.user1, dto, file)).resolves.toEqual({
         status: 'duplicate',
@@ -355,7 +353,6 @@ describe('AssetMediaService', () => {
       const dto = _getUpdateAssetDto();
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
@@ -388,7 +385,6 @@ describe('AssetMediaService', () => {
       const updatedAsset = { ...existingAsset, ...updatedFile };
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
@@ -419,7 +415,6 @@ describe('AssetMediaService', () => {
       const updatedAsset = { ...existingAsset, ...updatedFile };
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
@@ -452,7 +447,6 @@ describe('AssetMediaService', () => {
       assetMock.update.mockRejectedValue(error);
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getByChecksums.mockResolvedValue([existingAsset]);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.libraryId!]));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);

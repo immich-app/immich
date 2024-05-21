@@ -23,7 +23,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
@@ -326,7 +325,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    if (asset.library.type === LibraryType.UPLOAD) {
+    if (!asset.libraryId) {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
@@ -338,7 +337,7 @@ export class AssetService {
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
     // skip originals if the user deleted the whole library
-    if (!asset.library.deletedAt) {
+    if (!asset.library?.deletedAt) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 

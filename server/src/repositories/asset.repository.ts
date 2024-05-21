@@ -5,7 +5,6 @@ import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import {
@@ -304,8 +303,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { libraryId, checksum } });
+  getByChecksum(libraryId: string | null, checksum: Buffer): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: {
+        libraryId: libraryId || IsNull(),
+        checksum,
+      },
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
@@ -330,9 +334,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         ownerId,
         checksum,
-        library: {
-          type: LibraryType.UPLOAD,
-        },
+        library: IsNull(),
       },
       withDeleted: true,
     });

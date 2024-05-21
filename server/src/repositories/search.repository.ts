@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { vectorExt } from 'src/database.config';
+import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -336,7 +336,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private getRuntimeConfig(numResults?: number): string {
-    if (vectorExt === DatabaseExtension.VECTOR) {
+    if (getVectorExtension() === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

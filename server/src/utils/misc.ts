@@ -153,19 +153,6 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         continue;
       }
 
-      // if (operation.responses.default) {
-      //   const aa: any = new Map();
-
-      //   aa.set('default', operation.responses.default);
-      //   const b = _.omit(operation?.responses, 'default');
-
-      //   for (const k of Object.keys(b)) {
-      //     aa.set(k, b[k]);
-      //   }
-      //   operation.responses = aa;
-      //   //asdfkk
-      // }
-
       if (operation.summary === '') {
         delete operation.summary;
       }
@@ -227,23 +214,6 @@ export const useSwagger = (app: INestApplication) => {
   if (isDev()) {
     // Generate  API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    function replacer(_: any, value: any) {
-      if (value instanceof Map) {
-        const mapEntries = [...value.keys()];
-        return (
-          '{\n' +
-          mapEntries
-            .map((k) => {
-              return '    ' + k + ' => ' + JSON.stringify(value.get(k), null, 2);
-            })
-            .join(',\n') +
-          '\n}'
-        );
-      } else {
-        return value;
-      }
-    }
-
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), replacer, 2), { encoding: 'utf8' });
+    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
 };

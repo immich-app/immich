@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
   IUserRepository,
@@ -123,10 +122,9 @@ export class UserRepository implements IUserRepository {
     const subQuery = this.assetRepository
       .createQueryBuilder('assets')
       .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
-      .leftJoin('assets.library', 'library')
       .leftJoin('assets.exifInfo', 'exif')
       .where('assets.ownerId = users.id')
-      .andWhere(`library.type = '${LibraryType.UPLOAD}'`)
+      .andWhere(`assets.libraryId IS NULL`)
       .withDeleted();
 
     const query = this.userRepository

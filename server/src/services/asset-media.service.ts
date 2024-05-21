@@ -32,7 +32,6 @@ import {
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -99,36 +98,15 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponse> {
     try {
-      const libraryId = await this.getLibraryId(auth, dto.libraryId);
-      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, auth.user.id);
       this.requireQuota(auth, file.size);
 
-      const asset = await this.create(auth, { ...dto, libraryId }, file, sidecarFile?.originalPath);
+      const asset = await this.create(auth, dto, file, sidecarFile?.originalPath);
       await this.userRepository.updateUsage(auth.user.id, file.size);
       return new AssetMediaCreatedResponse(mapAsset(asset));
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
-  }
-
-  private async getLibraryId(auth: AuthDto, libraryId?: string) {
-    if (libraryId) {
-      return libraryId;
-    }
-
-    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.user.id);
-    if (!library) {
-      library = await this.libraryRepository.create({
-        ownerId: auth.user.id,
-        name: 'Default Library',
-        assets: [],
-        type: LibraryType.UPLOAD,
-        importPaths: [],
-        exclusionPatterns: [],
-      });
-    }
-
-    return library.id;
   }
 
   public async replaceAsset(
@@ -142,8 +120,6 @@ export class AssetMediaService {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
 
-      const libraryId = existingAssetEntity.libraryId;
-      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
       this.requireQuota(auth, file.size);
 
       await this.updateAssetFileData(existingAssetEntity.id, dto, file, sidecarFile?.originalPath);
@@ -260,7 +236,7 @@ export class AssetMediaService {
 
   private async create(
     auth: AuthDto,
-    dto: CreateAssetMediaDto & { libraryId: string },
+    dto: CreateAssetMediaDto,
     file: UploadFile,
     sidecarPath?: string,
   ): Promise<AssetEntity> {

@@ -7,7 +7,6 @@ import {
   LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
-  getAllLibraries,
   getAssetInfo,
   updateAssets,
 } from '@immich/sdk';
@@ -888,25 +887,6 @@ describe('/asset', () => {
       })) as any;
 
       expect(status).toBe('duplicate');
-    });
-
-    it("should not upload to another user's library", async () => {
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
-      const library = libraries.find((library) => library.ownerId === user1.userId) as LibraryResponseDto;
-
-      const { body, status } = await request(app)
-        .post('/asset')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .field('libraryId', library.id)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
-        .field('fileCreatedAt', new Date().toISOString())
-        .field('fileModifiedAt', new Date().toISOString())
-        .field('duration', '0:00:00.000000')
-        .attach('assetData', makeRandomImage(), 'example.png');
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no asset.upload access'));
     });
 
     it('should update the used quota', async () => {

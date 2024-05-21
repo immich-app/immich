@@ -26,7 +26,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  libraryId!: string;
+  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
   fileCreatedAt!: Date;
