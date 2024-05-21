@@ -8120,10 +8120,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
           "sidecarData": {
             "format": "binary",
             "type": "string"

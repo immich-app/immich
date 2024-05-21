@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -11,9 +11,6 @@ export enum UploadFieldName {
 }
 
 export class CreateAssetMediaDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
-
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;

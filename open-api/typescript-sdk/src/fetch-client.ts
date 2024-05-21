@@ -247,7 +247,6 @@ export type CreateAssetMediaDto = {
     isFavorite?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    libraryId?: string;
     sidecarData?: Blob;
 };
 export type DuplicateAssetResponseDto = {

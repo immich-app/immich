@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    //Future<DuplicateAssetResponseDto> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, String libraryId, MultipartFile sidecarData }) async
+    //Future<DuplicateAssetResponseDto> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String xImmichChecksum, String duration, bool isArchived, bool isFavorite, bool isOffline, bool isVisible, MultipartFile sidecarData }) async
     test('test createAsset', () async {
       // TODO
     });

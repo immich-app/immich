@@ -142,8 +142,6 @@ const _getCreateAssetDto = (): CreateAssetMediaDto => {
   createAssetDto.isFavorite = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
-  createAssetDto.libraryId = 'libraryId';
-
   return createAssetDto;
 };
 

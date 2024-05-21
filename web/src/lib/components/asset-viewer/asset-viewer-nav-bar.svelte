@@ -87,6 +87,8 @@
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
 
+  $: showDevUI = new URL(window.location.href).searchParams.get('showDevUI');
+
   const showOptionsMenu = (event: MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, 'top-right');
     isShowAssetOptions = !isShowAssetOptions;
@@ -245,11 +247,13 @@
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
-              <MenuOption
-                icon={mdiUpload}
-                on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
-                text="Replace with upload"
-              />
+              {#if showDevUI}
+                <MenuOption
+                  icon={mdiUpload}
+                  on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                  text="Replace with upload"
+                />
+              {/if}
               <hr />
               <MenuOption
                 icon={mdiDatabaseRefreshOutline}

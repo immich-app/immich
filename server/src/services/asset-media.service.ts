@@ -239,7 +239,6 @@ export class AssetMediaService {
   ): Promise<AssetEntity> {
     const asset = await this.assetRepository.create({
       ownerId: auth.user.id,
-      libraryId: dto.libraryId,
 
       checksum: file.checksum,
       originalPath: file.originalPath,

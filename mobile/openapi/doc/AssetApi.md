@@ -147,7 +147,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **createAsset**
-> DuplicateAssetResponseDto createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData)
+> DuplicateAssetResponseDto createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, sidecarData)
 
 
 
@@ -182,11 +182,10 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isOffline = true; // bool | 
 final isVisible = true; // bool | 
-final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, sidecarData);
+    final result = api_instance.createAsset(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->createAsset: $e\n');
@@ -209,7 +208,6 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isOffline** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
- **libraryId** | **String**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
 
 ### Return type

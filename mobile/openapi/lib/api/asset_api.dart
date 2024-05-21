@@ -148,10 +148,8 @@ class AssetApi {
   ///
   /// * [bool] isVisible:
   ///
-  /// * [String] libraryId:
-  ///
   /// * [MultipartFile] sidecarData:
-  Future<Response> createAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? sidecarData, }) async {
+  Future<Response> createAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, MultipartFile? sidecarData, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -215,10 +213,6 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'isVisible'] = parameterToString(isVisible);
     }
-    if (libraryId != null) {
-      hasFields = true;
-      mp.fields[r'libraryId'] = parameterToString(libraryId);
-    }
     if (sidecarData != null) {
       hasFields = true;
       mp.fields[r'sidecarData'] = sidecarData.field;
@@ -266,11 +260,9 @@ class AssetApi {
   ///
   /// * [bool] isVisible:
   ///
-  /// * [String] libraryId:
-  ///
   /// * [MultipartFile] sidecarData:
-  Future<DefaultAssetMediaResponseDto?> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? libraryId, MultipartFile? sidecarData, }) async {
-    final response = await createAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isVisible: isVisible, libraryId: libraryId, sidecarData: sidecarData, );
+  Future<DefaultAssetMediaResponseDto?> createAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, MultipartFile? sidecarData, }) async {
+    final response = await createAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isVisible: isVisible, sidecarData: sidecarData, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
