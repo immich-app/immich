@@ -80,7 +80,7 @@
       <SettingAccordion
         key="duplicate-detection"
         title="Duplicate Detection"
-        subtitle="Use CLIP embeddings to find very similar images that are likely duplicates"
+        subtitle="Use CLIP embeddings to find likely duplicates"
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
