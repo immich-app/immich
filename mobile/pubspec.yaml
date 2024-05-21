@@ -60,6 +60,7 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  background_downloader: ^8.0.0
 
   openapi:
     path: openapi
@@ -82,6 +83,7 @@ dependency_overrides:
 #f      url: https://github.com/Zverik/flutter-geolocator.git
 #f      ref: floss
 #f      path: geolocator_android
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
