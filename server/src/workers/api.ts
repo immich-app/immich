@@ -30,8 +30,14 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   if (isDev()) {
-    app.enableCors();
+    // app.enableCors();
   }
+  app.enableCors({
+    credentials: true,
+    origin: true,
+    allowedHeaders: ['Authorization', 'Content-Type', 'Accept', 'Set-Cookie'],
+    exposedHeaders: ['Set-Cookie'],
+  });
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app);
 

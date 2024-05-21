@@ -6,10 +6,13 @@ const config: CapacitorConfig = {
   webDir: 'build',
 
   server: {
+    url: 'http://192.168.10.242:2283',
+    // hostname: '192.168.10.242',
     androidScheme: 'http',
     cleartext: true,
-    allowNavigation: ['http://192.168.10.242:2283/api/*'],
+    allowNavigation: ['http://192.168.10.242:2283/api/*', 'http://localhost/*', 'https://localhost/*'],
   },
+  plugins: {},
 };
 
 export default config;
