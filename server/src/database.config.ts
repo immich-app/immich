@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { TlsOptions, rootCertificates } from 'node:tls';
+import { TlsOptions } from 'node:tls';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
