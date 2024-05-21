@@ -15,7 +15,8 @@ x-server-build: &server-common
     - IMMICH_MACHINE_LEARNING_ENABLED=false
     - IMMICH_METRICS=true
   env_file:
-    - ./.env
+    - path: ./.env
+      required: false
   volumes:
     - upload:/usr/src/app/upload
     - ./test-assets:/test-assets
