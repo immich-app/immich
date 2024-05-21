@@ -1,6 +1,6 @@
+import os
 import sys
 import requests
-import os
 
 port = os.getenv("IMMICH_PORT", 3003)
 
