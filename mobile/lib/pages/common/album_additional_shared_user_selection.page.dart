@@ -87,6 +87,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
             itemBuilder: ((context, index) {
               return ListTile(
                 leading: buildTileIcon(users[index]),
+                dense: true,
                 title: Text(
                   users[index].name,
                   style: const TextStyle(
