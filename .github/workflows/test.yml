@@ -142,6 +142,11 @@ jobs:
   e2e-tests:
     name: End-to-End Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tls:
+          - enable
+          - disable
     defaults:
       run:
         working-directory: ./e2e
@@ -190,6 +195,11 @@ jobs:
       - name: Docker build
         run: docker compose build
         if: ${{ !cancelled() }}
+
+      - name: Generate database certificates
+        run: ./generate.sh
+        working-directory: ./e2e/postgres-tls
+        if: ${{ !cancelled() && matrix.tls=='enable' }}
 
       - name: Run e2e tests (api & cli)
         run: npm run test

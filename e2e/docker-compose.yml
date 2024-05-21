@@ -14,6 +14,8 @@ x-server-build: &server-common
     - DB_DATABASE_NAME=immich
     - IMMICH_MACHINE_LEARNING_ENABLED=false
     - IMMICH_METRICS=true
+  env_file:
+    - ./.env
   volumes:
     - upload:/usr/src/app/upload
     - ./test-assets:/test-assets
@@ -39,11 +41,13 @@ services:
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
-    command: -c fsync=off -c shared_preload_libraries=vectors.so
+    command: -c fsync=off -c shared_preload_libraries=vectors.so -c ssl=on -c ssl_cert_file=/tls/server.crt -c ssl_key_file=/tls/server.key -c ssl_ca_file=/tls/root.crt
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: immich
+    volumes:
+      - ./postgres-tls:/tls
     ports:
       - 5433:5432
 

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { TlsOptions, rootCertificates } from 'node:tls';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { DataSource } from 'typeorm';
@@ -19,7 +20,7 @@ const ssl: TlsOptions = {
   rejectUnauthorized: process.env.DB_TLS_SKIP_VERIFY !== 'true',
 };
 if (process.env.DB_TLS_CA) {
-  ssl.ca = [...rootCertificates, process.env.DB_TLS_CA];
+  ssl.ca = process.env.DB_TLS_CA.split(String.raw`\n`).join('\n');
 }
 if (process.env.DB_TLS_SERVERNAME) {
   //@ts-expect-error ConnectionOptions for clients in node:tls actuallycontainthis property
@@ -28,8 +29,8 @@ if (process.env.DB_TLS_SERVERNAME) {
   ssl.servername = process.env.DB_TLS_SERVERNAME;
 }
 if (process.env.DB_TLS_CLIENT_CERT && process.env.DB_TLS_CLIENT_KEY) {
-  ssl.cert = process.env.DB_TLS_CLIENT_CERT;
-  ssl.key = process.env.DB_TLS_CLIENT_KEY;
+  ssl.cert = process.env.DB_TLS_CLIENT_CERT.split(String.raw`\n`).join('\n');
+  ssl.key = process.env.DB_TLS_CLIENT_KEY.split(String.raw`\n`).join('\n');
 }
 
 /* eslint unicorn/prefer-module: "off" -- We can fix this when migrating to ESM*/
@@ -45,6 +46,9 @@ export const databaseConfig: PostgresConnectionOptions = {
   ...urlOrParts,
   ssl: process.env.DB_TLS === 'true' ? ssl : false,
 };
+new Logger('DatabaseConfig').log(
+  `Database TLS is ${process.env.DB_TLS === 'true' ? 'enable' : 'disable'}; ${process.env.DB_TLS_SKIP_VERIFY === 'true' ? 'Skip TLS verify; ' : ''}${process.env.DB_TLS_CA ? 'Custom CA is set; ' : ''}${ssl.cert && ssl.key ? 'mTLS is enable' : ''}`,
+);
 
 /**
  * @deprecated - DO NOT USE THIS
