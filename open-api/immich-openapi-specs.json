@@ -9248,19 +9248,19 @@
       },
       "ResolveDuplicatesDto": {
         "properties": {
-          "duplicateId": {
-            "type": "string"
-          },
-          "ids": {
+          "assetIds": {
             "items": {
               "type": "string"
             },
             "type": "array"
+          },
+          "duplicateId": {
+            "type": "string"
           }
         },
         "required": [
-          "duplicateId",
-          "ids"
+          "assetIds",
+          "duplicateId"
         ],
         "type": "object"
       },

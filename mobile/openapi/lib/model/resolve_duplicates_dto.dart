@@ -13,32 +13,32 @@ part of openapi.api;
 class ResolveDuplicatesDto {
   /// Returns a new [ResolveDuplicatesDto] instance.
   ResolveDuplicatesDto({
+    this.assetIds = const [],
     required this.duplicateId,
-    this.ids = const [],
   });
+
+  List<String> assetIds;
 
   String duplicateId;
 
-  List<String> ids;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is ResolveDuplicatesDto &&
-    other.duplicateId == duplicateId &&
-    _deepEquality.equals(other.ids, ids);
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.duplicateId == duplicateId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (duplicateId.hashCode) +
-    (ids.hashCode);
+    (assetIds.hashCode) +
+    (duplicateId.hashCode);
 
   @override
-  String toString() => 'ResolveDuplicatesDto[duplicateId=$duplicateId, ids=$ids]';
+  String toString() => 'ResolveDuplicatesDto[assetIds=$assetIds, duplicateId=$duplicateId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'assetIds'] = this.assetIds;
       json[r'duplicateId'] = this.duplicateId;
-      json[r'ids'] = this.ids;
     return json;
   }
 
@@ -50,10 +50,10 @@ class ResolveDuplicatesDto {
       final json = value.cast<String, dynamic>();
 
       return ResolveDuplicatesDto(
-        duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
-        ids: json[r'ids'] is Iterable
-            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
       );
     }
     return null;
@@ -101,8 +101,8 @@ class ResolveDuplicatesDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetIds',
     'duplicateId',
-    'ids',
   };
 }
 

@@ -86,7 +86,7 @@
           <SettingSwitch
             id="enable-duplicate-detection"
             title="ENABLED"
-            subtitle="If disabled, images will not be checked to see if they are duplicates."
+            subtitle="If disabled, exactly identical assets will still be de-duplicated."
             bind:checked={config.machineLearning.duplicateDetection.enabled}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
           />

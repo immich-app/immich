@@ -378,8 +378,8 @@ export type DuplicateResponseDto = {
     duplicateId: string;
 };
 export type ResolveDuplicatesDto = {
+    assetIds: string[];
     duplicateId: string;
-    ids: string[];
 };
 export type PersonResponseDto = {
     birthDate: string | null;

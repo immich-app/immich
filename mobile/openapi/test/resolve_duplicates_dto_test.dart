@@ -16,13 +16,13 @@ void main() {
   // final instance = ResolveDuplicatesDto();
 
   group('test ResolveDuplicatesDto', () {
-    // String duplicateId
-    test('to test the property `duplicateId`', () async {
+    // List<String> assetIds (default value: const [])
+    test('to test the property `assetIds`', () async {
       // TODO
     });
 
-    // List<String> ids (default value: const [])
-    test('to test the property `ids`', () async {
+    // String duplicateId
+    test('to test the property `duplicateId`', () async {
       // TODO
     });
 

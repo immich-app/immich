@@ -14,7 +14,7 @@
 
   const handleOnResolve = async (duplicateId: string, trashIds: string[]) => {
     try {
-      await resolveDuplicates({ resolveDuplicatesDto: { duplicateId, ids: trashIds } });
+      await resolveDuplicates({ resolveDuplicatesDto: { duplicateId, assetIds: trashIds } });
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
       if (trashIds.length === 0) {
@@ -35,7 +35,7 @@
   <div class="mt-4">
     {#if data.duplicates && data.duplicates.length > 0}
       <div class="mb-4 text-sm dark:text-white">
-        <p>Resolve the following duplication by keeping or moving assets to the trash.</p>
+        <p>Resolve each group by indicating which, if any, are duplicates.</p>
       </div>
       {#key data.duplicates[0].duplicateId}
         <DuplicatesCompareControl
