@@ -362,29 +362,22 @@ cap_drop:
 
 ### How can I monitor the health of the Immich containers?
 
-All of the containers have health monitoring scripts that are disabled by default. To enable them, add the following to your `docker-compose.yml`.
+All of the containers have health monitoring scripts. These are enabled by default in `immich-server` and `immich-machine-learning`. To enable them for the other containers, add the following to your `docker-compose.yml`.
 
 ```diff
 services:
-  immich-server:
-    ...
-+   healthcheck:
-+     test: npm run healthcheck
-
-  immich-machine-learning:
-    ...
-+   healthcheck:
-+     test: python3 healthcheck.py
-
   redis:
     ...
 +   healthcheck:
-+     test: redis-cli ping
++     test: redis-cli ping || exit 1
 
   database:
     ...
 +   healthcheck:
-+     test: ["CMD-SHELL", "pg_isready", "--dbname=${DB_DATABASE_NAME}"]
++     test: test: pg_isready --dbname='${DB_DATABASE_NAME}' || exit 1; Chksum="$$(psql --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' --tuples-only --no-align --command="SELECT checksum_failures FROM pg_stat_database WHERE datname = '${DB_DATABASE_NAME}'")"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
++     interval: 5m
++     start_interval: 30s
++     start_period: 5m
 ```
 
 ### How can I purge data from Immich?
