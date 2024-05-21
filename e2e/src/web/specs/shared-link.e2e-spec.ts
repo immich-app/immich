@@ -1,17 +1,9 @@
-import {
-  AlbumResponseDto,
-  AssetResponseDto,
-  LoginResponseDto,
-  SharedLinkResponseDto,
-  SharedLinkType,
-  createAlbum,
-} from '@immich/sdk';
+import { AlbumResponseDto, LoginResponseDto, SharedLinkResponseDto, SharedLinkType, createAlbum } from '@immich/sdk';
 import { test } from '@playwright/test';
 import { asBearerAuth, utils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
-  let asset: AssetResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
   let sharedLinkPassword: SharedLinkResponseDto;
