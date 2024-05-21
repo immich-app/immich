@@ -100,6 +100,9 @@ export enum JobName {
   // Notification
   NOTIFY_SIGNUP = 'notify-signup',
   SEND_EMAIL = 'notification-send-email',
+
+  // Version check
+  VERSION_CHECK = 'version-check',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -243,7 +246,10 @@ export type JobItem =
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
-  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
+  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
+
+  // Version check
+  | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

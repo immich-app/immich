@@ -957,7 +957,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, livePhotoData, sidecarData)
+> AssetFileUploadResponseDto uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, livePhotoData, sidecarData)
 
 
 
@@ -992,12 +992,11 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isOffline = true; // bool | 
 final isVisible = true; // bool | 
-final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 
 try {
-    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, libraryId, livePhotoData, sidecarData);
+    final result = api_instance.uploadFile(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, key, xImmichChecksum, duration, isArchived, isFavorite, isOffline, isVisible, livePhotoData, sidecarData);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1020,7 +1019,6 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isOffline** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
- **libraryId** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
 

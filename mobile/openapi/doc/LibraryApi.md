@@ -130,7 +130,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllLibraries**
-> List<LibraryResponseDto> getAllLibraries(type)
+> List<LibraryResponseDto> getAllLibraries()
 
 
 
@@ -153,10 +153,9 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = LibraryApi();
-final type = ; // LibraryType | 
 
 try {
-    final result = api_instance.getAllLibraries(type);
+    final result = api_instance.getAllLibraries();
     print(result);
 } catch (e) {
     print('Exception when calling LibraryApi->getAllLibraries: $e\n');
@@ -164,10 +163,7 @@ try {
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **type** | [**LibraryType**](.md)|  | [optional] 
+This endpoint does not need any parameter.
 
 ### Return type
 

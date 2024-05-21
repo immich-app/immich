@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    // String duplicateId
+    test('to test the property `duplicateId`', () async {
+      // TODO
+    });
+
     // String duration
     test('to test the property `duration`', () async {
       // TODO
@@ -94,6 +99,7 @@ void main() {
       // TODO
     });
 
+    // This property was deprecated in v1.106.0
     // String libraryId
     test('to test the property `libraryId`', () async {
       // TODO

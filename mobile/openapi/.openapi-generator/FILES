@@ -68,7 +68,9 @@ doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
+doc/DuplicateApi.md
 doc/DuplicateDetectionConfig.md
+doc/DuplicateResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
 doc/FaceApi.md
@@ -90,7 +92,6 @@ doc/JobStatusDto.md
 doc/LibraryApi.md
 doc/LibraryResponseDto.md
 doc/LibraryStatsResponseDto.md
-doc/LibraryType.md
 doc/LogLevel.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
@@ -224,6 +225,7 @@ lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
 lib/api/download_api.dart
+lib/api/duplicate_api.dart
 lib/api/face_api.dart
 lib/api/file_report_api.dart
 lib/api/job_api.dart
@@ -310,6 +312,7 @@ lib/model/download_archive_info.dart
 lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/duplicate_detection_config.dart
+lib/model/duplicate_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
 lib/model/face_dto.dart
@@ -327,7 +330,6 @@ lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
 lib/model/library_stats_response_dto.dart
-lib/model/library_type.dart
 lib/model/log_level.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
@@ -503,7 +505,9 @@ test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
+test/duplicate_api_test.dart
 test/duplicate_detection_config_test.dart
+test/duplicate_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
 test/face_api_test.dart
@@ -525,7 +529,6 @@ test/job_status_dto_test.dart
 test/library_api_test.dart
 test/library_response_dto_test.dart
 test/library_stats_response_dto_test.dart
-test/library_type_test.dart
 test/log_level_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
