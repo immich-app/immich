@@ -12,11 +12,12 @@ x-server-build: &server-common
     - DB_USERNAME=postgres
     - DB_PASSWORD=postgres
     - DB_DATABASE_NAME=immich
+    - DB_TLS=${DB_TLS}
+    - DB_TLS_CA=${DB_TLS_CA}
+    - DB_TLS_CLIENT_CERT=${DB_TLS_CLIENT_CERT}
+    - DB_TLS_CLIENT_KEY=${DB_TLS_CLIENT_KEY}
     - IMMICH_MACHINE_LEARNING_ENABLED=false
     - IMMICH_METRICS=true
-  env_file:
-    - path: ./.env
-      required: false
   volumes:
     - upload:/usr/src/app/upload
     - ./test-assets:/test-assets
