@@ -27,5 +27,6 @@ DB_TLS=true
 DB_TLS_CA=$(sudo sed -z 's/\n/\\n/g' root.crt)
 DB_TLS_CLIENT_CERT=$(sudo sed -z 's/\n/\\n/g' client.crt)
 DB_TLS_CLIENT_KEY=$(sudo sed -z 's/\n/\\n/g' client.key)
+POSTGRES_SSL_PARAMS="-c ssl=on -c ssl_cert_file=/tls/server.crt -c ssl_key_file=/tls/server.key -c ssl_ca_file=/tls/root.crt"
 EOF
 mv -f .env ../

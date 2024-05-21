@@ -43,7 +43,7 @@ services:
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
-    command: -c fsync=off -c shared_preload_libraries=vectors.so -c ssl=on -c ssl_cert_file=/tls/server.crt -c ssl_key_file=/tls/server.key -c ssl_ca_file=/tls/root.crt
+    command: -c fsync=off -c shared_preload_libraries=vectors.so ${POSTGRES_SSL_PARAMS}
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
