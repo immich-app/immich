@@ -19,7 +19,7 @@ import { handlePromiseError } from 'src/utils/misc';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
-sharp.cache({ files: 0 });
+sharp.cache(false);
 
 @Instrumentation()
 @Injectable()
