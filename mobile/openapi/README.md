@@ -220,7 +220,7 @@ Class | Method | HTTP request | Description
 *UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /users | 
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /users/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/profile-image/{id} | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /users/info/{id} | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /users/{id} | 
 *UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /users/{id}/restore | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /users | 
 

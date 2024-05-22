@@ -2750,16 +2750,6 @@ export function updateUser({ updateUserDto }: {
         body: updateUserDto
     })));
 }
-export function getUserById({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
-    }>(`/users/info/${encodeURIComponent(id)}`, {
-        ...opts
-    }));
-}
 export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2808,6 +2798,16 @@ export function deleteUser({ id, deleteUserDto }: {
         method: "DELETE",
         body: deleteUserDto
     })));
+}
+export function getUserById({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto;
+    }>(`/users/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
 }
 export function restoreUser({ id }: {
     id: string;
