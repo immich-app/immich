@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { user } from '$lib/stores/user.store';
-import { getMyUserInfo, getServerInfo } from '@immich/sdk';
+import { getMyUserInfo, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
@@ -58,7 +58,7 @@ export const authenticate = async (options?: AuthOptions) => {
 
 export const requestServerInfo = async () => {
   if (get(user)) {
-    const data = await getServerInfo();
+    const data = await getStorage();
     serverInfo.set(data);
   }
 };

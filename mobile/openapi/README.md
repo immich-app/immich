@@ -116,6 +116,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DeprecatedApi* | [**getServerInfo**](doc//DeprecatedApi.md#getserverinfo) | **GET** /server-info | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
@@ -174,6 +175,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStorage**](doc//ServerInfoApi.md#getstorage) | **GET** /server-info/storage | 
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
@@ -348,10 +350,10 @@ Class | Method | HTTP request | Description
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
- - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
+ - [ServerStorageResponseDto](doc//ServerStorageResponseDto.md)
  - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
