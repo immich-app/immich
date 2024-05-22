@@ -93,15 +93,15 @@ describe('/users', () => {
     });
   });
 
-  describe('GET /users/info/:id', () => {
+  describe('GET /users/:id', () => {
     it('should require authentication', async () => {
-      const { status } = await request(app).get(`/users/info/${admin.userId}`);
+      const { status } = await request(app).get(`/users/${admin.userId}`);
       expect(status).toEqual(401);
     });
 
     it('should get the user info', async () => {
       const { status, body } = await request(app)
-        .get(`/users/info/${admin.userId}`)
+        .get(`/users/${admin.userId}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({

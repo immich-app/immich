@@ -6229,48 +6229,6 @@
         ]
       }
     },
-    "/users/info/{id}": {
-      "get": {
-        "operationId": "getUserById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
     "/users/me": {
       "get": {
         "operationId": "getMyUserInfo",
@@ -6436,6 +6394,46 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
+      "get": {
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
