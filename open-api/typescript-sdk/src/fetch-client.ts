@@ -2776,16 +2776,6 @@ export function createProfileImage({ createProfileImageDto }: {
         body: createProfileImageDto
     })));
 }
-export function getProfileImage({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchBlob<{
-        status: 200;
-        data: Blob;
-    }>(`/users/profile-image/${encodeURIComponent(id)}`, {
-        ...opts
-    }));
-}
 export function deleteUser({ id, deleteUserDto }: {
     id: string;
     deleteUserDto: DeleteUserDto;
@@ -2806,6 +2796,16 @@ export function getUserById({ id }: {
         status: 200;
         data: UserResponseDto;
     }>(`/users/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function getProfileImage({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/users/${encodeURIComponent(id)}/profile-image`, {
         ...opts
     }));
 }

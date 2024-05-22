@@ -298,13 +298,13 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /users/profile-image/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /users/{id}/profile-image' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/profile-image/{id}'
+    final path = r'/users/{id}/profile-image'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
