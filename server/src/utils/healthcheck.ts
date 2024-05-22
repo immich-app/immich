@@ -12,7 +12,6 @@ const main = async () => {
     if (response.ok) {
       const body = await response.json();
       if (body.res === 'pong') {
-        console.log('Server is running');
         process.exit();
       }
     }
@@ -24,7 +23,6 @@ const main = async () => {
     clearTimeout(timeout);
   }
 
-  console.log('Server is NOT reachable');
   process.exit(1);
 };
 
