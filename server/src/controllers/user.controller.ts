@@ -101,7 +101,7 @@ export class UserController {
     return this.service.createProfileImage(auth, fileInfo);
   }
 
-  @Get('profile-image/:id')
+  @Get(':id/profile-image')
   @FileResponse()
   @Authenticated()
   async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
