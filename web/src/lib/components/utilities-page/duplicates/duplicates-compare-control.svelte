@@ -7,6 +7,7 @@
   import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { s } from '$lib/utils';
 
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (trashIds: string[]) => void;
@@ -114,7 +115,7 @@
                 {#if albums.length === 0}
                   Not in any album
                 {:else}
-                  In {albums.length} album{albums.length > 1 ? 's' : ''}
+                  In {albums.length} album{s(albums.length)}
                 {/if}
               {/await}
             </td>
