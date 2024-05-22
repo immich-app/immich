@@ -29,7 +29,7 @@ class AssetResponseDto {
     required this.isOffline,
     this.isReadOnly,
     required this.isTrashed,
-    required this.libraryId,
+    this.libraryId,
     this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
@@ -101,7 +101,8 @@ class AssetResponseDto {
 
   bool isTrashed;
 
-  String libraryId;
+  /// This property was deprecated in v1.106.0
+  String? libraryId;
 
   String? livePhotoVideoId;
 
@@ -202,7 +203,7 @@ class AssetResponseDto {
     (isOffline.hashCode) +
     (isReadOnly == null ? 0 : isReadOnly!.hashCode) +
     (isTrashed.hashCode) +
-    (libraryId.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime.hashCode) +
     (originalFileName.hashCode) +
@@ -257,7 +258,11 @@ class AssetResponseDto {
     //  json[r'isReadOnly'] = null;
     }
       json[r'isTrashed'] = this.isTrashed;
+    if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
+    } else {
+    //  json[r'libraryId'] = null;
+    }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
@@ -325,7 +330,7 @@ class AssetResponseDto {
         isOffline: mapValueOfType<bool>(json, r'isOffline')!,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly'),
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
-        libraryId: mapValueOfType<String>(json, r'libraryId')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
@@ -401,7 +406,6 @@ class AssetResponseDto {
     'isFavorite',
     'isOffline',
     'isTrashed',
-    'libraryId',
     'localDateTime',
     'originalFileName',
     'originalPath',

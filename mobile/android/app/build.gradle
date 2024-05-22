@@ -82,7 +82,7 @@ flutter {
 
 dependencies {
     def kotlin_version = '1.9.24'
-    def kotlin_coroutines_version = '1.8.0'
+    def kotlin_coroutines_version = '1.8.1'
     def work_version = '2.9.0'
     def concurrent_version = '1.1.0'
     def guava_version = '33.2.0-android'
