@@ -42,7 +42,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError, s } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
@@ -291,7 +291,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Added ${count} asset${s(count)}`,
       });
 
       await refreshAlbum();

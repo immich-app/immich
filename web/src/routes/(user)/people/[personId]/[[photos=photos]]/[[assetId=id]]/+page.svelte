@@ -31,7 +31,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getPeopleThumbnailUrl, handlePromiseError, s } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
@@ -482,7 +482,7 @@
                     {#if data.person.name}
                       <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
                       <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
+                        {`${numberOfAssets} asset${s(numberOfAssets)}`}
                       </p>
                     {:else}
                       <p class="font-medium">Add a name</p>

@@ -5,7 +5,7 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
-import { downloadRequest, getKey } from '$lib/utils';
+import { downloadRequest, getKey, s } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
@@ -38,7 +38,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
     timeout: 5000,
     message:
       count > 0
-        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        ? `Added ${count} asset${s(count)} to the album`
         : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
     button: {
       text: 'View Album',
@@ -58,7 +58,7 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
   notificationController.show({
     type: NotificationType.Info,
     timeout: 5000,
-    message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+    message: `Added ${assetIds.length} asset${s(assetIds.length)} to ${displayName}`,
     html: true,
     button: {
       text: 'View Album',
@@ -267,7 +267,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
   if (numberOfIssues > 0) {
     notificationController.show({
-      message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,
+      message: `Can't change metadata of ${numberOfIssues} asset${s(numberOfIssues)}`,
       type: NotificationType.Warning,
     });
   }
