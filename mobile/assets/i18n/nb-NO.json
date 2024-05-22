@@ -77,7 +77,7 @@
   "backup_controller_page_background_configure_error": "Konfigurering av bakgrunnstjenesten feilet",
   "backup_controller_page_background_delay": "Forsink sikkerhetskopiering av nye objekter: {}",
   "backup_controller_page_background_description": "Skru på bakgrunnstjenesten for å automatisk sikkerhetskopiere alle nye objekter uten å måtte åpne appen",
-  "backup_controller_page_background_is_off": "Automatisk sikkerhetskopiering i bakgrunnener deaktivert",
+  "backup_controller_page_background_is_off": "Automatisk sikkerhetskopiering i bakgrunnen er deaktivert",
   "backup_controller_page_background_is_on": "Automatisk sikkerhetskopiering i bakgrunnen er aktivert",
   "backup_controller_page_background_turn_off": "Skru av bakgrunnstjenesten",
   "backup_controller_page_background_turn_on": "Skru på bakgrunnstjenesten",
