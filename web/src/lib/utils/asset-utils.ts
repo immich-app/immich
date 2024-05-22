@@ -5,7 +5,6 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
-import { locale } from '$lib/stores/preferences.store';
 import { downloadRequest, getKey, s } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { asByteUnitString } from '$lib/utils/byte-units';

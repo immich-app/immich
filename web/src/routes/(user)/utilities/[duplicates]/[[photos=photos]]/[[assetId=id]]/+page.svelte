@@ -9,6 +9,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { s } from '$lib/utils';
 
   export let data: PageData;
 
@@ -23,7 +24,7 @@
       }
 
       notificationController.show({
-        message: `Moved ${trashIds.length} to trash`,
+        message: `Moved ${trashIds.length} asset${s(trashIds.length)} to trash`,
         type: NotificationType.Info,
       });
     } catch (error) {

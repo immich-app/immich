@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-  import { sortBy } from 'lodash';
+  import { sortBy } from 'lodash-es';
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (trashIds: string[]) => void;
 
