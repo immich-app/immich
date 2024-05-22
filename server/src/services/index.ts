@@ -6,6 +6,7 @@ import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { AuthService } from 'src/services/auth.service';
+import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
@@ -44,6 +45,7 @@ export const services = [
   AssetServiceV1,
   AuditService,
   AuthService,
+  CliService,
   DatabaseService,
   DownloadService,
   DuplicateService,
