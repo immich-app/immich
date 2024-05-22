@@ -11,7 +11,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
   scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
 
-describe('/library', () => {
+describe('/libraries', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let library: LibraryResponseDto;
@@ -37,24 +37,24 @@ describe('/library', () => {
     utils.resetEvents();
   });
 
-  describe('GET /library', () => {
+  describe('GET /libraries', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/library');
+      const { status, body } = await request(app).get('/libraries');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
   });
 
-  describe('POST /library', () => {
+  describe('POST /libraries', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/library').send({});
+      const { status, body } = await request(app).post('/libraries').send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require admin authentication', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .send({ ownerId: admin.userId });
 
@@ -64,7 +64,7 @@ describe('/library', () => {
 
     it('should create an external library with defaults', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ ownerId: admin.userId });
 
@@ -83,7 +83,7 @@ describe('/library', () => {
 
     it('should create an external library with options', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
@@ -103,7 +103,7 @@ describe('/library', () => {
 
     it('should not create an external library with duplicate import paths', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
@@ -118,7 +118,7 @@ describe('/library', () => {
 
     it('should not create an external library with duplicate exclusion patterns', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
@@ -132,16 +132,16 @@ describe('/library', () => {
     });
   });
 
-  describe('PUT /library/:id', () => {
+  describe('PUT /libraries/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/library/${uuidDto.notFound}`).send({});
+      const { status, body } = await request(app).put(`/libraries/${uuidDto.notFound}`).send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should change the library name', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ name: 'New Library Name' });
 
@@ -155,7 +155,7 @@ describe('/library', () => {
 
     it('should not set an empty name', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ name: '' });
 
@@ -165,7 +165,7 @@ describe('/library', () => {
 
     it('should change the import paths', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: [testAssetDirInternal] });
 
@@ -179,7 +179,7 @@ describe('/library', () => {
 
     it('should reject an empty import path', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: [''] });
 
@@ -189,7 +189,7 @@ describe('/library', () => {
 
     it('should reject duplicate import paths', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: ['/path', '/path'] });
 
@@ -199,7 +199,7 @@ describe('/library', () => {
 
     it('should change the exclusion pattern', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: ['**/Raw/**'] });
 
@@ -213,7 +213,7 @@ describe('/library', () => {
 
     it('should reject duplicate exclusion patterns', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
 
@@ -223,7 +223,7 @@ describe('/library', () => {
 
     it('should reject an empty exclusion pattern', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: [''] });
 
@@ -232,9 +232,9 @@ describe('/library', () => {
     });
   });
 
-  describe('GET /library/:id', () => {
+  describe('GET /libraries/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/library/${uuidDto.notFound}`);
+      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -242,7 +242,7 @@ describe('/library', () => {
 
     it('should require admin access', async () => {
       const { status, body } = await request(app)
-        .get(`/library/${uuidDto.notFound}`)
+        .get(`/libraries/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
@@ -252,7 +252,7 @@ describe('/library', () => {
       const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
       const { status, body } = await request(app)
-        .get(`/library/${library.id}`)
+        .get(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
@@ -269,18 +269,18 @@ describe('/library', () => {
     });
   });
 
-  describe('GET /library/:id/statistics', () => {
+  describe('GET /libraries/:id/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/library/${uuidDto.notFound}/statistics`);
+      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}/statistics`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
   });
 
-  describe('POST /library/:id/scan', () => {
+  describe('POST /libraries/:id/scan', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/scan`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/scan`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -496,9 +496,9 @@ describe('/library', () => {
     });
   });
 
-  describe('POST /library/:id/removeOffline', () => {
+  describe('POST /libraries/:id/removeOffline', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/removeOffline`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/removeOffline`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -532,7 +532,7 @@ describe('/library', () => {
       expect(offlineAssets.count).toBe(1);
 
       const { status } = await request(app)
-        .post(`/library/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/removeOffline`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
@@ -557,7 +557,7 @@ describe('/library', () => {
       expect(assetsBefore.count).toBeGreaterThan(1);
 
       const { status } = await request(app)
-        .post(`/library/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/removeOffline`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
@@ -569,9 +569,9 @@ describe('/library', () => {
     });
   });
 
-  describe('POST /library/:id/validate', () => {
+  describe('POST /libraries/:id/validate', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/validate`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/validate`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -617,9 +617,9 @@ describe('/library', () => {
     });
   });
 
-  describe('DELETE /library/:id', () => {
+  describe('DELETE /libraries/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/library/${uuidDto.notFound}`);
+      const { status, body } = await request(app).delete(`/libraries/${uuidDto.notFound}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -629,7 +629,7 @@ describe('/library', () => {
       const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
       const { status, body } = await request(app)
-        .delete(`/library/${library.id}`)
+        .delete(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(204);
@@ -655,7 +655,7 @@ describe('/library', () => {
       await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
 
       const { status, body } = await request(app)
-        .delete(`/library/${library.id}`)
+        .delete(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(204);
