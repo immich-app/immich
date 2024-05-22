@@ -8,7 +8,7 @@ import { PartnerService } from 'src/services/partner.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Partner')
-@Controller('partner')
+@Controller('partners')
 export class PartnerController {
   constructor(private service: PartnerService) {}
 

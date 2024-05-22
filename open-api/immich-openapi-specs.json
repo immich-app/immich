@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/activity": {
+    "/activities": {
       "get": {
         "operationId": "getActivities",
         "parameters": [
@@ -120,7 +120,7 @@
         ]
       }
     },
-    "/activity/statistics": {
+    "/activities/statistics": {
       "get": {
         "operationId": "getActivityStatistics",
         "parameters": [
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/activity/{id}": {
+    "/activities/{id}": {
       "delete": {
         "operationId": "deleteActivity",
         "parameters": [
@@ -206,7 +206,7 @@
         ]
       }
     },
-    "/album": {
+    "/albums": {
       "get": {
         "operationId": "getAllAlbums",
         "parameters": [
@@ -300,7 +300,7 @@
         ]
       }
     },
-    "/album/count": {
+    "/albums/count": {
       "get": {
         "operationId": "getAlbumCount",
         "parameters": [],
@@ -332,7 +332,7 @@
         ]
       }
     },
-    "/album/{id}": {
+    "/albums/{id}": {
       "delete": {
         "operationId": "deleteAlbum",
         "parameters": [
@@ -473,7 +473,7 @@
         ]
       }
     },
-    "/album/{id}/assets": {
+    "/albums/{id}/assets": {
       "delete": {
         "operationId": "removeAssetFromAlbum",
         "parameters": [
@@ -589,7 +589,7 @@
         ]
       }
     },
-    "/album/{id}/user/{userId}": {
+    "/albums/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
         "parameters": [
@@ -683,7 +683,7 @@
         ]
       }
     },
-    "/album/{id}/users": {
+    "/albums/{id}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
         "parameters": [
@@ -735,7 +735,7 @@
         ]
       }
     },
-    "/api-key": {
+    "/api-keys": {
       "get": {
         "operationId": "getApiKeys",
         "parameters": [],
@@ -810,7 +810,7 @@
         ]
       }
     },
-    "/api-key/{id}": {
+    "/api-keys/{id}": {
       "delete": {
         "operationId": "deleteApiKey",
         "parameters": [
@@ -2301,7 +2301,7 @@
         ]
       }
     },
-    "/face": {
+    "/faces": {
       "get": {
         "operationId": "getFaces",
         "parameters": [
@@ -2346,7 +2346,7 @@
         ]
       }
     },
-    "/face/{id}": {
+    "/faces/{id}": {
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -2481,7 +2481,7 @@
         ]
       }
     },
-    "/library": {
+    "/libraries": {
       "get": {
         "operationId": "getAllLibraries",
         "parameters": [],
@@ -2556,7 +2556,7 @@
         ]
       }
     },
-    "/library/{id}": {
+    "/libraries/{id}": {
       "delete": {
         "operationId": "deleteLibrary",
         "parameters": [
@@ -2681,7 +2681,7 @@
         ]
       }
     },
-    "/library/{id}/removeOffline": {
+    "/libraries/{id}/removeOffline": {
       "post": {
         "operationId": "removeOfflineFiles",
         "parameters": [
@@ -2716,7 +2716,7 @@
         ]
       }
     },
-    "/library/{id}/scan": {
+    "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
         "parameters": [
@@ -2761,7 +2761,7 @@
         ]
       }
     },
-    "/library/{id}/statistics": {
+    "/libraries/{id}/statistics": {
       "get": {
         "operationId": "getLibraryStatistics",
         "parameters": [
@@ -2803,7 +2803,7 @@
         ]
       }
     },
-    "/library/{id}/validate": {
+    "/libraries/{id}/validate": {
       "post": {
         "operationId": "validate",
         "parameters": [
@@ -3313,7 +3313,7 @@
         ]
       }
     },
-    "/partner": {
+    "/partners": {
       "get": {
         "operationId": "getPartners",
         "parameters": [
@@ -3361,7 +3361,7 @@
         ]
       }
     },
-    "/partner/{id}": {
+    "/partners/{id}": {
       "delete": {
         "operationId": "removePartner",
         "parameters": [
@@ -3486,7 +3486,7 @@
         ]
       }
     },
-    "/person": {
+    "/people": {
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -3610,7 +3610,7 @@
         ]
       }
     },
-    "/person/{id}": {
+    "/people/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -3702,7 +3702,7 @@
         ]
       }
     },
-    "/person/{id}/assets": {
+    "/people/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -3747,7 +3747,7 @@
         ]
       }
     },
-    "/person/{id}/merge": {
+    "/people/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
         "parameters": [
@@ -3802,7 +3802,7 @@
         ]
       }
     },
-    "/person/{id}/reassign": {
+    "/people/{id}/reassign": {
       "put": {
         "operationId": "reassignFaces",
         "parameters": [
@@ -3857,7 +3857,7 @@
         ]
       }
     },
-    "/person/{id}/statistics": {
+    "/people/{id}/statistics": {
       "get": {
         "operationId": "getPersonStatistics",
         "parameters": [
@@ -3899,7 +3899,7 @@
         ]
       }
     },
-    "/person/{id}/thumbnail": {
+    "/people/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
         "parameters": [
@@ -3942,7 +3942,7 @@
         ]
       }
     },
-    "/report": {
+    "/reports": {
       "get": {
         "operationId": "getAuditFiles",
         "parameters": [],
@@ -3974,7 +3974,7 @@
         ]
       }
     },
-    "/report/checksum": {
+    "/reports/checksum": {
       "post": {
         "operationId": "getFileChecksums",
         "parameters": [],
@@ -4019,7 +4019,7 @@
         ]
       }
     },
-    "/report/fix": {
+    "/reports/fix": {
       "post": {
         "operationId": "fixAuditFiles",
         "parameters": [],
@@ -4701,7 +4701,7 @@
         ]
       }
     },
-    "/shared-link": {
+    "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
         "parameters": [],
@@ -4776,7 +4776,7 @@
         ]
       }
     },
-    "/shared-link/me": {
+    "/shared-links/me": {
       "get": {
         "operationId": "getMySharedLink",
         "parameters": [
@@ -4834,7 +4834,7 @@
         ]
       }
     },
-    "/shared-link/{id}": {
+    "/shared-links/{id}": {
       "delete": {
         "operationId": "removeSharedLink",
         "parameters": [
@@ -4959,7 +4959,7 @@
         ]
       }
     },
-    "/shared-link/{id}/assets": {
+    "/shared-links/{id}/assets": {
       "delete": {
         "operationId": "removeSharedLinkAssets",
         "parameters": [
@@ -5452,7 +5452,7 @@
         ]
       }
     },
-    "/tag": {
+    "/tags": {
       "get": {
         "operationId": "getAllTags",
         "parameters": [],
@@ -5527,7 +5527,7 @@
         ]
       }
     },
-    "/tag/{id}": {
+    "/tags/{id}": {
       "delete": {
         "operationId": "deleteTag",
         "parameters": [
@@ -5652,7 +5652,7 @@
         ]
       }
     },
-    "/tag/{id}/assets": {
+    "/tags/{id}/assets": {
       "delete": {
         "operationId": "untagAssets",
         "parameters": [
@@ -6150,7 +6150,7 @@
         ]
       }
     },
-    "/user": {
+    "/users": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -6274,7 +6274,7 @@
         ]
       }
     },
-    "/user/info/{id}": {
+    "/users/info/{id}": {
       "get": {
         "operationId": "getUserById",
         "parameters": [
@@ -6316,7 +6316,7 @@
         ]
       }
     },
-    "/user/me": {
+    "/users/me": {
       "get": {
         "operationId": "getMyUserInfo",
         "parameters": [],
@@ -6348,7 +6348,7 @@
         ]
       }
     },
-    "/user/profile-image": {
+    "/users/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
         "parameters": [],
@@ -6414,7 +6414,7 @@
         ]
       }
     },
-    "/user/profile-image/{id}": {
+    "/users/profile-image/{id}": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
@@ -6457,7 +6457,7 @@
         ]
       }
     },
-    "/user/{id}": {
+    "/users/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
@@ -6509,7 +6509,7 @@
         ]
       }
     },
-    "/user/{id}/restore": {
+    "/users/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [
