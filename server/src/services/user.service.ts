@@ -63,19 +63,21 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.createUser(dto);
+    const { memoriesEnabled, notify, ...rest } = dto;
+    let user = await this.userCore.createUser(rest);
 
     // TODO remove and replace with entire dto.preferences config
-    if (dto.memoriesEnabled === false) {
+    if (memoriesEnabled === false) {
       await this.userRepository.upsertMetadata(user.id, {
         key: UserMetadataKey.PREFERENCES,
         value: { memories: { enabled: false } },
       });
-      delete dto.memoriesEnabled;
+
+      user = await this.findOrFail(user.id, {});
     }
 
-    const tempPassword = user.shouldChangePassword ? dto.password : undefined;
-    if (dto.notify) {
+    const tempPassword = user.shouldChangePassword ? rest.password : undefined;
+    if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
     }
     return mapUser(user);
