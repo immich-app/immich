@@ -69,7 +69,7 @@ export class UserCore {
       dto.storageLabel = null;
     }
 
-    return this.userRepository.update(id, dto);
+    return this.userRepository.update(id, { ...dto, updatedAt: new Date() });
   }
 
   async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
