@@ -2,48 +2,52 @@
 
 A short guide on connecting [pgAdmin](https://www.pgadmin.org/) to Immich.
 
-:::note
-
-In order to connect to the database the immich_postgres container **must be running**.
-
-The passwords and usernames used below match the ones specified in the example `.env` file. If changed, please use actual values instead.
-
-**Optional:** To connect to the database **outside** of your Docker's network:
-
-- Expose port 5432 in your `docker-compose.yml` file.
-- Edit the PostgreSQL [`pg_hba.conf`](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file.
-- Make sure your firewall does not block access to port 5432.
-  Note that exposing the database port increases the risk of getting attacked by hackers.  
-  Make sure to remove the binding port after finishing the database's tasks.
-
-:::
-
 ## 1. Install pgAdmin
 
-Download and install [pgAdmin](https://www.pgadmin.org/download/) following the official documentation.
+Add a file `docker-compose-pgadmin.yml` next to your `docker-compose.yml` with the following content:
+
+```
+name: immich
+
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
+      PGADMIN_DEFAULT_PASSWORD: strong-password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pgadmin-data:
+```
+
+Change the values of `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` in this file.
+
+Run `docker compose -f docker-compose.yml -f docker-compose-pgadmin.yml up` to start immich along with `pgAdmin`.
 
 ## 2. Add a Server
 
-Open pgAdmin and click "Add New Server".
+Open [localhost:8888](http://localhost:8888) and login with the default credentials from above.
 
-<img src={require('./img/add-new-server-option.png').default} width="50%" title="new server option" />
+Right click on `Servers` and click on `Register >> Server..` then enter the values below in the `Connection` tab.
 
-## 3. Enter Connection Details
+<img src={require('./img/pgadmin-add-new-server.png').default} width="50%" title="new server option" />
 
-| Name                 | Value       |
-| -------------------- | ----------- |
-| Host name/address    | `localhost` |
-| Port                 | `5432`      |
-| Maintenance database | `immich`    |
-| Username             | `postgres`  |
-| Password             | `postgres`  |
+:::note
+The parameters used here match those specified in the example `.env` file. If you have changed your `.env` file, you'll need to adjust accordingly.
+:::
 
-<img src={require('./img/Connection-Pgadmin.png').default} width="75%" title="Connection" />
-
-## 4. Save Connection
+| Name                 | Value             |
+| -------------------- | ----------------- |
+| Host name/address    | `immich_postgres` |
+| Port                 | `5432`            |
+| Maintenance database | `immich`          |
+| Username             | `postgres`        |
+| Password             | `postgres`        |
 
 Click on "Save" to connect to the Immich database.
-
-:::tip
-View [Database Queries](/docs/guides/database-queries/) for common database queries.
-:::

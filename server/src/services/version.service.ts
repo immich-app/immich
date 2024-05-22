@@ -1,24 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import semver, { SemVer } from 'semver';
 import { isDev, serverVersion } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
-import { ReleaseNotification } from 'src/dtos/server-info.dto';
+import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey, VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { Version } from 'src/utils/version';
 
-const asNotification = ({ releaseVersion, checkedAt }: VersionCheckMetadata): ReleaseNotification => {
-  const version = Version.fromString(releaseVersion);
+const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {
-    isAvailable: version.isNewerThan(serverVersion) !== 0,
+    isAvailable: semver.gt(releaseVersion, serverVersion),
     checkedAt,
-    serverVersion,
-    releaseVersion: version,
+    serverVersion: ServerVersionResponseDto.fromSemVer(serverVersion),
+    releaseVersion: ServerVersionResponseDto.fromSemVer(new SemVer(releaseVersion)),
   };
 };
 
@@ -42,7 +41,7 @@ export class VersionService {
   }
 
   getVersion() {
-    return serverVersion;
+    return ServerVersionResponseDto.fromSemVer(serverVersion);
   }
 
   async handleQueueVersionCheck() {
@@ -72,18 +71,13 @@ export class VersionService {
         }
       }
 
-      const githubRelease = await this.repository.getGitHubRelease();
-      const githubVersion = Version.fromString(githubRelease.tag_name);
-      const metadata: VersionCheckMetadata = {
-        checkedAt: DateTime.utc().toISO(),
-        releaseVersion: githubVersion.toString(),
-      };
+      const { tag_name: releaseVersion, published_at: publishedAt } = await this.repository.getGitHubRelease();
+      const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VERSION_CHECK_STATE, metadata);
 
-      if (githubVersion.isNewerThan(serverVersion)) {
-        const publishedAt = new Date(githubRelease.published_at);
-        this.logger.log(`Found ${githubVersion.toString()}, released at ${publishedAt.toLocaleString()}`);
+      if (semver.gt(releaseVersion, serverVersion)) {
+        this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
         this.eventRepository.clientBroadcast(ClientEvent.NEW_RELEASE, asNotification(metadata));
       }
     } catch (error: Error | any) {

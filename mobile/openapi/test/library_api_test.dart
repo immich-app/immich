@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<LibraryResponseDto>> getAllLibraries({ LibraryType type }) async
+    //Future<List<LibraryResponseDto>> getAllLibraries() async
     test('test getAllLibraries', () async {
       // TODO
     });

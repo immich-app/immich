@@ -1,11 +1,4 @@
-import {
-  LibraryResponseDto,
-  LibraryType,
-  LoginResponseDto,
-  ScanLibraryDto,
-  getAllLibraries,
-  scanLibrary,
-} from '@immich/sdk';
+import { LibraryResponseDto, LoginResponseDto, ScanLibraryDto, getAllLibraries, scanLibrary } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
@@ -29,7 +22,7 @@ describe('/library', () => {
     admin = await utils.adminSetup();
     await utils.resetAdminConfig(admin.accessToken);
     user = await utils.userSetup(admin.accessToken, userDto.user1);
-    library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId, type: LibraryType.External });
+    library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
     websocket = await utils.connectWebsocket(admin.accessToken);
     utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
     utils.createImageFile(`${testAssetDir}/temp/directoryB/assetB.png`);
@@ -50,24 +43,6 @@ describe('/library', () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
-
-    it('should start with a default upload library', async () => {
-      const { status, body } = await request(app).get('/library').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            ownerId: admin.userId,
-            type: LibraryType.Upload,
-            name: 'Default Library',
-            refreshedAt: null,
-            assetCount: 0,
-            importPaths: [],
-            exclusionPatterns: [],
-          }),
-        ]),
-      );
-    });
   });
 
   describe('POST /library', () => {
@@ -81,7 +56,7 @@ describe('/library', () => {
       const { status, body } = await request(app)
         .post('/library')
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.External });
+        .send({ ownerId: admin.userId });
 
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
@@ -91,13 +66,12 @@ describe('/library', () => {
       const { status, body } = await request(app)
         .post('/library')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.External });
+        .send({ ownerId: admin.userId });
 
       expect(status).toBe(201);
       expect(body).toEqual(
         expect.objectContaining({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'New External Library',
           refreshedAt: null,
           assetCount: 0,
@@ -113,7 +87,6 @@ describe('/library', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path/to/import'],
           exclusionPatterns: ['**/Raw/**'],
@@ -134,7 +107,6 @@ describe('/library', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path', '/path'],
           exclusionPatterns: ['**/Raw/**'],
@@ -150,7 +122,6 @@ describe('/library', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path/to/import'],
           exclusionPatterns: ['**/Raw/**', '**/Raw/**'],
@@ -158,60 +129,6 @@ describe('/library', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
-    });
-
-    it('should create an upload library with defaults', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload });
-
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          ownerId: admin.userId,
-          type: LibraryType.Upload,
-          name: 'New Upload Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      );
-    });
-
-    it('should create an upload library with options', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, name: 'My Awesome Library' });
-
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          name: 'My Awesome Library',
-        }),
-      );
-    });
-
-    it('should not allow upload libraries to have import paths', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, importPaths: ['/path/to/import'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Upload libraries cannot have import paths'));
-    });
-
-    it('should not allow upload libraries to have exclusion patterns', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, exclusionPatterns: ['**/Raw/**'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Upload libraries cannot have exclusion patterns'));
     });
   });
 
@@ -332,10 +249,7 @@ describe('/library', () => {
     });
 
     it('should get library by id', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
-      });
+      const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
       const { status, body } = await request(app)
         .get(`/library/${library.id}`)
@@ -345,7 +259,6 @@ describe('/library', () => {
       expect(body).toEqual(
         expect.objectContaining({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'New External Library',
           refreshedAt: null,
           assetCount: 0,
@@ -373,24 +286,9 @@ describe('/library', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not scan an upload library', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.Upload,
-      });
-
-      const { status, body } = await request(app)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Can only refresh external libraries'));
-    });
-
     it('should scan external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
@@ -406,7 +304,6 @@ describe('/library', () => {
     it('should scan external library with exclusion pattern', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
         exclusionPatterns: ['**/directoryA'],
       });
@@ -423,7 +320,6 @@ describe('/library', () => {
     it('should scan multiple import paths', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
@@ -440,7 +336,6 @@ describe('/library', () => {
     it('should pick up new files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -466,7 +361,6 @@ describe('/library', () => {
       utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -493,7 +387,6 @@ describe('/library', () => {
     it('should scan new files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -521,7 +414,6 @@ describe('/library', () => {
       it('should reimport modified files', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
-          type: LibraryType.External,
           importPaths: [`${testAssetDirInternal}/temp`],
         });
 
@@ -549,7 +441,6 @@ describe('/library', () => {
       it('should not reimport unmodified files', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
-          type: LibraryType.External,
           importPaths: [`${testAssetDirInternal}/temp`],
         });
 
@@ -579,7 +470,6 @@ describe('/library', () => {
       it('should reimport all files', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
-          type: LibraryType.External,
           importPaths: [`${testAssetDirInternal}/temp`],
         });
 
@@ -617,7 +507,6 @@ describe('/library', () => {
     it('should remove offline files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -658,7 +547,6 @@ describe('/library', () => {
     it('should not remove online files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -737,37 +625,8 @@ describe('/library', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not delete the last upload library', async () => {
-      const libraries = await getAllLibraries(
-        { $type: LibraryType.Upload },
-        { headers: asBearerAuth(admin.accessToken) },
-      );
-
-      const adminLibraries = libraries.filter((library) => library.ownerId === admin.userId);
-      expect(adminLibraries.length).toBeGreaterThanOrEqual(1);
-      const lastLibrary = adminLibraries.pop() as LibraryResponseDto;
-
-      // delete all but the last upload library
-      for (const library of adminLibraries) {
-        const { status } = await request(app)
-          .delete(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`);
-        expect(status).toBe(204);
-      }
-
-      const { status, body } = await request(app)
-        .delete(`/library/${lastLibrary.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(body).toEqual(errorDto.noDeleteUploadLibrary);
-      expect(status).toBe(400);
-    });
-
     it('should delete an external library', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
-      });
+      const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
       const { status, body } = await request(app)
         .delete(`/library/${library.id}`)
@@ -776,7 +635,7 @@ describe('/library', () => {
       expect(status).toBe(204);
       expect(body).toEqual({});
 
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
+      const libraries = await getAllLibraries({ headers: asBearerAuth(admin.accessToken) });
       expect(libraries).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -789,7 +648,6 @@ describe('/library', () => {
     it('should delete an external library with assets', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -803,7 +661,7 @@ describe('/library', () => {
       expect(status).toBe(204);
       expect(body).toEqual({});
 
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
+      const libraries = await getAllLibraries({ headers: asBearerAuth(admin.accessToken) });
       expect(libraries).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({

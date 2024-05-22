@@ -1,6 +1,5 @@
 import os
 import sys
-
 import requests
 
 port = os.getenv("IMMICH_PORT", 3003)

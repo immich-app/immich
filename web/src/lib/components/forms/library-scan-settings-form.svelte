@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LibraryType, type LibraryResponseDto } from '@immich/sdk';
+  import { type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
@@ -27,14 +27,14 @@
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: { library: Partial<LibraryResponseDto>; type: LibraryType };
+    submit: Partial<LibraryResponseDto>;
   }>();
   const handleCancel = () => {
     dispatch('cancel');
   };
 
   const handleSubmit = () => {
-    dispatch('submit', { library, type: LibraryType.External });
+    dispatch('submit', library);
   };
 
   const handleAddExclusionPattern = () => {
