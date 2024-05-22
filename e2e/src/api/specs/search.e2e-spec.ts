@@ -308,14 +308,14 @@ describe('/search', () => {
       {
         should: 'should search by originalFilename',
         deferred: () => ({
-          dto: { originalFileName: 'rocks' },
+          dto: { originalFileName: '*rocks*' },
           assets: [assetRocks],
         }),
       },
       {
         should: 'should search by originalFilename with spaces',
         deferred: () => ({
-          dto: { originalFileName: 'Samsung One', type: 'IMAGE' },
+          dto: { originalFileName: '*Samsung One*', type: 'IMAGE' },
           assets: [assetOneJpg5, assetOneJpg6, assetOneHeic6],
         }),
       },
