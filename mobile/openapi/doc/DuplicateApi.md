@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getAssetDuplicates**](DuplicateApi.md#getassetduplicates) | **GET** /duplicates | 
-[**resolveDuplicates**](DuplicateApi.md#resolveduplicates) | **POST** /duplicates/resolve | 
+[**resolveDuplicates**](DuplicateApi.md#resolveduplicates) | **POST** /duplicates/{id}/resolve | 
 
 
 # **getAssetDuplicates**
@@ -65,7 +65,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **resolveDuplicates**
-> resolveDuplicates(resolveDuplicatesDto)
+> resolveDuplicates(id, resolveDuplicatesDto)
 
 
 
@@ -88,10 +88,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = DuplicateApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final resolveDuplicatesDto = ResolveDuplicatesDto(); // ResolveDuplicatesDto | 
 
 try {
-    api_instance.resolveDuplicates(resolveDuplicatesDto);
+    api_instance.resolveDuplicates(id, resolveDuplicatesDto);
 } catch (e) {
     print('Exception when calling DuplicateApi->resolveDuplicates: $e\n');
 }
@@ -101,6 +102,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
  **resolveDuplicatesDto** | [**ResolveDuplicatesDto**](ResolveDuplicatesDto.md)|  | 
 
 ### Return type

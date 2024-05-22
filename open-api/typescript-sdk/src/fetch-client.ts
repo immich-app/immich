@@ -379,7 +379,6 @@ export type DuplicateResponseDto = {
 };
 export type ResolveDuplicatesDto = {
     assetIds: string[];
-    duplicateId: string;
 };
 export type PersonResponseDto = {
     birthDate: string | null;
@@ -1710,10 +1709,11 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function resolveDuplicates({ resolveDuplicatesDto }: {
+export function resolveDuplicates({ id, resolveDuplicatesDto }: {
+    id: string;
     resolveDuplicatesDto: ResolveDuplicatesDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/duplicates/resolve", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}/resolve`, oazapfts.json({
         ...opts,
         method: "POST",
         body: resolveDuplicatesDto

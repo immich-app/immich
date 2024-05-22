@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // String duplicateId
-    test('to test the property `duplicateId`', () async {
-      // TODO
-    });
-
 
   });
 

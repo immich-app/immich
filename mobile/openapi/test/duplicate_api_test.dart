@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future resolveDuplicates(ResolveDuplicatesDto resolveDuplicatesDto) async
+    //Future resolveDuplicates(String id, ResolveDuplicatesDto resolveDuplicatesDto) async
     test('test resolveDuplicates', () async {
       // TODO
     });

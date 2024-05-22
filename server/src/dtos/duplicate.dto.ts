@@ -9,9 +9,6 @@ export class DuplicateResponseDto {
 
 export class ResolveDuplicatesDto {
   @IsNotEmpty()
-  duplicateId!: string;
-
-  @IsNotEmpty()
   assetIds!: string[];
 }
 

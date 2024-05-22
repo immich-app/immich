@@ -41,8 +41,8 @@ export class DuplicateService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async resolveDuplicates(auth: AuthDto, dto: ResolveDuplicatesDto): Promise<void> {
-    const { assetIds, duplicateId } = dto;
+  async resolveDuplicates(auth: AuthDto, duplicateId: string, dto: ResolveDuplicatesDto): Promise<void> {
+    const { assetIds } = dto;
 
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, assetIds);
 

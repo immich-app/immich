@@ -14,31 +14,25 @@ class ResolveDuplicatesDto {
   /// Returns a new [ResolveDuplicatesDto] instance.
   ResolveDuplicatesDto({
     this.assetIds = const [],
-    required this.duplicateId,
   });
 
   List<String> assetIds;
 
-  String duplicateId;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is ResolveDuplicatesDto &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.duplicateId == duplicateId;
+    _deepEquality.equals(other.assetIds, assetIds);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (duplicateId.hashCode);
+    (assetIds.hashCode);
 
   @override
-  String toString() => 'ResolveDuplicatesDto[assetIds=$assetIds, duplicateId=$duplicateId]';
+  String toString() => 'ResolveDuplicatesDto[assetIds=$assetIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
-      json[r'duplicateId'] = this.duplicateId;
     return json;
   }
 
@@ -53,7 +47,6 @@ class ResolveDuplicatesDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
       );
     }
     return null;
@@ -102,7 +95,6 @@ class ResolveDuplicatesDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetIds',
-    'duplicateId',
   };
 }
 

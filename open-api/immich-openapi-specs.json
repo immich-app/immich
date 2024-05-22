@@ -2256,10 +2256,20 @@
         ]
       }
     },
-    "/duplicates/resolve": {
+    "/duplicates/{id}/resolve": {
       "post": {
         "operationId": "resolveDuplicates",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2271,7 +2281,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
@@ -9291,14 +9301,10 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "duplicateId": {
-            "type": "string"
           }
         },
         "required": [
-          "assetIds",
-          "duplicateId"
+          "assetIds"
         ],
         "type": "object"
       },

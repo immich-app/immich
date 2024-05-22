@@ -14,7 +14,8 @@
 
   const handleOnResolve = async (duplicateId: string, trashIds: string[]) => {
     try {
-      await resolveDuplicates({ resolveDuplicatesDto: { duplicateId, assetIds: trashIds } });
+      await resolveDuplicates({ id: duplicateId, resolveDuplicatesDto: { assetIds: trashIds } });
+
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
       if (trashIds.length === 0) {
