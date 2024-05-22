@@ -9,6 +9,7 @@
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { s } from '$lib/utils';
 
   export let library: LibraryResponseDto;
 
@@ -56,14 +57,9 @@
           type: NotificationType.Info,
         });
       }
-    } else if (failedPaths === 1) {
-      notificationController.show({
-        message: `${failedPaths} path failed validation`,
-        type: NotificationType.Warning,
-      });
     } else {
       notificationController.show({
-        message: `${failedPaths} paths failed validation`,
+        message: `${failedPaths} path${s(failedPaths)} failed validation`,
         type: NotificationType.Warning,
       });
     }
