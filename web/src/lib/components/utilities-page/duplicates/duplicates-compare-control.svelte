@@ -1,15 +1,13 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { asByteUnitString } from '$lib/utils/byte-units';
   import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-
+  import { sortBy } from 'lodash';
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (trashIds: string[]) => void;
 
@@ -18,16 +16,15 @@
   $: trashCount = duplicate.assets.length - selectedAssetIds.size;
 
   onMount(() => {
-    const suggestedAsset = duplicate.assets.sort((a, b) => {
-      if (!a.exifInfo || !b.exifInfo || !a.exifInfo.fileSizeInByte || !b.exifInfo.fileSizeInByte) {
-        return 0;
-      }
+    const suggestedAsset = sortBy(duplicate.assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 
-      return b.exifInfo.fileSizeInByte - a.exifInfo.fileSizeInByte;
-    })[0];
+    if (!suggestedAsset) {
+      selectedAssetIds = new Set(duplicate.assets[0].id);
+      return;
+    }
 
     selectedAssetIds.add(suggestedAsset.id);
-    selectedAssetIds = new Set(selectedAssetIds);
+    selectedAssetIds = selectedAssetIds;
   });
 
   const onSelectAsset = (asset: AssetResponseDto) => {
