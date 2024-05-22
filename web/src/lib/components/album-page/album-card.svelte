@@ -61,7 +61,7 @@
       </p>
     {/if}
 
-    <span class="flex gap-2 text-sm" data-testid="album-details">
+    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
       {#if showItemCount}
         <p>
           {album.assetCount.toLocaleString($locale)}
