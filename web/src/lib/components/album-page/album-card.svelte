@@ -7,6 +7,7 @@
   import { getShortDateRange } from '$lib/utils/date-time';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { s } from '$lib/utils';
 
   export let album: AlbumResponseDto;
   export let showOwner = false;
@@ -61,11 +62,11 @@
       </p>
     {/if}
 
-    <span class="flex gap-2 text-sm" data-testid="album-details">
+    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
       {#if showItemCount}
         <p>
           {album.assetCount.toLocaleString($locale)}
-          {album.assetCount === 1 ? `item` : `items`}
+          item{s(album.assetCount)}
         </p>
       {/if}
 

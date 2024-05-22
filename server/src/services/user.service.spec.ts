@@ -138,13 +138,17 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: userStub.user1.id,
         storageLabel: null,
+        updatedAt: expect.any(Date),
       });
     });
 
     it('should omit a storage label set by non-admin users', async () => {
       userMock.update.mockResolvedValue(userStub.user1);
       await sut.update({ user: userStub.user1 }, { id: userStub.user1.id, storageLabel: 'admin' });
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { id: userStub.user1.id });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
+        id: userStub.user1.id,
+        updatedAt: expect.any(Date),
+      });
     });
 
     it('user can only update its information', async () => {
@@ -174,6 +178,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         email: 'updated@test.com',
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -210,6 +215,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         shouldChangePassword: true,
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -231,7 +237,7 @@ describe(UserService.name, () => {
 
       await sut.update(authStub.admin, dto);
 
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, dto);
+      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, { ...dto, updatedAt: expect.any(Date) });
     });
 
     it('should not let the another user become an admin', async () => {

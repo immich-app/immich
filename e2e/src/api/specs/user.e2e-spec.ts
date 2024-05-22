@@ -257,23 +257,6 @@ describe('/user', () => {
       expect(body).toMatchObject({ id: admin.userId, profileImagePath: '' });
     });
 
-    it('should ignore updates to createdAt, updatedAt and deletedAt', async () => {
-      const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
-
-      const { status, body } = await request(app)
-        .put(`/user`)
-        .send({
-          id: admin.userId,
-          createdAt: '2023-01-01T00:00:00.000Z',
-          updatedAt: '2023-01-01T00:00:00.000Z',
-          deletedAt: '2023-01-01T00:00:00.000Z',
-        })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toStrictEqual(before);
-    });
-
     it('should update first and last name', async () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 

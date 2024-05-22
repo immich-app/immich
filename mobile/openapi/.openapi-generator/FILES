@@ -64,6 +64,7 @@ doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/DeleteUserDto.md
+doc/DeprecatedApi.md
 doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
@@ -145,10 +146,10 @@ doc/SearchSuggestionType.md
 doc/ServerConfigDto.md
 doc/ServerFeaturesDto.md
 doc/ServerInfoApi.md
-doc/ServerInfoResponseDto.md
 doc/ServerMediaTypesResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
+doc/ServerStorageResponseDto.md
 doc/ServerThemeDto.md
 doc/ServerVersionResponseDto.md
 doc/SessionResponseDto.md
@@ -225,6 +226,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/deprecated_api.dart
 lib/api/download_api.dart
 lib/api/duplicate_api.dart
 lib/api/face_api.dart
@@ -378,10 +380,10 @@ lib/model/search_response_dto.dart
 lib/model/search_suggestion_type.dart
 lib/model/server_config_dto.dart
 lib/model/server_features_dto.dart
-lib/model/server_info_response_dto.dart
 lib/model/server_media_types_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
+lib/model/server_storage_response_dto.dart
 lib/model/server_theme_dto.dart
 lib/model/server_version_response_dto.dart
 lib/model/session_response_dto.dart
@@ -503,6 +505,7 @@ test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/delete_user_dto_test.dart
+test/deprecated_api_test.dart
 test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
@@ -584,10 +587,10 @@ test/search_suggestion_type_test.dart
 test/server_config_dto_test.dart
 test/server_features_dto_test.dart
 test/server_info_api_test.dart
-test/server_info_response_dto_test.dart
 test/server_media_types_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
+test/server_storage_response_dto_test.dart
 test/server_theme_dto_test.dart
 test/server_version_response_dto_test.dart
 test/session_response_dto_test.dart

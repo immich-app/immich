@@ -20,6 +20,7 @@ import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
 export const entities = [
@@ -44,6 +45,7 @@ export const entities = [
   SystemMetadataEntity,
   TagEntity,
   UserEntity,
+  UserMetadataEntity,
   SessionEntity,
   LibraryEntity,
 ];

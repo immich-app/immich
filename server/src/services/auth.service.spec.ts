@@ -4,6 +4,7 @@ import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
 import { AuthType } from 'src/constants';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -248,8 +249,13 @@ describe('AuthService', () => {
 
     it('should sign up the admin', async () => {
       userMock.getAdmin.mockResolvedValue(null);
-      userMock.create.mockResolvedValue({ ...dto, id: 'admin', createdAt: new Date('2021-01-01') } as UserEntity);
-      await expect(sut.adminSignUp(dto)).resolves.toEqual({
+      userMock.create.mockResolvedValue({
+        ...dto,
+        id: 'admin',
+        createdAt: new Date('2021-01-01'),
+        metadata: [] as UserMetadataEntity[],
+      } as UserEntity);
+      await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),
         id: 'admin',
         createdAt: new Date('2021-01-01'),

@@ -7,7 +7,7 @@ export class ServerPingResponse {
   res!: string;
 }
 
-export class ServerInfoResponseDto {
+export class ServerStorageResponseDto {
   diskSize!: string;
   diskUse!: string;
   diskAvailable!: string;

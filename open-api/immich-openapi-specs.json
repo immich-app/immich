@@ -4372,6 +4372,8 @@
     },
     "/server-info": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.106.0",
         "operationId": "getServerInfo",
         "parameters": [],
         "responses": {
@@ -4379,7 +4381,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
                 }
               }
             },
@@ -4398,8 +4400,12 @@
           }
         ],
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.106.0"
+        }
       }
     },
     "/server-info/config": {
@@ -4496,6 +4502,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/storage": {
+      "get": {
+        "operationId": "getStorage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
                 }
               }
             },
@@ -9540,45 +9578,6 @@
         ],
         "type": "object"
       },
-      "ServerInfoResponseDto": {
-        "properties": {
-          "diskAvailable": {
-            "type": "string"
-          },
-          "diskAvailableRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskSizeRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskUsagePercentage": {
-            "format": "float",
-            "type": "number"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskUseRaw": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "diskAvailable",
-          "diskAvailableRaw",
-          "diskSize",
-          "diskSizeRaw",
-          "diskUsagePercentage",
-          "diskUse",
-          "diskUseRaw"
-        ],
-        "type": "object"
-      },
       "ServerMediaTypesResponseDto": {
         "properties": {
           "image": {
@@ -9656,6 +9655,45 @@
           "usage",
           "usageByUser",
           "videos"
+        ],
+        "type": "object"
+      },
+      "ServerStorageResponseDto": {
+        "properties": {
+          "diskAvailable": {
+            "type": "string"
+          },
+          "diskAvailableRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskSizeRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskUsagePercentage": {
+            "format": "float",
+            "type": "number"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskUseRaw": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "diskAvailable",
+          "diskAvailableRaw",
+          "diskSize",
+          "diskSizeRaw",
+          "diskUsagePercentage",
+          "diskUse",
+          "diskUseRaw"
         ],
         "type": "object"
       },
