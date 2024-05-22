@@ -4,7 +4,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto, ResolveDuplicatesDto } from 'src/dtos/duplicate.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
-import { UUIDParamDto } from '../validation';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Duplicate')
 @Controller('duplicates')
