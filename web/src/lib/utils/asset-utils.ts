@@ -5,8 +5,10 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
+import { locale } from '$lib/stores/preferences.store';
 import { downloadRequest, getKey, s } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
+import { asByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
@@ -221,6 +223,21 @@ function isRotated270CW(orientation: number) {
 export function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
+}
+
+export function getFileSize(asset: AssetResponseDto): string {
+  const size = asset.exifInfo?.fileSizeInByte || 0;
+  return size > 0 ? asByteUnitString(size, undefined, 4) : 'Invalid Data';
+}
+
+export function getAssetResolution(asset: AssetResponseDto): string {
+  const { width, height } = getAssetRatio(asset);
+
+  if (width === 235 && height === 235) {
+    return 'Invalid Data';
+  }
+
+  return `${width} x ${height}`;
 }
 
 /**

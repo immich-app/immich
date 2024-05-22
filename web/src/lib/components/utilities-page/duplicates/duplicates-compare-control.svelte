@@ -8,6 +8,7 @@
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
+  import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
 
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (trashIds: string[]) => void;
@@ -52,14 +53,6 @@
       {@const isSelected = selectedAssetIds.has(asset.id)}
       {@const isFromExternalLibrary = !!asset.libraryId}
       {@const assetData = JSON.stringify(asset, null, 2)}
-      {@const hasValidFileSize = asset.exifInfo?.fileSizeInByte != null}
-      {@const hasValidDimensions = asset.exifInfo?.exifImageWidth != null && asset.exifInfo?.exifImageHeight != null}
-      {@const fileSize = hasValidFileSize
-        ? asByteUnitString(Number(asset.exifInfo?.fileSizeInByte), $locale, 4)
-        : 'Invalid Data'}
-      {@const dimensions = hasValidDimensions
-        ? `${asset.exifInfo?.exifImageWidth}x${asset.exifInfo?.exifImageHeight}`
-        : 'Invalid Data'}
 
       <div class="relative">
         <button on:click={() => onSelectAsset(asset)} class="block relative">
@@ -102,7 +95,7 @@
           <tr
             class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center`}
           >
-            <td>{dimensions} - {fileSize}</td>
+            <td>{getAssetResolution(asset)} - {getFileSize(asset)}</td>
           </tr>
 
           <tr
@@ -126,12 +119,7 @@
   </div>
 
   <!-- CONFIRM BUTTONS -->
-  <div class="flex gap-4 my-4 border-transparent w-full justify-between p-4 h-[85px]">
-    <div class="m-4 text-xs dark:text-white">
-      <p>DUPLICATE ID {duplicate.duplicateId}</p>
-      <p>TOTAL {duplicate.assets.length}</p>
-    </div>
-
+  <div class="flex gap-4 my-4 border-transparent w-full justify-end p-4 h-[85px]">
     {#if trashCount === 0}
       <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
         ><Icon path={mdiCheck} size="20" />Keep All
