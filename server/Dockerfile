@@ -62,3 +62,5 @@ VOLUME /usr/src/app/upload
 EXPOSE 3001
 ENTRYPOINT ["tini", "--", "/bin/bash"]
 CMD ["start.sh"]
+
+HEALTHCHECK CMD npm run healthcheck
