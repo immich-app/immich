@@ -40,14 +40,7 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    metadata: [
-      // {
-      //   user: authStub.user1.user,
-      //   userId: authStub.user1.user.id,
-      //   key: UserMetadataKey.PREFERENCES,
-      //   value: { avatar: { color: UserAvatarColor.PRIMARY } },
-      // },
-    ],
+    metadata: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   }),
