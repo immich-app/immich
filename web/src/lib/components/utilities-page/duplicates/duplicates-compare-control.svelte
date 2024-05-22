@@ -12,12 +12,17 @@
   export let onResolve: (trashIds: string[]) => void;
 
   let selectedAssetIds = new Set<string>();
+
   $: trashCount = duplicate.assets.length - selectedAssetIds.size;
 
   onMount(() => {
-    const suggestedAsset = duplicate.assets.sort(
-      (a, b) => b.exifInfo!.fileSizeInByte! - a.exifInfo!.fileSizeInByte!,
-    )[0];
+    const suggestedAsset = duplicate.assets.sort((a, b) => {
+      if (!a.exifInfo || !b.exifInfo || !a.exifInfo.fileSizeInByte || !b.exifInfo.fileSizeInByte) {
+        return 0;
+      }
+
+      return b.exifInfo.fileSizeInByte - a.exifInfo.fileSizeInByte;
+    })[0];
 
     selectedAssetIds.add(suggestedAsset.id);
     selectedAssetIds = new Set(selectedAssetIds);
@@ -44,6 +49,16 @@
   <div class="flex flex-wrap gap-1 place-items-center place-content-center px-4 pt-4">
     {#each duplicate.assets as asset, index (index)}
       {@const isSelected = selectedAssetIds.has(asset.id)}
+      {@const isFromExternalLibrary = !!asset.libraryId}
+      {@const assetData = JSON.stringify(asset, null, 2)}
+      {@const hasValidFileSize = asset.exifInfo?.fileSizeInByte != null}
+      {@const hasValidDimensions = asset.exifInfo?.exifImageWidth != null && asset.exifInfo?.exifImageHeight != null}
+      {@const fileSize = hasValidFileSize
+        ? asByteUnitString(Number(asset.exifInfo?.fileSizeInByte), $locale, 4)
+        : 'Invalid Data'}
+      {@const dimensions = hasValidDimensions
+        ? `${asset.exifInfo?.exifImageWidth}x${asset.exifInfo?.exifImageHeight}`
+        : 'Invalid Data'}
 
       <div class="relative">
         <button on:click={() => onSelectAsset(asset)} class="block relative">
@@ -51,17 +66,26 @@
           <img
             src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
             alt={asset.id}
-            title={`assetId: ${asset.id}`}
+            title={`${assetData}`}
             class={`w-[250px] h-[250px] object-cover rounded-t-xl border-t-[4px] border-l-[4px] border-r-[4px] border-gray-300 ${isSelected ? 'border-immich-primary dark:border-immich-dark-primary' : 'dark:border-gray-800'} transition-all`}
             draggable="false"
           />
 
           <!-- OVERLAY CHIP -->
           <div
-            class={`absolute bottom-2 right-3 ${isSelected ? 'bg-green-400/80' : 'bg-red-300/80'} px-4 py-1 rounded-xl text-sm font-semibold`}
+            class={`absolute bottom-2 right-3 ${isSelected ? 'bg-green-400/90' : 'bg-red-300/90'} px-4 py-1 rounded-xl text-xs font-semibold`}
           >
             {isSelected ? 'Keep' : 'Trash'}
           </div>
+
+          <!-- EXTERNAL LIBRARY CHIP-->
+          {#if isFromExternalLibrary}
+            <div
+              class="absolute top-2 right-3 bg-immich-primary/90 px-4 py-1 rounded-xl text-xs font-semibold text-white"
+            >
+              External
+            </div>
+          {/if}
         </button>
 
         <!-- ASSET INFO-->
@@ -73,22 +97,11 @@
           >
             <td>{asset.originalFileName}</td>
           </tr>
+
           <tr
             class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center`}
           >
-            <td
-              >{asset.exifInfo?.exifImageWidth}x{asset.exifInfo?.exifImageHeight} - {asByteUnitString(
-                Number(asset.exifInfo?.fileSizeInByte),
-                $locale,
-                4,
-              )}</td
-            >
-          </tr>
-
-          <tr
-            class={`h-[32px] ${isSelected ? 'border-immich-primary rounded-xl dark:border-immich-dark-primary' : 'border-gray-300'} text-center `}
-          >
-            <td>{asset.libraryId ? 'In EXTERNAL Library' : 'In UPLOAD Library'}</td>
+            <td>{dimensions} - {fileSize}</td>
           </tr>
 
           <tr
