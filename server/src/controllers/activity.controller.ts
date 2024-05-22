@@ -14,7 +14,7 @@ import { ActivityService } from 'src/services/activity.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Activity')
-@Controller('activity')
+@Controller('activities')
 export class ActivityController {
   constructor(private service: ActivityService) {}
 

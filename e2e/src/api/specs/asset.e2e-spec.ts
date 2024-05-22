@@ -5,6 +5,7 @@ import {
   LoginResponseDto,
   SharedLinkType,
   getAssetInfo,
+  getMyUserInfo,
   updateAssets,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
@@ -830,7 +831,7 @@ describe('/asset', () => {
       expect(body).toEqual({ id: expect.any(String), duplicate: false });
       expect(status).toBe(201);
 
-      const { body: user } = await request(app).get('/user/me').set('Authorization', `Bearer ${quotaUser.accessToken}`);
+      const user = await getMyUserInfo({ headers: asBearerAuth(quotaUser.accessToken) });
 
       expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
     });

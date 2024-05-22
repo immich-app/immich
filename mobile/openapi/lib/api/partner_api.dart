@@ -16,13 +16,13 @@ class PartnerApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /partner/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /partners/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> createPartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partner/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -64,13 +64,13 @@ class PartnerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /partner' operation and returns the [Response].
+  /// Performs an HTTP 'GET /partners' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] direction (required):
   Future<Response> getPartnersWithHttpInfo(String direction,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partner';
+    final path = r'/partners';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -116,13 +116,13 @@ class PartnerApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /partner/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /partners/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> removePartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partner/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -156,7 +156,7 @@ class PartnerApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /partner/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /partners/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -164,7 +164,7 @@ class PartnerApi {
   /// * [UpdatePartnerDto] updatePartnerDto (required):
   Future<Response> updatePartnerWithHttpInfo(String id, UpdatePartnerDto updatePartnerDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partner/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
