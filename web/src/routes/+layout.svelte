@@ -18,6 +18,7 @@
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
 
   let showNavigationLoadingBar = false;
 
@@ -121,6 +122,7 @@
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
+<DialogWrapper />
 
 {#if $user?.isAdmin}
   <VersionAnnouncementBox />
