@@ -169,7 +169,6 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
-      const { assetId } = responseData as DefaultAssetMediaResponseDto;
       if (albumId && assetId) {
         uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
         await addAssetsToAlbum(albumId, [assetId]);
