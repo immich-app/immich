@@ -6,7 +6,7 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-describe('/user', () => {
+describe('/users', () => {
   let websocket: Socket;
 
   let admin: LoginResponseDto;
@@ -34,15 +34,15 @@ describe('/user', () => {
     utils.disconnectWebsocket(websocket);
   });
 
-  describe('GET /user', () => {
+  describe('GET /users', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/user');
+      const { status, body } = await request(app).get('/users');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get users', async () => {
-      const { status, body } = await request(app).get('/user').set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get('/users').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toHaveLength(5);
       expect(body).toEqual(
@@ -58,7 +58,7 @@ describe('/user', () => {
 
     it('should hide deleted users', async () => {
       const { status, body } = await request(app)
-        .get(`/user`)
+        .get(`/users`)
         .query({ isAll: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
@@ -75,7 +75,7 @@ describe('/user', () => {
 
     it('should include deleted users', async () => {
       const { status, body } = await request(app)
-        .get(`/user`)
+        .get(`/users`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -93,15 +93,15 @@ describe('/user', () => {
     });
   });
 
-  describe('GET /user/info/:id', () => {
+  describe('GET /users/:id', () => {
     it('should require authentication', async () => {
-      const { status } = await request(app).get(`/user/info/${admin.userId}`);
+      const { status } = await request(app).get(`/users/${admin.userId}`);
       expect(status).toEqual(401);
     });
 
     it('should get the user info', async () => {
       const { status, body } = await request(app)
-        .get(`/user/info/${admin.userId}`)
+        .get(`/users/${admin.userId}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({
@@ -111,15 +111,15 @@ describe('/user', () => {
     });
   });
 
-  describe('GET /user/me', () => {
+  describe('GET /users/me', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/user/me`);
+      const { status, body } = await request(app).get(`/users/me`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should get my info', async () => {
-      const { status, body } = await request(app).get(`/user/me`).set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app).get(`/users/me`).set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({
         id: admin.userId,
@@ -128,9 +128,9 @@ describe('/user', () => {
     });
   });
 
-  describe('POST /user', () => {
+  describe('POST /users', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/user`).send(createUserDto.user1);
+      const { status, body } = await request(app).post(`/users`).send(createUserDto.user1);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -138,7 +138,7 @@ describe('/user', () => {
     for (const key of Object.keys(createUserDto.user1)) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
-          .post(`/user`)
+          .post(`/users`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ ...createUserDto.user1, [key]: null });
         expect(status).toBe(400);
@@ -148,7 +148,7 @@ describe('/user', () => {
 
     it('should ignore `isAdmin`', async () => {
       const { status, body } = await request(app)
-        .post(`/user`)
+        .post(`/users`)
         .send({
           isAdmin: true,
           email: 'user5@immich.cloud',
@@ -166,7 +166,7 @@ describe('/user', () => {
 
     it('should create a user without memories enabled', async () => {
       const { status, body } = await request(app)
-        .post(`/user`)
+        .post(`/users`)
         .send({
           email: 'no-memories@immich.cloud',
           password: 'Password123',
@@ -182,16 +182,16 @@ describe('/user', () => {
     });
   });
 
-  describe('DELETE /user/:id', () => {
+  describe('DELETE /users/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/user/${userToDelete.userId}`);
+      const { status, body } = await request(app).delete(`/users/${userToDelete.userId}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should delete user', async () => {
       const { status, body } = await request(app)
-        .delete(`/user/${userToDelete.userId}`)
+        .delete(`/users/${userToDelete.userId}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
@@ -204,7 +204,7 @@ describe('/user', () => {
 
     it('should hard delete user', async () => {
       const { status, body } = await request(app)
-        .delete(`/user/${userToHardDelete.userId}`)
+        .delete(`/users/${userToHardDelete.userId}`)
         .send({ force: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -219,9 +219,9 @@ describe('/user', () => {
     });
   });
 
-  describe('PUT /user', () => {
+  describe('PUT /users', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/user`);
+      const { status, body } = await request(app).put(`/users`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -229,7 +229,7 @@ describe('/user', () => {
     for (const key of Object.keys(userDto.admin)) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
-          .put(`/user`)
+          .put(`/users`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ ...userDto.admin, [key]: null });
         expect(status).toBe(400);
@@ -239,7 +239,7 @@ describe('/user', () => {
 
     it('should not allow a non-admin to become an admin', async () => {
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/users`)
         .send({ isAdmin: true, id: nonAdmin.userId })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -249,7 +249,7 @@ describe('/user', () => {
 
     it('ignores updates to profileImagePath', async () => {
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/users`)
         .send({ id: admin.userId, profileImagePath: 'invalid.jpg' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -261,7 +261,7 @@ describe('/user', () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
 
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/users`)
         .send({
           id: admin.userId,
           name: 'Name',
@@ -280,7 +280,7 @@ describe('/user', () => {
     it('should update memories enabled', async () => {
       const before = await getUserById({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
       const { status, body } = await request(app)
-        .put(`/user`)
+        .put(`/users`)
         .send({
           id: admin.userId,
           memoriesEnabled: false,

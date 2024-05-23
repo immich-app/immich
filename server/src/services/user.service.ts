@@ -170,20 +170,6 @@ export class UserService {
     });
   }
 
-  async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
-    const admin = await this.userRepository.getAdmin();
-    if (!admin) {
-      throw new BadRequestException('Admin account does not exist');
-    }
-
-    const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || this.cryptoRepository.newPassword(24);
-
-    await this.userCore.updateUser(admin, admin.id, { password });
-
-    return { admin, password, provided: !!providedPassword };
-  }
-
   async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
     return JobStatus.SUCCESS;

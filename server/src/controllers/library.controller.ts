@@ -14,7 +14,7 @@ import { LibraryService } from 'src/services/library.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')
-@Controller('library')
+@Controller('libraries')
 export class LibraryController {
   constructor(private service: LibraryService) {}
 

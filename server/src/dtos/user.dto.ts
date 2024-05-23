@@ -41,21 +41,6 @@ export class CreateUserDto {
   notify?: boolean;
 }
 
-export class CreateAdminDto {
-  @IsNotEmpty()
-  isAdmin!: true;
-
-  @IsEmail({ require_tld: false })
-  @Transform(({ value }) => value?.toLowerCase())
-  email!: string;
-
-  @IsNotEmpty()
-  password!: string;
-
-  @IsNotEmpty()
-  name!: string;
-}
-
 export class CreateUserOAuthDto {
   @IsEmail({ require_tld: false })
   @Transform(({ value }) => value?.toLowerCase())
