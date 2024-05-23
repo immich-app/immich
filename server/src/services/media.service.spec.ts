@@ -1496,12 +1496,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-async_depth 4',
-            '-threads 1',
+          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-async_depth 4', '-threads 1']),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
           ]),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12')]),
           twoPass: false,
         },
       );
@@ -1521,11 +1519,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-async_depth 4',
-            '-threads 1',
-          ]),
+          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-async_depth 4', '-threads 1']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
               'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=vaapi:reverse=1',
@@ -1549,10 +1543,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-qsv_device /dev/dri/renderD129',
-          ]),
+          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
           outputOptions: expect.any(Array),
           twoPass: false,
         },
