@@ -130,14 +130,11 @@
     }
   });
 
-  const onCopyShortcut = async () => {
-    const selection = window.getSelection();
-    if (selection?.type === 'Range') {
-      if (selection.toString().length > 0) {
-        await copyToClipboard(selection.toString(), true);
-      }
+  const onCopyShortcut = (event: KeyboardEvent) => {
+    if (window.getSelection()?.type === 'Range') {
       return;
     }
+    event.preventDefault();
     handlePromiseError(doCopy());
   };
 </script>
@@ -146,8 +143,8 @@
   on:copyImage={doCopy}
   on:zoomImage={doZoomImage}
   use:shortcuts={[
-    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
-    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
 
