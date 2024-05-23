@@ -5,7 +5,8 @@
   import { getAssetJobName } from '$lib/utils';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiAccountCircleOutline,
     mdiAlertOutline,
@@ -32,6 +33,7 @@
     mdiPlaySpeed,
     mdiPresentationPlay,
     mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -84,6 +86,8 @@
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
+
+  $: showDevUI = new URL(window.location.href).searchParams.get('showDevUI');
 
   const showOptionsMenu = (event: MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, 'top-right');
@@ -243,6 +247,13 @@
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
+              {#if showDevUI}
+                <MenuOption
+                  icon={mdiUpload}
+                  on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                  text="Replace with upload"
+                />
+              {/if}
               <hr />
               <MenuOption
                 icon={mdiDatabaseRefreshOutline}

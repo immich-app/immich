@@ -104,6 +104,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
+*AssetApi* | [**replaceAsset**](doc//AssetApi.md#replaceasset) | **PUT** /asset/{id}/file | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -213,16 +214,16 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
-*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /users/profile-image | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /users | 
-*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /users/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /users | 
-*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /users/me | 
-*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /users/{id} | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /users/{id}/restore | 
-*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /users | 
+*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
+*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
+*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /user/profile-image | 
+*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
+*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
+*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
+*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/{id}/profile-image | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/{id} | 
+*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
+*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 
 
 ## Documentation For Models
@@ -261,6 +262,7 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
+ - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
@@ -281,6 +283,7 @@ Class | Method | HTTP request | Description
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
+ - [DefaultAssetMediaResponseDto](doc//DefaultAssetMediaResponseDto.md)
  - [DeleteUserDto](doc//DeleteUserDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)

@@ -52,6 +52,7 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -98,7 +99,7 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-
+  let unsubscribe: () => void;
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
@@ -192,6 +193,11 @@
   }
 
   onMount(async () => {
+    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
     await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
@@ -237,6 +243,7 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
+    unsubscribe?.();
   });
 
   $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
@@ -633,6 +640,7 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              checksum={previewStackedAsset.checksum}
               projectionType={previewStackedAsset.exifInfo?.projectionType}
               loopVideo={true}
               on:close={closeViewer}
@@ -655,6 +663,7 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                checksum={asset.checksum}
                 projectionType={asset.exifInfo?.projectionType}
                 loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
                 on:close={closeViewer}
@@ -670,6 +679,7 @@
           {:else}
             <VideoViewer
               assetId={asset.id}
+              checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               on:close={closeViewer}

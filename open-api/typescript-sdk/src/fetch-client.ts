@@ -323,6 +323,20 @@ export type UpdateAssetDto = {
     latitude?: number;
     longitude?: number;
 };
+export type UpdateAssetMediaDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+};
+export type DefaultAssetMediaResponseDto = {
+    assetId?: string;
+    copyId?: string;
+    duplicateId?: string;
+    status: AssetMediaStatus;
+};
 export type AuditDeletesResponseDto = {
     ids: string[];
     needsFullSync: boolean;
@@ -1584,6 +1598,22 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
+export function replaceAsset({ id, key, updateAssetMediaDto }: {
+    id: string;
+    key?: string;
+    updateAssetMediaDto: UpdateAssetMediaDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DefaultAssetMediaResponseDto;
+    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "PUT",
+        body: updateAssetMediaDto
+    })));
+}
 export function getAuditDeletes({ after, entityType, userId }: {
     after: string;
     entityType: EntityType;
@@ -2720,7 +2750,7 @@ export function getAllUsers({ isAll }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>(`/users${QS.query(QS.explode({
+    }>(`/user${QS.query(QS.explode({
         isAll
     }))}`, {
         ...opts
@@ -2732,7 +2762,7 @@ export function createUser({ createUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>("/users", oazapfts.json({
+    }>("/user", oazapfts.json({
         ...opts,
         method: "POST",
         body: createUserDto
@@ -2744,7 +2774,7 @@ export function updateUser({ updateUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>("/users", oazapfts.json({
+    }>("/user", oazapfts.json({
         ...opts,
         method: "PUT",
         body: updateUserDto
@@ -2754,12 +2784,12 @@ export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>("/users/me", {
+    }>("/user/me", {
         ...opts
     }));
 }
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/users/profile-image", {
+    return oazapfts.ok(oazapfts.fetchText("/user/profile-image", {
         ...opts,
         method: "DELETE"
     }));
@@ -2770,7 +2800,7 @@ export function createProfileImage({ createProfileImageDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: CreateProfileImageResponseDto;
-    }>("/users/profile-image", oazapfts.multipart({
+    }>("/user/profile-image", oazapfts.multipart({
         ...opts,
         method: "POST",
         body: createProfileImageDto
@@ -2783,7 +2813,7 @@ export function deleteUser({ id, deleteUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
+    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: deleteUserDto
@@ -2795,7 +2825,7 @@ export function getUserById({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}`, {
+    }>(`/user/${encodeURIComponent(id)}`, {
         ...opts
     }));
 }
@@ -2805,7 +2835,7 @@ export function getProfileImage({ id }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/users/${encodeURIComponent(id)}/profile-image`, {
+    }>(`/user/${encodeURIComponent(id)}/profile-image`, {
         ...opts
     }));
 }
@@ -2815,7 +2845,7 @@ export function restoreUser({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}/restore`, {
+    }>(`/user/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
     }));
@@ -2890,6 +2920,11 @@ export enum AssetJobName {
 export enum ThumbnailFormat {
     Jpeg = "JPEG",
     Webp = "WEBP"
+}
+export enum AssetMediaStatus {
+    Created = "created",
+    Updated = "updated",
+    Duplicate = "duplicate"
 }
 export enum EntityType {
     Asset = "ASSET",

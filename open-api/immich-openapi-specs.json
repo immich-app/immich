@@ -1840,6 +1840,70 @@
         ]
       }
     },
+    "/asset/{id}/file": {
+      "put": {
+        "operationId": "replaceAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetMediaDto"
+              }
+            }
+          },
+          "description": "Replaces the asset with new file, without changing its id",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultAssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
+      }
+    },
     "/audit/deletes": {
       "get": {
         "operationId": "getAuditDeletes",
@@ -6105,7 +6169,7 @@
         ]
       }
     },
-    "/users": {
+    "/user": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -6229,7 +6293,7 @@
         ]
       }
     },
-    "/users/me": {
+    "/user/me": {
       "get": {
         "operationId": "getMyUserInfo",
         "parameters": [],
@@ -6261,7 +6325,7 @@
         ]
       }
     },
-    "/users/profile-image": {
+    "/user/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
         "parameters": [],
@@ -6327,7 +6391,7 @@
         ]
       }
     },
-    "/users/{id}": {
+    "/user/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
@@ -6419,7 +6483,7 @@
         ]
       }
     },
-    "/users/{id}/profile-image": {
+    "/user/{id}/profile-image": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
@@ -6462,7 +6526,7 @@
         ]
       }
     },
-    "/users/{id}/restore": {
+    "/user/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [
@@ -7326,6 +7390,14 @@
         ],
         "type": "object"
       },
+      "AssetMediaStatus": {
+        "enum": [
+          "created",
+          "updated",
+          "duplicate"
+        ],
+        "type": "string"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -7866,6 +7938,26 @@
           "email",
           "name",
           "password"
+        ],
+        "type": "object"
+      },
+      "DefaultAssetMediaResponseDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "copyId": {
+            "type": "string"
+          },
+          "duplicateId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "status"
         ],
         "type": "object"
       },
@@ -10824,6 +10916,39 @@
             "type": "number"
           }
         },
+        "type": "object"
+      },
+      "UpdateAssetMediaDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
         "type": "object"
       },
       "UpdateLibraryDto": {

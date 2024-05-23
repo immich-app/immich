@@ -61,6 +61,9 @@ String parameterToString(dynamic value) {
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is AssetMediaStatus) {
+    return AssetMediaStatusTypeTransformer().encode(value).toString();
+  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
