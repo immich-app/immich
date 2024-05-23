@@ -33,7 +33,7 @@
   confirmText="Continue"
   confirmColor="green"
   onConfirm={handleRestoreUser}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p><b>{user.name}</b>'s account will be restored.</p>

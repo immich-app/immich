@@ -52,7 +52,7 @@
     id="log-out-device-modal"
     prompt="Are you sure you want to log out this device?"
     onConfirm={() => handleDelete()}
-    onClose={() => (deleteDevice = null)}
+    onCancel={() => (deleteDevice = null)}
   />
 {/if}
 
@@ -61,7 +61,7 @@
     id="log-out-all-modal"
     prompt="Are you sure you want to log out all devices?"
     onConfirm={() => handleDeleteAll()}
-    onClose={() => (deleteAll = false)}
+    onCancel={() => (deleteAll = false)}
   />
 {/if}
 

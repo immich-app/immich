@@ -110,7 +110,7 @@
     title="Empty trash"
     confirmText="Empty"
     onConfirm={handleEmptyTrash}
-    onClose={() => (isShowEmptyConfirmation = false)}
+    onCancel={() => (isShowEmptyConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>

@@ -27,7 +27,7 @@
   title="Permanently delete asset{s(size)}"
   confirmText="Delete"
   onConfirm={handleConfirm}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p>

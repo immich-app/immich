@@ -157,7 +157,7 @@
         title="Merge people"
         confirmText="Merge"
         onConfirm={handleMerge}
-        onClose={() => (isShowConfirmation = false)}
+        onCancel={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
           <p>Are you sure you want merge these people ?</p></svelte:fragment

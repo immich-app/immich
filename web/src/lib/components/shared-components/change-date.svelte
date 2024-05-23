@@ -62,7 +62,7 @@
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onConfirm={handleConfirm}
-  onClose={handleCancel}
+  onCancel={handleCancel}
 >
   <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
     <div class="flex flex-col">

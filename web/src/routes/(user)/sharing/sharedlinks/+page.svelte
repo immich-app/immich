@@ -93,6 +93,6 @@
     prompt="Are you sure you want to delete this shared link?"
     confirmText="Delete"
     onConfirm={() => handleDeleteLink()}
-    onClose={() => (deleteLinkId = null)}
+    onCancel={() => (deleteLinkId = null)}
   />
 {/if}

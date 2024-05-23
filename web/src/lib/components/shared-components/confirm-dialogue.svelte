@@ -13,7 +13,7 @@
   export let hideCancelButton = false;
   export let disabled = false;
   export let width: 'wide' | 'narrow' = 'narrow';
-  export let onClose: () => void;
+  export let onCancel: () => void;
   export let onConfirm: () => void;
 
   let isConfirmButtonDisabled = false;
@@ -24,7 +24,7 @@
   };
 </script>
 
-<FullScreenModal {title} {id} {onClose} {width}>
+<FullScreenModal {title} {id} onClose={onCancel} {width}>
   <div class="text-md py-5 text-center">
     <slot name="prompt">
       <p>{prompt}</p>
@@ -33,7 +33,7 @@
 
   <svelte:fragment slot="sticky-bottom">
     {#if !hideCancelButton}
-      <Button color={cancelColor} fullwidth on:click={onClose}>
+      <Button color={cancelColor} fullwidth on:click={onCancel}>
         {cancelText}
       </Button>
     {/if}

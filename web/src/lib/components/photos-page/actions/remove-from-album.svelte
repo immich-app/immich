@@ -62,7 +62,7 @@
     title="Remove from {album.albumName}"
     confirmText="Remove"
     onConfirm={removeFromAlbum}
-    onClose={() => (isShowConfirmation = false)}
+    onCancel={() => (isShowConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

@@ -157,7 +157,7 @@
     id="reprocess-faces-modal"
     prompt="Are you sure you want to reprocess all faces? This will also clear named people."
     {onConfirm}
-    onClose={() => (confirmJob = null)}
+    onCancel={() => (confirmJob = null)}
   />
 {/if}
 

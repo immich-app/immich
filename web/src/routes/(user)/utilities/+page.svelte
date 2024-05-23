@@ -6,16 +6,12 @@
 
   export let data: PageData;
 
-  const showDialog = (mgs: string) => {
-    dialogController.show(
-      { type: DialogType.Confirm, message: mgs },
-      () => {
-        console.log('On confirmed clicked');
-      },
-      () => {
-        console.log('on cancled clicked');
-      },
-    );
+  const showDialog = async (mgs: string) => {
+    const result = await dialogController.show({ type: DialogType.Confirm, prompt: mgs });
+
+    console.log('result is', result);
+
+    console.log('After result is logged');
   };
 </script>
 

@@ -55,6 +55,6 @@
     prompt="Are you sure you want to remove {getAssets().size} asset(s) from this shared link?"
     confirmText="Remove"
     onConfirm={() => handleRemove()}
-    onClose={() => (removing = false)}
+    onCancel={() => (removing = false)}
   />
 {/if}

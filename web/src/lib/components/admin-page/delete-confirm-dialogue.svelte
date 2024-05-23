@@ -47,7 +47,7 @@
   title="Delete user"
   confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
   onConfirm={handleDeleteUser}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
   disabled={deleteButtonDisabled}
 >
   <svelte:fragment slot="prompt">

@@ -5,36 +5,45 @@ export enum DialogType {
   Delete,
 }
 
-export type Dialog = {
-  type: DialogType;
-  message: string;
-  confirm: () => void;
-  cancel: () => void;
+type DialogActions = {
+  onConfirm: () => void;
+  onCancel: () => void;
 };
 
-export type DialogOptions = {
+type DialogOptions = {
   type: DialogType;
-  message: string;
+  title?: string;
+  prompt?: string;
+  confirmText?: string;
+  cancelText?: string;
+  hideCancelButton?: boolean;
+  disable?: boolean;
+  width?: 'wide' | 'narrow' | undefined;
 };
+
+export type Dialog = DialogOptions & DialogActions;
 
 function createDialogWrapper() {
   const dialog = writable<Dialog | undefined>();
 
-  function show(options: DialogOptions, onConfirmed: () => void, onCanceled: () => void) {
-    const newDialog: Dialog = {
-      type: options.type,
-      message: options.message,
-      confirm: () => {
-        onConfirmed();
-        dialog.set(undefined);
-      },
-      cancel: () => {
-        onCanceled();
-        dialog.set(undefined);
-      },
-    };
+  async function show(options: DialogOptions, actions?: DialogActions) {
+    return new Promise((resolve) => {
+      const newDialog: Dialog = {
+        ...options,
+        onConfirm: () => {
+          dialog.set(undefined);
+          actions?.onConfirm();
+          resolve(true);
+        },
+        onCancel: () => {
+          dialog.set(undefined);
+          actions?.onCancel();
+          resolve(false);
+        },
+      };
 
-    dialog.set(newDialog);
+      dialog.set(newDialog);
+    });
   }
 
   return {

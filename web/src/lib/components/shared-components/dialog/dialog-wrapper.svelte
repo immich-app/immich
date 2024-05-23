@@ -10,5 +10,5 @@
     <button on:click={() => $dialog.cancel()}>CANCEL</button>
   </div> -->
 
-  <ConfirmDialogue id="ok" onClose={$dialog.cancel} onConfirm={$dialog.confirm} prompt={$dialog.message} />
+  <ConfirmDialogue id={Date.now.toString()} {...$dialog} />
 {/if}

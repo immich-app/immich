@@ -154,7 +154,7 @@
     title="Reset password"
     confirmText="Reset"
     onConfirm={resetPassword}
-    onClose={() => (isShowResetPasswordConfirmation = false)}
+    onCancel={() => (isShowResetPasswordConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>

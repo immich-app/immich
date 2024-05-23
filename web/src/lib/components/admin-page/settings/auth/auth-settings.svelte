@@ -45,7 +45,7 @@
   <ConfirmDialogue
     id="disable-login-modal"
     title="Disable login"
-    onClose={() => (isConfirmOpen = false)}
+    onCancel={() => (isConfirmOpen = false)}
     onConfirm={() => handleSave(true)}
   >
     <svelte:fragment slot="prompt">

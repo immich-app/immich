@@ -109,7 +109,7 @@
   title="Change location"
   width="wide"
   onConfirm={handleConfirm}
-  onClose={handleCancel}
+  onCancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div

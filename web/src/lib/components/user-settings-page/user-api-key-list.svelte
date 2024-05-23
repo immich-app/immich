@@ -108,7 +108,7 @@
     id="confirm-api-key-delete-modal"
     prompt="Are you sure you want to delete this API key?"
     onConfirm={() => handleDelete()}
-    onClose={() => (deleteKey = null)}
+    onCancel={() => (deleteKey = null)}
   />
 {/if}
 

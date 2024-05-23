@@ -158,7 +158,7 @@
           title="Password reset success"
           confirmText="Done"
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-          onClose={() => (shouldShowPasswordResetSuccess = false)}
+          onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
           confirmColor="green"
         >
