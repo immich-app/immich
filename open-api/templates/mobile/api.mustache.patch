@@ -1,0 +1,43 @@
+--- api.mustache	2024-05-23 15:06:20.644564309 +0000
++++ api1.mustache	2024-05-23 15:05:40.011786015 +0000
+@@ -161,11 +161,31 @@
+   ///
+     {{/-last}}
+   {{/allParams}}
+-  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
++  Future<{{>op_return_sig}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+     final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}} {{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} {{/hasOptionalParams}});
+     if (response.statusCode >= HttpStatus.badRequest) {
+       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+     }
++    {{#hasDefaultResponse}}
++    {{#responses}}
++    {{#isDefault}}
++    {{#isArray}}
++    final responseBody = await _decodeBodyBytes(response);
++    return (await apiClient.deserializeAsync(responseBody, '{{{dataType}}}') as List)
++      .cast<{{{baseType}}}>()
++      .{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}};
++    {{/isArray}}
++    {{^isArray}}
++    {{#isMap}}
++    return {{dataType}}.from(await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{dataType}}'),);
++    {{/isMap}}
++    {{^isMap}}
++    return await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{>dataType}}',) as {{>dataType}};
++    {{/isMap}}{{/isArray}}
++    {{/isDefault}}
++    {{/responses}}
++    {{/hasDefaultResponse}}
++    {{^hasDefaultResponse}}
+     {{#returnType}}
+     // When a remote server returns no body with a status of 204, we shall not decode it.
+     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+@@ -188,6 +208,7 @@
+     }
+     return null;
+     {{/returnType}}
++    {{/hasDefaultResponse}}
+   }
+   {{/operation}}
+ }
