@@ -710,7 +710,7 @@ class AssetApi {
     return null;
   }
 
-  /// Replaces the asset with new file, without changing its id
+  /// Replace the asset with new file, without changing its id
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -791,7 +791,7 @@ class AssetApi {
     );
   }
 
-  /// Replaces the asset with new file, without changing its id
+  /// Replace the asset with new file, without changing its id
   ///
   /// Parameters:
   ///

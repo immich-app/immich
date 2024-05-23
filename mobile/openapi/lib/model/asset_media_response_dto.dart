@@ -13,17 +13,11 @@ part of openapi.api;
 class AssetMediaResponseDto {
   /// Returns a new [AssetMediaResponseDto] instance.
   AssetMediaResponseDto({
-    this.id,
+    required this.id,
     required this.status,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? id;
+  String id;
 
   AssetMediaStatus status;
 
@@ -35,7 +29,7 @@ class AssetMediaResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id == null ? 0 : id!.hashCode) +
+    (id.hashCode) +
     (status.hashCode);
 
   @override
@@ -43,11 +37,7 @@ class AssetMediaResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.id != null) {
       json[r'id'] = this.id;
-    } else {
-    //  json[r'id'] = null;
-    }
       json[r'status'] = this.status;
     return json;
   }
@@ -60,7 +50,7 @@ class AssetMediaResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetMediaResponseDto(
-        id: mapValueOfType<String>(json, r'id'),
+        id: mapValueOfType<String>(json, r'id')!,
         status: AssetMediaStatus.fromJson(json[r'status'])!,
       );
     }
@@ -109,6 +99,7 @@ class AssetMediaResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'id',
     'status',
   };
 }

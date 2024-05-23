@@ -103,17 +103,17 @@
     }
   };
 
-  const {
-    createZoomImage: createZoomImageWheel,
-    zoomImageState: zoomImageWheelState,
-    setZoomImageState: setZoomImageWheelState,
-  } = useZoomImageWheel();
-
   const doZoomImage = () => {
     setZoomImageWheelState({
       currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1,
     });
   };
+
+  const {
+    createZoomImage: createZoomImageWheel,
+    zoomImageState: zoomImageWheelState,
+    setZoomImageState: setZoomImageWheelState,
+  } = useZoomImageWheel();
 
   zoomImageWheelState.subscribe((state) => {
     photoZoomState.set(state);

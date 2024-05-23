@@ -482,20 +482,6 @@ WHERE
 LIMIT
   1
 
--- AssetRepository.getByChecksums
-SELECT
-  "AssetEntity"."id" AS "AssetEntity_id",
-  "AssetEntity"."checksum" AS "AssetEntity_checksum"
-FROM
-  "assets" "AssetEntity"
-WHERE
-  (
-    ("AssetEntity"."ownerId" = $1)
-    AND (
-      "AssetEntity"."checksum" IN ($2, $3, $4, $5, $6, $7, $8, $9, $10)
-    )
-  )
-
 -- AssetRepository.getUploadAssetIdByChecksum
 SELECT
   "AssetEntity"."id" AS "AssetEntity_id"

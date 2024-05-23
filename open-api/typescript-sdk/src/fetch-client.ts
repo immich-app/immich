@@ -323,7 +323,7 @@ export type UpdateAssetDto = {
     latitude?: number;
     longitude?: number;
 };
-export type UpdateAssetMediaDto = {
+export type AssetMediaReplaceDto = {
     assetData: Blob;
     deviceAssetId: string;
     deviceId: string;
@@ -332,7 +332,7 @@ export type UpdateAssetMediaDto = {
     fileModifiedAt: string;
 };
 export type AssetMediaResponseDto = {
-    id?: string;
+    id: string;
     status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
@@ -1597,12 +1597,12 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
- * Replaces the asset with new file, without changing its id
+ * Replace the asset with new file, without changing its id
  */
-export function replaceAsset({ id, key, updateAssetMediaDto }: {
+export function replaceAsset({ id, key, assetMediaReplaceDto }: {
     id: string;
     key?: string;
-    updateAssetMediaDto: UpdateAssetMediaDto;
+    assetMediaReplaceDto: AssetMediaReplaceDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -1612,7 +1612,7 @@ export function replaceAsset({ id, key, updateAssetMediaDto }: {
     }))}`, oazapfts.multipart({
         ...opts,
         method: "PUT",
-        body: updateAssetMediaDto
+        body: assetMediaReplaceDto
     })));
 }
 export function getAuditDeletes({ after, entityType, userId }: {

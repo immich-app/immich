@@ -1,12 +1,11 @@
 import { Stats } from 'node:fs';
 import { AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
-import { UpdateAssetMediaDto } from 'src/dtos/asset-media.dto';
+import { AssetMediaReplaceDto } from 'src/dtos/asset-media.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -18,15 +17,14 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
 import { Mocked } from 'vitest';
 
-const _getUpdateAssetDto = (): UpdateAssetMediaDto => {
-  return Object.assign(new UpdateAssetMediaDto(), {
+const _getUpdateAssetDto = (): AssetMediaReplaceDto => {
+  return Object.assign(new AssetMediaReplaceDto(), {
     deviceAssetId: 'deviceAssetId',
     deviceId: 'deviceId',
     fileModifiedAt: new Date('2024-04-15T23:41:36.910Z'),
@@ -88,7 +86,6 @@ describe('AssetMediaService', () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let libraryMock: Mocked<ILibraryRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
@@ -98,29 +95,19 @@ describe('AssetMediaService', () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
-    libraryMock = newLibraryRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     eventMock = newEventRepositoryMock();
 
-    sut = new AssetMediaService(
-      accessMock,
-      assetMock,
-      jobMock,
-      libraryMock,
-      storageMock,
-      userMock,
-      eventMock,
-      loggerMock,
-    );
+    sut = new AssetMediaService(accessMock, assetMock, jobMock, storageMock, userMock, eventMock, loggerMock);
   });
 
   describe('replaceAsset', () => {
     const expectAssetUpdate = (
       existingAsset: AssetEntity,
       uploadFile: UploadFile,
-      dto: UpdateAssetMediaDto,
+      dto: AssetMediaReplaceDto,
       livePhotoVideo?: AssetEntity,
       sidecarPath?: UploadFile,
       // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -268,7 +255,7 @@ describe('AssetMediaService', () => {
 
       assetMock.update.mockRejectedValue(error);
       assetMock.getById.mockResolvedValueOnce(existingAsset);
-      assetMock.getByChecksums.mockResolvedValue([existingAsset]);
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(existingAsset.id);
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);

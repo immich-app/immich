@@ -26,25 +26,13 @@ const getExtensions = async () => {
   }
   return _extensions;
 };
-// the following set of interfaces ensure that either albumId OR assetId
-// may be specified, but not both.
-interface FileUploadParams {
-  multiple?: boolean;
-}
-interface FileUploadWithAlbum extends FileUploadParams {
-  albumId?: string;
-  assetId?: never;
-}
-interface FileUploadWithAsset extends FileUploadParams {
-  albumId?: never;
-  assetId?: string;
-}
-type FileUploadParam = FileUploadWithAlbum | FileUploadWithAsset;
-const defaultParams: FileUploadWithAlbum = {
-  multiple: true,
-};
 
-export const openFileUploadDialog = async ({ albumId, multiple, assetId }: FileUploadParam = defaultParams) => {
+type FileUploadParam = { multiple?: boolean } & (
+  | { albumId?: string; assetId?: never }
+  | { albumId?: never; assetId?: string }
+);
+export const openFileUploadDialog = async (options?: FileUploadParam) => {
+  const { albumId, multiple, assetId } = options || { multiple: true };
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {

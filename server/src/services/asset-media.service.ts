@@ -1,14 +1,13 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetMediaResponseDto, AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
-import { UpdateAssetMediaDto, UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -37,7 +36,6 @@ export class AssetMediaService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
@@ -50,7 +48,7 @@ export class AssetMediaService {
   public async replaceAsset(
     auth: AuthDto,
     id: string,
-    dto: UpdateAssetMediaDto,
+    dto: AssetMediaReplaceDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
@@ -60,11 +58,11 @@ export class AssetMediaService {
 
       this.requireQuota(auth, file.size);
 
-      await this.updateAssetFileData(existingAssetEntity.id, dto, file, sidecarFile?.originalPath);
+      await this.replaceFileData(existingAssetEntity.id, dto, file, sidecarFile?.originalPath);
 
       // Next, create a backup copy of the existing record. The db record has already been updated above,
       // but the local variable holds the original file data paths.
-      const copiedPhoto = await this.createAssetCopy(existingAssetEntity);
+      const copiedPhoto = await this.createCopy(existingAssetEntity);
       // and immediate trash it
       await this.assetRepository.softDeleteAll([copiedPhoto.id]);
       this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [copiedPhoto.id]);
@@ -91,12 +89,12 @@ export class AssetMediaService {
 
     // handle duplicates with a success response
     if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-      const duplicate = await this.assetRepository.getByChecksums(auth.user.id, [file.checksum]);
-      if (!duplicate || duplicate.length !== 1) {
+      const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+      if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
-      return { status: AssetMediaStatusEnum.DUPLICATE, id: duplicate[0].id };
+      return { status: AssetMediaStatusEnum.DUPLICATE, id: duplicateId };
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -110,9 +108,9 @@ export class AssetMediaService {
    * the specified timestamps. The exif db record is upserted, and then A METADATA_EXTRACTION
    * job is queued to update these derived properties.
    */
-  private async updateAssetFileData(
+  private async replaceFileData(
     assetId: string,
-    dto: UpdateAssetMediaDto,
+    dto: AssetMediaReplaceDto,
     file: UploadFile,
     sidecarPath?: string,
   ): Promise<void> {
@@ -148,7 +146,7 @@ export class AssetMediaService {
    * Uses only vital properties excluding things like: stacks, faces, smart search info, etc,
    * and then queues a METADATA_EXTRACTION job.
    */
-  private async createAssetCopy(asset: AssetEntity): Promise<AssetEntity> {
+  private async createCopy(asset: AssetEntity): Promise<AssetEntity> {
     const created = await this.assetRepository.create({
       ownerId: asset.ownerId,
       originalPath: asset.originalPath,

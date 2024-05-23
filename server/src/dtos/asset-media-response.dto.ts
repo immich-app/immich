@@ -1,4 +1,3 @@
-import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum AssetMediaStatusEnum {
@@ -6,13 +5,7 @@ export enum AssetMediaStatusEnum {
   DUPLICATE = 'duplicate',
 }
 export class AssetMediaResponseDto {
-  @ApiProperty({
-    type: String,
-    enum: AssetMediaStatusEnum,
-    required: true,
-    enumName: 'AssetMediaStatus',
-  })
-  status?: AssetMediaStatusEnum;
-  @Optional()
-  id?: string;
+  @ApiProperty({ enum: AssetMediaStatusEnum, enumName: 'AssetMediaStatus' })
+  status!: AssetMediaStatusEnum;
+  id!: string;
 }

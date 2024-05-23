@@ -1842,7 +1842,7 @@
     },
     "/asset/{id}/file": {
       "put": {
-        "description": "Replaces the asset with new file, without changing its id",
+        "description": "Replace the asset with new file, without changing its id",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -1867,7 +1867,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAssetMediaDto"
+                "$ref": "#/components/schemas/AssetMediaReplaceDto"
               }
             }
           },
@@ -7390,6 +7390,39 @@
         ],
         "type": "object"
       },
+      "AssetMediaReplaceDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
       "AssetMediaResponseDto": {
         "properties": {
           "id": {
@@ -7400,6 +7433,7 @@
           }
         },
         "required": [
+          "id",
           "status"
         ],
         "type": "object"
@@ -10909,39 +10943,6 @@
             "type": "number"
           }
         },
-        "type": "object"
-      },
-      "UpdateAssetMediaDto": {
-        "properties": {
-          "assetData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetData",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
-        ],
         "type": "object"
       },
       "UpdateLibraryDto": {

@@ -11,6 +11,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { UploadFile } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
+
 export interface UploadFiles {
   assetData: ImmichFile[];
   livePhotoData?: ImmichFile[];

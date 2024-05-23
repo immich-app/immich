@@ -8,7 +8,8 @@ export enum UploadFieldName {
   SIDECAR_DATA = 'sidecarData',
   PROFILE_DATA = 'file',
 }
-export class UpdateAssetMediaDto {
+
+export class AssetMediaReplaceDto {
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;

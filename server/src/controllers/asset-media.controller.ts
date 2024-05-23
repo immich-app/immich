@@ -14,7 +14,7 @@ import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import { AssetMediaResponseDto, AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
-import { UpdateAssetMediaDto, UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -31,8 +31,7 @@ export class AssetMediaController {
   ) {}
 
   /**
-   *
-   *  Replaces the asset with new file, without changing its id
+   *  Replace the asset with new file, without changing its id
    */
   @Put(':id/file')
   @UseInterceptors(FileUploadInterceptor)
@@ -44,14 +43,14 @@ export class AssetMediaController {
     @Param() { id }: UUIDParamDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
     files: UploadFiles,
-    @Body() dto: UpdateAssetMediaDto,
+    @Body() dto: AssetMediaReplaceDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
     const { file } = getFiles(files);
-    const assetMediaResponse = await this.service.replaceAsset(auth, id, dto, file);
-    if (assetMediaResponse.status === AssetMediaStatusEnum.DUPLICATE) {
+    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
+    if (responseDto.status === AssetMediaStatusEnum.DUPLICATE) {
       res.status(HttpStatus.OK);
     }
-    return assetMediaResponse;
+    return responseDto;
   }
 }

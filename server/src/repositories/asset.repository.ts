@@ -301,21 +301,6 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      select: {
-        id: true,
-        checksum: true,
-      },
-      where: {
-        ownerId,
-        checksum: In(checksums),
-      },
-      withDeleted: true,
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
     const asset = await this.repository.findOne({
       select: { id: true },
