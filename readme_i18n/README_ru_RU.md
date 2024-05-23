@@ -50,15 +50,15 @@
 - [Возможности](#features)
 - [Введение](https://immich.app/docs/overview/introduction)
 - [Установка](https://immich.app/docs/install/requirements)
-- [Гайд по доработке проекта](https://immich.app/docs/overview/support-the-project)
+- [Гид по доработке проекта](https://immich.app/docs/overview/support-the-project)
 
 ## Документация
 
-Вы можете найти документацию, включая инструкции по установке по [ссылке](https://immich.app/).
+Вы можете прочитать инструкции по установке и остальную документацию [здесь](https://immich.app/)
 
 ## Демо
 
-Вы можете опробовать демонстрационную веб версию по [ссылке](https://demo.immich.app/).
+Вы можете опробовать [демонстрационную версию](https://demo.immich.app/).
 
 Для мобильного приложения вы можете использовать адрес `https://demo.immich.app/api` в поле `Server Endpoint URL`.
 
