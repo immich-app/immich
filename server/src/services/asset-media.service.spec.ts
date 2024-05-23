@@ -231,7 +231,7 @@ describe('AssetMediaService', () => {
         new Date(dto.fileModifiedAt),
       );
     });
-    it.only('should update a photo with a sidecar to photo with no sidecar', async () => {
+    it('should update a photo with a sidecar to photo with no sidecar', async () => {
       const existingAsset = _getExistingAssetWithSideCar();
       const updatedFile = fileStub.photo;
 
