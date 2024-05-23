@@ -71,7 +71,6 @@ export class AssetMediaService {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
-      console.log(existingAssetEntity);
 
       this.requireQuota(auth, file.size);
 

@@ -7392,7 +7392,6 @@
       },
       "AssetMediaStatus": {
         "enum": [
-          "created",
           "updated",
           "duplicate"
         ],

@@ -2922,7 +2922,6 @@ export enum ThumbnailFormat {
     Webp = "WEBP"
 }
 export enum AssetMediaStatus {
-    Created = "created",
     Updated = "updated",
     Duplicate = "duplicate"
 }

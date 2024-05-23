@@ -1,54 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
-import { Optional } from 'src/validation';
-
-export class CheckExistingAssetsResponseDto {
-  existingIds!: string[];
-}
-
-export enum AssetUploadAction {
-  ACCEPT = 'accept',
-  REJECT = 'reject',
-}
-
-export enum AssetRejectReason {
-  DUPLICATE = 'duplicate',
-  UNSUPPORTED_FORMAT = 'unsupported-format',
-}
-
-export class AssetBulkUploadCheckResult {
-  id!: string;
-  action!: AssetUploadAction;
-  reason?: AssetRejectReason;
-  assetId?: string;
-}
-
-export class AssetBulkUploadCheckResponseDto {
-  results!: AssetBulkUploadCheckResult[];
-}
-
-export enum GetAssetThumbnailFormatEnum {
-  JPEG = 'JPEG',
-  WEBP = 'WEBP',
-}
+import { IsOptional } from 'class-validator';
 
 export enum AssetMediaStatusEnum {
-  CREATED = 'created',
   UPDATED = 'updated',
   DUPLICATE = 'duplicate',
-}
-
-export class GetAssetThumbnailDto {
-  @Optional()
-  @IsEnum(GetAssetThumbnailFormatEnum)
-  @ApiProperty({
-    type: String,
-    enum: GetAssetThumbnailFormatEnum,
-    default: GetAssetThumbnailFormatEnum.WEBP,
-    required: false,
-    enumName: 'ThumbnailFormat',
-  })
-  format: GetAssetThumbnailFormatEnum = GetAssetThumbnailFormatEnum.WEBP;
 }
 
 export class DefaultAssetMediaResponseDto {
@@ -67,30 +22,7 @@ export class DefaultAssetMediaResponseDto {
   duplicateId?: string;
 }
 
-export class AssetMediaCreateResponseDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    readOnly: true,
-    enum: AssetMediaStatusEnum,
-    enumName: 'AssetMediaStatus',
-    default: AssetMediaStatusEnum.CREATED,
-  })
-  readonly status = 'created';
-  assetId: string;
-  constructor(assetId: string) {
-    this.assetId = assetId;
-  }
-}
 export class AssetMediaUpdateResponseDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    readOnly: true,
-    enum: AssetMediaStatusEnum,
-    enumName: 'AssetMediaStatus',
-    default: AssetMediaStatusEnum.UPDATED,
-  })
   readonly status = 'updated';
   assetId: string;
   copyId: string;
@@ -100,14 +32,6 @@ export class AssetMediaUpdateResponseDto {
   }
 }
 export class DuplicateAssetResponseDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    readOnly: true,
-    enum: AssetMediaStatusEnum,
-    enumName: 'AssetMediaStatus',
-    default: AssetMediaStatusEnum.DUPLICATE,
-  })
   readonly status = 'duplicate';
   duplicateId: string;
   constructor(duplicateId: string) {
@@ -115,7 +39,4 @@ export class DuplicateAssetResponseDto {
   }
 }
 
-export type AssetMediaResponseDto =
-  | AssetMediaCreateResponseDto
-  | AssetMediaUpdateResponseDto
-  | DuplicateAssetResponseDto;
+export type AssetMediaResponseDto = AssetMediaUpdateResponseDto | DuplicateAssetResponseDto;
