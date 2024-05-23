@@ -11,6 +11,7 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -101,10 +102,7 @@
             min={0.001}
             max={0.1}
             desc="Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives."
-            disabled={disabled ||
-              !config.machineLearning.enabled ||
-              !config.machineLearning.clip.enabled ||
-              !config.machineLearning.duplicateDetection.enabled}
+            disabled={disabled || $featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
           />

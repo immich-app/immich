@@ -58,9 +58,9 @@
         />
       {/key}
     {:else}
-      <div class="text-center text-lg dark:text-white flex place-items-center place-content-center">
-        No duplication was found on the instance
-      </div>
+      <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
+        No duplicates were found.
+      </p>
     {/if}
   </div>
 </UserPageLayout>
