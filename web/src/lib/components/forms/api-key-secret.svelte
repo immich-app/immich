@@ -1,7 +1,7 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
   import { mdiKeyVariant } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
@@ -11,12 +11,6 @@
     done: void;
   }>();
   const handleDone = () => dispatch('done');
-  let canCopyImagesToClipboard = true;
-
-  onMount(async () => {
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
-  });
 </script>
 
 <FullScreenModal id="api-key-secret-modal" title="API key" icon={mdiKeyVariant} onClose={() => handleDone()}>
@@ -32,9 +26,7 @@
   </div>
 
   <svelte:fragment slot="sticky-bottom">
-    {#if canCopyImagesToClipboard}
-      <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
-    {/if}
+    <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
     <Button on:click={() => handleDone()} fullwidth>Done</Button>
   </svelte:fragment>
 </FullScreenModal>
