@@ -208,12 +208,10 @@ export const getAssetJobIcon = (job: AssetJobName) => {
   return names[job];
 };
 
-export const copyToClipboard = async (text: string, silent?: boolean) => {
+export const copyToClipboard = async (secret: string) => {
   try {
-    await navigator.clipboard.writeText(text);
-    if (!silent) {
-      notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
-    }
+    await navigator.clipboard.writeText(secret);
+    notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
   } catch (error) {
     handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
   }
