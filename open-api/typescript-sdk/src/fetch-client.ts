@@ -238,6 +238,7 @@ export type AssetBulkDeleteDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    duplicateId?: string | null;
     ids: string[];
     isArchived?: boolean;
     isFavorite?: boolean;

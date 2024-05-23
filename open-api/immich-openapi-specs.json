@@ -6955,6 +6955,10 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
