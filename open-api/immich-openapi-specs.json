@@ -6169,7 +6169,7 @@
         ]
       }
     },
-    "/user": {
+    "/users": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -6293,7 +6293,7 @@
         ]
       }
     },
-    "/user/me": {
+    "/users/me": {
       "get": {
         "operationId": "getMyUserInfo",
         "parameters": [],
@@ -6325,7 +6325,7 @@
         ]
       }
     },
-    "/user/profile-image": {
+    "/users/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
         "parameters": [],
@@ -6391,7 +6391,7 @@
         ]
       }
     },
-    "/user/{id}": {
+    "/users/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
@@ -6483,7 +6483,7 @@
         ]
       }
     },
-    "/user/{id}/profile-image": {
+    "/users/{id}/profile-image": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
@@ -6526,7 +6526,7 @@
         ]
       }
     },
-    "/user/{id}/restore": {
+    "/users/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [

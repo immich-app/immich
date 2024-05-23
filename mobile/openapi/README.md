@@ -214,16 +214,16 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
-*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /user/profile-image | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
-*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/{id}/profile-image | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/{id} | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
-*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
+*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /users/profile-image | 
+*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /users | 
+*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
+*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /users/{id} | 
+*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /users | 
+*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /users/me | 
+*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
+*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /users/{id} | 
+*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /users/{id}/restore | 
+*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /users | 
 
 
 ## Documentation For Models

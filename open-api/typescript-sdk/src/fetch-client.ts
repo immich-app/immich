@@ -2750,7 +2750,7 @@ export function getAllUsers({ isAll }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>(`/user${QS.query(QS.explode({
+    }>(`/users${QS.query(QS.explode({
         isAll
     }))}`, {
         ...opts
@@ -2762,7 +2762,7 @@ export function createUser({ createUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>("/user", oazapfts.json({
+    }>("/users", oazapfts.json({
         ...opts,
         method: "POST",
         body: createUserDto
@@ -2774,7 +2774,7 @@ export function updateUser({ updateUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>("/user", oazapfts.json({
+    }>("/users", oazapfts.json({
         ...opts,
         method: "PUT",
         body: updateUserDto
@@ -2784,12 +2784,12 @@ export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>("/user/me", {
+    }>("/users/me", {
         ...opts
     }));
 }
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/user/profile-image", {
+    return oazapfts.ok(oazapfts.fetchText("/users/profile-image", {
         ...opts,
         method: "DELETE"
     }));
@@ -2800,7 +2800,7 @@ export function createProfileImage({ createProfileImageDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: CreateProfileImageResponseDto;
-    }>("/user/profile-image", oazapfts.multipart({
+    }>("/users/profile-image", oazapfts.multipart({
         ...opts,
         method: "POST",
         body: createProfileImageDto
@@ -2813,7 +2813,7 @@ export function deleteUser({ id, deleteUserDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, oazapfts.json({
+    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: deleteUserDto
@@ -2825,7 +2825,7 @@ export function getUserById({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}`, {
+    }>(`/users/${encodeURIComponent(id)}`, {
         ...opts
     }));
 }
@@ -2835,7 +2835,7 @@ export function getProfileImage({ id }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/user/${encodeURIComponent(id)}/profile-image`, {
+    }>(`/users/${encodeURIComponent(id)}/profile-image`, {
         ...opts
     }));
 }
@@ -2845,7 +2845,7 @@ export function restoreUser({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: UserResponseDto;
-    }>(`/user/${encodeURIComponent(id)}/restore`, {
+    }>(`/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
     }));
