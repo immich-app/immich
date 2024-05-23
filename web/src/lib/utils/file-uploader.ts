@@ -92,7 +92,7 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(assetFile: File, albumId?: string, assetId?: string): Promise<string | undefined> {
+async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: string): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(assetFile);
 
@@ -112,7 +112,7 @@ async function fileUploader(assetFile: File, albumId?: string, assetId?: string)
       formData.append(key, value);
     }
 
-    let responseData: DefaultAssetMediaResponseDto | AssetMediaUpdateResponseDto | undefined;
+    let responseData: DefaultAssetMediaResponseDto | undefined;
     const key = getKey();
     if (crypto?.subtle?.digest && !key) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
@@ -135,16 +135,19 @@ async function fileUploader(assetFile: File, albumId?: string, assetId?: string)
       }
     }
 
+    let status;
+    let assetId;
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
-      if (assetId) {
+      if (replaceAssetId) {
         const response = await uploadRequest<DefaultAssetMediaResponseDto>({
-          url: getBaseUrl() + '/asset/' + assetId + '/file' + (key ? `?key=${key}` : ''),
+          url: getBaseUrl() + '/asset/' + replaceAssetId + '/file' + (key ? `?key=${key}` : ''),
           method: 'PUT',
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
-        responseData = response.data;
+        status = response.data.status;
+        assetId = response.data.assetId;
       } else {
         const response = await uploadRequest<AssetFileUploadResponseDto>({
           url: getBaseUrl() + '/asset/upload' + (key ? `?key=${key}` : ''),
@@ -154,17 +157,19 @@ async function fileUploader(assetFile: File, albumId?: string, assetId?: string)
         if (![200, 201].includes(response.status)) {
           throw new Error('Failed to upload file');
         }
-        responseData = response.data;
+        if (response.data.duplicate) {
+          status = AssetMediaStatus.Duplicate;
+        } else {
+          assetId = response.data.id;
+        }
       }
     }
-
-    const { status } = responseData;
 
     if (status === AssetMediaStatus.Duplicate) {
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
-      const { assetId } = responseData as AssetMediaCreateResponseDto | AssetMediaUpdateResponseDto;
+      const { assetId } = responseData as DefaultAssetMediaResponseDto;
       if (albumId && assetId) {
         uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
         await addAssetsToAlbum(albumId, [assetId]);
@@ -180,7 +185,7 @@ async function fileUploader(assetFile: File, albumId?: string, assetId?: string)
       uploadAssetsStore.removeUploadAsset(deviceAssetId);
     }, 1000);
 
-    return 'assetId' in responseData ? responseData.assetId : undefined;
+    return assetId;
   } catch (error) {
     handleError(error, 'Unable to upload file');
     const reason = getServerErrorMessage(error) || error;
