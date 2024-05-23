@@ -313,7 +313,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
       throw new Error(`Device '${device}' does not exist`);
     }
 
-    return device;
+    return `/dev/dri/${deviceName}`;
   }
 }
 
@@ -652,7 +652,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     const options = ['-hwaccel qsv', '-async_depth 4', '-threads 1'];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
-      options.push(`-qsv_device /dev/dri/${hwDevice}`);
+      options.push(`-qsv_device ${hwDevice}`);
     }
 
     return options;
