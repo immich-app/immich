@@ -1,4 +1,3 @@
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -8,7 +7,6 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
-import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
@@ -27,7 +25,6 @@ describe(SearchService.name, () => {
   let loggerMock: Mocked<ILoggerRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let accessMock: Mocked<IAccessRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -36,9 +33,8 @@ describe(SearchService.name, () => {
     loggerMock = newLoggerRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
-    accessMock = newAccessRepositoryMock();
 
-    sut = new DuplicateService(systemMock, searchMock, assetMock, loggerMock, cryptoMock, jobMock, accessMock);
+    sut = new DuplicateService(systemMock, searchMock, assetMock, loggerMock, cryptoMock, jobMock);
   });
 
   it('should work', () => {

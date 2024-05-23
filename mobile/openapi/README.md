@@ -121,7 +121,6 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicateApi* | [**getAssetDuplicates**](doc//DuplicateApi.md#getassetduplicates) | **GET** /duplicates | 
-*DuplicateApi* | [**resolveDuplicates**](doc//DuplicateApi.md#resolveduplicates) | **POST** /duplicates/{id}/resolve | 
 *FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /faces | 
 *FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
 *FileReportApi* | [**fixAuditFiles**](doc//FileReportApi.md#fixauditfiles) | **POST** /reports/fix | 
@@ -339,7 +338,6 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [RecognitionConfig](doc//RecognitionConfig.md)
- - [ResolveDuplicatesDto](doc//ResolveDuplicatesDto.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)

@@ -131,7 +131,6 @@ doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
 doc/RecognitionConfig.md
-doc/ResolveDuplicatesDto.md
 doc/ReverseGeocodingStateResponseDto.md
 doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
@@ -367,7 +366,6 @@ lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
 lib/model/recognition_config.dart
-lib/model/resolve_duplicates_dto.dart
 lib/model/reverse_geocoding_state_response_dto.dart
 lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
@@ -572,7 +570,6 @@ test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
 test/recognition_config_test.dart
-test/resolve_duplicates_dto_test.dart
 test/reverse_geocoding_state_response_dto_test.dart
 test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart

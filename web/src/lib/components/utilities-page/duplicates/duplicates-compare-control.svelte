@@ -8,8 +8,9 @@
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { sortBy } from 'lodash-es';
+
   export let duplicate: DuplicateResponseDto;
-  export let onResolve: (trashIds: string[]) => void;
+  export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
 
   let selectedAssetIds = new Set<string>();
 
@@ -39,8 +40,8 @@
 
   const handleResolve = () => {
     const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
-
-    onResolve(trashIds);
+    const duplicateAssetIds = duplicate.assets.map((asset) => asset.id);
+    onResolve(duplicateAssetIds, trashIds);
   };
 </script>
 

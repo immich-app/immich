@@ -169,7 +169,6 @@ part 'model/queue_status_dto.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
 part 'model/recognition_config.dart';
-part 'model/resolve_duplicates_dto.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';
 part 'model/scan_library_dto.dart';
 part 'model/search_album_response_dto.dart';

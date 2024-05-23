@@ -2256,51 +2256,6 @@
         ]
       }
     },
-    "/duplicates/{id}/resolve": {
-      "post": {
-        "operationId": "resolveDuplicates",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResolveDuplicatesDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Duplicate"
-        ]
-      }
-    },
     "/faces": {
       "get": {
         "operationId": "getFaces",
@@ -7002,6 +6957,10 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
@@ -9291,20 +9250,6 @@
           "minFaces",
           "minScore",
           "modelName"
-        ],
-        "type": "object"
-      },
-      "ResolveDuplicatesDto": {
-        "properties": {
-          "assetIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "assetIds"
         ],
         "type": "object"
       },

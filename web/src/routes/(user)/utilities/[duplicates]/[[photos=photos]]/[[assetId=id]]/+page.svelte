@@ -1,7 +1,6 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { resolveDuplicates } from '@immich/sdk';
 
   import type { PageData } from './$types';
   import { handleError } from '$lib/utils/handle-error';
@@ -10,12 +9,24 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { s } from '$lib/utils';
+  import { deleteAssets, getConfig, updateAssets } from '@immich/sdk';
 
   export let data: PageData;
 
-  const handleOnResolve = async (duplicateId: string, trashIds: string[]) => {
+  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     try {
-      await resolveDuplicates({ id: duplicateId, resolveDuplicatesDto: { assetIds: trashIds } });
+      const { trash } = await getConfig();
+      // TODO - Create showConfirmDialog controller to show native confirm.
+      if (
+        !trash.enabled &&
+        trashIds.length > 0 &&
+        !confirm('Are you sure you want to permanently delete these duplicates?')
+      ) {
+        return;
+      }
+
+      await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+      await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !trash.enabled } });
 
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
@@ -42,7 +53,8 @@
       {#key data.duplicates[0].duplicateId}
         <DuplicatesCompareControl
           duplicate={data.duplicates[0]}
-          onResolve={(ids) => handleOnResolve(data.duplicates[0].duplicateId, ids)}
+          onResolve={(duplicateAssetIds, trashIds) =>
+            handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
         />
       {/key}
     {:else}

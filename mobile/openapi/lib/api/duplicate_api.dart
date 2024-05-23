@@ -59,48 +59,4 @@ class DuplicateApi {
     }
     return null;
   }
-
-  /// Performs an HTTP 'POST /duplicates/{id}/resolve' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [ResolveDuplicatesDto] resolveDuplicatesDto (required):
-  Future<Response> resolveDuplicatesWithHttpInfo(String id, ResolveDuplicatesDto resolveDuplicatesDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/duplicates/{id}/resolve'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody = resolveDuplicatesDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [ResolveDuplicatesDto] resolveDuplicatesDto (required):
-  Future<void> resolveDuplicates(String id, ResolveDuplicatesDto resolveDuplicatesDto,) async {
-    final response = await resolveDuplicatesWithHttpInfo(id, resolveDuplicatesDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
 }

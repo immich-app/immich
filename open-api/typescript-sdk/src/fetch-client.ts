@@ -238,6 +238,7 @@ export type AssetBulkDeleteDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    duplicateId?: string | null;
     ids: string[];
     isArchived?: boolean;
     isFavorite?: boolean;
@@ -376,9 +377,6 @@ export type DownloadResponseDto = {
 export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
-};
-export type ResolveDuplicatesDto = {
-    assetIds: string[];
 };
 export type PersonResponseDto = {
     birthDate: string | null;
@@ -1708,16 +1706,6 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     }>("/duplicates", {
         ...opts
     }));
-}
-export function resolveDuplicates({ id, resolveDuplicatesDto }: {
-    id: string;
-    resolveDuplicatesDto: ResolveDuplicatesDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}/resolve`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: resolveDuplicatesDto
-    })));
 }
 export function getFaces({ id }: {
     id: string;

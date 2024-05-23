@@ -1,10 +1,9 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto, ResolveDuplicatesDto } from 'src/dtos/duplicate.dto';
+import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
-import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Duplicate')
 @Controller('duplicates')
@@ -15,16 +14,5 @@ export class DuplicateController {
   @Authenticated()
   getAssetDuplicates(@Auth() auth: AuthDto): Promise<DuplicateResponseDto[]> {
     return this.service.getDuplicates(auth);
-  }
-
-  @Post(':id/resolve')
-  @HttpCode(200)
-  @Authenticated()
-  resolveDuplicates(
-    @Auth() auth: AuthDto,
-    @Param() { id: duplicateId }: UUIDParamDto,
-    @Body() dto: ResolveDuplicatesDto,
-  ): Promise<void> {
-    return this.service.resolveDuplicates(auth, duplicateId, dto);
   }
 }
