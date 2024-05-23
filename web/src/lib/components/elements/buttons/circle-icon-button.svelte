@@ -40,7 +40,7 @@
   {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-colors hover:dark:text-immich-dark-gray {className} {mobileClass}"
   on:click
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
