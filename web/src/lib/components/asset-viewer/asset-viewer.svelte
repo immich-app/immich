@@ -14,7 +14,7 @@
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,

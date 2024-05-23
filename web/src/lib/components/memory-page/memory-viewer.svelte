@@ -19,7 +19,7 @@
   import { type Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane, type AssetResponseDto } from '@immich/sdk';
   import {

@@ -14,7 +14,7 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';

@@ -3,8 +3,8 @@
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { autoGrowHeight } from '$lib/actions/autogrow';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
@@ -25,7 +25,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 

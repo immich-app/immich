@@ -1,7 +1,7 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
 
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;

@@ -44,7 +44,7 @@
   import { user } from '$lib/stores/user.store';
   import { handlePromiseError, s } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';

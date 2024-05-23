@@ -2,15 +2,15 @@
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
-  import { shortcuts } from '$lib/utils/shortcut';
-  import { focusOutside } from '$lib/utils/focus-outside';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { focusOutside } from '$lib/actions/focus-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let value = '';

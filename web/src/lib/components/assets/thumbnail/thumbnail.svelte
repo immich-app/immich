@@ -21,7 +21,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };

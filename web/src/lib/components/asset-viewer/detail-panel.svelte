@@ -9,8 +9,8 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { autoGrowHeight } from '$lib/actions/autogrow';
+  import { clickOutside } from '$lib/actions/click-outside';
   import {
     ThumbnailFormat,
     getAssetInfo,
@@ -42,7 +42,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
   export let asset: AssetResponseDto;

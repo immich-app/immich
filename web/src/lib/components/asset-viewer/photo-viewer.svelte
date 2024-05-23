@@ -6,7 +6,7 @@
   import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
