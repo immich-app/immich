@@ -13,11 +13,13 @@ import {
   mapAsset,
 } from 'src/dtos/asset-response.dto';
 import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
+
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
+  AssetSearchDto,
   AssetStatsDto,
   UpdateAssetDto,
   UploadFieldName,
@@ -30,6 +32,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -58,6 +61,7 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IAssetRepositoryV1) private assetRepositoryV1: IAssetRepositoryV1,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -222,6 +226,13 @@ export class AssetService {
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
+  }
+
+  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || auth.user.id;
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
+    return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {

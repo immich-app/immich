@@ -157,6 +157,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(deviceAssetIds),
+        deviceId,
+        ownerId,
+      },
+      withDeleted: true,
+    });
+  }
+
   getByUserId(
     pagination: PaginationOptions,
     userId: string,

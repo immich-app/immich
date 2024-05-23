@@ -4,6 +4,7 @@ import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/a
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
@@ -155,6 +156,7 @@ describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let assetRepositoryMockV1: Mocked<IAssetRepositoryV1>;
   let jobMock: Mocked<IJobRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
@@ -188,9 +190,18 @@ describe(AssetService.name, () => {
     albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
+    assetRepositoryMockV1 = {
+      get: vitest.fn(),
+      getAllByUserId: vitest.fn(),
+      getAssetsByChecksums: vitest.fn(),
+      getExistingAssets: vitest.fn(),
+      getByOriginalPath: vitest.fn(),
+    };
+
     sut = new AssetService(
       accessMock,
       assetMock,
+      assetRepositoryMockV1,
       jobMock,
       systemMock,
       storageMock,

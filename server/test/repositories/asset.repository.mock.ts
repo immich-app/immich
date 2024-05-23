@@ -10,6 +10,7 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getByIds: vitest.fn().mockResolvedValue([]),
     getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
     getByAlbumId: vitest.fn(),
+    getByDeviceIds: vitest.fn(),
     getByUserId: vitest.fn(),
     getById: vitest.fn(),
     getWithout: vitest.fn(),

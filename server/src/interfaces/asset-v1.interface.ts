@@ -1,4 +1,5 @@
-import { AssetSearchDto, CheckExistingAssetsDto } from 'src/dtos/asset-v1.dto';
+import { CheckExistingAssetsDto } from 'src/dtos/asset-media.dto';
+import { AssetSearchDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 
 export interface AssetCheck {

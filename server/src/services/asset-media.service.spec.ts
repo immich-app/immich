@@ -1,6 +1,7 @@
 import { Stats } from 'node:fs';
 import { AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaReplaceDto } from 'src/dtos/asset-media.dto';
+import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -275,6 +276,33 @@ describe('AssetMediaService', () => {
         data: { files: [updatedFile.originalPath, undefined] },
       });
       expect(userMock.updateUsage).not.toHaveBeenCalled();
+    });
+  });
+  describe('bulkUploadCheck', () => {
+    it('should accept hex and base64 checksums', async () => {
+      const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+      const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
+
+      assetMock.getByChecksums.mockResolvedValue([
+        { id: 'asset-1', checksum: file1 } as AssetEntity,
+        { id: 'asset-2', checksum: file2 } as AssetEntity,
+      ]);
+
+      await expect(
+        sut.bulkUploadCheck(authStub.admin, {
+          assets: [
+            { id: '1', checksum: file1.toString('hex') },
+            { id: '2', checksum: file2.toString('base64') },
+          ],
+        }),
+      ).resolves.toEqual({
+        results: [
+          { id: '1', assetId: 'asset-1', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
+          { id: '2', assetId: 'asset-2', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
+        ],
+      });
+
+      expect(assetMock.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
     });
   });
 });
