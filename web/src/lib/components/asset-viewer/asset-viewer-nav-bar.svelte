@@ -3,7 +3,7 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName } from '$lib/utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
   import {
