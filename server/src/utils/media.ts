@@ -652,7 +652,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     const options = ['-hwaccel qsv', '-async_depth 4', '-threads 1'];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
-      options.push(`-qsv_device ${hwDevice}`);
+      options.push(`-qsv_device /dev/dri/${hwDevice}`);
     }
 
     return options;
@@ -661,7 +661,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     if (this.shouldScale(videoStream) || !this.shouldToneMap(videoStream)) {
-      let scaling = `scale_qsv=${this.getScaling(videoStream)}:mode=hq:async_depth=4`;
+      let scaling = `scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq`;
       if (!this.shouldToneMap(videoStream)) {
         scaling += ':format=nv12';
       }
