@@ -331,10 +331,8 @@ export type UpdateAssetMediaDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
 };
-export type DefaultAssetMediaResponseDto = {
-    assetId?: string;
-    copyId?: string;
-    duplicateId?: string;
+export type AssetMediaResponseDto = {
+    id?: string;
     status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
@@ -1598,6 +1596,9 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
+/**
+ * Replaces the asset with new file, without changing its id
+ */
 export function replaceAsset({ id, key, updateAssetMediaDto }: {
     id: string;
     key?: string;
@@ -1605,7 +1606,7 @@ export function replaceAsset({ id, key, updateAssetMediaDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DefaultAssetMediaResponseDto;
+        data: AssetMediaResponseDto;
     }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
@@ -2922,7 +2923,7 @@ export enum ThumbnailFormat {
     Webp = "WEBP"
 }
 export enum AssetMediaStatus {
-    Updated = "updated",
+    Replaced = "replaced",
     Duplicate = "duplicate"
 }
 export enum EntityType {

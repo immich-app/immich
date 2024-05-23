@@ -180,12 +180,12 @@ export const getAssetThumbnailUrl = (
 };
 
 export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/user/profile-image/${userId}`;
+  const path = `/users/profile-image/${userId}`;
   return createUrl(path);
 };
 
 export const getPeopleThumbnailUrl = (personId: string) => {
-  const path = `/person/${personId}/thumbnail`;
+  const path = `/people/${personId}/thumbnail`;
   return createUrl(path);
 };
 

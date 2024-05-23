@@ -1842,6 +1842,7 @@
     },
     "/asset/{id}/file": {
       "put": {
+        "description": "Replaces the asset with new file, without changing its id",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -1870,7 +1871,6 @@
               }
             }
           },
-          "description": "Replaces the asset with new file, without changing its id",
           "required": true
         },
         "responses": {
@@ -1878,7 +1878,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DefaultAssetMediaResponseDto"
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
                 }
               }
             },
@@ -7390,9 +7390,23 @@
         ],
         "type": "object"
       },
+      "AssetMediaResponseDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
       "AssetMediaStatus": {
         "enum": [
-          "updated",
+          "replaced",
           "duplicate"
         ],
         "type": "string"
@@ -7937,26 +7951,6 @@
           "email",
           "name",
           "password"
-        ],
-        "type": "object"
-      },
-      "DefaultAssetMediaResponseDto": {
-        "properties": {
-          "assetId": {
-            "type": "string"
-          },
-          "copyId": {
-            "type": "string"
-          },
-          "duplicateId": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/AssetMediaStatus"
-          }
-        },
-        "required": [
-          "status"
         ],
         "type": "object"
       },

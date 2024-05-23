@@ -710,7 +710,10 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /asset/{id}/file' operation and returns the [Response].
+  /// Replaces the asset with new file, without changing its id
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -788,6 +791,8 @@ class AssetApi {
     );
   }
 
+  /// Replaces the asset with new file, without changing its id
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -805,7 +810,7 @@ class AssetApi {
   /// * [String] key:
   ///
   /// * [String] duration:
-  Future<DefaultAssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, }) async {
+  Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, }) async {
     final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -814,7 +819,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DefaultAssetMediaResponseDto',) as DefaultAssetMediaResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetMediaResponseDto',) as AssetMediaResponseDto;
     
     }
     return null;

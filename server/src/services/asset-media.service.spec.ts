@@ -1,4 +1,5 @@
 import { Stats } from 'node:fs';
+import { AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
 import { UpdateAssetMediaDto } from 'src/dtos/asset-media.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -184,9 +185,8 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: 'updated',
-        assetId: updatedAsset.id,
-        copyId: _getCopiedAsset().id,
+        status: AssetMediaStatusEnum.REPLACED,
+        id: _getCopiedAsset().id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
@@ -216,9 +216,8 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
-        status: 'updated',
-        assetId: updatedAsset.id,
-        copyId: _getCopiedAsset().id,
+        status: AssetMediaStatusEnum.REPLACED,
+        id: _getCopiedAsset().id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto, undefined, sidecarFile);
@@ -246,9 +245,8 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: 'updated',
-        assetId: updatedAsset.id,
-        copyId: _getCopiedAsset().id,
+        status: AssetMediaStatusEnum.REPLACED,
+        id: _getCopiedAsset().id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);
@@ -278,8 +276,8 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: 'duplicate',
-        duplicateId: existingAsset.id,
+        status: AssetMediaStatusEnum.DUPLICATE,
+        id: existingAsset.id,
       });
 
       expectAssetUpdate(existingAsset, updatedFile, dto);

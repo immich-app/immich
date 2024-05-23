@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetMediaUpdateResponseDto, DuplicateAssetResponseDto } from 'src/dtos/asset-media-response.dto';
+import { AssetMediaResponseDto, AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
 import { UpdateAssetMediaDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
@@ -14,20 +14,6 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { mimeTypes } from 'src/utils/mime-types';
 import { QueryFailedError } from 'typeorm';
-
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
 
 export interface UploadRequest {
   auth: AuthDto | null;
@@ -67,7 +53,7 @@ export class AssetMediaService {
     dto: UpdateAssetMediaDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<AssetMediaUpdateResponseDto | DuplicateAssetResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     try {
       await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
       const existingAssetEntity = (await this.assetRepository.getById(id)) as AssetEntity;
@@ -85,7 +71,7 @@ export class AssetMediaService {
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
-      return new AssetMediaUpdateResponseDto(id, copiedPhoto.id);
+      return { status: AssetMediaStatusEnum.REPLACED, id: copiedPhoto.id };
     } catch (error: any) {
       return await this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -96,7 +82,7 @@ export class AssetMediaService {
     auth: AuthDto,
     file: UploadFile,
     sidecarFile?: UploadFile,
-  ): Promise<DuplicateAssetResponseDto> {
+  ): Promise<AssetMediaResponseDto> {
     // clean up files
     await this.jobRepository.queue({
       name: JobName.DELETE_FILES,
@@ -110,7 +96,7 @@ export class AssetMediaService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
-      return new DuplicateAssetResponseDto(duplicate[0].id);
+      return { status: AssetMediaStatusEnum.DUPLICATE, id: duplicate[0].id };
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
@@ -159,7 +145,7 @@ export class AssetMediaService {
 
   /**
    * Create a 'shallow' copy of the specified asset record creating a new asset record in the database.
-   * Uses only vital properties likxcluding things like: stacks, faces, smart search info, etc,
+   * Uses only vital properties excluding things like: stacks, faces, smart search info, etc,
    * and then queues a METADATA_EXTRACTION job.
    */
   private async createAssetCopy(asset: AssetEntity): Promise<AssetEntity> {
