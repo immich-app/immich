@@ -32,5 +32,5 @@
     </h1>
   </div>
 
-  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title="Close" class="focus:ring" />
+  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title="Close" />
 </div>

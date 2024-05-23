@@ -52,8 +52,13 @@
   };
 </script>
 
-<FullScreenModal id="album-selection-modal" title={getTitle()} {onClose}>
+<FullScreenModal id="album-selection-modal" title={getTitle()} initialFocusIndex={1} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
+    <input
+      class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
+      placeholder="Search"
+      bind:value={search}
+    />
     {#if loading}
       {#each { length: 3 } as _}
         <div class="flex animate-pulse gap-4 px-6 py-2">
@@ -68,11 +73,6 @@
         </div>
       {/each}
     {:else}
-      <input
-        class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
-        placeholder="Search"
-        bind:value={search}
-      />
       <div class="immich-scrollbar overflow-y-auto">
         <button
           on:click={handleNew}

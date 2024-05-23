@@ -27,6 +27,10 @@
    * - `auto`: fits the width of the modal content, up to a maximum of 550px
    */
   export let width: 'wide' | 'narrow' | 'auto' = 'narrow';
+  /**
+   * The index of the focusable element that should be selected when the modal is initially launched.
+   */
+  export let initialFocusIndex: number = 0;
 
   $: titleId = `${id}-title`;
   $: isStickyBottom = !!$$slots['sticky-bottom'];
@@ -52,7 +56,7 @@
     event.stopPropagation();
   }}
 >
-  <FocusTrap>
+  <FocusTrap {initialFocusIndex}>
     <div
       class="z-[9999] max-w-[95vw] max-h-[95vh] {modalWidth} overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
       style="max-height: min(95vh, 900px);"
