@@ -3,7 +3,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { copyToClipboard, downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -130,8 +130,12 @@
     }
   });
 
-  const onCopyShortcut = () => {
-    if (window.getSelection()?.type === 'Range') {
+  const onCopyShortcut = async () => {
+    const selection = window.getSelection();
+    if (selection?.type === 'Range') {
+      if (selection.toString().length > 0) {
+        await copyToClipboard(selection.toString(), true);
+      }
       return;
     }
     handlePromiseError(doCopy());
