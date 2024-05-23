@@ -703,7 +703,7 @@ export class VAAPIConfig extends BaseHWConfig {
     }
 
     let hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice === null) {
+    if (!hwDevice) {
       hwDevice = `/dev/dri/${this.devices[0]}`;
     }
 
