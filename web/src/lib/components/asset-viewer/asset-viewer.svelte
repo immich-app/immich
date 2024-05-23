@@ -88,7 +88,7 @@
   let isShowProfileImageCrop = false;
   let sharedLink = getSharedLink();
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
-  let shouldShowDetailButton = asset.hasMetadata;
+  let enableDetailPanel = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
@@ -574,7 +574,7 @@
           showZoomButton={asset.type === AssetTypeEnum.Image}
           showMotionPlayButton={!!asset.livePhotoVideoId}
           showDownloadButton={shouldShowDownloadButton}
-          showDetailButton={shouldShowDetailButton}
+          showDetailButton={enableDetailPanel}
           showSlideshow={!!assetStore}
           hasStackChildren={$stackAssetsStore.length > 0}
           showShareButton={shouldShowShareModal}
@@ -701,7 +701,7 @@
       </div>
     {/if}
 
-    {#if $slideshowState === SlideshowState.None && $isShowDetail}
+    {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
       <div
         transition:fly={{ duration: 150 }}
         id="detail-panel"
