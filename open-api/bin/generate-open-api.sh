@@ -24,7 +24,8 @@ function typescript {
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
 }
 
-node ./bin/sync-spec-version.js
+# requires server to be built
+npm run sync:open-api --prefix=../server
 
 if [[ $1 == 'dart' ]]; then
   dart
