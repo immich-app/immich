@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   HttpStatus,
   Inject,
   ParseFilePipe,
@@ -12,6 +13,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MigrationBegin, MigrationStatus } from 'src/dtos/migrate.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MigrateService } from 'src/services/migrate.service';
@@ -44,5 +46,17 @@ export class MigrateController {
       this.logger.error('Error uploading file', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: 'Failed to upload file' });
     }
+  }
+
+  @Get('status')
+  @Authenticated({ sharedLink: true })
+  getMigrationStatus(): Promise<MigrationStatus> {
+    return this.service.getMigrationStatus();
+  }
+
+  @Post('begin')
+  @Authenticated({ sharedLink: true })
+  async beginMigration(): Promise<MigrationBegin> {
+    return await this.service.beginMigration();
   }
 }

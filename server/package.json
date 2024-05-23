@@ -62,6 +62,7 @@
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
+    "google-photos-migrate": "^2.7.1",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.3.2",
@@ -85,7 +86,8 @@
     "sirv": "^2.0.4",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
-    "ua-parser-js": "^1.0.35"
+    "ua-parser-js": "^1.0.35",
+    "unzipper": "^0.11.6"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.1.16",
@@ -109,6 +111,7 @@
     "@types/picomatch": "^2.3.3",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
+    "@types/unzipper": "^0.10.9",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vitest/coverage-v8": "^1.5.0",

@@ -3092,6 +3092,88 @@
         ]
       }
     },
+    "/migrate/begin": {
+      "post": {
+        "operationId": "beginMigration",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationBegin"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Migrate"
+        ]
+      }
+    },
+    "/migrate/status": {
+      "get": {
+        "operationId": "getMigrationStatus",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationStatus"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Migrate"
+        ]
+      }
+    },
     "/migrate/upload": {
       "post": {
         "operationId": "uploadFile",
@@ -8800,6 +8882,38 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "MigrationBegin": {
+        "properties": {
+          "success": {
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "type": "object"
+      },
+      "MigrationStatus": {
+        "properties": {
+          "res": {
+            "example": [
+              "file1.zip",
+              "file2.zip"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "res"
+        ],
         "type": "object"
       },
       "ModelType": {
