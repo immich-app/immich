@@ -38,7 +38,8 @@ import {
   HEVCConfig,
   NvencHwDecodeConfig,
   NvencSwDecodeConfig,
-  QSVConfig,
+  QsvHwDecodeConfig,
+  QsvSwDecodeConfig,
   RkmppHwDecodeConfig,
   RkmppSwDecodeConfig,
   ThumbnailConfig,
@@ -499,7 +500,9 @@ export class MediaService {
         break;
       }
       case TranscodeHWAccel.QSV: {
-        handler = new QSVConfig(config, await this.getDevices());
+        handler = config.accelDecode
+          ? new QsvHwDecodeConfig(config, await this.getDevices())
+          : new QsvSwDecodeConfig(config, await this.getDevices());
         break;
       }
       case TranscodeHWAccel.VAAPI: {
