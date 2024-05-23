@@ -30,7 +30,8 @@
     "typeorm:migrations:revert": "typeorm migration:revert -d ./dist/database.config.js",
     "typeorm:schema:drop": "typeorm query -d ./dist/database.config.js 'DROP schema public cascade; CREATE schema public;'",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
-    "sql:generate": "node ./dist/utils/sql.js",
+    "sync:open-api": "node ./dist/bin/sync-open-api.js",
+    "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
