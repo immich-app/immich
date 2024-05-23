@@ -26,7 +26,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  libraryId!: string;
+  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
   fileCreatedAt!: Date;
@@ -50,6 +51,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
   stackCount!: number | null;
+  duplicateId?: string | null;
 }
 
 export type AssetMapOptions = {
@@ -130,6 +132,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isExternal: false,
     isReadOnly: false,
     hasMetadata: true,
+    duplicateId: entity.duplicateId,
   };
 }
 

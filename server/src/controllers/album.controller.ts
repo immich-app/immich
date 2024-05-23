@@ -17,7 +17,7 @@ import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Album')
-@Controller('album')
+@Controller('albums')
 export class AlbumController {
   constructor(private service: AlbumService) {}
 

@@ -89,7 +89,7 @@
           {#if !shared && search.length === 0}
             <p class="px-5 py-3 text-xs">RECENT</p>
             {#each recentAlbums as album (album.id)}
-              <AlbumListItem variant="simple" {album} on:album={() => handleSelect(album)} />
+              <AlbumListItem {album} on:album={() => handleSelect(album)} />
             {/each}
           {/if}
 

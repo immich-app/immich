@@ -27,7 +27,7 @@ import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.moc
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
-import { Mocked, vitest } from 'vitest';
+import { Mocked } from 'vitest';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -138,13 +138,17 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: userStub.user1.id,
         storageLabel: null,
+        updatedAt: expect.any(Date),
       });
     });
 
     it('should omit a storage label set by non-admin users', async () => {
       userMock.update.mockResolvedValue(userStub.user1);
       await sut.update({ user: userStub.user1 }, { id: userStub.user1.id, storageLabel: 'admin' });
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { id: userStub.user1.id });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
+        id: userStub.user1.id,
+        updatedAt: expect.any(Date),
+      });
     });
 
     it('user can only update its information', async () => {
@@ -174,6 +178,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         email: 'updated@test.com',
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -210,6 +215,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         shouldChangePassword: true,
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -231,7 +237,7 @@ describe(UserService.name, () => {
 
       await sut.update(authStub.admin, dto);
 
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, dto);
+      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, { ...dto, updatedAt: expect.any(Date) });
     });
 
     it('should not let the another user become an admin', async () => {
@@ -427,45 +433,6 @@ describe(UserService.name, () => {
       );
 
       expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
-    });
-  });
-
-  describe('resetAdminPassword', () => {
-    it('should only work when there is an admin account', async () => {
-      userMock.getAdmin.mockResolvedValue(null);
-      const ask = vitest.fn().mockResolvedValue('new-password');
-
-      await expect(sut.resetAdminPassword(ask)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(ask).not.toHaveBeenCalled();
-    });
-
-    it('should default to a random password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = vitest.fn().mockImplementation(() => {});
-
-      const response = await sut.resetAdminPassword(ask);
-
-      const [id, update] = userMock.update.mock.calls[0];
-
-      expect(response.provided).toBe(false);
-      expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
-      expect(update.password).toBeDefined();
-    });
-
-    it('should use the supplied password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = vitest.fn().mockResolvedValue('new-password');
-
-      const response = await sut.resetAdminPassword(ask);
-
-      const [id, update] = userMock.update.mock.calls[0];
-
-      expect(response.provided).toBe(true);
-      expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
-      expect(update.password).toBeDefined();
     });
   });
 

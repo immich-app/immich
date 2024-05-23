@@ -300,6 +300,8 @@ class ApiClient {
           return DownloadResponseDto.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
+        case 'DuplicateResponseDto':
+          return DuplicateResponseDto.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
@@ -334,8 +336,6 @@ class ApiClient {
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
           return LibraryStatsResponseDto.fromJson(value);
-        case 'LibraryType':
-          return LibraryTypeTypeTransformer().decode(value);
         case 'LogLevel':
           return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':
@@ -428,14 +428,14 @@ class ApiClient {
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':
           return ServerFeaturesDto.fromJson(value);
-        case 'ServerInfoResponseDto':
-          return ServerInfoResponseDto.fromJson(value);
         case 'ServerMediaTypesResponseDto':
           return ServerMediaTypesResponseDto.fromJson(value);
         case 'ServerPingResponse':
           return ServerPingResponse.fromJson(value);
         case 'ServerStatsResponseDto':
           return ServerStatsResponseDto.fromJson(value);
+        case 'ServerStorageResponseDto':
+          return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
         case 'ServerVersionResponseDto':

@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto, UpdateUserDto } from 'src/dtos/user.dto';
+import { CreateUserDto, CreateUserOAuthDto, UpdateUserDto } from 'src/dtos/user.dto';
 
 describe('update user DTO', () => {
   it('should allow emails without a tld', async () => {
@@ -42,22 +42,6 @@ describe('create user DTO', () => {
     const someEmail = 'test@test';
 
     const dto = plainToInstance(CreateUserDto, {
-      email: someEmail,
-      password: 'some password',
-      name: 'some name',
-    });
-    const errors = await validate(dto);
-    expect(errors).toHaveLength(0);
-    expect(dto.email).toEqual(someEmail);
-  });
-});
-
-describe('create admin DTO', () => {
-  it('should allow emails without a tld', async () => {
-    const someEmail = 'test@test';
-
-    const dto = plainToInstance(CreateAdminDto, {
-      isAdmin: true,
       email: someEmail,
       password: 'some password',
       name: 'some name',

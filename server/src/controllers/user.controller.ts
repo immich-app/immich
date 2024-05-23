@@ -41,10 +41,10 @@ export class UserController {
     return this.service.getAll(auth, isAll);
   }
 
-  @Get('info/:id')
-  @Authenticated()
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.get(id);
+  @Post()
+  @Authenticated({ admin: true })
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.service.create(createUserDto);
   }
 
   @Get('me')
@@ -53,10 +53,10 @@ export class UserController {
     return this.service.getMe(auth);
   }
 
-  @Post()
-  @Authenticated({ admin: true })
-  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.service.create(createUserDto);
+  @Get(':id')
+  @Authenticated()
+  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.get(id);
   }
 
   @Delete('profile-image')
@@ -101,7 +101,7 @@ export class UserController {
     return this.service.createProfileImage(auth, fileInfo);
   }
 
-  @Get('profile-image/:id')
+  @Get(':id/profile-image')
   @FileResponse()
   @Authenticated()
   async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {

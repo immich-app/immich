@@ -4,10 +4,10 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
-  ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
+  ServerStorageResponseDto,
   UsageByUserDto,
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
@@ -42,13 +42,13 @@ export class ServerInfoService {
     }
   }
 
-  async getInfo(): Promise<ServerInfoResponseDto> {
+  async getStorage(): Promise<ServerStorageResponseDto> {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 
-    const serverInfo = new ServerInfoResponseDto();
+    const serverInfo = new ServerStorageResponseDto();
     serverInfo.diskAvailable = asHumanReadable(diskInfo.available);
     serverInfo.diskSize = asHumanReadable(diskInfo.total);
     serverInfo.diskUse = asHumanReadable(diskInfo.total - diskInfo.free);

@@ -1,12 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { EndpointLifecycle } from 'src/decorators';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
-  ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
+  ServerStorageResponseDto,
   ServerThemeDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server-info.dto';
@@ -23,9 +24,16 @@ export class ServerInfoController {
   ) {}
 
   @Get()
+  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
   @Authenticated()
-  getServerInfo(): Promise<ServerInfoResponseDto> {
-    return this.service.getInfo();
+  getServerInfo(): Promise<ServerStorageResponseDto> {
+    return this.service.getStorage();
+  }
+
+  @Get('storage')
+  @Authenticated()
+  getStorage(): Promise<ServerStorageResponseDto> {
+    return this.service.getStorage();
   }
 
   @Get('ping')

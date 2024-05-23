@@ -5,12 +5,12 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
-import { downloadRequest, getKey } from '$lib/utils';
+import { downloadRequest, getKey, s } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
-  defaults,
+  getBaseUrl,
   getDownloadInfo,
   updateAssets,
   type AlbumResponseDto,
@@ -38,7 +38,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
     timeout: 5000,
     message:
       count > 0
-        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        ? `Added ${count} asset${s(count)} to the album`
         : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
     button: {
       text: 'View Album',
@@ -58,7 +58,7 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
   notificationController.show({
     type: NotificationType.Info,
     timeout: 5000,
-    message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+    message: `Added ${assetIds.length} asset${s(assetIds.length)} to ${displayName}`,
     html: true,
     button: {
       text: 'View Album',
@@ -121,7 +121,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + '/download/archive' + (key ? `?key=${key}` : ''),
         data: { assetIds: archive.assetIds },
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
@@ -177,7 +177,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
@@ -267,7 +267,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
   if (numberOfIssues > 0) {
     notificationController.show({
-      message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,
+      message: `Can't change metadata of ${numberOfIssues} asset${s(numberOfIssues)}`,
       type: NotificationType.Warning,
     });
   }

@@ -9,6 +9,7 @@
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { s } from '$lib/utils';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined;
@@ -33,7 +34,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Removed ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Removed ${count} asset${s(count)}`,
       });
 
       clearSelect();

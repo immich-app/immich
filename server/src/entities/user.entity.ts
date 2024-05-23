@@ -1,5 +1,6 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { TagEntity } from 'src/entities/tag.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,19 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export enum UserAvatarColor {
-  PRIMARY = 'primary',
-  PINK = 'pink',
-  RED = 'red',
-  YELLOW = 'yellow',
-  BLUE = 'blue',
-  GREEN = 'green',
-  PURPLE = 'purple',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-  AMBER = 'amber',
-}
 
 export enum UserStatus {
   ACTIVE = 'active',
@@ -36,9 +24,6 @@ export class UserEntity {
 
   @Column({ default: '' })
   name!: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  avatarColor!: UserAvatarColor | null;
 
   @Column({ default: false })
   isAdmin!: boolean;
@@ -73,9 +58,6 @@ export class UserEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
-  @Column({ default: true })
-  memoriesEnabled!: boolean;
-
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 
@@ -87,4 +69,7 @@ export class UserEntity {
 
   @Column({ type: 'bigint', default: 0 })
   quotaUsageInBytes!: number;
+
+  @OneToMany(() => UserMetadataEntity, (metadata) => metadata.user)
+  metadata!: UserMetadataEntity[];
 }

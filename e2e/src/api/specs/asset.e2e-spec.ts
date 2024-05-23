@@ -2,11 +2,10 @@ import {
   AssetFileUploadResponseDto,
   AssetResponseDto,
   AssetTypeEnum,
-  LibraryResponseDto,
   LoginResponseDto,
   SharedLinkType,
-  getAllLibraries,
   getAssetInfo,
+  getMyUserInfo,
   updateAssets,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
@@ -819,25 +818,6 @@ describe('/asset', () => {
       expect(duplicate).toBe(true);
     });
 
-    it("should not upload to another user's library", async () => {
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
-      const library = libraries.find((library) => library.ownerId === user1.userId) as LibraryResponseDto;
-
-      const { body, status } = await request(app)
-        .post('/asset/upload')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .field('libraryId', library.id)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
-        .field('fileCreatedAt', new Date().toISOString())
-        .field('fileModifiedAt', new Date().toISOString())
-        .field('duration', '0:00:00.000000')
-        .attach('assetData', makeRandomImage(), 'example.png');
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no asset.upload access'));
-    });
-
     it('should update the used quota', async () => {
       const { body, status } = await request(app)
         .post('/asset/upload')
@@ -851,7 +831,7 @@ describe('/asset', () => {
       expect(body).toEqual({ id: expect.any(String), duplicate: false });
       expect(status).toBe(201);
 
-      const { body: user } = await request(app).get('/user/me').set('Authorization', `Bearer ${quotaUser.accessToken}`);
+      const user = await getMyUserInfo({ headers: asBearerAuth(quotaUser.accessToken) });
 
       expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
     });
