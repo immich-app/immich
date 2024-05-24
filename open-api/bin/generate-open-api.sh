@@ -6,6 +6,13 @@ BASE_URL=https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENA
 
 PRE_PATCHES=(serialization/native/native_class.mustache api.mustache)
 POST_PATCHES=(api_client.dart api.dart)
+function cleanup {
+  # Remove the patched files, so they don't show up as outgoing changes
+  for patch in "${PRE_PATCHES[@]}"; do
+    rm -vf "./templates/mobile/$patch"
+  done
+}
+trap cleanup EXIT
 function dart {
   rm -rf ../mobile/openapi
   for patch in "${PRE_PATCHES[@]}"; do
@@ -42,3 +49,4 @@ else
   dart
   typescript
 fi
+

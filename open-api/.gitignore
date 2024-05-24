@@ -1,0 +1,2 @@
+*.mustache
+!op_return_sign.mustache
