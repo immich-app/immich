@@ -157,9 +157,6 @@ The default configuration looks like this:
   "server": {
     "externalDomain": "",
     "loginPageMessage": ""
-  },
-  "user": {
-    "deleteDelay": 7
   }
 }
 ```
