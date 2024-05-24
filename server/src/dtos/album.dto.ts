@@ -51,12 +51,7 @@ export class CreateAlbumDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AlbumUserCreateDto)
-  @PropertyLifecycle({ addedAt: 'v1.104.0' })
   albumUsers?: AlbumUserCreateDto[];
-
-  @ValidateUUID({ optional: true, each: true })
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  sharedWithUserIds?: string[];
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];

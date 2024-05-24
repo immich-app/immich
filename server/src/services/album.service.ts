@@ -115,9 +115,6 @@ export class AlbumService {
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     const albumUsers = dto.albumUsers || [];
-    for (const userId of dto.sharedWithUserIds || []) {
-      albumUsers.push({ userId, role: AlbumUserRole.EDITOR });
-    }
 
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});

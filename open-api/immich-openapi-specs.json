@@ -7783,7 +7783,6 @@
             "type": "string"
           },
           "albumUsers": {
-            "description": "This property was added in v1.104.0",
             "items": {
               "$ref": "#/components/schemas/AlbumUserCreateDto"
             },
@@ -7798,15 +7797,6 @@
           },
           "description": {
             "type": "string"
-          },
-          "sharedWithUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [
