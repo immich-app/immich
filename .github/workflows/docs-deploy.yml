@@ -22,39 +22,45 @@ jobs:
             const eventType = context.payload.workflow_run.event;
             const isFork = context.payload.workflow_run.repository.fork;
 
+            let parameters;
+
+            console.log({eventType, isFork});
+
             if (eventType == "push") {
               const branch = context.payload.workflow_run.head_branch;
+              console.log({branch});
               const shouldDeploy = !isFork && branch == "main";
-              return {
+              parameters = {
                 event: "branch",
                 name: "main",
                 shouldDeploy
               };
-            }
-
-            if (eventType == "pull_request") {
+            } else if (eventType == "pull_request") {
               const pull_number = context.payload.workflow_run.pull_requests[0].number;
-              const {data: pr} = github.rest.pulls.get({
-                owner: "immich-app",
-                repo: "immich",
+              const {data: pr} = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 pull_number
               });
               const isApproved = pr.labels.some((l) => l.name == "preview-docs");
-              const shouldDeploy = !isFork || isApproved;
-              return {
+
+              console.log({pull_number, isApproved});
+
+              parameters = {
                 event: "pr",
                 name: pull_number,
-                shouldDeploy
+                shouldDeploy: !isFork || isApproved
               };
-            }
-
-            if (eventType == "release") {
-              return {
+            } else if (eventType == "release") {
+              parameters = {
                 event: "release",
                 name: context.payload.workflow_run.head_branch,
                 shouldDeploy: !isFork
               };
             }
+
+            console.log(parameters);
+            return parameters;
 
   deploy:
     runs-on: ubuntu-latest
