@@ -36,7 +36,9 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       [],
     );
 
-    return TextField(
+    return Material(
+      color: Colors.transparent,
+      child: TextField(
       onChanged: (value) {
         if (value.isEmpty) {
         } else {
@@ -90,6 +92,6 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-    );
+    ));
   }
 }
