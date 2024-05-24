@@ -1026,27 +1026,6 @@ describe('/asset', () => {
     });
   });
 
-  describe('GET /asset', () => {
-    it('should return stack data', async () => {
-      const { status, body } = await request(app).get('/asset').set('Authorization', `Bearer ${stackUser.accessToken}`);
-
-      const stack = body.find((asset: AssetResponseDto) => asset.id === stackAssets[0].id);
-
-      expect(status).toBe(200);
-      expect(stack).toEqual(
-        expect.objectContaining({
-          stackCount: 3,
-          stack:
-            // Response includes children at the root level
-            expect.arrayContaining([
-              expect.objectContaining({ id: stackAssets[1].id }),
-              expect.objectContaining({ id: stackAssets[2].id }),
-            ]),
-        }),
-      );
-    });
-  });
-
   describe('PUT /asset', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).put('/asset');

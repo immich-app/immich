@@ -1,11 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetJobsDto,
-  AssetSearchDto,
   AssetStatsDto,
   AssetStatsResponseDto,
   DeviceIdDto,
@@ -84,21 +83,6 @@ export class AssetController {
   @Authenticated()
   updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
     return this.service.updateStackParent(auth, dto);
-  }
-
-  /**
-   * Get all AssetEntity belong to the user
-   */
-  @Get('/')
-  @ApiHeader({
-    name: 'if-none-match',
-    description: 'ETag of data already cached on the client',
-    required: false,
-    schema: { type: 'string' },
-  })
-  @Authenticated()
-  getAllAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.getAllAssets(auth, dto);
   }
 
   @Get(':id')

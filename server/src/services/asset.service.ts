@@ -61,7 +61,6 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IAssetRepositoryV1) private assetRepositoryV1: IAssetRepositoryV1,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -226,13 +225,6 @@ export class AssetService {
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
-  }
-
-  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {

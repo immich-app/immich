@@ -156,7 +156,6 @@ describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let assetRepositoryMockV1: Mocked<IAssetRepositoryV1>;
   let jobMock: Mocked<IJobRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
@@ -190,18 +189,9 @@ describe(AssetService.name, () => {
     albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    assetRepositoryMockV1 = {
-      get: vitest.fn(),
-      getAllByUserId: vitest.fn(),
-      getAssetsByChecksums: vitest.fn(),
-      getExistingAssets: vitest.fn(),
-      getByOriginalPath: vitest.fn(),
-    };
-
     sut = new AssetService(
       accessMock,
       assetMock,
-      assetRepositoryMockV1,
       jobMock,
       systemMock,
       storageMock,

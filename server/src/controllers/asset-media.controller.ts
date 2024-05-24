@@ -15,14 +15,17 @@ import {
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
-import { AssetMediaResponseDto, AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import {
-  AssetBulkUploadCheckResponseDto, CheckExistingAssetsResponseDto
+  AssetBulkUploadCheckResponseDto,
+  AssetMediaResponseDto,
+  AssetMediaStatusEnum,
+  CheckExistingAssetsResponseDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
   AssetBulkUploadCheckDto,
-  CheckExistingAssetsDto
+  AssetMediaReplaceDto,
+  CheckExistingAssetsDto,
+  UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -30,6 +33,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
+
 @ApiTags('Asset')
 @Controller(Route.ASSET)
 export class AssetMediaController {
@@ -65,7 +69,7 @@ export class AssetMediaController {
   /**
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
-  @Post('/exist')
+  @Post('exist')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
   checkExistingAssets(
@@ -78,7 +82,7 @@ export class AssetMediaController {
   /**
    * Checks if assets exist by checksums
    */
-  @Post('/bulk-upload-check')
+  @Post('bulk-upload-check')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
   checkBulkUpload(
