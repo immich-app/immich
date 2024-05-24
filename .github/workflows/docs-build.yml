@@ -39,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docs-build-output
-          path: build/
+          path: docs/build/
           retention-days: 1
