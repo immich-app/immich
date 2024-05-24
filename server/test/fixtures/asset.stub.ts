@@ -486,7 +486,7 @@ export const assetStub = {
     },
   } as AssetEntity),
 
-  livePhotoStillAssetWithOriginalFileName: Object.freeze({
+  livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
     originalPath: fileStub.livePhotoStill.originalPath,
     originalFileName: fileStub.livePhotoStill.originalName,
