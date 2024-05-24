@@ -39,7 +39,7 @@ jobs:
                 repo: "immich",
                 pull_number
               });
-              const isApproved = pr.labels.some((l) => l.name == "preview-docs";
+              const isApproved = pr.labels.some((l) => l.name == "preview-docs");
               const shouldDeploy = !isFork || isApproved;
               return {
                 event: "pr",
