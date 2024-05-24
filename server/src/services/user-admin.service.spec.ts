@@ -4,7 +4,6 @@ import { UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserAdminService } from 'src/services/user-admin.service';
@@ -13,7 +12,6 @@ import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, describe } from 'vitest';
@@ -25,18 +23,16 @@ describe(UserAdminService.name, () => {
 
   let albumMock: Mocked<IAlbumRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let libraryMock: Mocked<ILibraryRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
-    libraryMock = newLibraryRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new UserAdminService(albumMock, cryptoRepositoryMock, jobMock, libraryMock, userMock, loggerMock);
+    sut = new UserAdminService(albumMock, cryptoRepositoryMock, jobMock, userMock, loggerMock);
 
     userMock.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
