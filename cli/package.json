@@ -59,7 +59,6 @@
   },
   "dependencies": {
     "fast-glob": "^3.3.2",
-    "install": "^0.13.0",
     "lodash-es": "^4.17.21",
     "upath": "^2.0.1"
   },
