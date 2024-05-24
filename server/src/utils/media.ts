@@ -302,10 +302,10 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     return this.config.gopSize;
   }
 
-  getPreferredHardwareDevice(): string | null {
+  getPreferredHardwareDevice(): string | undefined {
     const device = this.config.preferredHwDevice;
     if (device === 'auto') {
-      return null;
+      return;
     }
 
     const deviceName = device.replace('/dev/dri/', '');
@@ -313,7 +313,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
       throw new Error(`Device '${device}' does not exist`);
     }
 
-    return device;
+    return `/dev/dri/${deviceName}`;
   }
 }
 
@@ -567,7 +567,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
   }
 }
 
-export class QSVConfig extends BaseHWConfig {
+export class QsvSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
       throw new Error('No QSV device found');
@@ -575,7 +575,7 @@ export class QSVConfig extends BaseHWConfig {
 
     let qsvString = '';
     const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice !== null) {
+    if (hwDevice) {
       qsvString = `,child_device=${hwDevice}`;
     }
 
@@ -643,6 +643,59 @@ export class QSVConfig extends BaseHWConfig {
   }
 }
 
+export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
+  getBaseInputOptions() {
+    if (this.devices.length === 0) {
+      throw new Error('No QSV device found');
+    }
+
+    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', '-threads 1'];
+    const hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice) {
+      options.push(`-qsv_device ${hwDevice}`);
+    }
+
+    return options;
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = [];
+    if (this.shouldScale(videoStream) || !this.shouldToneMap(videoStream)) {
+      let scaling = `scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq`;
+      if (!this.shouldToneMap(videoStream)) {
+        scaling += ':format=nv12';
+      }
+      options.push(scaling);
+    }
+
+    options.push(...this.getToneMapping(videoStream));
+    return options;
+  }
+
+  getToneMapping(videoStream: VideoStreamInfo): string[] {
+    if (!this.shouldToneMap(videoStream)) {
+      return [];
+    }
+
+    const colors = this.getColors();
+    const tonemapOptions = [
+      'desat=0',
+      'format=nv12',
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
+      'range=pc',
+      `tonemap=${this.config.tonemap}`,
+      `transfer=${colors.transfer}`,
+    ];
+
+    return [
+      'hwmap=derive_device=opencl',
+      `tonemap_opencl=${tonemapOptions.join(':')}`,
+      'hwmap=derive_device=qsv:reverse=1,format=qsv',
+    ];
+  }
+}
+
 export class VAAPIConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
@@ -650,7 +703,7 @@ export class VAAPIConfig extends BaseHWConfig {
     }
 
     let hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice === null) {
+    if (!hwDevice) {
       hwDevice = `/dev/dri/${this.devices[0]}`;
     }
 

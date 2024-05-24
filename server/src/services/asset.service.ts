@@ -27,7 +27,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
@@ -47,23 +46,10 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { UploadRequest } from 'src/services/asset-media.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { fromChecksum } from 'src/utils/request';
-
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
 
 export class AssetService {
   private access: AccessCore;
@@ -424,7 +410,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    if (asset.library.type === LibraryType.UPLOAD) {
+    if (!asset.libraryId) {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
@@ -436,7 +422,7 @@ export class AssetService {
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
     // skip originals if the user deleted the whole library
-    if (!asset.library.deletedAt) {
+    if (!asset.library?.deletedAt) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 

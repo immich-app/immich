@@ -4,7 +4,6 @@
 SELECT
   "UserEntity"."id" AS "UserEntity_id",
   "UserEntity"."name" AS "UserEntity_name",
-  "UserEntity"."avatarColor" AS "UserEntity_avatarColor",
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
@@ -15,7 +14,6 @@ SELECT
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
   "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
@@ -51,7 +49,6 @@ LIMIT
 SELECT
   "user"."id" AS "user_id",
   "user"."name" AS "user_name",
-  "user"."avatarColor" AS "user_avatarColor",
   "user"."isAdmin" AS "user_isAdmin",
   "user"."email" AS "user_email",
   "user"."storageLabel" AS "user_storageLabel",
@@ -62,7 +59,6 @@ SELECT
   "user"."deletedAt" AS "user_deletedAt",
   "user"."status" AS "user_status",
   "user"."updatedAt" AS "user_updatedAt",
-  "user"."memoriesEnabled" AS "user_memoriesEnabled",
   "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
   "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes"
 FROM
@@ -75,7 +71,6 @@ WHERE
 SELECT
   "UserEntity"."id" AS "UserEntity_id",
   "UserEntity"."name" AS "UserEntity_name",
-  "UserEntity"."avatarColor" AS "UserEntity_avatarColor",
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
@@ -86,7 +81,6 @@ SELECT
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
   "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
@@ -101,7 +95,6 @@ LIMIT
 SELECT
   "UserEntity"."id" AS "UserEntity_id",
   "UserEntity"."name" AS "UserEntity_name",
-  "UserEntity"."avatarColor" AS "UserEntity_avatarColor",
   "UserEntity"."isAdmin" AS "UserEntity_isAdmin",
   "UserEntity"."email" AS "UserEntity_email",
   "UserEntity"."storageLabel" AS "UserEntity_storageLabel",
@@ -112,7 +105,6 @@ SELECT
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
   "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
@@ -167,12 +159,10 @@ SET
       COALESCE(SUM(exif."fileSizeInByte"), 0)
     FROM
       "assets" "assets"
-      LEFT JOIN "libraries" "library" ON "library"."id" = "assets"."libraryId"
-      AND ("library"."deletedAt" IS NULL)
       LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
     WHERE
       "assets"."ownerId" = users.id
-      AND "library"."type" = 'UPLOAD'
+      AND "assets"."libraryId" IS NULL
   ),
   "updatedAt" = CURRENT_TIMESTAMP
 WHERE

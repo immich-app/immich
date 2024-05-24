@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/activity": {
+    "/activities": {
       "get": {
         "operationId": "getActivities",
         "parameters": [
@@ -120,7 +120,7 @@
         ]
       }
     },
-    "/activity/statistics": {
+    "/activities/statistics": {
       "get": {
         "operationId": "getActivityStatistics",
         "parameters": [
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/activity/{id}": {
+    "/activities/{id}": {
       "delete": {
         "operationId": "deleteActivity",
         "parameters": [
@@ -206,7 +206,7 @@
         ]
       }
     },
-    "/album": {
+    "/albums": {
       "get": {
         "operationId": "getAllAlbums",
         "parameters": [
@@ -300,7 +300,7 @@
         ]
       }
     },
-    "/album/count": {
+    "/albums/count": {
       "get": {
         "operationId": "getAlbumCount",
         "parameters": [],
@@ -332,7 +332,7 @@
         ]
       }
     },
-    "/album/{id}": {
+    "/albums/{id}": {
       "delete": {
         "operationId": "deleteAlbum",
         "parameters": [
@@ -473,7 +473,7 @@
         ]
       }
     },
-    "/album/{id}/assets": {
+    "/albums/{id}/assets": {
       "delete": {
         "operationId": "removeAssetFromAlbum",
         "parameters": [
@@ -589,7 +589,7 @@
         ]
       }
     },
-    "/album/{id}/user/{userId}": {
+    "/albums/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
         "parameters": [
@@ -683,7 +683,7 @@
         ]
       }
     },
-    "/album/{id}/users": {
+    "/albums/{id}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
         "parameters": [
@@ -735,7 +735,7 @@
         ]
       }
     },
-    "/api-key": {
+    "/api-keys": {
       "get": {
         "operationId": "getApiKeys",
         "parameters": [],
@@ -810,7 +810,7 @@
         ]
       }
     },
-    "/api-key/{id}": {
+    "/api-keys/{id}": {
       "delete": {
         "operationId": "deleteApiKey",
         "parameters": [
@@ -1840,6 +1840,70 @@
         ]
       }
     },
+    "/asset/{id}/file": {
+      "put": {
+        "description": "Replace the asset with new file, without changing its id",
+        "operationId": "replaceAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaReplaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
+      }
+    },
     "/audit/deletes": {
       "get": {
         "operationId": "getAuditDeletes",
@@ -2256,7 +2320,7 @@
         ]
       }
     },
-    "/face": {
+    "/faces": {
       "get": {
         "operationId": "getFaces",
         "parameters": [
@@ -2301,7 +2365,7 @@
         ]
       }
     },
-    "/face/{id}": {
+    "/faces/{id}": {
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -2436,19 +2500,10 @@
         ]
       }
     },
-    "/library": {
+    "/libraries": {
       "get": {
         "operationId": "getAllLibraries",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LibraryType"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -2520,7 +2575,7 @@
         ]
       }
     },
-    "/library/{id}": {
+    "/libraries/{id}": {
       "delete": {
         "operationId": "deleteLibrary",
         "parameters": [
@@ -2645,7 +2700,7 @@
         ]
       }
     },
-    "/library/{id}/removeOffline": {
+    "/libraries/{id}/removeOffline": {
       "post": {
         "operationId": "removeOfflineFiles",
         "parameters": [
@@ -2680,7 +2735,7 @@
         ]
       }
     },
-    "/library/{id}/scan": {
+    "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
         "parameters": [
@@ -2725,7 +2780,7 @@
         ]
       }
     },
-    "/library/{id}/statistics": {
+    "/libraries/{id}/statistics": {
       "get": {
         "operationId": "getLibraryStatistics",
         "parameters": [
@@ -2767,7 +2822,7 @@
         ]
       }
     },
-    "/library/{id}/validate": {
+    "/libraries/{id}/validate": {
       "post": {
         "operationId": "validate",
         "parameters": [
@@ -3277,7 +3332,7 @@
         ]
       }
     },
-    "/partner": {
+    "/partners": {
       "get": {
         "operationId": "getPartners",
         "parameters": [
@@ -3325,7 +3380,7 @@
         ]
       }
     },
-    "/partner/{id}": {
+    "/partners/{id}": {
       "delete": {
         "operationId": "removePartner",
         "parameters": [
@@ -3450,7 +3505,7 @@
         ]
       }
     },
-    "/person": {
+    "/people": {
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -3574,7 +3629,7 @@
         ]
       }
     },
-    "/person/{id}": {
+    "/people/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -3666,7 +3721,7 @@
         ]
       }
     },
-    "/person/{id}/assets": {
+    "/people/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -3711,7 +3766,7 @@
         ]
       }
     },
-    "/person/{id}/merge": {
+    "/people/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
         "parameters": [
@@ -3766,7 +3821,7 @@
         ]
       }
     },
-    "/person/{id}/reassign": {
+    "/people/{id}/reassign": {
       "put": {
         "operationId": "reassignFaces",
         "parameters": [
@@ -3821,7 +3876,7 @@
         ]
       }
     },
-    "/person/{id}/statistics": {
+    "/people/{id}/statistics": {
       "get": {
         "operationId": "getPersonStatistics",
         "parameters": [
@@ -3863,7 +3918,7 @@
         ]
       }
     },
-    "/person/{id}/thumbnail": {
+    "/people/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
         "parameters": [
@@ -3906,7 +3961,7 @@
         ]
       }
     },
-    "/report": {
+    "/reports": {
       "get": {
         "operationId": "getAuditFiles",
         "parameters": [],
@@ -3938,7 +3993,7 @@
         ]
       }
     },
-    "/report/checksum": {
+    "/reports/checksum": {
       "post": {
         "operationId": "getFileChecksums",
         "parameters": [],
@@ -3983,7 +4038,7 @@
         ]
       }
     },
-    "/report/fix": {
+    "/reports/fix": {
       "post": {
         "operationId": "fixAuditFiles",
         "parameters": [],
@@ -4346,6 +4401,8 @@
     },
     "/server-info": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.106.0",
         "operationId": "getServerInfo",
         "parameters": [],
         "responses": {
@@ -4353,7 +4410,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
                 }
               }
             },
@@ -4372,8 +4429,12 @@
           }
         ],
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.106.0"
+        }
       }
     },
     "/server-info/config": {
@@ -4470,6 +4531,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/storage": {
+      "get": {
+        "operationId": "getStorage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
                 }
               }
             },
@@ -4627,7 +4720,7 @@
         ]
       }
     },
-    "/shared-link": {
+    "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
         "parameters": [],
@@ -4702,7 +4795,7 @@
         ]
       }
     },
-    "/shared-link/me": {
+    "/shared-links/me": {
       "get": {
         "operationId": "getMySharedLink",
         "parameters": [
@@ -4760,7 +4853,7 @@
         ]
       }
     },
-    "/shared-link/{id}": {
+    "/shared-links/{id}": {
       "delete": {
         "operationId": "removeSharedLink",
         "parameters": [
@@ -4885,7 +4978,7 @@
         ]
       }
     },
-    "/shared-link/{id}/assets": {
+    "/shared-links/{id}/assets": {
       "delete": {
         "operationId": "removeSharedLinkAssets",
         "parameters": [
@@ -5378,7 +5471,7 @@
         ]
       }
     },
-    "/tag": {
+    "/tags": {
       "get": {
         "operationId": "getAllTags",
         "parameters": [],
@@ -5453,7 +5546,7 @@
         ]
       }
     },
-    "/tag/{id}": {
+    "/tags/{id}": {
       "delete": {
         "operationId": "deleteTag",
         "parameters": [
@@ -5578,7 +5671,7 @@
         ]
       }
     },
-    "/tag/{id}/assets": {
+    "/tags/{id}/assets": {
       "delete": {
         "operationId": "untagAssets",
         "parameters": [
@@ -6076,7 +6169,7 @@
         ]
       }
     },
-    "/user": {
+    "/users": {
       "get": {
         "operationId": "getAllUsers",
         "parameters": [
@@ -6200,49 +6293,7 @@
         ]
       }
     },
-    "/user/info/{id}": {
-      "get": {
-        "operationId": "getUserById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/me": {
+    "/users/me": {
       "get": {
         "operationId": "getMyUserInfo",
         "parameters": [],
@@ -6274,7 +6325,7 @@
         ]
       }
     },
-    "/user/profile-image": {
+    "/users/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
         "parameters": [],
@@ -6340,50 +6391,7 @@
         ]
       }
     },
-    "/user/profile-image/{id}": {
-      "get": {
-        "operationId": "getProfileImage",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/{id}": {
+    "/users/{id}": {
       "delete": {
         "operationId": "deleteUser",
         "parameters": [
@@ -6433,9 +6441,92 @@
         "tags": [
           "User"
         ]
+      },
+      "get": {
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
       }
     },
-    "/user/{id}/restore": {
+    "/users/{id}/profile-image": {
+      "get": {
+        "operationId": "getProfileImage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/users/{id}/restore": {
       "post": {
         "operationId": "restoreUser",
         "parameters": [
@@ -6928,6 +7019,10 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
@@ -7299,6 +7394,61 @@
         ],
         "type": "object"
       },
+      "AssetMediaReplaceDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
+      "AssetMediaResponseDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "AssetMediaStatus": {
+        "enum": [
+          "replaced",
+          "duplicate"
+        ],
+        "type": "string"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -7365,6 +7515,9 @@
             "type": "boolean"
           },
           "libraryId": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.106.0",
+            "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
@@ -7444,7 +7597,6 @@
           "isFavorite",
           "isOffline",
           "isTrashed",
-          "libraryId",
           "localDateTime",
           "originalFileName",
           "originalPath",
@@ -7715,10 +7867,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
           "livePhotoData": {
             "format": "binary",
             "type": "string"
@@ -7757,14 +7905,10 @@
           "ownerId": {
             "format": "uuid",
             "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
-          "ownerId",
-          "type"
+          "ownerId"
         ],
         "type": "object"
       },
@@ -8319,9 +8463,6 @@
             "nullable": true,
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -8336,7 +8477,6 @@
           "name",
           "ownerId",
           "refreshedAt",
-          "type",
           "updatedAt"
         ],
         "type": "object"
@@ -8368,13 +8508,6 @@
           "videos"
         ],
         "type": "object"
-      },
-      "LibraryType": {
-        "enum": [
-          "UPLOAD",
-          "EXTERNAL"
-        ],
-        "type": "string"
       },
       "LogLevel": {
         "enum": [
@@ -9513,45 +9646,6 @@
         ],
         "type": "object"
       },
-      "ServerInfoResponseDto": {
-        "properties": {
-          "diskAvailable": {
-            "type": "string"
-          },
-          "diskAvailableRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskSizeRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskUsagePercentage": {
-            "format": "float",
-            "type": "number"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskUseRaw": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "diskAvailable",
-          "diskAvailableRaw",
-          "diskSize",
-          "diskSizeRaw",
-          "diskUsagePercentage",
-          "diskUse",
-          "diskUseRaw"
-        ],
-        "type": "object"
-      },
       "ServerMediaTypesResponseDto": {
         "properties": {
           "image": {
@@ -9629,6 +9723,45 @@
           "usage",
           "usageByUser",
           "videos"
+        ],
+        "type": "object"
+      },
+      "ServerStorageResponseDto": {
+        "properties": {
+          "diskAvailable": {
+            "type": "string"
+          },
+          "diskAvailableRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskSizeRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskUsagePercentage": {
+            "format": "float",
+            "type": "number"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskUseRaw": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "diskAvailable",
+          "diskAvailableRaw",
+          "diskSize",
+          "diskSizeRaw",
+          "diskUsagePercentage",
+          "diskUse",
+          "diskUseRaw"
         ],
         "type": "object"
       },

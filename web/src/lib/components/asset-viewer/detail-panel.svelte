@@ -9,8 +9,8 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { autoGrowHeight } from '$lib/actions/autogrow';
+  import { clickOutside } from '$lib/actions/click-outside';
   import {
     ThumbnailFormat,
     getAssetInfo,
@@ -33,8 +33,8 @@
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { asByteUnitString } from '../../utils/byte-units';
-  import { handleError } from '../../utils/handle-error';
+  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
@@ -42,7 +42,8 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
+  import AlbumListItemDetails from './album-list-item-details.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -607,10 +608,7 @@
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
             <div class="flex flex-col gap-0 text-sm">
               <div>
-                <span>{album.assetCount} items</span>
-                {#if album.shared}
-                  <span> • Shared</span>
-                {/if}
+                <AlbumListItemDetails {album} />
               </div>
             </div>
           </div>

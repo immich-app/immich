@@ -17,7 +17,6 @@ class CreateLibraryDto {
     this.importPaths = const [],
     this.name,
     required this.ownerId,
-    required this.type,
   });
 
   List<String> exclusionPatterns;
@@ -34,15 +33,12 @@ class CreateLibraryDto {
 
   String ownerId;
 
-  LibraryType type;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     _deepEquality.equals(other.importPaths, importPaths) &&
     other.name == name &&
-    other.ownerId == ownerId &&
-    other.type == type;
+    other.ownerId == ownerId;
 
   @override
   int get hashCode =>
@@ -50,11 +46,10 @@ class CreateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (ownerId.hashCode) +
-    (type.hashCode);
+    (ownerId.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, name=$name, ownerId=$ownerId, type=$type]';
+  String toString() => 'CreateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, name=$name, ownerId=$ownerId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -66,7 +61,6 @@ class CreateLibraryDto {
     //  json[r'name'] = null;
     }
       json[r'ownerId'] = this.ownerId;
-      json[r'type'] = this.type;
     return json;
   }
 
@@ -86,7 +80,6 @@ class CreateLibraryDto {
             : const [],
         name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        type: LibraryType.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -135,7 +128,6 @@ class CreateLibraryDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'ownerId',
-    'type',
   };
 }
 

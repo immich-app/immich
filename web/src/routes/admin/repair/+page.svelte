@@ -250,7 +250,7 @@
                   <div class="px-3">
                     <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These results may be due to manual deletion of files in the default upload library
+                      These results may be due to manual deletion of files that are not part of an external library.
                     </p>
                   </div>
                 </th>

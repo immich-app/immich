@@ -17,4 +17,9 @@
   {value}
   on:input={(e) => (updatedValue = e.currentTarget.value)}
   on:blur={() => (value = updatedValue)}
+  on:keydown={(e) => {
+    if (e.key === 'Enter') {
+      value = updatedValue;
+    }
+  }}
 />

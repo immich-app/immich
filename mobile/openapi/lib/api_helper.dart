@@ -61,6 +61,9 @@ String parameterToString(dynamic value) {
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is AssetMediaStatus) {
+    return AssetMediaStatusTypeTransformer().encode(value).toString();
+  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
@@ -90,9 +93,6 @@ String parameterToString(dynamic value) {
   }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
-  }
-  if (value is LibraryType) {
-    return LibraryTypeTypeTransformer().encode(value).toString();
   }
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();

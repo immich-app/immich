@@ -34,16 +34,10 @@ import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
+import { FileUploadInterceptor, Route, UploadFiles, mapToUploadFile } from 'src/middleware/file-upload.interceptor';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
-
-interface UploadFiles {
-  assetData: ImmichFile[];
-  livePhotoData?: ImmichFile[];
-  sidecarData: ImmichFile[];
-}
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)

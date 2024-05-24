@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
+    mdiContentDuplicate,
     mdiFaceRecognition,
     mdiFileJpgBox,
     mdiFileXmlBox,
@@ -87,6 +88,12 @@
       title: getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.smartSearch,
+    },
+    [JobName.DuplicateDetection]: {
+      icon: mdiContentDuplicate,
+      title: getJobName(JobName.DuplicateDetection),
+      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,

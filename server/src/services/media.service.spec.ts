@@ -1482,6 +1482,84 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
+    it('should use hardware decoding for qsv if enabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining([
+            '-hwaccel qsv',
+            '-hwaccel_output_format qsv',
+            '-async_depth 4',
+            '-threads 1',
+          ]),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use hardware tone-mapping for qsv if hardware decoding is enabled and should tone map', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining([
+            '-hwaccel qsv',
+            '-hwaccel_output_format qsv',
+            '-async_depth 4',
+            '-threads 1',
+          ]),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=qsv:reverse=1,format=qsv',
+            ),
+          ]),
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should use preferred device for qsv when hardware decoding', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128', 'renderD129', 'renderD130']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.QSV, accelDecode: true, preferredHwDevice: 'renderD129' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
+          outputOptions: expect.any(Array),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should set options for vaapi', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);

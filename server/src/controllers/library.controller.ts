@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
   ScanLibraryDto,
-  SearchLibraryDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
@@ -15,14 +14,14 @@ import { LibraryService } from 'src/services/library.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Library')
-@Controller('library')
+@Controller('libraries')
 export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
   @Authenticated({ admin: true })
-  getAllLibraries(@Query() dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
-    return this.service.getAll(dto);
+  getAllLibraries(): Promise<LibraryResponseDto[]> {
+    return this.service.getAll();
   }
 
   @Post()

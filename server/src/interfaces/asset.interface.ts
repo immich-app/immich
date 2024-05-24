@@ -111,7 +111,10 @@ export type AssetWithoutRelations = Omit<
   | 'tags'
 >;
 
-export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+type AssetUpdateWithoutRelations = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+type AssetUpdateWithLivePhotoRelation = Pick<AssetWithoutRelations, 'id'> & Pick<AssetEntity, 'livePhotoVideo'>;
+
+export type AssetUpdateOptions = AssetUpdateWithoutRelations | AssetUpdateWithLivePhotoRelation;
 
 export type AssetUpdateAllOptions = Omit<Partial<AssetWithoutRelations>, 'id'>;
 
@@ -164,7 +167,7 @@ export interface IAssetRepository {
   ): Promise<AssetEntity[]>;
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
-  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null>;
+  getByChecksum(libraryId: string | null, checksum: Buffer): Promise<AssetEntity | null>;
   getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;

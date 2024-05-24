@@ -6,6 +6,7 @@
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { initInput } from '$lib/actions/focus';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -72,6 +73,7 @@
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder="Search"
         bind:value={search}
+        use:initInput
       />
       <div class="immich-scrollbar overflow-y-auto">
         <button
@@ -89,7 +91,7 @@
           {#if !shared && search.length === 0}
             <p class="px-5 py-3 text-xs">RECENT</p>
             {#each recentAlbums as album (album.id)}
-              <AlbumListItem variant="simple" {album} on:album={() => handleSelect(album)} />
+              <AlbumListItem {album} on:album={() => handleSelect(album)} />
             {/each}
           {/if}
 

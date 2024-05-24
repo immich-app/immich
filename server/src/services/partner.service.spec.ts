@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { PartnerResponseDto } from 'src/dtos/partner.dto';
-import { UserAvatarColor } from 'src/entities/user.entity';
+import { UserAvatarColor } from 'src/entities/user-metadata.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IPartnerRepository, PartnerDirection } from 'src/interfaces/partner.interface';
 import { PartnerService } from 'src/services/partner.service';
@@ -23,7 +23,7 @@ const responseDto = {
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
     memoriesEnabled: true,
-    avatarColor: UserAvatarColor.PRIMARY,
+    avatarColor: UserAvatarColor.GRAY,
     quotaSizeInBytes: null,
     inTimeline: true,
     quotaUsageInBytes: 0,

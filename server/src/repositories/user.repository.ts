@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
+import { UserMetadata, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
   IUserRepository,
@@ -19,6 +19,7 @@ export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+    @InjectRepository(UserMetadataEntity) private metadataRepository: Repository<UserMetadataEntity>,
   ) {}
 
   async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
@@ -26,6 +27,9 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.findOne({
       where: { id: userId },
       withDeleted: options.withDeleted,
+      relations: {
+        metadata: true,
+      },
     });
   }
 
@@ -70,6 +74,9 @@ export class UserRepository implements IUserRepository {
       order: {
         createdAt: 'DESC',
       },
+      relations: {
+        metadata: true,
+      },
     });
   }
 
@@ -80,6 +87,13 @@ export class UserRepository implements IUserRepository {
   // TODO change to (user: Partial<UserEntity>)
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
     return this.save({ ...user, id });
+  }
+
+  async upsertMetadata<T extends UserMetadataKey.PREFERENCES>(
+    id: string,
+    { key, value }: { key: T; value: UserMetadata[T] },
+  ) {
+    await this.metadataRepository.upsert({ userId: id, key, value }, { conflictPaths: { userId: true, key: true } });
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
@@ -123,10 +137,9 @@ export class UserRepository implements IUserRepository {
     const subQuery = this.assetRepository
       .createQueryBuilder('assets')
       .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
-      .leftJoin('assets.library', 'library')
       .leftJoin('assets.exifInfo', 'exif')
       .where('assets.ownerId = users.id')
-      .andWhere(`library.type = '${LibraryType.UPLOAD}'`)
+      .andWhere(`assets.libraryId IS NULL`)
       .withDeleted();
 
     const query = this.userRepository
@@ -144,6 +157,12 @@ export class UserRepository implements IUserRepository {
 
   private async save(user: Partial<UserEntity>) {
     const { id } = await this.userRepository.save(user);
-    return this.userRepository.findOneOrFail({ where: { id }, withDeleted: true });
+    return this.userRepository.findOneOrFail({
+      where: { id },
+      withDeleted: true,
+      relations: {
+        metadata: true,
+      },
+    });
   }
 }

@@ -18,14 +18,14 @@ class ServerInfoService {
 
   ServerInfoService(this._apiService);
 
-  Future<ServerDiskInfo?> getServerInfo() async {
+  Future<ServerDiskInfo?> getDiskInfo() async {
     try {
-      final dto = await _apiService.serverInfoApi.getServerInfo();
+      final dto = await _apiService.serverInfoApi.getStorage();
       if (dto != null) {
         return ServerDiskInfo.fromDto(dto);
       }
     } catch (e) {
-      debugPrint("Error [getServerInfo] ${e.toString()}");
+      debugPrint("Error [getDiskInfo] ${e.toString()}");
     }
     return null;
   }

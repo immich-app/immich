@@ -174,7 +174,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   return document;
 };
 
-export const useSwagger = (app: INestApplication) => {
+export const useSwagger = (app: INestApplication, force = false) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -211,7 +211,7 @@ export const useSwagger = (app: INestApplication) => {
 
   SwaggerModule.setup('doc', app, specification, customOptions);
 
-  if (isDev()) {
+  if (isDev() || force) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });

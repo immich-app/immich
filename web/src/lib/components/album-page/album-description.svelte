@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { autoGrowHeight } from '$lib/actions/autogrow';
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   export let id: string;
   export let description: string;
