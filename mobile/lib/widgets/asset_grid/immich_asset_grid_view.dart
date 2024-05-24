@@ -239,7 +239,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
 
     bool appBarOffset() {
       return (ref.watch(tabProvider).index == 0 &&
-          ModalRoute.of(context)?.settings.name == TabControllerRoute.name) || (ModalRoute.of(context)?.settings.name == AlbumViewerRoute.name);
+              ModalRoute.of(context)?.settings.name ==
+                  TabControllerRoute.name) ||
+          (ModalRoute.of(context)?.settings.name == AlbumViewerRoute.name);
     }
 
     final listWidget = ScrollablePositionedList.builder(
