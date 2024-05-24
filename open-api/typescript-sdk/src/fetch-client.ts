@@ -123,12 +123,8 @@ export type AssetResponseDto = {
     hasMetadata: boolean;
     id: string;
     isArchived: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isExternal?: boolean;
     isFavorite: boolean;
     isOffline: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isReadOnly?: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
@@ -166,8 +162,6 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** This property was deprecated in v1.102.0 */
-    sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
 };
@@ -177,12 +171,9 @@ export type AlbumUserCreateDto = {
 };
 export type CreateAlbumDto = {
     albumName: string;
-    /** This property was added in v1.104.0 */
     albumUsers?: AlbumUserCreateDto[];
     assetIds?: string[];
     description?: string;
-    /** This property was deprecated in v1.104.0 */
-    sharedWithUserIds?: string[];
 };
 export type AlbumCountResponseDto = {
     notShared: number;
@@ -213,8 +204,6 @@ export type AlbumUserAddDto = {
 };
 export type AddUsersDto = {
     albumUsers: AlbumUserAddDto[];
-    /** This property was deprecated in v1.102.0 */
-    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
@@ -285,8 +274,6 @@ export type MapMarkerResponseDto = {
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
-    /** This property was deprecated in v1.100.0 */
-    title: string;
     yearsAgo: number;
 };
 export type UpdateStackParentDto = {
@@ -660,8 +647,6 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
-    /** This property was deprecated in v1.100.0 */
-    resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -672,8 +657,6 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    /** This property was deprecated in v1.100.0 */
-    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -745,15 +728,6 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
-export type ServerStorageResponseDto = {
-    diskAvailable: string;
-    diskAvailableRaw: number;
-    diskSize: string;
-    diskSizeRaw: number;
-    diskUsagePercentage: number;
-    diskUse: string;
-    diskUseRaw: number;
-};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -800,6 +774,15 @@ export type ServerStatsResponseDto = {
     usage: number;
     usageByUser: UsageByUserDto[];
     videos: number;
+};
+export type ServerStorageResponseDto = {
+    diskAvailable: string;
+    diskAvailableRaw: number;
+    diskSize: string;
+    diskSizeRaw: number;
+    diskUsagePercentage: number;
+    diskUse: string;
+    diskUseRaw: number;
 };
 export type ServerThemeDto = {
     customCss: string;
@@ -2274,17 +2257,6 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         state,
         "type": $type
     }))}`, {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.106.0
- */
-export function getServerInfo(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStorageResponseDto;
-    }>("/server-info", {
         ...opts
     }));
 }

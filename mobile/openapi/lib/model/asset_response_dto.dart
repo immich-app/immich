@@ -24,10 +24,8 @@ class AssetResponseDto {
     required this.hasMetadata,
     required this.id,
     required this.isArchived,
-    this.isExternal,
     required this.isFavorite,
     required this.isOffline,
-    this.isReadOnly,
     required this.isTrashed,
     this.libraryId,
     this.livePhotoVideoId,
@@ -77,27 +75,9 @@ class AssetResponseDto {
 
   bool isArchived;
 
-  /// This property was deprecated in v1.104.0
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isExternal;
-
   bool isFavorite;
 
   bool isOffline;
-
-  /// This property was deprecated in v1.104.0
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isReadOnly;
 
   bool isTrashed;
 
@@ -161,10 +141,8 @@ class AssetResponseDto {
     other.hasMetadata == hasMetadata &&
     other.id == id &&
     other.isArchived == isArchived &&
-    other.isExternal == isExternal &&
     other.isFavorite == isFavorite &&
     other.isOffline == isOffline &&
-    other.isReadOnly == isReadOnly &&
     other.isTrashed == isTrashed &&
     other.libraryId == libraryId &&
     other.livePhotoVideoId == livePhotoVideoId &&
@@ -198,10 +176,8 @@ class AssetResponseDto {
     (hasMetadata.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
-    (isExternal == null ? 0 : isExternal!.hashCode) +
     (isFavorite.hashCode) +
     (isOffline.hashCode) +
-    (isReadOnly == null ? 0 : isReadOnly!.hashCode) +
     (isTrashed.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
@@ -222,7 +198,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isExternal=$isExternal, isFavorite=$isFavorite, isOffline=$isOffline, isReadOnly=$isReadOnly, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -245,18 +221,8 @@ class AssetResponseDto {
       json[r'hasMetadata'] = this.hasMetadata;
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
-    if (this.isExternal != null) {
-      json[r'isExternal'] = this.isExternal;
-    } else {
-    //  json[r'isExternal'] = null;
-    }
       json[r'isFavorite'] = this.isFavorite;
       json[r'isOffline'] = this.isOffline;
-    if (this.isReadOnly != null) {
-      json[r'isReadOnly'] = this.isReadOnly;
-    } else {
-    //  json[r'isReadOnly'] = null;
-    }
       json[r'isTrashed'] = this.isTrashed;
     if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
@@ -325,10 +291,8 @@ class AssetResponseDto {
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
-        isExternal: mapValueOfType<bool>(json, r'isExternal'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isOffline: mapValueOfType<bool>(json, r'isOffline')!,
-        isReadOnly: mapValueOfType<bool>(json, r'isReadOnly'),
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),

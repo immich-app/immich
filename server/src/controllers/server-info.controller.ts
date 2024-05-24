@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { EndpointLifecycle } from 'src/decorators';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -22,13 +21,6 @@ export class ServerInfoController {
     private service: ServerInfoService,
     private versionService: VersionService,
   ) {}
-
-  @Get()
-  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
-  @Authenticated()
-  getServerInfo(): Promise<ServerStorageResponseDto> {
-    return this.service.getStorage();
-  }
 
   @Get('storage')
   @Authenticated()

@@ -8,6 +8,8 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
+import '../utils/string_helper.dart';
+
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
     ref.watch(apiServiceProvider),
@@ -36,13 +38,13 @@ class MemoryService {
       }
 
       List<Memory> memories = [];
-      for (final MemoryLaneResponseDto(:title, :assets) in data) {
+      for (final MemoryLaneResponseDto(:yearsAgo, :assets) in data) {
         final dbAssets =
             await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
         if (dbAssets.isNotEmpty) {
           memories.add(
             Memory(
-              title: title,
+              title: '$yearsAgo year${s(yearsAgo)} ago',
               assets: dbAssets,
             ),
           );

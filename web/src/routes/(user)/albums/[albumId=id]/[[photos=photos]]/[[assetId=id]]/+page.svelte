@@ -136,7 +136,7 @@
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
-    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   $: isEditor =
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -158,7 +158,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
+    if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -229,7 +229,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.sharedUsers.length > 0) {
+  $: if (album.albumUsers.length > 0) {
     handlePromiseError(getFavorite());
     handlePromiseError(getNumberOfComments());
   }
@@ -342,7 +342,7 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error deleting shared user');
     }
@@ -482,7 +482,7 @@
               {/if}
             {/if}
 
-            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
               <Button
                 size="sm"
                 rounded="lg"
@@ -546,7 +546,7 @@
             {album}
             {assetStore}
             {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
+            isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
@@ -563,7 +563,7 @@
                 {/if}
 
                 <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
                   <div class="my-3 flex gap-x-1">
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
@@ -649,7 +649,7 @@
       {/key}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}

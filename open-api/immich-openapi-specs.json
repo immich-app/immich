@@ -4399,44 +4399,6 @@
         ]
       }
     },
-    "/server-info": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.106.0",
-        "operationId": "getServerInfo",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStorageResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.106.0"
-        }
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -6738,15 +6700,6 @@
               "$ref": "#/components/schemas/AlbumUserAddDto"
             },
             "type": "array"
-          },
-          "sharedUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [
@@ -6844,14 +6797,6 @@
           "shared": {
             "type": "boolean"
           },
-          "sharedUsers": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            },
-            "type": "array"
-          },
           "startDate": {
             "format": "date-time",
             "type": "string"
@@ -6875,7 +6820,6 @@
           "owner",
           "ownerId",
           "shared",
-          "sharedUsers",
           "updatedAt"
         ],
         "type": "object"
@@ -7495,20 +7439,10 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
             "type": "boolean"
           },
           "isTrashed": {
@@ -7801,7 +7735,6 @@
             "type": "string"
           },
           "albumUsers": {
-            "description": "This property was added in v1.104.0",
             "items": {
               "$ref": "#/components/schemas/AlbumUserCreateDto"
             },
@@ -7816,15 +7749,6 @@
           },
           "description": {
             "type": "string"
-          },
-          "sharedWithUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [
@@ -8672,18 +8596,12 @@
             },
             "type": "array"
           },
-          "title": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "yearsAgo": {
             "type": "integer"
           }
         },
         "required": [
           "assets",
-          "title",
           "yearsAgo"
         ],
         "type": "object"
@@ -8874,11 +8792,6 @@
           "previewPath": {
             "type": "string"
           },
-          "resizePath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -8915,11 +8828,6 @@
           },
           "updatedBefore": {
             "format": "date-time",
-            "type": "string"
-          },
-          "webpPath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "withArchived": {

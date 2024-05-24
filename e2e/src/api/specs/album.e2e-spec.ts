@@ -383,7 +383,6 @@ describe('/albums', () => {
         description: '',
         albumThumbnailAssetId: null,
         shared: false,
-        sharedUsers: [],
         albumUsers: [],
         hasSharedLink: false,
         assets: [],
@@ -611,7 +610,11 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          sharedUsers: [expect.objectContaining({ id: user2.userId })],
+          albumUsers: [
+            expect.objectContaining({
+              user: expect.objectContaining({ id: user2.userId }),
+            }),
+          ],
         }),
       );
     });
