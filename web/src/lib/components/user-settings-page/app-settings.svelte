@@ -138,7 +138,7 @@
         <SettingSwitch
           id="video-viewer-muted"
           title="Muted video player"
-          subtitle="Mute the video viewer by default"
+          subtitle="Mute the video player by default"
           bind:checked={$videoViewerMuted}
         />
       </div>
