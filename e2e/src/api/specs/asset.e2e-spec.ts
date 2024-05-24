@@ -72,7 +72,7 @@ describe('/asset', () => {
   let stackAssets: AssetFileUploadResponseDto[];
   let locationAsset: AssetFileUploadResponseDto;
 
-  beforeAll(async () => {
+  const setupTests = async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
@@ -155,7 +155,8 @@ describe('/asset', () => {
       assetId: user1Assets[0].id,
       personId: person1.id,
     });
-  }, 30_000);
+  };
+  beforeAll(setupTests, 30_000);
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
@@ -539,359 +540,6 @@ describe('/asset', () => {
     });
   });
 
-  describe('POST /asset/upload', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/asset/upload`);
-      expect(body).toEqual(errorDto.unauthorized);
-      expect(status).toBe(401);
-    });
-
-    const invalid = [
-      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
-      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
-      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
-      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
-      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
-      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
-      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
-      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
-    ];
-
-    for (const { should, dto } of invalid) {
-      it(`should ${should}`, async () => {
-        const { status, body } = await request(app)
-          .post('/asset/upload')
-          .set('Authorization', `Bearer ${user1.accessToken}`)
-          .attach('assetData', makeRandomImage(), 'example.png')
-          .field(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-    }
-
-    const tests = [
-      {
-        input: 'formats/avif/8bit-sRGB.avif',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: '8bit-sRGB.avif',
-          resized: true,
-          exifInfo: {
-            description: '',
-            exifImageHeight: 1080,
-            exifImageWidth: 1617,
-            fileSizeInByte: 862_424,
-            latitude: null,
-            longitude: null,
-          },
-        },
-      },
-      {
-        input: 'formats/jpg/el_torcal_rocks.jpg',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: 'el_torcal_rocks.jpg',
-          resized: true,
-          exifInfo: {
-            dateTimeOriginal: '2012-08-05T11:39:59.000Z',
-            exifImageWidth: 512,
-            exifImageHeight: 341,
-            latitude: null,
-            longitude: null,
-            focalLength: 75,
-            iso: 200,
-            fNumber: 11,
-            exposureTime: '1/160',
-            fileSizeInByte: 53_493,
-            make: 'SONY',
-            model: 'DSLR-A550',
-            orientation: null,
-            description: 'SONY DSC',
-          },
-        },
-      },
-      {
-        input: 'formats/jxl/8bit-sRGB.jxl',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: '8bit-sRGB.jxl',
-          resized: true,
-          exifInfo: {
-            description: '',
-            exifImageHeight: 1080,
-            exifImageWidth: 1440,
-            fileSizeInByte: 1_780_777,
-            latitude: null,
-            longitude: null,
-          },
-        },
-      },
-      {
-        input: 'formats/heic/IMG_2682.heic',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: 'IMG_2682.heic',
-          resized: true,
-          fileCreatedAt: '2019-03-21T16:04:22.348Z',
-          exifInfo: {
-            dateTimeOriginal: '2019-03-21T16:04:22.348Z',
-            exifImageWidth: 4032,
-            exifImageHeight: 3024,
-            latitude: 41.2203,
-            longitude: -96.071_625,
-            make: 'Apple',
-            model: 'iPhone 7',
-            lensModel: 'iPhone 7 back camera 3.99mm f/1.8',
-            fileSizeInByte: 880_703,
-            exposureTime: '1/887',
-            iso: 20,
-            focalLength: 3.99,
-            fNumber: 1.8,
-            timeZone: 'America/Chicago',
-          },
-        },
-      },
-      {
-        input: 'formats/png/density_plot.png',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: 'density_plot.png',
-          resized: true,
-          exifInfo: {
-            exifImageWidth: 800,
-            exifImageHeight: 800,
-            latitude: null,
-            longitude: null,
-            fileSizeInByte: 25_408,
-          },
-        },
-      },
-      {
-        input: 'formats/raw/Nikon/D80/glarus.nef',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: 'glarus.nef',
-          resized: true,
-          fileCreatedAt: '2010-07-20T17:27:12.000Z',
-          exifInfo: {
-            make: 'NIKON CORPORATION',
-            model: 'NIKON D80',
-            exposureTime: '1/200',
-            fNumber: 10,
-            focalLength: 18,
-            iso: 100,
-            fileSizeInByte: 9_057_784,
-            dateTimeOriginal: '2010-07-20T17:27:12.000Z',
-            latitude: null,
-            longitude: null,
-            orientation: '1',
-          },
-        },
-      },
-      {
-        input: 'formats/raw/Nikon/D700/philadelphia.nef',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: 'philadelphia.nef',
-          resized: true,
-          fileCreatedAt: '2016-09-22T22:10:29.060Z',
-          exifInfo: {
-            make: 'NIKON CORPORATION',
-            model: 'NIKON D700',
-            exposureTime: '1/400',
-            fNumber: 11,
-            focalLength: 85,
-            iso: 200,
-            fileSizeInByte: 15_856_335,
-            dateTimeOriginal: '2016-09-22T22:10:29.060Z',
-            latitude: null,
-            longitude: null,
-            orientation: '1',
-            timeZone: 'UTC-5',
-          },
-        },
-      },
-      {
-        input: 'formats/raw/Panasonic/DMC-GH4/4_3.rw2',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: '4_3.rw2',
-          resized: true,
-          fileCreatedAt: '2018-05-10T08:42:37.842Z',
-          exifInfo: {
-            make: 'Panasonic',
-            model: 'DMC-GH4',
-            exifImageHeight: 3456,
-            exifImageWidth: 4608,
-            exposureTime: '1/100',
-            fNumber: 3.2,
-            focalLength: 35,
-            iso: 400,
-            fileSizeInByte: 19_587_072,
-            dateTimeOriginal: '2018-05-10T08:42:37.842Z',
-            latitude: null,
-            longitude: null,
-            orientation: '1',
-          },
-        },
-      },
-      {
-        input: 'formats/raw/Sony/ILCE-6300/12bit-compressed-(3_2).arw',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: '12bit-compressed-(3_2).arw',
-          resized: true,
-          fileCreatedAt: '2016-09-27T10:51:44.000Z',
-          exifInfo: {
-            make: 'SONY',
-            model: 'ILCE-6300',
-            exifImageHeight: 4024,
-            exifImageWidth: 6048,
-            exposureTime: '1/320',
-            fNumber: 8,
-            focalLength: 97,
-            iso: 100,
-            lensModel: 'E PZ 18-105mm F4 G OSS',
-            fileSizeInByte: 25_001_984,
-            dateTimeOriginal: '2016-09-27T10:51:44.000Z',
-            latitude: null,
-            longitude: null,
-            orientation: '1',
-          },
-        },
-      },
-      {
-        input: 'formats/raw/Sony/ILCE-7M2/14bit-uncompressed-(3_2).arw',
-        expected: {
-          type: AssetTypeEnum.Image,
-          originalFileName: '14bit-uncompressed-(3_2).arw',
-          resized: true,
-          fileCreatedAt: '2016-01-08T15:08:01.000Z',
-          exifInfo: {
-            make: 'SONY',
-            model: 'ILCE-7M2',
-            exifImageHeight: 4024,
-            exifImageWidth: 6048,
-            exposureTime: '1.3',
-            fNumber: 22,
-            focalLength: 25,
-            iso: 100,
-            lensModel: 'E 25mm F2',
-            fileSizeInByte: 49_512_448,
-            dateTimeOriginal: '2016-01-08T15:08:01.000Z',
-            latitude: null,
-            longitude: null,
-            orientation: '1',
-          },
-        },
-      },
-    ];
-
-    for (const { input, expected } of tests) {
-      it(`should upload and generate a thumbnail for ${input}`, async () => {
-        const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await utils.createAsset(admin.accessToken, {
-          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-        });
-
-        expect(duplicate).toBe(false);
-
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
-
-        const asset = await utils.getAssetInfo(admin.accessToken, id);
-
-        expect(asset.exifInfo).toBeDefined();
-        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-        expect(asset).toMatchObject(expected);
-      });
-    }
-
-    it('should handle a duplicate', async () => {
-      const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
-      const { duplicate } = await utils.createAsset(admin.accessToken, {
-        assetData: {
-          bytes: await readFile(join(testAssetDir, filepath)),
-          filename: basename(filepath),
-        },
-      });
-
-      expect(duplicate).toBe(true);
-    });
-
-    it('should update the used quota', async () => {
-      const { body, status } = await request(app)
-        .post('/asset/upload')
-        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
-        .field('fileCreatedAt', new Date().toISOString())
-        .field('fileModifiedAt', new Date().toISOString())
-        .attach('assetData', makeRandomImage(), 'example.jpg');
-
-      expect(body).toEqual({ id: expect.any(String), duplicate: false });
-      expect(status).toBe(201);
-
-      const user = await getMyUserInfo({ headers: asBearerAuth(quotaUser.accessToken) });
-
-      expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
-    });
-
-    it('should not upload an asset if it would exceed the quota', async () => {
-      const { body, status } = await request(app)
-        .post('/asset/upload')
-        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
-        .field('fileCreatedAt', new Date().toISOString())
-        .field('fileModifiedAt', new Date().toISOString())
-        .attach('assetData', randomBytes(2014), 'example.jpg');
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
-    });
-
-    // These hashes were created by copying the image files to a Samsung phone,
-    // exporting the video from Samsung's stock Gallery app, and hashing them locally.
-    // This ensures that immich+exiftool are extracting the videos the same way Samsung does.
-    // DO NOT assume immich+exiftool are doing things correctly and just copy whatever hash it gives
-    // into the test here.
-    const motionTests = [
-      {
-        filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
-        checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
-      },
-      {
-        filepath: 'formats/motionphoto/Samsung One UI 6.jpg',
-        checksum: 'lT9Uviw/FFJYCjfIxAGPTjzAmmw=',
-      },
-      {
-        filepath: 'formats/motionphoto/Samsung One UI 6.heic',
-        checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
-      },
-    ];
-
-    for (const { filepath, checksum } of motionTests) {
-      it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await utils.createAsset(admin.accessToken, {
-          assetData: {
-            bytes: await readFile(join(testAssetDir, filepath)),
-            filename: basename(filepath),
-          },
-        });
-
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
-
-        expect(response.duplicate).toBe(false);
-
-        const asset = await utils.getAssetInfo(admin.accessToken, response.id);
-        expect(asset.livePhotoVideoId).toBeDefined();
-
-        const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
-        expect(video.checksum).toStrictEqual(checksum);
-      });
-    }
-  });
-
   describe('GET /asset/thumbnail/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get(`/asset/thumbnail/${locationAsset.id}`);
@@ -963,6 +611,31 @@ describe('/asset', () => {
   });
 
   describe('GET /asset/map-marker', () => {
+    beforeAll(async () => {
+      const files = [
+        'formats/avif/8bit-sRGB.avif',
+        'formats/jpg/el_torcal_rocks.jpg',
+        'formats/jxl/8bit-sRGB.jxl',
+        'formats/heic/IMG_2682.heic',
+        'formats/png/density_plot.png',
+        'formats/raw/Nikon/D80/glarus.nef',
+        'formats/raw/Nikon/D700/philadelphia.nef',
+        'formats/raw/Panasonic/DMC-GH4/4_3.rw2',
+        'formats/raw/Sony/ILCE-6300/12bit-compressed-(3_2).arw',
+        'formats/raw/Sony/ILCE-7M2/14bit-uncompressed-(3_2).arw',
+      ];
+      utils.resetEvents();
+      const uploadFile = async (input: string) => {
+        const filepath = join(testAssetDir, input);
+        const { id } = await utils.createAsset(admin.accessToken, {
+          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+        });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      };
+      const uploads = files.map((f) => uploadFile(f));
+      await Promise.all(uploads);
+    }, 30_000);
+
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/asset/map-marker');
       expect(status).toBe(401);
@@ -1191,6 +864,348 @@ describe('/asset', () => {
           expect.objectContaining({ id: stackAssets[3].id }),
         ]),
       );
+    });
+  });
+  describe('POST /asset/upload', () => {
+    beforeAll(setupTests, 30_000);
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post(`/asset/upload`);
+      expect(body).toEqual(errorDto.unauthorized);
+      expect(status).toBe(401);
+    });
+
+    it.each([
+      { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
+      { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
+      { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
+      { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
+      { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
+      { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
+      { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
+      { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
+    ])('should $should', async ({ dto }) => {
+      const { status, body } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .attach('assetData', makeRandomImage(), 'example.png')
+        .field(dto);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
+    it.each([
+      {
+        input: 'formats/avif/8bit-sRGB.avif',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '8bit-sRGB.avif',
+          resized: true,
+          exifInfo: {
+            description: '',
+            exifImageHeight: 1080,
+            exifImageWidth: 1617,
+            fileSizeInByte: 862_424,
+            latitude: null,
+            longitude: null,
+          },
+        },
+      },
+      {
+        input: 'formats/jpg/el_torcal_rocks.jpg',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: 'el_torcal_rocks.jpg',
+          resized: true,
+          exifInfo: {
+            dateTimeOriginal: '2012-08-05T11:39:59.000Z',
+            exifImageWidth: 512,
+            exifImageHeight: 341,
+            latitude: null,
+            longitude: null,
+            focalLength: 75,
+            iso: 200,
+            fNumber: 11,
+            exposureTime: '1/160',
+            fileSizeInByte: 53_493,
+            make: 'SONY',
+            model: 'DSLR-A550',
+            orientation: null,
+            description: 'SONY DSC',
+          },
+        },
+      },
+      {
+        input: 'formats/jxl/8bit-sRGB.jxl',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '8bit-sRGB.jxl',
+          resized: true,
+          exifInfo: {
+            description: '',
+            exifImageHeight: 1080,
+            exifImageWidth: 1440,
+            fileSizeInByte: 1_780_777,
+            latitude: null,
+            longitude: null,
+          },
+        },
+      },
+      {
+        input: 'formats/heic/IMG_2682.heic',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: 'IMG_2682.heic',
+          resized: true,
+          fileCreatedAt: '2019-03-21T16:04:22.348Z',
+          exifInfo: {
+            dateTimeOriginal: '2019-03-21T16:04:22.348Z',
+            exifImageWidth: 4032,
+            exifImageHeight: 3024,
+            latitude: 41.2203,
+            longitude: -96.071_625,
+            make: 'Apple',
+            model: 'iPhone 7',
+            lensModel: 'iPhone 7 back camera 3.99mm f/1.8',
+            fileSizeInByte: 880_703,
+            exposureTime: '1/887',
+            iso: 20,
+            focalLength: 3.99,
+            fNumber: 1.8,
+            timeZone: 'America/Chicago',
+          },
+        },
+      },
+      {
+        input: 'formats/png/density_plot.png',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: 'density_plot.png',
+          resized: true,
+          exifInfo: {
+            exifImageWidth: 800,
+            exifImageHeight: 800,
+            latitude: null,
+            longitude: null,
+            fileSizeInByte: 25_408,
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Nikon/D80/glarus.nef',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: 'glarus.nef',
+          resized: true,
+          fileCreatedAt: '2010-07-20T17:27:12.000Z',
+          exifInfo: {
+            make: 'NIKON CORPORATION',
+            model: 'NIKON D80',
+            exposureTime: '1/200',
+            fNumber: 10,
+            focalLength: 18,
+            iso: 100,
+            fileSizeInByte: 9_057_784,
+            dateTimeOriginal: '2010-07-20T17:27:12.000Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Nikon/D700/philadelphia.nef',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: 'philadelphia.nef',
+          resized: true,
+          fileCreatedAt: '2016-09-22T22:10:29.060Z',
+          exifInfo: {
+            make: 'NIKON CORPORATION',
+            model: 'NIKON D700',
+            exposureTime: '1/400',
+            fNumber: 11,
+            focalLength: 85,
+            iso: 200,
+            fileSizeInByte: 15_856_335,
+            dateTimeOriginal: '2016-09-22T22:10:29.060Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+            timeZone: 'UTC-5',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Panasonic/DMC-GH4/4_3.rw2',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '4_3.rw2',
+          resized: true,
+          fileCreatedAt: '2018-05-10T08:42:37.842Z',
+          exifInfo: {
+            make: 'Panasonic',
+            model: 'DMC-GH4',
+            exifImageHeight: 3456,
+            exifImageWidth: 4608,
+            exposureTime: '1/100',
+            fNumber: 3.2,
+            focalLength: 35,
+            iso: 400,
+            fileSizeInByte: 19_587_072,
+            dateTimeOriginal: '2018-05-10T08:42:37.842Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Sony/ILCE-6300/12bit-compressed-(3_2).arw',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '12bit-compressed-(3_2).arw',
+          resized: true,
+          fileCreatedAt: '2016-09-27T10:51:44.000Z',
+          exifInfo: {
+            make: 'SONY',
+            model: 'ILCE-6300',
+            exifImageHeight: 4024,
+            exifImageWidth: 6048,
+            exposureTime: '1/320',
+            fNumber: 8,
+            focalLength: 97,
+            iso: 100,
+            lensModel: 'E PZ 18-105mm F4 G OSS',
+            fileSizeInByte: 25_001_984,
+            dateTimeOriginal: '2016-09-27T10:51:44.000Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+      {
+        input: 'formats/raw/Sony/ILCE-7M2/14bit-uncompressed-(3_2).arw',
+        expected: {
+          type: AssetTypeEnum.Image,
+          originalFileName: '14bit-uncompressed-(3_2).arw',
+          resized: true,
+          fileCreatedAt: '2016-01-08T15:08:01.000Z',
+          exifInfo: {
+            make: 'SONY',
+            model: 'ILCE-7M2',
+            exifImageHeight: 4024,
+            exifImageWidth: 6048,
+            exposureTime: '1.3',
+            fNumber: 22,
+            focalLength: 25,
+            iso: 100,
+            lensModel: 'E 25mm F2',
+            fileSizeInByte: 49_512_448,
+            dateTimeOriginal: '2016-01-08T15:08:01.000Z',
+            latitude: null,
+            longitude: null,
+            orientation: '1',
+          },
+        },
+      },
+    ])(`should upload and generate a thumbnail for $input`, async ({ input, expected }) => {
+      const filepath = join(testAssetDir, input);
+      const { id, duplicate } = await utils.createAsset(admin.accessToken, {
+        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+      });
+
+      expect(duplicate).toBe(false);
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
+
+      const asset = await utils.getAssetInfo(admin.accessToken, id);
+
+      expect(asset.exifInfo).toBeDefined();
+      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+      expect(asset).toMatchObject(expected);
+    });
+
+    it('should handle a duplicate', async () => {
+      const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
+      const { duplicate } = await utils.createAsset(admin.accessToken, {
+        assetData: {
+          bytes: await readFile(join(testAssetDir, filepath)),
+          filename: basename(filepath),
+        },
+      });
+
+      expect(duplicate).toBe(true);
+    });
+
+    it('should update the used quota', async () => {
+      const { body, status } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'e2e')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .attach('assetData', makeRandomImage(), 'example.jpg');
+
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+      expect(status).toBe(201);
+
+      const user = await getMyUserInfo({ headers: asBearerAuth(quotaUser.accessToken) });
+
+      expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 70 }));
+    });
+
+    it('should not upload an asset if it would exceed the quota', async () => {
+      const { body, status } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${quotaUser.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'e2e')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .attach('assetData', randomBytes(2014), 'example.jpg');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
+    });
+
+    // These hashes were created by copying the image files to a Samsung phone,
+    // exporting the video from Samsung's stock Gallery app, and hashing them locally.
+    // This ensures that immich+exiftool are extracting the videos the same way Samsung does.
+    // DO NOT assume immich+exiftool are doing things correctly and just copy whatever hash it gives
+    // into the test here.
+    it.each([
+      {
+        filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
+        checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
+      },
+      {
+        filepath: 'formats/motionphoto/Samsung One UI 6.jpg',
+        checksum: 'lT9Uviw/FFJYCjfIxAGPTjzAmmw=',
+      },
+      {
+        filepath: 'formats/motionphoto/Samsung One UI 6.heic',
+        checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
+      },
+    ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
+      const response = await utils.createAsset(admin.accessToken, {
+        assetData: {
+          bytes: await readFile(join(testAssetDir, filepath)),
+          filename: basename(filepath),
+        },
+      });
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
+
+      expect(response.duplicate).toBe(false);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, response.id);
+      expect(asset.livePhotoVideoId).toBeDefined();
+
+      const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
+      expect(video.checksum).toStrictEqual(checksum);
     });
   });
 });
