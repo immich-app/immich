@@ -658,8 +658,6 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
-    /** This property was deprecated in v1.100.0 */
-    resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -670,8 +668,6 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    /** This property was deprecated in v1.100.0 */
-    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;

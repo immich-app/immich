@@ -8868,11 +8868,6 @@
           "previewPath": {
             "type": "string"
           },
-          "resizePath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -8909,11 +8904,6 @@
           },
           "updatedBefore": {
             "format": "date-time",
-            "type": "string"
-          },
-          "webpPath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
             "type": "string"
           },
           "withArchived": {
