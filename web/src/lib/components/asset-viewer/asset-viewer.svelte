@@ -14,7 +14,7 @@
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -52,6 +52,7 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -88,7 +89,7 @@
   let isShowProfileImageCrop = false;
   let sharedLink = getSharedLink();
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
-  let shouldShowDetailButton = asset.hasMetadata;
+  let enableDetailPanel = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
@@ -98,7 +99,7 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-
+  let unsubscribe: () => void;
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
@@ -192,6 +193,11 @@
   }
 
   onMount(async () => {
+    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
     await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
@@ -237,6 +243,7 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
+    unsubscribe?.();
   });
 
   $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
@@ -574,7 +581,7 @@
           showZoomButton={asset.type === AssetTypeEnum.Image}
           showMotionPlayButton={!!asset.livePhotoVideoId}
           showDownloadButton={shouldShowDownloadButton}
-          showDetailButton={shouldShowDetailButton}
+          showDetailButton={enableDetailPanel}
           showSlideshow={!!assetStore}
           hasStackChildren={$stackAssetsStore.length > 0}
           showShareButton={shouldShowShareModal}
@@ -633,6 +640,7 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              checksum={previewStackedAsset.checksum}
               projectionType={previewStackedAsset.exifInfo?.projectionType}
               loopVideo={true}
               on:close={closeViewer}
@@ -655,6 +663,7 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                checksum={asset.checksum}
                 projectionType={asset.exifInfo?.projectionType}
                 loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
                 on:close={closeViewer}
@@ -670,6 +679,7 @@
           {:else}
             <VideoViewer
               assetId={asset.id}
+              checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               on:close={closeViewer}
@@ -701,7 +711,7 @@
       </div>
     {/if}
 
-    {#if $slideshowState === SlideshowState.None && $isShowDetail}
+    {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
       <div
         transition:fly={{ duration: 150 }}
         id="detail-panel"

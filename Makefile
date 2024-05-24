@@ -37,7 +37,7 @@ open-api-typescript:
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
 sql:
-	npm --prefix server run sql:generate
+	npm --prefix server run sync:sql
 
 attach-server:
 	docker exec -it docker_immich-server_1 sh

@@ -25,6 +25,7 @@ interface DownloadRequestOptions<T = unknown> {
 
 interface UploadRequestOptions {
   url: string;
+  method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
@@ -64,7 +65,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
       xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
-    xhr.open('POST', url);
+    xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
   });
@@ -158,18 +159,28 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
+export const getAssetFileUrl = (
+  ...[assetId, isWeb, isThumb, checksum]:
+    | [assetId: string, isWeb: boolean, isThumb: boolean]
+    | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
+) => {
   const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey() });
+  return createUrl(path, { isThumb, isWeb, key: getKey(), c: checksum });
 };
 
-export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
+export const getAssetThumbnailUrl = (
+  ...[assetId, format, checksum]:
+    | [assetId: string, format: ThumbnailFormat | undefined]
+    | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
+) => {
+  // checksum (optional) is used as a cache-buster param, since thumbs are
+  // served with static resource cache headers
   const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey() });
+  return createUrl(path, { format, key: getKey(), c: checksum });
 };
 
 export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/users/${userId}/profile-image`;
+  const path = `/users/profile-image/${userId}`;
   return createUrl(path);
 };
 

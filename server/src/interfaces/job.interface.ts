@@ -113,7 +113,7 @@ export interface IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write';
+  source?: 'upload' | 'sidecar-write' | 'copy';
 }
 
 export interface ILibraryFileJob extends IEntityJob {

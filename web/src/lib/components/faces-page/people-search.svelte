@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { initInput } from '$lib/actions/focus';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -68,10 +69,6 @@
       showLoadingSpinner = false;
       search();
     }
-  };
-
-  const initInput = (element: HTMLInputElement) => {
-    element.focus();
   };
 
   const handleReset = () => {

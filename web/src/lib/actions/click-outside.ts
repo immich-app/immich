@@ -1,5 +1,5 @@
+import { matchesShortcut } from '$lib/actions/shortcut';
 import type { ActionReturn } from 'svelte/action';
-import { matchesShortcut } from './shortcut';
 
 interface Attributes {
   /** @deprecated */
