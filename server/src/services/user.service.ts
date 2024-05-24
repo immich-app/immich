@@ -3,7 +3,6 @@ import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
@@ -22,18 +21,16 @@ import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
 @Injectable()
 export class UserService {
   private configCore: SystemConfigCore;
-  private userCore: UserCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
     this.logger.setContext(UserService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }

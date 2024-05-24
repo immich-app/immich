@@ -15,7 +15,6 @@ import { UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
@@ -28,11 +27,10 @@ export class UserAdminService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.userCore = UserCore.create(cryptoRepository, userRepository);
     this.logger.setContext(UserAdminService.name);
   }
 
