@@ -216,15 +216,7 @@ export class AlbumService {
     return results;
   }
 
-  async addUsers(auth: AuthDto, id: string, { albumUsers, sharedUserIds }: AddUsersDto): Promise<AlbumResponseDto> {
-    // Remove once deprecated sharedUserIds is removed
-    if (!albumUsers) {
-      if (!sharedUserIds) {
-        throw new BadRequestException('No users provided');
-      }
-      albumUsers = sharedUserIds.map((userId) => ({ userId, role: AlbumUserRole.EDITOR }));
-    }
-
+  async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });

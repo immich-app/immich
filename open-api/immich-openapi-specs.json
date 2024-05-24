@@ -6738,15 +6738,6 @@
               "$ref": "#/components/schemas/AlbumUserAddDto"
             },
             "type": "array"
-          },
-          "sharedUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [

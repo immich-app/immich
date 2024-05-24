@@ -213,8 +213,6 @@ export type AlbumUserAddDto = {
 };
 export type AddUsersDto = {
     albumUsers: AlbumUserAddDto[];
-    /** This property was deprecated in v1.102.0 */
-    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
