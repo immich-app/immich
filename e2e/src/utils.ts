@@ -17,7 +17,6 @@ import {
   createSharedLink,
   createUser,
   deleteAssets,
-  getAllAssets,
   getAllJobsStatus,
   getAssetInfo,
   getConfigDefaults,
@@ -339,8 +338,6 @@ export const utils = {
   },
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-
-  getAllAssets: (accessToken: string) => getAllAssets({}, { headers: asBearerAuth(accessToken) }),
 
   metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
