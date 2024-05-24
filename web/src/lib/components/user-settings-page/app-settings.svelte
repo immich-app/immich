@@ -11,6 +11,7 @@
     playVideoThumbnailOnHover,
     showDeleteModal,
     sidebarSettings,
+    videoViewerMuted,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
@@ -130,6 +131,15 @@
           subtitle="Enable to automatically loop a video in the detail viewer."
           bind:checked={$loopVideo}
           on:toggle={() => ($loopVideo = !$loopVideo)}
+        />
+      </div>
+
+      <div class="ml-4">
+        <SettingSwitch
+          id="video-viewer-muted"
+          title="Muted video player"
+          subtitle="Mute the video viewer by default"
+          bind:checked={$videoViewerMuted}
         />
       </div>
 
