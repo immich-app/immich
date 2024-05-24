@@ -19,7 +19,6 @@ import {
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
-  AssetSearchDto,
   AssetStatsDto,
   UpdateAssetDto,
   UploadFieldName,
@@ -32,7 +31,6 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
-import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {

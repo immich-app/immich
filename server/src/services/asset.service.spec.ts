@@ -4,7 +4,6 @@ import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/a
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
-import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
