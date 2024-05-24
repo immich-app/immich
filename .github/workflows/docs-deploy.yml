@@ -80,6 +80,13 @@ jobs:
       
       - run: |
           echo "Starting docs deployment for ${{ steps.parameters.outputs.name }} (trigger: ${{ steps.parameters.outputs.event }})"
-      # TODO: Download docs build artifact
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build-output
+          path: docs-artifact/
+          run-id: ${{ github.event.workflow_run.id }}
+
       # TODO: Terraform shenanigans
       # TODO: Comment URL on PR
