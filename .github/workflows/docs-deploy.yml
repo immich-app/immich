@@ -65,10 +65,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: checks
-    if: ${{ needs.checks.outputs.parameters.shouldDeploy }}
+    if: ${{ fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
+      - name: Load parameters
+        id: parameters
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const json = `${{ needs.checks.outputs.parameters }}`;
+            const parameters = JSON.parse(json);
+            core.setOutput("event", parameters.event);
+            core.setOutput("name", parameters.name);
+            core.setOutput("shouldDeploy", parameters.shouldDeploy);
+      
       - run: |
-          echo Starting docs deployment for ${{ needs.checks.outputs.parameters.name }} (trigger: ${{ needs.checks.outputs.parameters.event }}
+          echo "Starting docs deployment for ${{ steps.parameters.outputs.name }} (trigger: ${{ steps.parameters.outputs.event }})"
       # TODO: Download docs build artifact
       # TODO: Terraform shenanigans
       # TODO: Comment URL on PR
