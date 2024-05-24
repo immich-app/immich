@@ -51,7 +51,7 @@
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
-  $: isOwner = asset.ownerId === $user?.id;
+  $: isOwner = $user && asset.ownerId === $user?.id;
 
   type MenuItemEvent =
     | 'addToAlbum'
