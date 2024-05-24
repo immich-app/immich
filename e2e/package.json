@@ -21,7 +21,7 @@
   "devDependencies": {
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@playwright/test": "^1.41.2",
+    "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.17",
     "@types/pg": "^8.11.0",
