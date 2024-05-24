@@ -875,7 +875,7 @@ describe('/asset', () => {
       expect(status).toBe(401);
     });
 
-    const invalid = [
+    it.each([
       { should: 'require `deviceAssetId`', dto: { ...makeUploadDto({ omit: 'deviceAssetId' }) } },
       { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
       { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
@@ -884,21 +884,17 @@ describe('/asset', () => {
       { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
       { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
       { should: 'throw if `isArchived` is not a boolean', dto: { ...makeUploadDto(), isArchived: 'not-a-boolean' } },
-    ];
+    ])('should $should', async ({ dto }) => {
+      const { status, body } = await request(app)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .attach('assetData', makeRandomImage(), 'example.png')
+        .field(dto);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
 
-    for (const { should, dto } of invalid) {
-      it(`should ${should}`, async () => {
-        const { status, body } = await request(app)
-          .post('/asset/upload')
-          .set('Authorization', `Bearer ${user1.accessToken}`)
-          .attach('assetData', makeRandomImage(), 'example.png')
-          .field(dto);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
-      });
-    }
-
-    const tests = [
+    it.each([
       {
         input: 'formats/avif/8bit-sRGB.avif',
         expected: {
@@ -1114,26 +1110,22 @@ describe('/asset', () => {
           },
         },
       },
-    ];
-
-    for (const { input, expected } of tests) {
-      it(`should upload and generate a thumbnail for ${input}`, async () => {
-        const filepath = join(testAssetDir, input);
-        const { id, duplicate } = await utils.createAsset(admin.accessToken, {
-          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-        });
-
-        expect(duplicate).toBe(false);
-
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
-
-        const asset = await utils.getAssetInfo(admin.accessToken, id);
-
-        expect(asset.exifInfo).toBeDefined();
-        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-        expect(asset).toMatchObject(expected);
+    ])(`should upload and generate a thumbnail for $input`, async ({ input, expected }) => {
+      const filepath = join(testAssetDir, input);
+      const { id, duplicate } = await utils.createAsset(admin.accessToken, {
+        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
       });
-    }
+
+      expect(duplicate).toBe(false);
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
+
+      const asset = await utils.getAssetInfo(admin.accessToken, id);
+
+      expect(asset.exifInfo).toBeDefined();
+      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+      expect(asset).toMatchObject(expected);
+    });
 
     it('should handle a duplicate', async () => {
       const filepath = 'formats/jpeg/el_torcal_rocks.jpeg';
@@ -1184,7 +1176,7 @@ describe('/asset', () => {
     // This ensures that immich+exiftool are extracting the videos the same way Samsung does.
     // DO NOT assume immich+exiftool are doing things correctly and just copy whatever hash it gives
     // into the test here.
-    const motionTests = [
+    it.each([
       {
         filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
         checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
@@ -1197,27 +1189,23 @@ describe('/asset', () => {
         filepath: 'formats/motionphoto/Samsung One UI 6.heic',
         checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
       },
-    ];
-
-    for (const { filepath, checksum } of motionTests) {
-      it(`should extract motionphoto video from ${filepath}`, async () => {
-        const response = await utils.createAsset(admin.accessToken, {
-          assetData: {
-            bytes: await readFile(join(testAssetDir, filepath)),
-            filename: basename(filepath),
-          },
-        });
-
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
-
-        expect(response.duplicate).toBe(false);
-
-        const asset = await utils.getAssetInfo(admin.accessToken, response.id);
-        expect(asset.livePhotoVideoId).toBeDefined();
-
-        const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
-        expect(video.checksum).toStrictEqual(checksum);
+    ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
+      const response = await utils.createAsset(admin.accessToken, {
+        assetData: {
+          bytes: await readFile(join(testAssetDir, filepath)),
+          filename: basename(filepath),
+        },
       });
-    }
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: response.id });
+
+      expect(response.duplicate).toBe(false);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, response.id);
+      expect(asset.livePhotoVideoId).toBeDefined();
+
+      const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
+      expect(video.checksum).toStrictEqual(checksum);
+    });
   });
 });
