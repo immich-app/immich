@@ -18,6 +18,5 @@ dart_code_metrics:
     - avoid-passing-self-as-argument:
         exclude:
           - lib/domain/repositories/**
-    - prefer-single-widget-per-file:
-        ignore-private-widgets: true
+    - prefer-single-widget-per-file: false
     - prefer-correct-callback-field-name: false

@@ -51,5 +51,11 @@
 	<string>en</string>
 	</array>
 	<!-- /Localization -->
+	<!-- URL Launcher -->
+	<key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>https</string>
+    </array>
+	<!-- /URL Launcher -->
 </dict>
 </plist>

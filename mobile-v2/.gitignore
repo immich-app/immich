@@ -2,6 +2,8 @@
 *.g.dart
 *.gr.dart
 *.drift.dart
+*.gen.dart
+openapi/*
 
 # Miscellaneous
 *.class

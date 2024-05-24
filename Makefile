@@ -27,6 +27,9 @@ open-api:
 open-api-dart:
 	cd ./open-api && bash ./bin/generate-open-api.sh dart
 
+open-api-dart-dio:
+	cd ./open-api && bash ./bin/generate-open-api.sh dart-dio
+
 open-api-typescript:
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 

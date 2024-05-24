@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:immich_mobile/domain/entities/album.entity.dart';
+import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:immich_mobile/domain/entities/log.entity.dart';
 import 'package:immich_mobile/domain/entities/store.entity.dart';
 import 'package:immich_mobile/domain/interfaces/database.interface.dart';
@@ -12,7 +14,7 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 import 'database.repository.drift.dart';
 
-@DriftDatabase(tables: [Logs, Store])
+@DriftDatabase(tables: [Logs, Store, LocalAlbum, LocalAsset])
 class DriftDatabaseRepository extends $DriftDatabaseRepository
     implements IDatabaseRepository<GeneratedDatabase> {
   DriftDatabaseRepository() : super(_openConnection());

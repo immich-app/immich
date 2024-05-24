@@ -16,18 +16,22 @@ dependencies:
   # OS specific path
   path_provider: ^2.0.0
   path: ^1.9.0
+  # Bloc
+  flutter_bloc: ^8.1.5
   # Database
   drift: ^2.18.0
   sqlite3: ^2.4.2
   sqlite3_flutter_libs: ^0.5.0
+  # Network
+  dio: ^5.2.0
   # Route handling
   auto_route: ^8.1.0
   # Logging
   logging: ^1.2.0
   # Collection Utils
   collection: ^1.18.0
-  # get_it / watch_it
-  watch_it: ^1.4.1
+  # service_locator
+  get_it: ^7.7.0
   # Photo Manager
   photo_manager: ^3.0.0
   photo_manager_image_provider: ^2.1.0
@@ -40,6 +44,13 @@ dependencies:
   slang_flutter: ^3.30.0
   # Adaptive scaffold
   flutter_adaptive_scaffold: ^0.1.10+2
+  # URL launching
+  url_launcher: ^6.3.0
+  # plus_extensions
+  package_info_plus: ^8.0.0
+
+  openapi:
+    path: openapi
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +66,13 @@ dev_dependencies:
   auto_route_generator: ^8.0.0
   # Localization generator
   slang_build_runner: ^3.30.0
+  # Assets constant generator
+  flutter_gen_runner: 5.5.0+1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+
+flutter_gen:
+  output: lib/utils/constants/

@@ -4,5 +4,29 @@
       "search": "Search",
       "sharing": "Sharing",
       "library": "Library"
+    },
+    "settings": {
+      "sections": {
+        "about": "About",
+        "general": "General",
+        "advance": "Advance"
+      }
+    },
+    "login": {
+      "error": {
+        "empty_server_url": "Kindly provide a server URL",
+        "invalid_server_url": "Invalid URL",
+        "server_not_reachable": "Server is not reachable"
+      },
+      "label": {
+        "email": "Email",
+        "password": "Password",
+        "endpoint": "Server Endpoint URL",
+        "login_button": "Login",
+        "back_button": "Back",
+        "next_button": "Next",
+        "oauth_button": "OAuth",
+        "login_disabled": "Login Disabled"
+      }
     }
   }

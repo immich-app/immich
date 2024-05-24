@@ -1,19 +1,14 @@
-/// Key for each possible value in the `Store`.
-/// Defines the data type for each value
-enum StoreKey {
-  appTheme(1000, type: int);
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/interfaces/store.interface.dart';
+import 'package:immich_mobile/domain/utils/store_converters.dart';
+import 'package:immich_mobile/presentation/modules/theme/models/app_theme.model.dart';
 
-  const StoreKey(this.id, {required this.type});
+@immutable
+class StoreValue<T> {
   final int id;
-  final Type type;
-}
+  final T? value;
 
-class StoreValue {
-  final int id;
-  final int? intValue;
-  final String? stringValue;
-
-  const StoreValue({required this.id, this.intValue, this.stringValue});
+  const StoreValue({required this.id, this.value});
 
   @override
   bool operator ==(covariant StoreValue other) {
@@ -23,45 +18,33 @@ class StoreValue {
   }
 
   @override
-  int get hashCode => id.hashCode ^ intValue.hashCode ^ stringValue.hashCode;
+  int get hashCode => id.hashCode ^ value.hashCode;
+}
 
-  T? extract<T>(Type type) {
-    switch (type) {
-      case const (int):
-        return intValue as T?;
-      case const (bool):
-        return intValue == null ? null : (intValue! == 1) as T;
-      case const (DateTime):
-        return intValue == null
-            ? null
-            : DateTime.fromMicrosecondsSinceEpoch(intValue!) as T;
-      case const (String):
-        return stringValue as T?;
-      default:
-        throw UnsupportedError("Unknown Store Key type");
-    }
-  }
+/// Key for each possible value in the `Store`.
+/// Also stores the converter to convert the value to and from the store and the type of value stored in the Store
+enum StoreKey<T, U> {
+  serverEndpoint<String, String>(
+    0,
+    converter: StorePrimitiveConverter(),
+    type: String,
+  ),
+  appTheme<AppTheme, int>(
+    1000,
+    converter: StoreEnumConverter(AppTheme.values),
+    type: int,
+  ),
+  themeMode<ThemeMode, int>(
+    1001,
+    converter: StoreEnumConverter(ThemeMode.values),
+    type: int,
+  ),
+  darkMode<bool, int>(1002, converter: StoreBooleanConverter(), type: int);
 
-  static StoreValue of<T>(StoreKey key, T? value) {
-    int? i;
-    String? s;
+  const StoreKey(this.id, {required this.converter, required this.type});
+  final int id;
 
-    switch (key.type) {
-      case const (int):
-        i = value as int?;
-        break;
-      case const (bool):
-        i = value == null ? null : (value == true ? 1 : 0);
-        break;
-      case const (DateTime):
-        i = value == null ? null : (value as DateTime).microsecondsSinceEpoch;
-        break;
-      case const (String):
-        s = value as String?;
-        break;
-      default:
-        throw UnsupportedError("Unknown Store Key type");
-    }
-    return StoreValue(id: key.id, intValue: i, stringValue: s);
-  }
+  /// Type is also stored here easily fetch it during runtime
+  final Type type;
+  final IStoreConverter<T, U> converter;
 }

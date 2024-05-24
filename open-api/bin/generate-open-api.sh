@@ -21,6 +21,15 @@ function dart {
   rm ../mobile/openapi/analysis_options.yaml
 }
 
+function dartDio {
+  rm -rf ../mobile-v2/openapi
+  npx --yes @openapitools/openapi-generator-cli generate -g dart-dio -i ./immich-openapi-specs.json -o ../mobile-v2/openapi --global-property skipFormModel=false --global-property models,apis,supportingFiles,apiTests=false,apiDocs=false,modelTests=false,modelDocs=false
+  # Don't include analysis_options.yaml for the generated openapi files
+  # so that language servers can properly exclude the mobile/openapi directory
+  rm ../mobile-v2/openapi/analysis_options.yaml
+  echo "export 'package:openapi/src/auth/bearer_auth.dart';" >> ../mobile-v2/openapi/lib/openapi.dart
+}
+
 function typescript {
   npx --yes oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
@@ -31,6 +40,8 @@ npm run sync:open-api --prefix=../server
 
 if [[ $1 == 'dart' ]]; then
   dart
+elif [[ $1 == 'dart-dio' ]]; then
+  dartDio
 elif [[ $1 == 'typescript' ]]; then
   typescript
 else

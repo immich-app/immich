@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
 /// Log levels according to dart logging [Level]
 enum LogLevel {
+  // do not change this order!
   all,
   finest,
   finer,
@@ -20,6 +22,7 @@ extension LevelExtension on Level {
       LogLevel.info;
 }
 
+@immutable
 class LogMessage {
   final int id;
   final String content;
