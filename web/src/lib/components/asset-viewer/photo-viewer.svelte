@@ -120,10 +120,11 @@
     forceLoadOriginal = state.currentZoom > 1 && isWebCompatibleImage(asset) ? true : false;
   });
 
-  const onCopyShortcut = () => {
+  const onCopyShortcut = (event: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
       return;
     }
+    event.preventDefault();
     handlePromiseError(doCopy());
   };
 </script>
@@ -132,8 +133,8 @@
   on:copyImage={doCopy}
   on:zoomImage={doZoomImage}
   use:shortcuts={[
-    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
-    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
 {#if imageError}
