@@ -1,5 +1,5 @@
+import { shortcuts } from '$lib/actions/shortcut';
 import type { Action } from 'svelte/action';
-import { shortcuts } from './shortcut';
 
 export const listNavigation: Action<HTMLElement, HTMLElement> = (node, container: HTMLElement) => {
   const moveFocus = (direction: 'up' | 'down') => {

@@ -238,6 +238,7 @@ export type AssetBulkDeleteDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    duplicateId?: string | null;
     ids: string[];
     isArchived?: boolean;
     isFavorite?: boolean;
@@ -322,6 +323,18 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+};
+export type AssetMediaReplaceDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+};
+export type AssetMediaResponseDto = {
+    id: string;
+    status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -1582,6 +1595,25 @@ export function updateAsset({ id, updateAssetDto }: {
         ...opts,
         method: "PUT",
         body: updateAssetDto
+    })));
+}
+/**
+ * Replace the asset with new file, without changing its id
+ */
+export function replaceAsset({ id, key, assetMediaReplaceDto }: {
+    id: string;
+    key?: string;
+    assetMediaReplaceDto: AssetMediaReplaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "PUT",
+        body: assetMediaReplaceDto
     })));
 }
 export function getAuditDeletes({ after, entityType, userId }: {
@@ -2890,6 +2922,10 @@ export enum AssetJobName {
 export enum ThumbnailFormat {
     Jpeg = "JPEG",
     Webp = "WEBP"
+}
+export enum AssetMediaStatus {
+    Replaced = "replaced",
+    Duplicate = "duplicate"
 }
 export enum EntityType {
     Asset = "ASSET",

@@ -39,6 +39,9 @@ export enum AppRoute {
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
+
+  UTILITIES = '/utilities',
+  DUPLICATES = '/utilities/duplicates',
 }
 
 export enum ProjectionType {

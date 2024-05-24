@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { createContext } from '$lib/utils/context';
 
   const { get: getMenuContext, set: setContext } = createContext<() => void>();

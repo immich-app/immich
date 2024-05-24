@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '../../utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { fade } from 'svelte/transition';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';

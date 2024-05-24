@@ -33,7 +33,7 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { UploadFile } from 'src/services/asset.service';
+import { UploadFile } from 'src/services/asset-media.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';

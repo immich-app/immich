@@ -32,7 +32,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError, s } from '$lib/utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
@@ -55,7 +55,7 @@
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
-  import { listNavigation } from '$lib/utils/list-navigation';
+  import { listNavigation } from '$lib/actions/list-navigation';
 
   export let data: PageData;
 

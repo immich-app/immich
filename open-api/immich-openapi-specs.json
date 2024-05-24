@@ -1840,6 +1840,70 @@
         ]
       }
     },
+    "/asset/{id}/file": {
+      "put": {
+        "description": "Replace the asset with new file, without changing its id",
+        "operationId": "replaceAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaReplaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
+      }
+    },
     "/audit/deletes": {
       "get": {
         "operationId": "getAuditDeletes",
@@ -6955,6 +7019,10 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
@@ -7325,6 +7393,61 @@
           "name"
         ],
         "type": "object"
+      },
+      "AssetMediaReplaceDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
+      "AssetMediaResponseDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "AssetMediaStatus": {
+        "enum": [
+          "replaced",
+          "duplicate"
+        ],
+        "type": "string"
       },
       "AssetOrder": {
         "enum": [
