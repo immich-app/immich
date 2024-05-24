@@ -109,7 +109,7 @@
   <div class="text-white">
     <CircleIconButton color="opaque" icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
   </div>
-  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white" data-testid="asset-viewer-navbar-actions">
     {#if showShareButton}
       <CircleIconButton
         color="opaque"
