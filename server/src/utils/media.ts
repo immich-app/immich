@@ -649,7 +649,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       throw new Error('No QSV device found');
     }
 
-    const options = ['-hwaccel qsv', '-async_depth 4', '-threads 1'];
+    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', '-threads 1'];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
       options.push(`-qsv_device ${hwDevice}`);
@@ -691,7 +691,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     return [
       'hwmap=derive_device=opencl',
       `tonemap_opencl=${tonemapOptions.join(':')}`,
-      'hwmap=derive_device=vaapi:reverse=1',
+      'hwmap=derive_device=qsv:reverse=1,format=qsv',
     ];
   }
 }
