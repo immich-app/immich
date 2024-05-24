@@ -112,6 +112,8 @@ jobs:
           script: |
             const name = "${{ steps.parameters.outputs.name }}";
             const comment = "📖 Documentation preview deployed to " + name + ".preview.immich.app";
+
+            # TODO: If comment already exists, skip this (or update comment with commit hash?)
             github.rest.issues.createComment({
               issue_number: context.payload.workflow_run.pull_requests[0].number,
               owner: context.repo.owner,
