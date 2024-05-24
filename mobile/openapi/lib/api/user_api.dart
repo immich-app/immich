@@ -205,6 +205,47 @@ class UserApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /users/me/preferences' operation and returns the [Response].
+  Future<Response> getMyPreferencesWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me/preferences';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<UserPreferencesResponseDto?> getMyPreferences() async {
+    final response = await getMyPreferencesWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /users/me' operation and returns the [Response].
   Future<Response> getMyUserWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -390,6 +431,54 @@ class UserApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /admin/users/{id}/preferences' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getUserPreferencesAdminWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/admin/users/{id}/preferences'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<UserPreferencesResponseDto?> getUserPreferencesAdmin(String id,) async {
+    final response = await getUserPreferencesAdminWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /admin/users/{id}/restore' operation and returns the [Response].
   /// Parameters:
   ///
@@ -536,6 +625,53 @@ class UserApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /users/me/preferences' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
+  Future<Response> updateMyPreferencesWithHttpInfo(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me/preferences';
+
+    // ignore: prefer_final_locals
+    Object? postBody = userPreferencesUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
+  Future<UserPreferencesResponseDto?> updateMyPreferences(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    final response = await updateMyPreferencesWithHttpInfo(userPreferencesUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /users/me' operation and returns the [Response].
   /// Parameters:
   ///
@@ -630,6 +766,58 @@ class UserApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /admin/users/{id}/preferences' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
+  Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/admin/users/{id}/preferences'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = userPreferencesUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
+  Future<UserPreferencesResponseDto?> updateUserPreferencesAdmin(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    final response = await updateUserPreferencesAdminWithHttpInfo(id, userPreferencesUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
     
     }
     return null;

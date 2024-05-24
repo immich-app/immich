@@ -45,7 +45,6 @@ export type UserAdminResponseDto = {
     email: string;
     id: string;
     isAdmin: boolean;
-    memoriesEnabled?: boolean;
     name: string;
     oauthId: string;
     profileImagePath: string;
@@ -58,7 +57,6 @@ export type UserAdminResponseDto = {
 };
 export type UserAdminCreateDto = {
     email: string;
-    memoriesEnabled?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -70,14 +68,32 @@ export type UserAdminDeleteDto = {
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
-    avatarColor?: UserAvatarColor;
     email?: string;
-    memoriesEnabled?: boolean;
     name?: string;
     password?: string;
     quotaSizeInBytes?: number | null;
     shouldChangePassword?: boolean;
     storageLabel?: string | null;
+};
+export type AvatarResponse = {
+    color: UserAvatarColor;
+};
+export type MemoryResponse = {
+    enabled: boolean;
+};
+export type UserPreferencesResponseDto = {
+    avatar: AvatarResponse;
+    memories: MemoryResponse;
+};
+export type AvatarUpdate = {
+    color?: UserAvatarColor;
+};
+export type MemoryUpdate = {
+    enabled?: boolean;
+};
+export type UserPreferencesUpdateDto = {
+    avatar?: AvatarUpdate;
+    memories?: MemoryUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -1073,9 +1089,7 @@ export type TimeBucketResponseDto = {
     timeBucket: string;
 };
 export type UserUpdateMeDto = {
-    avatarColor?: UserAvatarColor;
     email?: string;
-    memoriesEnabled?: boolean;
     name?: string;
     password?: string;
 };
@@ -1198,6 +1212,29 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
         ...opts,
         method: "PUT",
         body: userAdminUpdateDto
+    })));
+}
+export function getUserPreferencesAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserPreferencesResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/preferences`, {
+        ...opts
+    }));
+}
+export function updateUserPreferencesAdmin({ id, userPreferencesUpdateDto }: {
+    id: string;
+    userPreferencesUpdateDto: UserPreferencesUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserPreferencesResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/preferences`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userPreferencesUpdateDto
     })));
 }
 export function restoreUserAdmin({ id }: {
@@ -2778,6 +2815,26 @@ export function updateMyUser({ userUpdateMeDto }: {
         ...opts,
         method: "PUT",
         body: userUpdateMeDto
+    })));
+}
+export function getMyPreferences(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserPreferencesResponseDto;
+    }>("/users/me/preferences", {
+        ...opts
+    }));
+}
+export function updateMyPreferences({ userPreferencesUpdateDto }: {
+    userPreferencesUpdateDto: UserPreferencesUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserPreferencesResponseDto;
+    }>("/users/me/preferences", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userPreferencesUpdateDto
     })));
 }
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {

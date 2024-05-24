@@ -19,7 +19,6 @@ class UserAdminResponseDto {
     required this.email,
     required this.id,
     required this.isAdmin,
-    this.memoriesEnabled,
     required this.name,
     required this.oauthId,
     required this.profileImagePath,
@@ -42,14 +41,6 @@ class UserAdminResponseDto {
   String id;
 
   bool isAdmin;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? memoriesEnabled;
 
   String name;
 
@@ -77,7 +68,6 @@ class UserAdminResponseDto {
     other.email == email &&
     other.id == id &&
     other.isAdmin == isAdmin &&
-    other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.oauthId == oauthId &&
     other.profileImagePath == profileImagePath &&
@@ -97,7 +87,6 @@ class UserAdminResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
@@ -109,7 +98,7 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -123,11 +112,6 @@ class UserAdminResponseDto {
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
-    if (this.memoriesEnabled != null) {
-      json[r'memoriesEnabled'] = this.memoriesEnabled;
-    } else {
-    //  json[r'memoriesEnabled'] = null;
-    }
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
@@ -166,7 +150,6 @@ class UserAdminResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,

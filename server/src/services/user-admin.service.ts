@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Inject, Injectable } from '@ne
 import { SALT_ROUNDS } from 'src/constants';
 import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
   UserAdminCreateDto,
   UserAdminDeleteDto,
@@ -17,7 +18,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
-import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
+import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class UserAdminService {
@@ -40,18 +41,8 @@ export class UserAdminService {
   }
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
-    const { memoriesEnabled, notify, ...rest } = dto;
-    let user = await this.userCore.createUser(rest);
-
-    // TODO remove and replace with entire dto.preferences config
-    if (memoriesEnabled === false) {
-      await this.userRepository.upsertMetadata(user.id, {
-        key: UserMetadataKey.PREFERENCES,
-        value: { memories: { enabled: false } },
-      });
-
-      user = await this.findOrFail(user.id, {});
-    }
+    const { notify, ...rest } = dto;
+    const user = await this.userCore.createUser(rest);
 
     const tempPassword = user.shouldChangePassword ? rest.password : undefined;
     if (notify) {
@@ -70,25 +61,6 @@ export class UserAdminService {
 
     if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
       await this.userRepository.syncUsage(id);
-    }
-
-    // TODO replace with entire preferences object
-    if (dto.memoriesEnabled !== undefined || dto.avatarColor) {
-      const newPreferences = getPreferences(user);
-      if (dto.memoriesEnabled !== undefined) {
-        newPreferences.memories.enabled = dto.memoriesEnabled;
-        delete dto.memoriesEnabled;
-      }
-
-      if (dto.avatarColor) {
-        newPreferences.avatar.color = dto.avatarColor;
-        delete dto.avatarColor;
-      }
-
-      await this.userRepository.upsertMetadata(id, {
-        key: UserMetadataKey.PREFERENCES,
-        value: getPreferencesPartial(user, newPreferences),
-      });
     }
 
     if (dto.email) {
@@ -142,6 +114,24 @@ export class UserAdminService {
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE });
     return mapUserAdmin(user);
+  }
+
+  async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {
+    const user = await this.findOrFail(id, { withDeleted: false });
+    const preferences = getPreferences(user);
+    return mapPreferences(preferences);
+  }
+
+  async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {
+    const user = await this.findOrFail(id, { withDeleted: false });
+    const preferences = mergePreferences(user, dto);
+
+    await this.userRepository.upsertMetadata(user.id, {
+      key: UserMetadataKey.PREFERENCES,
+      value: getPreferencesPartial(user, preferences),
+    });
+
+    return mapPreferences(preferences);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

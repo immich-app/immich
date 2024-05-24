@@ -3,20 +3,20 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { updateMyUser, type UserAdminResponseDto } from '@immich/sdk';
+  import { updateMyPreferences } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
 
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { preferences } from '$lib/stores/user.store';
   import Button from '../elements/buttons/button.svelte';
 
-  export let user: UserAdminResponseDto;
+  let memoriesEnabled = $preferences?.memories?.enabled ?? false;
 
   const handleSave = async () => {
     try {
-      const data = await updateMyUser({ userUpdateMeDto: { memoriesEnabled: user.memoriesEnabled } });
-
-      Object.assign(user, data);
+      const data = await updateMyPreferences({ userPreferencesUpdateDto: { memories: { enabled: memoriesEnabled } } });
+      $preferences.memories.enabled = data.memories.enabled;
 
       notificationController.show({ message: 'Saved settings', type: NotificationType.Info });
     } catch (error) {
@@ -34,7 +34,7 @@
             id="time-based-memories"
             title="Time-based memories"
             subtitle="Photos from previous years"
-            bind:checked={user.memoriesEnabled}
+            bind:checked={memoriesEnabled}
           />
         </div>
         <div class="flex justify-end">

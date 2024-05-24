@@ -1,4 +1,11 @@
-import { LoginResponseDto, deleteUserAdmin, getMyUser, getUserAdmin, login } from '@immich/sdk';
+import {
+  LoginResponseDto,
+  deleteUserAdmin,
+  getMyUser,
+  getUserAdmin,
+  getUserPreferencesAdmin,
+  login,
+} from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -103,15 +110,7 @@ describe('/admin/users', () => {
       expect(body).toEqual(errorDto.forbidden);
     });
 
-    for (const key of [
-      'password',
-      'email',
-      'name',
-      'quotaSizeInBytes',
-      'shouldChangePassword',
-      'memoriesEnabled',
-      'notify',
-    ]) {
+    for (const key of ['password', 'email', 'name', 'quotaSizeInBytes', 'shouldChangePassword', 'notify']) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
           .post(`/admin/users`)
@@ -139,23 +138,6 @@ describe('/admin/users', () => {
       });
       expect(status).toBe(201);
     });
-
-    it('should create a user without memories enabled', async () => {
-      const { status, body } = await request(app)
-        .post(`/admin/users`)
-        .send({
-          email: 'no-memories@immich.cloud',
-          password: 'Password123',
-          name: 'No Memories',
-          memoriesEnabled: false,
-        })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toMatchObject({
-        email: 'no-memories@immich.cloud',
-        memoriesEnabled: false,
-      });
-      expect(status).toBe(201);
-    });
   });
 
   describe('PUT /admin/users/:id', () => {
@@ -173,7 +155,7 @@ describe('/admin/users', () => {
       expect(body).toEqual(errorDto.forbidden);
     });
 
-    for (const key of ['password', 'email', 'name', 'shouldChangePassword', 'memoriesEnabled']) {
+    for (const key of ['password', 'email', 'name', 'shouldChangePassword']) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
           .put(`/admin/users/${uuidDto.notFound}`)
@@ -221,22 +203,6 @@ describe('/admin/users', () => {
       expect(before.updatedAt).not.toEqual(body.updatedAt);
     });
 
-    it('should update memories enabled', async () => {
-      const before = await getUserAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
-      const { status, body } = await request(app)
-        .put(`/admin/users/${admin.userId}`)
-        .send({ memoriesEnabled: false })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toMatchObject({
-        ...before,
-        updatedAt: expect.anything(),
-        memoriesEnabled: false,
-      });
-      expect(before.updatedAt).not.toEqual(body.updatedAt);
-    });
-
     it('should update password', async () => {
       const { status, body } = await request(app)
         .put(`/admin/users/${nonAdmin.userId}`)
@@ -251,6 +217,43 @@ describe('/admin/users', () => {
 
       const user = await getMyUser({ headers: asBearerAuth(token.accessToken) });
       expect(user).toMatchObject({ email: nonAdmin.userEmail });
+    });
+  });
+
+  describe('PUT /admin/users/:id/preferences', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put(`/admin/users/${userToDelete.userId}/preferences`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should update memories enabled', async () => {
+      const before = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ memories: { enabled: true } });
+
+      const { status, body } = await request(app)
+        .put(`/admin/users/${admin.userId}/preferences`)
+        .send({ memories: { enabled: false } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ memories: { enabled: false } });
+
+      const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ memories: { enabled: false } });
+    });
+
+    it('should update the avatar color', async () => {
+      const { status, body } = await request(app)
+        .put(`/admin/users/${admin.userId}/preferences`)
+        .send({ avatar: { color: 'orange' } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ avatar: { color: 'orange' }, memories: { enabled: false } });
+
+      const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after).toEqual({ avatar: { color: 'orange' }, memories: { enabled: false } });
     });
   });
 

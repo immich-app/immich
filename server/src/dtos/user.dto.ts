@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { UserAvatarColor } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { getPreferences } from 'src/utils/preferences';
@@ -22,14 +22,6 @@ export class UserUpdateMeDto {
   @IsString()
   @IsNotEmpty()
   name?: string;
-
-  @ValidateBoolean({ optional: true })
-  memoriesEnabled?: boolean;
-
-  @Optional()
-  @IsEnum(UserAvatarColor)
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  avatarColor?: UserAvatarColor;
 }
 
 export class UserResponseDto {
@@ -37,7 +29,6 @@ export class UserResponseDto {
   name!: string;
   email!: string;
   profileImagePath!: string;
-  @IsEnum(UserAvatarColor)
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor!: UserAvatarColor;
 }
@@ -74,9 +65,6 @@ export class UserAdminCreateDto {
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
-
-  @ValidateBoolean({ optional: true })
-  memoriesEnabled?: boolean;
 
   @Optional({ nullable: true })
   @IsNumber()
@@ -116,14 +104,6 @@ export class UserAdminUpdateDto {
   @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  memoriesEnabled?: boolean;
-
-  @Optional()
-  @IsEnum(UserAvatarColor)
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  avatarColor?: UserAvatarColor;
-
   @Optional({ nullable: true })
   @IsNumber()
   @IsPositive()
@@ -144,7 +124,6 @@ export class UserAdminResponseDto extends UserResponseDto {
   deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
-  memoriesEnabled?: boolean;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -163,7 +142,6 @@ export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
-    memoriesEnabled: getPreferences(entity).memories.enabled,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

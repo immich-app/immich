@@ -22,7 +22,7 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
@@ -98,7 +98,7 @@
     on:escape={handleEscape}
     withStacked
   >
-    {#if $user.memoriesEnabled}
+    {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
     <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />

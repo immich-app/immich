@@ -215,15 +215,19 @@ Class | Method | HTTP request | Description
 *UserApi* | [**createUserAdmin**](doc//UserApi.md#createuseradmin) | **POST** /admin/users | 
 *UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
 *UserApi* | [**deleteUserAdmin**](doc//UserApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | 
+*UserApi* | [**getMyPreferences**](doc//UserApi.md#getmypreferences) | **GET** /users/me/preferences | 
 *UserApi* | [**getMyUser**](doc//UserApi.md#getmyuser) | **GET** /users/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
 *UserApi* | [**getUser**](doc//UserApi.md#getuser) | **GET** /users/{id} | 
 *UserApi* | [**getUserAdmin**](doc//UserApi.md#getuseradmin) | **GET** /admin/users/{id} | 
+*UserApi* | [**getUserPreferencesAdmin**](doc//UserApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | 
 *UserApi* | [**restoreUserAdmin**](doc//UserApi.md#restoreuseradmin) | **POST** /admin/users/{id}/restore | 
 *UserApi* | [**searchUsers**](doc//UserApi.md#searchusers) | **GET** /users | 
 *UserApi* | [**searchUsersAdmin**](doc//UserApi.md#searchusersadmin) | **GET** /admin/users | 
+*UserApi* | [**updateMyPreferences**](doc//UserApi.md#updatemypreferences) | **PUT** /users/me/preferences | 
 *UserApi* | [**updateMyUser**](doc//UserApi.md#updatemyuser) | **PUT** /users/me | 
 *UserApi* | [**updateUserAdmin**](doc//UserApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
+*UserApi* | [**updateUserPreferencesAdmin**](doc//UserApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
 
 
 ## Documentation For Models
@@ -270,6 +274,8 @@ Class | Method | HTTP request | Description
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
+ - [AvatarResponse](doc//AvatarResponse.md)
+ - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
@@ -313,8 +319,10 @@ Class | Method | HTTP request | Description
  - [MapTheme](doc//MapTheme.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
+ - [MemoryResponse](doc//MemoryResponse.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
+ - [MemoryUpdate](doc//MemoryUpdate.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
@@ -409,6 +417,8 @@ Class | Method | HTTP request | Description
  - [UserAdminResponseDto](doc//UserAdminResponseDto.md)
  - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
+ - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)
+ - [UserPreferencesUpdateDto](doc//UserPreferencesUpdateDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [UserStatus](doc//UserStatus.md)
  - [UserUpdateMeDto](doc//UserUpdateMeDto.md)

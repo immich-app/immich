@@ -13,9 +13,7 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
-    this.avatarColor,
     this.email,
-    this.memoriesEnabled,
     this.name,
     this.password,
   });
@@ -26,23 +24,7 @@ class UserUpdateMeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  UserAvatarColor? avatarColor;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? email;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? memoriesEnabled;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,40 +44,26 @@ class UserUpdateMeDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserUpdateMeDto &&
-    other.avatarColor == avatarColor &&
     other.email == email &&
-    other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
-    (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode);
 
   @override
-  String toString() => 'UserUpdateMeDto[avatarColor=$avatarColor, email=$email, memoriesEnabled=$memoriesEnabled, name=$name, password=$password]';
+  String toString() => 'UserUpdateMeDto[email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
-      json[r'avatarColor'] = this.avatarColor;
-    } else {
-    //  json[r'avatarColor'] = null;
-    }
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
     //  json[r'email'] = null;
-    }
-    if (this.memoriesEnabled != null) {
-      json[r'memoriesEnabled'] = this.memoriesEnabled;
-    } else {
-    //  json[r'memoriesEnabled'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
@@ -118,9 +86,7 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
-        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
       );

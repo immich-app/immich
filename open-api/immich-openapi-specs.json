@@ -432,6 +432,98 @@
         ]
       }
     },
+    "/admin/users/{id}/preferences": {
+      "get": {
+        "operationId": "getUserPreferencesAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "operationId": "updateUserPreferencesAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/admin/users/{id}/restore": {
       "post": {
         "operationId": "restoreUserAdmin",
@@ -6403,6 +6495,78 @@
         ]
       }
     },
+    "/users/me/preferences": {
+      "get": {
+        "operationId": "getMyPreferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "operationId": "updateMyPreferences",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/users/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
@@ -7621,6 +7785,25 @@
         ],
         "type": "object"
       },
+      "AvatarResponse": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          }
+        },
+        "required": [
+          "color"
+        ],
+        "type": "object"
+      },
+      "AvatarUpdate": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          }
+        },
+        "type": "object"
+      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -8584,6 +8767,17 @@
         ],
         "type": "object"
       },
+      "MemoryResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "MemoryResponseDto": {
         "properties": {
           "assets": {
@@ -8649,6 +8843,14 @@
           "on_this_day"
         ],
         "type": "string"
+      },
+      "MemoryUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -10878,9 +11080,6 @@
           "email": {
             "type": "string"
           },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -10942,9 +11141,6 @@
           "isAdmin": {
             "type": "boolean"
           },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -11000,14 +11196,8 @@
       },
       "UserAdminUpdateDto": {
         "properties": {
-          "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
-          },
           "email": {
             "type": "string"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
           },
           "name": {
             "type": "string"
@@ -11046,6 +11236,32 @@
         ],
         "type": "string"
       },
+      "UserPreferencesResponseDto": {
+        "properties": {
+          "avatar": {
+            "$ref": "#/components/schemas/AvatarResponse"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoryResponse"
+          }
+        },
+        "required": [
+          "avatar",
+          "memories"
+        ],
+        "type": "object"
+      },
+      "UserPreferencesUpdateDto": {
+        "properties": {
+          "avatar": {
+            "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoryUpdate"
+          }
+        },
+        "type": "object"
+      },
       "UserResponseDto": {
         "properties": {
           "avatarColor": {
@@ -11083,14 +11299,8 @@
       },
       "UserUpdateMeDto": {
         "properties": {
-          "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
-          },
           "email": {
             "type": "string"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
           },
           "name": {
             "type": "string"
