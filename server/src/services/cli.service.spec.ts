@@ -1,12 +1,10 @@
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { CliService } from 'src/services/cli.service';
 import { userStub } from 'test/fixtures/user.stub';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -17,18 +15,16 @@ describe(CliService.name, () => {
 
   let userMock: Mocked<IUserRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
-  let libraryMock: Mocked<ILibraryRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     cryptoMock = newCryptoRepositoryMock();
-    libraryMock = newLibraryRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new CliService(cryptoMock, libraryMock, systemMock, userMock, loggerMock);
+    sut = new CliService(cryptoMock, systemMock, userMock, loggerMock);
   });
 
   describe('resetAdminPassword', () => {
