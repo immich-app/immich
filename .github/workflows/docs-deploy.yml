@@ -79,7 +79,7 @@ jobs:
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
       
       - run: |
-          echo "Starting docs deployment for ${{ steps.parameters.outputs.name }} (trigger: ${{ steps.parameters.outputs.event }})"
+          echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
 
       - name: Download artifact
         uses: actions/github-script@v7
