@@ -285,8 +285,6 @@ export type MapMarkerResponseDto = {
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
-    /** This property was deprecated in v1.100.0 */
-    title: string;
     yearsAgo: number;
 };
 export type UpdateStackParentDto = {

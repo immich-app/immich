@@ -8672,18 +8672,12 @@
             },
             "type": "array"
           },
-          "title": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "yearsAgo": {
             "type": "integer"
           }
         },
         "required": [
           "assets",
-          "title",
           "yearsAgo"
         ],
         "type": "object"
