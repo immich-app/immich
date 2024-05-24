@@ -14,7 +14,7 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
-export type UserDto = {
+export type UserResponseDto = {
     avatarColor: UserAvatarColor;
     email: string;
     id: string;
@@ -27,7 +27,7 @@ export type ActivityResponseDto = {
     createdAt: string;
     id: string;
     "type": Type;
-    user: UserDto;
+    user: UserResponseDto;
 };
 export type ActivityCreateDto = {
     albumId: string;
@@ -38,7 +38,7 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
-export type UserResponseDto = {
+export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
     createdAt: string;
     deletedAt: string | null;
@@ -55,6 +55,29 @@ export type UserResponseDto = {
     status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
+};
+export type UserAdminCreateDto = {
+    email: string;
+    memoriesEnabled?: boolean;
+    name: string;
+    notify?: boolean;
+    password: string;
+    quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
+    storageLabel?: string | null;
+};
+export type UserAdminDeleteDto = {
+    force?: boolean;
+};
+export type UserAdminUpdateDto = {
+    avatarColor?: UserAvatarColor;
+    email?: string;
+    memoriesEnabled?: boolean;
+    name?: string;
+    password?: string;
+    quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
+    storageLabel?: string | null;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -517,22 +540,11 @@ export type OAuthCallbackDto = {
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
     email: string;
     id: string;
     inTimeline?: boolean;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
     name: string;
-    oauthId: string;
     profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type UpdatePartnerDto = {
     inTimeline: boolean;
@@ -1060,27 +1072,12 @@ export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
 };
-export type CreateUserDto = {
-    email: string;
-    memoriesEnabled?: boolean;
-    name: string;
-    notify?: boolean;
-    password: string;
-    quotaSizeInBytes?: number | null;
-    shouldChangePassword?: boolean;
-    storageLabel?: string | null;
-};
-export type UpdateUserDto = {
+export type UserUpdateMeDto = {
     avatarColor?: UserAvatarColor;
     email?: string;
-    id: string;
-    isAdmin?: boolean;
     memoriesEnabled?: boolean;
     name?: string;
     password?: string;
-    quotaSizeInBytes?: number | null;
-    shouldChangePassword?: boolean;
-    storageLabel?: string;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -1088,9 +1085,6 @@ export type CreateProfileImageDto = {
 export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
-};
-export type DeleteUserDto = {
-    force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -1144,6 +1138,77 @@ export function deleteActivity({ id }: {
     return oazapfts.ok(oazapfts.fetchText(`/activities/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function searchUsersAdmin({ withDeleted }: {
+    withDeleted?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto[];
+    }>(`/admin/users${QS.query(QS.explode({
+        withDeleted
+    }))}`, {
+        ...opts
+    }));
+}
+export function createUserAdmin({ userAdminCreateDto }: {
+    userAdminCreateDto: UserAdminCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>("/admin/users", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: userAdminCreateDto
+    })));
+}
+export function deleteUserAdmin({ id, userAdminDeleteDto }: {
+    id: string;
+    userAdminDeleteDto: UserAdminDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: userAdminDeleteDto
+    })));
+}
+export function getUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateUserAdmin({ id, userAdminUpdateDto }: {
+    id: string;
+    userAdminUpdateDto: UserAdminUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userAdminUpdateDto
+    })));
+}
+export function restoreUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
+        ...opts,
+        method: "POST"
     }));
 }
 export function getAllAlbums({ assetId, shared }: {
@@ -1620,7 +1685,7 @@ export function signUpAdmin({ signUpDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/auth/admin-sign-up", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1632,7 +1697,7 @@ export function changePassword({ changePasswordDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/auth/change-password", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1965,7 +2030,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/oauth/link", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1980,7 +2045,7 @@ export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
 export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/oauth/unlink", {
         ...opts,
         method: "POST"
@@ -2718,49 +2783,33 @@ export function restoreAssets({ bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getAllUsers({ isAll }: {
-    isAll: boolean;
-}, opts?: Oazapfts.RequestOpts) {
+export function searchUsers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>(`/users${QS.query(QS.explode({
-        isAll
-    }))}`, {
+    }>("/users", {
         ...opts
     }));
 }
-export function createUser({ createUserDto }: {
-    createUserDto: CreateUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: UserResponseDto;
-    }>("/users", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: createUserDto
-    })));
-}
-export function updateUser({ updateUserDto }: {
-    updateUserDto: UpdateUserDto;
-}, opts?: Oazapfts.RequestOpts) {
+export function getMyUser(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto;
-    }>("/users", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateUserDto
-    })));
-}
-export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/users/me", {
         ...opts
     }));
+}
+export function updateMyUser({ userUpdateMeDto }: {
+    userUpdateMeDto: UserUpdateMeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>("/users/me", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userUpdateMeDto
+    })));
 }
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/profile-image", {
@@ -2780,20 +2829,7 @@ export function createProfileImage({ createProfileImageDto }: {
         body: createProfileImageDto
     })));
 }
-export function deleteUser({ id, deleteUserDto }: {
-    id: string;
-    deleteUserDto: DeleteUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
-        ...opts,
-        method: "DELETE",
-        body: deleteUserDto
-    })));
-}
-export function getUserById({ id }: {
+export function getUser({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2811,17 +2847,6 @@ export function getProfileImage({ id }: {
         data: Blob;
     }>(`/users/${encodeURIComponent(id)}/profile-image`, {
         ...opts
-    }));
-}
-export function restoreUser({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}/restore`, {
-        ...opts,
-        method: "POST"
     }));
 }
 export enum ReactionLevel {
@@ -2848,14 +2873,14 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
-export enum AlbumUserRole {
-    Editor = "editor",
-    Viewer = "viewer"
-}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
     Deleted = "deleted"
+}
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",

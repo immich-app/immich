@@ -27,6 +27,7 @@ import { SystemMetadataController } from 'src/controllers/system-metadata.contro
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
+import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 
 export const controllers = [
@@ -59,5 +60,6 @@ export const controllers = [
   TagController,
   TimelineController,
   TrashController,
+  UserAdminController,
   UserController,
 ];

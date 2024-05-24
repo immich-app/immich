@@ -57,7 +57,7 @@ class TabNavigationObserver extends AutoRouterObserver {
       // Update user info
       try {
         final userResponseDto =
-            await ref.read(apiServiceProvider).userApi.getMyUserInfo();
+            await ref.read(apiServiceProvider).userApi.getMyUser();
 
         if (userResponseDto == null) {
           return;

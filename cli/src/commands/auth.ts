@@ -1,4 +1,4 @@
-import { getMyUserInfo } from '@immich/sdk';
+import { getMyUser } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { mkdir, unlink } from 'node:fs/promises';
 import { BaseOptions, connect, getAuthFilePath, logError, withError, writeAuthFile } from 'src/utils';
@@ -10,13 +10,13 @@ export const login = async (url: string, key: string, options: BaseOptions) => {
 
   await connect(url, key);
 
-  const [error, userInfo] = await withError(getMyUserInfo());
+  const [error, user] = await withError(getMyUser());
   if (error) {
     logError(error, 'Failed to load user info');
     process.exit(1);
   }
 
-  console.log(`Logged in as ${userInfo.email}`);
+  console.log(`Logged in as ${user.email}`);
 
   if (!existsSync(configDir)) {
     // Create config folder if it doesn't exist

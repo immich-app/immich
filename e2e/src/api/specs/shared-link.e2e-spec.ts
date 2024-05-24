@@ -5,7 +5,7 @@ import {
   SharedLinkResponseDto,
   SharedLinkType,
   createAlbum,
-  deleteUser,
+  deleteUserAdmin,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -86,7 +86,7 @@ describe('/shared-links', () => {
         }),
       ]);
 
-    await deleteUser({ id: user2.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUserAdmin({ id: user2.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /share/${key}', () => {

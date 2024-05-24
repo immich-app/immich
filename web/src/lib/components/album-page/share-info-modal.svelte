@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    getMyUserInfo,
+    getMyUser,
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
@@ -36,7 +36,7 @@
 
   onMount(async () => {
     try {
-      currentUser = await getMyUserInfo();
+      currentUser = await getMyUser();
     } catch (error) {
       handleError(error, 'Unable to refresh user');
     }

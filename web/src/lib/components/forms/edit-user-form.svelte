@@ -1,16 +1,16 @@
 <script lang="ts">
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { mdiAccountEditOutline } from '@mdi/js';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
   export let onClose: () => void;
@@ -36,9 +36,9 @@
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel } = user;
-      await updateUser({
-        updateUserDto: {
-          id,
+      await updateUserAdmin({
+        id,
+        userAdminUpdateDto: {
           email,
           name,
           storageLabel: storageLabel || '',
@@ -56,9 +56,9 @@
     try {
       newPassword = generatePassword();
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
+      await updateUserAdmin({
+        id: user.id,
+        userAdminUpdateDto: {
           password: newPassword,
           shouldChangePassword: true,
         },
