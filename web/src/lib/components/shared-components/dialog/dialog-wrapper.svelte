@@ -1,6 +1,6 @@
 <script lang="ts">
   import { dialogController } from './dialog';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   const { dialog } = dialogController;
 </script>
 
@@ -10,5 +10,5 @@
     <button on:click={() => $dialog.cancel()}>CANCEL</button>
   </div> -->
 
-  <ConfirmDialogue id={Date.now.toString()} {...$dialog} />
+  <ConfirmDialog id={Date.now.toString()} {...$dialog} />
 {/if}

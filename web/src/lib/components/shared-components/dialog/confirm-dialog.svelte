@@ -1,6 +1,6 @@
 <script lang="ts">
-  import FullScreenModal from './full-screen-modal.svelte';
-  import Button from '../elements/buttons/button.svelte';
+  import FullScreenModal from '../full-screen-modal.svelte';
+  import Button from '../../elements/buttons/button.svelte';
   import type { Color } from '$lib/components/elements/buttons/button.svelte';
 
   export let id: string;

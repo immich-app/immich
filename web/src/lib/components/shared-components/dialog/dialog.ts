@@ -26,18 +26,16 @@ export type Dialog = DialogOptions & DialogActions;
 function createDialogWrapper() {
   const dialog = writable<Dialog | undefined>();
 
-  async function show(options: DialogOptions, actions?: DialogActions) {
+  async function show(options: DialogOptions) {
     return new Promise((resolve) => {
       const newDialog: Dialog = {
         ...options,
         onConfirm: () => {
           dialog.set(undefined);
-          actions?.onConfirm();
           resolve(true);
         },
         onCancel: () => {
           dialog.set(undefined);
-          actions?.onCancel();
           resolve(false);
         },
       };
