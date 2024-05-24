@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
-  import ConfirmDialogue from './confirm-dialogue.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
 
@@ -55,7 +55,7 @@
   };
 </script>
 
-<ConfirmDialogue
+<ConfirmDialog
   id="edit-date-time-modal"
   confirmColor="primary"
   title="Edit date and time"
@@ -84,4 +84,4 @@
       />
     </div>
   </div>
-</ConfirmDialogue>
+</ConfirmDialog>

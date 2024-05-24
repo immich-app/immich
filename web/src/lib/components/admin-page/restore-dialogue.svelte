@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUser, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
@@ -27,7 +27,7 @@
   };
 </script>
 
-<ConfirmDialogue
+<ConfirmDialog
   id="restore-user-modal"
   title="Restore user"
   confirmText="Continue"
@@ -38,4 +38,4 @@
   <svelte:fragment slot="prompt">
     <p><b>{user.name}</b>'s account will be restored.</p>
   </svelte:fragment>
-</ConfirmDialogue>
+</ConfirmDialog>

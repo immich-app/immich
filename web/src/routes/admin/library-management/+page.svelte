@@ -6,7 +6,7 @@
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -296,7 +296,7 @@
 </script>
 
 {#if confirmDeleteLibrary}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="warning-modal"
     title="Warning!"
     prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."

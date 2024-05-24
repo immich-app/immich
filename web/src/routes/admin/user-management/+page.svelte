@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
@@ -153,7 +153,7 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <ConfirmDialogue
+        <ConfirmDialog
           id="password-reset-success-modal"
           title="Password reset success"
           confirmText="Done"
@@ -185,7 +185,7 @@
               </p>
             </div>
           </svelte:fragment>
-        </ConfirmDialogue>
+        </ConfirmDialog>
       {/if}
 
       <table class="my-5 w-full text-left">
