@@ -12,7 +12,6 @@ import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { AuthType, LOGIN_URL, MOBILE_REDIRECT } from 'src/constants';
-import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
@@ -30,10 +29,8 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -60,15 +57,12 @@ interface ClaimOptions<T> {
 
 @Injectable()
 export class AuthService {
-  private access: AccessCore;
   private configCore: SystemConfigCore;
   private userCore: UserCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
@@ -76,9 +70,8 @@ export class AuthService {
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
     this.logger.setContext(AuthService.name);
-    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.userCore = UserCore.create(cryptoRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }

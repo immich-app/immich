@@ -4,7 +4,6 @@ import { SALT_ROUNDS } from 'src/constants';
 import { UserResponseDto } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
 let instance: UserCore | null;
@@ -12,17 +11,12 @@ let instance: UserCore | null;
 export class UserCore {
   private constructor(
     private cryptoRepository: ICryptoRepository,
-    private libraryRepository: ILibraryRepository,
     private userRepository: IUserRepository,
   ) {}
 
-  static create(
-    cryptoRepository: ICryptoRepository,
-    libraryRepository: ILibraryRepository,
-    userRepository: IUserRepository,
-  ) {
+  static create(cryptoRepository: ICryptoRepository, userRepository: IUserRepository) {
     if (!instance) {
-      instance = new UserCore(cryptoRepository, libraryRepository, userRepository);
+      instance = new UserCore(cryptoRepository, userRepository);
     }
 
     return instance;
