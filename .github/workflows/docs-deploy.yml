@@ -82,11 +82,25 @@ jobs:
           echo "Starting docs deployment for ${{ steps.parameters.outputs.name }} (trigger: ${{ steps.parameters.outputs.event }})"
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/github-script@v7
         with:
-          name: docs-build-output
-          path: docs-artifact/
-          run-id: ${{ github.event.workflow_run.id }}
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "docs-build-output"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/docs-build-output.zip`, Buffer.from(download.data));
 
       # TODO: Terraform shenanigans
       
@@ -99,7 +113,7 @@ jobs:
             const name = "${{ steps.parameters.outputs.name }}";
             const comment = "📖 Documentation preview deployed to " + name + ".preview.immich.app";
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: context.payload.workflow_run.pull_requests[0].number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: comment
