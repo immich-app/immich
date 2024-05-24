@@ -133,8 +133,6 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
-  sharedUsers!: UserResponseDto[];
   albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
@@ -188,7 +186,6 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     id: entity.id,
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
-    sharedUsers,
     albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,

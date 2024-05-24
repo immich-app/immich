@@ -6835,14 +6835,6 @@
           "shared": {
             "type": "boolean"
           },
-          "sharedUsers": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            },
-            "type": "array"
-          },
           "startDate": {
             "format": "date-time",
             "type": "string"
@@ -6866,7 +6858,6 @@
           "owner",
           "ownerId",
           "shared",
-          "sharedUsers",
           "updatedAt"
         ],
         "type": "object"

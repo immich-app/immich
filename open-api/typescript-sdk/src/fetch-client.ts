@@ -166,8 +166,6 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** This property was deprecated in v1.102.0 */
-    sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
 };

@@ -571,7 +571,7 @@
   </div>
 {/if}
 
-{#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
+{#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">

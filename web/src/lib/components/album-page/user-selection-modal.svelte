@@ -42,8 +42,8 @@
     users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
 
     // Remove the existed shared users from the album
-    for (const sharedUser of album.sharedUsers) {
-      users = users.filter((user) => user.id !== sharedUser.id);
+    for (const sharedUser of album.albumUsers) {
+      users = users.filter((user) => user.id !== sharedUser.user.id);
     }
   });
 

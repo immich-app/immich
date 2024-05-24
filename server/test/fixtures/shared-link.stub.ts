@@ -100,7 +100,6 @@ const albumResponse: AlbumResponseDto = {
   id: 'album-123',
   ownerId: 'admin_id',
   owner: mapUser(userStub.admin),
-  sharedUsers: [],
   albumUsers: [],
   shared: false,
   hasSharedLink: false,
