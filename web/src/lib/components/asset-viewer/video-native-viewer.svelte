@@ -52,9 +52,9 @@
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
-    bind:muted={$videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg, checksum)}
+    muted={$videoViewerMuted}
   >
     <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
