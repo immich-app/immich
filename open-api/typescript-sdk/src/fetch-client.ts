@@ -123,12 +123,8 @@ export type AssetResponseDto = {
     hasMetadata: boolean;
     id: string;
     isArchived: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isExternal?: boolean;
     isFavorite: boolean;
     isOffline: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isReadOnly?: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;

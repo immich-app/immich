@@ -57,7 +57,6 @@ const assetResponse: AssetResponseDto = {
   resized: false,
   thumbhash: null,
   fileModifiedAt: today,
-  isExternal: false,
   isOffline: false,
   fileCreatedAt: today,
   localDateTime: today,

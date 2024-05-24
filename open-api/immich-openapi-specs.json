@@ -7477,20 +7477,10 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
           "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
             "type": "boolean"
           },
           "isTrashed": {

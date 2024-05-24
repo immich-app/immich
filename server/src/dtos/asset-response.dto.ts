@@ -37,10 +37,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isExternal?: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isReadOnly?: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
@@ -129,8 +125,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       : undefined,
     stackCount: entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
-    isExternal: false,
-    isReadOnly: false,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
   };
