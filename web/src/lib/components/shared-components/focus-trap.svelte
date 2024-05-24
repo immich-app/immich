@@ -2,18 +2,13 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { onMount, onDestroy } from 'svelte';
 
-  /**
-   * The index of the focusable element that should be selected when the modal is initially launched.
-   */
-  export let initialFocusIndex: number = 0;
-
   let container: HTMLElement;
   let triggerElement: HTMLElement;
 
   onMount(() => {
     triggerElement = document.activeElement as HTMLElement;
     const focusableElements = getFocusableElements();
-    focusableElements[initialFocusIndex]?.focus();
+    focusableElements[0]?.focus();
   });
 
   onDestroy(() => {
