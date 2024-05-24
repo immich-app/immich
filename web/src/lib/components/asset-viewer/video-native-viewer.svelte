@@ -9,9 +9,19 @@
 
   export let assetId: string;
   export let loopVideo: boolean;
+  export let checksum: string;
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+  let assetFileUrl: string;
+
+  $: {
+    const next = getAssetFileUrl(assetId, false, true, checksum);
+    if (assetFileUrl !== next) {
+      assetFileUrl = next;
+      element && element.load();
+    }
+  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
@@ -44,9 +54,9 @@
     on:ended={() => dispatch('onVideoEnded')}
     bind:muted={$videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg, checksum)}
   >
-    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
   </video>
 
