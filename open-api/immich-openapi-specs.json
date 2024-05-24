@@ -4399,44 +4399,6 @@
         ]
       }
     },
-    "/server-info": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.106.0",
-        "operationId": "getServerInfo",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStorageResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.106.0"
-        }
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",

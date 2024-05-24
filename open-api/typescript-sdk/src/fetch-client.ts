@@ -728,15 +728,6 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
-export type ServerStorageResponseDto = {
-    diskAvailable: string;
-    diskAvailableRaw: number;
-    diskSize: string;
-    diskSizeRaw: number;
-    diskUsagePercentage: number;
-    diskUse: string;
-    diskUseRaw: number;
-};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -783,6 +774,15 @@ export type ServerStatsResponseDto = {
     usage: number;
     usageByUser: UsageByUserDto[];
     videos: number;
+};
+export type ServerStorageResponseDto = {
+    diskAvailable: string;
+    diskAvailableRaw: number;
+    diskSize: string;
+    diskSizeRaw: number;
+    diskUsagePercentage: number;
+    diskUse: string;
+    diskUseRaw: number;
 };
 export type ServerThemeDto = {
     customCss: string;
@@ -2257,17 +2257,6 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         state,
         "type": $type
     }))}`, {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.106.0
- */
-export function getServerInfo(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStorageResponseDto;
-    }>("/server-info", {
         ...opts
     }));
 }

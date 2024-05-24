@@ -23,13 +23,6 @@ export class ServerInfoController {
     private versionService: VersionService,
   ) {}
 
-  @Get()
-  @EndpointLifecycle({ deprecatedAt: 'v1.106.0' })
-  @Authenticated()
-  getServerInfo(): Promise<ServerStorageResponseDto> {
-    return this.service.getStorage();
-  }
-
   @Get('storage')
   @Authenticated()
   getStorage(): Promise<ServerStorageResponseDto> {

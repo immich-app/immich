@@ -35,7 +35,6 @@ part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/audit_api.dart';
 part 'api/authentication_api.dart';
-part 'api/deprecated_api.dart';
 part 'api/download_api.dart';
 part 'api/duplicate_api.dart';
 part 'api/face_api.dart';
