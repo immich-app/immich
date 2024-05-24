@@ -215,7 +215,7 @@ class _ManualPicker extends HookWidget {
           decorationText: "location_picker_longitude",
           hintText: "location_picker_longitude_hint",
           errorText: "location_picker_longitude_error",
-          focusNode: latitiudeFocusNode,
+          focusNode: longitudeFocusNode,
           validator: _validateLong,
           onUpdated: onLongitudeEditingCompleted,
         ),
