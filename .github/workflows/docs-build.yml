@@ -2,8 +2,12 @@ name: Docs build
 on:
   push:
     branches: [main]
+    paths:
+      - "docs/**"
   pull_request:
     branches: [main]
+    paths:
+      - "docs/**"
   release:
     types: [published]
 
@@ -13,7 +17,6 @@ concurrency:
 
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
     defaults:
       run:
