@@ -147,7 +147,8 @@ class Album {
     }
     if (dto.albumUsers.isNotEmpty) {
       final users = await db.users.getAllById(
-          dto.albumUsers.map((e) => e.user.id).toList(growable: false));
+        dto.albumUsers.map((e) => e.user.id).toList(growable: false),
+      );
       a.sharedUsers.addAll(users.cast());
     }
     if (dto.assets.isNotEmpty) {

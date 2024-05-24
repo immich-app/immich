@@ -181,8 +181,12 @@ class AlbumService {
           albumName: albumName,
           assetIds: assets.map((asset) => asset.remoteId!).toList(),
           albumUsers: sharedUsers
-              .map((e) =>
-                  AlbumUserCreateDto(userId: e.id, role: AlbumUserRole.editor))
+              .map(
+                (e) => AlbumUserCreateDto(
+                  userId: e.id,
+                  role: AlbumUserRole.editor,
+                ),
+              )
               .toList(),
         ),
       );

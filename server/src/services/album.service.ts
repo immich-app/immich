@@ -14,7 +14,7 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserEntity, AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';

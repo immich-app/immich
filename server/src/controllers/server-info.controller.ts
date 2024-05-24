@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { EndpointLifecycle } from 'src/decorators';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
