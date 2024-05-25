@@ -23,6 +23,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
+  import { handleFavoriteAssetGrid } from '$lib/utils/asset-utils';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
@@ -66,7 +67,10 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+    <FavoriteAction
+      removeFavorite={isAllFavorite}
+      onFavorite={(assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore)}
+    />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
       {#if $selectedAssets.size > 1 || isAssetStackSelected}
@@ -92,6 +96,7 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
   <AssetGrid
+    {isAllFavorite}
     {assetStore}
     {assetInteractionStore}
     removeAction={AssetAction.ARCHIVE}

@@ -7,22 +7,23 @@
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { archiveAssets, deleteAssets, favoriteAssets } from '$lib/utils/actions';
   import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
-  import Portal from '../shared-components/portal/portal.svelte';
-  import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
-  import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
-  import AssetDateGroup from './asset-date-group.svelte';
-  import { stackAssets } from '$lib/utils/asset-utils';
-  import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import Scrollbar from '$lib/components/shared-components/scrollbar/scrollbar.svelte';
+  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
+  import AssetDateGroup from '$lib/components/photos-page/asset-date-group.svelte';
+  import { handleFavoriteAssetGrid, stackAssets } from '$lib/utils/asset-utils';
+  import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { page } from '$app/stores';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -34,6 +35,7 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
+  export let isAllFavorite: boolean | null = null;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
 
@@ -93,6 +95,22 @@
     handlePromiseError(trashOrDelete(true));
   };
 
+  const onArchive = async () => {
+    const assets = Array.from($selectedAssets);
+    const ids = assets.map((asset) => asset.id);
+    await archiveAssets($page.url.pathname !== AppRoute.ARCHIVE, (assetIds) => assetStore.removeAssets(assetIds), ids);
+    assetInteractionStore.clearMultiselect();
+  };
+
+  const onFavorite = async () => {
+    await favoriteAssets(
+      !isAllFavorite,
+      (assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore),
+      Array.from($selectedAssets),
+    );
+    assetInteractionStore.clearMultiselect();
+  };
+
   const onStackAssets = async () => {
     const ids = await stackAssets(Array.from($selectedAssets));
     if (ids) {
@@ -128,6 +146,14 @@
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
       );
+      // you're not supposed to manage your assets on the trash page: there's no button to manage it, then there's no reason to have shortcuts to do it.
+      if ($page.url.pathname !== AppRoute.TRASH) {
+        shortcuts.push({ shortcut: { key: 'a', shift: true }, onShortcut: onArchive });
+        // on some page, you can't favorite assets (like on `/parthner`)
+        if (isAllFavorite !== null) {
+          shortcuts.push({ shortcut: { key: 'f' }, onShortcut: onFavorite });
+        }
+      }
     }
 
     return shortcuts;

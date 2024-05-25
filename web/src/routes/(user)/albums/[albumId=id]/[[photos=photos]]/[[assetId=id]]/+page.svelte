@@ -43,7 +43,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { handlePromiseError, s } from '$lib/utils';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import { downloadAlbum, handleFavoriteAssetGrid } from '$lib/utils/asset-utils';
   import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -412,7 +412,10 @@
           <AddToAlbum shared />
         </AssetSelectContextMenu>
         {#if isAllUserOwned}
-          <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+          <FavoriteAction
+            removeFavorite={isAllFavorite}
+            onFavorite={(assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore)}
+          />
         {/if}
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
           <DownloadAction menuItem filename="{album.albumName}.zip" />
@@ -546,6 +549,7 @@
             {album}
             {assetStore}
             {assetInteractionStore}
+            {isAllFavorite}
             isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}

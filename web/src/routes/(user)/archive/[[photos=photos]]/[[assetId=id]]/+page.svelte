@@ -14,6 +14,7 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
+  import { handleFavoriteAssetGrid } from '$lib/utils/asset-utils';
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
 
@@ -35,7 +36,10 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+    <FavoriteAction
+      removeFavorite={isAllFavorite}
+      onFavorite={(assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore)}
+    />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
       <DownloadAction menuItem />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
@@ -44,7 +48,7 @@
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+  <AssetGrid {isAllFavorite} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
     <EmptyPlaceholder text="Archive photos and videos to hide them from your Photos view" slot="empty" />
   </AssetGrid>
 </UserPageLayout>

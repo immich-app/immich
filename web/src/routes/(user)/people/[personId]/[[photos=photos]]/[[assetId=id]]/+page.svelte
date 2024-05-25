@@ -56,6 +56,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import { handleFavoriteAssetGrid } from '$lib/utils/asset-utils';
 
   export let data: PageData;
 
@@ -383,7 +384,10 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
-      <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+      <FavoriteAction
+        removeFavorite={isAllFavorite}
+        onFavorite={(assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore)}
+      />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <MenuOption icon={mdiAccountMultipleCheckOutline} text="Fix incorrect match" on:click={handleReassignAssets} />
@@ -434,6 +438,7 @@
 <main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
+      {isAllFavorite}
       {assetStore}
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}

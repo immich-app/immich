@@ -34,6 +34,7 @@
   import { clearQueryParam } from '$lib/utils/navigation';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import { initInput } from '$lib/actions/focus';
 
   export let data: PageData;
 
@@ -62,7 +63,6 @@
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
   let showPeople: PersonResponseDto[] = [];
   let countVisiblePeople: number;
-  let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
   for (const person of people) {
@@ -244,8 +244,6 @@
     personName = detail.name;
     personMerge1 = detail;
     edittingPerson = detail;
-
-    setTimeout(() => changeNameInputEl?.focus(), 100);
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
@@ -463,7 +461,7 @@
             name="name"
             type="text"
             bind:value={personName}
-            bind:this={changeNameInputEl}
+            use:initInput={100}
           />
         </div>
       </form>

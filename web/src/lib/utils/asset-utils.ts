@@ -397,3 +397,10 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
 export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const handleFavoriteAssetGrid = (assets: AssetResponseDto[], isFavorite: boolean, assetStore: AssetStore) => {
+  for (const asset of assets) {
+    asset.isFavorite = isFavorite;
+  }
+  assetStore.triggerUpdate();
+};

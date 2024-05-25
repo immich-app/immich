@@ -1,15 +1,9 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
-  import type { OnFavorite } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAssets } from '@immich/sdk';
+  import { favoriteAssets, type OnFavorite } from '$lib/utils/actions';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
 
   export let onFavorite: OnFavorite;
 
@@ -26,33 +20,10 @@
   const handleFavorite = async () => {
     const isFavorite = !removeFavorite;
     loading = true;
-
-    try {
-      const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
-
-      const ids = assets.map(({ id }) => id);
-
-      if (ids.length > 0) {
-        await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
-      }
-
-      for (const asset of assets) {
-        asset.isFavorite = isFavorite;
-      }
-
-      onFavorite(ids, isFavorite);
-
-      notificationController.show({
-        message: isFavorite ? `Added ${ids.length} to favorites` : `Removed ${ids.length} from favorites`,
-        type: NotificationType.Info,
-      });
-
-      clearSelect();
-    } catch (error) {
-      handleError(error, `Unable to ${isFavorite ? 'add to' : 'remove from'} favorites`);
-    } finally {
-      loading = false;
-    }
+    const assets = [...getOwnedAssets()].filter((asset) => asset.isFavorite !== isFavorite);
+    await favoriteAssets(isFavorite, () => onFavorite(assets, isFavorite), assets);
+    clearSelect();
+    loading = false;
   };
 </script>
 

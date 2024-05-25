@@ -16,6 +16,7 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
+  import { handleFavoriteAssetGrid } from '$lib/utils/asset-utils';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
 
@@ -31,7 +32,10 @@
 <!-- Multiselection mode app bar -->
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <FavoriteAction
+      removeFavorite
+      onFavorite={(assets, isFavorite) => handleFavoriteAssetGrid(assets, isFavorite, assetStore)}
+    />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
