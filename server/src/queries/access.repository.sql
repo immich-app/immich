@@ -153,6 +153,7 @@ FROM
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "partner"."sharedWithId" = $1
+  AND "asset"."isArchived" = false
   AND "asset"."id" IN ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
