@@ -15,7 +15,7 @@ The [hwaccel.ml.yml](https://github.com/immich-app/immich/releases/latest/downlo
 :::
 
 ```yaml
-version: '3.8'
+name: immich_remote_ml
 
 services:
   immich-machine-learning:
