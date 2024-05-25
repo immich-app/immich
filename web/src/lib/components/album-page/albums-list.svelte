@@ -32,7 +32,7 @@
   } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let ownedAlbums: AlbumResponseDto[] = [];
   export let sharedAlbums: AlbumResponseDto[] = [];
@@ -292,7 +292,7 @@
     }
 
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'delete-album',
       prompt: `Are you sure you want to delete the album ${albumToDelete.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
     });
 

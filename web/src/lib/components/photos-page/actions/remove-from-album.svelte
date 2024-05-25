@@ -9,7 +9,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { s } from '$lib/utils';
-  import { dialogController, DialogType } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined;
@@ -19,7 +19,7 @@
 
   const removeFromAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'remove-from-album',
       prompt: `Are you sure you want to remove asset${s(getAssets().size)} from the album?`,
     });
 

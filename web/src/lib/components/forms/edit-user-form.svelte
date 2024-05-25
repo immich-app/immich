@@ -8,7 +8,7 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { mdiAccountEditOutline } from '@mdi/js';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -53,7 +53,7 @@
 
   const resetPassword = async () => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'confirm-reset-password',
       prompt: `Are you sure you want to reset ${user.name}'s password?`,
     });
 

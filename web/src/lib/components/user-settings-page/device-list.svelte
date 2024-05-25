@@ -4,7 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
-  import { dialogController, DialogType } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let devices: SessionResponseDto[];
 
@@ -15,7 +15,7 @@
 
   const handleDelete = async (device: SessionResponseDto) => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'log-out-device',
       prompt: 'Are you sure you want to log out this device?',
     });
 
@@ -35,7 +35,7 @@
 
   const handleDeleteAll = async () => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'log-out-all-devices',
       prompt: 'Are you sure you want to log out all devices?',
     });
 

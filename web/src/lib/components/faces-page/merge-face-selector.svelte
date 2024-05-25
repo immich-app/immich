@@ -16,7 +16,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -65,7 +65,7 @@
 
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'merge-people',
       prompt: 'Do you want to merge these people?',
     });
 

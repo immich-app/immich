@@ -22,7 +22,7 @@
   import type { ComponentType } from 'svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
-  import { dialogController, DialogType } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -41,7 +41,7 @@
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
       const isConfirmed = await dialogController.show({
-        type: DialogType.Confirm,
+        id: 'confirm-reprocess-all-faces',
         prompt: 'Are you sure you want to reprocess all faces? This will also clear named people.',
       });
 

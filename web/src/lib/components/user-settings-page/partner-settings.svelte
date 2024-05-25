@@ -16,7 +16,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -77,7 +77,7 @@
 
   const handleRemovePartner = async (partner: PartnerResponseDto) => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'remove-partner',
       title: 'Stop sharing your photos?',
       prompt: `${partner.name} will no longer be able to access your photos.`,
     });

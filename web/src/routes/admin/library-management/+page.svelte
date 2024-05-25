@@ -37,6 +37,7 @@
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -282,28 +283,38 @@
   const onDeleteLibraryClicked = async () => {
     closeAll();
 
-    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      await refreshStats(selectedLibraryIndex);
-      if (totalCount[selectedLibraryIndex] > 0) {
-        deleteAssetCount = totalCount[selectedLibraryIndex];
-        confirmDeleteLibrary = selectedLibrary;
-      } else {
-        deletedLibrary = selectedLibrary;
-        await handleDelete();
+    if (!selectedLibrary) {
+      return;
+    }
+
+    const isConfirmedLibrary = await dialogController.show({
+      id: 'delete-library',
+      prompt: `Are you sure you want to delete ${selectedLibrary.name} library?`,
+    });
+
+    if (!isConfirmedLibrary) {
+      return;
+    }
+
+    await refreshStats(selectedLibraryIndex);
+    if (totalCount[selectedLibraryIndex] > 0) {
+      deleteAssetCount = totalCount[selectedLibraryIndex];
+
+      const isConfirmedLibraryAssetCount = await dialogController.show({
+        id: 'delete-library-assets',
+        prompt: `Are you sure you want to delete this library? This will delete all ${deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.`,
+      });
+
+      if (!isConfirmedLibraryAssetCount) {
+        return;
       }
+      await handleDelete();
+    } else {
+      deletedLibrary = selectedLibrary;
+      await handleDelete();
     }
   };
 </script>
-
-{#if confirmDeleteLibrary}
-  <ConfirmDialog
-    id="warning-modal"
-    title="Warning!"
-    prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
-    onConfirm={handleDelete}
-    onCancel={() => (confirmDeleteLibrary = null)}
-  />
-{/if}
 
 {#if toCreateLibrary}
   <LibraryUserPickerForm

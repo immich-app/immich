@@ -1,17 +1,12 @@
 import { writable } from 'svelte/store';
 
-export enum DialogType {
-  Confirm,
-  Delete,
-}
-
 type DialogActions = {
   onConfirm: () => void;
   onCancel: () => void;
 };
 
 type DialogOptions = {
-  type: DialogType;
+  id: string;
   title?: string;
   prompt?: string;
   confirmText?: string;
