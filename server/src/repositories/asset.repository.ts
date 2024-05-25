@@ -800,7 +800,7 @@ export class AssetRepository implements IAssetRepository {
       {
         ownerId: DummyValue.UUID,
         lastCreationDate: DummyValue.DATE,
-        lastId: DummyValue.STRING,
+        lastId: DummyValue.UUID,
         updatedUntil: DummyValue.DATE,
         limit: 10,
       },
