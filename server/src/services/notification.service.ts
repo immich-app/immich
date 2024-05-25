@@ -65,7 +65,7 @@ export class NotificationService {
 
   @OnEmit({ event: 'asset.show' })
   async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
-    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAIL, data: { id: assetId, notify: true } });
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
   }
 
   @OnEmit({ event: 'asset.trash' })

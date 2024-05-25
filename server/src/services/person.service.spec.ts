@@ -926,20 +926,20 @@ describe(PersonService.name, () => {
     it('should skip a person not found', async () => {
       personMock.getById.mockResolvedValue(null);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnails).not.toHaveBeenCalled();
     });
 
     it('should skip a person without a face asset id', async () => {
       personMock.getById.mockResolvedValue(personStub.noThumbnail);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnails).not.toHaveBeenCalled();
     });
 
     it('should skip a person with a face asset id not found', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.id });
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnails).not.toHaveBeenCalled();
     });
 
     it('should skip a person with a face asset id without a thumbnail', async () => {
@@ -947,7 +947,7 @@ describe(PersonService.name, () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
-      expect(mediaMock.generateThumbnail).not.toHaveBeenCalled();
+      expect(mediaMock.generateThumbnails).not.toHaveBeenCalled();
     });
 
     it('should generate a thumbnail', async () => {
@@ -959,14 +959,13 @@ describe(PersonService.name, () => {
 
       expect(assetMock.getById).toHaveBeenCalledWith(faceStub.middle.assetId, { exifInfo: true, files: true });
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-        {
+      expect(mediaMock.generateThumbnails).toHaveBeenCalledWith(assetStub.primaryImage.originalPath, {
+        colorspace: Colorspace.P3,
+        thumbnail: {
           format: 'jpeg',
+          path: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
           size: 250,
           quality: 80,
-          colorspace: Colorspace.P3,
           crop: {
             left: 238,
             top: 163,
@@ -975,7 +974,7 @@ describe(PersonService.name, () => {
           },
           processInvalidImages: false,
         },
-      );
+      });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
         thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
@@ -989,14 +988,13 @@ describe(PersonService.name, () => {
 
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.image.originalPath,
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-        {
+      expect(mediaMock.generateThumbnails).toHaveBeenCalledWith(assetStub.image.originalPath, {
+        colorspace: Colorspace.P3,
+        thumbnail: {
           format: 'jpeg',
+          path: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
           size: 250,
           quality: 80,
-          colorspace: Colorspace.P3,
           crop: {
             left: 0,
             top: 85,
@@ -1005,7 +1003,7 @@ describe(PersonService.name, () => {
           },
           processInvalidImages: false,
         },
-      );
+      });
     });
 
     it('should generate a thumbnail without overflowing', async () => {
@@ -1015,14 +1013,13 @@ describe(PersonService.name, () => {
 
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.primaryImage.originalPath,
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-        {
+      expect(mediaMock.generateThumbnails).toHaveBeenCalledWith(assetStub.primaryImage.originalPath, {
+        colorspace: Colorspace.P3,
+        thumbnail: {
           format: 'jpeg',
+          path: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
           size: 250,
           quality: 80,
-          colorspace: Colorspace.P3,
           crop: {
             left: 591,
             top: 591,
@@ -1031,34 +1028,7 @@ describe(PersonService.name, () => {
           },
           processInvalidImages: false,
         },
-      );
-    });
-
-    it('should use preview path for videos', async () => {
-      personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
-      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.end);
-      assetMock.getById.mockResolvedValue(assetStub.video);
-      mediaMock.getImageDimensions.mockResolvedValue({ width: 2560, height: 1440 });
-
-      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
-
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-        {
-          format: 'jpeg',
-          size: 250,
-          quality: 80,
-          colorspace: Colorspace.P3,
-          crop: {
-            left: 1741,
-            top: 851,
-            width: 588,
-            height: 588,
-          },
-          processInvalidImages: false,
-        },
-      );
+      });
     });
   });
 

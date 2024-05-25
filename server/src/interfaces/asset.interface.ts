@@ -141,6 +141,12 @@ export interface AssetUpdateDuplicateOptions {
   duplicateIds: string[];
 }
 
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
@@ -194,5 +200,6 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
-  upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
+  upsertFile(file: UpsertFileOptions): Promise<void>;
+  upsertFiles(files: UpsertFileOptions[]): Promise<void>;
 }

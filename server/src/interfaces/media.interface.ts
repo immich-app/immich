@@ -10,16 +10,44 @@ export interface CropOptions {
   height: number;
 }
 
-export interface ImageOutputConfig {
+export interface ImageOptions {
   format: ImageFormat;
   quality: number;
   size: number;
 }
 
-export interface ThumbnailOptions extends ImageOutputConfig {
+export interface RawImageInfo {
+  width: number;
+  height: number;
+  channels: 1 | 2 | 3 | 4;
+}
+
+interface DecodeImageOptions {
   colorspace: string;
   crop?: CropOptions;
   processInvalidImages: boolean;
+  raw?: RawImageInfo;
+}
+
+export interface DecodeToBufferOptions extends DecodeImageOptions {
+  size: number;
+}
+
+export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
+
+export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
+
+export type GenerateThumbhashOptions = DecodeImageOptions;
+
+export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { raw: RawImageInfo };
+
+export interface GenerateThumbnailsOptions {
+  colorspace: string;
+  crop?: CropOptions;
+  preview?: ImageOptions;
+  processInvalidImages: boolean;
+  thumbhash?: boolean;
+  thumbnail?: ImageOptions;
 }
 
 export interface VideoStreamInfo {
@@ -78,6 +106,11 @@ export interface BitrateDistribution {
   unit: string;
 }
 
+export interface ImageBuffer {
+  data: Buffer;
+  info: RawImageInfo;
+}
+
 export interface VideoCodecSWConfig {
   getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeCommand;
 }
@@ -93,8 +126,11 @@ export interface ProbeOptions {
 export interface IMediaRepository {
   // image
   extract(input: string, output: string): Promise<boolean>;
-  generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void>;
-  generateThumbhash(imagePath: string): Promise<Buffer>;
+  decodeImage(input: string, options: DecodeToBufferOptions): Promise<ImageBuffer>;
+  generateThumbnail(input: string, options: GenerateThumbnailOptions, outputFile: string): Promise<void>;
+  generateThumbnail(input: Buffer, options: GenerateThumbnailFromBufferOptions, outputFile: string): Promise<void>;
+  generateThumbhash(input: string, options: GenerateThumbhashOptions): Promise<Buffer>;
+  generateThumbhash(input: Buffer, options: GenerateThumbhashFromBufferOptions): Promise<Buffer>;
   getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
