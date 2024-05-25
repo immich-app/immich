@@ -13,7 +13,6 @@ import {
   mapAsset,
 } from 'src/dtos/asset-response.dto';
 import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
-
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,

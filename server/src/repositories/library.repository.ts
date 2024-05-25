@@ -39,21 +39,6 @@ export class LibraryRepository implements ILibraryRepository {
     return this.repository.countBy({ ownerId });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
-    return this.repository.find({
-      where: {
-        ownerId,
-      },
-      relations: {
-        owner: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
   @GenerateSql({ params: [] })
   getAll(withDeleted = false): Promise<LibraryEntity[]> {
     return this.repository.find({

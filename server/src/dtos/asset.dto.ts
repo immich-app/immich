@@ -9,13 +9,12 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
-  IsUUID,
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -26,37 +25,6 @@ export class DeviceIdDto {
 const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
   o.latitude !== undefined || o.longitude !== undefined;
 const ValidateGPS = () => ValidateIf(hasGPS);
-
-export class AssetSearchDto {
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @Optional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  skip?: number;
-
-  @Optional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  take?: number;
-
-  @Optional()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
-  userId?: string;
-
-  @ValidateDate({ optional: true })
-  updatedAfter?: Date;
-
-  @ValidateDate({ optional: true })
-  updatedBefore?: Date;
-}
 
 export class UpdateAssetBase {
   @ValidateBoolean({ optional: true })

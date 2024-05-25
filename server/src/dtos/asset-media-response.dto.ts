@@ -30,6 +30,7 @@ export class AssetBulkUploadCheckResult {
 export class AssetBulkUploadCheckResponseDto {
   results!: AssetBulkUploadCheckResult[];
 }
+
 export class CheckExistingAssetsResponseDto {
   existingIds!: string[];
 }

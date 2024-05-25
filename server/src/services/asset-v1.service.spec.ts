@@ -73,10 +73,7 @@ describe('AssetService', () => {
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: vitest.fn(),
-      getAllByUserId: vitest.fn(),
       getAssetsByChecksums: vitest.fn(),
-      getExistingAssets: vitest.fn(),
-      getByOriginalPath: vitest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
