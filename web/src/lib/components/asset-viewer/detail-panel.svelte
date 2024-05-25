@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
@@ -27,7 +28,6 @@
     mdiEyeOff,
     mdiImageOutline,
     mdiInformationOutline,
-    mdiMapMarkerOutline,
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -38,7 +38,6 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import ChangeLocation from '../shared-components/change-location.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -162,18 +161,6 @@
       await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
       handleError(error, 'Unable to change date');
-    }
-  }
-
-  let isShowChangeLocation = false;
-
-  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
-    isShowChangeLocation = false;
-
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
-    } catch (error) {
-      handleError(error, 'Unable to change location');
     }
   }
 </script>
@@ -464,65 +451,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city}
-      <button
-        type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-        title={isOwner ? 'Edit location' : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
-      >
-        <div class="flex gap-4">
-          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-          <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
-          </div>
-        </div>
-
-        {#if isOwner}
-          <div>
-            <Icon path={mdiPencil} size="20" />
-          </div>
-        {/if}
-      </button>
-    {:else if !asset.exifInfo?.city && isOwner}
-      <button
-        type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
-        on:click={() => (isShowChangeLocation = true)}
-        title="Add location"
-      >
-        <div class="flex gap-4">
-          <div>
-            <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-          </div>
-
-          <p>Add a location</p>
-        </div>
-        <div class="focus:outline-none p-1">
-          <Icon path={mdiPencil} size="20" />
-        </div>
-      </button>
-    {/if}
-    {#if isShowChangeLocation}
-      <ChangeLocation
-        {asset}
-        on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
-        on:cancel={() => (isShowChangeLocation = false)}
-      />
-    {/if}
+    <DetailPanelLocation {isOwner} {asset} />
   </div>
 </section>
 
