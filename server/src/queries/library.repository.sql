@@ -44,36 +44,6 @@ ORDER BY
 LIMIT
   1
 
--- LibraryRepository.existsByName
-SELECT
-  1 AS "row_exists"
-FROM
-  (
-    SELECT
-      1 AS dummy_column
-  ) "dummy_table"
-WHERE
-  EXISTS (
-    SELECT
-      1
-    FROM
-      "libraries" "LibraryEntity"
-    WHERE
-      ((("LibraryEntity"."name" = $1)))
-      AND ("LibraryEntity"."deletedAt" IS NULL)
-  )
-LIMIT
-  1
-
--- LibraryRepository.getCountForUser
-SELECT
-  COUNT(1) AS "cnt"
-FROM
-  "libraries" "LibraryEntity"
-WHERE
-  ((("LibraryEntity"."ownerId" = $1)))
-  AND ("LibraryEntity"."deletedAt" IS NULL)
-
 -- LibraryRepository.getAll
 SELECT
   "LibraryEntity"."id" AS "LibraryEntity_id",
@@ -175,20 +145,6 @@ WHERE
   AND ("libraries"."deletedAt" IS NULL)
 GROUP BY
   "libraries"."id"
-
--- LibraryRepository.getOnlineAssetPaths
-SELECT
-  "assets"."originalPath" AS "assets_originalPath"
-FROM
-  "libraries" "library"
-  INNER JOIN "assets" "assets" ON "assets"."libraryId" = "library"."id"
-  AND ("assets"."deletedAt" IS NULL)
-WHERE
-  (
-    "library"."id" = $1
-    AND "assets"."isOffline" = false
-  )
-  AND ("library"."deletedAt" IS NULL)
 
 -- LibraryRepository.getAssetIds
 SELECT

@@ -4,7 +4,6 @@ import { LibraryEntity } from 'src/entities/library.entity';
 export const ILibraryRepository = 'ILibraryRepository';
 
 export interface ILibraryRepository {
-  getCountForUser(ownerId: string): Promise<number>;
   getAll(withDeleted?: boolean): Promise<LibraryEntity[]>;
   getAllDeleted(): Promise<LibraryEntity[]>;
   get(id: string, withDeleted?: boolean): Promise<LibraryEntity | null>;
@@ -12,6 +11,6 @@ export interface ILibraryRepository {
   delete(id: string): Promise<void>;
   softDelete(id: string): Promise<void>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
-  getStatistics(id: string): Promise<LibraryStatsResponseDto>;
+  getStatistics(id: string): Promise<LibraryStatsResponseDto | undefined>;
   getAssetIds(id: string, withDeleted?: boolean): Promise<string[]>;
 }
