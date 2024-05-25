@@ -240,6 +240,7 @@ class AssetAccess implements IAssetAccess {
       .innerJoin('sharedBy.assets', 'asset')
       .select('asset.id', 'assetId')
       .where('partner.sharedWithId = :userId', { userId })
+      .andWhere('asset.isArchived = false')
       .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
       .getRawMany()
       .then((rows) => new Set(rows.map((row) => row.assetId)));
