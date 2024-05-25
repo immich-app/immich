@@ -23,7 +23,7 @@
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -35,7 +35,7 @@
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'empty-trash',
       prompt:
         'Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.\nYou cannot undo this action!',
     });

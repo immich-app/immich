@@ -15,7 +15,7 @@
   import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { dialogController, DialogType } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
@@ -30,7 +30,7 @@
 
   const handleDeleteLink = async (id: string) => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'delete-shared-link',
       title: 'Delete shared link',
       prompt: 'Are you sure you want to delete this shared link?',
       confirmText: 'Delete',

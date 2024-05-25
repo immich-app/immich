@@ -80,7 +80,7 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -350,7 +350,7 @@
 
   const handleRemoveAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'remove-album',
       prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
     });
 

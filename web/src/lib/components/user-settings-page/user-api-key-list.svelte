@@ -9,7 +9,7 @@
   import APIKeySecret from '../forms/api-key-secret.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { DialogType, dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let keys: ApiKeyResponseDto[];
 
@@ -60,7 +60,7 @@
 
   const handleDelete = async (key: ApiKeyResponseDto) => {
     const isConfirmed = await dialogController.show({
-      type: DialogType.Confirm,
+      id: 'delete-api-key',
       prompt: 'Are you sure you want to delete this API key?',
     });
 
