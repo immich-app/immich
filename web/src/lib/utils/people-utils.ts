@@ -120,7 +120,7 @@ export const zoomImageToBase64 = async (
   
     return canvas.toDataURL(); 
   } else { 
-    return null; 
+    return null;
   }
 }; 
  

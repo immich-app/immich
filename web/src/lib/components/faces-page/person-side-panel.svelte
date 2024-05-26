@@ -231,7 +231,10 @@
                     shadow
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id].id)}
                     altText={selectedPersonToReassign[face.id]?.name || selectedPersonToReassign[face.id].id}
-                    title={getPersonNameWithHiddenValue(selectedPersonToReassign[face.id].name, face.person?.isHidden)}
+                    title={getPersonNameWithHiddenValue(
+                      selectedPersonToReassign[face.id].name,
+                      selectedPersonToReassign[face.id]?.isHidden,
+                    )}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                     hidden={selectedPersonToReassign[face.id].isHidden}
