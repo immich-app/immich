@@ -1403,37 +1403,6 @@ export function deleteAssets({ assetBulkDeleteDto }: {
         body: assetBulkDeleteDto
     })));
 }
-/**
- * Get all AssetEntity belong to the user
- */
-export function getAllAssets({ ifNoneMatch, isArchived, isFavorite, skip, take, updatedAfter, updatedBefore, userId }: {
-    ifNoneMatch?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    skip?: number;
-    take?: number;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    userId?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/asset${QS.query(QS.explode({
-        isArchived,
-        isFavorite,
-        skip,
-        take,
-        updatedAfter,
-        updatedBefore,
-        userId
-    }))}`, {
-        ...opts,
-        headers: oazapfts.mergeHeaders(opts?.headers, {
-            "if-none-match": ifNoneMatch
-        })
-    }));
-}
 export function updateAssets({ assetBulkUpdateDto }: {
     assetBulkUpdateDto: AssetBulkUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {

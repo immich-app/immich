@@ -157,6 +157,18 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(deviceAssetIds),
+        deviceId,
+        ownerId,
+      },
+      withDeleted: true,
+    });
+  }
+
   getByUserId(
     pagination: PaginationOptions,
     userId: string,
@@ -297,6 +309,21 @@ export class AssetRepository implements IAssetRepository {
         libraryId: libraryId || IsNull(),
         checksum,
       },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
+  getByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: {
+        id: true,
+        checksum: true,
+      },
+      where: {
+        ownerId,
+        checksum: In(checksums),
+      },
+      withDeleted: true,
     });
   }
 
@@ -773,7 +800,7 @@ export class AssetRepository implements IAssetRepository {
       {
         ownerId: DummyValue.UUID,
         lastCreationDate: DummyValue.DATE,
-        lastId: DummyValue.STRING,
+        lastId: DummyValue.UUID,
         updatedUntil: DummyValue.DATE,
         limit: 10,
       },

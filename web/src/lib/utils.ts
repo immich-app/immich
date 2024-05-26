@@ -178,8 +178,8 @@ export const getAssetThumbnailUrl = (
   return createUrl(path, { format, key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/users/profile-image/${userId}`;
+export const getProfileImageUrl = (userId: string) => {
+  const path = `/users/${userId}/profile-image`;
   return createUrl(path);
 };
 

@@ -1,7 +1,19 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetMediaResponseDto, AssetMediaStatusEnum } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
+import {
+  AssetBulkUploadCheckResponseDto,
+  AssetMediaResponseDto,
+  AssetMediaStatusEnum,
+  AssetRejectReason,
+  AssetUploadAction,
+  CheckExistingAssetsResponseDto,
+} from 'src/dtos/asset-media-response.dto';
+import {
+  AssetBulkUploadCheckDto,
+  AssetMediaReplaceDto,
+  CheckExistingAssetsDto,
+  UploadFieldName,
+} from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -12,8 +24,8 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { mimeTypes } from 'src/utils/mime-types';
+import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
-
 export interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
@@ -173,5 +185,50 @@ export class AssetMediaService {
     if (auth.user.quotaSizeInBytes && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
+  }
+
+  async checkExistingAssets(
+    auth: AuthDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    const assets = await this.assetRepository.getByDeviceIds(
+      auth.user.id,
+      checkExistingAssetsDto.deviceId,
+      checkExistingAssetsDto.deviceAssetIds,
+    );
+    return {
+      existingIds: assets.map((asset) => asset.id),
+    };
+  }
+
+  async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
+    const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
+    const checksumMap: Record<string, string> = {};
+
+    for (const { id, checksum } of results) {
+      checksumMap[checksum.toString('hex')] = id;
+    }
+
+    return {
+      results: dto.assets.map(({ id, checksum }) => {
+        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
+        if (duplicate) {
+          return {
+            id,
+            assetId: duplicate,
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+          };
+        }
+
+        // TODO mime-check
+
+        return {
+          id,
+          action: AssetUploadAction.ACCEPT,
+        };
+      }),
+    };
   }
 }

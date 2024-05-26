@@ -231,6 +231,21 @@ describe(SystemConfigService.name, () => {
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should log errors with the config file', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+
+      systemMock.readFile.mockResolvedValue(`{ "ffmpeg2": true, "ffmpeg2": true }`);
+
+      await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+
+      expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
+      expect(loggerMock.error).toHaveBeenCalledTimes(2);
+      expect(loggerMock.error.mock.calls[0][0]).toEqual('Unable to load configuration file: immich-config.json');
+      expect(loggerMock.error.mock.calls[1][0].toString()).toEqual(
+        expect.stringContaining('YAMLException: duplicated mapping key (1:20)'),
+      );
+    });
+
     it('should load the config from a yaml file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
       const partialConfig = `
