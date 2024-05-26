@@ -130,7 +130,7 @@ Here's an example of OAuth configured for Authentik:
 
 Configuration of Authorised redirect URIs (Google Console)
 
-<img src={require('./img/Google-Example.webp').default} width='50%' title="Authorised redirect URIs" />
+<img src={require('./img/google-example.webp').default} width='50%' title="Authorised redirect URIs" />
 
 Configuration of OAuth in System Settings
 
