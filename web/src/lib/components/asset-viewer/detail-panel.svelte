@@ -14,6 +14,8 @@
     ThumbnailFormat,
     getAssetInfo,
     updateAsset,
+    getFaces,
+    type AssetFaceResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
     type ExifResponseDto,
@@ -27,6 +29,7 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
+    mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -75,6 +78,10 @@
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
+      await getFaces({ id: asset.id }).then((data) => {
+        faces = data;
+        hasUnassignedFaces = faces.length > people.length;
+      });
     }
   };
 
@@ -91,6 +98,9 @@
 
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
+
+  let faces: AssetFaceResponseDto[] = [];
+  let hasUnassignedFaces = false;
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -118,6 +128,11 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
+      hasUnassignedFaces = faces.length > people.length;
+    });
+    await getFaces({ id: asset.id }).then((data) => {
+      faces = data;
+      hasUnassignedFaces = faces.length > people.length;
     });
     showEditFaces = false;
   };
@@ -158,11 +173,14 @@
 
   <DetailPanelDescription {asset} {isOwner} />
 
-  {#if !isSharedLink() && people.length > 0}
+  {#if !isSharedLink() && (faces.length > 0 || people.length > 0)}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
         <div class="flex gap-2 items-center">
+          {#if hasUnassignedFaces}
+            <Icon ariaLabel="Asset has unassigned faces" color="currentColor" path={mdiAccountOff} size="24" />
+          {/if}
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
