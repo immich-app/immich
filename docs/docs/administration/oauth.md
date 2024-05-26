@@ -120,6 +120,7 @@ Here's an example of OAuth configured for Authentik:
 <img src={require('./img/oauth-settings.png').default} title="OAuth settings" />
 
 [oidc]: https://openid.net/connect/
+
 </details>
 
 <details>
