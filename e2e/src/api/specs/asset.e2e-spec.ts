@@ -86,6 +86,8 @@ describe('/asset', () => {
       utils.userSetup(admin.accessToken, createUserDto.create('stack')),
     ]);
 
+    await utils.createPartner(user1.accessToken, user2.userId);
+
     // asset location
     locationAsset = await utils.createAsset(admin.accessToken, {
       assetData: {
@@ -232,6 +234,35 @@ describe('/asset', () => {
       const data = await request(app).get(`/asset/${user1Assets[0].id}?key=${sharedLink.key}`);
       expect(data.status).toBe(200);
       expect(data.body).toMatchObject({ people: [] });
+    });
+
+    describe('partner assets', () => {
+      it('should get the asset info', async () => {
+        const { status, body } = await request(app)
+          .get(`/asset/${user1Assets[0].id}`)
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+        expect(status).toBe(200);
+        expect(body).toMatchObject({ id: user1Assets[0].id });
+      });
+
+      it('disallows viewing archived assets', async () => {
+        const asset = await utils.createAsset(user1.accessToken, { isArchived: true });
+
+        const { status } = await request(app)
+          .get(`/asset/${asset.id}`)
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+        expect(status).toBe(400);
+      });
+
+      it('disallows viewing trashed assets', async () => {
+        const asset = await utils.createAsset(user1.accessToken);
+        await utils.deleteAssets(user1.accessToken, [asset.id]);
+
+        const { status } = await request(app)
+          .get(`/asset/${asset.id}`)
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+        expect(status).toBe(400);
+      });
     });
   });
 

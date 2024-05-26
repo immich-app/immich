@@ -19,9 +19,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
     const formData = await this.getFormData(input, config);
 
-    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData }).catch((error: Error | any) => {
-      throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
-    });
+    const res = await fetch(new URL('/predict', url), { method: 'POST', body: formData }).catch(
+      (error: Error | any) => {
+        throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
+      },
+    );
 
     if (res.status >= 400) {
       const modelType = config.modelType ? ` for ${config.modelType.replace('-', ' ')}` : '';

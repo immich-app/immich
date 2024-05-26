@@ -13,6 +13,7 @@ import {
   createAlbum,
   createApiKey,
   createLibrary,
+  createPartner,
   createPerson,
   createSharedLink,
   createUser,
@@ -384,6 +385,8 @@ export const utils = {
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([
