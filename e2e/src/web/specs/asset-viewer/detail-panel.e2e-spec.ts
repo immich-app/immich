@@ -43,4 +43,18 @@ test.describe('Detail Panel', () => {
     await page.keyboard.press('i');
     await expect(page.locator('#detail-panel')).toHaveCount(0);
   });
+
+  test('description is visible for owner on shared links', async ({ context, page }) => {
+    const sharedLink = await utils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Individual,
+      assetIds: [asset.id],
+    });
+    await utils.setAuthCookies(context, admin.accessToken);
+    await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
+
+    const textarea = page.getByRole('textbox', { name: 'Add a description' });
+    await page.getByRole('button', { name: 'Info' }).click();
+    await expect(textarea).toBeVisible();
+    await expect(textarea).not.toBeDisabled();
+  });
 });

@@ -8,10 +8,8 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/actions/autogrow';
-  import { clickOutside } from '$lib/actions/click-outside';
   import {
     ThumbnailFormat,
     getAssetInfo,
@@ -40,9 +38,8 @@
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { shortcut } from '$lib/actions/shortcut';
   import AlbumListItemDetails from './album-list-item-details.svelte';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -58,9 +55,6 @@
   };
 
   let showAssetPath = false;
-  let textArea: HTMLTextAreaElement;
-  let description: string;
-  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -77,16 +71,11 @@
   $: isOwner = $user?.id === asset.ownerId;
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    description = newAsset?.exifInfo?.description || '';
-
-    // Get latest description from server
+    // TODO: check if reloading asset data is necessary
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
-
-      description = data.exifInfo?.description || '';
     }
-    originalDescription = description;
   };
 
   $: handlePromiseError(handleNewAsset(asset));
@@ -129,26 +118,8 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
-      textArea.value = data?.exifInfo?.description || '';
     });
     showEditFaces = false;
-  };
-
-  const handleFocusOut = async () => {
-    textArea.blur();
-    if (description === originalDescription) {
-      return;
-    }
-    originalDescription = description;
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Asset description has been updated',
-      });
-    } catch (error) {
-      handleError(error, 'Cannot update the description');
-    }
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -185,31 +156,7 @@
     </section>
   {/if}
 
-  {#if isOwner}
-    <section class="px-4 mt-10">
-      {#key asset.id}
-        <textarea
-          disabled={!isOwner || isSharedLink()}
-          bind:this={textArea}
-          class="max-h-[500px]
-      w-full resize-none border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
-          placeholder={isOwner ? 'Add a description' : ''}
-          on:focusout={handleFocusOut}
-          on:input={() => autoGrowHeight(textArea)}
-          bind:value={description}
-          use:autoGrowHeight
-          use:clickOutside
-          on:outclick={handleFocusOut}
-          use:shortcut={{
-            shortcut: { key: 'Enter', ctrl: true },
-            onShortcut: () => handlePromiseError(handleFocusOut()),
-          }}
-        />
-      {/key}
-    </section>
-  {:else if description}
-    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
-  {/if}
+  <DetailPanelDescription {asset} {isOwner} />
 
   {#if !isSharedLink() && people.length > 0}
     <section class="px-4 py-4 text-sm">
