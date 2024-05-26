@@ -110,8 +110,29 @@ Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to 
 
 ## Example Configuration
 
+<details>
+<summary>Authentik Example</summary>
+
+### Authentik Example
+
 Here's an example of OAuth configured for Authentik:
 
-![OAuth Settings](./img/oauth-settings.png)
+<img src={require('./img/oauth-settings.png').default} title="OAuth settings" />
 
 [oidc]: https://openid.net/connect/
+</details>
+
+<details>
+<summary>Google Example</summary>
+
+### Google Example
+
+Configuration of Authorised redirect URIs (Google Console)
+
+<img src={require('./img/Google-Example.webp').default} width='50%' title="Authorised redirect URIs" />
+
+Configuration of OAuth in System Settings
+
+<img src={require('./img/immich-google-example.webp').default} width='60%' title="OAuth settings" />
+
+</details>
