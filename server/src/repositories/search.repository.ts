@@ -160,6 +160,7 @@ export class SearchRepository implements ISearchRepository {
     assetId,
     embedding,
     maxDistance,
+    type,
     userIds,
   }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
     const cte = this.assetRepository.createQueryBuilder('asset');
@@ -171,18 +172,22 @@ export class SearchRepository implements ISearchRepository {
       .where('asset.ownerId IN (:...userIds )')
       .andWhere('asset.id != :assetId')
       .andWhere('asset.isVisible = :isVisible')
+      .andWhere('asset.type = :type')
       .orderBy('search.embedding <=> :embedding')
       .limit(64)
-      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, userIds });
+      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, type, userIds });
 
     const builder = this.assetRepository.manager
       .createQueryBuilder()
       .addCommonTableExpression(cte, 'cte')
       .from('cte', 'res')
-      .select('res.*')
-      .where('res.distance <= :maxDistance', { maxDistance });
+      .select('res.*');
 
-    return builder.getRawMany() as any as Promise<AssetDuplicateResult[]>;
+    if (maxDistance) {
+      builder.where('res.distance <= :maxDistance', { maxDistance });
+    }
+
+    return builder.getRawMany() as Promise<AssetDuplicateResult[]>;
   }
 
   @GenerateSql({
