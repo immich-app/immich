@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -405,6 +405,12 @@
       handleError(error, 'Unable to update album cover');
     }
   };
+
+  onNavigate(async () => {
+    if (album.assetCount === 0 && !album.albumName) {
+      await deleteAlbum(album);
+    }
+  });
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -559,7 +565,7 @@
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-24">
-                <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
+                <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
 
                 {#if album.assetCount > 0}
                   <AlbumSummary {album} />
