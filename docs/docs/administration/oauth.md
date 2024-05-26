@@ -134,6 +134,21 @@ Configuration of Authorised redirect URIs (Google Console)
 
 Configuration of OAuth in System Settings
 
-<img src={require('./img/immich-google-example.webp').default} width='60%' title="OAuth settings" />
+| Setting                      | Value                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Enable                       | Login with OAuth                                                                                       |
+| Issuer URL                   | [https://accounts.google.com](https://accounts.google.com)                                             |
+| Client ID                    | 7****\*\*\*\*****\*\*****\*\*\*\*****vuls.apps.googleusercontent.com                                   |
+| Client Secret                | G****\*\*\*\*****\*\*****\*\*\*\*****OO                                                                |
+| Scope                        | openid email profile                                                                                   |
+| Signing Algorithm            | RS256                                                                                                  |
+| Storage Label Claim          | preferred_username                                                                                     |
+| Storage Quota Claim          | immich_quota                                                                                           |
+| Default Storage Quota (GiB)  | 0                                                                                                      |
+| Button Text                  | Sign in with Google                                                                                    |
+| Auto Register                | Enabled                                                                                                |
+| Auto Launch                  | Enabled                                                                                                |
+| Mobile Redirect URI Override | Enabled                                                                                                |
+| Mobile Redirect URI          | [https://demo.immich.app/api/oauth/mobile-redirect](https://demo.immich.app/api/oauth/mobile-redirect) |
 
 </details>
