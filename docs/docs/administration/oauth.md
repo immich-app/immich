@@ -119,8 +119,6 @@ Here's an example of OAuth configured for Authentik:
 
 <img src={require('./img/oauth-settings.png').default} title="OAuth settings" />
 
-[oidc]: https://openid.net/connect/
-
 </details>
 
 <details>
@@ -136,19 +134,20 @@ Configuration of OAuth in System Settings
 
 | Setting                      | Value                                                                                                  |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Enable                       | Login with OAuth                                                                                       |
 | Issuer URL                   | [https://accounts.google.com](https://accounts.google.com)                                             |
-| Client ID                    | 7****\*\*\*\*****\*\*****\*\*\*\*****vuls.apps.googleusercontent.com                                   |
-| Client Secret                | G****\*\*\*\*****\*\*****\*\*\*\*****OO                                                                |
+| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com                           |
+| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                                                        |
 | Scope                        | openid email profile                                                                                   |
 | Signing Algorithm            | RS256                                                                                                  |
 | Storage Label Claim          | preferred_username                                                                                     |
 | Storage Quota Claim          | immich_quota                                                                                           |
-| Default Storage Quota (GiB)  | 0                                                                                                      |
-| Button Text                  | Sign in with Google                                                                                    |
-| Auto Register                | Enabled                                                                                                |
+| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                                              |
+| Button Text                  | Sign in with Google (optional)                                                                         |
+| Auto Register                | Enabled (optional)                                                                                     |
 | Auto Launch                  | Enabled                                                                                                |
-| Mobile Redirect URI Override | Enabled                                                                                                |
+| Mobile Redirect URI Override | Enabled (required)                                                                                     |
 | Mobile Redirect URI          | [https://demo.immich.app/api/oauth/mobile-redirect](https://demo.immich.app/api/oauth/mobile-redirect) |
 
 </details>
+
+[oidc]: https://openid.net/connect/
