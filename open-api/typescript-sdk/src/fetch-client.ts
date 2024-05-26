@@ -1712,7 +1712,7 @@ export function unassignFace({ id }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetFaceResponseDto;
-    }>(`/face/${encodeURIComponent(id)}`, {
+    }>(`/faces/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
     }));
@@ -2020,7 +2020,7 @@ export function unassignFaces({ assetFaceUpdateDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BulkIdResponseDto[];
-    }>("/person", oazapfts.json({
+    }>("/people", oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetFaceUpdateDto
