@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { onMount, onDestroy } from 'svelte';
 
   let container: HTMLElement;

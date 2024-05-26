@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -39,7 +39,6 @@ class MetadataSearchDto {
     this.page,
     this.personIds = const [],
     this.previewPath,
-    this.resizePath,
     this.size,
     this.state,
     this.takenAfter,
@@ -50,7 +49,6 @@ class MetadataSearchDto {
     this.type,
     this.updatedAfter,
     this.updatedBefore,
-    this.webpPath,
     this.withArchived = false,
     this.withDeleted,
     this.withExif,
@@ -261,15 +259,6 @@ class MetadataSearchDto {
   ///
   String? previewPath;
 
-  /// This property was deprecated in v1.100.0
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? resizePath;
-
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -352,15 +341,6 @@ class MetadataSearchDto {
   ///
   DateTime? updatedBefore;
 
-  /// This property was deprecated in v1.100.0
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? webpPath;
-
   bool withArchived;
 
   ///
@@ -423,7 +403,6 @@ class MetadataSearchDto {
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.previewPath == previewPath &&
-    other.resizePath == resizePath &&
     other.size == size &&
     other.state == state &&
     other.takenAfter == takenAfter &&
@@ -434,7 +413,6 @@ class MetadataSearchDto {
     other.type == type &&
     other.updatedAfter == updatedAfter &&
     other.updatedBefore == updatedBefore &&
-    other.webpPath == webpPath &&
     other.withArchived == withArchived &&
     other.withDeleted == withDeleted &&
     other.withExif == withExif &&
@@ -470,7 +448,6 @@ class MetadataSearchDto {
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
     (previewPath == null ? 0 : previewPath!.hashCode) +
-    (resizePath == null ? 0 : resizePath!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
@@ -481,7 +458,6 @@ class MetadataSearchDto {
     (type == null ? 0 : type!.hashCode) +
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (webpPath == null ? 0 : webpPath!.hashCode) +
     (withArchived.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode) +
@@ -489,7 +465,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, resizePath=$resizePath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, webpPath=$webpPath, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -619,11 +595,6 @@ class MetadataSearchDto {
     } else {
     //  json[r'previewPath'] = null;
     }
-    if (this.resizePath != null) {
-      json[r'resizePath'] = this.resizePath;
-    } else {
-    //  json[r'resizePath'] = null;
-    }
     if (this.size != null) {
       json[r'size'] = this.size;
     } else {
@@ -673,11 +644,6 @@ class MetadataSearchDto {
       json[r'updatedBefore'] = this.updatedBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedBefore'] = null;
-    }
-    if (this.webpPath != null) {
-      json[r'webpPath'] = this.webpPath;
-    } else {
-    //  json[r'webpPath'] = null;
     }
       json[r'withArchived'] = this.withArchived;
     if (this.withDeleted != null) {
@@ -739,7 +705,6 @@ class MetadataSearchDto {
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
-        resizePath: mapValueOfType<String>(json, r'resizePath'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         takenAfter: mapDateTime(json, r'takenAfter', r''),
@@ -750,7 +715,6 @@ class MetadataSearchDto {
         type: AssetTypeEnum.fromJson(json[r'type']),
         updatedAfter: mapDateTime(json, r'updatedAfter', r''),
         updatedBefore: mapDateTime(json, r'updatedBefore', r''),
-        webpPath: mapValueOfType<String>(json, r'webpPath'),
         withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),

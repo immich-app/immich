@@ -17,7 +17,7 @@
 
   import { isEqual } from 'lodash-es';
   import LinkButton from './buttons/link-button.svelte';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
 

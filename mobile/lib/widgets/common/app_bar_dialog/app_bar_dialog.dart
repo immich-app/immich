@@ -31,7 +31,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).updateServerInfo();
+        ref.read(backupProvider.notifier).updateDiskInfo();
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },

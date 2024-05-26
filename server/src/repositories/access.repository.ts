@@ -20,7 +20,6 @@ type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
 type IAssetAccess = IAccessRepository['asset'];
 type IAuthDeviceAccess = IAccessRepository['authDevice'];
-type ILibraryAccess = IAccessRepository['library'];
 type ITimelineAccess = IAccessRepository['timeline'];
 type IMemoryAccess = IAccessRepository['memory'];
 type IPersonAccess = IAccessRepository['person'];
@@ -241,6 +240,7 @@ class AssetAccess implements IAssetAccess {
       .innerJoin('sharedBy.assets', 'asset')
       .select('asset.id', 'assetId')
       .where('partner.sharedWithId = :userId', { userId })
+      .andWhere('asset.isArchived = false')
       .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
       .getRawMany()
       .then((rows) => new Set(rows.map((row) => row.assetId)));
@@ -310,28 +310,6 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
         },
       })
       .then((tokens) => new Set(tokens.map((token) => token.id)));
-  }
-}
-
-class LibraryAccess implements ILibraryAccess {
-  constructor(private libraryRepository: Repository<LibraryEntity>) {}
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
-  @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>> {
-    if (libraryIds.size === 0) {
-      return new Set();
-    }
-
-    return this.libraryRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...libraryIds]),
-          ownerId: userId,
-        },
-      })
-      .then((libraries) => new Set(libraries.map((library) => library.id)));
   }
 }
 
@@ -447,7 +425,6 @@ export class AccessRepository implements IAccessRepository {
   album: IAlbumAccess;
   asset: IAssetAccess;
   authDevice: IAuthDeviceAccess;
-  library: ILibraryAccess;
   memory: IMemoryAccess;
   person: IPersonAccess;
   partner: IPartnerAccess;
@@ -469,7 +446,6 @@ export class AccessRepository implements IAccessRepository {
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
     this.authDevice = new AuthDeviceAccess(sessionRepository);
-    this.library = new LibraryAccess(libraryRepository);
     this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);
     this.partner = new PartnerAccess(partnerRepository);

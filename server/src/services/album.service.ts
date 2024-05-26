@@ -14,7 +14,7 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserEntity, AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -115,9 +115,6 @@ export class AlbumService {
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     const albumUsers = dto.albumUsers || [];
-    for (const userId of dto.sharedWithUserIds || []) {
-      albumUsers.push({ userId, role: AlbumUserRole.EDITOR });
-    }
 
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
@@ -216,15 +213,7 @@ export class AlbumService {
     return results;
   }
 
-  async addUsers(auth: AuthDto, id: string, { albumUsers, sharedUserIds }: AddUsersDto): Promise<AlbumResponseDto> {
-    // Remove once deprecated sharedUserIds is removed
-    if (!albumUsers) {
-      if (!sharedUserIds) {
-        throw new BadRequestException('No users provided');
-      }
-      albumUsers = sharedUserIds.map((userId) => ({ userId, role: AlbumUserRole.EDITOR }));
-    }
-
+  async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });

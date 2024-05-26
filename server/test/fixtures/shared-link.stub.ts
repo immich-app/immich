@@ -9,7 +9,6 @@ import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entit
 import { UserEntity } from 'src/entities/user.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 const today = new Date();
@@ -58,7 +57,6 @@ const assetResponse: AssetResponseDto = {
   resized: false,
   thumbhash: null,
   fileModifiedAt: today,
-  isExternal: false,
   isOffline: false,
   fileCreatedAt: today,
   localDateTime: today,
@@ -101,7 +99,6 @@ const albumResponse: AlbumResponseDto = {
   id: 'album-123',
   ownerId: 'admin_id',
   owner: mapUser(userStub.admin),
-  sharedUsers: [],
   albumUsers: [],
   shared: false,
   hasSharedLink: false,
@@ -210,8 +207,6 @@ export const sharedLinkStub = {
           isArchived: false,
           isExternal: false,
           isOffline: false,
-          libraryId: 'library-id',
-          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],
@@ -252,7 +247,6 @@ export const sharedLinkStub = {
             exposureTime: '1/16',
             fps: 100,
             asset: null as any,
-            exifTextSearchableColumn: '',
             profileDescription: 'sRGB',
             bitsPerSample: 8,
             colorspace: 'sRGB',
@@ -263,6 +257,7 @@ export const sharedLinkStub = {
           faces: [],
           sidecarPath: null,
           deletedAt: null,
+          duplicateId: null,
         },
       ],
     },

@@ -1,27 +1,27 @@
-import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let jobMock: Mocked<IJobRepository>;
   let searchMock: Mocked<ISearchRepository>;
   let machineMock: Mocked<IMachineLearningRepository>;
@@ -30,13 +30,13 @@ describe(SmartInfoService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     searchMock = newSearchRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, configMock, loggerMock);
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, systemMock, loggerMock);
 
     assetMock.getByIds.mockResolvedValue([assetStub.image]);
   });
@@ -47,7 +47,7 @@ describe(SmartInfoService.name, () => {
 
   describe('handleQueueEncodeClip', () => {
     it('should do nothing if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       await sut.handleQueueEncodeClip({});
 
@@ -84,7 +84,7 @@ describe(SmartInfoService.name, () => {
 
   describe('handleEncodeClip', () => {
     it('should do nothing if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       expect(await sut.handleEncodeClip({ id: '123' })).toEqual(JobStatus.SKIPPED);
 

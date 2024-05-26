@@ -2,11 +2,13 @@ import { ActivityController } from 'src/controllers/activity.controller';
 import { AlbumController } from 'src/controllers/album.controller';
 import { APIKeyController } from 'src/controllers/api-key.controller';
 import { AppController } from 'src/controllers/app.controller';
+import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetControllerV1 } from 'src/controllers/asset-v1.controller';
 import { AssetController } from 'src/controllers/asset.controller';
 import { AuditController } from 'src/controllers/audit.controller';
 import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
+import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
 import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
@@ -34,9 +36,11 @@ export const controllers = [
   AppController,
   AssetController,
   AssetControllerV1,
+  AssetMediaController,
   AuditController,
   AuthController,
   DownloadController,
+  DuplicateController,
   FaceController,
   JobController,
   LibraryController,

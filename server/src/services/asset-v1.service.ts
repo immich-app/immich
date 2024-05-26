@@ -6,26 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import {
-  AssetBulkUploadCheckResponseDto,
-  AssetFileUploadResponseDto,
-  AssetRejectReason,
-  AssetUploadAction,
-  CheckExistingAssetsResponseDto,
-} from 'src/dtos/asset-v1-response.dto';
-import {
-  AssetBulkUploadCheckDto,
-  AssetSearchDto,
-  CheckExistingAssetsDto,
-  CreateAssetDto,
-  GetAssetThumbnailDto,
-  GetAssetThumbnailFormatEnum,
-  ServeFileDto,
-} from 'src/dtos/asset-v1.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
+import { CreateAssetDto, GetAssetThumbnailDto, GetAssetThumbnailFormatEnum, ServeFileDto } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -34,10 +18,9 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { UploadFile } from 'src/services/asset.service';
+import { UploadFile } from 'src/services/asset-media.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
@@ -76,15 +59,20 @@ export class AssetServiceV1 {
     let livePhotoAsset: AssetEntity | null = null;
 
     try {
-      const libraryId = await this.getLibraryId(auth, dto.libraryId);
-      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      await this.access.requirePermission(
+        auth,
+        Permission.ASSET_UPLOAD,
+        // do not need an id here, but the interface requires it
+        auth.user.id,
+      );
+
       this.requireQuota(auth, file.size);
       if (livePhotoFile) {
-        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
+        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
         livePhotoAsset = await this.create(auth, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.create(auth, { ...dto, libraryId }, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+      const asset = await this.create(auth, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
@@ -106,13 +94,6 @@ export class AssetServiceV1 {
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw error;
     }
-  }
-
-  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
   }
 
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
@@ -153,46 +134,6 @@ export class AssetServiceV1 {
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PRIVATE_WITH_CACHE,
     });
-  }
-
-  async checkExistingAssets(
-    auth: AuthDto,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return {
-      existingIds: await this.assetRepositoryV1.getExistingAssets(auth.user.id, checkExistingAssetsDto),
-    };
-  }
-
-  async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
-    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
-    const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
-    const checksumMap: Record<string, string> = {};
-
-    for (const { id, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = id;
-    }
-
-    return {
-      results: dto.assets.map(({ id, checksum }) => {
-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
-        if (duplicate) {
-          return {
-            id,
-            assetId: duplicate,
-            action: AssetUploadAction.REJECT,
-            reason: AssetRejectReason.DUPLICATE,
-          };
-        }
-
-        // TODO mime-check
-
-        return {
-          id,
-          action: AssetUploadAction.ACCEPT,
-        };
-      }),
-    };
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
@@ -245,37 +186,16 @@ export class AssetServiceV1 {
     return asset.previewPath;
   }
 
-  private async getLibraryId(auth: AuthDto, libraryId?: string) {
-    if (libraryId) {
-      return libraryId;
-    }
-
-    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.user.id);
-    if (!library) {
-      library = await this.libraryRepository.create({
-        ownerId: auth.user.id,
-        name: 'Default Library',
-        assets: [],
-        type: LibraryType.UPLOAD,
-        importPaths: [],
-        exclusionPatterns: [],
-        isVisible: true,
-      });
-    }
-
-    return library.id;
-  }
-
   private async create(
     auth: AuthDto,
-    dto: CreateAssetDto & { libraryId: string },
+    dto: CreateAssetDto,
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,
   ): Promise<AssetEntity> {
     const asset = await this.assetRepository.create({
       ownerId: auth.user.id,
-      libraryId: dto.libraryId,
+      libraryId: null,
 
       checksum: file.checksum,
       originalPath: file.originalPath,

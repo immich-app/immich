@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { videoViewerVolume } from '$lib/stores/preferences.store';
+  import { loopVideo as loopVideoPreference, videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
   import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { ThumbnailFormat } from '@immich/sdk';
@@ -8,18 +8,27 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let assetId: string;
+  export let loopVideo: boolean;
+  export let checksum: string;
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+  let assetFileUrl: string;
+
+  $: {
+    const next = getAssetFileUrl(assetId, false, true, checksum);
+    if (assetFileUrl !== next) {
+      assetFileUrl = next;
+      element && element.load();
+    }
+  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
   const handleCanPlay = async (event: Event) => {
     try {
       const video = event.currentTarget as HTMLVideoElement;
-      video.muted = true;
       await video.play();
-      video.muted = false;
       dispatch('onVideoStarted');
     } catch (error) {
       handleError(error, 'Unable to play video');
@@ -36,16 +45,18 @@
 >
   <video
     bind:this={element}
+    loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
     controls
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}
+    bind:muted={$videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg, checksum)}
   >
-    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
   </video>
 

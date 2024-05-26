@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class ActivityApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /activity' operation and returns the [Response].
+  /// Performs an HTTP 'POST /activities' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
   Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity';
+    final path = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody = activityCreateDto;
@@ -63,13 +63,13 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /activity/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /activities/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/{id}'
+    final path = r'/activities/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -103,7 +103,7 @@ class ActivityApi {
     }
   }
 
-  /// Performs an HTTP 'GET /activity' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activities' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -117,7 +117,7 @@ class ActivityApi {
   /// * [String] userId:
   Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity';
+    final path = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -183,7 +183,7 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/statistics' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activities/statistics' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -191,7 +191,7 @@ class ActivityApi {
   /// * [String] assetId:
   Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/statistics';
+    final path = r'/activities/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;

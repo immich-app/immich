@@ -88,7 +88,7 @@
           <div class="w-full">{user.name}</div>
           <div>Owner</div>
         </div>
-        {#each album.sharedUsers as user (user.id)}
+        {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">
             <div>
               <UserAvatar {user} size="md" />

@@ -3,6 +3,7 @@ import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { DatabaseService } from 'src/services/database.service';
+import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
@@ -15,6 +16,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
+import { VersionService } from 'src/services/version.service';
 import { otelSDK } from 'src/utils/instrumentation';
 
 @Injectable()
@@ -35,6 +37,8 @@ export class MicroservicesService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
+    private duplicateService: DuplicateService,
+    private versionService: VersionService,
   ) {}
 
   async init() {
@@ -53,6 +57,8 @@ export class MicroservicesService {
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.QUEUE_DUPLICATE_DETECTION]: (data) => this.duplicateService.handleQueueSearchDuplicates(data),
+      [JobName.DUPLICATE_DETECTION]: (data) => this.duplicateService.handleSearchDuplicates(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
@@ -85,6 +91,7 @@ export class MicroservicesService {
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
+      [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });
 
     await this.metadataService.init();

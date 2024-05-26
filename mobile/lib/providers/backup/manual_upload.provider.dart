@@ -121,7 +121,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     bool isDuplicated,
   ) {
     state = state.copyWith(successfulUploads: state.successfulUploads + 1);
-    _backupProvider.updateServerInfo();
+    _backupProvider.updateDiskInfo();
   }
 
   void _onAssetUploadError(ErrorUploadAsset errorAssetInfo) {

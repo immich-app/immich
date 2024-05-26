@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
-import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
@@ -158,18 +157,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  resizePath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  webpPath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
   previewPath?: string;
 
   @IsString()
@@ -317,6 +304,9 @@ export class MapMarkerDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withSharedAlbums?: boolean;
 }
 
 export class MemoryLaneDto {

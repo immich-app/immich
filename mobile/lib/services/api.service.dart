@@ -23,6 +23,7 @@ class ApiService {
   late PersonApi personApi;
   late AuditApi auditApi;
   late SharedLinkApi sharedLinkApi;
+  late SyncApi syncApi;
   late SystemConfigApi systemConfigApi;
   late ActivityApi activityApi;
   late DownloadApi downloadApi;
@@ -53,6 +54,7 @@ class ApiService {
     personApi = PersonApi(_apiClient);
     auditApi = AuditApi(_apiClient);
     sharedLinkApi = SharedLinkApi(_apiClient);
+    syncApi = SyncApi(_apiClient);
     systemConfigApi = SystemConfigApi(_apiClient);
     activityApi = ActivityApi(_apiClient);
     downloadApi = DownloadApi(_apiClient);

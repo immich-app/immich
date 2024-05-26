@@ -32,10 +32,6 @@ export class SyncService {
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
-      // no archived assets for partner user
-      isArchived: userId === auth.user.id ? undefined : false,
-      // no stack for partner user
-      withStacked: userId === auth.user.id ? true : undefined,
       lastCreationDate: dto.lastCreationDate,
       updatedUntil: dto.updatedUntil,
       lastId: dto.lastId,

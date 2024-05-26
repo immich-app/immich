@@ -2,10 +2,8 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserResponseDto } from 'src/dtos/user.dto';
-import { LibraryType } from 'src/entities/library.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 
 let instance: UserCore | null;
@@ -13,17 +11,12 @@ let instance: UserCore | null;
 export class UserCore {
   private constructor(
     private cryptoRepository: ICryptoRepository,
-    private libraryRepository: ILibraryRepository,
     private userRepository: IUserRepository,
   ) {}
 
-  static create(
-    cryptoRepository: ICryptoRepository,
-    libraryRepository: ILibraryRepository,
-    userRepository: IUserRepository,
-  ) {
+  static create(cryptoRepository: ICryptoRepository, userRepository: IUserRepository) {
     if (!instance) {
-      instance = new UserCore(cryptoRepository, libraryRepository, userRepository);
+      instance = new UserCore(cryptoRepository, userRepository);
     }
 
     return instance;
@@ -70,7 +63,7 @@ export class UserCore {
       dto.storageLabel = null;
     }
 
-    return this.userRepository.update(id, dto);
+    return this.userRepository.update(id, { ...dto, updatedAt: new Date() });
   }
 
   async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
@@ -93,17 +86,7 @@ export class UserCore {
     if (payload.storageLabel) {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
-    const userEntity = await this.userRepository.create(payload);
-    await this.libraryRepository.create({
-      owner: { id: userEntity.id } as UserEntity,
-      name: 'Default Library',
-      assets: [],
-      type: LibraryType.UPLOAD,
-      importPaths: [],
-      exclusionPatterns: [],
-      isVisible: true,
-    });
 
-    return userEntity;
+    return this.userRepository.create(payload);
   }
 }

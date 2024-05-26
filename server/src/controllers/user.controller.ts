@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Next,
   Param,
   Post,
@@ -19,6 +20,7 @@ import { NextFunction, Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
 import { UserService } from 'src/services/user.service';
@@ -28,7 +30,10 @@ import { UUIDParamDto } from 'src/validation';
 @ApiTags('User')
 @Controller(Route.USER)
 export class UserController {
-  constructor(private service: UserService) {}
+  constructor(
+    private service: UserService,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {}
 
   @Get()
   @Authenticated()
@@ -36,10 +41,10 @@ export class UserController {
     return this.service.getAll(auth, isAll);
   }
 
-  @Get('info/:id')
-  @Authenticated()
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.get(id);
+  @Post()
+  @Authenticated({ admin: true })
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.service.create(createUserDto);
   }
 
   @Get('me')
@@ -48,10 +53,10 @@ export class UserController {
     return this.service.getMe(auth);
   }
 
-  @Post()
-  @Authenticated({ admin: true })
-  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.service.create(createUserDto);
+  @Get(':id')
+  @Authenticated()
+  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.get(id);
   }
 
   @Delete('profile-image')
@@ -96,10 +101,10 @@ export class UserController {
     return this.service.createProfileImage(auth, fileInfo);
   }
 
-  @Get('profile-image/:id')
+  @Get(':id/profile-image')
   @FileResponse()
   @Authenticated()
   async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
-    await sendFile(res, next, () => this.service.getProfileImage(id));
+    await sendFile(res, next, () => this.service.getProfileImage(id), this.logger);
   }
 }

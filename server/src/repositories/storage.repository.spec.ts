@@ -77,17 +77,6 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should support globbing paths',
-    options: {
-      pathsToCrawl: ['/photos*'],
-    },
-    files: {
-      '/photos1/image1.jpg': true,
-      '/photos2/image2.jpg': true,
-      '/images/image3.jpg': false,
-    },
-  },
-  {
     test: 'should crawl a single path without trailing slash',
     options: {
       pathsToCrawl: ['/photos'],
@@ -177,6 +166,15 @@ const tests: Test[] = [
       [`${cwd}/photos/1.jpg`]: true,
       [`${cwd}/photos/2.jpg`]: true,
       [`/photos/3.jpg`]: false,
+    },
+  },
+  {
+    test: 'should support special characters in paths',
+    options: {
+      pathsToCrawl: ['/photos (new)'],
+    },
+    files: {
+      ['/photos (new)/1.jpg']: true,
     },
   },
 ];

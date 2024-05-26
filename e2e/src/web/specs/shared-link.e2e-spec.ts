@@ -17,7 +17,7 @@ test.describe('Shared Links', () => {
   let sharedLinkPassword: SharedLinkResponseDto;
 
   test.beforeAll(async () => {
-    utils.setApiEndpoint();
+    utils.initSdk();
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     asset = await utils.createAsset(admin.accessToken);

@@ -77,5 +77,5 @@ String getThumbnailUrlForRemoteId(
 }
 
 String getFaceThumbnailUrl(final String personId) {
-  return '${Store.get(StoreKey.serverEndpoint)}/person/$personId/thumbnail';
+  return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
 }

@@ -1,4 +1,3 @@
-import { AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-v1-response.dto';
 import { CreateAssetDto } from 'src/dtos/asset-v1.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -32,7 +31,6 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.isFavorite = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
-  createAssetDto.libraryId = 'libraryId';
 
   return createAssetDto;
 };
@@ -75,10 +73,7 @@ describe('AssetService', () => {
   beforeEach(() => {
     assetRepositoryMockV1 = {
       get: vitest.fn(),
-      getAllByUserId: vitest.fn(),
       getAssetsByChecksums: vitest.fn(),
-      getExistingAssets: vitest.fn(),
-      getByOriginalPath: vitest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
@@ -121,7 +116,6 @@ describe('AssetService', () => {
       const dto = _getCreateAssetDto();
 
       assetMock.create.mockResolvedValue(assetEntity);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
@@ -149,7 +143,6 @@ describe('AssetService', () => {
 
       assetMock.create.mockRejectedValue(error);
       assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 
@@ -167,7 +160,6 @@ describe('AssetService', () => {
 
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([dto.libraryId!]));
 
       await expect(
         sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
@@ -196,34 +188,6 @@ describe('AssetService', () => {
         expect.any(Date),
         new Date(dto.fileModifiedAt),
       );
-    });
-  });
-
-  describe('bulkUploadCheck', () => {
-    it('should accept hex and base64 checksums', async () => {
-      const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
-      const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
-
-      assetRepositoryMockV1.getAssetsByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1 },
-        { id: 'asset-2', checksum: file2 },
-      ]);
-
-      await expect(
-        sut.bulkUploadCheck(authStub.admin, {
-          assets: [
-            { id: '1', checksum: file1.toString('hex') },
-            { id: '2', checksum: file2.toString('base64') },
-          ],
-        }),
-      ).resolves.toEqual({
-        results: [
-          { id: '1', assetId: 'asset-1', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
-          { id: '2', assetId: 'asset-2', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
-        ],
-      });
-
-      expect(assetRepositoryMockV1.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
     });
   });
 });

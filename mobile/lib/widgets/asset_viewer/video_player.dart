@@ -1,7 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/widgets/asset_viewer/hooks/chewiew_controller_hook.dart';
+import 'package:immich_mobile/utils/hooks/chewiew_controller_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:video_player/video_player.dart';
 
@@ -12,6 +12,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool loopVideo;
 
   const VideoPlayerViewer({
     super.key,
@@ -21,6 +22,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
     required this.hideControlsTimer,
     required this.showControls,
     required this.showDownloadingIndicator,
+    required this.loopVideo,
   });
 
   @override
@@ -36,6 +38,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
       ),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
+      loopVideo: loopVideo,
     );
 
     return Chewie(

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class TagApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /tag' operation and returns the [Response].
+  /// Performs an HTTP 'POST /tags' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateTagDto] createTagDto (required):
   Future<Response> createTagWithHttpInfo(CreateTagDto createTagDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag';
+    final path = r'/tags';
 
     // ignore: prefer_final_locals
     Object? postBody = createTagDto;
@@ -63,13 +63,13 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /tag/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /tags/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> deleteTagWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}'
+    final path = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -103,10 +103,10 @@ class TagApi {
     }
   }
 
-  /// Performs an HTTP 'GET /tag' operation and returns the [Response].
+  /// Performs an HTTP 'GET /tags' operation and returns the [Response].
   Future<Response> getAllTagsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/tag';
+    final path = r'/tags';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -147,13 +147,13 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /tag/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'GET /tags/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getTagAssetsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}/assets'
+    final path = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -198,13 +198,13 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /tag/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /tags/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getTagByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}'
+    final path = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -246,7 +246,7 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /tag/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /tags/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -254,7 +254,7 @@ class TagApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   Future<Response> tagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}/assets'
+    final path = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -301,7 +301,7 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /tag/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /tags/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -309,7 +309,7 @@ class TagApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   Future<Response> untagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}/assets'
+    final path = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -356,7 +356,7 @@ class TagApi {
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /tag/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PATCH /tags/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -364,7 +364,7 @@ class TagApi {
   /// * [UpdateTagDto] updateTagDto (required):
   Future<Response> updateTagWithHttpInfo(String id, UpdateTagDto updateTagDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tag/{id}'
+    final path = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

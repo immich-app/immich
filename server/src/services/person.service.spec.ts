@@ -1,8 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { Colorspace, SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -13,13 +13,14 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { PersonService } from 'src/services/person.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { personStub } from 'test/fixtures/person.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
@@ -31,7 +32,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { IsNull } from 'typeorm';
 import { Mocked } from 'vitest';
 
@@ -63,7 +64,7 @@ const detectFaceMock = {
 describe(PersonService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let jobMock: Mocked<IJobRepository>;
   let machineLearningMock: Mocked<IMachineLearningRepository>;
   let mediaMock: Mocked<IMediaRepository>;
@@ -78,7 +79,7 @@ describe(PersonService.name, () => {
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
     moveMock = newMoveRepositoryMock();
@@ -95,7 +96,7 @@ describe(PersonService.name, () => {
       moveMock,
       mediaMock,
       personMock,
-      configMock,
+      systemMock,
       storageMock,
       jobMock,
       searchMock,
@@ -504,12 +505,12 @@ describe(PersonService.name, () => {
 
   describe('handleQueueDetectFaces', () => {
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       await expect(sut.handleQueueDetectFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should queue missing assets', async () => {
@@ -581,11 +582,11 @@ describe(PersonService.name, () => {
   describe('handleQueueRecognizeFaces', () => {
     it('should skip if machine learning is disabled', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queueAll).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should skip if recognition jobs are already queued', async () => {
@@ -665,11 +666,11 @@ describe(PersonService.name, () => {
 
   describe('handleDetectFaces', () => {
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       await expect(sut.handleDetectFaces({ id: 'foo' })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should skip when no resize path', async () => {
@@ -796,9 +797,7 @@ describe(PersonService.name, () => {
         { face: faceStub.face1, distance: 0.4 },
       ] as FaceSearchResult[];
 
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
-      ]);
+      systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(faceStub.primaryFace1.person);
@@ -823,9 +822,7 @@ describe(PersonService.name, () => {
         { face: faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
-      ]);
+      systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
@@ -863,9 +860,7 @@ describe(PersonService.name, () => {
         { face: faceStub.noPerson2, distance: 0.4 },
       ] as FaceSearchResult[];
 
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 3 },
-      ]);
+      systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
@@ -887,9 +882,7 @@ describe(PersonService.name, () => {
         { face: faceStub.noPerson2, distance: 0.4 },
       ] as FaceSearchResult[];
 
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 3 },
-      ]);
+      systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
@@ -905,11 +898,11 @@ describe(PersonService.name, () => {
 
   describe('handleGeneratePersonThumbnail', () => {
     it('should skip if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
       await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.SKIPPED);
       expect(assetMock.getByIds).not.toHaveBeenCalled();
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should skip a person not found', async () => {

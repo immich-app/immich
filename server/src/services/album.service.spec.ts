@@ -185,7 +185,7 @@ describe(AlbumService.name, () => {
 
       await sut.create(authStub.admin, {
         albumName: 'Empty album',
-        sharedWithUserIds: ['user-id'],
+        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
         description: '',
         assetIds: ['123'],
       });
@@ -208,7 +208,7 @@ describe(AlbumService.name, () => {
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
-          sharedWithUserIds: ['user-3'],
+          albumUsers: [{ userId: 'user-3', role: AlbumUserRole.EDITOR }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(userMock.get).toHaveBeenCalledWith('user-3', {});

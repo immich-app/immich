@@ -11,7 +11,6 @@ FROM
       "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
       "APIKeyEntity__APIKeyEntity_user"."id" AS "APIKeyEntity__APIKeyEntity_user_id",
       "APIKeyEntity__APIKeyEntity_user"."name" AS "APIKeyEntity__APIKeyEntity_user_name",
-      "APIKeyEntity__APIKeyEntity_user"."avatarColor" AS "APIKeyEntity__APIKeyEntity_user_avatarColor",
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
       "APIKeyEntity__APIKeyEntity_user"."email" AS "APIKeyEntity__APIKeyEntity_user_email",
       "APIKeyEntity__APIKeyEntity_user"."storageLabel" AS "APIKeyEntity__APIKeyEntity_user_storageLabel",
@@ -22,7 +21,6 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."deletedAt" AS "APIKeyEntity__APIKeyEntity_user_deletedAt",
       "APIKeyEntity__APIKeyEntity_user"."status" AS "APIKeyEntity__APIKeyEntity_user_status",
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
-      "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled",
       "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
       "APIKeyEntity__APIKeyEntity_user"."quotaUsageInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaUsageInBytes"
     FROM

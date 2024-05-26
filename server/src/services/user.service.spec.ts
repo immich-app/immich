@@ -9,10 +9,9 @@ import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserService } from 'src/services/user.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
@@ -22,12 +21,11 @@ import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
-import { Mocked, vitest } from 'vitest';
+import { Mocked } from 'vitest';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -42,31 +40,20 @@ describe(UserService.name, () => {
 
   let albumMock: Mocked<IAlbumRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
-    libraryMock = newLibraryRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new UserService(
-      albumMock,
-      cryptoRepositoryMock,
-      jobMock,
-      libraryMock,
-      storageMock,
-      configMock,
-      userMock,
-      loggerMock,
-    );
+    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, storageMock, systemMock, userMock, loggerMock);
 
     userMock.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
@@ -138,13 +125,17 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: userStub.user1.id,
         storageLabel: null,
+        updatedAt: expect.any(Date),
       });
     });
 
     it('should omit a storage label set by non-admin users', async () => {
       userMock.update.mockResolvedValue(userStub.user1);
       await sut.update({ user: userStub.user1 }, { id: userStub.user1.id, storageLabel: 'admin' });
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { id: userStub.user1.id });
+      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
+        id: userStub.user1.id,
+        updatedAt: expect.any(Date),
+      });
     });
 
     it('user can only update its information', async () => {
@@ -174,6 +165,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         email: 'updated@test.com',
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -210,6 +202,7 @@ describe(UserService.name, () => {
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         id: 'user-id',
         shouldChangePassword: true,
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -231,7 +224,7 @@ describe(UserService.name, () => {
 
       await sut.update(authStub.admin, dto);
 
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, dto);
+      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, { ...dto, updatedAt: expect.any(Date) });
     });
 
     it('should not let the another user become an admin', async () => {
@@ -430,45 +423,6 @@ describe(UserService.name, () => {
     });
   });
 
-  describe('resetAdminPassword', () => {
-    it('should only work when there is an admin account', async () => {
-      userMock.getAdmin.mockResolvedValue(null);
-      const ask = vitest.fn().mockResolvedValue('new-password');
-
-      await expect(sut.resetAdminPassword(ask)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(ask).not.toHaveBeenCalled();
-    });
-
-    it('should default to a random password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = vitest.fn().mockImplementation(() => {});
-
-      const response = await sut.resetAdminPassword(ask);
-
-      const [id, update] = userMock.update.mock.calls[0];
-
-      expect(response.provided).toBe(false);
-      expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
-      expect(update.password).toBeDefined();
-    });
-
-    it('should use the supplied password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
-      const ask = vitest.fn().mockResolvedValue('new-password');
-
-      const response = await sut.resetAdminPassword(ask);
-
-      const [id, update] = userMock.update.mock.calls[0];
-
-      expect(response.provided).toBe(true);
-      expect(ask).toHaveBeenCalled();
-      expect(id).toEqual(userStub.admin.id);
-      expect(update.password).toBeDefined();
-    });
-  });
-
   describe('handleQueueUserDelete', () => {
     it('should skip users not ready for deletion', async () => {
       userMock.getDeletedUsers.mockResolvedValue([
@@ -486,7 +440,7 @@ describe(UserService.name, () => {
     });
 
     it('should skip users not ready for deletion - deleteDelay30', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.deleteDelay30);
+      systemMock.get.mockResolvedValue(systemConfigStub.deleteDelay30);
       userMock.getDeletedUsers.mockResolvedValue([
         {},
         { deletedAt: undefined },

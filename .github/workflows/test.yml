@@ -208,7 +208,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.19.3'
+          flutter-version: '3.22.0'
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -260,9 +260,18 @@ jobs:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install server dependencies
+        run: npm --prefix=server ci
+
+      - name: Build the app
+        run: npm --prefix=server run build
+
       - name: Run API generation
         run: make open-api
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v20
         id: verify-changed-files
@@ -270,6 +279,8 @@ jobs:
           files: |
             mobile/openapi
             open-api/typescript-sdk
+            open-api/immich-openapi-specs.json
+
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -332,7 +343,7 @@ jobs:
           exit 1
 
       - name: Run SQL generation
-        run: npm run sql:generate
+        run: npm run sync:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 

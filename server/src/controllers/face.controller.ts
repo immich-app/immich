@@ -7,7 +7,7 @@ import { PersonService } from 'src/services/person.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Face')
-@Controller('face')
+@Controller('faces')
 export class FaceController {
   constructor(private service: PersonService) {}
 

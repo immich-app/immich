@@ -24,18 +24,25 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 | `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                                |
 
 :::tip
-
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
-
 :::
+
+### Supported filesystems
+
+The Immich Postgres database (`DB_DATA_LOCATION`) must be located on a filesystem that supports user/group
+ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32.
+It will not work in WSL (Windows Subsystem for Linux) when using a mounted host directory (commonly under `/mnt`).
+If this is an issue, you can change the bind mount to a Docker volume instead.
+
+Regardless of filesystem, it is not recommended to use a network share for your database location due to performance and possible data loss issues.
 
 ## General
 
 | Variable                        | Description                                  |         Default          | Services                                |
 | :------------------------------ | :------------------------------------------- | :----------------------: | :-------------------------------------- |
 | `TZ`                            | Timezone                                     |                          | microservices                           |
-| `NODE_ENV`                      | Environment (production, development)        |       `production`       | server, microservices, machine learning |
-| `LOG_LEVEL`                     | Log Level (verbose, debug, log, warn, error) |          `log`           | server, microservices, machine learning |
+| `IMMICH_ENV`                    | Environment (production, development)        |       `production`       | server, microservices, machine learning |
+| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error) |          `log`           | server, microservices, machine learning |
 | `IMMICH_MEDIA_LOCATION`         | Media Location                               | `./upload`<sup>\*1</sup> | server, microservices                   |
 | `IMMICH_CONFIG_FILE`            | Path to config file                          |                          | server, microservices                   |
 | `IMMICH_WEB_ROOT`               | Path of root index.html                      |    `/usr/src/app/www`    | server                                  |
@@ -52,13 +59,10 @@ It only need to be set if the Immich deployment method is changing.
 
 ## Ports
 
-| Variable                | Description           |  Default  | Services              |
-| :---------------------- | :-------------------- | :-------: | :-------------------- |
-| `HOST`                  | Host                  | `0.0.0.0` | server, microservices |
-| `SERVER_PORT`           | Server Port           |  `3001`   | server                |
-| `MICROSERVICES_PORT`    | Microservices Port    |  `3002`   | microservices         |
-| `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning      |
-| `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning      |
+| Variable      | Description    |                Default                 |
+| :------------ | :------------- | :------------------------------------: |
+| `IMMICH_HOST` | Listening host |               `0.0.0.0`                |
+| `IMMICH_PORT` | Listening port | 3001 (server), 3003 (machine learning) |
 
 ## Database
 

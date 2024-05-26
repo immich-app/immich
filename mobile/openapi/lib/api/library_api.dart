@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class LibraryApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /library' operation and returns the [Response].
+  /// Performs an HTTP 'POST /libraries' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateLibraryDto] createLibraryDto (required):
   Future<Response> createLibraryWithHttpInfo(CreateLibraryDto createLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library';
+    final path = r'/libraries';
 
     // ignore: prefer_final_locals
     Object? postBody = createLibraryDto;
@@ -63,13 +63,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /library/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /libraries/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> deleteLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}'
+    final path = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -103,13 +103,10 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'GET /library' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [LibraryType] type:
-  Future<Response> getAllLibrariesWithHttpInfo({ LibraryType? type, }) async {
+  /// Performs an HTTP 'GET /libraries' operation and returns the [Response].
+  Future<Response> getAllLibrariesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/library';
+    final path = r'/libraries';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -117,10 +114,6 @@ class LibraryApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
 
     const contentTypes = <String>[];
 
@@ -136,11 +129,8 @@ class LibraryApi {
     );
   }
 
-  /// Parameters:
-  ///
-  /// * [LibraryType] type:
-  Future<List<LibraryResponseDto>?> getAllLibraries({ LibraryType? type, }) async {
-    final response = await getAllLibrariesWithHttpInfo( type: type, );
+  Future<List<LibraryResponseDto>?> getAllLibraries() async {
+    final response = await getAllLibrariesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -157,13 +147,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /library/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /libraries/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}'
+    final path = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -205,13 +195,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /library/{id}/statistics' operation and returns the [Response].
+  /// Performs an HTTP 'GET /libraries/{id}/statistics' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getLibraryStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/statistics'
+    final path = r'/libraries/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -253,13 +243,13 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/{id}/removeOffline' operation and returns the [Response].
+  /// Performs an HTTP 'POST /libraries/{id}/removeOffline' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> removeOfflineFilesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/removeOffline'
+    final path = r'/libraries/{id}/removeOffline'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -293,7 +283,7 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'POST /library/{id}/scan' operation and returns the [Response].
+  /// Performs an HTTP 'POST /libraries/{id}/scan' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -301,7 +291,7 @@ class LibraryApi {
   /// * [ScanLibraryDto] scanLibraryDto (required):
   Future<Response> scanLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/scan'
+    final path = r'/libraries/{id}/scan'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -337,7 +327,7 @@ class LibraryApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /library/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /libraries/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -345,7 +335,7 @@ class LibraryApi {
   /// * [UpdateLibraryDto] updateLibraryDto (required):
   Future<Response> updateLibraryWithHttpInfo(String id, UpdateLibraryDto updateLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}'
+    final path = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -389,7 +379,7 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/{id}/validate' operation and returns the [Response].
+  /// Performs an HTTP 'POST /libraries/{id}/validate' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -397,7 +387,7 @@ class LibraryApi {
   /// * [ValidateLibraryDto] validateLibraryDto (required):
   Future<Response> validateWithHttpInfo(String id, ValidateLibraryDto validateLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/validate'
+    final path = r'/libraries/{id}/validate'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

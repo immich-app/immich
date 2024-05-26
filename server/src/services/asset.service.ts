@@ -27,8 +27,8 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -44,25 +44,12 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { UploadRequest } from 'src/services/asset-media.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { fromChecksum } from 'src/utils/request';
-
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
 
 export class AssetService {
   private access: AccessCore;
@@ -72,17 +59,18 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
@@ -167,6 +155,7 @@ export class AssetService {
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds: string[] = [auth.user.id];
+    // TODO convert to SQL join
     if (options.withPartners) {
       const partners = await this.partnerRepository.getAll(auth.user.id);
       const partnersIds = partners
@@ -174,7 +163,18 @@ export class AssetService {
         .map((partner) => partner.sharedById);
       userIds.push(...partnersIds);
     }
-    return this.assetRepository.getMapMarkers(userIds, options);
+
+    // TODO convert to SQL join
+    const albumIds: string[] = [];
+    if (options.withSharedAlbums) {
+      const [ownedAlbums, sharedAlbums] = await Promise.all([
+        this.albumRepository.getOwned(auth.user.id),
+        this.albumRepository.getShared(auth.user.id),
+      ]);
+      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
+    }
+
+    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -410,7 +410,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    if (asset.library.type === LibraryType.UPLOAD) {
+    if (!asset.libraryId) {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
@@ -420,12 +420,13 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
     }
 
-    await this.jobRepository.queue({
-      name: JobName.DELETE_FILES,
-      data: {
-        files: [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath, asset.sidecarPath, asset.originalPath],
-      },
-    });
+    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
+    // skip originals if the user deleted the whole library
+    if (!asset.library?.deletedAt) {
+      files.push(asset.sidecarPath, asset.originalPath);
+    }
+
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
 
     return JobStatus.SUCCESS;
   }

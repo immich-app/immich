@@ -20,6 +20,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
+  import { s } from '$lib/utils';
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
@@ -78,7 +79,7 @@
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({
-        message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
+        message: `Re-assigned ${assetIds.length} asset${s(assetIds.length)} to a new person`,
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -98,7 +99,7 @@
       if (selectedPerson) {
         await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
         notificationController.show({
-          message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to ${
+          message: `Re-assigned ${assetIds.length} asset${s(assetIds.length)} to ${
             selectedPerson.name || 'an existing person'
           }`,
           type: NotificationType.Info,

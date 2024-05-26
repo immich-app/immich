@@ -6,16 +6,17 @@ import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService {
@@ -24,17 +25,16 @@ export class UserService {
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.userCore = UserCore.create(cryptoRepository, userRepository);
     this.logger.setContext(UserService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async listUsers(): Promise<UserResponseDto[]> {
@@ -61,9 +61,21 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.createUser(dto);
-    const tempPassword = user.shouldChangePassword ? dto.password : undefined;
-    if (dto.notify) {
+    const { memoriesEnabled, notify, ...rest } = dto;
+    let user = await this.userCore.createUser(rest);
+
+    // TODO remove and replace with entire dto.preferences config
+    if (memoriesEnabled === false) {
+      await this.userRepository.upsertMetadata(user.id, {
+        key: UserMetadataKey.PREFERENCES,
+        value: { memories: { enabled: false } },
+      });
+
+      user = await this.findOrFail(user.id, {});
+    }
+
+    const tempPassword = user.shouldChangePassword ? rest.password : undefined;
+    if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
     }
     return mapUser(user);
@@ -76,7 +88,28 @@ export class UserService {
       await this.userRepository.syncUsage(dto.id);
     }
 
-    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
+    // TODO replace with entire preferences object
+    if (dto.memoriesEnabled !== undefined || dto.avatarColor) {
+      const newPreferences = getPreferences(user);
+      if (dto.memoriesEnabled !== undefined) {
+        newPreferences.memories.enabled = dto.memoriesEnabled;
+        delete dto.memoriesEnabled;
+      }
+
+      if (dto.avatarColor) {
+        newPreferences.avatar.color = dto.avatarColor;
+        delete dto.avatarColor;
+      }
+
+      await this.userRepository.upsertMetadata(dto.id, {
+        key: UserMetadataKey.PREFERENCES,
+        value: getPreferencesPartial(user, newPreferences),
+      });
+    }
+
+    const updatedUser = await this.userCore.updateUser(auth.user, dto.id, dto);
+
+    return mapUser(updatedUser);
   }
 
   async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
@@ -133,20 +166,6 @@ export class UserService {
       contentType: 'image/jpeg',
       cacheControl: CacheControl.NONE,
     });
-  }
-
-  async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
-    const admin = await this.userRepository.getAdmin();
-    if (!admin) {
-      throw new BadRequestException('Admin account does not exist');
-    }
-
-    const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || this.cryptoRepository.newPassword(24);
-
-    await this.userCore.updateUser(admin, admin.id, { password });
-
-    return { admin, password, provided: !!providedPassword };
   }
 
   async handleUserSyncUsage(): Promise<JobStatus> {

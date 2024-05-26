@@ -7,7 +7,7 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { Subscription } from 'rxjs';
 import { StorageCore } from 'src/cores/storage.core';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -31,7 +31,7 @@ import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interfa
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -70,10 +70,9 @@ export enum Orientation {
   Rotate270CW = '8',
 }
 
-type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
-  ExifEntity,
-  'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
-> & { dateTimeOriginal: Date };
+type ExifEntityWithoutGeocodeAndTypeOrm = Omit<ExifEntity, 'city' | 'state' | 'country' | 'description'> & {
+  dateTimeOriginal: Date;
+};
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
@@ -114,19 +113,19 @@ export class MetadataService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
       storageRepository,
-      configRepository,
+      systemMetadataRepository,
       this.logger,
     );
   }
@@ -332,7 +331,8 @@ export class MetadataService {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
-    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    if (!reverseGeocoding.enabled || !longitude || !latitude) {
       return;
     }
 
@@ -409,7 +409,7 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId, checksum);
+      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId ?? null, checksum);
       if (motionAsset) {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
@@ -423,10 +423,7 @@ export class MetadataService {
           this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
         }
       } else {
-        // We create a UUID in advance so that each extracted video can have a unique filename
-        // (allowing us to delete old ones if necessary)
         const motionAssetId = this.cryptoRepository.randomUUID();
-        const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
@@ -437,16 +434,13 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: motionPath,
-          originalFileName: asset.originalFileName,
+          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
           isVisible: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
 
-        this.storageCore.ensureFolders(motionPath);
-        await this.storageRepository.writeFile(motionAsset.originalPath, video);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
         if (!asset.isExternal) {
           await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
         }
@@ -463,6 +457,15 @@ export class MetadataService {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
+      }
+
+      // write extracted motion video to disk, especially if the encoded-video folder has been deleted
+      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!existsOnDisk) {
+        this.storageCore.ensureFolders(motionAsset.originalPath);
+        await this.storageRepository.writeFile(motionAsset.originalPath, video);
+        this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
 
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);

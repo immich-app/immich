@@ -10,7 +10,7 @@ interface CommunityProjectProps {
 const projects: CommunityProjectProps[] = [
   {
     title: 'immich-go',
-    description: `An alternative to the immich-CLI command that doesn't depend on nodejs installation. It tries its best for importing google photos takeout archives.`,
+    description: `An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives.`,
     url: 'https://github.com/simulot/immich-go',
   },
   {
@@ -32,6 +32,11 @@ const projects: CommunityProjectProps[] = [
     title: 'Create albums from folders',
     description: 'A Python script to create albums based on the folder structure of an external library.',
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
+  },
+  {
+    title: 'Immich-Tools',
+    description: 'Provides scripts for handling problems on the repair page.',
+    url: 'https://github.com/clumsyCoder00/Immich-Tools',
   },
   {
     title: 'Lightroom Publisher: mi.Immich.Publisher',

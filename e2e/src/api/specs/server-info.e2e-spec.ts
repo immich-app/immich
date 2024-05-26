@@ -15,16 +15,16 @@ describe('/server-info', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
-  describe('GET /server-info', () => {
+  describe('GET /server-info/storage', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server-info');
+      const { status, body } = await request(app).get('/server-info/storage');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return the disk information', async () => {
       const { status, body } = await request(app)
-        .get('/server-info')
+        .get('/server-info/storage')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -66,6 +66,7 @@ describe('/server-info', () => {
       expect(body).toEqual({
         smartSearch: false,
         configFile: false,
+        duplicateDetection: false,
         facialRecognition: false,
         map: true,
         reverseGeocoding: true,
