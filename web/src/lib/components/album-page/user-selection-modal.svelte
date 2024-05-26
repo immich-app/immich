@@ -7,7 +7,7 @@
   import {
     AlbumUserRole,
     getAllSharedLinks,
-    getAllUsers,
+    searchUsers,
     type AlbumResponseDto,
     type AlbumUserAddDto,
     type SharedLinkResponseDto,
@@ -36,10 +36,10 @@
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
-    const data = await getAllUsers({ isAll: false });
+    const data = await searchUsers();
 
-    // remove invalid users
-    users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
+    // remove album owner
+    users = data.filter((user) => user.id !== album.ownerId);
 
     // Remove the existed shared users from the album
     for (const sharedUser of album.albumUsers) {

@@ -4,7 +4,7 @@ import {
   AlbumUserRole,
   AssetFileUploadResponseDto,
   AssetOrder,
-  deleteUser,
+  deleteUserAdmin,
   getAlbumInfo,
   LoginResponseDto,
   SharedLinkType,
@@ -107,7 +107,7 @@ describe('/albums', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /albums', () => {

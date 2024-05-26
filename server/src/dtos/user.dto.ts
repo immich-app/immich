@@ -1,12 +1,63 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { UserAvatarColor } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { getPreferences } from 'src/utils/preferences';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
-export class CreateUserDto {
+export class UserUpdateMeDto {
+  @Optional()
+  @IsEmail({ require_tld: false })
+  @Transform(toEmail)
+  email?: string;
+
+  // TODO: migrate to the other change password endpoint
+  @Optional()
+  @IsNotEmpty()
+  @IsString()
+  password?: string;
+
+  @Optional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @ValidateBoolean({ optional: true })
+  memoriesEnabled?: boolean;
+
+  @Optional()
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor?: UserAvatarColor;
+}
+
+export class UserResponseDto {
+  id!: string;
+  name!: string;
+  email!: string;
+  profileImagePath!: string;
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor!: UserAvatarColor;
+}
+
+export const mapUser = (entity: UserEntity): UserResponseDto => {
+  return {
+    id: entity.id,
+    email: entity.email,
+    name: entity.name,
+    profileImagePath: entity.profileImagePath,
+    avatarColor: getPreferences(entity).avatar.color,
+  };
+};
+
+export class UserAdminSearchDto {
+  @ValidateBoolean({ optional: true })
+  withDeleted?: boolean;
+}
+
+export class UserAdminCreateDto {
   @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email!: string;
@@ -41,23 +92,7 @@ export class CreateUserDto {
   notify?: boolean;
 }
 
-export class CreateUserOAuthDto {
-  @IsEmail({ require_tld: false })
-  @Transform(({ value }) => value?.toLowerCase())
-  email!: string;
-
-  @IsNotEmpty()
-  oauthId!: string;
-
-  name?: string;
-}
-
-export class DeleteUserDto {
-  @ValidateBoolean({ optional: true })
-  force?: boolean;
-}
-
-export class UpdateUserDto {
+export class UserAdminUpdateDto {
   @Optional()
   @IsEmail({ require_tld: false })
   @Transform(toEmail)
@@ -73,18 +108,10 @@ export class UpdateUserDto {
   @IsNotEmpty()
   name?: string;
 
-  @Optional()
+  @Optional({ nullable: true })
   @IsString()
   @Transform(toSanitized)
-  storageLabel?: string;
-
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-
-  @ValidateBoolean({ optional: true })
-  isAdmin?: boolean;
+  storageLabel?: string | null;
 
   @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
@@ -104,17 +131,12 @@ export class UpdateUserDto {
   quotaSizeInBytes?: number | null;
 }
 
-export class UserDto {
-  id!: string;
-  name!: string;
-  email!: string;
-  profileImagePath!: string;
-  @IsEnum(UserAvatarColor)
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  avatarColor!: UserAvatarColor;
+export class UserAdminDeleteDto {
+  @ValidateBoolean({ optional: true })
+  force?: boolean;
 }
 
-export class UserResponseDto extends UserDto {
+export class UserAdminResponseDto extends UserResponseDto {
   storageLabel!: string | null;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
@@ -131,19 +153,9 @@ export class UserResponseDto extends UserDto {
   status!: string;
 }
 
-export const mapSimpleUser = (entity: UserEntity): UserDto => {
+export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
   return {
-    id: entity.id,
-    email: entity.email,
-    name: entity.name,
-    profileImagePath: entity.profileImagePath,
-    avatarColor: getPreferences(entity).avatar.color,
-  };
-};
-
-export function mapUser(entity: UserEntity): UserResponseDto {
-  return {
-    ...mapSimpleUser(entity),
+    ...mapUser(entity),
     storageLabel: entity.storageLabel,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,

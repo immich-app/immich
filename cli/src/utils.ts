@@ -1,4 +1,4 @@
-import { getMyUserInfo, init, isHttpError } from '@immich/sdk';
+import { getMyUser, init, isHttpError } from '@immich/sdk';
 import { glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -48,7 +48,7 @@ export const connect = async (url: string, key: string) => {
 
   init({ baseUrl: url, apiKey: key });
 
-  const [error] = await withError(getMyUserInfo());
+  const [error] = await withError(getMyUser());
   if (isHttpError(error)) {
     logError(error, 'Failed to connect to server');
     process.exit(1);

@@ -3,23 +3,18 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateMyUser, type UserAdminResponseDto } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
 
-  import Button from '../elements/buttons/button.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import Button from '../elements/buttons/button.svelte';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
 
   const handleSave = async () => {
     try {
-      const data = await updateUser({
-        updateUserDto: {
-          id: user.id,
-          memoriesEnabled: user.memoriesEnabled,
-        },
-      });
+      const data = await updateMyUser({ userUpdateMeDto: { memoriesEnabled: user.memoriesEnabled } });
 
       Object.assign(user, data);
 

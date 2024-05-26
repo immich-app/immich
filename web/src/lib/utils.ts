@@ -11,7 +11,6 @@ import {
   startOAuth,
   unlinkOAuthAccount,
   type SharedLinkResponseDto,
-  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
@@ -264,7 +263,7 @@ export const oauth = {
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): Promise<UserResponseDto> => {
+  link: (location: Location) => {
     return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {

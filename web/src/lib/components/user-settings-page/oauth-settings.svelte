@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
-  import { type UserResponseDto } from '@immich/sdk';
+  import { type UserAdminResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
@@ -10,7 +10,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
 
   let loading = true;
 
