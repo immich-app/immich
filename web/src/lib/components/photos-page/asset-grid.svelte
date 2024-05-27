@@ -149,7 +149,7 @@
       // you're not supposed to manage your assets on the trash page: there's no button to manage it, then there's no reason to have shortcuts to do it.
       if ($page.url.pathname !== AppRoute.TRASH) {
         shortcuts.push({ shortcut: { key: 'a', shift: true }, onShortcut: onArchive });
-        // on some page, you can't favorite assets (like on `/parthner`)
+        // on some pages, you can't favorite assets (like on `/partner`)
         if (isAllFavorite !== null) {
           shortcuts.push({ shortcut: { key: 'f' }, onShortcut: onFavorite });
         }
