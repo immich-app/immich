@@ -83,5 +83,5 @@ export interface IMediaRepository {
 
   // video
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void>;
+  transcode(input: string, output: string | Writable, command: TranscodeCommand): Promise<void>;
 }
