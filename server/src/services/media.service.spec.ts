@@ -297,7 +297,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
-            '-frames:v 2',
+            '-frames:v 1',
             '-update 1',
             '-v verbose',
             `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
@@ -324,7 +324,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
-            '-frames:v 2',
+            '-frames:v 1',
             '-update 1',
             '-v verbose',
             `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
@@ -353,7 +353,7 @@ describe(MediaService.name, () => {
           inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
-            '-frames:v 2',
+            '-frames:v 1',
             '-update 1',
             '-v verbose',
             `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
