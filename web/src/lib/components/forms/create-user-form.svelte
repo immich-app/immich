@@ -2,7 +2,7 @@
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { createUser } from '@immich/sdk';
+  import { createUserAdmin } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
@@ -49,8 +49,8 @@
       error = '';
 
       try {
-        await createUser({
-          createUserDto: {
+        await createUserAdmin({
+          userAdminCreateDto: {
             email,
             password,
             shouldChangePassword,

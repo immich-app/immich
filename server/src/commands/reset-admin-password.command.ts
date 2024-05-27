@@ -1,9 +1,9 @@
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
-import { UserResponseDto } from 'src/dtos/user.dto';
+import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { CliService } from 'src/services/cli.service';
 
 const prompt = (inquirer: InquirerService) => {
-  return function ask(admin: UserResponseDto) {
+  return function ask(admin: UserAdminResponseDto) {
     const { id, oauthId, email, name } = admin;
     console.log(`Found Admin:
 - ID=${id}

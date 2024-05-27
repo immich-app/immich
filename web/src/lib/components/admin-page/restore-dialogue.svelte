@@ -1,7 +1,7 @@
 <script lang="ts">
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { restoreUser, type UserResponseDto } from '@immich/sdk';
+  import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
@@ -14,7 +14,7 @@
 
   const handleRestoreUser = async () => {
     try {
-      const { deletedAt } = await restoreUser({ id: user.id });
+      const { deletedAt } = await restoreUserAdmin({ id: user.id });
       if (deletedAt == undefined) {
         dispatch('success');
       } else {

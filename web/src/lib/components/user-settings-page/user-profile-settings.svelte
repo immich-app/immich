@@ -3,23 +3,22 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { cloneDeep } from 'lodash-es';
-  import { updateUser } from '@immich/sdk';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { updateMyUser } from '@immich/sdk';
+  import { cloneDeep } from 'lodash-es';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
 
   let editedUser = cloneDeep($user);
 
   const handleSaveProfile = async () => {
     try {
-      const data = await updateUser({
-        updateUserDto: {
-          id: editedUser.id,
+      const data = await updateMyUser({
+        userUpdateMeDto: {
           email: editedUser.email,
           name: editedUser.name,
         },

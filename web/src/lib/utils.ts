@@ -11,7 +11,6 @@ import {
   startOAuth,
   unlinkOAuthAccount,
   type SharedLinkResponseDto,
-  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
@@ -179,8 +178,8 @@ export const getAssetThumbnailUrl = (
   return createUrl(path, { format, key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/users/profile-image/${userId}`;
+export const getProfileImageUrl = (userId: string) => {
+  const path = `/users/${userId}/profile-image`;
   return createUrl(path);
 };
 
@@ -264,7 +263,7 @@ export const oauth = {
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): Promise<UserResponseDto> => {
+  link: (location: Location) => {
     return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {

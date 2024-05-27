@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Optional, ValidateDate } from 'src/validation';
 
 export enum UploadFieldName {
@@ -32,4 +33,32 @@ export class AssetMediaReplaceDto {
   // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })
   [UploadFieldName.ASSET_DATA]!: any;
+}
+
+export class AssetBulkUploadCheckItem {
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+
+  /** base64 or hex encoded sha1 hash */
+  @IsString()
+  @IsNotEmpty()
+  checksum!: string;
+}
+
+export class AssetBulkUploadCheckDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetBulkUploadCheckItem)
+  assets!: AssetBulkUploadCheckItem[];
+}
+
+export class CheckExistingAssetsDto {
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  deviceAssetIds!: string[];
+
+  @IsNotEmpty()
+  deviceId!: string;
 }

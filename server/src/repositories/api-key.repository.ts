@@ -34,7 +34,9 @@ export class ApiKeyRepository implements IKeyRepository {
       },
       where: { key: hashedToken },
       relations: {
-        user: true,
+        user: {
+          metadata: true,
+        },
       },
     });
   }
