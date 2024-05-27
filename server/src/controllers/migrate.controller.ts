@@ -16,6 +16,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MigrationBegin, MigrationStatus } from 'src/dtos/migrate.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { MigrateService } from 'src/services/migrate.service';
 
 @ApiTags('Migrate')
@@ -23,6 +24,7 @@ import { MigrateService } from 'src/services/migrate.service';
 export class MigrateController {
   constructor(
     private service: MigrateService,
+    private assetServiceV1: AssetServiceV1,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {}
 
@@ -40,7 +42,7 @@ export class MigrateController {
     @Res() res: Response,
   ): Promise<void> {
     try {
-      await this.service.uploadFile(auth, file);
+      await this.service.uploadZipFile(auth, file);
       res.status(HttpStatus.OK).send({ message: 'File uploaded successfully' });
     } catch (error) {
       this.logger.error('Error uploading file', error);
@@ -56,7 +58,12 @@ export class MigrateController {
 
   @Post('begin')
   @Authenticated({ sharedLink: true })
-  async beginMigration(): Promise<MigrationBegin> {
-    return await this.service.beginMigration();
+  async beginMigration(@Auth() auth: AuthDto): Promise<MigrationBegin> {
+    try {
+      return await this.service.beginMigration(auth, this.assetServiceV1);
+    } catch (error) {
+      this.logger.error('Error beginning migration', error);
+      throw new Error('Failed to begin migration');
+    }
   }
 }
