@@ -17,6 +17,7 @@
 </script>
 
 <button
+  type="button"
   {disabled}
   class="flex h-full w-full flex-col place-content-center place-items-center gap-2 px-8 py-2 text-xs text-gray-600 transition-colors dark:text-gray-200 {colorClasses[
     color

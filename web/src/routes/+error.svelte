@@ -68,10 +68,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
                 <p class="text-sm">Get Help</p>
-              </button>
+              </div>
             </a>
 
             <a
@@ -80,10 +80,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
                 <p class="text-sm">Read Changelog</p>
-              </button>
+              </div>
             </a>
 
             <a
@@ -92,10 +92,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
                 <p class="text-sm">Check Logs</p>
-              </button>
+              </div>
             </a>
           </div>
         </div>

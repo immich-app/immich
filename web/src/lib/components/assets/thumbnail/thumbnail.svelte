@@ -106,6 +106,7 @@
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
+            type="button"
             on:click={onIconClickedHandler}
             class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}

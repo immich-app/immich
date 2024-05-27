@@ -128,6 +128,7 @@
     {:else}
       <div class="rounded-full">
         <button
+          type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
           class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
@@ -136,6 +137,7 @@
         </button>
         {#if $hasError}
           <button
+            type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             on:click={() => (showDetail = true)}
             class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
@@ -144,6 +146,7 @@
           </button>
         {/if}
         <button
+          type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           on:click={() => (showDetail = true)}
           class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"

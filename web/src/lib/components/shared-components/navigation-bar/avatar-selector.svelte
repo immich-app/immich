@@ -17,7 +17,7 @@
   <div class="flex items-center justify-center mt-4">
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
       {#each colors as color}
-        <button on:click={() => dispatch('choose', color)}>
+        <button type="button" on:click={() => dispatch('choose', color)}>
           <UserAvatar label={color} {user} {color} size="xl" showProfileImage={false} />
         </button>
       {/each}
