@@ -226,9 +226,8 @@ export class BaseConfig implements VideoCodecSWConfig {
     return videoStream.isHDR && this.config.tonemap !== ToneMapping.DISABLED;
   }
 
-  getScaling(videoStream: VideoStreamInfo) {
+  getScaling(videoStream: VideoStreamInfo, mult = 2) {
     const targetResolution = this.getTargetResolution(videoStream);
-    const mult = this.config.accel === TranscodeHWAccel.QSV ? 1 : 2; // QSV doesn't support scaling numbers below -1
     return this.isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
@@ -708,6 +707,10 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   useCQP() {
     return this.config.cqMode === CQMode.CQP || this.config.targetVideoCodec === VideoCodec.VP9;
+  }
+
+  getScaling(videoStream: VideoStreamInfo): string {
+    return super.getScaling(videoStream, 1);
   }
 }
 
