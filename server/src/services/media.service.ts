@@ -27,25 +27,12 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import {
-  AV1Config,
-  H264Config,
-  HEVCConfig,
-  NvencHwDecodeConfig,
-  NvencSwDecodeConfig,
-  QsvHwDecodeConfig,
-  QsvSwDecodeConfig,
-  RkmppHwDecodeConfig,
-  RkmppSwDecodeConfig,
-  ThumbnailConfig,
-  VAAPIConfig,
-  VP9Config,
-} from 'src/utils/media';
+import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
@@ -53,8 +40,8 @@ import { usePagination } from 'src/utils/pagination';
 export class MediaService {
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private openCL: boolean | null = null;
-  private devices: string[] | null = null;
+  private maliOpenCL?: boolean;
+  private devices?: string[];
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -232,8 +219,8 @@ export class MediaService {
           return;
         }
         const mainAudioStream = this.getMainStream(audioStreams);
-        const config = { ...ffmpeg, targetResolution: size.toString() };
-        const options = new ThumbnailConfig(config).getOptions(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
+        const config = ThumbnailConfig.create({ ...ffmpeg, targetResolution: size.toString() });
+        const options = config.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(asset.originalPath, path, options);
         break;
       }
@@ -331,8 +318,8 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
-    const { ffmpeg: config } = await this.configCore.getConfig();
-    const target = this.getTranscodeTarget(config, mainVideoStream, mainAudioStream);
+    const { ffmpeg } = await this.configCore.getConfig();
+    const target = this.getTranscodeTarget(ffmpeg, mainVideoStream, mainAudioStream);
     if (target === TranscodeTarget.NONE) {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
@@ -343,30 +330,28 @@ export class MediaService {
       return JobStatus.SKIPPED;
     }
 
-    let transcodeOptions;
+    let command;
     try {
-      transcodeOptions = await this.getCodecConfig(config).then((c) =>
-        c.getOptions(target, mainVideoStream, mainAudioStream),
-      );
+      const config = BaseConfig.create(ffmpeg, await this.getDevices(), await this.hasMaliOpenCL());
+      command = config.getCommand(target, mainVideoStream, mainAudioStream);
     } catch (error) {
       this.logger.error(`An error occurred while configuring transcoding options: ${error}`);
       return JobStatus.FAILED;
     }
 
-    this.logger.log(`Started encoding video ${asset.id} ${JSON.stringify(transcodeOptions)}`);
+    this.logger.log(`Started encoding video ${asset.id} ${JSON.stringify(command)}`);
     try {
-      await this.mediaRepository.transcode(input, output, transcodeOptions);
+      await this.mediaRepository.transcode(input, output, command);
     } catch (error) {
       this.logger.error(error);
-      if (config.accel !== TranscodeHWAccel.DISABLED) {
+      if (ffmpeg.accel !== TranscodeHWAccel.DISABLED) {
         this.logger.error(
-          `Error occurred during transcoding. Retrying with ${config.accel.toUpperCase()} acceleration disabled.`,
+          `Error occurred during transcoding. Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled.`,
         );
       }
-      transcodeOptions = await this.getCodecConfig({ ...config, accel: TranscodeHWAccel.DISABLED }).then((c) =>
-        c.getOptions(target, mainVideoStream, mainAudioStream),
-      );
-      await this.mediaRepository.transcode(input, output, transcodeOptions);
+      const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
+      command = config.getCommand(target, mainVideoStream, mainAudioStream);
+      await this.mediaRepository.transcode(input, output, command);
     }
 
     this.logger.log(`Successfully encoded ${asset.id}`);
@@ -382,10 +367,10 @@ export class MediaService {
 
   private getTranscodeTarget(
     config: SystemConfigFFmpegDto,
-    videoStream: VideoStreamInfo | null,
-    audioStream: AudioStreamInfo | null,
+    videoStream?: VideoStreamInfo,
+    audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
-    if (videoStream == null && audioStream == null) {
+    if (!videoStream && !audioStream) {
       return TranscodeTarget.NONE;
     }
 
@@ -407,8 +392,8 @@ export class MediaService {
     return TranscodeTarget.NONE;
   }
 
-  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: AudioStreamInfo | null): boolean {
-    if (stream == null) {
+  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
+    if (!stream) {
       return false;
     }
 
@@ -430,8 +415,8 @@ export class MediaService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo | null): boolean {
-    if (stream == null) {
+  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: VideoStreamInfo): boolean {
+    if (!stream) {
       return false;
     }
 
@@ -463,70 +448,6 @@ export class MediaService {
         throw new Error(`Unsupported transcode policy: ${ffmpegConfig.transcode}`);
       }
     }
-  }
-
-  async getCodecConfig(config: SystemConfigFFmpegDto) {
-    if (config.accel === TranscodeHWAccel.DISABLED) {
-      return this.getSWCodecConfig(config);
-    }
-    return this.getHWCodecConfig(config);
-  }
-
-  private getSWCodecConfig(config: SystemConfigFFmpegDto) {
-    switch (config.targetVideoCodec) {
-      case VideoCodec.H264: {
-        return new H264Config(config);
-      }
-      case VideoCodec.HEVC: {
-        return new HEVCConfig(config);
-      }
-      case VideoCodec.VP9: {
-        return new VP9Config(config);
-      }
-      case VideoCodec.AV1: {
-        return new AV1Config(config);
-      }
-      default: {
-        throw new UnsupportedMediaTypeException(`Codec '${config.targetVideoCodec}' is unsupported`);
-      }
-    }
-  }
-
-  private async getHWCodecConfig(config: SystemConfigFFmpegDto) {
-    let handler: VideoCodecHWConfig;
-    switch (config.accel) {
-      case TranscodeHWAccel.NVENC: {
-        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
-        break;
-      }
-      case TranscodeHWAccel.QSV: {
-        handler = config.accelDecode
-          ? new QsvHwDecodeConfig(config, await this.getDevices())
-          : new QsvSwDecodeConfig(config, await this.getDevices());
-        break;
-      }
-      case TranscodeHWAccel.VAAPI: {
-        handler = new VAAPIConfig(config, await this.getDevices());
-        break;
-      }
-      case TranscodeHWAccel.RKMPP: {
-        handler =
-          config.accelDecode && (await this.hasOpenCL())
-            ? new RkmppHwDecodeConfig(config, await this.getDevices())
-            : new RkmppSwDecodeConfig(config, await this.getDevices());
-        break;
-      }
-      default: {
-        throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);
-      }
-    }
-    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
-      throw new UnsupportedMediaTypeException(
-        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
-      );
-    }
-
-    return handler;
   }
 
   isSRGB(asset: AssetEntity): boolean {
@@ -567,24 +488,29 @@ export class MediaService {
 
   private async getDevices() {
     if (!this.devices) {
-      this.devices = await this.storageRepository.readdir('/dev/dri');
+      try {
+        this.devices = await this.storageRepository.readdir('/dev/dri');
+      } catch {
+        this.logger.debug('No devices found in /dev/dri.');
+        this.devices = [];
+      }
     }
 
     return this.devices;
   }
 
-  private async hasOpenCL() {
-    if (this.openCL === null) {
+  private async hasMaliOpenCL() {
+    if (this.maliOpenCL === undefined) {
       try {
         const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
         const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
-        this.openCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+        this.maliOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
       } catch {
-        this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
-        this.openCL = false;
+        this.logger.debug('OpenCL not available for transcoding, using CPU decoding instead.');
+        this.maliOpenCL = false;
       }
     }
 
-    return this.openCL;
+    return this.maliOpenCL;
   }
 }

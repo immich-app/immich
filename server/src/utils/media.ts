@@ -3,22 +3,84 @@ import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
-  TranscodeOptions,
+  TranscodeCommand,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
   VideoStreamInfo,
 } from 'src/interfaces/media.interface';
 
-class BaseConfig implements VideoCodecSWConfig {
-  presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  constructor(protected config: SystemConfigFFmpegDto) {}
+export class BaseConfig implements VideoCodecSWConfig {
+  readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
+  protected constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  static create(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false): VideoCodecSWConfig {
+    if (config.accel === TranscodeHWAccel.DISABLED) {
+      return this.getSWCodecConfig(config);
+    }
+    return this.getHWCodecConfig(config, devices, hasMaliOpenCL);
+  }
+
+  private static getSWCodecConfig(config: SystemConfigFFmpegDto) {
+    switch (config.targetVideoCodec) {
+      case VideoCodec.H264: {
+        return new H264Config(config);
+      }
+      case VideoCodec.HEVC: {
+        return new HEVCConfig(config);
+      }
+      case VideoCodec.VP9: {
+        return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
+      }
+      default: {
+        throw new Error(`Codec '${config.targetVideoCodec}' is unsupported`);
+      }
+    }
+  }
+
+  private static getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false) {
+    let handler: VideoCodecHWConfig;
+    switch (config.accel) {
+      case TranscodeHWAccel.NVENC: {
+        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
+        break;
+      }
+      case TranscodeHWAccel.QSV: {
+        handler = config.accelDecode ? new QsvHwDecodeConfig(config, devices) : new QsvSwDecodeConfig(config, devices);
+        break;
+      }
+      case TranscodeHWAccel.VAAPI: {
+        handler = new VAAPIConfig(config, devices);
+        break;
+      }
+      case TranscodeHWAccel.RKMPP: {
+        handler =
+          config.accelDecode && hasMaliOpenCL
+            ? new RkmppHwDecodeConfig(config, devices)
+            : new RkmppSwDecodeConfig(config, devices);
+        break;
+      }
+      default: {
+        throw new Error(`${config.accel.toUpperCase()} acceleration is unsupported`);
+      }
+    }
+    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
+      throw new Error(
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
+      );
+    }
+
+    return handler;
+  }
+
+  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(videoStream),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
-    } as TranscodeOptions;
+    } as TranscodeCommand;
     if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
       const filters = this.getFilterOptions(videoStream);
       if (filters.length > 0) {
@@ -318,6 +380,10 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
+  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+    return new ThumbnailConfig(config);
+  }
+
   getBaseInputOptions(): string[] {
     return ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'];
   }
