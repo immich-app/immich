@@ -5,6 +5,34 @@
             "changelog": "Änderungsprotokoll lesen",
             "help": "Erhalte Hilfe",
             "logs": "Logs überprüfen"
+        },
+        "page": {
+            "title": "Willkommen 🎉",
+            "description": "Immich Web Interface"
+        },
+        "auth": {
+            "register": {
+                "admin_registry_info": "Da Sie der erste Benutzer im System sind, werden Sie als Administrator zugewiesen und sind für administrative Aufgaben zuständig. Weitere Benutzer werden von Ihnen erstellt."
+            }
+        }
+    },
+    "common": {
+        "name": "Immich",
+        "welcome": {
+            "title": "Willkommen zu Immich",
+            "getting_started": "Erste Schritte"
+        }
+    },
+    "component": {
+        "form": {
+            "admin_email": "Admin Email",
+            "admin_password": "Admin Passwort",
+            "admin_password_confirm": "Admin Passwort wiederholen",
+            "name": "Name",
+            "sign_up": "Registrieren Sie sich",
+            "error_password_mismatch": "Passwörter stimmen nicht überein",
+            "error_create_admin": "Fehler beim Erstellen eines Administratorkontos",
+            "error_unable_create_admin": "Admin-Konto kann nicht erstellt werden"
         }
     }
 }
