@@ -279,6 +279,7 @@
       <div class="flex gap-2">
         {#if peopleWithFaces.length > Object.keys(selectedFaceToRemove).length}
           <button
+            type="button"
             class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
             on:click={handleRemoveAllFaces}
             title="Remove all faces"
@@ -290,6 +291,7 @@
         {/if}
         {#if (unassignedFaces.length > 0 && unassignedFaces.length > Object.keys(selectedPersonToAdd).length) || Object.keys(selectedFaceToRemove).length > 0}
           <button
+            type="button"
             class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
             on:click={handleOpenAvailableFaces}
             title="Faces available"
@@ -300,6 +302,7 @@
           </button>
         {/if}
         <button
+          type="button"
           class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
           on:click={() => handleEditFaces()}
         >

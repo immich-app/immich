@@ -75,6 +75,7 @@
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
       <button
+        type="button"
         class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
         on:click={onClose}
       >
@@ -93,6 +94,7 @@
           {#if !selectedPersonToAdd[face.id]}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <button
+                type="button"
                 tabindex={index}
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
                 on:focus={() => ($boundingBoxesArray = [face])}
@@ -141,6 +143,7 @@
       <div class="flex items-center justify-between">
         <p>Faces to be removed</p>
         <button
+          type="button"
           class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
           on:click={handleRemoveAllFaces}
           title="Reset"
@@ -154,6 +157,7 @@
         {#each Object.entries(selectedFaceToRemove) as [id, face], index}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <button
+              type="button"
               tabindex={index}
               class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
               on:focus={() => (face ? ($boundingBoxesArray = [face]) : '')}
