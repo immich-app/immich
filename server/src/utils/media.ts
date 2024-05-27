@@ -538,8 +538,6 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     options.push(...this.getToneMapping(videoStream));
     if (options.length > 0) {
       options[options.length - 1] += ':format=nv12';
-    } else {
-      options.push('format=nv12');
     }
     return options;
   }
@@ -563,7 +561,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
   }
 
   getInputThreadOptions() {
-    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+    return [`-threads 1`];
   }
 
   getOutputThreadOptions() {
@@ -653,7 +651,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       throw new Error('No QSV device found');
     }
 
-    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', '-threads 1'];
+    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', ...this.getInputThreadOptions()];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
       options.push(`-qsv_device ${hwDevice}`);
@@ -697,6 +695,10 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       `tonemap_opencl=${tonemapOptions.join(':')}`,
       'hwmap=derive_device=qsv:reverse=1,format=qsv',
     ];
+  }
+
+  getInputThreadOptions() {
+    return [`-threads 1`];
   }
 }
 
