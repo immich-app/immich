@@ -293,7 +293,7 @@ describe(MediaService.name, () => {
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp\.jpeg/), {
         inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
         outputOptions: [
           '-fps_mode vfr',
@@ -305,7 +305,7 @@ describe(MediaService.name, () => {
         twoPass: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
-      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp\.jpeg/), previewPath);
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
@@ -316,7 +316,7 @@ describe(MediaService.name, () => {
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp\.jpeg/), {
         inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
         outputOptions: [
           '-fps_mode vfr',
@@ -328,7 +328,7 @@ describe(MediaService.name, () => {
         twoPass: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
-      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp\.jpeg/), previewPath);
     });
 
     it('should always generate video thumbnail in one pass', async () => {
@@ -341,7 +341,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
-      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp\.jpeg/), {
         inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
         outputOptions: [
           '-fps_mode vfr',
@@ -353,7 +353,7 @@ describe(MediaService.name, () => {
         twoPass: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
-      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp\.jpeg/), previewPath);
     });
 
     it('should run successfully', async () => {

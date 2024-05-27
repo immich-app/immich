@@ -188,7 +188,7 @@ export class MediaService {
     const { image, ffmpeg } = await this.configCore.getConfig();
     const size = type === AssetPathType.PREVIEW ? image.previewSize : image.thumbnailSize;
     const path = StorageCore.getImagePath(asset, type, format);
-    const tmpPath = StorageCore.getTempPathInDir(dirname(path));
+    const tmpPath = `${StorageCore.getTempPathInDir(dirname(path))}.${format}`;
     this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
@@ -204,6 +204,9 @@ export class MediaService {
 
           const inputPath = useExtracted ? extractedPath : asset.originalPath;
           await this.mediaRepository.generateThumbnail(inputPath, tmpPath, imageOptions);
+        } catch (error) {
+          await this.storageRepository.unlink(tmpPath);
+          throw error;
         } finally {
           if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
@@ -222,7 +225,12 @@ export class MediaService {
         const mainAudioStream = this.getMainStream(audioStreams);
         const config = ThumbnailConfig.create({ ...ffmpeg, targetResolution: size.toString() });
         const options = config.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
-        await this.mediaRepository.transcode(asset.originalPath, tmpPath, options);
+        try {
+          await this.mediaRepository.transcode(asset.originalPath, tmpPath, options);
+        } catch (error) {
+          await this.storageRepository.unlink(tmpPath);
+          throw error;
+        }
         break;
       }
 
@@ -354,9 +362,16 @@ export class MediaService {
           `Error occurred during transcoding. Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled.`,
         );
       }
-      const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
-      command = config.getCommand(target, mainVideoStream, mainAudioStream);
-      await this.mediaRepository.transcode(input, tmpPath, command);
+
+      try {
+        const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
+        command = config.getCommand(target, mainVideoStream, mainAudioStream);
+        await this.mediaRepository.transcode(input, tmpPath, command);
+      } catch (error) {
+        this.logger.error(error);
+        await this.storageRepository.unlink(tmpPath);
+        return JobStatus.FAILED;
+      }
     }
 
     await this.storageRepository.rename(tmpPath, output);
