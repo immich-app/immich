@@ -343,8 +343,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getScaling(videoStream: VideoStreamInfo) {
-    let options = super.getScaling(videoStream);
-    options += ':flags=lanczos+accurate_rnd+full_chroma_int';
+    let options = super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
       options += ':out_color_matrix=601:out_range=pc';
     }
