@@ -1,10 +1,21 @@
 {
+    "common": {
+        "name": "Immich",
+        "welcome": {
+            "title": "Welcome to Immich",
+            "getting_started": "Getting started"
+        }
+    },
     "page": {
         "error": {
             "message": "🚨 Error - Something went wrong",
             "help": "Get help",
             "changelog": "Read changelog",
             "logs": "Check Logs"
+        },
+        "page": {
+            "title": "Welcome 🎉",
+            "description": "Immich Web Interface"
         }
     }
 }
