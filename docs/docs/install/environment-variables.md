@@ -55,7 +55,7 @@ It only need to be set if the Immich deployment method is changing.
 :::tip
 `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 
-`TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
+`TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used to localize the log output timestamps.
 :::
 
 ## Workers
