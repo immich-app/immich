@@ -3092,7 +3092,7 @@
         ]
       }
     },
-    "/migrate/begin": {
+    "/migrate/google/begin": {
       "post": {
         "operationId": "beginMigration",
         "parameters": [
@@ -3133,7 +3133,7 @@
         ]
       }
     },
-    "/migrate/status": {
+    "/migrate/google/status": {
       "get": {
         "operationId": "getMigrationStatus",
         "parameters": [
@@ -3174,7 +3174,7 @@
         ]
       }
     },
-    "/migrate/upload": {
+    "/migrate/google/upload": {
       "post": {
         "operationId": "uploadFile",
         "parameters": [

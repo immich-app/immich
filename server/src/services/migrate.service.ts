@@ -85,7 +85,7 @@ export class MigrateService {
     }
 
     const sanitizedFilename = sanitize(file.originalname);
-    const uploadFolder = this.getUploadFolder();
+    const uploadFolder = this.getMigrateFolder();
     const uploadPath = path.join(uploadFolder, sanitizedFilename);
     console.log(uploadPath);
 
@@ -103,14 +103,14 @@ export class MigrateService {
     }
   }
 
-  private getUploadFolder(): string {
+  private getMigrateFolder(): string {
     const folder = StorageCore.getBaseFolder(StorageFolder.MIGRATE);
     this.storageRepository.mkdirSync(folder);
     return folder;
   }
 
   public async getMigrationStatus(): Promise<MigrationStatus> {
-    const folder = this.getUploadFolder();
+    const folder = this.getMigrateFolder();
     try {
       const files = await fs.readdir(folder);
       const zipFiles = files.filter((file) => path.extname(file) === '.zip');
@@ -127,7 +127,7 @@ export class MigrateService {
     const migration = new MigrationBegin();
     try {
       // 1: Unzip folder
-      const folder = this.getUploadFolder();
+      const folder = this.getMigrateFolder();
       await this.unzipFiles(folder, folder);
 
       // 2: Run google-photos-migrate on it
@@ -162,7 +162,7 @@ export class MigrateService {
       console.log(`Files failed: ${counts.err}`);
 
       // 3: Import those files
-      const outputFolder = path.join(folder, 'output', 'Photos');
+      const outputFolder = path.join(folder, 'output');
       const paths = await this.getFilesRecursively(outputFolder);
 
       for (const filePath of paths) {
@@ -186,6 +186,11 @@ export class MigrateService {
         };
         await assetServiceV1.uploadFile(auth, cdto, newUploadFile);
       }
+
+      // 4: Clean up
+      // Currently not impl because if I immediately delete files, thumbnail job has no
+      // "origional path" to generate thumbnail from
+      // await this.cleanUp(folder);
 
       migration.success = true;
       return migration;
@@ -222,6 +227,27 @@ export class MigrateService {
       console.log('All zip files have been successfully extracted.');
     } catch (error) {
       console.error('An error occurred while extracting zip files:', error);
+    }
+  }
+
+  private async cleanUp(sourceDir: string) {
+    try {
+      // Read all files from the source directory
+      const files = await fs.readdir(sourceDir);
+
+      // Filter out only .zip files
+      const zipFiles = files.filter((file) => path.extname(file) === '.zip');
+      for (const zipFile of zipFiles) {
+        const zipFilePath = path.join(sourceDir, zipFile);
+        await fs.unlink(zipFilePath);
+      }
+
+      await fs.rmdir(path.join(sourceDir, 'output'), { recursive: true });
+      await fs.rmdir(path.join(sourceDir, 'output'), { recursive: true });
+
+      console.log('All zip files have been successfully removed.');
+    } catch (error) {
+      console.error('An error occurred while removing zip files:', error);
     }
   }
 

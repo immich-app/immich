@@ -28,7 +28,7 @@ export class MigrateController {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {}
 
-  @Post('upload')
+  @Post('google/upload')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -50,13 +50,13 @@ export class MigrateController {
     }
   }
 
-  @Get('status')
+  @Get('google/status')
   @Authenticated({ sharedLink: true })
   getMigrationStatus(): Promise<MigrationStatus> {
     return this.service.getMigrationStatus();
   }
 
-  @Post('begin')
+  @Post('google/begin')
   @Authenticated({ sharedLink: true })
   async beginMigration(@Auth() auth: AuthDto): Promise<MigrationBegin> {
     try {
