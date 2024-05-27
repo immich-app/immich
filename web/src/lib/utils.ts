@@ -291,4 +291,4 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const s = (count: number) => (count === 1 ? '' : 's');
 
-export const memoryLaneTitle = (yearsAgo: number) => `year${s(yearsAgo)} ago`;
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;
