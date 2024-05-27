@@ -488,7 +488,12 @@ export class MediaService {
 
   private async getDevices() {
     if (!this.devices) {
-      this.devices = await this.storageRepository.readdir('/dev/dri');
+      try {
+        this.devices = await this.storageRepository.readdir('/dev/dri');
+      } catch {
+        this.logger.debug('No devices found in /dev/dri.');
+        this.devices = [];
+      }
     }
 
     return this.devices;
