@@ -27,6 +27,6 @@
 
   <div class="right">
     <Button {disabled} size="sm" color="gray" on:click={() => dispatch('reset', { default: false })}>Reset</Button>
-    <Button {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
+    <Button type="submit" {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
   </div>
 </div>
