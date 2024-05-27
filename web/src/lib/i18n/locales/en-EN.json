@@ -16,6 +16,23 @@
         "page": {
             "title": "Welcome 🎉",
             "description": "Immich Web Interface"
+        },
+        "auth": {
+            "register": {
+                "admin_registry_info": "Since you are the first user on the system, you will be assigned as the Admin and are responsible for administrative tasks, and additional users will be created by you."
+            }
+        }
+    },
+    "component": {
+        "form": {
+            "admin_email": "Admin Email",
+            "admin_password": "Admin Password",
+            "admin_password_confirm": "Confirm Admin Password",
+            "name": "Name",
+            "sign_up": "Sign up",
+            "error_password_mismatch": "Password does not match",
+            "error_create_admin": "Error create admin account",
+            "error_unable_create_admin": "Unable to create admin account"
         }
     }
 }

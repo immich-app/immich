@@ -3,7 +3,6 @@ import { getServerConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { loadUser } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
-import { t } from 'svelte-i18n';
 
 export const ssr = false;
 export const csr = true;
@@ -22,8 +21,8 @@ export const load = (async () => {
 
   return {
     meta: {
-      title: $t('page.page.title'),
-      description: $t('page.page.description'),
+      title: 'Welcome 🎉',
+      description: 'Immich Web Interface',
     },
   };
 }) satisfies PageLoad;

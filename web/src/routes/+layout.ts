@@ -17,8 +17,10 @@ export const load = (async({ fetch }) => {
 	if (browser) {
 		locale.set(window.navigator.language)
 	}
-	await waitLocale()
-
+  else {
+    locale.set('en-EN')
+  }
+  
   return {
     meta: {
       title: "Immich",
