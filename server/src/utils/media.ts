@@ -319,7 +319,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 
 export class ThumbnailConfig extends BaseConfig {
   getBaseInputOptions(): string[] {
-    return ['-ss 00:00:00', '-sws_flags accurate_rnd+full_chroma_int'];
+    return ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
@@ -328,9 +328,9 @@ export class ThumbnailConfig extends BaseConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
     return [
-      'fps=15',
-      'thumbnail=15',
-      'select=gt(scene,0.15)-eq(prev_selected_n,n)+isnan(prev_selected_n)',
+      'fps=12',
+      'thumbnail=12',
+      `select=gt(scene\\,0.15)-eq(prev_selected_n\\,n)+isnan(prev_selected_n)`,
       ...super.getFilterOptions(videoStream),
     ];
   }
