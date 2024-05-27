@@ -2,7 +2,9 @@
     "page": {
         "error": {
             "message": "🚨 Fehler - Etwas ist schiefgelaufen",
-            "changelog": "Lese changelog"
+            "changelog": "Änderungsprotokoll lesen",
+            "help": "Erhalte Hilfe",
+            "logs": "Logs überprüfen"
         }
     }
 }
