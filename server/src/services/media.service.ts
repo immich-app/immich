@@ -188,6 +188,7 @@ export class MediaService {
     const { image, ffmpeg } = await this.configCore.getConfig();
     const size = type === AssetPathType.PREVIEW ? image.previewSize : image.thumbnailSize;
     const path = StorageCore.getImagePath(asset, type, format);
+    const tmpPath = StorageCore.getTempPathInDir(dirname(path));
     this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
@@ -201,8 +202,8 @@ export class MediaService {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const imageOptions = { format, size, colorspace, quality: image.quality };
 
-          const outputPath = useExtracted ? extractedPath : asset.originalPath;
-          await this.mediaRepository.generateThumbnail(outputPath, path, imageOptions);
+          const inputPath = useExtracted ? extractedPath : asset.originalPath;
+          await this.mediaRepository.generateThumbnail(inputPath, tmpPath, imageOptions);
         } finally {
           if (didExtract) {
             await this.storageRepository.unlink(extractedPath);
@@ -221,7 +222,7 @@ export class MediaService {
         const mainAudioStream = this.getMainStream(audioStreams);
         const config = ThumbnailConfig.create({ ...ffmpeg, targetResolution: size.toString() });
         const options = config.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
-        await this.mediaRepository.transcode(asset.originalPath, path, options);
+        await this.mediaRepository.transcode(asset.originalPath, tmpPath, options);
         break;
       }
 
@@ -229,6 +230,9 @@ export class MediaService {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
       }
     }
+
+    await this.storageRepository.rename(tmpPath, path);
+
     this.logger.log(
       `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${asset.id}`,
     );
@@ -340,8 +344,9 @@ export class MediaService {
     }
 
     this.logger.log(`Started encoding video ${asset.id} ${JSON.stringify(command)}`);
+    const tmpPath = StorageCore.getTempPathInDir(dirname(output));
     try {
-      await this.mediaRepository.transcode(input, output, command);
+      await this.mediaRepository.transcode(input, tmpPath, command);
     } catch (error) {
       this.logger.error(error);
       if (ffmpeg.accel !== TranscodeHWAccel.DISABLED) {
@@ -351,8 +356,10 @@ export class MediaService {
       }
       const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
       command = config.getCommand(target, mainVideoStream, mainAudioStream);
-      await this.mediaRepository.transcode(input, output, command);
+      await this.mediaRepository.transcode(input, tmpPath, command);
     }
+
+    await this.storageRepository.rename(tmpPath, output);
 
     this.logger.log(`Successfully encoded ${asset.id}`);
 

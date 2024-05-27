@@ -241,13 +241,14 @@ describe(MediaService.name, () => {
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith('/original/path.jpg', previewPath, {
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith('/original/path.jpg', expect.stringMatching(/.*\.tmp/), {
         size: 1440,
         format,
         quality: 80,
         colorspace: Colorspace.SRGB,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
     });
 
     it('should delete previous preview if different path', async () => {
@@ -265,12 +266,14 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([
         { ...assetStub.image, exifInfo: { profileDescription: 'Adobe RGB', bitsPerSample: 14 } as ExifEntity },
       ]);
+      const previewPath = 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg';
+
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
       expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
         '/original/path.jpg',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.stringMatching(/.*\.tmp/),
         {
           size: 1440,
           format: ImageFormat.JPEG,
@@ -278,64 +281,54 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
         },
       );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-      });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
     });
 
     it('should generate a thumbnail for a video', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      const previewPath = 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg';
+
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-        {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
-          outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
-          ],
-          twoPass: false,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+        outputOptions: [
+          '-fps_mode vfr',
+          '-frames:v 1',
+          '-update 1',
+          '-v verbose',
+          `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
+        ],
+        twoPass: false,
       });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      const previewPath = 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg';
+
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-        {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
-          outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
-          ],
-          twoPass: false,
-        },
-      );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+        outputOptions: [
+          '-fps_mode vfr',
+          '-frames:v 1',
+          '-update 1',
+          '-v verbose',
+          `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+        ],
+        twoPass: false,
       });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
     });
 
     it('should always generate video thumbnail in one pass', async () => {
@@ -344,23 +337,23 @@ describe(MediaService.name, () => {
         ffmpeg: { twoPass: true, maxBitrate: '5000k' },
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      const previewPath = 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg';
+
       await sut.handleGeneratePreview({ id: assetStub.video.id });
 
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
-        {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
-          outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
-          ],
-          twoPass: false,
-        },
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+        outputOptions: [
+          '-fps_mode vfr',
+          '-frames:v 1',
+          '-update 1',
+          '-v verbose',
+          `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+        ],
+        twoPass: false,
+      });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), previewPath);
     });
 
     it('should run successfully', async () => {
@@ -396,13 +389,18 @@ describe(MediaService.name, () => {
         await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
         expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith('/original/path.jpg', thumbnailPath, {
-          size: 250,
-          format,
-          quality: 80,
-          colorspace: Colorspace.SRGB,
-        });
+        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+          assetStub.image.originalPath,
+          expect.stringMatching(/.*\.tmp/),
+          {
+            size: 250,
+            format,
+            quality: 80,
+            colorspace: Colorspace.SRGB,
+          },
+        );
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
+        expect(storageMock.rename).toHaveBeenCalledWith(expect.stringMatching(/.*\.tmp/), thumbnailPath);
       },
     );
 
@@ -425,7 +423,7 @@ describe(MediaService.name, () => {
     expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
     expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
-      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      expect.stringMatching(/.*\.tmp/),
       {
         format: ImageFormat.WEBP,
         size: 250,
@@ -437,6 +435,10 @@ describe(MediaService.name, () => {
       id: 'asset-id',
       thumbnailPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
     });
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+    );
   });
 
   it('should extract embedded image if enabled and available', async () => {
@@ -451,7 +453,7 @@ describe(MediaService.name, () => {
     expect(mediaMock.generateThumbnail.mock.calls).toEqual([
       [
         extractedPath,
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        expect.stringMatching(/.*\.tmp/),
         {
           format: ImageFormat.WEBP,
           size: 250,
@@ -462,6 +464,10 @@ describe(MediaService.name, () => {
     ]);
     expect(extractedPath?.endsWith('.tmp')).toBe(true);
     expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+    );
   });
 
   it('should resize original image if embedded image is too small', async () => {
@@ -475,7 +481,7 @@ describe(MediaService.name, () => {
     expect(mediaMock.generateThumbnail.mock.calls).toEqual([
       [
         assetStub.imageDng.originalPath,
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        expect.stringMatching(/.*\.tmp/),
         {
           format: ImageFormat.WEBP,
           size: 250,
@@ -487,6 +493,10 @@ describe(MediaService.name, () => {
     const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
     expect(extractedPath?.endsWith('.tmp')).toBe(true);
     expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+    );
   });
 
   it('should resize original image if embedded image not found', async () => {
@@ -497,13 +507,17 @@ describe(MediaService.name, () => {
 
     expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
-      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      expect.stringMatching(/.*\.tmp/),
       {
         format: ImageFormat.WEBP,
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
       },
+    );
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
   });
@@ -517,13 +531,17 @@ describe(MediaService.name, () => {
     expect(mediaMock.extract).not.toHaveBeenCalled();
     expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
       assetStub.imageDng.originalPath,
-      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      expect.stringMatching(/.*\.tmp/),
       {
         format: ImageFormat.WEBP,
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
       },
+    );
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
   });
@@ -632,14 +650,14 @@ describe(MediaService.name, () => {
       expect(mediaMock.probe).toHaveBeenCalledWith('/original/path.ext');
       expect(systemMock.get).toHaveBeenCalled();
       expect(storageMock.mkdirSync).toHaveBeenCalled();
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:1']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:1']),
-          twoPass: false,
-        },
       );
     });
 
@@ -662,14 +680,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.ALL } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        },
       );
     });
 
@@ -677,14 +695,14 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        },
       );
     });
 
@@ -692,14 +710,14 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream40Mbps);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.BITRATE, maxBitrate: '30M' } });
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        },
       );
     });
 
@@ -707,14 +725,14 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.ALL, targetResolution: 'original' } });
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('scale')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('scale')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -723,14 +741,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:720/)]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:720/)]),
-          twoPass: false,
-        },
       );
     });
 
@@ -739,14 +757,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=720:-2/)]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=720:-2/)]),
-          twoPass: false,
-        },
       );
     });
 
@@ -755,14 +773,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.ALL, targetResolution: 'original' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:354/)]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:354/)]),
-          twoPass: false,
-        },
       );
     });
 
@@ -771,14 +789,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.ALL, targetResolution: 'original' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=354:-2/)]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=354:-2/)]),
-          twoPass: false,
-        },
       );
     });
 
@@ -789,14 +807,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v copy', '-c:a aac']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v copy', '-c:a aac']),
-          twoPass: false,
-        },
       );
     });
 
@@ -811,14 +829,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining(['-tag:v hvc1']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining(['-tag:v hvc1']),
-          twoPass: false,
-        },
       );
     });
 
@@ -833,14 +851,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v copy', '-tag:v hvc1']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v copy', '-tag:v hvc1']),
-          twoPass: false,
-        },
       );
     });
 
@@ -849,14 +867,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
-          twoPass: false,
-        },
       );
     });
 
@@ -904,14 +922,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { maxBitrate: '4500k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
-          twoPass: false,
-        },
       );
     });
 
@@ -920,15 +938,11 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { twoPass: true, maxBitrate: '4500k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
-          twoPass: true,
-        },
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v h264', '-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
+        twoPass: true,
+      });
     });
 
     it('should fallback to one pass for h264/h265 if two-pass is enabled but no max bitrate is set', async () => {
@@ -936,14 +950,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { twoPass: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
-          twoPass: false,
-        },
       );
     });
 
@@ -958,15 +972,11 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
-          twoPass: true,
-        },
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
+        twoPass: true,
+      });
     });
 
     it('should transcode by crf in two passes for vp9 when two pass mode is enabled and max bitrate is disabled', async () => {
@@ -980,15 +990,11 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-maxrate')]),
-          twoPass: true,
-        },
-      );
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-maxrate')]),
+        twoPass: true,
+      });
     });
 
     it('should configure preset for vp9', async () => {
@@ -996,14 +1002,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.VP9, preset: 'slow' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-cpu-used 2']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-cpu-used 2']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1012,14 +1018,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { preset: 'invalid', targetVideoCodec: VideoCodec.VP9 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-cpu-used')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-cpu-used')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1028,14 +1034,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.VP9, threads: 2 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-threads 2']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-threads 2']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1044,14 +1050,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { threads: 1 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-threads 1', '-x264-params frame-threads=1:pools=none']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-threads 1', '-x264-params frame-threads=1:pools=none']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1060,14 +1066,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { threads: 0 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1076,14 +1082,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { threads: 1, targetVideoCodec: VideoCodec.HEVC } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v hevc', '-threads 1', '-x265-params frame-threads=1:pools=none']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v hevc', '-threads 1', '-x265-params frame-threads=1:pools=none']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1092,14 +1098,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { threads: 0, targetVideoCodec: VideoCodec.HEVC } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1108,24 +1114,24 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining([
+          '-c:v av1',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-v verbose',
+          '-vf scale=-2:720,format=yuv420p',
+          '-preset 12',
+          '-crf 23',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([
-            '-c:v av1',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:1',
-            '-v verbose',
-            '-vf scale=-2:720,format=yuv420p',
-            '-preset 12',
-            '-crf 23',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1134,14 +1140,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, preset: 'veryslow' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-preset 4']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-preset 4']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1150,14 +1156,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, maxBitrate: '2M' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-svtav1-params mbr=2M']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params mbr=2M']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1166,14 +1172,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, threads: 4 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-svtav1-params lp=4']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params lp=4']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1182,14 +1188,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { targetVideoCodec: VideoCodec.AV1, threads: 4, maxBitrate: '2M' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-svtav1-params lp=4:mbr=2M']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params lp=4:mbr=2M']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1228,30 +1234,30 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.arrayContaining([
+          '-tune hq',
+          '-qmin 0',
+          '-rc-lookahead 20',
+          '-i_qfactor 0.75',
+          `-c:v h264_nvenc`,
+          '-c:a copy',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-g 256',
+          '-v verbose',
+          '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
+          '-preset p1',
+          '-cq:v 23',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.arrayContaining([
-            '-tune hq',
-            '-qmin 0',
-            '-rc-lookahead 20',
-            '-i_qfactor 0.75',
-            `-c:v h264_nvenc`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:1',
-            '-g 256',
-            '-v verbose',
-            '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
-            '-preset p1',
-            '-cq:v 23',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1266,14 +1272,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.arrayContaining([expect.stringContaining('-multipass')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.arrayContaining([expect.stringContaining('-multipass')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1282,14 +1288,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, maxBitrate: '10000k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.arrayContaining(['-cq:v 23', '-maxrate 10000k', '-bufsize 6897k']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.arrayContaining(['-cq:v 23', '-maxrate 10000k', '-bufsize 6897k']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1298,14 +1304,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, maxBitrate: '10000k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.not.stringContaining('-maxrate'),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.not.stringContaining('-maxrate'),
-          twoPass: false,
-        },
       );
     });
 
@@ -1314,14 +1320,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC, preset: 'invalid' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1330,14 +1336,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.NVENC } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-multipass')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-multipass')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1348,19 +1354,19 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-hwaccel cuda',
+          '-hwaccel_output_format cuda',
+          '-noautorotate',
+          '-threads 1',
+        ]),
+        outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel cuda',
-            '-hwaccel_output_format cuda',
-            '-noautorotate',
-            '-threads 1',
-          ]),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1371,18 +1377,18 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining(
+            'tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709:format=nv12',
+          ),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709:format=nv12',
-            ),
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1392,30 +1398,30 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV, maxBitrate: '10000k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+        outputOptions: expect.arrayContaining([
+          `-c:v h264_qsv`,
+          '-c:a copy',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-bf 7',
+          '-refs 5',
+          '-g 256',
+          '-v verbose',
+          '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+          '-preset 7',
+          '-global_quality 23',
+          '-maxrate 10000k',
+          '-bufsize 20000k',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
-          outputOptions: expect.arrayContaining([
-            `-c:v h264_qsv`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:1',
-            '-bf 7',
-            '-refs 5',
-            '-g 256',
-            '-v verbose',
-            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
-            '-preset 7',
-            '-global_quality 23',
-            '-maxrate 10000k',
-            '-bufsize 20000k',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1431,17 +1437,17 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
+          '-filter_hw_device hw',
+        ]),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device hw',
-          ]),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        },
       );
     });
 
@@ -1451,14 +1457,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV, preset: 'invalid' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1468,14 +1474,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV, targetVideoCodec: VideoCodec.VP9 } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+        outputOptions: expect.arrayContaining(['-low_power 1']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
-          outputOptions: expect.arrayContaining(['-low_power 1']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1498,21 +1504,21 @@ describe(MediaService.name, () => {
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-hwaccel qsv',
+          '-hwaccel_output_format qsv',
+          '-async_depth 4',
+          '-threads 1',
+        ]),
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-hwaccel_output_format qsv',
-            '-async_depth 4',
-            '-threads 1',
-          ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1526,23 +1532,23 @@ describe(MediaService.name, () => {
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-hwaccel qsv',
+          '-hwaccel_output_format qsv',
+          '-async_depth 4',
+          '-threads 1',
+        ]),
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining(
+            'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=qsv:reverse=1,format=qsv',
+          ),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-hwaccel_output_format qsv',
-            '-async_depth 4',
-            '-threads 1',
-          ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=qsv:reverse=1,format=qsv',
-            ),
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1555,14 +1561,14 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
 
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        },
       );
     });
 
@@ -1572,29 +1578,29 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.arrayContaining([
+          `-c:v h264_vaapi`,
+          '-c:a copy',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-g 256',
+          '-v verbose',
+          '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+          '-compression_level 7',
+          '-rc_mode 1',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:1',
-            '-g 256',
-            '-v verbose',
-            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
-            '-compression_level 7',
-            '-rc_mode 1',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1604,23 +1610,23 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, maxBitrate: '10000k' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.arrayContaining([
+          `-c:v h264_vaapi`,
+          '-b:v 6897k',
+          '-maxrate 10000k',
+          '-minrate 3448.5k',
+          '-rc_mode 3',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-b:v 6897k',
-            '-maxrate 10000k',
-            '-minrate 3448.5k',
-            '-rc_mode 3',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1630,23 +1636,23 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.arrayContaining([
+          `-c:v h264_vaapi`,
+          '-c:a copy',
+          '-qp 23',
+          '-global_quality 23',
+          '-rc_mode 1',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-c:a copy',
-            '-qp 23',
-            '-global_quality 23',
-            '-rc_mode 1',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1656,17 +1662,17 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, preset: 'invalid' } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.not.arrayContaining([expect.stringContaining('-compression_level')]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.not.arrayContaining([expect.stringContaining('-compression_level')]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1676,17 +1682,14 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-init_hw_device vaapi=accel:/dev/dri/card1', '-filter_hw_device accel']),
+        outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/card1',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1696,17 +1699,17 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD130',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD130',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1718,17 +1721,17 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining([
+          '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+          '-filter_hw_device accel',
+        ]),
+        outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1740,14 +1743,14 @@ describe(MediaService.name, () => {
       mediaMock.transcode.mockRejectedValueOnce(new Error('error'));
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledTimes(2);
-      expect(mediaMock.transcode).toHaveBeenLastCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.arrayContaining(['-c:v h264']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1767,27 +1770,27 @@ describe(MediaService.name, () => {
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+        outputOptions: expect.arrayContaining([
+          `-c:v h264_rkmpp`,
+          '-c:a copy',
+          '-movflags faststart',
+          '-fps_mode passthrough',
+          '-map 0:0',
+          '-map 0:1',
+          '-g 256',
+          '-v verbose',
+          '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
+          '-level 51',
+          '-rc_mode CQP',
+          '-qp_init 23',
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([
-            `-c:v h264_rkmpp`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:1',
-            '-g 256',
-            '-v verbose',
-            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
-            '-level 51',
-            '-rc_mode CQP',
-            '-qp_init 23',
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1805,14 +1808,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+        outputOptions: expect.arrayContaining([`-c:v hevc_rkmpp`, '-level 153', '-rc_mode AVBR', '-b:v 10000k']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([`-c:v hevc_rkmpp`, '-level 153', '-rc_mode AVBR', '-b:v 10000k']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1825,14 +1828,14 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+        outputOptions: expect.arrayContaining([`-c:v h264_rkmpp`, '-level 51', '-rc_mode CQP', '-qp_init 30']),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([`-c:v h264_rkmpp`, '-level 51', '-rc_mode CQP', '-qp_init 30']),
-          twoPass: false,
-        },
       );
     });
 
@@ -1845,18 +1848,18 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining(
+            'scale_rkrga=-2:720:format=p010:afbc=1,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
+          ),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'scale_rkrga=-2:720:format=p010:afbc=1,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
-            ),
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1869,18 +1872,18 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: [],
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining(
+            'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          ),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: [],
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
-            ),
-          ]),
-          twoPass: false,
-        },
       );
     });
 
@@ -1893,18 +1896,18 @@ describe(MediaService.name, () => {
       });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
+      expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+        inputOptions: [],
+        outputOptions: expect.arrayContaining([
+          expect.stringContaining(
+            'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+          ),
+        ]),
+        twoPass: false,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(
+        expect.stringMatching(/.*\.tmp/),
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: [],
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
-            ),
-          ]),
-          twoPass: false,
-        },
       );
     });
   });
@@ -1914,18 +1917,18 @@ describe(MediaService.name, () => {
     systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
     assetMock.getByIds.mockResolvedValue([assetStub.video]);
     await sut.handleVideoConversion({ id: assetStub.video.id });
-    expect(mediaMock.transcode).toHaveBeenCalledWith(
-      '/original/path.ext',
+    expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      inputOptions: expect.any(Array),
+      outputOptions: expect.arrayContaining([
+        '-c:v h264',
+        '-c:a copy',
+        '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+      ]),
+      twoPass: false,
+    });
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
-      {
-        inputOptions: expect.any(Array),
-        outputOptions: expect.arrayContaining([
-          '-c:v h264',
-          '-c:a copy',
-          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
-        ]),
-        twoPass: false,
-      },
     );
   });
 
@@ -1934,18 +1937,18 @@ describe(MediaService.name, () => {
     systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
     assetMock.getByIds.mockResolvedValue([assetStub.video]);
     await sut.handleVideoConversion({ id: assetStub.video.id });
-    expect(mediaMock.transcode).toHaveBeenCalledWith(
-      '/original/path.ext',
+    expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      inputOptions: expect.any(Array),
+      outputOptions: expect.arrayContaining([
+        '-c:v h264',
+        '-c:a copy',
+        '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+      ]),
+      twoPass: false,
+    });
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
-      {
-        inputOptions: expect.any(Array),
-        outputOptions: expect.arrayContaining([
-          '-c:v h264',
-          '-c:a copy',
-          '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
-        ]),
-        twoPass: false,
-      },
     );
   });
 
@@ -1954,18 +1957,18 @@ describe(MediaService.name, () => {
     systemMock.get.mockResolvedValue({ ffmpeg: { tonemap: ToneMapping.MOBIUS } });
     assetMock.getByIds.mockResolvedValue([assetStub.video]);
     await sut.handleVideoConversion({ id: assetStub.video.id });
-    expect(mediaMock.transcode).toHaveBeenCalledWith(
-      '/original/path.ext',
+    expect(mediaMock.transcode).toHaveBeenCalledWith('/original/path.ext', expect.stringMatching(/.*\.tmp/), {
+      inputOptions: expect.any(Array),
+      outputOptions: expect.arrayContaining([
+        '-c:v h264',
+        '-c:a copy',
+        '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+      ]),
+      twoPass: false,
+    });
+    expect(storageMock.rename).toHaveBeenCalledWith(
+      expect.stringMatching(/.*\.tmp/),
       'upload/encoded-video/user-id/as/se/asset-id.mp4',
-      {
-        inputOptions: expect.any(Array),
-        outputOptions: expect.arrayContaining([
-          '-c:v h264',
-          '-c:a copy',
-          '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
-        ]),
-        twoPass: false,
-      },
     );
   });
 
