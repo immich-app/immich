@@ -133,7 +133,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildTitle(Album album) {
       return Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 24),
+        padding: const EdgeInsets.only(left: 8, right: 8),
         child: userId == album.ownerId && album.isRemote
             ? AlbumViewerEditableTitle(
                 album: album,
@@ -228,9 +228,30 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: ref.watch(multiselectProvider)
-          ? null
-          : album.when(
+      body: Stack(
+        children: [
+          album.widgetWhen(
+            onData: (data) => MultiselectGrid(
+              renderListProvider: albumRenderlistProvider(albumId),
+              topWidget: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildHeader(data),
+                  if (data.isRemote) buildControlButton(data),
+                ],
+              ),
+              onRemoveFromAlbum: onRemoveFromAlbumPressed,
+              editEnabled: data.ownerId == userId,
+            ),
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            top: ref.watch(multiselectProvider)
+                ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+                : 0,
+            left: 0,
+            right: 0,
+            child: album.when(
               data: (data) => AlbumViewerAppbar(
                 titleFocusNode: titleFocusNode,
                 album: data,
@@ -242,19 +263,8 @@ class AlbumViewerPage extends HookConsumerWidget {
               error: (error, stackTrace) => AppBar(title: const Text("Error")),
               loading: () => AppBar(),
             ),
-      body: album.widgetWhen(
-        onData: (data) => MultiselectGrid(
-          renderListProvider: albumRenderlistProvider(albumId),
-          topWidget: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildHeader(data),
-              if (data.isRemote) buildControlButton(data),
-            ],
           ),
-          onRemoveFromAlbum: onRemoveFromAlbumPressed,
-          editEnabled: data.ownerId == userId,
-        ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    getMyUserInfo,
+    getMyUser,
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
@@ -36,7 +36,7 @@
 
   onMount(async () => {
     try {
-      currentUser = await getMyUserInfo();
+      currentUser = await getMyUser();
     } catch (error) {
       handleError(error, 'Unable to refresh user');
     }
@@ -141,6 +141,7 @@
               </div>
             {:else if user.id == currentUser?.id}
               <button
+                type="button"
                 on:click={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >Leave</button

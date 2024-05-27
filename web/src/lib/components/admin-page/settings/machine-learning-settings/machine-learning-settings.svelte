@@ -102,7 +102,7 @@
             min={0.001}
             max={0.1}
             desc="Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives."
-            disabled={disabled || $featureFlags.duplicateDetection}
+            disabled={disabled || !$featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
           />

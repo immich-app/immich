@@ -5,10 +5,10 @@ import {
   CreateAlbumDto,
   CreateAssetDto,
   CreateLibraryDto,
-  CreateUserDto,
   MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UserAdminCreateDto,
   ValidateLibraryDto,
   createAlbum,
   createApiKey,
@@ -16,7 +16,7 @@ import {
   createPartner,
   createPerson,
   createSharedLink,
-  createUser,
+  createUserAdmin,
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
@@ -273,8 +273,8 @@ export const utils = {
     return response;
   },
 
-  userSetup: async (accessToken: string, dto: CreateUserDto) => {
-    await createUser({ createUserDto: dto }, { headers: asBearerAuth(accessToken) });
+  userSetup: async (accessToken: string, dto: UserAdminCreateDto) => {
+    await createUserAdmin({ userAdminCreateDto: dto }, { headers: asBearerAuth(accessToken) });
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
     });

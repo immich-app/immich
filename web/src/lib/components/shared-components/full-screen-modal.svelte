@@ -43,13 +43,16 @@
   }
 </script>
 
-<FocusTrap>
-  <section
-    role="presentation"
-    in:fade={{ duration: 100 }}
-    out:fade={{ duration: 100 }}
-    class="fixed left-0 top-0 z-[9990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
-  >
+<section
+  role="presentation"
+  in:fade={{ duration: 100 }}
+  out:fade={{ duration: 100 }}
+  class="fixed left-0 top-0 z-[9990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
+  on:keydown={(event) => {
+    event.stopPropagation();
+  }}
+>
+  <FocusTrap>
     <div
       class="z-[9999] max-w-[95vw] max-h-[95vh] {modalWidth} overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
       style="max-height: min(95vh, 900px);"
@@ -72,5 +75,5 @@
         </div>
       {/if}
     </div>
-  </section>
-</FocusTrap>
+  </FocusTrap>
+</section>

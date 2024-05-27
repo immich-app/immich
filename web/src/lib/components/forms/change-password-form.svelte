@@ -2,9 +2,8 @@
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateMyUser } from '@immich/sdk';
 
-  export let user: UserResponseDto;
   let errorMessage: string;
   let success: string;
 
@@ -31,13 +30,7 @@
     if (valid) {
       errorMessage = '';
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
-          password: String(password),
-          shouldChangePassword: false,
-        },
-      });
+      await updateMyUser({ userUpdateMeDto: { password: String(password) } });
 
       dispatch('success');
     }

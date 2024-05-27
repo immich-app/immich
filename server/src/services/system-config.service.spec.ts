@@ -81,8 +81,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelName: 'ViT-B-32__openai',
     },
     duplicateDetection: {
-      enabled: false,
-      maxDistance: 0.03,
+      enabled: true,
+      maxDistance: 0.0155,
     },
     facialRecognition: {
       enabled: true,

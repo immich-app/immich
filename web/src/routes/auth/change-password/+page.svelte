@@ -25,5 +25,5 @@
     enter the new password below.
   </p>
 
-  <ChangePasswordForm user={$user} on:success={onSuccess} />
+  <ChangePasswordForm on:success={onSuccess} />
 </FullscreenContainer>

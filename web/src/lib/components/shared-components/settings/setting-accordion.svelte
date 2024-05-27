@@ -27,7 +27,12 @@
 </script>
 
 <div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
-  <button on:click={() => (isOpen = !isOpen)} class="flex w-full place-items-center justify-between text-left">
+  <button
+    type="button"
+    aria-expanded={isOpen}
+    on:click={() => (isOpen = !isOpen)}
+    class="flex w-full place-items-center justify-between text-left"
+  >
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
@@ -38,8 +43,7 @@
       </slot>
     </div>
 
-    <button
-      aria-expanded={isOpen}
+    <div
       class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20"
     >
       <svg
@@ -55,7 +59,7 @@
       >
         <path d="M19 9l-7 7-7-7" />
       </svg>
-    </button>
+    </div>
   </button>
 
   {#if isOpen}

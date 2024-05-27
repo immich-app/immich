@@ -94,6 +94,7 @@ export class DuplicateService {
       assetId: asset.id,
       embedding: asset.smartSearch.embedding,
       maxDistance: machineLearning.duplicateDetection.maxDistance,
+      type: asset.type,
       userIds: [asset.ownerId],
     });
 

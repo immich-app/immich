@@ -1,14 +1,15 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     NotificationType,
     notificationController,
@@ -17,28 +18,27 @@
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { asByteUnitString } from '$lib/utils/byte-units';
   import { copyToClipboard } from '$lib/utils';
-  import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
+  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   export let data: PageData;
 
-  let allUsers: UserResponseDto[] = [];
+  let allUsers: UserAdminResponseDto[] = [];
   let shouldShowEditUserForm = false;
   let shouldShowCreateUserForm = false;
   let shouldShowPasswordResetSuccess = false;
   let shouldShowDeleteConfirmDialog = false;
   let shouldShowRestoreDialog = false;
-  let selectedUser: UserResponseDto;
+  let selectedUser: UserAdminResponseDto;
   let newPassword: string;
 
   const refresh = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+    allUsers = await searchUsersAdmin({ withDeleted: true });
   };
 
   const onDeleteSuccess = (userId: string) => {
@@ -75,7 +75,7 @@
     shouldShowCreateUserForm = false;
   };
 
-  const editUserHandler = (user: UserResponseDto) => {
+  const editUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowEditUserForm = true;
   };
@@ -91,7 +91,7 @@
     shouldShowPasswordResetSuccess = true;
   };
 
-  const deleteUserHandler = (user: UserResponseDto) => {
+  const deleteUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowDeleteConfirmDialog = true;
   };
@@ -101,7 +101,7 @@
     shouldShowDeleteConfirmDialog = false;
   };
 
-  const restoreUserHandler = (user: UserResponseDto) => {
+  const restoreUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowRestoreDialog = true;
   };

@@ -100,7 +100,7 @@
         {#each showPeople as person (person.id)}
           {#if person.id !== editedPerson?.id}
             <div class="w-fit">
-              <button class="w-[90px]" on:click={() => onReassign(person)}>
+              <button type="button" class="w-[90px]" on:click={() => onReassign(person)}>
                 <div class="relative">
                   <ImageThumbnail
                     curve
