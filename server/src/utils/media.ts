@@ -330,7 +330,7 @@ export class ThumbnailConfig extends BaseConfig {
     return [
       'fps=15',
       'thumbnail=15',
-      'select=gt(scene,0.15)-eq(prev_selected_n,n)+isnan(prev_selected_n),',
+      'select=gt(scene,0.15)-eq(prev_selected_n,n)+isnan(prev_selected_n)',
       ...super.getFilterOptions(videoStream),
     ];
   }
