@@ -37,6 +37,7 @@
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
         <button
+          type="button"
           on:click={() => selectUser(user)}
           class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >

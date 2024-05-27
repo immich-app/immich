@@ -53,7 +53,7 @@
       {@const assetData = JSON.stringify(asset, null, 2)}
 
       <div class="relative">
-        <button on:click={() => onSelectAsset(asset)} class="block relative">
+        <button type="button" on:click={() => onSelectAsset(asset)} class="block relative">
           <!-- THUMBNAIL-->
           <img
             src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}

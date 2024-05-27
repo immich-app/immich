@@ -41,6 +41,7 @@
       {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
       {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
       <button
+        type="button"
         on:click={() => toggleAlbumGroupCollapsing(albumGroup.id)}
         class="flex w-full mt-4 rounded-md"
         aria-expanded={!isCollapsed}

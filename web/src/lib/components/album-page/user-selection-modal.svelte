@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -122,7 +121,11 @@
         {#each users as user}
           {#if !Object.keys(selectedUsers).includes(user.id)}
             <div class="flex place-items-center transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl">
-              <button on:click={() => handleToggle(user)} class="flex w-full place-items-center gap-4 p-4">
+              <button
+                type="button"
+                on:click={() => handleToggle(user)}
+                class="flex w-full place-items-center gap-4 p-4"
+              >
                 <UserAvatar {user} size="md" />
                 <div class="text-left flex-grow">
                   <p class="text-immich-fg dark:text-immich-dark-fg">
@@ -160,6 +163,7 @@
 
   <div id="shared-buttons" class="mt-4 flex place-content-center place-items-center justify-around">
     <button
+      type="button"
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
       on:click={() => dispatch('share')}
     >
@@ -168,13 +172,13 @@
     </button>
 
     {#if sharedLinks.length}
-      <button
+      <a
+        href={AppRoute.SHARED_LINKS}
         class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-        on:click={() => goto(AppRoute.SHARED_LINKS)}
       >
         <Icon path={mdiShareCircle} size={24} />
         <p class="text-sm">View links</p>
-      </button>
+      </a>
     {/if}
   </div>
 </FullScreenModal>

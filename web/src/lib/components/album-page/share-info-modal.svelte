@@ -141,6 +141,7 @@
               </div>
             {:else if user.id == currentUser?.id}
               <button
+                type="button"
                 on:click={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >Leave</button

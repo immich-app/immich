@@ -28,6 +28,7 @@
 </script>
 
 <button
+  type="button"
   on:click={() => dispatch('album')}
   class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
 >

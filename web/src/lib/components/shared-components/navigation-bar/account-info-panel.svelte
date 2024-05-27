@@ -92,6 +92,7 @@
 
     <div class="mb-4 flex flex-col">
       <button
+        type="button"
         class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
         on:click={() => dispatch('logout')}
       >

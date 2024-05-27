@@ -464,6 +464,7 @@
             {:else}
               <div class="relative">
                 <button
+                  type="button"
                   class="flex items-center justify-center"
                   title="Edit name"
                   on:click={() => (isEditingName = true)}
@@ -507,6 +508,7 @@
                 <div bind:this={suggestionContainer}>
                   {#each suggestedPeople as person, index (person.id)}
                     <button
+                      type="button"
                       class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                       suggestedPeople.length - 1
                         ? 'rounded-b-lg border-b'

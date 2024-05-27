@@ -510,6 +510,7 @@
 
           <svelte:fragment slot="trailing">
             <button
+              type="button"
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
@@ -577,13 +578,13 @@
                     {/if}
 
                     <!-- owner -->
-                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -620,6 +621,7 @@
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
                   <button
+                    type="button"
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
