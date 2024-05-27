@@ -5,6 +5,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   const handleCopy = async () => {
     //
@@ -34,7 +35,7 @@
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
             <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
-              🚨 Error - Something went wrong
+              {$t('page.error.message')}
             </h1>
             <div class="flex justify-end">
               <CircleIconButton
@@ -70,7 +71,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
-                <p class="text-sm">Get Help</p>
+                <p class="text-sm">{$t('page.error.help')}</p>
               </div>
             </a>
 
@@ -82,7 +83,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
-                <p class="text-sm">Read Changelog</p>
+                <p class="text-sm">{$t('page.error.changelog')}</p>
               </div>
             </a>
 
@@ -94,7 +95,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
-                <p class="text-sm">Check Logs</p>
+                <p class="text-sm">{$t('page.error.logs')}</p>
               </div>
             </a>
           </div>

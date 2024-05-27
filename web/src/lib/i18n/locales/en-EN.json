@@ -1,0 +1,10 @@
+{
+    "page": {
+        "error": {
+            "message": "🚨 Error - Something went wrong",
+            "help": "Get help",
+            "changelog": "Read changelog",
+            "logs": "Check Logs"
+        }
+    }
+}

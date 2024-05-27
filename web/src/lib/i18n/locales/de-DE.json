@@ -1,0 +1,8 @@
+{
+    "page": {
+        "error": {
+            "message": "🚨 Fehler - Etwas ist schiefgelaufen",
+            "changelog": "Lese changelog"
+        }
+    }
+}
