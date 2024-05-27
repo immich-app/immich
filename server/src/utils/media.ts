@@ -323,16 +323,11 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBaseOutputOptions() {
-    return ['-fps_mode vfr', '-frames:v 2', '-update 1'];
+    return ['-fps_mode vfr', '-frames:v 1', '-update 1'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    return [
-      'fps=12',
-      'thumbnail=12',
-      `select=gt(scene\\,0.15)-eq(prev_selected_n\\,n)+isnan(prev_selected_n)`,
-      ...super.getFilterOptions(videoStream),
-    ];
+    return ['fps=12', 'thumbnail=12', `select=gt(scene\\,0.1)+gt(n\\,20)`, ...super.getFilterOptions(videoStream)];
   }
 
   getPresetOptions() {
