@@ -13,11 +13,11 @@ export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(protected config: SystemConfigFFmpegDto) {}
 
-  static create(config: SystemConfigFFmpegDto, devices: string[] = [], hasOpenCL = false): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false): VideoCodecSWConfig {
     if (config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
     }
-    return this.getHWCodecConfig(config, devices, hasOpenCL);
+    return this.getHWCodecConfig(config, devices, hasMaliOpenCL);
   }
 
   private static getSWCodecConfig(config: SystemConfigFFmpegDto) {
@@ -40,7 +40,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  private static getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = [], hasOpenCL = false) {
+  private static getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false) {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
@@ -57,7 +57,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       }
       case TranscodeHWAccel.RKMPP: {
         handler =
-          config.accelDecode && hasOpenCL
+          config.accelDecode && hasMaliOpenCL
             ? new RkmppHwDecodeConfig(config, devices)
             : new RkmppSwDecodeConfig(config, devices);
         break;

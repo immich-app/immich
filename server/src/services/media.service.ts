@@ -40,8 +40,8 @@ import { usePagination } from 'src/utils/pagination';
 export class MediaService {
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private openCL: boolean | null = null;
-  private devices: string[] | null = null;
+  private maliOpenCL?: boolean;
+  private devices?: string[];
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -332,7 +332,7 @@ export class MediaService {
 
     let command;
     try {
-      const config = BaseConfig.create(ffmpeg, await this.getDevices(), await this.hasOpenCL());
+      const config = BaseConfig.create(ffmpeg, await this.getDevices(), await this.hasMaliOpenCL());
       command = config.getCommand(target, mainVideoStream, mainAudioStream);
     } catch (error) {
       this.logger.error(`An error occurred while configuring transcoding options: ${error}`);
@@ -367,10 +367,10 @@ export class MediaService {
 
   private getTranscodeTarget(
     config: SystemConfigFFmpegDto,
-    videoStream: VideoStreamInfo | null,
-    audioStream: AudioStreamInfo | null,
+    videoStream?: VideoStreamInfo,
+    audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
-    if (videoStream == null && audioStream == null) {
+    if (!videoStream && !audioStream) {
       return TranscodeTarget.NONE;
     }
 
@@ -392,8 +392,8 @@ export class MediaService {
     return TranscodeTarget.NONE;
   }
 
-  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: AudioStreamInfo | null): boolean {
-    if (stream == null) {
+  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
+    if (!stream) {
       return false;
     }
 
@@ -415,8 +415,8 @@ export class MediaService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo | null): boolean {
-    if (stream == null) {
+  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: VideoStreamInfo): boolean {
+    if (!stream) {
       return false;
     }
 
@@ -499,18 +499,18 @@ export class MediaService {
     return this.devices;
   }
 
-  private async hasOpenCL() {
-    if (this.openCL === null) {
+  private async hasMaliOpenCL() {
+    if (this.maliOpenCL === undefined) {
       try {
         const maliIcdStat = await this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd');
         const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
-        this.openCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+        this.maliOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
       } catch {
-        this.logger.warn('OpenCL not available for transcoding, using CPU instead.');
-        this.openCL = false;
+        this.logger.debug('OpenCL not available for transcoding, using CPU decoding instead.');
+        this.maliOpenCL = false;
       }
     }
 
-    return this.openCL;
+    return this.maliOpenCL;
   }
 }
