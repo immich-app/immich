@@ -11,7 +11,8 @@
         "type": "Type",
         "owner": "Owner",
         "assets": "Assets",
-        "size": "Size"
+        "size": "Size",
+        "warning_exclamation": "Warning!"
     },
     "page": {
         "error": {
@@ -103,7 +104,7 @@
                 "error_scan_libraries": "Unable to scan libraries",
                 "error_scan_library": "Unable to scan library",
                 "error_remove_files": "Unable to remove offline files",
-                "delete_confirmation": "Are you sure you want to delete {library_name} library?",
+                "delete_confirmation": "Are you sure you want to delete {libraryName} library?",
                 "delete_confirmation_asset_count": "Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.",
                 "scan_all_libraries": "Scan All Libraries",
                 "create_library": "Create Library",
@@ -121,7 +122,15 @@
                 "menu_scan_all_files_subtitle": "Only refreshes modified files",
                 "menu_scan_all_files_force": "Force Re-scan All Library Files",
                 "menu_scan_all_files_force_subtitle": "Refreshes every file",
-                "menu_remove_offline_files": "Remove Offline Files"
+                "menu_remove_offline_files": "Remove Offline Files",
+                "message_remove_offline_files": "Removing Offline Files",
+                "message_force_refresh": "Forcing refresh of all library files",
+                "message_scan_changed": "Scanning library for changed files",
+                "message_scan_new": "Scanning library for new files",
+                "message_refresh_all": "Refreshing all libraries"
+            },
+            "jobs": {
+                "concurrency": "Manage Concurrency"
             }
         }
     },
