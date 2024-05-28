@@ -27,7 +27,7 @@ class User {
 
   Id get isarId => fastHash(id);
 
-  User.fromUserDto(UserResponseDto dto)
+  User.fromUserDto(UserAdminResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
@@ -44,21 +44,21 @@ class User {
 
   User.fromPartnerDto(PartnerResponseDto dto)
       : id = dto.id,
-        updatedAt = dto.updatedAt,
+        updatedAt = DateTime.now(),
         email = dto.email,
         name = dto.name,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
-        isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled ?? false,
+        isAdmin = false,
+        memoryEnabled = false,
         avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = dto.inTimeline ?? false,
-        quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,
-        quotaSizeInBytes = dto.quotaSizeInBytes ?? 0;
+        quotaUsageInBytes = 0,
+        quotaSizeInBytes = 0;
 
   /// Base user dto used where the complete user object is not required
-  User.fromSimpleUserDto(UserDto dto)
+  User.fromSimpleUserDto(UserResponseDto dto)
       : id = dto.id,
         email = dto.email,
         name = dto.name,

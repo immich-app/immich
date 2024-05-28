@@ -2,6 +2,7 @@ import { ActivityService } from 'src/services/activity.service';
 import { AlbumService } from 'src/services/album.service';
 import { APIKeyService } from 'src/services/api-key.service';
 import { ApiService } from 'src/services/api.service';
+import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -32,6 +33,7 @@ import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { TagService } from 'src/services/tag.service';
 import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
+import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 
@@ -41,6 +43,7 @@ export const services = [
   APIKeyService,
   ActivityService,
   AlbumService,
+  AssetMediaService,
   AssetService,
   AssetServiceV1,
   AuditService,
@@ -71,5 +74,6 @@ export const services = [
   TimelineService,
   TrashService,
   UserService,
+  UserAdminService,
   VersionService,
 ];

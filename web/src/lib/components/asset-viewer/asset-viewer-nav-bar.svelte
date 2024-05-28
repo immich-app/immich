@@ -5,7 +5,8 @@
   import { getAssetJobName } from '$lib/utils';
   import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiAccountCircleOutline,
     mdiAlertOutline,
@@ -32,6 +33,7 @@
     mdiPlaySpeed,
     mdiPresentationPlay,
     mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -49,7 +51,7 @@
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
-  $: isOwner = asset.ownerId === $user?.id;
+  $: isOwner = $user && asset.ownerId === $user?.id;
 
   type MenuItemEvent =
     | 'addToAlbum'
@@ -107,7 +109,10 @@
   <div class="text-white">
     <CircleIconButton color="opaque" icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
   </div>
-  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+  <div
+    class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
+    data-testid="asset-viewer-navbar-actions"
+  >
     {#if showShareButton}
       <CircleIconButton
         color="opaque"
@@ -242,6 +247,11 @@
                 on:click={() => dispatch('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
+              />
+              <MenuOption
+                icon={mdiUpload}
+                on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                text="Replace with upload"
               />
               <hr />
               <MenuOption

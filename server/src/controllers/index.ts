@@ -2,6 +2,7 @@ import { ActivityController } from 'src/controllers/activity.controller';
 import { AlbumController } from 'src/controllers/album.controller';
 import { APIKeyController } from 'src/controllers/api-key.controller';
 import { AppController } from 'src/controllers/app.controller';
+import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetControllerV1 } from 'src/controllers/asset-v1.controller';
 import { AssetController } from 'src/controllers/asset.controller';
 import { AuditController } from 'src/controllers/audit.controller';
@@ -26,6 +27,7 @@ import { SystemMetadataController } from 'src/controllers/system-metadata.contro
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
+import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 
 export const controllers = [
@@ -35,6 +37,7 @@ export const controllers = [
   AppController,
   AssetController,
   AssetControllerV1,
+  AssetMediaController,
   AuditController,
   AuthController,
   DownloadController,
@@ -57,5 +60,6 @@ export const controllers = [
   TagController,
   TimelineController,
   TrashController,
+  UserAdminController,
   UserController,
 ];

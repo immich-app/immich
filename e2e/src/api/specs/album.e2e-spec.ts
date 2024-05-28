@@ -4,7 +4,7 @@ import {
   AlbumUserRole,
   AssetFileUploadResponseDto,
   AssetOrder,
-  deleteUser,
+  deleteUserAdmin,
   getAlbumInfo,
   LoginResponseDto,
   SharedLinkType,
@@ -107,7 +107,7 @@ describe('/albums', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /albums', () => {
@@ -383,7 +383,6 @@ describe('/albums', () => {
         description: '',
         albumThumbnailAssetId: null,
         shared: false,
-        sharedUsers: [],
         albumUsers: [],
         hasSharedLink: false,
         assets: [],
@@ -611,7 +610,11 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          sharedUsers: [expect.objectContaining({ id: user2.userId })],
+          albumUsers: [
+            expect.objectContaining({
+              user: expect.objectContaining({ id: user2.userId }),
+            }),
+          ],
         }),
       );
     });

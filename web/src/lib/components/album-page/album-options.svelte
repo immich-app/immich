@@ -75,7 +75,7 @@
     <div class="py-2">
       <div class="text-gray text-sm mb-3">PEOPLE</div>
       <div class="p-2">
-        <button class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
+        <button type="button" class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
           <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
             <div><Icon path={mdiPlus} size="25" /></div>
           </div>
@@ -88,7 +88,7 @@
           <div class="w-full">{user.name}</div>
           <div>Owner</div>
         </div>
-        {#each album.sharedUsers as user (user.id)}
+        {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">
             <div>
               <UserAvatar {user} size="md" />

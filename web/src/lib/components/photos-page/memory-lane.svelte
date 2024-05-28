@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
@@ -46,6 +45,7 @@
         {#if canScrollLeft}
           <div class="absolute left-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
+              type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollLeft}
             >
@@ -56,6 +56,7 @@
         {#if canScrollRight}
           <div class="absolute right-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
+              type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollRight}
             >
@@ -68,9 +69,9 @@
     <div class="inline-block" bind:offsetWidth={innerWidth}>
       {#each $memoryStore as memory, index (memory.yearsAgo)}
         {#if memory.assets.length > 0}
-          <button
+          <a
             class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
-            on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${index}`)}
+            href="{AppRoute.MEMORY}?{QueryParameter.MEMORY_INDEX}={index}"
           >
             <img
               class="h-full w-full rounded-xl object-cover"
@@ -84,7 +85,7 @@
             <div
               class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
             />
-          </button>
+          </a>
         {/if}
       {/each}
     </div>

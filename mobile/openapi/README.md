@@ -96,7 +96,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
@@ -104,6 +103,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
+*AssetApi* | [**replaceAsset**](doc//AssetApi.md#replaceasset) | **PUT** /asset/{id}/file | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -116,7 +116,6 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
-*DeprecatedApi* | [**getServerInfo**](doc//DeprecatedApi.md#getserverinfo) | **GET** /server-info | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
@@ -172,7 +171,6 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
-*ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStorage**](doc//ServerInfoApi.md#getstorage) | **GET** /server-info/storage | 
@@ -214,15 +212,18 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /users/profile-image | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /users | 
+*UserApi* | [**createUserAdmin**](doc//UserApi.md#createuseradmin) | **POST** /admin/users | 
 *UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /users/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /users | 
-*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /users/me | 
+*UserApi* | [**deleteUserAdmin**](doc//UserApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | 
+*UserApi* | [**getMyUser**](doc//UserApi.md#getmyuser) | **GET** /users/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /users/{id} | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /users/{id}/restore | 
-*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /users | 
+*UserApi* | [**getUser**](doc//UserApi.md#getuser) | **GET** /users/{id} | 
+*UserApi* | [**getUserAdmin**](doc//UserApi.md#getuseradmin) | **GET** /admin/users/{id} | 
+*UserApi* | [**restoreUserAdmin**](doc//UserApi.md#restoreuseradmin) | **POST** /admin/users/{id}/restore | 
+*UserApi* | [**searchUsers**](doc//UserApi.md#searchusers) | **GET** /users | 
+*UserApi* | [**searchUsersAdmin**](doc//UserApi.md#searchusersadmin) | **GET** /admin/users | 
+*UserApi* | [**updateMyUser**](doc//UserApi.md#updatemyuser) | **PUT** /users/me | 
+*UserApi* | [**updateUserAdmin**](doc//UserApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
 
 
 ## Documentation For Models
@@ -261,6 +262,8 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
+ - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
+ - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
@@ -280,8 +283,6 @@ Class | Method | HTTP request | Description
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
- - [CreateUserDto](doc//CreateUserDto.md)
- - [DeleteUserDto](doc//DeleteUserDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
@@ -402,12 +403,15 @@ Class | Method | HTTP request | Description
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
  - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
- - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
+ - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
+ - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)
+ - [UserAdminResponseDto](doc//UserAdminResponseDto.md)
+ - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
- - [UserDto](doc//UserDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [UserStatus](doc//UserStatus.md)
+ - [UserUpdateMeDto](doc//UserUpdateMeDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)

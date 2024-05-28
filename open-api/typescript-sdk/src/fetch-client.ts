@@ -14,7 +14,7 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
-export type UserDto = {
+export type UserResponseDto = {
     avatarColor: UserAvatarColor;
     email: string;
     id: string;
@@ -27,7 +27,7 @@ export type ActivityResponseDto = {
     createdAt: string;
     id: string;
     "type": Type;
-    user: UserDto;
+    user: UserResponseDto;
 };
 export type ActivityCreateDto = {
     albumId: string;
@@ -38,7 +38,7 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
-export type UserResponseDto = {
+export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
     createdAt: string;
     deletedAt: string | null;
@@ -55,6 +55,29 @@ export type UserResponseDto = {
     status: UserStatus;
     storageLabel: string | null;
     updatedAt: string;
+};
+export type UserAdminCreateDto = {
+    email: string;
+    memoriesEnabled?: boolean;
+    name: string;
+    notify?: boolean;
+    password: string;
+    quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
+    storageLabel?: string | null;
+};
+export type UserAdminDeleteDto = {
+    force?: boolean;
+};
+export type UserAdminUpdateDto = {
+    avatarColor?: UserAvatarColor;
+    email?: string;
+    memoriesEnabled?: boolean;
+    name?: string;
+    password?: string;
+    quotaSizeInBytes?: number | null;
+    shouldChangePassword?: boolean;
+    storageLabel?: string | null;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -123,12 +146,8 @@ export type AssetResponseDto = {
     hasMetadata: boolean;
     id: string;
     isArchived: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isExternal?: boolean;
     isFavorite: boolean;
     isOffline: boolean;
-    /** This property was deprecated in v1.104.0 */
-    isReadOnly?: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
@@ -166,8 +185,6 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     ownerId: string;
     shared: boolean;
-    /** This property was deprecated in v1.102.0 */
-    sharedUsers: UserResponseDto[];
     startDate?: string;
     updatedAt: string;
 };
@@ -177,12 +194,9 @@ export type AlbumUserCreateDto = {
 };
 export type CreateAlbumDto = {
     albumName: string;
-    /** This property was added in v1.104.0 */
     albumUsers?: AlbumUserCreateDto[];
     assetIds?: string[];
     description?: string;
-    /** This property was deprecated in v1.104.0 */
-    sharedWithUserIds?: string[];
 };
 export type AlbumCountResponseDto = {
     notShared: number;
@@ -213,8 +227,6 @@ export type AlbumUserAddDto = {
 };
 export type AddUsersDto = {
     albumUsers: AlbumUserAddDto[];
-    /** This property was deprecated in v1.102.0 */
-    sharedUserIds?: string[];
 };
 export type ApiKeyResponseDto = {
     createdAt: string;
@@ -285,8 +297,6 @@ export type MapMarkerResponseDto = {
 };
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
-    /** This property was deprecated in v1.100.0 */
-    title: string;
     yearsAgo: number;
 };
 export type UpdateStackParentDto = {
@@ -323,6 +333,18 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+};
+export type AssetMediaReplaceDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+};
+export type AssetMediaResponseDto = {
+    id: string;
+    status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -518,22 +540,11 @@ export type OAuthCallbackDto = {
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
-    createdAt: string;
-    deletedAt: string | null;
     email: string;
     id: string;
     inTimeline?: boolean;
-    isAdmin: boolean;
-    memoriesEnabled?: boolean;
     name: string;
-    oauthId: string;
     profileImagePath: string;
-    quotaSizeInBytes: number | null;
-    quotaUsageInBytes: number | null;
-    shouldChangePassword: boolean;
-    status: UserStatus;
-    storageLabel: string | null;
-    updatedAt: string;
 };
 export type UpdatePartnerDto = {
     inTimeline: boolean;
@@ -648,8 +659,6 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
-    /** This property was deprecated in v1.100.0 */
-    resizePath?: string;
     size?: number;
     state?: string;
     takenAfter?: string;
@@ -660,8 +669,6 @@ export type MetadataSearchDto = {
     "type"?: AssetTypeEnum;
     updatedAfter?: string;
     updatedBefore?: string;
-    /** This property was deprecated in v1.100.0 */
-    webpPath?: string;
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
@@ -733,15 +740,6 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
-export type ServerStorageResponseDto = {
-    diskAvailable: string;
-    diskAvailableRaw: number;
-    diskSize: string;
-    diskSizeRaw: number;
-    diskUsagePercentage: number;
-    diskUse: string;
-    diskUseRaw: number;
-};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -788,6 +786,15 @@ export type ServerStatsResponseDto = {
     usage: number;
     usageByUser: UsageByUserDto[];
     videos: number;
+};
+export type ServerStorageResponseDto = {
+    diskAvailable: string;
+    diskAvailableRaw: number;
+    diskSize: string;
+    diskSizeRaw: number;
+    diskUsagePercentage: number;
+    diskUse: string;
+    diskUseRaw: number;
 };
 export type ServerThemeDto = {
     customCss: string;
@@ -1065,27 +1072,12 @@ export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
 };
-export type CreateUserDto = {
-    email: string;
-    memoriesEnabled?: boolean;
-    name: string;
-    notify?: boolean;
-    password: string;
-    quotaSizeInBytes?: number | null;
-    shouldChangePassword?: boolean;
-    storageLabel?: string | null;
-};
-export type UpdateUserDto = {
+export type UserUpdateMeDto = {
     avatarColor?: UserAvatarColor;
     email?: string;
-    id: string;
-    isAdmin?: boolean;
     memoriesEnabled?: boolean;
     name?: string;
     password?: string;
-    quotaSizeInBytes?: number | null;
-    shouldChangePassword?: boolean;
-    storageLabel?: string;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -1093,9 +1085,6 @@ export type CreateProfileImageDto = {
 export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
-};
-export type DeleteUserDto = {
-    force?: boolean;
 };
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -1149,6 +1138,77 @@ export function deleteActivity({ id }: {
     return oazapfts.ok(oazapfts.fetchText(`/activities/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function searchUsersAdmin({ withDeleted }: {
+    withDeleted?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto[];
+    }>(`/admin/users${QS.query(QS.explode({
+        withDeleted
+    }))}`, {
+        ...opts
+    }));
+}
+export function createUserAdmin({ userAdminCreateDto }: {
+    userAdminCreateDto: UserAdminCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>("/admin/users", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: userAdminCreateDto
+    })));
+}
+export function deleteUserAdmin({ id, userAdminDeleteDto }: {
+    id: string;
+    userAdminDeleteDto: UserAdminDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: userAdminDeleteDto
+    })));
+}
+export function getUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateUserAdmin({ id, userAdminUpdateDto }: {
+    id: string;
+    userAdminUpdateDto: UserAdminUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userAdminUpdateDto
+    })));
+}
+export function restoreUserAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
+        ...opts,
+        method: "POST"
     }));
 }
 export function getAllAlbums({ assetId, shared }: {
@@ -1342,37 +1402,6 @@ export function deleteAssets({ assetBulkDeleteDto }: {
         method: "DELETE",
         body: assetBulkDeleteDto
     })));
-}
-/**
- * Get all AssetEntity belong to the user
- */
-export function getAllAssets({ ifNoneMatch, isArchived, isFavorite, skip, take, updatedAfter, updatedBefore, userId }: {
-    ifNoneMatch?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    skip?: number;
-    take?: number;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    userId?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/asset${QS.query(QS.explode({
-        isArchived,
-        isFavorite,
-        skip,
-        take,
-        updatedAfter,
-        updatedBefore,
-        userId
-    }))}`, {
-        ...opts,
-        headers: oazapfts.mergeHeaders(opts?.headers, {
-            "if-none-match": ifNoneMatch
-        })
-    }));
 }
 export function updateAssets({ assetBulkUpdateDto }: {
     assetBulkUpdateDto: AssetBulkUpdateDto;
@@ -1585,6 +1614,25 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
+/**
+ * Replace the asset with new file, without changing its id
+ */
+export function replaceAsset({ id, key, assetMediaReplaceDto }: {
+    id: string;
+    key?: string;
+    assetMediaReplaceDto: AssetMediaReplaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "PUT",
+        body: assetMediaReplaceDto
+    })));
+}
 export function getAuditDeletes({ after, entityType, userId }: {
     after: string;
     entityType: EntityType;
@@ -1606,7 +1654,7 @@ export function signUpAdmin({ signUpDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/auth/admin-sign-up", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1618,7 +1666,7 @@ export function changePassword({ changePasswordDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/auth/change-password", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1951,7 +1999,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/oauth/link", oazapfts.json({
         ...opts,
         method: "POST",
@@ -1966,7 +2014,7 @@ export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
 export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/oauth/unlink", {
         ...opts,
         method: "POST"
@@ -2243,17 +2291,6 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         state,
         "type": $type
     }))}`, {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.106.0
- */
-export function getServerInfo(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStorageResponseDto;
-    }>("/server-info", {
         ...opts
     }));
 }
@@ -2715,49 +2752,33 @@ export function restoreAssets({ bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getAllUsers({ isAll }: {
-    isAll: boolean;
-}, opts?: Oazapfts.RequestOpts) {
+export function searchUsers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>(`/users${QS.query(QS.explode({
-        isAll
-    }))}`, {
+    }>("/users", {
         ...opts
     }));
 }
-export function createUser({ createUserDto }: {
-    createUserDto: CreateUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: UserResponseDto;
-    }>("/users", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: createUserDto
-    })));
-}
-export function updateUser({ updateUserDto }: {
-    updateUserDto: UpdateUserDto;
-}, opts?: Oazapfts.RequestOpts) {
+export function getMyUser(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: UserResponseDto;
-    }>("/users", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateUserDto
-    })));
-}
-export function getMyUserInfo(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
+        data: UserAdminResponseDto;
     }>("/users/me", {
         ...opts
     }));
+}
+export function updateMyUser({ userUpdateMeDto }: {
+    userUpdateMeDto: UserUpdateMeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserAdminResponseDto;
+    }>("/users/me", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userUpdateMeDto
+    })));
 }
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/profile-image", {
@@ -2777,20 +2798,7 @@ export function createProfileImage({ createProfileImageDto }: {
         body: createProfileImageDto
     })));
 }
-export function deleteUser({ id, deleteUserDto }: {
-    id: string;
-    deleteUserDto: DeleteUserDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}`, oazapfts.json({
-        ...opts,
-        method: "DELETE",
-        body: deleteUserDto
-    })));
-}
-export function getUserById({ id }: {
+export function getUser({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2808,17 +2816,6 @@ export function getProfileImage({ id }: {
         data: Blob;
     }>(`/users/${encodeURIComponent(id)}/profile-image`, {
         ...opts
-    }));
-}
-export function restoreUser({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: UserResponseDto;
-    }>(`/users/${encodeURIComponent(id)}/restore`, {
-        ...opts,
-        method: "POST"
     }));
 }
 export enum ReactionLevel {
@@ -2845,14 +2842,14 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
-export enum AlbumUserRole {
-    Editor = "editor",
-    Viewer = "viewer"
-}
 export enum UserStatus {
     Active = "active",
     Removing = "removing",
     Deleted = "deleted"
+}
+export enum AlbumUserRole {
+    Editor = "editor",
+    Viewer = "viewer"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",
@@ -2891,6 +2888,10 @@ export enum AssetJobName {
 export enum ThumbnailFormat {
     Jpeg = "JPEG",
     Webp = "WEBP"
+}
+export enum AssetMediaStatus {
+    Replaced = "replaced",
+    Duplicate = "duplicate"
 }
 export enum EntityType {
     Asset = "ASSET",

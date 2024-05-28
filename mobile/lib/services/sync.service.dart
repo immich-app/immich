@@ -362,15 +362,15 @@ class SyncService {
     // update shared users
     final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
     sharedUsers.sort((a, b) => a.id.compareTo(b.id));
-    dto.sharedUsers.sort((a, b) => a.id.compareTo(b.id));
+    dto.albumUsers.sort((a, b) => a.user.id.compareTo(b.user.id));
     final List<String> userIdsToAdd = [];
     final List<User> usersToUnlink = [];
     diffSortedListsSync(
-      dto.sharedUsers,
+      dto.albumUsers,
       sharedUsers,
-      compare: (UserResponseDto a, User b) => a.id.compareTo(b.id),
+      compare: (AlbumUserResponseDto a, User b) => a.user.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (UserResponseDto a) => userIdsToAdd.add(a.id),
+      onlyFirst: (AlbumUserResponseDto a) => userIdsToAdd.add(a.user.id),
       onlySecond: (User a) => usersToUnlink.add(a),
     );
 
@@ -905,7 +905,7 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumName != a.name ||
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
-      dto.sharedUsers.length != a.sharedUsers.length ||
+      dto.albumUsers.length != a.sharedUsers.length ||
       !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
       !isAtSameMomentAs(dto.startDate, a.startDate) ||
       !isAtSameMomentAs(dto.endDate, a.endDate) ||

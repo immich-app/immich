@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAllUsers, getPartners, type UserResponseDto } from '@immich/sdk';
+  import { searchUsers, getPartners, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -14,11 +14,10 @@
   const dispatch = createEventDispatcher<{ 'add-users': UserResponseDto[] }>();
 
   onMount(async () => {
-    // TODO: update endpoint to have a query param for deleted users
-    let users = await getAllUsers({ isAll: false });
+    let users = await searchUsers();
 
-    // remove invalid users
-    users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
+    // remove current user
+    users = users.filter((_user) => _user.id !== user.id);
 
     // exclude partners from the list of users available for selection
     const partners = await getPartners({ direction: 'shared-by' });
@@ -38,6 +37,7 @@
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
         <button
+          type="button"
           on:click={() => selectUser(user)}
           class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >

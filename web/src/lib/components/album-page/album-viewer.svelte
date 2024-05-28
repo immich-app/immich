@@ -75,7 +75,7 @@
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title="Add Photos"
-            on:click={() => openFileUploadDialog(album.id)}
+            on:click={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}

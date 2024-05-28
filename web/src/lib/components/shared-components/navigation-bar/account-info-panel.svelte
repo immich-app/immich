@@ -4,7 +4,7 @@
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateUser, type UserAvatarColor } from '@immich/sdk';
+  import { deleteProfileImage, updateMyUser, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -27,9 +27,8 @@
         await deleteProfileImage();
       }
 
-      $user = await updateUser({
-        updateUserDto: {
-          id: $user.id,
+      $user = await updateMyUser({
+        userUpdateMeDto: {
           email: $user.email,
           name: $user.name,
           avatarColor: color,
@@ -93,6 +92,7 @@
 
     <div class="mb-4 flex flex-col">
       <button
+        type="button"
         class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
         on:click={() => dispatch('logout')}
       >

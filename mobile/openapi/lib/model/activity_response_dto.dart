@@ -31,7 +31,7 @@ class ActivityResponseDto {
 
   ActivityResponseDtoTypeEnum type;
 
-  UserDto user;
+  UserResponseDto user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
@@ -87,7 +87,7 @@ class ActivityResponseDto {
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ActivityResponseDtoTypeEnum.fromJson(json[r'type'])!,
-        user: UserDto.fromJson(json[r'user'])!,
+        user: UserResponseDto.fromJson(json[r'user'])!,
       );
     }
     return null;

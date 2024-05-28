@@ -22,7 +22,7 @@
     deleteLibrary,
     getAllLibraries,
     getLibraryStatistics,
-    getUserById,
+    getUserAdmin,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
@@ -99,7 +99,7 @@
 
   const refreshStats = async (listIndex: number) => {
     stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    owner[listIndex] = await getUserById({ id: libraries[listIndex].ownerId });
+    owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;

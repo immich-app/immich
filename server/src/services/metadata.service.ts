@@ -435,7 +435,7 @@ export class MetadataService {
           checksum,
           ownerId: asset.ownerId,
           originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-          originalFileName: asset.originalFileName,
+          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
           isVisible: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',

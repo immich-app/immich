@@ -27,4 +27,25 @@ describe('SettingInputField component', () => {
     await user.click(document.body);
     expect(numberInput.value).toEqual('100');
   });
+
+  it('allows emptying number inputs while editing', async () => {
+    const { getByRole } = render(SettingInputField, {
+      props: {
+        label: 'test-number-input',
+        inputType: SettingInputFieldType.NUMBER,
+        value: 5,
+      },
+    });
+    const user = userEvent.setup();
+
+    const numberInput = getByRole('spinbutton') as HTMLInputElement;
+    expect(numberInput.value).toEqual('5');
+
+    await user.click(numberInput);
+    await user.keyboard('{Backspace}');
+    expect(numberInput.value).toEqual('');
+
+    await user.click(document.body);
+    expect(numberInput.value).toEqual('0');
+  });
 });

@@ -135,7 +135,7 @@
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
-    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   $: isEditor =
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -157,7 +157,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
+    if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -228,7 +228,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.sharedUsers.length > 0) {
+  $: if (album.albumUsers.length > 0) {
     handlePromiseError(getFavorite());
     handlePromiseError(getNumberOfComments());
   }
@@ -310,7 +310,7 @@
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id);
+    await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };
@@ -338,7 +338,7 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error deleting shared user');
     }
@@ -484,7 +484,7 @@
               {/if}
             {/if}
 
-            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
               <Button
                 size="sm"
                 rounded="lg"
@@ -512,6 +512,7 @@
 
           <svelte:fragment slot="trailing">
             <button
+              type="button"
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
@@ -548,7 +549,7 @@
             {album}
             {assetStore}
             {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
+            isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
@@ -565,7 +566,7 @@
                 {/if}
 
                 <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
                   <div class="my-3 flex gap-x-1">
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
@@ -579,13 +580,13 @@
                     {/if}
 
                     <!-- owner -->
-                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -622,6 +623,7 @@
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
                   <button
+                    type="button"
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
@@ -651,7 +653,7 @@
       {/key}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}

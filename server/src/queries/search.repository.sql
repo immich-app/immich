@@ -204,6 +204,7 @@ WITH
         "asset"."ownerId" IN ($2)
         AND "asset"."id" != $3
         AND "asset"."isVisible" = $4
+        AND "asset"."type" = $5
       )
       AND ("asset"."deletedAt" IS NULL)
     ORDER BY
@@ -216,7 +217,7 @@ SELECT
 FROM
   "cte" "res"
 WHERE
-  res.distance <= $5
+  res.distance <= $6
 
 -- SearchRepository.searchFaces
 START TRANSACTION

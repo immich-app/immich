@@ -117,7 +117,7 @@
       use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
       use:listNavigation={suggestionContainer}
     >
-      <button class="w-full" on:click={() => (hideSuggestion = false)}>
+      <button type="button" class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
           placeholder="Search places"
           bind:name={searchWord}
@@ -133,6 +133,7 @@
         {#if !hideSuggestion}
           {#each suggestedPlaces as place, index}
             <button
+              type="button"
               class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
               suggestedPlaces.length - 1
                 ? 'rounded-b-lg border-b'

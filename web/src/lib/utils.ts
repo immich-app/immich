@@ -11,7 +11,6 @@ import {
   startOAuth,
   unlinkOAuthAccount,
   type SharedLinkResponseDto,
-  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
@@ -25,6 +24,7 @@ interface DownloadRequestOptions<T = unknown> {
 
 interface UploadRequestOptions {
   url: string;
+  method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
@@ -64,7 +64,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
       xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
-    xhr.open('POST', url);
+    xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
   });
@@ -158,17 +158,27 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
+export const getAssetFileUrl = (
+  ...[assetId, isWeb, isThumb, checksum]:
+    | [assetId: string, isWeb: boolean, isThumb: boolean]
+    | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
+) => {
   const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey() });
+  return createUrl(path, { isThumb, isWeb, key: getKey(), c: checksum });
 };
 
-export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
+export const getAssetThumbnailUrl = (
+  ...[assetId, format, checksum]:
+    | [assetId: string, format: ThumbnailFormat | undefined]
+    | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
+) => {
+  // checksum (optional) is used as a cache-buster param, since thumbs are
+  // served with static resource cache headers
   const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey() });
+  return createUrl(path, { format, key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (...[userId]: [string]) => {
+export const getProfileImageUrl = (userId: string) => {
   const path = `/users/${userId}/profile-image`;
   return createUrl(path);
 };
@@ -253,7 +263,7 @@ export const oauth = {
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): Promise<UserResponseDto> => {
+  link: (location: Location) => {
     return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
@@ -281,4 +291,4 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const s = (count: number) => (count === 1 ? '' : 's');
 
-export const memoryLaneTitle = (yearsAgo: number) => `year${s(yearsAgo)} ago`;
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;

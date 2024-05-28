@@ -294,11 +294,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
+            '-fps_mode vfr',
             '-frames:v 1',
+            '-update 1',
             '-v verbose',
-            '-vf scale=-2:1440:flags=lanczos+accurate_rnd+bitexact+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p',
+            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
@@ -319,11 +321,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
+            '-fps_mode vfr',
             '-frames:v 1',
+            '-update 1',
             '-v verbose',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
@@ -346,11 +350,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'],
+          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
+            '-fps_mode vfr',
             '-frames:v 1',
+            '-update 1',
             '-v verbose',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p',
+            `-vf fps=12,thumbnail=12,select=gt(scene\\,0.1)+gt(n\\,20),zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
@@ -1496,7 +1502,12 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-async_depth 4', '-threads 1']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel qsv',
+            '-hwaccel_output_format qsv',
+            '-async_depth 4',
+            '-threads 1',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
           ]),
@@ -1519,10 +1530,15 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-async_depth 4', '-threads 1']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel qsv',
+            '-hwaccel_output_format qsv',
+            '-async_depth 4',
+            '-threads 1',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=vaapi:reverse=1',
+              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=qsv:reverse=1,format=qsv',
             ),
           ]),
           twoPass: false,

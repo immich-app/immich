@@ -6,23 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import {
-  AssetBulkUploadCheckResponseDto,
-  AssetFileUploadResponseDto,
-  AssetRejectReason,
-  AssetUploadAction,
-  CheckExistingAssetsResponseDto,
-} from 'src/dtos/asset-v1-response.dto';
-import {
-  AssetBulkUploadCheckDto,
-  AssetSearchDto,
-  CheckExistingAssetsDto,
-  CreateAssetDto,
-  GetAssetThumbnailDto,
-  GetAssetThumbnailFormatEnum,
-  ServeFileDto,
-} from 'src/dtos/asset-v1.dto';
+import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
+import { CreateAssetDto, GetAssetThumbnailDto, GetAssetThumbnailFormatEnum, ServeFileDto } from 'src/dtos/asset-v1.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -33,10 +18,9 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { UploadFile } from 'src/services/asset.service';
+import { UploadFile } from 'src/services/asset-media.service';
 import { CacheControl, ImmichFileResponse, getLivePhotoMotionFilename } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
 
 @Injectable()
@@ -112,13 +96,6 @@ export class AssetServiceV1 {
     }
   }
 
-  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
-    const assets = await this.assetRepositoryV1.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset, { withStack: true, auth }));
-  }
-
   async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
@@ -157,46 +134,6 @@ export class AssetServiceV1 {
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PRIVATE_WITH_CACHE,
     });
-  }
-
-  async checkExistingAssets(
-    auth: AuthDto,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return {
-      existingIds: await this.assetRepositoryV1.getExistingAssets(auth.user.id, checkExistingAssetsDto),
-    };
-  }
-
-  async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
-    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
-    const results = await this.assetRepositoryV1.getAssetsByChecksums(auth.user.id, checksums);
-    const checksumMap: Record<string, string> = {};
-
-    for (const { id, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = id;
-    }
-
-    return {
-      results: dto.assets.map(({ id, checksum }) => {
-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
-        if (duplicate) {
-          return {
-            id,
-            assetId: duplicate,
-            action: AssetUploadAction.REJECT,
-            reason: AssetRejectReason.DUPLICATE,
-          };
-        }
-
-        // TODO mime-check
-
-        return {
-          id,
-          action: AssetUploadAction.ACCEPT,
-        };
-      }),
-    };
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {

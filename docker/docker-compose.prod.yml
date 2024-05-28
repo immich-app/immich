@@ -4,6 +4,9 @@ services:
   immich-server:
     container_name: immich_server
     image: immich-server:latest
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     build:
       context: ../
       dockerfile: server/Dockerfile
@@ -38,7 +41,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:c0634a08e74a4bb576d02d1ee993dc05dba10e8b7b9492dfa28a7af100d46c01
+    image: redis:6.2-alpine@sha256:e31ca60b18f7e9b78b573d156702471d4eda038803c0b8e6f01559f350031e93
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always

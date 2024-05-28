@@ -119,6 +119,7 @@
           on:escape={() => (shouldShowAccountInfoPanel = false)}
         >
           <button
+            type="button"
             class="flex"
             on:mouseover={() => (shouldShowAccountInfo = true)}
             on:focus={() => (shouldShowAccountInfo = true)}
