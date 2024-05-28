@@ -9,7 +9,7 @@
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    {$t('page.auth.register.admin_registry_info')}
+    {$t('page.auth.register.message')}
   </p>
 
   <AdminRegistrationForm />

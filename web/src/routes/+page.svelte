@@ -1,8 +1,9 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import Dropdown from '$lib/components/elements/dropdown.svelte';
   import { AppRoute } from '$lib/constants';
-  import { t } from 'svelte-i18n';
+  import { t, locale, locales } from 'svelte-i18n';
 </script>
 
 <section class="flex h-screen w-screen place-content-center place-items-center">
@@ -16,5 +17,11 @@
         <span class="px-2 font-bold">{$t('common.welcome.getting_started')}</span>
       </Button>
     </a>
+    <Dropdown
+      title="Choose language"
+      options={Object.values($locales)}
+      selectedOption={$locale}
+      on:select={({ detail }) => ($locale = detail)}
+    />
   </div>
 </section>

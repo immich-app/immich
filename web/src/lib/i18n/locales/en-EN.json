@@ -1,10 +1,17 @@
 {
     "common": {
-        "name": "Immich",
+        "app_name": "Immich",
+        "email": "Email",
+        "name": "Name",
+        "action": "Action",
         "welcome": {
             "title": "Welcome to Immich",
             "getting_started": "Getting started"
-        }
+        },
+        "type": "Type",
+        "owner": "Owner",
+        "assets": "Assets",
+        "size": "Size"
     },
     "page": {
         "error": {
@@ -19,7 +26,102 @@
         },
         "auth": {
             "register": {
-                "admin_registry_info": "Since you are the first user on the system, you will be assigned as the Admin and are responsible for administrative tasks, and additional users will be created by you."
+                "message": "Since you are the first user on the system, you will be assigned as the Admin and are responsible for administrative tasks, and additional users will be created by you."
+            },
+            "change_password": {
+                "salutation": "Hi {name} ({email})",
+                "message": "This is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below."
+            }
+        },
+        "admin": {
+            "user_management": {
+                "user_delete_success": "User {email} has been successfully removed.",
+                "user_reset_password_success": "The user's password has been reset",
+                "password_copy": "Copy password",
+                "temporary_password_info": "Please provide the temporary password to the user and inform them they will need to change the password at their next login.",
+                "user_create": "Create user",
+                "user_edit": "Edit user",
+                "user_delete": "Delete user",
+                "user_restore": "Restore user - scheduled removal on {delete_date}",
+                "quota": "Has quota"
+            },
+            "system_settings": {
+                "auth_settings_title": "Authentication Settings",
+                "auth_settings_subtitle": "Manage password, OAuth, and other authentication settings",
+                "image_settings_title": "Image Settings",
+                "image_settings_subtitle": "Manage the quality and resolution of generated images",
+                "job_settings_title": "Job Settings",
+                "job_settings_subtitle": "Manage job concurrency",
+                "library_settings_title": "External Library",
+                "library_settings_subtitle": "Manage external library settings",
+                "logging_settings_title": "Logging",
+                "logging_settings_subtitle": "Manage log settings",
+                "machine_learning_settings_title": "Machine Learning Settings",
+                "machine_learning_settings_subtitle": "Manage machine learning features and settings",
+                "map_settings_title": "Map & GPS Settings",
+                "map_settings_subtitle": "Manage map related features and setting",
+                "notification_settings_title": "Notification Settings",
+                "notification_settings_subtitle": "Manage notification settings, including email",
+                "server_settings_title": "Server Settings",
+                "server_settings_subtitle": "Manage server settings",
+                "storage_template_settings_title": "Storage Template",
+                "storage_template_settings_subtitle": "Manage the folder structure and file name of the upload asset",
+                "theme_settings_title": "Theme Settings",
+                "theme_settings_subtitle": "Manage customization of the Immich web interface",
+                "trash_settings_title": "Trash Settings",
+                "trash_settings_subtitle": "Manage trash settings",
+                "user_settings_title": "User Settings",
+                "user_settings_subtitle": "Manage user settings",
+                "new_version_check_settings_title": "Version Check",
+                "new_version_check_settings_subtitle": "Enable/disable the new version notification",
+                "ffmpeg_settings_title": "Video Transcoding Settings",
+                "ffmpeg_settings_subtitle": "Manage the resolution and encoding information of the video files",
+                "config_file_set": "Config is currently set by a config file",
+                "json_export": "Export as JSON",
+                "json_import": "Import from JSON",
+                "clipboard": "Copy to Clipboard"
+            },
+            "repair": {
+                "repair_error": "Unable to repair items",
+                "load_error": "Unable to load items",
+                "check_item_error": "Unable to check item",
+                "check_items_error": "Unable to check items",
+                "refreshed": "Refreshed",
+                "matched_items": "Matched {count, plural, one {# item} other {# items}}",
+                "repaired_items": "Repaired {count} items",
+                "matches": "MATCHES",
+                "matches_info": "These files are matched by their checksums",
+                "offline_paths": "OFFLINE PATHS",
+                "offline_paths_info": "These results may be due to manual deletion of files that are not part of an external library.",
+                "untracked_files": "UNTRACKED FILES",
+                "untracked_files_info": "These files are not tracked by the application. They can be the results of failed moves, interrupted uploads, or left behind due to a bug"
+            },
+            "library_management": {
+                "error_create": "Unable to create library",
+                "error_update": "Unable to update library",
+                "error_delete": "Unable to remove library",
+                "error_scan_libraries": "Unable to scan libraries",
+                "error_scan_library": "Unable to scan library",
+                "error_remove_files": "Unable to remove offline files",
+                "delete_confirmation": "Are you sure you want to delete {library_name} library?",
+                "delete_confirmation_asset_count": "Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.",
+                "scan_all_libraries": "Scan All Libraries",
+                "create_library": "Create Library",
+                "delete_library": "Delete library",
+                "library_created": "Created library: {name}",
+                "library_deleted": "Library deleted",
+                "library_options": "Library options",
+                "library_created_at": "External library (created on {createdAt})",
+                "empty_placeholder": "Create an external library to view your photos and videos",
+                "menu_rename": "Rename",
+                "menu_edit_import_paths": "Edit Import Paths",
+                "menu_scan_settings": "Scan Settings",
+                "menu_scan_new_files": "Scan New Library Files",
+                "menu_scan_all_files": "Re-scan All Library Files",
+                "menu_scan_all_files_subtitle": "Only refreshes modified files",
+                "menu_scan_all_files_force": "Force Re-scan All Library Files",
+                "menu_scan_all_files_force_subtitle": "Refreshes every file",
+                "menu_remove_offline_files": "Remove Offline Files"
             }
         }
     },

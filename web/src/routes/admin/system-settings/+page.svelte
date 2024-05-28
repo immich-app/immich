@@ -28,6 +28,7 @@
   import type { SystemConfigDto } from '@immich/sdk';
   import { mdiAlert, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -82,92 +83,92 @@
   }> = [
     {
       item: AuthSettings,
-      title: 'Authentication Settings',
-      subtitle: 'Manage password, OAuth, and other authentication settings',
+      title: $t('page.admin.system_settings.auth_settings_title'),
+      subtitle: $t('page.admin.system_settings.auth_settings_subtitle'),
       key: 'image',
     },
     {
       item: ImageSettings,
-      title: 'Image Settings',
-      subtitle: 'Manage the quality and resolution of generated images',
+      title: $t('page.admin.system_settings.image_settings_title'),
+      subtitle: $t('page.admin.system_settings.image_settings_subtitle'),
       key: 'image',
     },
     {
       item: JobSettings,
-      title: 'Job Settings',
-      subtitle: 'Manage job concurrency',
+      title: $t('page.admin.system_settings.job_settings_title'),
+      subtitle: $t('page.admin.system_settings.job_settings_subtitle'),
       key: 'job',
     },
     {
       item: LibrarySettings,
-      title: 'External Library',
-      subtitle: 'Manage external library settings',
+      title: $t('page.admin.system_settings.library_settings_title'),
+      subtitle: $t('page.admin.system_settings.library_settings_subtitle'),
       key: 'external-library',
     },
     {
       item: LoggingSettings,
-      title: 'Logging',
-      subtitle: 'Manage log settings',
+      title: $t('page.admin.system_settings.logging_settings_title'),
+      subtitle: $t('page.admin.system_settings.logging_settings_subtitle'),
       key: 'logging',
     },
     {
       item: MachineLearningSettings,
-      title: 'Machine Learning Settings',
-      subtitle: 'Manage machine learning features and settings',
+      title: $t('page.admin.system_settings.machine_learning_settings_title'),
+      subtitle: $t('page.admin.system_settings.machine_learning_settings_subtitle'),
       key: 'machine-learning',
     },
     {
       item: MapSettings,
-      title: 'Map & GPS Settings',
-      subtitle: 'Manage map related features and setting',
+      title: $t('page.admin.system_settings.map_settings_title'),
+      subtitle: $t('page.admin.system_settings.map_settings_subtitle'),
       key: 'location',
     },
     {
       item: NotificationSettings,
-      title: 'Notification Settings',
-      subtitle: 'Manage notification settings, including email',
+      title: $t('page.admin.system_settings.notification_settings_title'),
+      subtitle: $t('page.admin.system_settings.notification_settings_subtitle'),
       key: 'notifications',
     },
     {
       item: ServerSettings,
-      title: 'Server Settings',
-      subtitle: 'Manage server settings',
+      title: $t('page.admin.system_settings.server_settings_title'),
+      subtitle: $t('page.admin.system_settings.server_settings_subtitle'),
       key: 'server',
     },
     {
       item: StorageTemplateSettings,
-      title: 'Storage Template',
-      subtitle: 'Manage the folder structure and file name of the upload asset',
+      title: $t('page.admin.system_settings.storage_template_settings_title'),
+      subtitle: $t('page.admin.system_settings.storage_template_settings_subtitle'),
       key: 'storage-template',
     },
     {
       item: ThemeSettings,
-      title: 'Theme Settings',
-      subtitle: 'Manage customization of the Immich web interface',
+      title: $t('page.admin.system_settings.theme_settings_title'),
+      subtitle: $t('page.admin.system_settings.theme_settings_subtitle'),
       key: 'theme',
     },
     {
       item: TrashSettings,
-      title: 'Trash Settings',
-      subtitle: 'Manage trash settings',
+      title: $t('page.admin.system_settings.trash_settings_title'),
+      subtitle: $t('page.admin.system_settings.trash_settings_subtitle'),
       key: 'trash',
     },
     {
       item: UserSettings,
-      title: 'User Settings',
-      subtitle: 'Manage user settings',
+      title: $t('page.admin.system_settings.user_settings_title'),
+      subtitle: $t('page.admin.system_settings.user_settings_subtitle'),
       key: 'user-settings',
     },
     {
       item: NewVersionCheckSettings,
-      title: 'Version Check',
-      subtitle: 'Enable/disable the new version notification',
+      title: $t('page.admin.system_settings.new_version_check_settings_title'),
+      subtitle: $t('page.admin.system_settings.new_version_check_settings_subtitle'),
       key: 'version-check',
     },
     {
       item: FFmpegSettings,
-      title: 'Video Transcoding Settings',
-      subtitle: 'Manage the resolution and encoding information of the video files',
+      title: $t('page.admin.system_settings.ffmpeg_settings_title'),
+      subtitle: $t('page.admin.system_settings.ffmpeg_settings_subtitle'),
       key: 'video-transcoding',
     },
   ];
@@ -180,7 +181,7 @@
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
       <Icon path={mdiAlert} class="text-yellow-400" size={18} />
       <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-        Config is currently set by a config file
+        {$t('page.admin.system_settings.config_file_set')}
       </h2>
     </div>
   {/if}
@@ -190,19 +191,19 @@
       <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
-          Copy to Clipboard
+          {$t('page.admin.system_settings.clipboard')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => downloadConfig()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
-          Export as JSON
+          {$t('page.admin.system_settings.json_export')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
-          Import from JSON
+          {$t('page.admin.system_settings.json_import')}
         </div>
       </LinkButton>
     </div>

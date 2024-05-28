@@ -16,6 +16,7 @@
   import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -79,12 +80,12 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Repaired ${matches.length} items`,
+        message: $t('page.admin.repair.repaired_items', { values: { count: matches.length } }),
       });
 
       matches = [];
     } catch (error) {
-      handleError(error, 'Unable to repair items');
+      handleError(error, $t('page.admin.repair.repair_error'));
     } finally {
       repairing = false;
     }
@@ -107,9 +108,9 @@
       orphans = report.orphans;
       extras = normalize(report.extras);
 
-      notificationController.show({ message: 'Refreshed', type: NotificationType.Info });
+      notificationController.show({ message: $t('page.admin.repair.refreshed'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to load items');
+      handleError(error, $t('page.admin.repair.load_error'));
     }
   };
 
@@ -117,10 +118,13 @@
     try {
       const matched = await loadAndMatch([filename]);
       if (matched) {
-        notificationController.show({ message: `Matched 1 item`, type: NotificationType.Info });
+        notificationController.show({
+          message: $t('page.admin.repair.matched_items', { values: { count: 1 } }),
+          type: NotificationType.Info,
+        });
       }
     } catch (error) {
-      handleError(error, 'Unable to check item');
+      handleError(error, $t('page.admin.repair.check_item_error'));
     }
   };
 
@@ -136,12 +140,15 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, 'Unable to check items');
+      handleError(error, $t('page.admin.repair.check_items_error'));
     } finally {
       checking = false;
     }
 
-    notificationController.show({ message: `Matched ${count} items`, type: NotificationType.Info });
+    notificationController.show({
+      message: $t('page.admin.repair.matched_items', { values: { count: count } }),
+      type: NotificationType.Info,
+    });
   };
 
   const loadAndMatch = async (filenames: string[]) => {
@@ -214,8 +221,8 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>MATCHES {matches.length > 0 ? `(${matches.length})` : ''}</p>
-                    <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
+                    <p>{$t('page.admin.repair.matches')} {matches.length > 0 ? `(${matches.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">{$t('page.admin.repair.matches_info')}</p>
                   </div>
                 </th>
               </tr>
@@ -248,9 +255,9 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
+                    <p>{$t('page.admin.repair.offline_paths')} {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These results may be due to manual deletion of files that are not part of an external library.
+                      {$t('page.admin.repair.offline_paths_info')}
                     </p>
                   </div>
                 </th>
@@ -286,10 +293,9 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKED FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>{$t('page.admin.repair.untracked_files')} {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These files are not tracked by the application. They can be the results of failed moves,
-                      interrupted uploads, or left behind due to a bug
+                      {$t('page.admin.repair.untracked_files_info')}
                     </p>
                   </div>
                 </th>
