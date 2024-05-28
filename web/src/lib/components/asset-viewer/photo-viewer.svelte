@@ -3,7 +3,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -24,14 +24,12 @@
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
-  let assetFileUrl: string = '';
+  let assetData: string;
+  let abortController: AbortController;
+  let hasZoomed = false;
   let copyImageToClipboard: (source: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
   let imageLoaded: boolean = false;
-  let imageError: boolean = false;
-  // set to true when am image has been zoomed, to force loading of the original image regardless
-  // of app settings
-  let forceLoadOriginal: boolean = false;
 
   const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
@@ -42,12 +40,6 @@
     });
   }
 
-  $: {
-    preload({ preloadAssets, loadOriginal: loadOriginalByDefault });
-  }
-
-  $: assetFileUrl = load(asset.id, !loadOriginalByDefault || forceLoadOriginal, false, asset.checksum);
-
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
     // TODO: Move to regular import once the package correctly supports ESM.
@@ -56,30 +48,42 @@
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
   });
 
+  $: void loadAssetData({ loadOriginal: loadOriginalByDefault, checksum: asset.checksum });
+
   onDestroy(() => {
     $boundingBoxesArray = [];
+    abortController?.abort();
   });
 
-  const preload = ({
-    preloadAssets,
-    loadOriginal,
-  }: {
-    preloadAssets: AssetResponseDto[] | null;
-    loadOriginal: boolean;
-  }) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetFileUrl(preloadAsset.id, !loadOriginal, false, preloadAsset.checksum);
-      }
-    }
-  };
+  const loadAssetData = async ({ loadOriginal, checksum }: { loadOriginal: boolean; checksum: string }) => {
+    try {
+      abortController?.abort();
+      abortController = new AbortController();
 
-  const load = (assetId: string, isWeb: boolean, isThumb: boolean, checksum: string) => {
-    const assetUrl = getAssetFileUrl(assetId, isWeb, isThumb, checksum);
-    // side effect, only flag imageLoaded when url is different
-    imageLoaded = assetFileUrl === assetUrl;
-    return assetUrl;
+      // TODO: Use sdk once it supports signals
+      const res = await downloadRequest({
+        url: getAssetFileUrl(asset.id, !loadOriginal, false, checksum),
+        signal: abortController.signal,
+      });
+
+      assetData = window.URL.createObjectURL(res.data);
+      imageLoaded = true;
+
+      if (!preloadAssets) {
+        return;
+      }
+
+      for (const preloadAsset of preloadAssets) {
+        if (preloadAsset.type === AssetTypeEnum.Image) {
+          await downloadRequest({
+            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            signal: abortController.signal,
+          });
+        }
+      }
+    } catch {
+      imageLoaded = false;
+    }
   };
 
   const doCopy = async () => {
@@ -88,7 +92,7 @@
     }
 
     try {
-      await copyImageToClipboard(assetFileUrl);
+      await copyImageToClipboard(assetData);
       notificationController.show({
         type: NotificationType.Info,
         message: 'Copied image to clipboard.',
@@ -117,7 +121,12 @@
 
   zoomImageWheelState.subscribe((state) => {
     photoZoomState.set(state);
-    forceLoadOriginal = state.currentZoom > 1 && isWebCompatibleImage(asset) ? true : false;
+
+    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
+      hasZoomed = true;
+
+      handlePromiseError(loadAssetData({ loadOriginal: true, checksum: asset.checksum }));
+    }
   });
 
   const onCopyShortcut = (event: KeyboardEvent) => {
@@ -137,53 +146,41 @@
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
-{#if imageError}
-  <div class="h-full flex items-center justify-center">Error loading image</div>
-{/if}
-<div bind:this={element} class="relative h-full select-none">
-  <img
-    style="display:none"
-    src={assetFileUrl}
-    alt={getAltText(asset)}
-    on:load={() => (imageLoaded = true)}
-    on:error={() => (imageError = imageLoaded = true)}
-  />
+
+<div
+  bind:this={element}
+  transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+  class="relative h-full select-none"
+>
   {#if !imageLoaded}
-    <div class:hidden={imageLoaded} class="flex h-full items-center justify-center">
+    <div class="flex h-full items-center justify-center">
       <LoadingSpinner />
     </div>
-  {:else if !imageError}
-    {#key assetFileUrl}
-      <div
-        bind:this={imgElement}
-        class:hidden={!imageLoaded}
-        class="h-full w-full"
-        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-      >
-        {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
-          <img
-            src={assetFileUrl}
-            alt={getAltText(asset)}
-            class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
-            draggable="false"
-          />
-        {/if}
+  {:else}
+    <div bind:this={imgElement} class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
-          bind:this={$photoViewer}
-          src={assetFileUrl}
+          src={assetData}
           alt={getAltText(asset)}
-          class="h-full w-full {$slideshowState === SlideshowState.None
-            ? 'object-contain'
-            : slideshowLookCssMapping[$slideshowLook]}"
+          class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
           draggable="false"
         />
-        {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
-          <div
-            class="absolute border-solid border-white border-[3px] rounded-lg"
-            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-          />
-        {/each}
-      </div>
-    {/key}
+      {/if}
+      <img
+        bind:this={$photoViewer}
+        src={assetData}
+        alt={getAltText(asset)}
+        class="h-full w-full {$slideshowState === SlideshowState.None
+          ? 'object-contain'
+          : slideshowLookCssMapping[$slideshowLook]}"
+        draggable="false"
+      />
+      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
+        <div
+          class="absolute border-solid border-white border-[3px] rounded-lg"
+          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+        />
+      {/each}
+    </div>
   {/if}
 </div>
