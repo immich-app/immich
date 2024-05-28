@@ -80,7 +80,7 @@
       people = data?.people || [];
       await getFaces({ id: asset.id }).then((data) => {
         faces = data;
-        hasUnassignedFaces = faces.length > people.length;
+        hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
       });
     }
   };
@@ -128,11 +128,11 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
-      hasUnassignedFaces = faces.length > people.length;
+      hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
     });
     await getFaces({ id: asset.id }).then((data) => {
       faces = data;
-      hasUnassignedFaces = faces.length > people.length;
+      hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
     });
     showEditFaces = false;
   };

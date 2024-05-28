@@ -204,7 +204,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {@const person_name = face.person ? face.person?.name : 'unassigned'}
+          {@const personName = face.person ? face.person?.name : 'Unassigned'}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div
               role="button"
@@ -220,7 +220,7 @@
                     curve
                     shadow
                     url={selectedPersonToCreate[face.id]}
-                    altText={selectedPersonToCreate[face.id]}
+                    altText={'New person'}
                     title={'New person'}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
@@ -230,7 +230,7 @@
                     curve
                     shadow
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id].id)}
-                    altText={selectedPersonToReassign[face.id]?.name || selectedPersonToReassign[face.id].id}
+                    altText={selectedPersonToReassign[face.id].name}
                     title={getPersonNameWithHiddenValue(
                       selectedPersonToReassign[face.id].name,
                       selectedPersonToReassign[face.id]?.isHidden,
@@ -244,7 +244,7 @@
                     curve
                     shadow
                     url={getPeopleThumbnailUrl(face.person.id)}
-                    altText={face.person.name || face.person.id}
+                    altText={face.person.name}
                     title={getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
@@ -256,8 +256,8 @@
                       curve
                       shadow
                       url="/src/lib/assets/no-thumbnail.png"
-                      altText="unassigned"
-                      title="unassigned"
+                      altText="Unassigned"
+                      title="Unassigned"
                       widthStyle="90px"
                       heightStyle="90px"
                       thumbhash={null}
@@ -268,8 +268,8 @@
                       curve
                       shadow
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
-                      altText="unassigned"
-                      title="unassigned"
+                      altText="Unassigned"
+                      title="Unassigned"
                       widthStyle="90px"
                       heightStyle="90px"
                       thumbhash={null}
@@ -280,11 +280,11 @@
               </div>
 
               {#if !selectedPersonToCreate[face.id]}
-                <p class="relative mt-1 truncate font-medium" title={person_name}>
+                <p class="relative mt-1 truncate font-medium" title={personName}>
                   {#if selectedPersonToReassign[face.id]?.id}
                     {selectedPersonToReassign[face.id]?.name}
                   {:else}
-                    {person_name}
+                    {personName}
                   {/if}
                 </p>
               {/if}
