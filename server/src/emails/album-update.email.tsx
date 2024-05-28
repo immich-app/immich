@@ -20,7 +20,7 @@ import { AlbumUpdateEmailProps } from 'src/interfaces/notification.interface';
 export const AlbumUpdateEmail = ({ baseUrl, albumName, recipientName, albumId, cid }: AlbumUpdateEmailProps) => (
   <Html>
     <Head />
-    <Preview>You have added to a shared album.</Preview>
+    <Preview>New media has been added to a shared album.</Preview>
     <Body
       style={{
         margin: 0,
