@@ -381,7 +381,7 @@
             {/if}
 
             {#if asset.exifInfo.exposureTime}
-              <p>{`${asset.exifInfo.exposureTime}`}</p>
+              <p>{`${asset.exifInfo.exposureTime} s`}</p>
             {/if}
 
             {#if asset.exifInfo.focalLength}
