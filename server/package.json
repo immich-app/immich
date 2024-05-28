@@ -50,7 +50,7 @@
     "@opentelemetry/context-async-hooks": "^1.24.0",
     "@opentelemetry/exporter-prometheus": "^0.51.0",
     "@opentelemetry/sdk-node": "^0.51.0",
-    "@react-email/components": "^0.0.17",
+    "@react-email/components": "^0.0.18",
     "@socket.io/postgres-adapter": "^0.3.1",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
