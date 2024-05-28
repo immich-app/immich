@@ -9,6 +9,9 @@ services:
     container_name: immich_server
     command: ['/usr/src/app/bin/immich-dev']
     image: immich-server-dev:latest
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     build:
       context: ../
       dockerfile: server/Dockerfile

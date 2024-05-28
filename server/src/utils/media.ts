@@ -3,22 +3,84 @@ import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AudioStreamInfo,
   BitrateDistribution,
-  TranscodeOptions,
+  TranscodeCommand,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
   VideoStreamInfo,
 } from 'src/interfaces/media.interface';
 
-class BaseConfig implements VideoCodecSWConfig {
-  presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  constructor(protected config: SystemConfigFFmpegDto) {}
+export class BaseConfig implements VideoCodecSWConfig {
+  readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
+  protected constructor(protected config: SystemConfigFFmpegDto) {}
 
-  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  static create(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false): VideoCodecSWConfig {
+    if (config.accel === TranscodeHWAccel.DISABLED) {
+      return this.getSWCodecConfig(config);
+    }
+    return this.getHWCodecConfig(config, devices, hasMaliOpenCL);
+  }
+
+  private static getSWCodecConfig(config: SystemConfigFFmpegDto) {
+    switch (config.targetVideoCodec) {
+      case VideoCodec.H264: {
+        return new H264Config(config);
+      }
+      case VideoCodec.HEVC: {
+        return new HEVCConfig(config);
+      }
+      case VideoCodec.VP9: {
+        return new VP9Config(config);
+      }
+      case VideoCodec.AV1: {
+        return new AV1Config(config);
+      }
+      default: {
+        throw new Error(`Codec '${config.targetVideoCodec}' is unsupported`);
+      }
+    }
+  }
+
+  private static getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false) {
+    let handler: VideoCodecHWConfig;
+    switch (config.accel) {
+      case TranscodeHWAccel.NVENC: {
+        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
+        break;
+      }
+      case TranscodeHWAccel.QSV: {
+        handler = config.accelDecode ? new QsvHwDecodeConfig(config, devices) : new QsvSwDecodeConfig(config, devices);
+        break;
+      }
+      case TranscodeHWAccel.VAAPI: {
+        handler = new VAAPIConfig(config, devices);
+        break;
+      }
+      case TranscodeHWAccel.RKMPP: {
+        handler =
+          config.accelDecode && hasMaliOpenCL
+            ? new RkmppHwDecodeConfig(config, devices)
+            : new RkmppSwDecodeConfig(config, devices);
+        break;
+      }
+      default: {
+        throw new Error(`${config.accel.toUpperCase()} acceleration is unsupported`);
+      }
+    }
+    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
+      throw new Error(
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
+      );
+    }
+
+    return handler;
+  }
+
+  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = {
       inputOptions: this.getBaseInputOptions(videoStream),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
-    } as TranscodeOptions;
+    } as TranscodeCommand;
     if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
       const filters = this.getFilterOptions(videoStream);
       if (filters.length > 0) {
@@ -318,11 +380,20 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  getBaseInputOptions(): string[] {
-    return ['-ss 00:00:00', '-sws_flags accurate_rnd+bitexact+full_chroma_int'];
+  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+    return new ThumbnailConfig(config);
   }
+
+  getBaseInputOptions(): string[] {
+    return ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'];
+  }
+
   getBaseOutputOptions() {
-    return ['-frames:v 1'];
+    return ['-fps_mode vfr', '-frames:v 1', '-update 1'];
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo): string[] {
+    return ['fps=12', 'thumbnail=12', `select=gt(scene\\,0.1)+gt(n\\,20)`, ...super.getFilterOptions(videoStream)];
   }
 
   getPresetOptions() {
@@ -338,8 +409,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getScaling(videoStream: VideoStreamInfo) {
-    let options = super.getScaling(videoStream);
-    options += ':flags=lanczos+accurate_rnd+bitexact+full_chroma_int';
+    let options = super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
       options += ':out_color_matrix=601:out_range=pc';
     }
@@ -534,8 +604,6 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     options.push(...this.getToneMapping(videoStream));
     if (options.length > 0) {
       options[options.length - 1] += ':format=nv12';
-    } else {
-      options.push('format=nv12');
     }
     return options;
   }
@@ -559,7 +627,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
   }
 
   getInputThreadOptions() {
-    return [`-threads ${this.config.threads <= 0 ? 1 : this.config.threads}`];
+    return [`-threads 1`];
   }
 
   getOutputThreadOptions() {
@@ -649,7 +717,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       throw new Error('No QSV device found');
     }
 
-    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', '-threads 1'];
+    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', ...this.getInputThreadOptions()];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
       options.push(`-qsv_device ${hwDevice}`);
@@ -693,6 +761,10 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       `tonemap_opencl=${tonemapOptions.join(':')}`,
       'hwmap=derive_device=qsv:reverse=1,format=qsv',
     ];
+  }
+
+  getInputThreadOptions() {
+    return [`-threads 1`];
   }
 }
 
