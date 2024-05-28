@@ -53,7 +53,7 @@
 
 ## Documentation
 
-You can find the main documentation, including installation guides, at [https://immich.app](https://immich.app).
+You can find the main documentation, including installation guides, at [https://immich.app/docs](https://immich.app/docs).
 
 ## Demo
 
