@@ -27,8 +27,10 @@ class User {
 
   Id get isarId => fastHash(id);
 
-  User.fromUserDto(UserAdminResponseDto dto)
-      : id = dto.id,
+  User.fromUserDto(
+    UserAdminResponseDto dto,
+    UserPreferencesResponseDto? preference,
+  )   : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
         name = dto.name,
@@ -36,7 +38,7 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = false,
+        memoryEnabled = preference?.memories.enabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = false,
         quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,
