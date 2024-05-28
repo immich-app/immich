@@ -177,10 +177,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       retResult = false;
     } else {
       UserAdminResponseDto? userResponseDto;
-      UserPreferencesResponseDto? userPreference;
+      UserPreferencesResponseDto? userPreferences;
       try {
         userResponseDto = await _apiService.userApi.getMyUser();
-        userPreference = await _apiService.userApi.getMyPreferences();
+        userPreferences = await _apiService.userApi.getMyPreferences();
       } on ApiException catch (error, stackTrace) {
         _log.severe(
           "Error getting user information from the server [API EXCEPTION]",
@@ -203,13 +203,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
         Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(userResponseDto, userPreference),
+          User.fromUserDto(userResponseDto, userPreferences),
         );
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
         shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromUserDto(userResponseDto, userPreference);
+        user = User.fromUserDto(userResponseDto, userPreferences);
 
         retResult = true;
       } else {

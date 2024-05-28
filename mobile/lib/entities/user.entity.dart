@@ -29,7 +29,7 @@ class User {
 
   User.fromUserDto(
     UserAdminResponseDto dto,
-    UserPreferencesResponseDto? preference,
+    UserPreferencesResponseDto? preferences,
   )   : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
@@ -38,7 +38,7 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = preference?.memories.enabled ?? false,
+        memoryEnabled = preferences?.memories.enabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = false,
         quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,

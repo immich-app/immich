@@ -58,7 +58,7 @@ class TabNavigationObserver extends AutoRouterObserver {
       try {
         final userResponseDto =
             await ref.read(apiServiceProvider).userApi.getMyUser();
-        final userPreferencen =
+        final userPreferences =
             await ref.read(apiServiceProvider).userApi.getMyPreferences();
 
         if (userResponseDto == null) {
@@ -67,7 +67,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
         Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(userResponseDto, userPreferencen),
+          User.fromUserDto(userResponseDto, userPreferences),
         );
         ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {
