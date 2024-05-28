@@ -363,6 +363,23 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use scaling divisible by 2 even when using quick sync', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGeneratePreview({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        {
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should run successfully', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGeneratePreview({ id: assetStub.image.id });
