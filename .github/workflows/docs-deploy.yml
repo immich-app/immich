@@ -13,7 +13,7 @@ jobs:
     steps:
       - if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         run: echo 'The triggering workflow failed' && exit 1
-      
+
       - name: Determine deploy parameters
         id: parameters
         uses: actions/github-script@v7
@@ -48,7 +48,7 @@ jobs:
 
               parameters = {
                 event: "pr",
-                name: pull_number,
+                name: `pr-${pull_number}`,
                 shouldDeploy: !isFork || isApproved
               };
             } else if (eventType == "release") {
@@ -67,6 +67,9 @@ jobs:
     needs: checks
     if: ${{ fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Load parameters
         id: parameters
         uses: actions/github-script@v7
@@ -77,7 +80,7 @@ jobs:
             core.setOutput("event", parameters.event);
             core.setOutput("name", parameters.name);
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
-      
+
       - run: |
           echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
 
@@ -102,21 +105,54 @@ jobs:
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/docs-build-output.zip`, Buffer.from(download.data));
 
-      # TODO: Terraform shenanigans
-      
-      - name: Comment
-        uses: actions/github-script@v7
-        if: ${{ steps.parameters.outputs.event == 'pr' }}
-        # TODO: Probably get the URL as an output from terraform
-        with:
-          script: |
-            const name = "${{ steps.parameters.outputs.name }}";
-            const comment = "📖 Documentation preview deployed to " + name + ".preview.immich.app";
+      - name: Unzip artifact
+        run: unzip "${{ github.workspace }}/docs-build-output.zip" -d "${{ github.workspace }}/docs/build"
 
-            # TODO: If comment already exists, skip this (or update comment with commit hash?)
-            github.rest.issues.createComment({
-              issue_number: context.payload.workflow_run.pull_requests[0].number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            })
+      - name: Deploy Docs Subdomain
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          TF_VAR_prefix_event_type: ${{ steps.parameters.outputs.event }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: "0.58.12"
+          tofu_version: "1.7.1"
+          tg_dir: "deployment/modules/cloudflare/docs"
+          tg_command: "apply"
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: "immich-app"
+          workingDirectory: "docs"
+          directory: "build"
+          branch: ${{ steps.parameters.outputs.name }}
+          wranglerVersion: '3'
+
+      - name: Deploy Docs Release Domain
+        if: ${{ steps.parameters.outputs.event == 'release' }}
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: '0.58.12'
+          tofu_version: '1.7.1'
+          tg_dir: 'deployment/modules/cloudflare/docs-release'
+          tg_command: 'apply'
+
+      - name: Comment
+        uses: actions-cool/maintain-one-comment@v3
+        if: ${{ steps.parameters.outputs.event == 'pr' }}
+        with:
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          body: |
+            📖 Documentation deployed to [${{ steps.parameters.outputs.name }}.preview.immich.app](https://${{ steps.parameters.outputs.name }}.preview.immich.app)
+          emojis: 'rocket'
+          body-include: '<!-- Docs PR URL -->'
