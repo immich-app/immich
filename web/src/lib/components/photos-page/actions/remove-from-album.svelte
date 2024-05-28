@@ -20,7 +20,7 @@
   const removeFromAlbum = async () => {
     const isConfirmed = await dialogController.show({
       id: 'remove-from-album',
-      prompt: `Are you sure you want to remove asset${s(getAssets().size)} from the album?`,
+      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from the album?`,
     });
 
     if (!isConfirmed) {

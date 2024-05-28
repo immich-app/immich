@@ -6,7 +6,7 @@ type DialogActions = {
 };
 
 type DialogOptions = {
-  id: string;
+  id?: string;
   title?: string;
   prompt?: string;
   confirmText?: string;

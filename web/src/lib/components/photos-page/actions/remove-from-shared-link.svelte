@@ -16,7 +16,7 @@
     const isConfirmed = await dialogController.show({
       id: 'remove-from-shared-link',
       title: 'Remove assets?',
-      prompt: `Are you sure you want to remove asset${s(getAssets().size)} from this shared link?`,
+      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from this shared link?`,
       confirmText: 'Remove',
     });
 
