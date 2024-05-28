@@ -678,7 +678,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const options = [];
-    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
+    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
@@ -821,9 +821,9 @@ export class VAAPIConfig extends BaseHWConfig {
         '-rc_mode 3',
       ); // variable bitrate
     } else if (this.useCQP()) {
-      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1');
+      options.push(`-qp:v ${this.config.crf}`, `-global_quality:v ${this.config.crf}`, '-rc_mode 1');
     } else {
-      options.push(`-global_quality ${this.config.crf}`, '-rc_mode 4');
+      options.push(`-global_quality:v ${this.config.crf}`, '-rc_mode 4');
     }
 
     return options;
