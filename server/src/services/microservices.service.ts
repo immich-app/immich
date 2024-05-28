@@ -90,6 +90,8 @@ export class MicroservicesService {
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
+      [JobName.NOTIFY_ALBUM_INVITE]: (data) => this.notificationService.handleAlbumInvite(data),
+      [JobName.NOTIFY_ALBUM_UPDATE]: (data) => this.notificationService.handleAlbumUpdate(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });

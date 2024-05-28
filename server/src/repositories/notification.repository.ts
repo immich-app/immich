@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React from 'react';
+import { AlbumInviteEmail } from 'src/emails/album-invite.email';
+import { AlbumUpdateEmail } from 'src/emails/album-update.email';
 import { WelcomeEmail } from 'src/emails/welcome.email';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -37,11 +39,18 @@ export class NotificationRepository implements INotificationRepository {
     return { html, text };
   }
 
-  sendEmail({ to, from, subject, html, text, smtp }: SendEmailOptions): Promise<SendEmailResponse> {
+  sendEmail({ to, from, subject, html, text, smtp, imageAttachments }: SendEmailOptions): Promise<SendEmailResponse> {
     this.logger.debug(`Sending email to ${to} with subject: ${subject}`);
     const transport = this.createTransport(smtp);
+
+    const attachments = imageAttachments?.map((attachment) => ({
+      filename: attachment.filename,
+      path: attachment.path,
+      cid: attachment.cid,
+    }));
+
     try {
-      return transport.sendMail({ to, from, subject, html, text });
+      return transport.sendMail({ to, from, subject, html, text, attachments });
     } finally {
       transport.close();
     }
@@ -51,6 +60,14 @@ export class NotificationRepository implements INotificationRepository {
     switch (template) {
       case EmailTemplate.WELCOME: {
         return React.createElement(WelcomeEmail, data);
+      }
+
+      case EmailTemplate.ALBUM_INVITE: {
+        return React.createElement(AlbumInviteEmail, data);
+      }
+
+      case EmailTemplate.ALBUM_UPDATE: {
+        return React.createElement(AlbumUpdateEmail, data);
       }
     }
   }

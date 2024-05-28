@@ -1,3 +1,5 @@
+import { EmailImageAttachment } from 'src/interfaces/notification.interface';
+
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
@@ -99,6 +101,8 @@ export enum JobName {
 
   // Notification
   NOTIFY_SIGNUP = 'notify-signup',
+  NOTIFY_ALBUM_INVITE = 'notify-album-invite',
+  NOTIFY_ALBUM_UPDATE = 'notify-album-update',
   SEND_EMAIL = 'notification-send-email',
 
   // Version check
@@ -150,10 +154,19 @@ export interface IEmailJob {
   subject: string;
   html: string;
   text: string;
+  imageAttachments?: EmailImageAttachment[];
 }
 
 export interface INotifySignupJob extends IEntityJob {
   tempPassword?: string;
+}
+
+export interface INotifyAlbumInviteJob extends IEntityJob {
+  recipientId: string;
+}
+
+export interface INotifyAlbumUpdateJob extends IEntityJob {
+  senderId: string;
 }
 
 export interface JobCounts {
@@ -246,6 +259,8 @@ export type JobItem =
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
+  | { name: JobName.NOTIFY_ALBUM_INVITE; data: INotifyAlbumInviteJob }
+  | { name: JobName.NOTIFY_ALBUM_UPDATE; data: INotifyAlbumUpdateJob }
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check

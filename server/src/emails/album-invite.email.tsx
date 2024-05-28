@@ -15,18 +15,25 @@ import {
 } from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
-import { WelcomeEmailProps } from 'src/interfaces/notification.interface';
+import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
 
-export const WelcomeEmail = ({ baseUrl, displayName, username, password }: WelcomeEmailProps) => (
+export const AlbumInviteEmail = ({
+  baseUrl,
+  albumName,
+  recipientName,
+  senderName,
+  albumId,
+  cid,
+}: AlbumInviteEmailProps) => (
   <Html>
     <Head />
-    <Preview>You have been invited to a new Immich instance.</Preview>
+    <Preview>You have been added to a shared album.</Preview>
     <Body
       style={{
         margin: 0,
         padding: 0,
         backgroundColor: '#ffffff',
-        color: 'rgb(66, 80, 175)',
+        color: 'rgb(28,28,28)',
         fontFamily: 'Overpass, sans-serif',
         fontSize: '18px',
         lineHeight: '24px',
@@ -34,7 +41,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
     >
       <Container
         style={{
-          width: '480px',
+          width: '540px',
           maxWidth: '100%',
           padding: '10px',
           margin: '0 auto',
@@ -62,36 +69,43 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
             }}
           />
 
-          <Text style={text}>
-            Hey <strong>{displayName}</strong>!
-          </Text>
-
-          <Text style={text}>A new account has been created for you.</Text>
+          <Text style={text}>Hey {recipientName}!</Text>
 
           <Text style={text}>
-            <strong>Username</strong>: {username}
-            {password && (
-              <>
-                <br />
-                <strong>Password</strong>: {password}
-              </>
-            )}
+            {senderName} has added you to the album <strong>{albumName}</strong>.
           </Text>
 
-          <Row>
-            <Text style={{ ...text, marginBottom: '36px' }}>
-              To login, open the link in a browser, or click the button below.
-            </Text>
+          {cid && (
+            <Row>
+              <Column align="center">
+                <Img
+                  src={`cid:${cid}`}
+                  width="300"
+                  style={{
+                    borderRadius: '20px',
+                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
+                  }}
+                />
+              </Column>
+            </Row>
+          )}
+
+          <Row style={{ marginBottom: '36px', marginTop: '36px' }}>
+            <Text style={{ ...text }}>To view the album, open the link in a browser, or click the button below.</Text>
           </Row>
           <Row>
-            <Link style={{ marginTop: '50px' }} href={baseUrl}>
-              {baseUrl}
-            </Link>
+            <Column align="center">
+              <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
+                {baseUrl}/albums/{albumId}
+              </Link>
+            </Column>
           </Row>
           <Row>
-            <Button style={button} href={`${baseUrl}/auth/login`}>
-              Login
-            </Button>
+            <Column align="center">
+              <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
+                View album
+              </Button>
+            </Column>
           </Row>
         </Section>
 
@@ -129,14 +143,16 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
   </Html>
 );
 
-WelcomeEmail.PreviewProps = {
-  baseUrl: 'https://demo.immich.app/auth/login',
-  displayName: 'Alan Turing',
-  username: 'alanturing@immich.app',
-  password: 'mysuperpassword',
-} as WelcomeEmailProps;
+AlbumInviteEmail.PreviewProps = {
+  baseUrl: 'https://demo.immich.app',
+  albumName: 'Trip to Europe',
+  albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
+  senderName: 'Owner User',
+  recipientName: 'Guest User',
+  cid: '',
+} as AlbumInviteEmailProps;
 
-export default WelcomeEmail;
+export default AlbumInviteEmail;
 
 const text = {
   margin: '0 0 24px 0',
