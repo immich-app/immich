@@ -22,6 +22,17 @@ describe('/map', () => {
     websocket = await utils.connectWebsocket(admin.accessToken);
 
     asset = await utils.createAsset(admin.accessToken);
+
+    const files = ['formats/heic/IMG_2682.heic', 'metadata/gps-position/thompson-springs.jpg'];
+    utils.resetEvents();
+    const uploadFile = async (input: string) => {
+      const filepath = join(testAssetDir, input);
+      const { id } = await utils.createAsset(admin.accessToken, {
+        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+      });
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+    };
+    await Promise.all(files.map((f) => uploadFile(f)));
   });
 
   afterAll(() => {
@@ -29,31 +40,6 @@ describe('/map', () => {
   });
 
   describe('GET /map/markers', () => {
-    beforeAll(async () => {
-      const files = [
-        'formats/avif/8bit-sRGB.avif',
-        'formats/jpg/el_torcal_rocks.jpg',
-        'formats/jxl/8bit-sRGB.jxl',
-        'formats/heic/IMG_2682.heic',
-        'formats/png/density_plot.png',
-        'formats/raw/Nikon/D80/glarus.nef',
-        'formats/raw/Nikon/D700/philadelphia.nef',
-        'formats/raw/Panasonic/DMC-GH4/4_3.rw2',
-        'formats/raw/Sony/ILCE-6300/12bit-compressed-(3_2).arw',
-        'formats/raw/Sony/ILCE-7M2/14bit-uncompressed-(3_2).arw',
-      ];
-      utils.resetEvents();
-      const uploadFile = async (input: string) => {
-        const filepath = join(testAssetDir, input);
-        const { id } = await utils.createAsset(admin.accessToken, {
-          assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-        });
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
-      };
-      const uploads = files.map((f) => uploadFile(f));
-      await Promise.all(uploads);
-    }, 30_000);
-
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/map/markers');
       expect(status).toBe(401);

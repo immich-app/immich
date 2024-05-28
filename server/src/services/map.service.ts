@@ -3,7 +3,6 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto } from 'src/dtos/search.dto';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -14,14 +13,13 @@ export class MapService {
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ILoggerRepository) loggerRepository: ILoggerRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IMapRepository) private repository: IMapRepository,
+    @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
   ) {
-    loggerRepository.setContext(MapService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, loggerRepository);
+    this.logger.setContext(MapService.name);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
@@ -45,7 +43,7 @@ export class MapService {
       albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
     }
 
-    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
+    return this.mapRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMapStyle(theme: 'light' | 'dark') {
@@ -53,7 +51,7 @@ export class MapService {
     const styleUrl = theme === 'dark' ? map.darkStyle : map.lightStyle;
 
     if (styleUrl) {
-      return this.repository.fetchStyle(styleUrl);
+      return this.mapRepository.fetchStyle(styleUrl);
     }
 
     return JSON.parse(await this.systemMetadataRepository.readFile(`./resources/style-${theme}.json`));
