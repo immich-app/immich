@@ -93,22 +93,23 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | 
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
-*AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
-*AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /asset | 
-*AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
-*AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /asset/{id} | 
-*AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /asset/statistics | 
-*AssetsApi* | [**getAssetThumbnail**](doc//AssetsApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /asset/memory-lane | 
-*AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /asset/random | 
-*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /asset/{id}/file | 
-*AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /asset/jobs | 
-*AssetsApi* | [**serveFile**](doc//AssetsApi.md#servefile) | **GET** /asset/file/{id} | 
-*AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /asset/{id} | 
-*AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /asset | 
-*AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
-*AssetsApi* | [**uploadFile**](doc//AssetsApi.md#uploadfile) | **POST** /asset/upload | 
+*AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | 
+*AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | 
+*AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | 
+*AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | 
+*AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | 
+*AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
+*AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
+*AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /assets/memory-lane | 
+*AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
+*AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
+*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | 
+*AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
+*AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
+*AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
+*AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /assets/stack/parent | 
+*AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
+*AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
@@ -116,7 +117,6 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
-*DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
@@ -260,13 +260,13 @@ Class | Method | HTTP request | Description
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
  - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
- - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetFullSyncDto](doc//AssetFullSyncDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
  - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
+ - [AssetMediaSize](doc//AssetMediaSize.md)
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
@@ -398,7 +398,6 @@ Class | Method | HTTP request | Description
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
- - [ThumbnailFormat](doc//ThumbnailFormat.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)
  - [ToneMapping](doc//ToneMapping.md)

@@ -178,7 +178,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: getBaseUrl() + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });

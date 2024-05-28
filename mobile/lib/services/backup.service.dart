@@ -21,7 +21,7 @@ import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:cancellation_token_http/http.dart' as http;
-import 'package:path/path.dart' as p;
+// import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -298,7 +298,7 @@ class BackupService {
 
           var req = MultipartRequest(
             'POST',
-            Uri.parse('$savedEndpoint/asset/upload'),
+            Uri.parse('$savedEndpoint/assets'),
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
@@ -318,27 +318,28 @@ class BackupService {
 
           var fileSize = file.lengthSync();
 
-          if (entity.isLivePhoto) {
-            if (livePhotoFile != null) {
-              final livePhotoTitle = p.setExtension(
-                originalFileName,
-                p.extension(livePhotoFile.path),
-              );
-              final fileStream = livePhotoFile.openRead();
-              final livePhotoRawUploadData = http.MultipartFile(
-                "livePhotoData",
-                fileStream,
-                livePhotoFile.lengthSync(),
-                filename: livePhotoTitle,
-              );
-              req.files.add(livePhotoRawUploadData);
-              fileSize += livePhotoFile.lengthSync();
-            } else {
-              _log.warning(
-                "Failed to obtain motion part of the livePhoto - $originalFileName",
-              );
-            }
-          }
+          // TODO upload as a separate request
+          // if (entity.isLivePhoto) {
+          //   if (livePhotoFile != null) {
+          //     final livePhotoTitle = p.setExtension(
+          //       originalFileName,
+          //       p.extension(livePhotoFile.path),
+          //     );
+          //     final fileStream = livePhotoFile.openRead();
+          //     final livePhotoRawUploadData = http.MultipartFile(
+          //       "livePhotoData",
+          //       fileStream,
+          //       livePhotoFile.lengthSync(),
+          //       filename: livePhotoTitle,
+          //     );
+          //     req.files.add(livePhotoRawUploadData);
+          //     fileSize += livePhotoFile.lengthSync();
+          //   } else {
+          //     _log.warning(
+          //       "Failed to obtain motion part of the livePhoto - $originalFileName",
+          //     );
+          //   }
+          // }
 
           setCurrentUploadAssetCb(
             CurrentUploadAsset(

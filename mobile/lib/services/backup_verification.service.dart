@@ -165,8 +165,8 @@ class BackupVerificationService {
           // (skip first few KBs containing metadata)
           final Uint64List localImage =
               _fakeDecodeImg(local, await file.readAsBytes());
-          final res = await apiService.downloadApi
-              .downloadFileWithHttpInfo(remote.remoteId!);
+          final res = await apiService.assetApi
+              .downloadAssetWithHttpInfo(remote.remoteId!);
           final Uint64List remoteImage = _fakeDecodeImg(remote, res.bodyBytes);
 
           final eq = const ListEquality().equals(remoteImage, localImage);

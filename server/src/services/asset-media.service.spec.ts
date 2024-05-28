@@ -1,6 +1,7 @@
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Stats } from 'node:fs';
-import { AssetMediaStatusEnum, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaReplaceDto } from 'src/dtos/asset-media.dto';
+import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
+import { AssetMediaCreateDto, AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -10,7 +11,9 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
+import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -22,6 +25,120 @@ import { newStorageRepositoryMock } from 'test/repositories/storage.repository.m
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { QueryFailedError } from 'typeorm';
 import { Mocked } from 'vitest';
+
+const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+
+const uploadFile = {
+  nullAuth: {
+    auth: null,
+    fieldName: UploadFieldName.ASSET_DATA,
+    file: {
+      uuid: 'random-uuid',
+      checksum: Buffer.from('checksum', 'utf8'),
+      originalPath: 'upload/admin/image.jpeg',
+      originalName: 'image.jpeg',
+      size: 1000,
+    },
+  },
+  filename: (fieldName: UploadFieldName, filename: string) => {
+    return {
+      auth: authStub.admin,
+      fieldName,
+      file: {
+        uuid: 'random-uuid',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('checksum', 'utf8'),
+        originalPath: `upload/admin/${filename}`,
+        originalName: filename,
+        size: 1000,
+      },
+    };
+  },
+};
+
+const validImages = [
+  '.3fr',
+  '.ari',
+  '.arw',
+  '.avif',
+  '.cap',
+  '.cin',
+  '.cr2',
+  '.cr3',
+  '.crw',
+  '.dcr',
+  '.dng',
+  '.erf',
+  '.fff',
+  '.gif',
+  '.heic',
+  '.heif',
+  '.iiq',
+  '.jpeg',
+  '.jpg',
+  '.jxl',
+  '.k25',
+  '.kdc',
+  '.mrw',
+  '.nef',
+  '.orf',
+  '.ori',
+  '.pef',
+  '.png',
+  '.psd',
+  '.raf',
+  '.raw',
+  '.rwl',
+  '.sr2',
+  '.srf',
+  '.srw',
+  '.svg',
+  '.tiff',
+  '.webp',
+  '.x3f',
+];
+
+const validVideos = ['.3gp', '.avi', '.flv', '.m2ts', '.mkv', '.mov', '.mp4', '.mpg', '.mts', '.webm', '.wmv'];
+
+const uploadTests = [
+  {
+    label: 'asset images',
+    fieldName: UploadFieldName.ASSET_DATA,
+    valid: validImages,
+    invalid: ['.html', '.xml'],
+  },
+  {
+    label: 'asset videos',
+    fieldName: UploadFieldName.ASSET_DATA,
+    valid: validVideos,
+    invalid: ['.html', '.xml'],
+  },
+  {
+    label: 'sidecar',
+    fieldName: UploadFieldName.SIDECAR_DATA,
+    valid: ['.xmp'],
+    invalid: ['.html', '.jpeg', '.jpg', '.mov', '.mp4', '.xml'],
+  },
+  {
+    label: 'profile',
+    fieldName: UploadFieldName.PROFILE_DATA,
+    valid: ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'],
+    invalid: ['.arf', '.cr2', '.html', '.mov', '.mp4', '.xml'],
+  },
+];
+
+const _getCreateAssetDto = (): AssetMediaCreateDto => {
+  const createAssetDto = new AssetMediaCreateDto();
+  createAssetDto.deviceAssetId = 'deviceAssetId';
+  createAssetDto.deviceId = 'deviceId';
+  createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
+  createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
+  createAssetDto.isFavorite = false;
+  createAssetDto.isArchived = false;
+  createAssetDto.duration = '0:00:00.000000';
+
+  return createAssetDto;
+};
 
 const _getUpdateAssetDto = (): AssetMediaReplaceDto => {
   return Object.assign(new AssetMediaReplaceDto(), {
@@ -103,6 +220,221 @@ describe('AssetMediaService', () => {
     sut = new AssetMediaService(accessMock, assetMock, jobMock, storageMock, userMock, eventMock, loggerMock);
   });
 
+  describe('getUploadAssetIdByChecksum', () => {
+    it('should handle a non-existent asset', async () => {
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'asset-id',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should find an existing asset by base64', async () => {
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
+        id: 'asset-id',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+  });
+
+  describe('canUpload', () => {
+    it('should require an authenticated user', () => {
+      expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    for (const { fieldName, valid, invalid } of uploadTests) {
+      describe(fieldName, () => {
+        for (const filetype of valid) {
+          it(`should accept ${filetype}`, () => {
+            expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
+          });
+        }
+
+        for (const filetype of invalid) {
+          it(`should reject ${filetype}`, () => {
+            expect(() => sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toThrowError(
+              BadRequestException,
+            );
+          });
+        }
+
+        it('should be sorted (valid)', () => {
+          // TODO: use toSorted in NodeJS 20.
+          expect(valid).toEqual([...valid].sort());
+        });
+
+        it('should be sorted (invalid)', () => {
+          // TODO: use toSorted in NodeJS 20.
+          expect(invalid).toEqual([...invalid].sort());
+        });
+      });
+    }
+  });
+
+  describe('getUploadFilename', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFilename(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should be the original extension for asset upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+
+    it('should be the xmp extension for sidecar upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.SIDECAR_DATA, 'image.html'))).toEqual(
+        'random-uuid.xmp',
+      );
+    });
+
+    it('should be the original extension for profile upload', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'random-uuid.jpg',
+      );
+    });
+  });
+
+  describe('getUploadFolder', () => {
+    it('should require authentication', () => {
+      expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
+    });
+
+    it('should return profile for profile uploads', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
+        'upload/profile/admin_id',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+    });
+
+    it('should return upload for everything else', () => {
+      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
+        'upload/upload/admin_id/ra/nd',
+      );
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
+    });
+  });
+
+  describe('uploadFile', () => {
+    it('should handle a file upload', async () => {
+      const assetEntity = _getAsset_1();
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      const dto = _getCreateAssetDto();
+
+      assetMock.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(assetMock.create).toHaveBeenCalled();
+      expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        file.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
+    });
+
+    it('should handle a duplicate', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+      const dto = _getCreateAssetDto();
+      const error = new QueryFailedError('', [], new Error('unique key violation'));
+      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
+
+      assetMock.create.mockRejectedValue(error);
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(_getAsset_1().id);
+
+      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+      });
+      expect(userMock.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should handle a live photo', async () => {
+      const dto = _getCreateAssetDto();
+
+      assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+
+      await expect(sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill)).resolves.toEqual({
+        status: AssetMediaStatus.CREATED,
+        id: 'live-photo-still-asset',
+      });
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
+      ]);
+      expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, fileStub.livePhotoStill.size);
+      expect(storageMock.utimes).toHaveBeenCalledWith(
+        fileStub.livePhotoStill.originalPath,
+        expect.any(Date),
+        new Date(dto.fileModifiedAt),
+      );
+    });
+  });
+
+  describe('downloadOriginal', () => {
+    it('should require the asset.download permission', async () => {
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+    });
+
+    it('should throw an error if the asset is not found', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      assetMock.getById.mockResolvedValue(null);
+
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(NotFoundException);
+
+      expect(assetMock.getById).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should download a file', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/original/path.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+        }),
+      );
+    });
+  });
+
   describe('replaceAsset', () => {
     const expectAssetUpdate = (
       existingAsset: AssetEntity,
@@ -158,6 +490,7 @@ describe('AssetMediaService', () => {
 
       expect(assetMock.create).not.toHaveBeenCalled();
     });
+
     it('should update a photo with no sidecar to photo with no sidecar', async () => {
       const existingAsset = _getExistingAsset();
       const updatedFile = fileStub.photo;
@@ -172,7 +505,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatusEnum.REPLACED,
+        status: AssetMediaStatus.REPLACED,
         id: _getCopiedAsset().id,
       });
 
@@ -187,6 +520,7 @@ describe('AssetMediaService', () => {
         new Date(dto.fileModifiedAt),
       );
     });
+
     it('should update a photo with sidecar to photo with sidecar', async () => {
       const existingAsset = _getExistingAssetWithSideCar();
 
@@ -203,7 +537,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
-        status: AssetMediaStatusEnum.REPLACED,
+        status: AssetMediaStatus.REPLACED,
         id: _getCopiedAsset().id,
       });
 
@@ -217,6 +551,7 @@ describe('AssetMediaService', () => {
         new Date(dto.fileModifiedAt),
       );
     });
+
     it('should update a photo with a sidecar to photo with no sidecar', async () => {
       const existingAsset = _getExistingAssetWithSideCar();
       const updatedFile = fileStub.photo;
@@ -232,7 +567,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatusEnum.REPLACED,
+        status: AssetMediaStatus.REPLACED,
         id: _getCopiedAsset().id,
       });
 
@@ -246,6 +581,7 @@ describe('AssetMediaService', () => {
         new Date(dto.fileModifiedAt),
       );
     });
+
     it('should handle a photo with sidecar to duplicate photo ', async () => {
       const existingAsset = _getExistingAssetWithSideCar();
       const updatedFile = fileStub.photo;
@@ -263,7 +599,7 @@ describe('AssetMediaService', () => {
       assetMock.create.mockResolvedValue(_getCopiedAsset());
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatusEnum.DUPLICATE,
+        status: AssetMediaStatus.DUPLICATE,
         id: existingAsset.id,
       });
 
@@ -277,6 +613,7 @@ describe('AssetMediaService', () => {
       expect(userMock.updateUsage).not.toHaveBeenCalled();
     });
   });
+
   describe('bulkUploadCheck', () => {
     it('should accept hex and base64 checksums', async () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
