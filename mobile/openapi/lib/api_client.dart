@@ -266,6 +266,10 @@ class ApiClient {
           return AudioCodecTypeTransformer().decode(value);
         case 'AuditDeletesResponseDto':
           return AuditDeletesResponseDto.fromJson(value);
+        case 'AvatarResponse':
+          return AvatarResponse.fromJson(value);
+        case 'AvatarUpdate':
+          return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -352,10 +356,14 @@ class ApiClient {
           return MemoryCreateDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MemoryResponse':
+          return MemoryResponse.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemoryType':
           return MemoryTypeTypeTransformer().decode(value);
+        case 'MemoryUpdate':
+          return MemoryUpdate.fromJson(value);
         case 'MemoryUpdateDto':
           return MemoryUpdateDto.fromJson(value);
         case 'MergePersonDto':
@@ -544,6 +552,10 @@ class ApiClient {
           return UserAdminUpdateDto.fromJson(value);
         case 'UserAvatarColor':
           return UserAvatarColorTypeTransformer().decode(value);
+        case 'UserPreferencesResponseDto':
+          return UserPreferencesResponseDto.fromJson(value);
+        case 'UserPreferencesUpdateDto':
+          return UserPreferencesUpdateDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'UserStatus':

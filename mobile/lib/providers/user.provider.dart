@@ -21,10 +21,11 @@ class CurrentUserProvider extends StateNotifier<User?> {
   refresh() async {
     try {
       final user = await _apiService.userApi.getMyUser();
+      final userPreferences = await _apiService.userApi.getMyPreferences();
       if (user != null) {
         Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(user),
+          User.fromUserDto(user, userPreferences),
         );
       }
     } catch (_) {}

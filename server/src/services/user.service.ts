@@ -4,6 +4,7 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserMetadataKey } from 'src/entities/user-metadata.entity';
@@ -16,7 +17,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { getPreferences, getPreferencesPartial } from 'src/utils/preferences';
+import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService {
@@ -45,25 +46,6 @@ export class UserService {
   }
 
   async updateMe({ user }: AuthDto, dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
-    // TODO replace with entire preferences object
-    if (dto.memoriesEnabled !== undefined || dto.avatarColor) {
-      const newPreferences = getPreferences(user);
-      if (dto.memoriesEnabled !== undefined) {
-        newPreferences.memories.enabled = dto.memoriesEnabled;
-        delete dto.memoriesEnabled;
-      }
-
-      if (dto.avatarColor) {
-        newPreferences.avatar.color = dto.avatarColor;
-        delete dto.avatarColor;
-      }
-
-      await this.userRepository.upsertMetadata(user.id, {
-        key: UserMetadataKey.PREFERENCES,
-        value: getPreferencesPartial(user, newPreferences),
-      });
-    }
-
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== user.id) {
@@ -85,6 +67,22 @@ export class UserService {
     const updatedUser = await this.userRepository.update(user.id, update);
 
     return mapUserAdmin(updatedUser);
+  }
+
+  getMyPreferences({ user }: AuthDto): UserPreferencesResponseDto {
+    const preferences = getPreferences(user);
+    return mapPreferences(preferences);
+  }
+
+  async updateMyPreferences({ user }: AuthDto, dto: UserPreferencesUpdateDto) {
+    const preferences = mergePreferences(user, dto);
+
+    await this.userRepository.upsertMetadata(user.id, {
+      key: UserMetadataKey.PREFERENCES,
+      value: getPreferencesPartial(user, preferences),
+    });
+
+    return mapPreferences(preferences);
   }
 
   async get(id: string): Promise<UserResponseDto> {

@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { serverInfo } from '$lib/stores/server-info.store';
-import { user } from '$lib/stores/user.store';
-import { getMyUser, getStorage } from '@immich/sdk';
+import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
+import { getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
@@ -13,12 +13,14 @@ export interface AuthOptions {
 
 export const loadUser = async () => {
   try {
-    let loaded = get(user);
-    if (!loaded && hasAuthCookie()) {
-      loaded = await getMyUser();
-      user.set(loaded);
+    let user = get(user$);
+    let preferences = get(preferences$);
+    if ((!user || !preferences) && hasAuthCookie()) {
+      [user, preferences] = await Promise.all([getMyUser(), getMyPreferences()]);
+      user$.set(user);
+      preferences$.set(preferences);
     }
-    return loaded;
+    return user;
   } catch {
     return null;
   }
@@ -57,7 +59,7 @@ export const authenticate = async (options?: AuthOptions) => {
 };
 
 export const requestServerInfo = async () => {
-  if (get(user)) {
+  if (get(user$)) {
     const data = await getStorage();
     serverInfo.set(data);
   }

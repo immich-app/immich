@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { UserMetadataKey, UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { getKeysDeep } from 'src/utils/misc';
@@ -36,4 +37,13 @@ export const getPreferencesPartial = (user: { email: string }, newPreferences: U
   }
 
   return partial;
+};
+
+export const mergePreferences = (user: UserEntity, dto: UserPreferencesUpdateDto) => {
+  const preferences = getPreferences(user);
+  for (const key of getKeysDeep(dto)) {
+    _.set(preferences, key, _.get(dto, key));
+  }
+
+  return preferences;
 };

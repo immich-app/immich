@@ -14,7 +14,6 @@ class UserAdminCreateDto {
   /// Returns a new [UserAdminCreateDto] instance.
   UserAdminCreateDto({
     required this.email,
-    this.memoriesEnabled,
     required this.name,
     this.notify,
     required this.password,
@@ -24,14 +23,6 @@ class UserAdminCreateDto {
   });
 
   String email;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? memoriesEnabled;
 
   String name;
 
@@ -61,7 +52,6 @@ class UserAdminCreateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminCreateDto &&
     other.email == email &&
-    other.memoriesEnabled == memoriesEnabled &&
     other.name == name &&
     other.notify == notify &&
     other.password == password &&
@@ -73,7 +63,6 @@ class UserAdminCreateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (notify == null ? 0 : notify!.hashCode) +
     (password.hashCode) +
@@ -82,16 +71,11 @@ class UserAdminCreateDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminCreateDto[email=$email, memoriesEnabled=$memoriesEnabled, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminCreateDto[email=$email, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-    if (this.memoriesEnabled != null) {
-      json[r'memoriesEnabled'] = this.memoriesEnabled;
-    } else {
-    //  json[r'memoriesEnabled'] = null;
-    }
       json[r'name'] = this.name;
     if (this.notify != null) {
       json[r'notify'] = this.notify;
@@ -126,7 +110,6 @@ class UserAdminCreateDto {
 
       return UserAdminCreateDto(
         email: mapValueOfType<String>(json, r'email')!,
-        memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         notify: mapValueOfType<bool>(json, r'notify'),
         password: mapValueOfType<String>(json, r'password')!,

@@ -42,7 +42,7 @@
   </SettingAccordion>
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">
-    <MemoriesSettings user={$user} />
+    <MemoriesSettings />
   </SettingAccordion>
 
   {#if $featureFlags.loaded && $featureFlags.oauth}
