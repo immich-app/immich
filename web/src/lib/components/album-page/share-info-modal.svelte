@@ -12,7 +12,7 @@
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -155,23 +155,23 @@
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="leave-album-modal"
     title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
     onConfirm={handleRemoveUser}
-    onClose={() => (selectedRemoveUser = null)}
+    onCancel={() => (selectedRemoveUser = null)}
   />
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="remove-user-modal"
     title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"
     onConfirm={handleRemoveUser}
-    onClose={() => (selectedRemoveUser = null)}
+    onCancel={() => (selectedRemoveUser = null)}
   />
 {/if}

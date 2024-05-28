@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import ConfirmDialogue from './confirm-dialogue.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
@@ -103,13 +103,13 @@
   };
 </script>
 
-<ConfirmDialogue
+<ConfirmDialog
   id="change-location-modal"
   confirmColor="primary"
   title="Change location"
   width="wide"
   onConfirm={handleConfirm}
-  onClose={handleCancel}
+  onCancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div
@@ -182,4 +182,4 @@
       {/await}
     </div>
   </div>
-</ConfirmDialogue>
+</ConfirmDialog>

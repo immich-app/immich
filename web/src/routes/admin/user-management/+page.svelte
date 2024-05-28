@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -9,7 +10,6 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     NotificationType,
     notificationController,
@@ -153,12 +153,12 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <ConfirmDialogue
+        <ConfirmDialog
           id="password-reset-success-modal"
           title="Password reset success"
           confirmText="Done"
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-          onClose={() => (shouldShowPasswordResetSuccess = false)}
+          onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
           confirmColor="green"
         >
@@ -185,7 +185,7 @@
               </p>
             </div>
           </svelte:fragment>
-        </ConfirmDialogue>
+        </ConfirmDialog>
       {/if}
 
       <table class="my-5 w-full text-left">

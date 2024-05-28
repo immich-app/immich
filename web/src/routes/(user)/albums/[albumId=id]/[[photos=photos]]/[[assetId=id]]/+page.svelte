@@ -24,7 +24,6 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -81,6 +80,7 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -98,7 +98,6 @@
   }
 
   enum ViewMode {
-    CONFIRM_DELETE = 'confirm-delete',
     LINK_SHARING = 'link-sharing',
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
@@ -248,10 +247,7 @@
       viewMode = ViewMode.VIEW;
       return;
     }
-    if (viewMode === ViewMode.CONFIRM_DELETE) {
-      viewMode = ViewMode.VIEW;
-      return;
-    }
+
     if (viewMode === ViewMode.SELECT_ASSETS) {
       handleCloseSelectAssets();
       return;
@@ -353,6 +349,16 @@
   };
 
   const handleRemoveAlbum = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-album',
+      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+    });
+
+    if (!isConfirmed) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+
     try {
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
@@ -471,11 +477,7 @@
                         on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                       />
                       <MenuOption icon={mdiCogOutline} text="Options" on:click={() => (viewMode = ViewMode.OPTIONS)} />
-                      <MenuOption
-                        icon={mdiDeleteOutline}
-                        text="Delete album"
-                        on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                      />
+                      <MenuOption icon={mdiDeleteOutline} text="Delete album" on:click={() => handleRemoveAlbum()} />
                     </ContextMenu>
                   {/if}
                 </div>
@@ -695,21 +697,6 @@
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
     on:refreshAlbum={refreshAlbum}
   />
-{/if}
-
-{#if viewMode === ViewMode.CONFIRM_DELETE}
-  <ConfirmDialogue
-    id="delete-album-modal"
-    title="Delete album"
-    confirmText="Delete"
-    onConfirm={handleRemoveAlbum}
-    onClose={() => (viewMode = ViewMode.VIEW)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
-      <p>If this album is shared, other users will not be able to access it anymore.</p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}
 
 {#if viewMode === ViewMode.OPTIONS && $user}

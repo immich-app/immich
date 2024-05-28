@@ -1,20 +1,29 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { getKey } from '$lib/utils';
+  import { getKey, s } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';
-  import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let sharedLink: SharedLinkResponseDto;
-
-  let removing = false;
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
   const handleRemove = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-from-shared-link',
+      title: 'Remove assets?',
+      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from this shared link?`,
+      confirmText: 'Remove',
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       const results = await removeSharedLinkAssets({
         id: sharedLink.id,
@@ -46,15 +55,4 @@
   };
 </script>
 
-<CircleIconButton title="Remove from shared link" on:click={() => (removing = true)} icon={mdiDeleteOutline} />
-
-{#if removing}
-  <ConfirmDialogue
-    id="remove-assets-modal"
-    title="Remove assets?"
-    prompt="Are you sure you want to remove {getAssets().size} asset(s) from this shared link?"
-    confirmText="Remove"
-    onConfirm={() => handleRemove()}
-    onClose={() => (removing = false)}
-  />
-{/if}
+<CircleIconButton title="Remove from shared link" on:click={handleRemove} icon={mdiDeleteOutline} />
