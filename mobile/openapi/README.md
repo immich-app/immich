@@ -100,7 +100,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**replaceAsset**](doc//AssetApi.md#replaceasset) | **PUT** /asset/{id}/file | 
@@ -136,6 +135,8 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /libraries/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /libraries/{id} | 
 *LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /libraries/{id}/validate | 
+*MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | 
+*MapApi* | [**getMapStyle**](doc//MapApi.md#getmapstyle) | **GET** /map/style.json | 
 *MemoryApi* | [**addMemoryAssets**](doc//MemoryApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | 
 *MemoryApi* | [**createMemory**](doc//MemoryApi.md#creatememory) | **POST** /memories | 
 *MemoryApi* | [**deleteMemory**](doc//MemoryApi.md#deletememory) | **DELETE** /memories/{id} | 
@@ -192,7 +193,6 @@ Class | Method | HTTP request | Description
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
-*SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 

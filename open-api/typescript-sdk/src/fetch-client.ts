@@ -303,14 +303,6 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
-export type MapMarkerResponseDto = {
-    city: string | null;
-    country: string | null;
-    id: string;
-    lat: number;
-    lon: number;
-    state: string | null;
-};
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     yearsAgo: number;
@@ -515,6 +507,14 @@ export type ValidateLibraryImportPathResponseDto = {
 };
 export type ValidateLibraryResponseDto = {
     importPaths?: ValidateLibraryImportPathResponseDto[];
+};
+export type MapMarkerResponseDto = {
+    city: string | null;
+    country: string | null;
+    id: string;
+    lat: number;
+    lon: number;
+    state: string | null;
 };
 export type OnThisDayDto = {
     year: number;
@@ -1518,28 +1518,6 @@ export function runAssetJobs({ assetJobsDto }: {
         body: assetJobsDto
     })));
 }
-export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums }: {
-    fileCreatedAfter?: string;
-    fileCreatedBefore?: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    withPartners?: boolean;
-    withSharedAlbums?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MapMarkerResponseDto[];
-    }>(`/asset/map-marker${QS.query(QS.explode({
-        fileCreatedAfter,
-        fileCreatedBefore,
-        isArchived,
-        isFavorite,
-        withPartners,
-        withSharedAlbums
-    }))}`, {
-        ...opts
-    }));
-}
 export function getMemoryLane({ day, month }: {
     day: number;
     month: number;
@@ -1929,6 +1907,42 @@ export function validate({ id, validateLibraryDto }: {
         method: "POST",
         body: validateLibraryDto
     })));
+}
+export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums }: {
+    fileCreatedAfter?: string;
+    fileCreatedBefore?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    withPartners?: boolean;
+    withSharedAlbums?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MapMarkerResponseDto[];
+    }>(`/map/markers${QS.query(QS.explode({
+        fileCreatedAfter,
+        fileCreatedBefore,
+        isArchived,
+        isFavorite,
+        withPartners,
+        withSharedAlbums
+    }))}`, {
+        ...opts
+    }));
+}
+export function getMapStyle({ key, theme }: {
+    key?: string;
+    theme: MapTheme;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: object;
+    }>(`/map/style.json${QS.query(QS.explode({
+        key,
+        theme
+    }))}`, {
+        ...opts
+    }));
 }
 export function searchMemories(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2568,20 +2582,6 @@ export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/system-config/map/style.json${QS.query(QS.explode({
-        key,
-        theme
-    }))}`, {
-        ...opts
-    }));
-}
 export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2977,6 +2977,10 @@ export enum JobCommand {
     Empty = "empty",
     ClearFailed = "clear-failed"
 }
+export enum MapTheme {
+    Light = "light",
+    Dark = "dark"
+}
 export enum Type2 {
     OnThisDay = "on_this_day"
 }
@@ -3072,10 +3076,6 @@ export enum CLIPMode {
 export enum ModelType {
     FacialRecognition = "facial-recognition",
     Clip = "clip"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum TimeBucketSize {
     Day = "DAY",
