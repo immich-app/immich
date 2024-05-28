@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
@@ -42,10 +42,10 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="disable-login-modal"
     title="Disable login"
-    onClose={() => (isConfirmOpen = false)}
+    onCancel={() => (isConfirmOpen = false)}
     onConfirm={() => handleSave(true)}
   >
     <svelte:fragment slot="prompt">
@@ -64,7 +64,7 @@
         </p>
       </div>
     </svelte:fragment>
-  </ConfirmDialogue>
+  </ConfirmDialog>
 {/if}
 
 <div>

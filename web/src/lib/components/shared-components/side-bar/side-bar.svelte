@@ -19,6 +19,8 @@
     mdiMapOutline,
     mdiTrashCan,
     mdiTrashCanOutline,
+    mdiToolbox,
+    mdiToolboxOutline,
   } from '@mdi/js';
   import LoadingSpinner from '../loading-spinner.svelte';
   import StatusBox from '../status-box.svelte';
@@ -42,6 +44,7 @@
   let isPhotosSelected: boolean;
   let isSharingSelected: boolean;
   let isTrashSelected: boolean;
+  let isUtilitiesSelected: boolean;
 </script>
 
 <SideBarSection>
@@ -135,6 +138,13 @@
         {/await}
       </svelte:fragment>
     </SideBarLink>
+
+    <SideBarLink
+      title="Utilities"
+      routeId="/(user)/utilities"
+      bind:isSelected={isUtilitiesSelected}
+      icon={isUtilitiesSelected ? mdiToolbox : mdiToolboxOutline}
+    ></SideBarLink>
 
     <SideBarLink
       title="Archive"

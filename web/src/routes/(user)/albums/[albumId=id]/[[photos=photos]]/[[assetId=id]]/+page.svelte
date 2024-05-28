@@ -24,7 +24,6 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -42,9 +41,9 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError, s } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -81,6 +80,7 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -98,7 +98,6 @@
   }
 
   enum ViewMode {
-    CONFIRM_DELETE = 'confirm-delete',
     LINK_SHARING = 'link-sharing',
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
@@ -136,7 +135,7 @@
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
-    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   $: isEditor =
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -158,7 +157,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
+    if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -229,7 +228,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.sharedUsers.length > 0) {
+  $: if (album.albumUsers.length > 0) {
     handlePromiseError(getFavorite());
     handlePromiseError(getNumberOfComments());
   }
@@ -248,10 +247,7 @@
       viewMode = ViewMode.VIEW;
       return;
     }
-    if (viewMode === ViewMode.CONFIRM_DELETE) {
-      viewMode = ViewMode.VIEW;
-      return;
-    }
+
     if (viewMode === ViewMode.SELECT_ASSETS) {
       handleCloseSelectAssets();
       return;
@@ -291,7 +287,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Added ${count} asset${s(count)}`,
       });
 
       await refreshAlbum();
@@ -314,7 +310,7 @@
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id);
+    await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };
@@ -342,7 +338,7 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
       handleError(error, 'Error deleting shared user');
     }
@@ -353,6 +349,16 @@
   };
 
   const handleRemoveAlbum = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-album',
+      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+    });
+
+    if (!isConfirmed) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+
     try {
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
@@ -471,18 +477,14 @@
                         on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                       />
                       <MenuOption icon={mdiCogOutline} text="Options" on:click={() => (viewMode = ViewMode.OPTIONS)} />
-                      <MenuOption
-                        icon={mdiDeleteOutline}
-                        text="Delete album"
-                        on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                      />
+                      <MenuOption icon={mdiDeleteOutline} text="Delete album" on:click={() => handleRemoveAlbum()} />
                     </ContextMenu>
                   {/if}
                 </div>
               {/if}
             {/if}
 
-            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
               <Button
                 size="sm"
                 rounded="lg"
@@ -510,6 +512,7 @@
 
           <svelte:fragment slot="trailing">
             <button
+              type="button"
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
@@ -546,7 +549,7 @@
             {album}
             {assetStore}
             {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
+            isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
@@ -563,7 +566,7 @@
                 {/if}
 
                 <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
                   <div class="my-3 flex gap-x-1">
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
@@ -577,13 +580,13 @@
                     {/if}
 
                     <!-- owner -->
-                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -620,6 +623,7 @@
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
                   <button
+                    type="button"
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
@@ -649,7 +653,7 @@
       {/key}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -693,21 +697,6 @@
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
     on:refreshAlbum={refreshAlbum}
   />
-{/if}
-
-{#if viewMode === ViewMode.CONFIRM_DELETE}
-  <ConfirmDialogue
-    id="delete-album-modal"
-    title="Delete album"
-    confirmText="Delete"
-    onConfirm={handleRemoveAlbum}
-    onClose={() => (viewMode = ViewMode.VIEW)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
-      <p>If this album is shared, other users will not be able to access it anymore.</p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}
 
 {#if viewMode === ViewMode.OPTIONS && $user}

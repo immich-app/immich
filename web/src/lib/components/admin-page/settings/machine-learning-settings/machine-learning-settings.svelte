@@ -11,6 +11,7 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -74,6 +75,37 @@
               must re-run the 'Smart Search' job for all images upon changing a model.
             </p>
           </SettingInputField>
+        </div>
+      </SettingAccordion>
+
+      <SettingAccordion
+        key="duplicate-detection"
+        title="Duplicate Detection"
+        subtitle="Use CLIP embeddings to find likely duplicates"
+      >
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            id="enable-duplicate-detection"
+            title="ENABLED"
+            subtitle="If disabled, exactly identical assets will still be de-duplicated."
+            bind:checked={config.machineLearning.duplicateDetection.enabled}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label="MAX DETECTION DISTANCE"
+            bind:value={config.machineLearning.duplicateDetection.maxDistance}
+            step="0.0005"
+            min={0.001}
+            max={0.1}
+            desc="Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives."
+            disabled={disabled || !$featureFlags.duplicateDetection}
+            isEdited={config.machineLearning.duplicateDetection.maxDistance !==
+              savedConfig.machineLearning.duplicateDetection.maxDistance}
+          />
         </div>
       </SettingAccordion>
 

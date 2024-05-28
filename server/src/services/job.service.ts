@@ -20,7 +20,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 @Injectable()
 export class JobService {
@@ -30,13 +30,13 @@ export class JobService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IMetricRepository) private metricRepository: IMetricRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(JobService.name);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
@@ -115,6 +115,10 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
       }
 
+      case QueueName.DUPLICATE_DETECTION: {
+        return this.jobRepository.queue({ name: JobName.QUEUE_DUPLICATE_DETECTION, data: { force } });
+      }
+
       case QueueName.METADATA_EXTRACTION: {
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
       }
@@ -191,7 +195,11 @@ export class JobService {
   }
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
-    return ![QueueName.FACIAL_RECOGNITION, QueueName.STORAGE_TEMPLATE_MIGRATION].includes(name);
+    return ![
+      QueueName.FACIAL_RECOGNITION,
+      QueueName.STORAGE_TEMPLATE_MIGRATION,
+      QueueName.DUPLICATE_DETECTION,
+    ].includes(name);
   }
 
   async handleNightlyJobs() {
@@ -242,7 +250,7 @@ export class JobService {
       }
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        if (item.data.source === 'upload') {
+        if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
         }
         break;
@@ -290,6 +298,13 @@ export class JobService {
         // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
         if (asset && asset.isVisible) {
           this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+        }
+        break;
+      }
+
+      case JobName.SMART_SEARCH: {
+        if (item.data.source === 'upload') {
+          await this.jobRepository.queue({ name: JobName.DUPLICATE_DETECTION, data: item.data });
         }
         break;
       }

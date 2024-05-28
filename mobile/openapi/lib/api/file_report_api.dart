@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class FileReportApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /report/fix' operation and returns the [Response].
+  /// Performs an HTTP 'POST /reports/fix' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [FileReportFixDto] fileReportFixDto (required):
   Future<Response> fixAuditFilesWithHttpInfo(FileReportFixDto fileReportFixDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/report/fix';
+    final path = r'/reports/fix';
 
     // ignore: prefer_final_locals
     Object? postBody = fileReportFixDto;
@@ -55,10 +55,10 @@ class FileReportApi {
     }
   }
 
-  /// Performs an HTTP 'GET /report' operation and returns the [Response].
+  /// Performs an HTTP 'GET /reports' operation and returns the [Response].
   Future<Response> getAuditFilesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/report';
+    final path = r'/reports';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -96,13 +96,13 @@ class FileReportApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /report/checksum' operation and returns the [Response].
+  /// Performs an HTTP 'POST /reports/checksum' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [FileChecksumDto] fileChecksumDto (required):
   Future<Response> getFileChecksumsWithHttpInfo(FileChecksumDto fileChecksumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/report/checksum';
+    final path = r'/reports/checksum';
 
     // ignore: prefer_final_locals
     Object? postBody = fileChecksumDto;

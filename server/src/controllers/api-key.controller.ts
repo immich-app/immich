@@ -7,7 +7,7 @@ import { APIKeyService } from 'src/services/api-key.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Key')
-@Controller('api-key')
+@Controller('api-keys')
 export class APIKeyController {
   constructor(private service: APIKeyService) {}
 

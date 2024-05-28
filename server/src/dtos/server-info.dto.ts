@@ -1,14 +1,13 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import type { DateTime } from 'luxon';
+import { SemVer } from 'semver';
 import { SystemConfigThemeDto } from 'src/dtos/system-config.dto';
-import { IVersion, VersionType } from 'src/utils/version';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
   res!: string;
 }
 
-export class ServerInfoResponseDto {
+export class ServerStorageResponseDto {
   diskSize!: string;
   diskUse!: string;
   diskAvailable!: string;
@@ -26,13 +25,17 @@ export class ServerInfoResponseDto {
   diskUsagePercentage!: number;
 }
 
-export class ServerVersionResponseDto implements IVersion {
+export class ServerVersionResponseDto {
   @ApiProperty({ type: 'integer' })
   major!: number;
   @ApiProperty({ type: 'integer' })
   minor!: number;
   @ApiProperty({ type: 'integer' })
   patch!: number;
+
+  static fromSemVer(value: SemVer) {
+    return { major: value.major, minor: value.minor, patch: value.patch };
+  }
 }
 
 export class UsageByUserDto {
@@ -97,6 +100,7 @@ export class ServerConfigDto {
 
 export class ServerFeaturesDto {
   smartSearch!: boolean;
+  duplicateDetection!: boolean;
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
@@ -111,8 +115,9 @@ export class ServerFeaturesDto {
 }
 
 export interface ReleaseNotification {
-  isAvailable: VersionType;
-  checkedAt: DateTime<boolean> | null;
+  isAvailable: boolean;
+  /** ISO8601 */
+  checkedAt: string;
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }

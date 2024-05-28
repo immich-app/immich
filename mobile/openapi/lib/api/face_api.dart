@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class FaceApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /face' operation and returns the [Response].
+  /// Performs an HTTP 'GET /faces' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/face';
+    final path = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -68,7 +68,7 @@ class FaceApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /face/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /faces/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -76,7 +76,7 @@ class FaceApi {
   /// * [FaceDto] faceDto (required):
   Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/face/{id}'
+    final path = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

@@ -4,7 +4,6 @@ import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { SystemConfigKey } from 'src/entities/system-config.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -17,7 +16,7 @@ import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interfa
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -35,14 +34,14 @@ import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let cryptoRepository: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
   let metadataMock: Mocked<IMetadataRepository>;
@@ -59,7 +58,6 @@ describe(MetadataService.name, () => {
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
     cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
@@ -67,6 +65,7 @@ describe(MetadataService.name, () => {
     personMock = newPersonRepositoryMock();
     eventMock = newEventRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     userMock = newUserRepositoryMock();
@@ -84,7 +83,7 @@ describe(MetadataService.name, () => {
       moveMock,
       personMock,
       storageMock,
-      configMock,
+      systemMock,
       userMock,
       loggerMock,
     );
@@ -108,7 +107,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should return if reverse geocoding is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: false }]);
+      systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
 
       await sut.init();
 
@@ -297,7 +296,7 @@ describe(MetadataService.name, () => {
 
     it('should apply reverse geocoding', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
+      systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: true } });
       metadataMock.reverseGeocode.mockResolvedValue({ city: 'City', state: 'State', country: 'Country' });
       metadataMock.readTags.mockResolvedValue({
         GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
@@ -357,7 +356,7 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
       metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         MotionPhotoVideo: new BinaryField(0, ''),
@@ -373,23 +372,23 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       metadataMock.extractBinaryTag.mockResolvedValue(video);
 
-      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(metadataMock.extractBinaryTag).toHaveBeenCalledWith(
-        assetStub.livePhotoStillAsset.originalPath,
+        assetStub.livePhotoWithOriginalFileName.originalPath,
         'MotionPhotoVideo',
       );
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
-        id: assetStub.livePhotoStillAsset.id,
+        id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
       metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
@@ -402,23 +401,23 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       metadataMock.extractBinaryTag.mockResolvedValue(video);
 
-      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(metadataMock.extractBinaryTag).toHaveBeenCalledWith(
-        assetStub.livePhotoStillAsset.originalPath,
+        assetStub.livePhotoWithOriginalFileName.originalPath,
         'EmbeddedVideoFile',
       );
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
-        id: assetStub.livePhotoStillAsset.id,
+        id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
       metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -432,20 +431,23 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
 
-      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id]);
-      expect(storageMock.readFile).toHaveBeenCalledWith(assetStub.livePhotoStillAsset.originalPath, expect.any(Object));
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
+      expect(storageMock.readFile).toHaveBeenCalledWith(
+        assetStub.livePhotoWithOriginalFileName.originalPath,
+        expect.any(Object),
+      );
       expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
-        id: assetStub.livePhotoStillAsset.id,
+        id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoWithOriginalFileName]);
       metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
@@ -458,10 +460,10 @@ describe(MetadataService.name, () => {
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
 
-      await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
+      await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(jobMock.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
-        data: { id: assetStub.livePhotoStillAsset.livePhotoVideoId },
+        data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId },
       });
       expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
         name: JobName.METADATA_EXTRACTION,

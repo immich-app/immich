@@ -24,8 +24,8 @@
   out:fade={{ duration: 100 }}
   class="flex flex-col rounded-lg bg-immich-bg text-xs dark:bg-immich-dark-bg"
 >
-  <div class="grid grid-cols-[65px_auto_auto]">
-    <div class="relative h-[65px]">
+  <div class="grid grid-cols-[65px_auto_auto] max-h-[70px]">
+    <div class="relative">
       <div in:fade={{ duration: 250 }}>
         <ImmichLogo noText class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
       </div>
@@ -83,18 +83,15 @@
       </div>
     </div>
     {#if uploadAsset.state === UploadState.ERROR}
-      <div class="flex h-full flex-col place-content-center place-items-center justify-items-center pr-2">
-        <button
-          on:click={() => handleRetry(uploadAsset)}
-          title="Retry upload"
-          class="flex h-full w-full place-content-center place-items-center text-sm"
-        >
+      <div class="flex h-full flex-col place-content-evenly place-items-center justify-items-center pr-2">
+        <button type="button" on:click={() => handleRetry(uploadAsset)} title="Retry upload" class="flex text-sm">
           <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Icon path={mdiRefresh} size="20" /></span>
         </button>
         <button
+          type="button"
           on:click={() => uploadAssetsStore.removeUploadAsset(uploadAsset.id)}
           title="Dismiss error"
-          class="flex h-full w-full place-content-center place-items-center text-sm"
+          class="flex text-sm"
         >
           <span class="text-immich-error"><Icon path={mdiCancel} size="20" /></span>
         </button>
@@ -104,7 +101,7 @@
 
   {#if uploadAsset.state === UploadState.ERROR}
     <div class="flex flex-row justify-between">
-      <p class="w-full rounded-md p-1 px-2 text-justify text-[10px] text-immich-error">
+      <p class="w-full rounded-md py-1 px-2 text-justify text-[10px] text-immich-error">
         {uploadAsset.error}
       </p>
     </div>

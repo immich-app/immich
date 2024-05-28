@@ -1,7 +1,7 @@
 <script lang="ts">
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   export let id: string;
   export let albumName: string;

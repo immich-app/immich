@@ -6,14 +6,34 @@ import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
-import { UploadFieldName } from 'src/dtos/asset.dto';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
-import { AssetService, UploadFile } from 'src/services/asset.service';
+import { UploadFile } from 'src/services/asset-media.service';
+import { AssetService } from 'src/services/asset.service';
+
+export interface UploadFiles {
+  assetData: ImmichFile[];
+  livePhotoData?: ImmichFile[];
+  sidecarData: ImmichFile[];
+}
+
+export function getFile(files: UploadFiles, property: 'assetData' | 'livePhotoData' | 'sidecarData') {
+  const file = files[property]?.[0];
+  return file ? mapToUploadFile(file) : file;
+}
+
+export function getFiles(files: UploadFiles) {
+  return {
+    file: getFile(files, 'assetData') as UploadFile,
+    livePhotoFile: getFile(files, 'livePhotoData'),
+    sidecarFile: getFile(files, 'sidecarData'),
+  };
+}
 
 export enum Route {
   ASSET = 'asset',
-  USER = 'user',
+  USER = 'users',
 }
 
 export interface ImmichFile extends Express.Multer.File {

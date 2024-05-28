@@ -19,7 +19,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import {
     type AssetResponseDto,
     searchSmart,

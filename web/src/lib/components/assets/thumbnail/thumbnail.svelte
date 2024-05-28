@@ -21,7 +21,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };
@@ -106,6 +106,7 @@
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
+            type="button"
             on:click={onIconClickedHandler}
             class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
@@ -180,7 +181,7 @@
 
         {#if asset.resized}
           <ImageThumbnail
-            url={getAssetThumbnailUrl(asset.id, format)}
+            url={getAssetThumbnailUrl(asset.id, format, asset.checksum)}
             altText={getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
@@ -196,7 +197,7 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={getAssetFileUrl(asset.id, false, true)}
+              url={getAssetFileUrl(asset.id, false, true, asset.checksum)}
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
@@ -208,7 +209,7 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={getAssetFileUrl(asset.livePhotoVideoId, false, true)}
+              url={getAssetFileUrl(asset.livePhotoVideoId, false, true, asset.checksum)}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
               showTime={false}

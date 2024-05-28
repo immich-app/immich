@@ -97,6 +97,7 @@ export interface SystemConfig {
     preferredHwDevice: string;
     transcode: TranscodePolicy;
     accel: TranscodeHWAccel;
+    accelDecode: boolean;
     tonemap: ToneMapping;
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
@@ -110,6 +111,10 @@ export interface SystemConfig {
     clip: {
       enabled: boolean;
       modelName: string;
+    };
+    duplicateDetection: {
+      enabled: boolean;
+      maxDistance: number;
     };
     facialRecognition: {
       enabled: boolean;
@@ -224,6 +229,7 @@ export const defaults = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.REQUIRED,
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
@@ -248,6 +254,10 @@ export const defaults = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+    },
+    duplicateDetection: {
+      enabled: true,
+      maxDistance: 0.0155,
     },
     facialRecognition: {
       enabled: true,
@@ -350,8 +360,8 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    NODE_ENV: Joi.string().optional().valid('development', 'production', 'staging').default('development'),
-    LOG_LEVEL: Joi.string()
+    IMMICH_ENV: Joi.string().optional().valid('development', 'production').default('production'),
+    IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
 
@@ -362,8 +372,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
     DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
-    MACHINE_LEARNING_PORT: Joi.number().optional(),
-    MICROSERVICES_PORT: Joi.number().optional(),
+    IMMICH_PORT: Joi.number().optional(),
     IMMICH_METRICS_PORT: Joi.number().optional(),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),

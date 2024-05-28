@@ -25,6 +25,7 @@ module.exports = {
     'unicorn/prefer-event-target': 'off',
     'unicorn/no-thenable': 'off',
     'unicorn/import-style': 'off',
+    'unicorn/prefer-structured-clone': 'off',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-misused-promises': 'error',

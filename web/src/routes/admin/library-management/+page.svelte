@@ -6,7 +6,6 @@
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -23,8 +22,7 @@
     deleteLibrary,
     getAllLibraries,
     getLibraryStatistics,
-    getUserById,
-    LibraryType,
+    getUserAdmin,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
@@ -32,12 +30,13 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync, mdiUpload } from '@mdi/js';
+  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -100,7 +99,7 @@
 
   const refreshStats = async (listIndex: number) => {
     stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    owner[listIndex] = await getUserById({ id: libraries[listIndex].ownerId });
+    owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;
@@ -108,7 +107,7 @@
   };
 
   async function readLibraryList() {
-    libraries = await getAllLibraries({ $type: LibraryType.External });
+    libraries = await getAllLibraries();
     dropdownOpen.length = libraries.length;
 
     for (let index = 0; index < libraries.length; index++) {
@@ -119,10 +118,7 @@
 
   const handleCreate = async (ownerId: string) => {
     try {
-      const createdLibrary = await createLibrary({
-        createLibraryDto: { ownerId, type: LibraryType.External },
-      });
-
+      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
       notificationController.show({
         message: `Created library: ${createdLibrary.name}`,
         type: NotificationType.Info,
@@ -135,14 +131,14 @@
     }
   };
 
-  const handleUpdate = async (event: Partial<LibraryResponseDto>) => {
+  const handleUpdate = async (library: Partial<LibraryResponseDto>) => {
     if (updateLibraryIndex === null) {
       return;
     }
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-      await updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
+      await updateLibrary({ id: libraryId, updateLibraryDto: library });
       closeAll();
       await readLibraryList();
     } catch (error) {
@@ -177,9 +173,7 @@
   const handleScanAll = async () => {
     try {
       for (const library of libraries) {
-        if (library.type === LibraryType.External) {
-          await scanLibrary({ id: library.id, scanLibraryDto: {} });
-        }
+        await scanLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
         message: `Refreshing all libraries`,
@@ -288,28 +282,38 @@
   const onDeleteLibraryClicked = async () => {
     closeAll();
 
-    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      await refreshStats(selectedLibraryIndex);
-      if (totalCount[selectedLibraryIndex] > 0) {
-        deleteAssetCount = totalCount[selectedLibraryIndex];
-        confirmDeleteLibrary = selectedLibrary;
-      } else {
-        deletedLibrary = selectedLibrary;
-        await handleDelete();
+    if (!selectedLibrary) {
+      return;
+    }
+
+    const isConfirmedLibrary = await dialogController.show({
+      id: 'delete-library',
+      prompt: `Are you sure you want to delete ${selectedLibrary.name} library?`,
+    });
+
+    if (!isConfirmedLibrary) {
+      return;
+    }
+
+    await refreshStats(selectedLibraryIndex);
+    if (totalCount[selectedLibraryIndex] > 0) {
+      deleteAssetCount = totalCount[selectedLibraryIndex];
+
+      const isConfirmedLibraryAssetCount = await dialogController.show({
+        id: 'delete-library-assets',
+        prompt: `Are you sure you want to delete this library? This will delete all ${deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.`,
+      });
+
+      if (!isConfirmedLibraryAssetCount) {
+        return;
       }
+      await handleDelete();
+    } else {
+      deletedLibrary = selectedLibrary;
+      await handleDelete();
     }
   };
 </script>
-
-{#if confirmDeleteLibrary}
-  <ConfirmDialogue
-    id="warning-modal"
-    title="Warning!"
-    prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
-    onConfirm={handleDelete}
-    onClose={() => (confirmDeleteLibrary = null)}
-  />
-{/if}
 
 {#if toCreateLibrary}
   <LibraryUserPickerForm
@@ -361,12 +365,8 @@
                 }`}
               >
                 <td class=" px-10 text-sm">
-                  {#if library.type === LibraryType.External}
-                    <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
-                  {:else if library.type === LibraryType.Upload}
-                    <Icon path={mdiUpload} size="40" title="Upload library (created on {library.createdAt})" />
-                  {/if}</td
-                >
+                  <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
+                </td>
 
                 <td class=" text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class=" text-ellipsis px-4 text-sm">
@@ -400,7 +400,7 @@
                       <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 
-                        {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
+                        {#if selectedLibrary}
                           <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
                           <hr />
@@ -448,7 +448,7 @@
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
-                    on:submit={({ detail }) => handleUpdate(detail.library)}
+                    on:submit={({ detail: library }) => handleUpdate(library)}
                     on:cancel={() => (editScanSettings = null)}
                   />
                 </div>

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,7 +16,7 @@ class SharedLinkApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /shared-link/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /shared-links/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -26,7 +26,7 @@ class SharedLinkApi {
   /// * [String] key:
   Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/{id}/assets'
+    final path = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -79,13 +79,13 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /shared-link' operation and returns the [Response].
+  /// Performs an HTTP 'POST /shared-links' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
   Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link';
+    final path = r'/shared-links';
 
     // ignore: prefer_final_locals
     Object? postBody = sharedLinkCreateDto;
@@ -126,10 +126,10 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-link' operation and returns the [Response].
+  /// Performs an HTTP 'GET /shared-links' operation and returns the [Response].
   Future<Response> getAllSharedLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link';
+    final path = r'/shared-links';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -170,7 +170,7 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-link/me' operation and returns the [Response].
+  /// Performs an HTTP 'GET /shared-links/me' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] key:
@@ -180,7 +180,7 @@ class SharedLinkApi {
   /// * [String] token:
   Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? token, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/me';
+    final path = r'/shared-links/me';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -235,13 +235,13 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-link/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /shared-links/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/{id}'
+    final path = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -283,13 +283,13 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /shared-link/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /shared-links/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/{id}'
+    final path = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -323,7 +323,7 @@ class SharedLinkApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /shared-link/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /shared-links/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -333,7 +333,7 @@ class SharedLinkApi {
   /// * [String] key:
   Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/{id}/assets'
+    final path = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -386,7 +386,7 @@ class SharedLinkApi {
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /shared-link/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PATCH /shared-links/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -394,7 +394,7 @@ class SharedLinkApi {
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
   Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-link/{id}'
+    final path = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

@@ -51,6 +51,7 @@
       </div>
 
       <button
+        type="button"
         disabled={potentialMergePeople.length === 0}
         class="flex h-28 w-28 items-center rounded-full border-2 border-immich-primary px-1 dark:border-immich-dark-primary md:h-32 md:w-32 md:px-2"
         on:click={() => {
@@ -71,13 +72,13 @@
     {:else}
       <div class="grid w-full grid-cols-1 gap-2">
         <div class="px-2">
-          <button on:click={() => (choosePersonToMerge = false)}> <Icon path={mdiArrowLeft} /></button>
+          <button type="button" on:click={() => (choosePersonToMerge = false)}> <Icon path={mdiArrowLeft} /></button>
         </div>
         <div class="flex items-center justify-center">
           <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
             {#each potentialMergePeople as person (person.id)}
               <div class="h-24 w-24 md:h-28 md:w-28">
-                <button class="p-2 w-full" on:click={() => changePersonToMerge(person)}>
+                <button type="button" class="p-2 w-full" on:click={() => changePersonToMerge(person)}>
                   <ImageThumbnail
                     border={true}
                     circle

@@ -7,10 +7,12 @@ import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { SystemConfigEntity, SystemConfigKey, SystemConfigValue } from 'src/entities/system-config.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getKeysDeep, unsetDeep } from 'src/utils/misc';
+import { DeepPartial } from 'typeorm';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
@@ -25,11 +27,11 @@ export class SystemConfigCore {
   config$ = new Subject<SystemConfig>();
 
   private constructor(
-    private repository: ISystemConfigRepository,
+    private repository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
   ) {}
 
-  static create(repository: ISystemConfigRepository, logger: ILoggerRepository) {
+  static create(repository: ISystemMetadataRepository, logger: ILoggerRepository) {
     if (!instance) {
       instance = new SystemConfigCore(repository, logger);
     }
@@ -55,41 +57,25 @@ export class SystemConfigCore {
   }
 
   async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
-    const updates: SystemConfigEntity[] = [];
-    const deletes: SystemConfigEntity[] = [];
+    // get the difference between the new config and the default config
+    const partialConfig: DeepPartial<SystemConfig> = {};
+    for (const property of getKeysDeep(defaults)) {
+      const newValue = _.get(newConfig, property);
+      const isEmpty = newValue === undefined || newValue === null || newValue === '';
+      const defaultValue = _.get(defaults, property);
+      const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
 
-    for (const key of Object.values(SystemConfigKey)) {
-      // get via dot notation
-      const item = { key, value: _.get(newConfig, key) as SystemConfigValue };
-      const defaultValue = _.get(defaults, key);
-      const isMissing = !_.has(newConfig, key);
-
-      if (
-        isMissing ||
-        item.value === null ||
-        item.value === '' ||
-        item.value === defaultValue ||
-        _.isEqual(item.value, defaultValue)
-      ) {
-        deletes.push(item);
+      if (isEmpty || isEqual) {
         continue;
       }
 
-      updates.push(item);
+      _.set(partialConfig, property, newValue);
     }
 
-    if (updates.length > 0) {
-      await this.repository.saveAll(updates);
-    }
-
-    if (deletes.length > 0) {
-      await this.repository.deleteKeys(deletes.map((item) => item.key));
-    }
+    await this.repository.set(SystemMetadataKey.SYSTEM_CONFIG, partialConfig);
 
     const config = await this.getConfig(true);
-
     this.config$.next(config);
-
     return config;
   }
 
@@ -103,16 +89,28 @@ export class SystemConfigCore {
   }
 
   private async buildConfig() {
-    const config = _.cloneDeep(defaults);
-    const overrides = this.isUsingConfigFile()
+    // load partial
+    const partial = this.isUsingConfigFile()
       ? await this.loadFromFile(process.env.IMMICH_CONFIG_FILE as string)
-      : await this.repository.load();
+      : await this.repository.get(SystemMetadataKey.SYSTEM_CONFIG);
 
-    for (const { key, value } of overrides) {
-      // set via dot notation
-      _.set(config, key, value);
+    // merge with defaults
+    const config = _.cloneDeep(defaults);
+    for (const property of getKeysDeep(partial)) {
+      _.set(config, property, _.get(partial, property));
     }
 
+    // check for extra properties
+    const unknownKeys = _.cloneDeep(config);
+    for (const property of getKeysDeep(defaults)) {
+      unsetDeep(unknownKeys, property);
+    }
+
+    if (!_.isEmpty(unknownKeys)) {
+      this.logger.warn(`Unknown keys found: ${JSON.stringify(unknownKeys, null, 2)}`);
+    }
+
+    // validate full config
     const errors = await validate(plainToInstance(SystemConfigDto, config));
     if (errors.length > 0) {
       if (this.isUsingConfigFile()) {
@@ -136,36 +134,11 @@ export class SystemConfigCore {
   private async loadFromFile(filepath: string) {
     try {
       const file = await this.repository.readFile(filepath);
-      const config = loadYaml(file.toString()) as any;
-      const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
-
-      for (const key of Object.values(SystemConfigKey)) {
-        const value = _.get(config, key);
-        this.unsetDeep(config, key);
-        if (value !== undefined) {
-          overrides.push({ key, value });
-        }
-      }
-
-      if (!_.isEmpty(config)) {
-        this.logger.warn(`Unknown keys found: ${JSON.stringify(config, null, 2)}`);
-      }
-
-      return overrides;
+      return loadYaml(file.toString()) as unknown;
     } catch (error: Error | any) {
       this.logger.error(`Unable to load configuration file: ${filepath}`);
+      this.logger.error(error);
       throw error;
-    }
-  }
-
-  private unsetDeep(object: object, key: string) {
-    _.unset(object, key);
-    const path = key.split('.');
-    while (path.pop()) {
-      if (!_.isEmpty(_.get(object, path))) {
-        return;
-      }
-      _.unset(object, path);
     }
   }
 }

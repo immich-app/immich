@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class APIKeyApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /api-key' operation and returns the [Response].
+  /// Performs an HTTP 'POST /api-keys' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
   Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-key';
+    final path = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody = aPIKeyCreateDto;
@@ -63,13 +63,13 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /api-key/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /api-keys/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-key/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -103,13 +103,13 @@ class APIKeyApi {
     }
   }
 
-  /// Performs an HTTP 'GET /api-key/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /api-keys/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-key/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -151,10 +151,10 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /api-key' operation and returns the [Response].
+  /// Performs an HTTP 'GET /api-keys' operation and returns the [Response].
   Future<Response> getApiKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/api-key';
+    final path = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -195,7 +195,7 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /api-key/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /api-keys/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -203,7 +203,7 @@ class APIKeyApi {
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
   Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-key/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

@@ -22,6 +22,7 @@
 
 <div id="immich-dropdown" class="relative">
   <button
+    type="button"
     {disabled}
     on:click={toggle}
     aria-expanded={isOpen}
@@ -52,6 +53,7 @@
     <div class="absolute mt-2 flex w-full flex-col">
       {#each options.options as option}
         <button
+          type="button"
           on:click={() => {
             selected = option;
             isOpen = false;

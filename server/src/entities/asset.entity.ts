@@ -25,12 +25,17 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
+export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 @Entity('assets')
 // Checksums must be unique per user and library
-@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'library', 'checksum'], {
+@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'checksum'], {
   unique: true,
+  where: '"libraryId" IS NULL',
+})
+@Index('UQ_assets_owner_library_checksum' + '', ['owner', 'library', 'checksum'], {
+  unique: true,
+  where: '"libraryId" IS NOT NULL',
 })
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
@@ -51,11 +56,11 @@ export class AssetEntity {
   @Column()
   ownerId!: string;
 
-  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  library!: LibraryEntity;
+  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  library?: LibraryEntity | null;
 
-  @Column()
-  libraryId!: string;
+  @Column({ nullable: true })
+  libraryId?: string | null;
 
   @Column()
   deviceId!: string;
@@ -165,6 +170,10 @@ export class AssetEntity {
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
+
+  @Index('IDX_assets_duplicateId')
+  @Column({ type: 'uuid', nullable: true })
+  duplicateId!: string | null;
 }
 
 export enum AssetType {

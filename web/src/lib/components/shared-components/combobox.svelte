@@ -15,9 +15,9 @@
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
   import { createEventDispatcher, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
-  import { shortcuts } from '$lib/utils/shortcut';
-  import { clickOutside } from '$lib/utils/click-outside';
-  import { focusOutside } from '$lib/utils/focus-outside';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { focusOutside } from '$lib/actions/focus-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   /**

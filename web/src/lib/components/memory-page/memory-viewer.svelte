@@ -19,7 +19,7 @@
   import { type Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { ThumbnailFormat, getMemoryLane, type AssetResponseDto } from '@immich/sdk';
   import {
@@ -182,10 +182,9 @@
           />
 
           {#each currentMemory.assets as _, index}
-            <button
+            <a
               class="relative w-full py-2"
-              on:click={() =>
-                goto(`?${QueryParameter.MEMORY_INDEX}=${memoryIndex}&${QueryParameter.ASSET_INDEX}=${index}`)}
+              href="?{QueryParameter.MEMORY_INDEX}={memoryIndex}&{QueryParameter.ASSET_INDEX}={index}"
             >
               <span class="absolute left-0 h-[2px] w-full bg-gray-500" />
               {#await resetPromise}
@@ -196,7 +195,7 @@
                   style:width={`${index < assetIndex ? 100 : index > assetIndex ? 0 : $progress * 100}%`}
                 />
               {/await}
-            </button>
+            </a>
           {/each}
 
           <div>
@@ -214,7 +213,11 @@
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
-        <button on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })} disabled={!galleryInView}>
+        <button
+          type="button"
+          on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
+          disabled={!galleryInView}
+        >
           <CircleIconButton title="Hide gallery" icon={mdiChevronUp} color="light" />
         </button>
       </div>
@@ -231,7 +234,12 @@
           class:opacity-0={!previousMemory}
           class:hover:opacity-70={previousMemory}
         >
-          <button class="relative h-full w-full rounded-2xl" disabled={!previousMemory} on:click={toPreviousMemory}>
+          <button
+            type="button"
+            class="relative h-full w-full rounded-2xl"
+            disabled={!previousMemory}
+            on:click={toPreviousMemory}
+          >
             {#if previousMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"
@@ -304,7 +312,12 @@
           class:opacity-0={!nextMemory}
           class:hover:opacity-70={nextMemory}
         >
-          <button class="relative h-full w-full rounded-2xl" on:click={toNextMemory} disabled={!nextMemory}>
+          <button
+            type="button"
+            class="relative h-full w-full rounded-2xl"
+            on:click={toNextMemory}
+            disabled={!nextMemory}
+          >
             {#if nextMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"

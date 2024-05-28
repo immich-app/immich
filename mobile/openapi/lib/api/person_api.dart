@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,13 +16,13 @@ class PersonApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /person' operation and returns the [Response].
+  /// Performs an HTTP 'POST /people' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
   Future<Response> createPersonWithHttpInfo(PersonCreateDto personCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person';
+    final path = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody = personCreateDto;
@@ -63,13 +63,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person' operation and returns the [Response].
+  /// Performs an HTTP 'GET /people' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [bool] withHidden:
   Future<Response> getAllPeopleWithHttpInfo({ bool? withHidden, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/person';
+    final path = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -114,13 +114,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /people/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}'
+    final path = r'/people/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -162,13 +162,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'GET /people/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonAssetsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/assets'
+    final path = r'/people/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -213,13 +213,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/statistics' operation and returns the [Response].
+  /// Performs an HTTP 'GET /people/{id}/statistics' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/statistics'
+    final path = r'/people/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -261,13 +261,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /person/{id}/thumbnail' operation and returns the [Response].
+  /// Performs an HTTP 'GET /people/{id}/thumbnail' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> getPersonThumbnailWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/thumbnail'
+    final path = r'/people/{id}/thumbnail'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -309,7 +309,7 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /person/{id}/merge' operation and returns the [Response].
+  /// Performs an HTTP 'POST /people/{id}/merge' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -317,7 +317,7 @@ class PersonApi {
   /// * [MergePersonDto] mergePersonDto (required):
   Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/merge'
+    final path = r'/people/{id}/merge'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -364,7 +364,7 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /person/{id}/reassign' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /people/{id}/reassign' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -372,7 +372,7 @@ class PersonApi {
   /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
   Future<Response> reassignFacesWithHttpInfo(String id, AssetFaceUpdateDto assetFaceUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}/reassign'
+    final path = r'/people/{id}/reassign'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -419,13 +419,13 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /person' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /people' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
   Future<Response> updatePeopleWithHttpInfo(PeopleUpdateDto peopleUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person';
+    final path = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody = peopleUpdateDto;
@@ -469,7 +469,7 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /person/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /people/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -477,7 +477,7 @@ class PersonApi {
   /// * [PersonUpdateDto] personUpdateDto (required):
   Future<Response> updatePersonWithHttpInfo(String id, PersonUpdateDto personUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/{id}'
+    final path = r'/people/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

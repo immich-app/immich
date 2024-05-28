@@ -1,72 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { UploadFieldName } from 'src/dtos/asset.dto';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
-
-export class AssetBulkUploadCheckItem {
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-
-  /** base64 or hex encoded sha1 hash */
-  @IsString()
-  @IsNotEmpty()
-  checksum!: string;
-}
-
-export class AssetBulkUploadCheckDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetBulkUploadCheckItem)
-  assets!: AssetBulkUploadCheckItem[];
-}
-
-export class AssetSearchDto {
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @Optional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  skip?: number;
-
-  @Optional()
-  @IsInt()
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  take?: number;
-
-  @Optional()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
-  userId?: string;
-
-  @ValidateDate({ optional: true })
-  updatedAfter?: Date;
-
-  @ValidateDate({ optional: true })
-  updatedBefore?: Date;
-}
-
-export class CheckExistingAssetsDto {
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  deviceAssetIds!: string[];
-
-  @IsNotEmpty()
-  deviceId!: string;
-}
+import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 
 export class CreateAssetDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
-
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;

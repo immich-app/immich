@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
+    mdiContentDuplicate,
     mdiFaceRecognition,
     mdiFileJpgBox,
     mdiFileXmlBox,
@@ -19,9 +20,9 @@
     mdiVideo,
   } from '@mdi/js';
   import type { ComponentType } from 'svelte';
-  import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -37,23 +38,22 @@
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
-  let confirmJob: JobName | null = null;
-
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
-      confirmJob = jobId;
+      const isConfirmed = await dialogController.show({
+        id: 'confirm-reprocess-all-faces',
+        prompt: 'Are you sure you want to reprocess all faces? This will also clear named people.',
+      });
+
+      if (isConfirmed) {
+        await handleCommand(jobId, { command: JobCommand.Start, force: true });
+        return;
+      }
+
       return;
     }
 
     await handleCommand(jobId, dto);
-  };
-
-  const onConfirm = async () => {
-    if (!confirmJob) {
-      return;
-    }
-    await handleCommand(confirmJob, { command: JobCommand.Start, force: true });
-    confirmJob = null;
   };
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
@@ -87,6 +87,12 @@
       title: getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.smartSearch,
+    },
+    [JobName.DuplicateDetection]: {
+      icon: mdiContentDuplicate,
+      title: getJobName(JobName.DuplicateDetection),
+      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
@@ -144,15 +150,6 @@
     }
   }
 </script>
-
-{#if confirmJob}
-  <ConfirmDialogue
-    id="reprocess-faces-modal"
-    prompt="Are you sure you want to reprocess all faces? This will also clear named people."
-    {onConfirm}
-    onClose={() => (confirmJob = null)}
-  />
-{/if}
 
 <div class="flex flex-col gap-7">
   {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}

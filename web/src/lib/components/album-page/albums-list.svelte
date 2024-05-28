@@ -5,7 +5,6 @@
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
     NotificationType,
@@ -33,6 +32,7 @@
   } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let ownedAlbums: AlbumResponseDto[] = [];
   export let sharedAlbums: AlbumResponseDto[] = [];
@@ -275,9 +275,10 @@
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);
   };
 
-  const setAlbumToDelete = () => {
+  const setAlbumToDelete = async () => {
     albumToDelete = contextMenuTargetAlbum ?? null;
     closeAlbumContextMenu();
+    await deleteSelectedAlbum();
   };
 
   const handleEdit = (album: AlbumResponseDto) => {
@@ -289,6 +290,16 @@
     if (!albumToDelete) {
       return;
     }
+
+    const isConfirmed = await dialogController.show({
+      id: 'delete-album',
+      prompt: `Are you sure you want to delete the album ${albumToDelete.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       await handleDeleteAlbum(albumToDelete);
     } catch {
@@ -455,21 +466,5 @@
         onClose={() => closeShareModal()}
       />
     {/if}
-  {/if}
-
-  <!-- Delete Modal -->
-  {#if albumToDelete}
-    <ConfirmDialogue
-      id="delete-album-dialogue-modal"
-      title="Delete album"
-      confirmText="Delete"
-      onConfirm={deleteSelectedAlbum}
-      onClose={() => (albumToDelete = null)}
-    >
-      <svelte:fragment slot="prompt">
-        <p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>
-        <p>If this album is shared, other users will not be able to access it anymore.</p>
-      </svelte:fragment>
-    </ConfirmDialogue>
   {/if}
 {/if}

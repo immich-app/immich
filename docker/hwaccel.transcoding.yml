@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Configurations for hardware-accelerated transcoding
 
 # If using Unraid or another platform that doesn't allow multiple Compose files,

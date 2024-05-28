@@ -24,14 +24,14 @@ import {
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 @Injectable()
 export class SystemConfigService {
   private core: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) private repository: ISystemMetadataRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
@@ -62,7 +62,7 @@ export class SystemConfigService {
   @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
   onValidateConfig({ newConfig, oldConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
-      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
+      throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }
 
@@ -135,10 +135,10 @@ export class SystemConfigService {
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
-    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
+    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
   }
 
   private getEnvLogLevel() {
-    return process.env.LOG_LEVEL as LogLevel;
+    return process.env.IMMICH_LOG_LEVEL as LogLevel;
   }
 }

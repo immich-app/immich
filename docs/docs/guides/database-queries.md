@@ -96,7 +96,7 @@ SELECT * FROM "users";
 ## System Config
 
 ```sql title="Custom settings"
-SELECT "key", "value" FROM "system_config";
+SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 ```
 
 (Only used when not using the [config file](/docs/install/config-file))

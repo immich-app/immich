@@ -107,7 +107,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password }: Welco
                 <Img
                   src={`https://immich.app/img/ios-app-store-badge.png`}
                   alt="Immich"
-                  style={{ height: '68px', padding: '14px' }}
+                  style={{ height: '72px', padding: '14px' }}
                 />
               </Link>
             </Column>

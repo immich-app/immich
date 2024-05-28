@@ -11,8 +11,7 @@ import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
-import { AuthType, LOGIN_URL, MOBILE_REDIRECT } from 'src/constants';
-import { AccessCore } from 'src/cores/access.core';
+import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
@@ -28,16 +27,14 @@ import {
   SignUpDto,
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
 
@@ -60,15 +57,12 @@ interface ClaimOptions<T> {
 
 @Injectable()
 export class AuthService {
-  private access: AccessCore;
   private configCore: SystemConfigCore;
   private userCore: UserCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
@@ -76,9 +70,8 @@ export class AuthService {
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
     this.logger.setContext(AuthService.name);
-    this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository, logger);
-    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+    this.userCore = UserCore.create(cryptoRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
@@ -116,7 +109,7 @@ export class AuthService {
     };
   }
 
-  async changePassword(auth: AuthDto, dto: ChangePasswordDto) {
+  async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
     const user = await this.userRepository.getByEmail(auth.user.email, true);
     if (!user) {
@@ -128,10 +121,14 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    return this.userCore.updateUser(auth.user, auth.user.id, { password: newPassword });
+    const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
+
+    const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
+
+    return mapUserAdmin(updatedUser);
   }
 
-  async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {
+  async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
     const adminUser = await this.userRepository.getAdmin();
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
@@ -145,7 +142,7 @@ export class AuthService {
       storageLabel: 'admin',
     });
 
-    return mapUser(admin);
+    return mapUserAdmin(admin);
   }
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
@@ -201,7 +198,7 @@ export class AuthService {
     // link existing user
     if (!user) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
-      if (emailUser) {
+      if (emailUser && !emailUser.oauthId) {
         user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }
@@ -244,7 +241,7 @@ export class AuthService {
     return this.createLoginResponse(user, loginDetails);
   }
 
-  async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
     const config = await this.configCore.getConfig();
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
@@ -252,11 +249,14 @@ export class AuthService {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
-    return mapUser(await this.userRepository.update(auth.user.id, { oauthId }));
+
+    const user = await this.userRepository.update(auth.user.id, { oauthId });
+    return mapUserAdmin(user);
   }
 
-  async unlink(auth: AuthDto): Promise<UserResponseDto> {
-    return mapUser(await this.userRepository.update(auth.user.id, { oauthId: '' }));
+  async unlink(auth: AuthDto): Promise<UserAdminResponseDto> {
+    const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
+    return mapUserAdmin(user);
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {

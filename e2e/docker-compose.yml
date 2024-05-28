@@ -2,40 +2,32 @@ version: '3.8'
 
 name: immich-e2e
 
-x-server-build: &server-common
-  image: immich-server:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-  environment:
-    - DB_HOSTNAME=database
-    - DB_USERNAME=postgres
-    - DB_PASSWORD=postgres
-    - DB_DATABASE_NAME=immich
-    - IMMICH_MACHINE_LEARNING_ENABLED=false
-    - IMMICH_METRICS=true
-  volumes:
-    - upload:/usr/src/app/upload
-    - ./test-assets:/test-assets
-  depends_on:
-    - redis
-    - database
-
 services:
   immich-server:
     container_name: immich-e2e-server
-    command: ['./start.sh', 'immich']
-    <<: *server-common
+    command: ['./start.sh']
+    image: immich-server:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+    environment:
+      - DB_HOSTNAME=database
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE_NAME=immich
+      - IMMICH_MACHINE_LEARNING_ENABLED=false
+      - IMMICH_METRICS=true
+    volumes:
+      - upload:/usr/src/app/upload
+      - ./test-assets:/test-assets
+    depends_on:
+      - redis
+      - database
     ports:
       - 2283:3001
 
-  immich-microservices:
-    container_name: immich-e2e-microservices
-    command: ['./start.sh', 'microservices']
-    <<: *server-common
-
   redis:
-    image: redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    image: redis:6.2-alpine@sha256:e31ca60b18f7e9b78b573d156702471d4eda038803c0b8e6f01559f350031e93
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0

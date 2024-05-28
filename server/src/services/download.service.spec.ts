@@ -180,7 +180,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -196,8 +195,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should split archives by size', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-
       assetMock.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },

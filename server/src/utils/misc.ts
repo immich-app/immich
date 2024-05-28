@@ -11,16 +11,59 @@ import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { CLIP_MODEL_INFO, isDev, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Metadata } from 'src/middleware/auth.guard';
+
+/**
+ * @returns a list of strings representing the keys of the object in dot notation
+ */
+export const getKeysDeep = (target: unknown, path: string[] = []) => {
+  if (!target || typeof target !== 'object') {
+    return [];
+  }
+
+  const obj = target as object;
+
+  const properties: string[] = [];
+  for (const key of Object.keys(obj as object)) {
+    const value = obj[key as keyof object];
+    if (value === undefined) {
+      continue;
+    }
+
+    if (_.isObject(value) && !_.isArray(value)) {
+      properties.push(...getKeysDeep(value, [...path, key]));
+      continue;
+    }
+
+    properties.push([...path, key].join('.'));
+  }
+
+  return properties;
+};
+
+export const unsetDeep = (object: unknown, key: string) => {
+  const parts = key.split('.');
+  while (parts.length > 0) {
+    _.unset(object, parts);
+    parts.pop();
+    if (!_.isEmpty(_.get(object, parts))) {
+      break;
+    }
+  }
+
+  return _.isEmpty(object) ? undefined : object;
+};
 
 const isMachineLearningEnabled = (machineLearning: SystemConfig['machineLearning']) => machineLearning.enabled;
 export const isSmartSearchEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.clip.enabled;
 export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
+export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
+  isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
@@ -131,7 +174,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   return document;
 };
 
-export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
+export const useSwagger = (app: INestApplication, force = false) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -168,7 +211,7 @@ export const useSwagger = (app: INestApplication, isDevelopment: boolean) => {
 
   SwaggerModule.setup('doc', app, specification, customOptions);
 
-  if (isDevelopment) {
+  if (isDev() || force) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });

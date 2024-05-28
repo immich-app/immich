@@ -16,6 +16,7 @@
   <div class="left">
     {#if showResetToDefault}
       <button
+        type="button"
         on:click={() => dispatch('reset', { default: true })}
         class="bg-none text-sm font-medium text-immich-primary hover:text-immich-primary/75 dark:text-immich-dark-primary hover:dark:text-immich-dark-primary/75"
       >
@@ -26,6 +27,6 @@
 
   <div class="right">
     <Button {disabled} size="sm" color="gray" on:click={() => dispatch('reset', { default: false })}>Reset</Button>
-    <Button {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
+    <Button type="submit" {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
   </div>
 </div>

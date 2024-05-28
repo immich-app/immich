@@ -6,7 +6,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { resetSavedUser, user } from '$lib/stores/user.store';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { logout } from '@immich/sdk';
   import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
@@ -119,6 +119,7 @@
           on:escape={() => (shouldShowAccountInfoPanel = false)}
         >
           <button
+            type="button"
             class="flex"
             on:mouseover={() => (shouldShowAccountInfo = true)}
             on:focus={() => (shouldShowAccountInfo = true)}

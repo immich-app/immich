@@ -12,24 +12,25 @@ import {
   VideoCodec,
   defaults,
 } from 'src/config';
-import { SystemConfigEntity, SystemConfigKey } from 'src/entities/system-config.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { DeepPartial } from 'typeorm';
 import { Mocked } from 'vitest';
 
-const updates: SystemConfigEntity[] = [
-  { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
-  { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
-  { key: SystemConfigKey.TRASH_DAYS, value: 10 },
-  { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
-];
+const partialConfig = {
+  ffmpeg: { crf: 30 },
+  oauth: { autoLaunch: true },
+  trash: { days: 10 },
+  user: { deleteDelay: 15 },
+} satisfies DeepPartial<SystemConfig>;
 
 const updatedConfig = Object.freeze<SystemConfig>({
   job: {
@@ -65,6 +66,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
     tonemap: ToneMapping.HABLE,
   },
   logging: {
@@ -77,6 +79,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+    },
+    duplicateDetection: {
+      enabled: true,
+      maxDistance: 0.0155,
     },
     facialRecognition: {
       enabled: true,
@@ -171,17 +177,17 @@ const updatedConfig = Object.freeze<SystemConfig>({
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
-  let configMock: Mocked<ISystemConfigRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let eventMock: Mocked<IEventRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let smartInfoMock: Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SystemConfigService(configMock, eventMock, loggerMock, smartInfoMock);
+    sut = new SystemConfigService(systemMock, eventMock, loggerMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -190,44 +196,54 @@ describe(SystemConfigService.name, () => {
 
   describe('getDefaults', () => {
     it('should return the default config', () => {
-      configMock.load.mockResolvedValue(updates);
+      systemMock.get.mockResolvedValue(partialConfig);
 
       expect(sut.getDefaults()).toEqual(defaults);
-      expect(configMock.load).not.toHaveBeenCalled();
+      expect(systemMock.get).not.toHaveBeenCalled();
     });
   });
 
   describe('getConfig', () => {
     it('should return the default config', async () => {
-      configMock.load.mockResolvedValue([]);
+      systemMock.get.mockResolvedValue({});
 
       await expect(sut.getConfig()).resolves.toEqual(defaults);
     });
 
     it('should merge the overrides', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
-        { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
-        { key: SystemConfigKey.TRASH_DAYS, value: 10 },
-        { key: SystemConfigKey.USER_DELETE_DELAY, value: 15 },
-      ]);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { crf: 30 },
+        oauth: { autoLaunch: true },
+        trash: { days: 10 },
+        user: { deleteDelay: 15 },
+      });
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
     });
 
     it('should load the config from a json file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      const partialConfig = {
-        ffmpeg: { crf: 30 },
-        oauth: { autoLaunch: true },
-        trash: { days: 10 },
-        user: { deleteDelay: 15 },
-      };
-      configMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
+
+      systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
 
-      expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
+      expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
+    });
+
+    it('should log errors with the config file', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+
+      systemMock.readFile.mockResolvedValue(`{ "ffmpeg2": true, "ffmpeg2": true }`);
+
+      await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+
+      expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
+      expect(loggerMock.error).toHaveBeenCalledTimes(2);
+      expect(loggerMock.error.mock.calls[0][0]).toEqual('Unable to load configuration file: immich-config.json');
+      expect(loggerMock.error.mock.calls[1][0].toString()).toEqual(
+        expect.stringContaining('YAMLException: duplicated mapping key (1:20)'),
+      );
     });
 
     it('should load the config from a yaml file', async () => {
@@ -242,26 +258,26 @@ describe(SystemConfigService.name, () => {
         user:
           deleteDelay: 15
       `;
-      configMock.readFile.mockResolvedValue(partialConfig);
+      systemMock.readFile.mockResolvedValue(partialConfig);
 
       await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
 
-      expect(configMock.readFile).toHaveBeenCalledWith('immich-config.yaml');
+      expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.yaml');
     });
 
     it('should accept an empty configuration file', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      configMock.readFile.mockResolvedValue(JSON.stringify({}));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({}));
 
       await expect(sut.getConfig()).resolves.toEqual(defaults);
 
-      expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
+      expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
     it('should allow underscores in the machine learning url', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
       const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
-      configMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
+      systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       const config = await sut.getConfig();
       expect(config.machineLearning.url).toEqual('immich_machine_learning');
@@ -272,7 +288,7 @@ describe(SystemConfigService.name, () => {
       const partialConfig = `
         unknownOption: true
       `;
-      configMock.readFile.mockResolvedValue(partialConfig);
+      systemMock.readFile.mockResolvedValue(partialConfig);
 
       await sut.getConfig();
       expect(loggerMock.warn).toHaveBeenCalled();
@@ -290,7 +306,7 @@ describe(SystemConfigService.name, () => {
     for (const test of tests) {
       it(`should ${test.should}`, async () => {
         process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-        configMock.readFile.mockResolvedValue(JSON.stringify(test.config));
+        systemMock.readFile.mockResolvedValue(JSON.stringify(test.config));
 
         if (test.warn) {
           await sut.getConfig();
@@ -338,20 +354,20 @@ describe(SystemConfigService.name, () => {
 
   describe('updateConfig', () => {
     it('should update the config and emit client and server events', async () => {
-      configMock.load.mockResolvedValue(updates);
+      systemMock.get.mockResolvedValue(partialConfig);
 
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
       expect(eventMock.clientBroadcast).toHaveBeenCalled();
       expect(eventMock.serverSend).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE, null);
-      expect(configMock.saveAll).toHaveBeenCalledWith(updates);
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_CONFIG, partialConfig);
     });
 
     it('should throw an error if a config file is in use', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-      configMock.readFile.mockResolvedValue(JSON.stringify({}));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({}));
       await expect(sut.updateConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
-      expect(configMock.saveAll).not.toHaveBeenCalled();
+      expect(systemMock.set).not.toHaveBeenCalled();
     });
   });
 

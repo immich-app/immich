@@ -3,8 +3,8 @@
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { autoGrowHeight } from '$lib/actions/autogrow';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
@@ -25,7 +25,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -200,6 +200,7 @@
               <div>
                 {#if showDeleteReaction[index]}
                   <button
+                    type="button"
                     class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                     use:clickOutside
                     on:outclick={() => (showDeleteReaction[index] = false)}
@@ -252,6 +253,7 @@
                 <div>
                   {#if showDeleteReaction[index]}
                     <button
+                      type="button"
                       class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                       use:clickOutside
                       on:outclick={() => (showDeleteReaction[index] = false)}

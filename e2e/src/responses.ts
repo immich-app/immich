@@ -51,11 +51,6 @@ export const errorDto = {
     statusCode: 400,
     message: 'The server already has an admin',
   },
-  noDeleteUploadLibrary: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: 'Cannot delete the last upload library',
-  },
 };
 
 export const signupResponseDto = {
@@ -73,7 +68,6 @@ export const signupResponseDto = {
     updatedAt: expect.any(String),
     deletedAt: null,
     oauthId: '',
-    memoriesEnabled: true,
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,
     status: 'active',

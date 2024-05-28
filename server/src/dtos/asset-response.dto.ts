@@ -26,7 +26,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  libraryId!: string;
+  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
   fileCreatedAt!: Date;
@@ -36,10 +37,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isExternal?: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isReadOnly?: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
@@ -50,6 +47,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
   stackCount!: number | null;
+  duplicateId?: string | null;
 }
 
 export type AssetMapOptions = {
@@ -127,16 +125,12 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       : undefined,
     stackCount: entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
-    isExternal: false,
-    isReadOnly: false,
     hasMetadata: true,
+    duplicateId: entity.duplicateId,
   };
 }
 
 export class MemoryLaneResponseDto {
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  title!: string;
-
   @ApiProperty({ type: 'integer' })
   yearsAgo!: number;
 

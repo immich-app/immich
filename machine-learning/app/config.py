@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
 
 class LogSettings(BaseSettings):
-    log_level: str = "info"
+    immich_log_level: str = "info"
     no_color: bool = False
 
     class Config:
@@ -77,7 +77,7 @@ LOG_LEVELS: dict[str, int] = {
 settings = Settings()
 log_settings = LogSettings()
 
-LOG_LEVEL = LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO)
+LOG_LEVEL = LOG_LEVELS.get(log_settings.immich_log_level.lower(), logging.INFO)
 
 
 class CustomRichHandler(RichHandler):

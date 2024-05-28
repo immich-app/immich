@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -15,7 +15,6 @@ class UpdateLibraryDto {
   UpdateLibraryDto({
     this.exclusionPatterns = const [],
     this.importPaths = const [],
-    this.isVisible,
     this.name,
   });
 
@@ -29,21 +28,12 @@ class UpdateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isVisible;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateLibraryDto &&
     _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
     _deepEquality.equals(other.importPaths, importPaths) &&
-    other.isVisible == isVisible &&
     other.name == name;
 
   @override
@@ -51,21 +41,15 @@ class UpdateLibraryDto {
     // ignore: unnecessary_parenthesis
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name]';
+  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'importPaths'] = this.importPaths;
-    if (this.isVisible != null) {
-      json[r'isVisible'] = this.isVisible;
-    } else {
-    //  json[r'isVisible'] = null;
-    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -88,7 +72,6 @@ class UpdateLibraryDto {
         importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
         name: mapValueOfType<String>(json, r'name'),
       );
     }

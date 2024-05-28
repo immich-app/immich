@@ -4,7 +4,7 @@ import {
   AlbumUserRole,
   AssetFileUploadResponseDto,
   AssetOrder,
-  deleteUser,
+  deleteUserAdmin,
   getAlbumInfo,
   LoginResponseDto,
   SharedLinkType,
@@ -23,7 +23,7 @@ const user2SharedUser = 'user2SharedUser';
 const user2SharedLink = 'user2SharedLink';
 const user2NotShared = 'user2NotShared';
 
-describe('/album', () => {
+describe('/albums', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user1Asset1: AssetFileUploadResponseDto;
@@ -107,19 +107,19 @@ describe('/album', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
-  describe('GET /album', () => {
+  describe('GET /albums', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/album');
+      const { status, body } = await request(app).get('/albums');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should reject an invalid shared param', async () => {
       const { status, body } = await request(app)
-        .get('/album?shared=invalid')
+        .get('/albums?shared=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest(['shared must be a boolean value']));
@@ -127,7 +127,7 @@ describe('/album', () => {
 
     it('should reject an invalid assetId param', async () => {
       const { status, body } = await request(app)
-        .get('/album?assetId=invalid')
+        .get('/albums?assetId=invalid')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest(['assetId must be a UUID']));
@@ -135,7 +135,7 @@ describe('/album', () => {
 
     it("should not show other users' favorites", async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user2.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toEqual({
@@ -146,7 +146,7 @@ describe('/album', () => {
 
     it('should not return shared albums with a deleted owner', async () => {
       const { status, body } = await request(app)
-        .get('/album?shared=true')
+        .get('/albums?shared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -178,7 +178,7 @@ describe('/album', () => {
     });
 
     it('should return the album collection including owned and shared', async () => {
-      const { status, body } = await request(app).get('/album').set('Authorization', `Bearer ${user1.accessToken}`);
+      const { status, body } = await request(app).get('/albums').set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(4);
       expect(body).toEqual(
@@ -209,7 +209,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by shared', async () => {
       const { status, body } = await request(app)
-        .get('/album?shared=true')
+        .get('/albums?shared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(4);
@@ -241,7 +241,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by NOT shared', async () => {
       const { status, body } = await request(app)
-        .get('/album?shared=false')
+        .get('/albums?shared=false')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
@@ -258,7 +258,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId', async () => {
       const { status, body } = await request(app)
-        .get(`/album?assetId=${user1Asset2.id}`)
+        .get(`/albums?assetId=${user1Asset2.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
@@ -266,7 +266,7 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId and ignores shared=true', async () => {
       const { status, body } = await request(app)
-        .get(`/album?shared=true&assetId=${user1Asset1.id}`)
+        .get(`/albums?shared=true&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
@@ -274,23 +274,23 @@ describe('/album', () => {
 
     it('should return the album collection filtered by assetId and ignores shared=false', async () => {
       const { status, body } = await request(app)
-        .get(`/album?shared=false&assetId=${user1Asset1.id}`)
+        .get(`/albums?shared=false&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
     });
   });
 
-  describe('GET /album/:id', () => {
+  describe('GET /albums/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/album/${user1Albums[0].id}`);
+      const { status, body } = await request(app).get(`/albums/${user1Albums[0].id}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return album info for own album', async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -302,7 +302,7 @@ describe('/album', () => {
 
     it('should return album info for shared album (editor)', async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user2Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user2Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -311,7 +311,7 @@ describe('/album', () => {
 
     it('should return album info for shared album (viewer)', async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user1Albums[3].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[3].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user2.accessToken}`);
 
       expect(status).toBe(200);
@@ -320,7 +320,7 @@ describe('/album', () => {
 
     it('should return album info with assets when withoutAssets is undefined', async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user1Albums[0].id}`)
+        .get(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -332,7 +332,7 @@ describe('/album', () => {
 
     it('should return album info without assets when withoutAssets is true', async () => {
       const { status, body } = await request(app)
-        .get(`/album/${user1Albums[0].id}?withoutAssets=true`)
+        .get(`/albums/${user1Albums[0].id}?withoutAssets=true`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -344,16 +344,16 @@ describe('/album', () => {
     });
   });
 
-  describe('GET /album/count', () => {
+  describe('GET /albums/count', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/album/count');
+      const { status, body } = await request(app).get('/albums/count');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return total count of albums the user has access to', async () => {
       const { status, body } = await request(app)
-        .get('/album/count')
+        .get('/albums/count')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -361,16 +361,16 @@ describe('/album', () => {
     });
   });
 
-  describe('POST /album', () => {
+  describe('POST /albums', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/album').send({ albumName: 'New album' });
+      const { status, body } = await request(app).post('/albums').send({ albumName: 'New album' });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should create an album', async () => {
       const { status, body } = await request(app)
-        .post('/album')
+        .post('/albums')
         .send({ albumName: 'New album' })
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(201);
@@ -383,7 +383,6 @@ describe('/album', () => {
         description: '',
         albumThumbnailAssetId: null,
         shared: false,
-        sharedUsers: [],
         albumUsers: [],
         hasSharedLink: false,
         assets: [],
@@ -395,9 +394,9 @@ describe('/album', () => {
     });
   });
 
-  describe('PUT /album/:id/assets', () => {
+  describe('PUT /albums/:id/assets', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/album/${user1Albums[0].id}/assets`);
+      const { status, body } = await request(app).put(`/albums/${user1Albums[0].id}/assets`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -405,7 +404,7 @@ describe('/album', () => {
     it('should be able to add own asset to own album', async () => {
       const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
-        .put(`/album/${user1Albums[0].id}/assets`)
+        .put(`/albums/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [asset.id] });
 
@@ -416,7 +415,7 @@ describe('/album', () => {
     it('should be able to add own asset to shared album', async () => {
       const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
-        .put(`/album/${user2Albums[0].id}/assets`)
+        .put(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [asset.id] });
 
@@ -427,7 +426,7 @@ describe('/album', () => {
     it('should not be able to add assets to album as a viewer', async () => {
       const asset = await utils.createAsset(user2.accessToken);
       const { status, body } = await request(app)
-        .put(`/album/${user1Albums[3].id}/assets`)
+        .put(`/albums/${user1Albums[3].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [asset.id] });
 
@@ -438,7 +437,7 @@ describe('/album', () => {
     it('should add duplicate assets only once', async () => {
       const asset = await utils.createAsset(user1.accessToken);
       const { status, body } = await request(app)
-        .put(`/album/${user1Albums[0].id}/assets`)
+        .put(`/albums/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [asset.id, asset.id] });
 
@@ -450,10 +449,10 @@ describe('/album', () => {
     });
   });
 
-  describe('PATCH /album/:id', () => {
+  describe('PATCH /albums/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app)
-        .patch(`/album/${uuidDto.notFound}`)
+        .patch(`/albums/${uuidDto.notFound}`)
         .send({ albumName: 'New album name' });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -464,7 +463,7 @@ describe('/album', () => {
         albumName: 'New album',
       });
       const { status, body } = await request(app)
-        .patch(`/album/${album.id}`)
+        .patch(`/albums/${album.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           albumName: 'New album name',
@@ -481,7 +480,7 @@ describe('/album', () => {
 
     it('should not be able to update as a viewer', async () => {
       const { status, body } = await request(app)
-        .patch(`/album/${user1Albums[3].id}`)
+        .patch(`/albums/${user1Albums[3].id}`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ albumName: 'New album name' });
 
@@ -491,7 +490,7 @@ describe('/album', () => {
 
     it('should not be able to update as an editor', async () => {
       const { status, body } = await request(app)
-        .patch(`/album/${user1Albums[0].id}`)
+        .patch(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ albumName: 'New album name' });
 
@@ -500,10 +499,10 @@ describe('/album', () => {
     });
   });
 
-  describe('DELETE /album/:id/assets', () => {
+  describe('DELETE /albums/:id/assets', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user1Albums[0].id}/assets`)
+        .delete(`/albums/${user1Albums[0].id}/assets`)
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(401);
@@ -512,7 +511,7 @@ describe('/album', () => {
 
     it('should not be able to remove foreign asset from own album', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user2Albums[0].id}/assets`)
+        .delete(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
@@ -528,7 +527,7 @@ describe('/album', () => {
 
     it('should not be able to remove foreign asset from foreign album', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user1Albums[0].id}/assets`)
+        .delete(`/albums/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
@@ -544,7 +543,7 @@ describe('/album', () => {
 
     it('should be able to remove own asset from own album', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user1Albums[0].id}/assets`)
+        .delete(`/albums/${user1Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
@@ -554,7 +553,7 @@ describe('/album', () => {
 
     it('should be able to remove own asset from shared album', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user2Albums[0].id}/assets`)
+        .delete(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
@@ -564,7 +563,7 @@ describe('/album', () => {
 
     it('should not be able to remove assets from album as a viewer', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user1Albums[3].id}/assets`)
+        .delete(`/albums/${user1Albums[3].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [user1Asset1.id] });
 
@@ -574,7 +573,7 @@ describe('/album', () => {
 
     it('should remove duplicate assets only once', async () => {
       const { status, body } = await request(app)
-        .delete(`/album/${user1Albums[1].id}/assets`)
+        .delete(`/albums/${user1Albums[1].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ ids: [user1Asset1.id, user1Asset1.id] });
 
@@ -596,7 +595,7 @@ describe('/album', () => {
     });
 
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/album/${user1Albums[0].id}/users`).send({ sharedUserIds: [] });
+      const { status, body } = await request(app).put(`/albums/${user1Albums[0].id}/users`).send({ sharedUserIds: [] });
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -604,21 +603,25 @@ describe('/album', () => {
 
     it('should be able to add user to own album', async () => {
       const { status, body } = await request(app)
-        .put(`/album/${album.id}/users`)
+        .put(`/albums/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          sharedUsers: [expect.objectContaining({ id: user2.userId })],
+          albumUsers: [
+            expect.objectContaining({
+              user: expect.objectContaining({ id: user2.userId }),
+            }),
+          ],
         }),
       );
     });
 
     it('should not be able to share album with owner', async () => {
       const { status, body } = await request(app)
-        .put(`/album/${album.id}/users`)
+        .put(`/albums/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }] });
 
@@ -628,12 +631,12 @@ describe('/album', () => {
 
     it('should not be able to add existing user to shared album', async () => {
       await request(app)
-        .put(`/album/${album.id}/users`)
+        .put(`/albums/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
       const { status, body } = await request(app)
-        .put(`/album/${album.id}/users`)
+        .put(`/albums/${album.id}/users`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
@@ -652,14 +655,16 @@ describe('/album', () => {
       expect(album.albumUsers[0].role).toEqual(AlbumUserRole.Viewer);
 
       const { status } = await request(app)
-        .put(`/album/${album.id}/user/${user2.userId}`)
+        .put(`/albums/${album.id}/user/${user2.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ role: AlbumUserRole.Editor });
 
       expect(status).toBe(200);
 
       // Get album to verify the role change
-      const { body } = await request(app).get(`/album/${album.id}`).set('Authorization', `Bearer ${user1.accessToken}`);
+      const { body } = await request(app)
+        .get(`/albums/${album.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(body).toEqual(
         expect.objectContaining({
           albumUsers: [expect.objectContaining({ role: AlbumUserRole.Editor })],
@@ -676,7 +681,7 @@ describe('/album', () => {
       expect(album.albumUsers[0].role).toEqual(AlbumUserRole.Viewer);
 
       const { status, body } = await request(app)
-        .put(`/album/${album.id}/user/${user2.userId}`)
+        .put(`/albums/${album.id}/user/${user2.userId}`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ role: AlbumUserRole.Editor });
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
@@ -15,11 +15,10 @@
   import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
-
-  let deleteLinkId: string | null = null;
 
   const refresh = async () => {
     sharedLinks = await getAllSharedLinks();
@@ -29,15 +28,21 @@
     await refresh();
   });
 
-  const handleDeleteLink = async () => {
-    if (!deleteLinkId) {
+  const handleDeleteLink = async (id: string) => {
+    const isConfirmed = await dialogController.show({
+      id: 'delete-shared-link',
+      title: 'Delete shared link',
+      prompt: 'Are you sure you want to delete this shared link?',
+      confirmText: 'Delete',
+    });
+
+    if (!isConfirmed) {
       return;
     }
 
     try {
-      await removeSharedLink({ id: deleteLinkId });
+      await removeSharedLink({ id });
       notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
-      deleteLinkId = null;
       await refresh();
     } catch (error) {
       handleError(error, 'Unable to delete shared link');
@@ -73,7 +78,7 @@
       {#each sharedLinks as link (link.id)}
         <SharedLinkCard
           {link}
-          on:delete={() => (deleteLinkId = link.id)}
+          on:delete={() => handleDeleteLink(link.id)}
           on:edit={() => (editSharedLink = link)}
           on:copy={() => handleCopyLink(link.key)}
         />
@@ -84,15 +89,4 @@
 
 {#if editSharedLink}
   <CreateSharedLinkModal editingLink={editSharedLink} onClose={handleEditDone} />
-{/if}
-
-{#if deleteLinkId}
-  <ConfirmDialogue
-    id="delete-shared-link-modal"
-    title="Delete shared link"
-    prompt="Are you sure you want to delete this shared link?"
-    confirmText="Delete"
-    onConfirm={() => handleDeleteLink()}
-    onClose={() => (deleteLinkId = null)}
-  />
 {/if}

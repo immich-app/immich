@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -16,7 +16,7 @@ class AlbumApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /album/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /albums/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -26,7 +26,7 @@ class AlbumApi {
   /// * [String] key:
   Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/assets'
+    final path = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -79,7 +79,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /album/{id}/users' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /albums/{id}/users' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -87,7 +87,7 @@ class AlbumApi {
   /// * [AddUsersDto] addUsersDto (required):
   Future<Response> addUsersToAlbumWithHttpInfo(String id, AddUsersDto addUsersDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/users'
+    final path = r'/albums/{id}/users'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -131,13 +131,13 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /album' operation and returns the [Response].
+  /// Performs an HTTP 'POST /albums' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
   Future<Response> createAlbumWithHttpInfo(CreateAlbumDto createAlbumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album';
+    final path = r'/albums';
 
     // ignore: prefer_final_locals
     Object? postBody = createAlbumDto;
@@ -178,13 +178,13 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /albums/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   Future<Response> deleteAlbumWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}'
+    final path = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -218,10 +218,10 @@ class AlbumApi {
     }
   }
 
-  /// Performs an HTTP 'GET /album/count' operation and returns the [Response].
+  /// Performs an HTTP 'GET /albums/count' operation and returns the [Response].
   Future<Response> getAlbumCountWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/album/count';
+    final path = r'/albums/count';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -259,7 +259,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /album/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /albums/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -269,7 +269,7 @@ class AlbumApi {
   /// * [bool] withoutAssets:
   Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}'
+    final path = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -322,7 +322,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /album' operation and returns the [Response].
+  /// Performs an HTTP 'GET /albums' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -331,7 +331,7 @@ class AlbumApi {
   /// * [bool] shared:
   Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/album';
+    final path = r'/albums';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -385,7 +385,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{id}/assets' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /albums/{id}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -393,7 +393,7 @@ class AlbumApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> removeAssetFromAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/assets'
+    final path = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -440,7 +440,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{id}/user/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /albums/{id}/user/{userId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -448,7 +448,7 @@ class AlbumApi {
   /// * [String] userId (required):
   Future<Response> removeUserFromAlbumWithHttpInfo(String id, String userId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/user/{userId}'
+    final path = r'/albums/{id}/user/{userId}'
       .replaceAll('{id}', id)
       .replaceAll('{userId}', userId);
 
@@ -485,7 +485,7 @@ class AlbumApi {
     }
   }
 
-  /// Performs an HTTP 'PATCH /album/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PATCH /albums/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -493,7 +493,7 @@ class AlbumApi {
   /// * [UpdateAlbumDto] updateAlbumDto (required):
   Future<Response> updateAlbumInfoWithHttpInfo(String id, UpdateAlbumDto updateAlbumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}'
+    final path = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -537,7 +537,7 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /album/{id}/user/{userId}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /albums/{id}/user/{userId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -547,7 +547,7 @@ class AlbumApi {
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
   Future<Response> updateAlbumUserWithHttpInfo(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/album/{id}/user/{userId}'
+    final path = r'/albums/{id}/user/{userId}'
       .replaceAll('{id}', id)
       .replaceAll('{userId}', userId);
 

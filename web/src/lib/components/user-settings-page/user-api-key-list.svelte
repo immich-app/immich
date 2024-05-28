@@ -7,15 +7,14 @@
   import Button from '../elements/buttons/button.svelte';
   import APIKeyForm from '../forms/api-key-form.svelte';
   import APIKeySecret from '../forms/api-key-secret.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let keys: ApiKeyResponseDto[];
 
   let newKey: Partial<ApiKeyResponseDto> | null = null;
   let editKey: ApiKeyResponseDto | null = null;
-  let deleteKey: ApiKeyResponseDto | null = null;
   let secret = '';
 
   const format: Intl.DateTimeFormatOptions = {
@@ -59,22 +58,26 @@
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteKey) {
+  const handleDelete = async (key: ApiKeyResponseDto) => {
+    const isConfirmed = await dialogController.show({
+      id: 'delete-api-key',
+      prompt: 'Are you sure you want to delete this API key?',
+    });
+
+    if (!isConfirmed) {
       return;
     }
 
     try {
-      await deleteApiKey({ id: deleteKey.id });
+      await deleteApiKey({ id: key.id });
       notificationController.show({
-        message: `Removed API Key: ${deleteKey.name}`,
+        message: `Removed API Key: ${key.name}`,
         type: NotificationType.Info,
       });
     } catch (error) {
       handleError(error, 'Unable to remove API Key');
     } finally {
       await refreshKeys();
-      deleteKey = null;
     }
   };
 </script>
@@ -100,15 +103,6 @@
     apiKey={editKey}
     on:submit={({ detail }) => handleUpdate(detail)}
     on:cancel={() => (editKey = null)}
-  />
-{/if}
-
-{#if deleteKey}
-  <ConfirmDialogue
-    id="confirm-api-key-delete-modal"
-    prompt="Are you sure you want to delete this API key?"
-    onConfirm={() => handleDelete()}
-    onClose={() => (deleteKey = null)}
   />
 {/if}
 
@@ -156,7 +150,7 @@
                     icon={mdiTrashCanOutline}
                     title="Delete key"
                     size="16"
-                    on:click={() => (deleteKey = key)}
+                    on:click={() => handleDelete(key)}
                   />
                 </td>
               </tr>

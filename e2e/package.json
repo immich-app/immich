@@ -21,7 +21,7 @@
   "devDependencies": {
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@playwright/test": "^1.41.2",
+    "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.17",
     "@types/pg": "^8.11.0",
@@ -33,7 +33,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-unicorn": "^52.0.0",
+    "eslint-plugin-unicorn": "^53.0.0",
     "exiftool-vendored": "^26.0.0",
     "luxon": "^3.4.4",
     "pg": "^8.11.3",

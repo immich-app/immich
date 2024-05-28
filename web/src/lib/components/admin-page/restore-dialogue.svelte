@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { restoreUser, type UserResponseDto } from '@immich/sdk';
+  import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
 
   export let user: UserResponseDto;
@@ -14,7 +14,7 @@
 
   const handleRestoreUser = async () => {
     try {
-      const { deletedAt } = await restoreUser({ id: user.id });
+      const { deletedAt } = await restoreUserAdmin({ id: user.id });
       if (deletedAt == undefined) {
         dispatch('success');
       } else {
@@ -27,15 +27,15 @@
   };
 </script>
 
-<ConfirmDialogue
+<ConfirmDialog
   id="restore-user-modal"
   title="Restore user"
   confirmText="Continue"
   confirmColor="green"
   onConfirm={handleRestoreUser}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p><b>{user.name}</b>'s account will be restored.</p>
   </svelte:fragment>
-</ConfirmDialogue>
+</ConfirmDialog>

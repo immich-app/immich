@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240514@sha256:b339f1daa1e7f6117d0d3fe3f6a1a38d3fc1cd88b6ccf5876d9fa11c0b3817be as dev
+FROM ghcr.io/immich-app/base-server-dev:20240521@sha256:1558bd68efc2c3a4bb4968428abd66b992a41a76afc1dbb601d2a7ea2a1f7c9a as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -11,7 +11,7 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
-    NODE_ENV=development \
+    IMMICH_ENV=development \
     NVIDIA_DRIVER_CAPABILITIES=all \
     NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
@@ -41,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240514@sha256:6234ac71f1b602036e6b540ba8adc54890453d88ab21ebe2b7db0564a25506e6
+FROM ghcr.io/immich-app/base-server-prod:20240521@sha256:894e6dff5617062c03e65d44d946169a60df51e232b63b6f38bac1c0d168d989
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -61,3 +61,6 @@ ENV PATH="${PATH}:/usr/src/app/bin"
 VOLUME /usr/src/app/upload
 EXPOSE 3001
 ENTRYPOINT ["tini", "--", "/bin/bash"]
+CMD ["start.sh"]
+
+HEALTHCHECK CMD npm run healthcheck

@@ -1,23 +1,22 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
   export let onClose: () => void;
 
   let error: string;
   let success: string;
-  let isShowResetPasswordConfirmation = false;
   let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
 
   const previousQutoa = user.quotaSizeInBytes;
@@ -36,9 +35,9 @@
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel } = user;
-      await updateUser({
-        updateUserDto: {
-          id,
+      await updateUserAdmin({
+        id,
+        userAdminUpdateDto: {
           email,
           name,
           storageLabel: storageLabel || '',
@@ -53,12 +52,21 @@
   };
 
   const resetPassword = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'confirm-reset-password',
+      prompt: `Are you sure you want to reset ${user.name}'s password?`,
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       newPassword = generatePassword();
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
+      await updateUserAdmin({
+        id: user.id,
+        userAdminUpdateDto: {
           password: newPassword,
           shouldChangePassword: true,
         },
@@ -67,8 +75,6 @@
       dispatch('resetPasswordSuccess');
     } catch (error) {
       handleError(error, 'Unable to reset password');
-    } finally {
-      isShowResetPasswordConfirmation = false;
     }
   };
 
@@ -140,26 +146,8 @@
   </form>
   <svelte:fragment slot="sticky-bottom">
     {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
-        >Reset password</Button
-      >
+      <Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
     {/if}
     <Button type="submit" fullwidth form="edit-user-form">Confirm</Button>
   </svelte:fragment>
 </FullScreenModal>
-
-{#if isShowResetPasswordConfirmation}
-  <ConfirmDialogue
-    id="reset-password-modal"
-    title="Reset password"
-    confirmText="Reset"
-    onConfirm={resetPassword}
-    onClose={() => (isShowResetPasswordConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>
-        Are you sure you want to reset <b>{user.name}</b>'s password?
-      </p>
-    </svelte:fragment>
-  </ConfirmDialogue>
-{/if}
