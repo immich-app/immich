@@ -61,15 +61,15 @@ You can access the web demo at https://demo.immich.app
 
 For the mobile app, you can use `https://demo.immich.app/api` for the `Server Endpoint URL`
 
-```bash title="Demo Credential"
-The credential
-email: demo@immich.app
-password: demo
-```
+### Demo login information
 
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
+email: `demo@immich.app`
+
+password: `demo`
+
+### Demo system specs
+
+Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 ## Activities
 
