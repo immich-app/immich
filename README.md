@@ -61,7 +61,7 @@ You can access the web demo at [https://demo.immich.app](https://demo.immich.app
 
 The login email is `demo@immich.app` and the password is `demo`.
 
-The demo server is running on a free-tier Oracle VPS (Amsterdam, 4-core Ampere Altra ARM64 CPU @3.0 GHz, 24GB RAM).
+The demo server is running on a free-tier Oracle VPS (Amsterdam, 4-core Ampere Altra ARM64 CPU @3.0 GHz, 24GB RAM, SSD storage).
 
 ## Activities
 
