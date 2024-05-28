@@ -57,9 +57,9 @@ You can find the main documentation, including installation guides, at https://i
 
 ## Demo
 
-You can access the web demo at [https://demo.immich.app](https://demo.immich.app). The login email is `demo@immich.app` and the password is `demo`.
+You can access the web demo at [https://demo.immich.app](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app/api` for the `Server Endpoint URL`.
 
-For the mobile app, you can use `https://demo.immich.app/api` for the `Server Endpoint URL`
+The login email is `demo@immich.app` and the password is `demo`.
 
 The demo server is running on a free-tier Oracle VPS (Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM).
 
