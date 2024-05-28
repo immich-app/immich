@@ -37,7 +37,7 @@ docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gunzip < "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres    # Restore Backup
+| docker exec -i immich_postgres psql --username=postgres -d immich   # Restore Backup
 docker compose up -d    # Start remainder of Immich apps
 ```
 
