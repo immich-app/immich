@@ -57,7 +57,7 @@ You can find the main documentation, including installation guides, at https://i
 
 ## Demo
 
-You can access the web demo at [](https://demo.immich.app). The login email is `demo@immich.app` and the password is `demo`.
+You can access the web demo at [https://demo.immich.app](https://demo.immich.app). The login email is `demo@immich.app` and the password is `demo`.
 
 For the mobile app, you can use `https://demo.immich.app/api` for the `Server Endpoint URL`
 
