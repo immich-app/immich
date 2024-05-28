@@ -6,7 +6,11 @@ import {
   JobName,
   ThumbnailFormat,
   finishOAuth,
+  getAssetOriginalPath,
+  getAssetThumbnailPath,
   getBaseUrl,
+  getPeopleThumbnailPath,
+  getUserProfileImagePath,
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
@@ -162,31 +166,19 @@ export const getAssetFileUrl = (
   ...[assetId, isWeb, isThumb, checksum]:
     | [assetId: string, isWeb: boolean, isThumb: boolean]
     | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
-) => {
-  const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey(), c: checksum });
-};
+) => createUrl(getAssetOriginalPath(assetId), { isThumb, isWeb, key: getKey(), c: checksum });
 
 export const getAssetThumbnailUrl = (
   ...[assetId, format, checksum]:
     | [assetId: string, format: ThumbnailFormat | undefined]
     | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
 ) => {
-  // checksum (optional) is used as a cache-buster param, since thumbs are
-  // served with static resource cache headers
-  const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey(), c: checksum });
+  return createUrl(getAssetThumbnailPath(assetId), { format, key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (userId: string) => {
-  const path = `/users/${userId}/profile-image`;
-  return createUrl(path);
-};
+export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
 
-export const getPeopleThumbnailUrl = (personId: string) => {
-  const path = `/people/${personId}/thumbnail`;
-  return createUrl(path);
-};
+export const getPeopleThumbnailUrl = (personId: string) => createUrl(getPeopleThumbnailPath(personId));
 
 export const getAssetJobName = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
