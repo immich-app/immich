@@ -1598,92 +1598,6 @@
         ]
       }
     },
-    "/asset/map-marker": {
-      "get": {
-        "operationId": "getMapMarkers",
-        "parameters": [
-          {
-            "name": "fileCreatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "fileCreatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withPartners",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withSharedAlbums",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MapMarkerResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/memory-lane": {
       "get": {
         "operationId": "getMemoryLane",
@@ -3128,6 +3042,141 @@
         ],
         "tags": [
           "Library"
+        ]
+      }
+    },
+    "/map/markers": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "parameters": [
+          {
+            "name": "fileCreatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileCreatedBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
+    "/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
         ]
       }
     },
@@ -5490,55 +5539,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SystemConfigDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "System Config"
-        ]
-      }
-    },
-    "/system-config/map/style.json": {
-      "get": {
-        "operationId": "getMapStyle",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "theme",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/MapTheme"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
                 }
               }
             },
