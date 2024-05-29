@@ -63,7 +63,7 @@
         <SettingSelect
           label="PRESET (-preset)"
           {disabled}
-          desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
+          desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above faster."
           bind:value={config.ffmpeg.preset}
           name="preset"
           options={[
