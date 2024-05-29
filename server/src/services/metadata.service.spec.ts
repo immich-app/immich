@@ -11,6 +11,7 @@ import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -29,6 +30,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
@@ -44,6 +46,7 @@ describe(MetadataService.name, () => {
   let systemMock: Mocked<ISystemMetadataRepository>;
   let cryptoRepository: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
+  let mapMock: Mocked<IMapRepository>;
   let metadataMock: Mocked<IMetadataRepository>;
   let moveMock: Mocked<IMoveRepository>;
   let mediaMock: Mocked<IMediaRepository>;
@@ -60,6 +63,7 @@ describe(MetadataService.name, () => {
     assetMock = newAssetRepositoryMock();
     cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
+    mapMock = newMapRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
@@ -78,6 +82,7 @@ describe(MetadataService.name, () => {
       cryptoRepository,
       databaseMock,
       jobMock,
+      mapMock,
       mediaMock,
       metadataMock,
       moveMock,
@@ -102,7 +107,7 @@ describe(MetadataService.name, () => {
       await sut.init();
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
+      expect(mapMock.init).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
 
@@ -112,7 +117,7 @@ describe(MetadataService.name, () => {
       await sut.init();
 
       expect(jobMock.pause).not.toHaveBeenCalled();
-      expect(metadataMock.init).not.toHaveBeenCalled();
+      expect(mapMock.init).not.toHaveBeenCalled();
       expect(jobMock.resume).not.toHaveBeenCalled();
     });
   });
@@ -297,7 +302,7 @@ describe(MetadataService.name, () => {
     it('should apply reverse geocoding', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: true } });
-      metadataMock.reverseGeocode.mockResolvedValue({ city: 'City', state: 'State', country: 'Country' });
+      mapMock.reverseGeocode.mockResolvedValue({ city: 'City', state: 'State', country: 'Country' });
       metadataMock.readTags.mockResolvedValue({
         GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
         GPSLongitude: assetStub.withLocation.exifInfo!.longitude!,

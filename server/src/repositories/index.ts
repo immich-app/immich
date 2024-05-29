@@ -14,6 +14,7 @@ import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
@@ -46,6 +47,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggerRepository } from 'src/repositories/logger.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
@@ -64,8 +66,8 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 
 export const repositories = [
-  { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
+  { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
@@ -76,10 +78,12 @@ export const repositories = [
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
-  { provide: ILoggerRepository, useClass: LoggerRepository },
-  { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
+  { provide: ILibraryRepository, useClass: LibraryRepository },
+  { provide: ILoggerRepository, useClass: LoggerRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
+  { provide: IMapRepository, useClass: MapRepository },
+  { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IMemoryRepository, useClass: MemoryRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMetricRepository, useClass: MetricRepository },
@@ -87,13 +91,12 @@ export const repositories = [
   { provide: INotificationRepository, useClass: NotificationRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
-  { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
+  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISessionRepository, useClass: SessionRepository },
+  { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: IStorageRepository, useClass: StorageRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
-  { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
 ];
