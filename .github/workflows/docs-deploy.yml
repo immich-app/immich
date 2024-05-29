@@ -52,15 +52,14 @@ jobs:
                 repo: context.repo.repo,
                 pull_number
               });
-              const isApproved = pr.labels.some((l) => l.name == "preview-docs");
 
-              console.log({pull_number, isApproved});
+              console.log({pull_number});
 
               parameters = {
                 event: "pr",
                 name: `pr-${pull_number}`,
                 pr_number: pull_number,
-                shouldDeploy: !isFork || isApproved
+                shouldDeploy: true
               };
             } else if (eventType == "release") {
               parameters = {
