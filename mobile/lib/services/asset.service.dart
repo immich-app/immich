@@ -82,7 +82,7 @@ class AssetService {
   ) async {
     try {
       final AssetResponseDto? dto =
-          await _apiService.assetApi.getAssetInfo(remoteId);
+          await _apiService.assetsApi.getAssetInfo(remoteId);
 
       return dto?.people;
     } catch (error, stack) {
@@ -138,7 +138,7 @@ class AssetService {
         payload.add(asset.remoteId!);
       }
 
-      await _apiService.assetApi.deleteAssets(
+      await _apiService.assetsApi.deleteAssets(
         AssetBulkDeleteDto(
           ids: payload,
           force: force,
@@ -158,7 +158,7 @@ class AssetService {
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
-        final dto = await _apiService.assetApi.getAssetInfo(a.remoteId!);
+        final dto = await _apiService.assetsApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
           final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (newExif != a.exifInfo) {
@@ -180,7 +180,7 @@ class AssetService {
     List<Asset> assets,
     UpdateAssetDto updateAssetDto,
   ) async {
-    return await _apiService.assetApi.updateAssets(
+    return await _apiService.assetsApi.updateAssets(
       AssetBulkUpdateDto(
         ids: assets.map((e) => e.remoteId!).toList(),
         dateTimeOriginal: updateAssetDto.dateTimeOriginal,

@@ -20,8 +20,8 @@ class CurrentUserProvider extends StateNotifier<User?> {
 
   refresh() async {
     try {
-      final user = await _apiService.userApi.getMyUser();
-      final userPreferences = await _apiService.userApi.getMyPreferences();
+      final user = await _apiService.usersApi.getMyUser();
+      final userPreferences = await _apiService.usersApi.getMyPreferences();
       if (user != null) {
         Store.put(
           StoreKey.currentUser,

@@ -35,7 +35,7 @@ class PartnerService {
   Future<List<User>?> getPartners(PartnerDirection direction) async {
     try {
       final userDtos =
-          await _apiService.partnerApi.getPartners(direction._value);
+          await _apiService.partnersApi.getPartners(direction._value);
       if (userDtos != null) {
         return userDtos.map((u) => User.fromPartnerDto(u)).toList();
       }
@@ -47,7 +47,7 @@ class PartnerService {
 
   Future<bool> removePartner(User partner) async {
     try {
-      await _apiService.partnerApi.removePartner(partner.id);
+      await _apiService.partnersApi.removePartner(partner.id);
       partner.isPartnerSharedBy = false;
       await _db.writeTxn(() => _db.users.put(partner));
     } catch (e) {
@@ -59,7 +59,7 @@ class PartnerService {
 
   Future<bool> addPartner(User partner) async {
     try {
-      final dto = await _apiService.partnerApi.createPartner(partner.id);
+      final dto = await _apiService.partnersApi.createPartner(partner.id);
       if (dto != null) {
         partner.isPartnerSharedBy = true;
         await _db.writeTxn(() => _db.users.put(partner));
@@ -73,7 +73,7 @@ class PartnerService {
 
   Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
     try {
-      final dto = await _apiService.partnerApi
+      final dto = await _apiService.partnersApi
           .updatePartner(partner.id, UpdatePartnerDto(inTimeline: inTimeline));
       if (dto != null) {
         partner.inTimeline = dto.inTimeline ?? partner.inTimeline;

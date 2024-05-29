@@ -138,7 +138,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> changePassword(String newPassword) async {
     try {
-      await _apiService.userApi.updateMyUser(
+      await _apiService.usersApi.updateMyUser(
         UserUpdateMeDto(
           password: newPassword,
         ),
@@ -179,8 +179,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       UserAdminResponseDto? userResponseDto;
       UserPreferencesResponseDto? userPreferences;
       try {
-        userResponseDto = await _apiService.userApi.getMyUser();
-        userPreferences = await _apiService.userApi.getMyPreferences();
+        userResponseDto = await _apiService.usersApi.getMyUser();
+        userPreferences = await _apiService.usersApi.getMyPreferences();
       } on ApiException catch (error, stackTrace) {
         _log.severe(
           "Error getting user information from the server [API EXCEPTION]",

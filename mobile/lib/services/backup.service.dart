@@ -44,7 +44,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
-      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
+      return await _apiService.assetsApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -178,7 +178,7 @@ class BackupService {
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
       final CheckExistingAssetsResponseDto? duplicates =
-          await _apiService.assetApi.checkExistingAssets(
+          await _apiService.assetsApi.checkExistingAssets(
         CheckExistingAssetsDto(
           deviceAssetIds: candidates.map((e) => e.id).toList(),
           deviceId: deviceId,
