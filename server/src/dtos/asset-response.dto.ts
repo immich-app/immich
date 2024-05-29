@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import { PersonWithFacesResponseDto, AssetFaceWithoutPersonResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -41,6 +41,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
+  faces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
@@ -116,6 +117,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
+    faces: entity.faces.map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack

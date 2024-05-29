@@ -14,8 +14,6 @@
     ThumbnailFormat,
     getAssetInfo,
     updateAsset,
-    getFaces,
-    type AssetFaceResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
     type ExifResponseDto,
@@ -78,10 +76,7 @@
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
-      await getFaces({ id: asset.id }).then((data) => {
-        faces = data;
-        hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
-      });
+      faces = data?.faces || [];
     }
   };
 
@@ -99,8 +94,8 @@
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
 
-  let faces: AssetFaceResponseDto[] = [];
-  let hasUnassignedFaces = false;
+  $: faces = asset.faces || [];
+  $: hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -128,11 +123,7 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
-      hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
-    });
-    await getFaces({ id: asset.id }).then((data) => {
-      faces = data;
-      hasUnassignedFaces = faces.length > people.reduce((count, person) => count + person.faces.length, 0);
+      faces = data?.faces;
     });
     showEditFaces = false;
   };
@@ -173,7 +164,7 @@
 
   <DetailPanelDescription {asset} {isOwner} />
 
-  {#if !isSharedLink() && (faces.length > 0 || people.length > 0)}
+  {#if !isSharedLink() && faces.length > 0}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
