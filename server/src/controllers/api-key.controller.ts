@@ -6,7 +6,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { APIKeyService } from 'src/services/api-key.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('API Key')
+@ApiTags('API Keys')
 @Controller('api-keys')
 export class APIKeyController {
   constructor(private service: APIKeyService) {}

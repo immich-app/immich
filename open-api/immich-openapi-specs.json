@@ -76,7 +76,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       },
       "post": {
@@ -116,7 +116,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -167,7 +167,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -202,7 +202,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -246,7 +246,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "post": {
@@ -286,7 +286,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -338,7 +338,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "get": {
@@ -378,7 +378,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "put": {
@@ -428,7 +428,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -470,7 +470,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "put": {
@@ -520,7 +520,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -562,7 +562,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -616,7 +616,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "post": {
@@ -656,7 +656,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -688,7 +688,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -723,7 +723,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "get": {
@@ -779,7 +779,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "patch": {
@@ -829,7 +829,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -884,7 +884,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -945,7 +945,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -988,7 +988,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -1039,7 +1039,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -1091,7 +1091,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -1126,7 +1126,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "post": {
@@ -1166,7 +1166,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
@@ -1201,7 +1201,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "get": {
@@ -1241,7 +1241,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "put": {
@@ -1291,7 +1291,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
@@ -1326,7 +1326,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
       "put": {
@@ -1359,7 +1359,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1402,7 +1402,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1447,7 +1447,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1490,7 +1490,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1559,7 +1559,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1594,7 +1594,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1650,7 +1650,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1695,7 +1695,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1730,7 +1730,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1787,7 +1787,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1846,7 +1846,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1907,7 +1907,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -1957,7 +1957,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
       "put": {
@@ -2007,7 +2007,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
@@ -2068,7 +2068,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ],
         "x-immich-lifecycle": {
           "addedAt": "v1.106.0"
@@ -2487,7 +2487,7 @@
           }
         ],
         "tags": [
-          "Duplicate"
+          "Duplicates"
         ]
       }
     },
@@ -2532,7 +2532,7 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
@@ -2584,7 +2584,7 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
@@ -2616,7 +2616,7 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
@@ -2667,7 +2667,7 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
@@ -2702,7 +2702,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "post": {
@@ -2742,7 +2742,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2777,7 +2777,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "get": {
@@ -2817,7 +2817,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "put": {
@@ -2867,7 +2867,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2902,7 +2902,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2947,7 +2947,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2989,7 +2989,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -3041,7 +3041,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -3211,7 +3211,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "post": {
@@ -3251,7 +3251,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3286,7 +3286,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "get": {
@@ -3326,7 +3326,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -3376,7 +3376,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3431,7 +3431,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -3484,7 +3484,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3682,7 +3682,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
@@ -3717,7 +3717,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "post": {
@@ -3757,7 +3757,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "put": {
@@ -3807,7 +3807,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
@@ -3848,7 +3848,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "post": {
@@ -3888,7 +3888,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -3931,7 +3931,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -3973,7 +3973,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -4023,7 +4023,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4068,7 +4068,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4123,7 +4123,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4178,7 +4178,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4220,7 +4220,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4263,7 +4263,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4295,7 +4295,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4340,7 +4340,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4375,7 +4375,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -5019,7 +5019,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "post": {
@@ -5059,7 +5059,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5117,7 +5117,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5152,7 +5152,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "get": {
@@ -5192,7 +5192,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "patch": {
@@ -5242,7 +5242,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5305,7 +5305,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "put": {
@@ -5366,7 +5366,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5721,7 +5721,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "post": {
@@ -5761,7 +5761,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -5796,7 +5796,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5836,7 +5836,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "patch": {
@@ -5886,7 +5886,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -5941,7 +5941,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5984,7 +5984,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "put": {
@@ -6037,7 +6037,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -6419,7 +6419,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6451,7 +6451,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "put": {
@@ -6491,7 +6491,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6523,7 +6523,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "put": {
@@ -6563,7 +6563,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6588,7 +6588,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "post": {
@@ -6629,7 +6629,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6671,7 +6671,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6714,7 +6714,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     }

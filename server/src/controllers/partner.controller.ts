@@ -7,7 +7,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { PartnerService } from 'src/services/partner.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Partner')
+@ApiTags('Partners')
 @Controller('partners')
 export class PartnerController {
   constructor(private service: PartnerService) {}

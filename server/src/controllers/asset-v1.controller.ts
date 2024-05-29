@@ -26,7 +26,7 @@ import { AssetServiceV1 } from 'src/services/asset-v1.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
-@ApiTags('Asset')
+@ApiTags('Assets')
 @Controller(Route.ASSET)
 export class AssetControllerV1 {
   constructor(

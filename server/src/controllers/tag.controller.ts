@@ -9,7 +9,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { TagService } from 'src/services/tag.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Tag')
+@ApiTags('Tags')
 @Controller('tags')
 export class TagController {
   constructor(private service: TagService) {}

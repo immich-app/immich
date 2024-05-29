@@ -16,7 +16,7 @@ import { SharedLinkService } from 'src/services/shared-link.service';
 import { respondWithCookie } from 'src/utils/response';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Shared Link')
+@ApiTags('Shared Links')
 @Controller('shared-links')
 export class SharedLinkController {
   constructor(private service: SharedLinkService) {}
