@@ -272,10 +272,6 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = async () => {
-    await closeViewer();
-  };
-
   const closeViewer = async () => {
     $slideshowState = SlideshowState.StopSlideshow;
     document.body.style.cursor = '';
@@ -519,7 +515,7 @@
           asset,
         });
       }
-      dispatch('close');
+      await closeViewer();
     }
   };
 
@@ -718,13 +714,7 @@
         class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
-        <DetailPanel
-          {asset}
-          currentAlbum={album}
-          albums={appearsInAlbums}
-          on:close={() => ($isShowDetail = false)}
-          on:closeViewer={handleCloseViewer}
-        />
+        <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
       </div>
     {/if}
 

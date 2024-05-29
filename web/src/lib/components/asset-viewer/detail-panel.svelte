@@ -102,7 +102,6 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    closeViewer: void;
   }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
