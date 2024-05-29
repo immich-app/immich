@@ -10,6 +10,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { shortcuts } from '$lib/actions/shortcut';
 
   export let id: string;
   export let icon: string;
@@ -30,15 +31,27 @@
 </script>
 
 <div use:clickOutside on:outclick={() => (showContextMenu = false)}>
-  <CircleIconButton
-    {title}
-    {icon}
-    on:click={handleShowMenu}
-    id={buttonId}
-    ariaExpanded={showContextMenu}
-    ariaHasPopup={true}
-    ariaControls={menuId}
-  />
+  <div
+    use:shortcuts={[
+      {
+        shortcut: { key: 'Escape' },
+        onShortcut: (event) => {
+          event.stopPropagation();
+          showContextMenu = false;
+        },
+      },
+    ]}
+  >
+    <CircleIconButton
+      {title}
+      {icon}
+      on:click={handleShowMenu}
+      id={buttonId}
+      ariaExpanded={showContextMenu}
+      ariaHasPopup={true}
+      ariaControls={menuId}
+    />
+  </div>
   {#if showContextMenu}
     <ContextMenu {...contextMenuPosition} id={menuId} ariaLabelledBy={buttonId}>
       <slot />
