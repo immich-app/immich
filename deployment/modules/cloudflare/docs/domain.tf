@@ -1,6 +1,6 @@
 resource "cloudflare_pages_domain" "immich_app_branch_domain" {
   account_id   = var.cloudflare_account_id
-  project_name = data.terraform_remote_state.cloudflare_account.outputs.immich_app_pages_project_name
+  project_name = local.is_release ? data.terraform_remote_state.cloudflare_account.outputs.immich_app_archive_pages_project_name : data.terraform_remote_state.cloudflare_account.outputs.immich_app_preview_pages_project_name
   domain       = "${var.prefix_name}.${local.deploy_domain_prefix}.immich.app"
 }
 
@@ -15,4 +15,8 @@ resource "cloudflare_record" "immich_app_branch_subdomain" {
 
 output "immich_app_branch_subdomain" {
   value = cloudflare_record.immich_app_branch_subdomain.hostname
+}
+
+output "pages_project_name" {
+  value = cloudflare_pages_domain.immich_app_branch_domain.project_name
 }
