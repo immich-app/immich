@@ -39,7 +39,7 @@ class UserService {
 
   Future<List<User>?> _getAllUsers() async {
     try {
-      final dto = await _apiService.userApi.searchUsers();
+      final dto = await _apiService.usersApi.searchUsers();
       return dto?.map(User.fromSimpleUserDto).toList();
     } catch (e) {
       _log.warning("Failed get all users", e);
@@ -57,7 +57,7 @@ class UserService {
 
   Future<CreateProfileImageResponseDto?> uploadProfileImage(XFile image) async {
     try {
-      return await _apiService.userApi.createProfileImage(
+      return await _apiService.usersApi.createProfileImage(
         MultipartFile.fromBytes(
           'file',
           await image.readAsBytes(),

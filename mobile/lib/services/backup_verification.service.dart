@@ -136,7 +136,7 @@ class BackupVerificationService {
     ExifInfo? exif = remote.exifInfo;
     if (exif != null && exif.lat != null) return false;
     if (exif == null || exif.fileSize == null) {
-      final dto = await apiService.assetApi.getAssetInfo(remote.remoteId!);
+      final dto = await apiService.assetsApi.getAssetInfo(remote.remoteId!);
       if (dto != null && dto.exifInfo != null) {
         exif = ExifInfo.fromDto(dto.exifInfo!);
       }

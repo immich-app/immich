@@ -19,7 +19,7 @@ import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Asset')
+@ApiTags('Assets')
 @Controller(Route.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}

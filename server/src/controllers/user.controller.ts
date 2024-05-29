@@ -27,7 +27,7 @@ import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('User')
+@ApiTags('Users')
 @Controller(Route.USER)
 export class UserController {
   constructor(

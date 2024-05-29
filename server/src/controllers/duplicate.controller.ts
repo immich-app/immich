@@ -5,7 +5,7 @@ import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
 
-@ApiTags('Duplicate')
+@ApiTags('Duplicates')
 @Controller('duplicates')
 export class DuplicateController {
   constructor(private service: DuplicateService) {}

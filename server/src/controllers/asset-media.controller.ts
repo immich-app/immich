@@ -34,7 +34,7 @@ import { FileUploadInterceptor, Route, UploadFiles, getFiles } from 'src/middlew
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
-@ApiTags('Asset')
+@ApiTags('Assets')
 @Controller(Route.ASSET)
 export class AssetMediaController {
   constructor(
