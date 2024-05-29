@@ -52,9 +52,7 @@
       ariaControls={menuId}
     />
   </div>
-  {#if showContextMenu}
-    <ContextMenu {...contextMenuPosition} id={menuId} ariaLabelledBy={buttonId}>
-      <slot />
-    </ContextMenu>
-  {/if}
+  <ContextMenu {...contextMenuPosition} id={menuId} ariaLabelledBy={buttonId} isVisible={showContextMenu}>
+    <slot />
+  </ContextMenu>
 </div>

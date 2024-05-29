@@ -3,6 +3,7 @@
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
 
+  export let isVisible: boolean = false;
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
@@ -30,19 +31,23 @@
   }
 </script>
 
-<ul
-  {id}
-  aria-labelledby={ariaLabelledBy}
-  bind:this={menuElement}
-  bind:clientHeight={height}
-  transition:slide={{ duration: 250, easing: quintOut }}
-  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg flex flex-col"
-  style:top="{top}px"
-  style:left="{left}px"
-  role="menu"
-  use:clickOutside
-  on:outclick
-  on:escape
->
-  <slot />
-</ul>
+{#key `${id}-${x}-${y}`}
+  <ul
+    {id}
+    aria-labelledby={ariaLabelledBy}
+    bind:this={menuElement}
+    bind:clientHeight={height}
+    transition:slide={{ duration: 250, easing: quintOut }}
+    class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg flex flex-col transition-all duration-300 ease-in-out"
+    class:max-h-0={!isVisible}
+    class:max-h-[100vh]={isVisible}
+    style:top="{top}px"
+    style:left="{left}px"
+    role="menu"
+    use:clickOutside
+    on:outclick
+    on:escape
+  >
+    <slot />
+  </ul>
+{/key}
