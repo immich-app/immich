@@ -22,7 +22,12 @@
   $: buttonId = `context-menu-button-${id}`;
   $: menuId = `context-menu-${id}`;
 
-  const handleShowMenu = (event: MouseEvent) => {
+  const openDropdown = (event: KeyboardEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-left');
+    showContextMenu = true;
+  };
+
+  const handleClick = (event: MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, 'top-left');
     showContextMenu = !showContextMenu;
   };
@@ -40,12 +45,24 @@
           showContextMenu = false;
         },
       },
+      {
+        shortcut: { key: 'ArrowUp' },
+        onShortcut: (event) => {
+          openDropdown(event);
+        },
+      },
+      {
+        shortcut: { key: 'ArrowDown' },
+        onShortcut: (event) => {
+          openDropdown(event);
+        },
+      },
     ]}
   >
     <CircleIconButton
       {title}
       {icon}
-      on:click={handleShowMenu}
+      on:click={handleClick}
       id={buttonId}
       ariaExpanded={showContextMenu}
       ariaHasPopup={true}
