@@ -6,7 +6,7 @@
   import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
@@ -46,28 +46,27 @@
     const module = await import('copy-image-clipboard');
     copyImageToClipboard = module.copyImageToClipboard;
     canCopyImagesToClipboard = module.canCopyImagesToClipboard;
-
-    imageLoaded = false;
-    await loadAssetData({ loadOriginal: loadOriginalByDefault });
   });
+
+  $: void loadAssetData({ loadOriginal: loadOriginalByDefault, checksum: asset.checksum });
 
   onDestroy(() => {
     $boundingBoxesArray = [];
     abortController?.abort();
   });
 
-  const loadAssetData = async ({ loadOriginal }: { loadOriginal: boolean }) => {
+  const loadAssetData = async ({ loadOriginal, checksum }: { loadOriginal: boolean; checksum: string }) => {
     try {
       abortController?.abort();
       abortController = new AbortController();
 
       // TODO: Use sdk once it supports signals
-      const { data } = await downloadRequest({
-        url: getAssetFileUrl(asset.id, !loadOriginal, false),
+      const res = await downloadRequest({
+        url: getAssetFileUrl(asset.id, !loadOriginal, false, checksum),
         signal: abortController.signal,
       });
 
-      assetData = URL.createObjectURL(data);
+      assetData = window.URL.createObjectURL(res.data);
       imageLoaded = true;
 
       if (!preloadAssets) {
@@ -126,14 +125,15 @@
     if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
       hasZoomed = true;
 
-      handlePromiseError(loadAssetData({ loadOriginal: true }));
+      handlePromiseError(loadAssetData({ loadOriginal: true, checksum: asset.checksum }));
     }
   });
 
-  const onCopyShortcut = () => {
+  const onCopyShortcut = (event: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
       return;
     }
+    event.preventDefault();
     handlePromiseError(doCopy());
   };
 </script>
@@ -142,8 +142,8 @@
   on:copyImage={doCopy}
   on:zoomImage={doZoomImage}
   use:shortcuts={[
-    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
-    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
 

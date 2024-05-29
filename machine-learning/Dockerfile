@@ -95,3 +95,5 @@ COPY start.sh log_conf.json ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]
+
+HEALTHCHECK CMD python3 healthcheck.py

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
-import { PropertyLifecycle } from 'src/decorators';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -25,10 +24,6 @@ export class AlbumUserAddDto {
 }
 
 export class AddUsersDto {
-  @ValidateUUID({ each: true, optional: true })
-  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
-  sharedUserIds?: string[];
-
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
 }
@@ -55,12 +50,7 @@ export class CreateAlbumDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AlbumUserCreateDto)
-  @PropertyLifecycle({ addedAt: 'v1.104.0' })
   albumUsers?: AlbumUserCreateDto[];
-
-  @ValidateUUID({ optional: true, each: true })
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  sharedWithUserIds?: string[];
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
@@ -137,8 +127,6 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
-  sharedUsers!: UserResponseDto[];
   albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
@@ -192,7 +180,6 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     id: entity.id,
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
-    sharedUsers,
     albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,

@@ -66,7 +66,7 @@ export class MemoryRepository implements IMemoryRepository {
     return new Set(results.map((row) => row['assetId']));
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(id: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()

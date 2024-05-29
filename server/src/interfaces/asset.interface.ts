@@ -2,7 +2,6 @@ import { AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { ReverseGeocodeResult } from 'src/interfaces/metadata.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -20,19 +19,6 @@ export interface LivePhotoSearchOptions {
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
-}
-
-export interface MapMarkerSearchOptions {
-  isArchived?: boolean;
-  isFavorite?: boolean;
-  fileCreatedBefore?: Date;
-  fileCreatedAfter?: Date;
-}
-
-export interface MapMarker extends ReverseGeocodeResult {
-  id: string;
-  lat: number;
-  lon: number;
 }
 
 export enum WithoutProperty {
@@ -111,7 +97,10 @@ export type AssetWithoutRelations = Omit<
   | 'tags'
 >;
 
-export type AssetUpdateOptions = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+type AssetUpdateWithoutRelations = Pick<AssetWithoutRelations, 'id'> & Partial<AssetWithoutRelations>;
+type AssetUpdateWithLivePhotoRelation = Pick<AssetWithoutRelations, 'id'> & Pick<AssetEntity, 'livePhotoVideo'>;
+
+export type AssetUpdateOptions = AssetUpdateWithoutRelations | AssetUpdateWithLivePhotoRelation;
 
 export type AssetUpdateAllOptions = Omit<Partial<AssetWithoutRelations>, 'id'>;
 
@@ -165,8 +154,10 @@ export interface IAssetRepository {
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
   getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(libraryId: string | null, checksum: Buffer): Promise<AssetEntity | null>;
+  getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
+  getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<AssetEntity[]>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getById(
     id: string,
@@ -190,7 +181,6 @@ export interface IAssetRepository {
   softDeleteAll(ids: string[]): Promise<void>;
   restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
-  getMapMarkers(ownerIds: string[], albumIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;

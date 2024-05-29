@@ -57,6 +57,9 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
   @ValidateBoolean({ optional: true })
   removeParent?: boolean;
+
+  @Optional()
+  duplicateId?: string | null;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {

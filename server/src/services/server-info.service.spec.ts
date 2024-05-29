@@ -29,11 +29,11 @@ describe(ServerInfoService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getInfo', () => {
+  describe('getStorage', () => {
     it('should return the disk space as B', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200, available: 300, total: 500 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '300 B',
         diskAvailableRaw: 300,
         diskSize: '500 B',
@@ -49,7 +49,7 @@ describe(ServerInfoService.name, () => {
     it('should return the disk space as KiB', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000, available: 300_000, total: 500_000 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '293.0 KiB',
         diskAvailableRaw: 300_000,
         diskSize: '488.3 KiB',
@@ -65,7 +65,7 @@ describe(ServerInfoService.name, () => {
     it('should return the disk space as MiB', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000_000, available: 300_000_000, total: 500_000_000 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '286.1 MiB',
         diskAvailableRaw: 300_000_000,
         diskSize: '476.8 MiB',
@@ -85,7 +85,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '279.4 GiB',
         diskAvailableRaw: 300_000_000_000,
         diskSize: '465.7 GiB',
@@ -105,7 +105,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '272.8 TiB',
         diskAvailableRaw: 300_000_000_000_000,
         diskSize: '454.7 TiB',
@@ -125,7 +125,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '266.5 PiB',
         diskAvailableRaw: 300_000_000_000_000_000,
         diskSize: '444.1 PiB',
@@ -149,7 +149,7 @@ describe(ServerInfoService.name, () => {
     it('should respond the server features', async () => {
       await expect(sut.getFeatures()).resolves.toEqual({
         smartSearch: true,
-        duplicateDetection: false,
+        duplicateDetection: true,
         facialRecognition: true,
         map: true,
         reverseGeocoding: true,

@@ -32,7 +32,7 @@ class ServerDiskInfo {
     return 'ServerDiskInfo(diskAvailable: $diskAvailable, diskSize: $diskSize, diskUse: $diskUse, diskUsagePercentage: $diskUsagePercentage)';
   }
 
-  ServerDiskInfo.fromDto(ServerInfoResponseDto dto)
+  ServerDiskInfo.fromDto(ServerStorageResponseDto dto)
       : diskAvailable = dto.diskAvailable,
         diskSize = dto.diskSize,
         diskUse = dto.diskUse,

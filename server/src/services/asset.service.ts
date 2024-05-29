@@ -24,11 +24,10 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
+import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -46,23 +45,10 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { UploadRequest } from 'src/services/asset-media.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import { fromChecksum } from 'src/utils/request';
-
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
 
 export class AssetService {
   private access: AccessCore;
@@ -78,7 +64,6 @@ export class AssetService {
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
@@ -164,30 +149,6 @@ export class AssetService {
     this.storageRepository.mkdirSync(folder);
 
     return folder;
-  }
-
-  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    const userIds: string[] = [auth.user.id];
-    // TODO convert to SQL join
-    if (options.withPartners) {
-      const partners = await this.partnerRepository.getAll(auth.user.id);
-      const partnersIds = partners
-        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
-        .map((partner) => partner.sharedById);
-      userIds.push(...partnersIds);
-    }
-
-    // TODO convert to SQL join
-    const albumIds: string[] = [];
-    if (options.withSharedAlbums) {
-      const [ownedAlbums, sharedAlbums] = await Promise.all([
-        this.albumRepository.getOwned(auth.user.id),
-        this.albumRepository.getShared(auth.user.id),
-      ]);
-      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
-    }
-
-    return this.assetRepository.getMapMarkers(userIds, albumIds, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {

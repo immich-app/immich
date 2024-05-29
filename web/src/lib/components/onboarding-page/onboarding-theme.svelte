@@ -23,6 +23,7 @@
 
   <div class="flex gap-4 mb-6">
     <button
+      type="button"
       class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-dark-primary/80 border-immich-primary dark:border dark:border-transparent"
       on:click={() => ($colorTheme.value = Theme.LIGHT)}
     >
@@ -34,6 +35,7 @@
       </div>
     </button>
     <button
+      type="button"
       class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl dark:border-[3px] dark:border-immich-dark-primary/80 dark:border-immich-dark-primary border border-transparent"
       on:click={() => ($colorTheme.value = Theme.DARK)}
     >

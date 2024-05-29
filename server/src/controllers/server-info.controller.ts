@@ -3,10 +3,10 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
-  ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
+  ServerStorageResponseDto,
   ServerThemeDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server-info.dto';
@@ -22,10 +22,10 @@ export class ServerInfoController {
     private versionService: VersionService,
   ) {}
 
-  @Get()
+  @Get('storage')
   @Authenticated()
-  getServerInfo(): Promise<ServerInfoResponseDto> {
-    return this.service.getInfo();
+  getStorage(): Promise<ServerStorageResponseDto> {
+    return this.service.getStorage();
   }
 
   @Get('ping')

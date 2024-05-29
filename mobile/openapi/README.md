@@ -73,37 +73,36 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*APIKeyApi* | [**createApiKey**](doc//APIKeyApi.md#createapikey) | **POST** /api-key | 
-*APIKeyApi* | [**deleteApiKey**](doc//APIKeyApi.md#deleteapikey) | **DELETE** /api-key/{id} | 
-*APIKeyApi* | [**getApiKey**](doc//APIKeyApi.md#getapikey) | **GET** /api-key/{id} | 
-*APIKeyApi* | [**getApiKeys**](doc//APIKeyApi.md#getapikeys) | **GET** /api-key | 
-*APIKeyApi* | [**updateApiKey**](doc//APIKeyApi.md#updateapikey) | **PUT** /api-key/{id} | 
-*ActivityApi* | [**createActivity**](doc//ActivityApi.md#createactivity) | **POST** /activity | 
-*ActivityApi* | [**deleteActivity**](doc//ActivityApi.md#deleteactivity) | **DELETE** /activity/{id} | 
-*ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
-*ActivityApi* | [**getActivityStatistics**](doc//ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
-*AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
-*AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
-*AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
-*AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
-*AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
-*AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
-*AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
-*AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
-*AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
-*AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
-*AlbumApi* | [**updateAlbumUser**](doc//AlbumApi.md#updatealbumuser) | **PUT** /album/{id}/user/{userId} | 
+*APIKeyApi* | [**createApiKey**](doc//APIKeyApi.md#createapikey) | **POST** /api-keys | 
+*APIKeyApi* | [**deleteApiKey**](doc//APIKeyApi.md#deleteapikey) | **DELETE** /api-keys/{id} | 
+*APIKeyApi* | [**getApiKey**](doc//APIKeyApi.md#getapikey) | **GET** /api-keys/{id} | 
+*APIKeyApi* | [**getApiKeys**](doc//APIKeyApi.md#getapikeys) | **GET** /api-keys | 
+*APIKeyApi* | [**updateApiKey**](doc//APIKeyApi.md#updateapikey) | **PUT** /api-keys/{id} | 
+*ActivityApi* | [**createActivity**](doc//ActivityApi.md#createactivity) | **POST** /activities | 
+*ActivityApi* | [**deleteActivity**](doc//ActivityApi.md#deleteactivity) | **DELETE** /activities/{id} | 
+*ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activities | 
+*ActivityApi* | [**getActivityStatistics**](doc//ActivityApi.md#getactivitystatistics) | **GET** /activities/statistics | 
+*AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /albums/{id}/assets | 
+*AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | 
+*AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /albums | 
+*AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /albums/{id} | 
+*AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /albums/count | 
+*AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /albums/{id} | 
+*AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /albums | 
+*AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | 
+*AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
+*AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /albums/{id} | 
+*AlbumApi* | [**updateAlbumUser**](doc//AlbumApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 *AssetApi* | [**getAssetInfo**](doc//AssetApi.md#getassetinfo) | **GET** /asset/{id} | 
 *AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
+*AssetApi* | [**replaceAsset**](doc//AssetApi.md#replaceasset) | **PUT** /asset/{id}/file | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -120,22 +119,24 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicateApi* | [**getAssetDuplicates**](doc//DuplicateApi.md#getassetduplicates) | **GET** /duplicates | 
-*FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
-*FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
-*FileReportApi* | [**fixAuditFiles**](doc//FileReportApi.md#fixauditfiles) | **POST** /report/fix | 
-*FileReportApi* | [**getAuditFiles**](doc//FileReportApi.md#getauditfiles) | **GET** /report | 
-*FileReportApi* | [**getFileChecksums**](doc//FileReportApi.md#getfilechecksums) | **POST** /report/checksum | 
+*FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /faces | 
+*FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
+*FileReportApi* | [**fixAuditFiles**](doc//FileReportApi.md#fixauditfiles) | **POST** /reports/fix | 
+*FileReportApi* | [**getAuditFiles**](doc//FileReportApi.md#getauditfiles) | **GET** /reports | 
+*FileReportApi* | [**getFileChecksums**](doc//FileReportApi.md#getfilechecksums) | **POST** /reports/checksum | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
-*LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
-*LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-*LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
-*LibraryApi* | [**getLibrary**](doc//LibraryApi.md#getlibrary) | **GET** /library/{id} | 
-*LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
-*LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
-*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
-*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
-*LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /library/{id}/validate | 
+*LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /libraries | 
+*LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /libraries/{id} | 
+*LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /libraries | 
+*LibraryApi* | [**getLibrary**](doc//LibraryApi.md#getlibrary) | **GET** /libraries/{id} | 
+*LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /libraries/{id}/statistics | 
+*LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /libraries/{id}/removeOffline | 
+*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /libraries/{id}/scan | 
+*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /libraries/{id} | 
+*LibraryApi* | [**validate**](doc//LibraryApi.md#validate) | **POST** /libraries/{id}/validate | 
+*MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | 
+*MapApi* | [**getMapStyle**](doc//MapApi.md#getmapstyle) | **GET** /map/style.json | 
 *MemoryApi* | [**addMemoryAssets**](doc//MemoryApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | 
 *MemoryApi* | [**createMemory**](doc//MemoryApi.md#creatememory) | **POST** /memories | 
 *MemoryApi* | [**deleteMemory**](doc//MemoryApi.md#deletememory) | **DELETE** /memories/{id} | 
@@ -148,20 +149,20 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**startOAuth**](doc//OAuthApi.md#startoauth) | **POST** /oauth/authorize | 
 *OAuthApi* | [**unlinkOAuthAccount**](doc//OAuthApi.md#unlinkoauthaccount) | **POST** /oauth/unlink | 
-*PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partner/{id} | 
-*PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
-*PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
-*PartnerApi* | [**updatePartner**](doc//PartnerApi.md#updatepartner) | **PUT** /partner/{id} | 
-*PersonApi* | [**createPerson**](doc//PersonApi.md#createperson) | **POST** /person | 
-*PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
-*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
-*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
-*PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
-*PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
-*PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
-*PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
-*PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
-*PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
+*PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partners/{id} | 
+*PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partners | 
+*PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partners/{id} | 
+*PartnerApi* | [**updatePartner**](doc//PartnerApi.md#updatepartner) | **PUT** /partners/{id} | 
+*PersonApi* | [**createPerson**](doc//PersonApi.md#createperson) | **POST** /people | 
+*PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /people | 
+*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /people/{id} | 
+*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /people/{id}/assets | 
+*PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
+*PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | 
+*PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /people/{id}/merge | 
+*PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /people/{id}/reassign | 
+*PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /people | 
+*PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /people/{id} | 
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
@@ -171,56 +172,62 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
-*ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
 *ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStorage**](doc//ServerInfoApi.md#getstorage) | **GET** /server-info/storage | 
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
-*SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
-*SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
-*SharedLinkApi* | [**getAllSharedLinks**](doc//SharedLinkApi.md#getallsharedlinks) | **GET** /shared-link | 
-*SharedLinkApi* | [**getMySharedLink**](doc//SharedLinkApi.md#getmysharedlink) | **GET** /shared-link/me | 
-*SharedLinkApi* | [**getSharedLinkById**](doc//SharedLinkApi.md#getsharedlinkbyid) | **GET** /shared-link/{id} | 
-*SharedLinkApi* | [**removeSharedLink**](doc//SharedLinkApi.md#removesharedlink) | **DELETE** /shared-link/{id} | 
-*SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
-*SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
+*SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-links/{id}/assets | 
+*SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-links | 
+*SharedLinkApi* | [**getAllSharedLinks**](doc//SharedLinkApi.md#getallsharedlinks) | **GET** /shared-links | 
+*SharedLinkApi* | [**getMySharedLink**](doc//SharedLinkApi.md#getmysharedlink) | **GET** /shared-links/me | 
+*SharedLinkApi* | [**getSharedLinkById**](doc//SharedLinkApi.md#getsharedlinkbyid) | **GET** /shared-links/{id} | 
+*SharedLinkApi* | [**removeSharedLink**](doc//SharedLinkApi.md#removesharedlink) | **DELETE** /shared-links/{id} | 
+*SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-links/{id}/assets | 
+*SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-links/{id} | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
-*SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 
 *SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | 
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | 
-*TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
-*TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
-*TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
-*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
-*TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tag/{id} | 
-*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
-*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
-*TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
+*TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tags | 
+*TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tags/{id} | 
+*TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tags | 
+*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tags/{id}/assets | 
+*TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tags/{id} | 
+*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tags/{id}/assets | 
+*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tags/{id}/assets | 
+*TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tags/{id} | 
 *TimelineApi* | [**getTimeBucket**](doc//TimelineApi.md#gettimebucket) | **GET** /timeline/bucket | 
 *TimelineApi* | [**getTimeBuckets**](doc//TimelineApi.md#gettimebuckets) | **GET** /timeline/buckets | 
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
-*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /user/profile-image | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
-*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
-*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
+*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /users/profile-image | 
+*UserApi* | [**createUserAdmin**](doc//UserApi.md#createuseradmin) | **POST** /admin/users | 
+*UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /users/profile-image | 
+*UserApi* | [**deleteUserAdmin**](doc//UserApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | 
+*UserApi* | [**getMyPreferences**](doc//UserApi.md#getmypreferences) | **GET** /users/me/preferences | 
+*UserApi* | [**getMyUser**](doc//UserApi.md#getmyuser) | **GET** /users/me | 
+*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
+*UserApi* | [**getUser**](doc//UserApi.md#getuser) | **GET** /users/{id} | 
+*UserApi* | [**getUserAdmin**](doc//UserApi.md#getuseradmin) | **GET** /admin/users/{id} | 
+*UserApi* | [**getUserPreferencesAdmin**](doc//UserApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | 
+*UserApi* | [**restoreUserAdmin**](doc//UserApi.md#restoreuseradmin) | **POST** /admin/users/{id}/restore | 
+*UserApi* | [**searchUsers**](doc//UserApi.md#searchusers) | **GET** /users | 
+*UserApi* | [**searchUsersAdmin**](doc//UserApi.md#searchusersadmin) | **GET** /admin/users | 
+*UserApi* | [**updateMyPreferences**](doc//UserApi.md#updatemypreferences) | **PUT** /users/me/preferences | 
+*UserApi* | [**updateMyUser**](doc//UserApi.md#updatemyuser) | **PUT** /users/me | 
+*UserApi* | [**updateUserAdmin**](doc//UserApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
+*UserApi* | [**updateUserPreferencesAdmin**](doc//UserApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
 
 
 ## Documentation For Models
@@ -259,12 +266,16 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
+ - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
+ - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
+ - [AvatarResponse](doc//AvatarResponse.md)
+ - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
@@ -278,8 +289,6 @@ Class | Method | HTTP request | Description
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
- - [CreateUserDto](doc//CreateUserDto.md)
- - [DeleteUserDto](doc//DeleteUserDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
@@ -310,8 +319,10 @@ Class | Method | HTTP request | Description
  - [MapTheme](doc//MapTheme.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
+ - [MemoryResponse](doc//MemoryResponse.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
+ - [MemoryUpdate](doc//MemoryUpdate.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
@@ -348,10 +359,10 @@ Class | Method | HTTP request | Description
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
- - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
+ - [ServerStorageResponseDto](doc//ServerStorageResponseDto.md)
  - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
@@ -400,12 +411,17 @@ Class | Method | HTTP request | Description
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
  - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
- - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
+ - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
+ - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)
+ - [UserAdminResponseDto](doc//UserAdminResponseDto.md)
+ - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
- - [UserDto](doc//UserDto.md)
+ - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)
+ - [UserPreferencesUpdateDto](doc//UserPreferencesUpdateDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [UserStatus](doc//UserStatus.md)
+ - [UserUpdateMeDto](doc//UserUpdateMeDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)

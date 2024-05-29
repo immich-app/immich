@@ -12,17 +12,16 @@
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
-  let isShowConfirmation = false;
 
   let dispatch = createEventDispatcher<{
     back: void;
@@ -65,6 +64,15 @@
   };
 
   const handleMerge = async () => {
+    const isConfirm = await dialogController.show({
+      id: 'merge-people',
+      prompt: 'Do you want to merge these people?',
+    });
+
+    if (!isConfirm) {
+      return;
+    }
+
     try {
       let results = await mergePerson({
         id: person.id,
@@ -79,8 +87,6 @@
       dispatch('merge', mergedPerson);
     } catch (error) {
       handleError(error, 'Cannot merge people');
-    } finally {
-      isShowConfirmation = false;
     }
   };
 </script>
@@ -101,13 +107,7 @@
       <div />
     </svelte:fragment>
     <svelte:fragment slot="trailing">
-      <Button
-        size={'sm'}
-        disabled={!hasSelection}
-        on:click={() => {
-          isShowConfirmation = true;
-        }}
-      >
+      <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
         <Icon path={mdiMerge} size={18} />
         <span class="ml-2"> Merge</span></Button
       >
@@ -150,19 +150,5 @@
 
       <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
     </section>
-
-    {#if isShowConfirmation}
-      <ConfirmDialogue
-        id="merge-people-modal"
-        title="Merge people"
-        confirmText="Merge"
-        onConfirm={handleMerge}
-        onClose={() => (isShowConfirmation = false)}
-      >
-        <svelte:fragment slot="prompt">
-          <p>Are you sure you want merge these people ?</p></svelte:fragment
-        >
-      </ConfirmDialogue>
-    {/if}
   </section>
 </section>

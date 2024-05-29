@@ -11,7 +11,7 @@ import {
   IMediaRepository,
   ImageDimensions,
   ThumbnailOptions,
-  TranscodeOptions,
+  TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -97,7 +97,7 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
@@ -150,7 +150,7 @@ export class MediaRepository implements IMediaRepository {
     return { width, height };
   }
 
-  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
     return ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)

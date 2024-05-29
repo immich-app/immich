@@ -6,7 +6,6 @@
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -23,7 +22,7 @@
     deleteLibrary,
     getAllLibraries,
     getLibraryStatistics,
-    getUserById,
+    getUserAdmin,
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
@@ -37,6 +36,7 @@
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -99,7 +99,7 @@
 
   const refreshStats = async (listIndex: number) => {
     stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    owner[listIndex] = await getUserById({ id: libraries[listIndex].ownerId });
+    owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
     photos[listIndex] = stats[listIndex].photos;
     videos[listIndex] = stats[listIndex].videos;
     totalCount[listIndex] = stats[listIndex].total;
@@ -282,28 +282,38 @@
   const onDeleteLibraryClicked = async () => {
     closeAll();
 
-    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
-      await refreshStats(selectedLibraryIndex);
-      if (totalCount[selectedLibraryIndex] > 0) {
-        deleteAssetCount = totalCount[selectedLibraryIndex];
-        confirmDeleteLibrary = selectedLibrary;
-      } else {
-        deletedLibrary = selectedLibrary;
-        await handleDelete();
+    if (!selectedLibrary) {
+      return;
+    }
+
+    const isConfirmedLibrary = await dialogController.show({
+      id: 'delete-library',
+      prompt: `Are you sure you want to delete ${selectedLibrary.name} library?`,
+    });
+
+    if (!isConfirmedLibrary) {
+      return;
+    }
+
+    await refreshStats(selectedLibraryIndex);
+    if (totalCount[selectedLibraryIndex] > 0) {
+      deleteAssetCount = totalCount[selectedLibraryIndex];
+
+      const isConfirmedLibraryAssetCount = await dialogController.show({
+        id: 'delete-library-assets',
+        prompt: `Are you sure you want to delete this library? This will delete all ${deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.`,
+      });
+
+      if (!isConfirmedLibraryAssetCount) {
+        return;
       }
+      await handleDelete();
+    } else {
+      deletedLibrary = selectedLibrary;
+      await handleDelete();
     }
   };
 </script>
-
-{#if confirmDeleteLibrary}
-  <ConfirmDialogue
-    id="warning-modal"
-    title="Warning!"
-    prompt="Are you sure you want to delete this library? This will delete all {deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk."
-    onConfirm={handleDelete}
-    onClose={() => (confirmDeleteLibrary = null)}
-  />
-{/if}
 
 {#if toCreateLibrary}
   <LibraryUserPickerForm

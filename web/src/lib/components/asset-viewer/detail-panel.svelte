@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
@@ -7,10 +8,8 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
-  import { clickOutside } from '$lib/utils/click-outside';
   import {
     ThumbnailFormat,
     getAssetInfo,
@@ -27,22 +26,20 @@
     mdiEyeOff,
     mdiImageOutline,
     mdiInformationOutline,
-    mdiMapMarkerOutline,
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { asByteUnitString } from '../../utils/byte-units';
-  import { handleError } from '../../utils/handle-error';
+  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import ChangeLocation from '../shared-components/change-location.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { shortcut } from '$lib/utils/shortcut';
+  import AlbumListItemDetails from './album-list-item-details.svelte';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -58,9 +55,6 @@
   };
 
   let showAssetPath = false;
-  let textArea: HTMLTextAreaElement;
-  let description: string;
-  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -77,16 +71,11 @@
   $: isOwner = $user?.id === asset.ownerId;
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    description = newAsset?.exifInfo?.description || '';
-
-    // Get latest description from server
+    // TODO: check if reloading asset data is necessary
     if (newAsset.id && !isSharedLink()) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
-
-      description = data.exifInfo?.description || '';
     }
-    originalDescription = description;
   };
 
   $: handlePromiseError(handleNewAsset(asset));
@@ -113,7 +102,6 @@
 
   const dispatch = createEventDispatcher<{
     close: void;
-    closeViewer: void;
   }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -129,26 +117,8 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
-      textArea.value = data?.exifInfo?.description || '';
     });
     showEditFaces = false;
-  };
-
-  const handleFocusOut = async () => {
-    textArea.blur();
-    if (description === originalDescription) {
-      return;
-    }
-    originalDescription = description;
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: 'Asset description has been updated',
-      });
-    } catch (error) {
-      handleError(error, 'Cannot update the description');
-    }
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -161,18 +131,6 @@
       await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
       handleError(error, 'Unable to change date');
-    }
-  }
-
-  let isShowChangeLocation = false;
-
-  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
-    isShowChangeLocation = false;
-
-    try {
-      await updateAsset({ id: asset.id, updateAssetDto: { latitude: gps.lat, longitude: gps.lng } });
-    } catch (error) {
-      handleError(error, 'Unable to change location');
     }
   }
 </script>
@@ -197,31 +155,7 @@
     </section>
   {/if}
 
-  {#if isOwner}
-    <section class="px-4 mt-10">
-      {#key asset.id}
-        <textarea
-          disabled={!isOwner || isSharedLink()}
-          bind:this={textArea}
-          class="max-h-[500px]
-      w-full resize-none border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
-          placeholder={isOwner ? 'Add a description' : ''}
-          on:focusout={handleFocusOut}
-          on:input={() => autoGrowHeight(textArea)}
-          bind:value={description}
-          use:autoGrowHeight
-          use:clickOutside
-          on:outclick={handleFocusOut}
-          use:shortcut={{
-            shortcut: { key: 'Enter', ctrl: true },
-            onShortcut: () => handlePromiseError(handleFocusOut()),
-          }}
-        />
-      {/key}
-    </section>
-  {:else if description}
-    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
-  {/if}
+  <DetailPanelDescription {asset} {isOwner} />
 
   {#if !isSharedLink() && people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -446,7 +380,7 @@
             {/if}
 
             {#if asset.exifInfo.exposureTime}
-              <p>{`${asset.exifInfo.exposureTime}`}</p>
+              <p>{`${asset.exifInfo.exposureTime} s`}</p>
             {/if}
 
             {#if asset.exifInfo.focalLength}
@@ -463,65 +397,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city}
-      <button
-        type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-        title={isOwner ? 'Edit location' : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
-      >
-        <div class="flex gap-4">
-          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-
-          <div>
-            <p>{asset.exifInfo.city}</p>
-            {#if asset.exifInfo?.state}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.state}</p>
-              </div>
-            {/if}
-            {#if asset.exifInfo?.country}
-              <div class="flex gap-2 text-sm">
-                <p>{asset.exifInfo.country}</p>
-              </div>
-            {/if}
-          </div>
-        </div>
-
-        {#if isOwner}
-          <div>
-            <Icon path={mdiPencil} size="20" />
-          </div>
-        {/if}
-      </button>
-    {:else if !asset.exifInfo?.city && isOwner}
-      <button
-        type="button"
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
-        on:click={() => (isShowChangeLocation = true)}
-        title="Add location"
-      >
-        <div class="flex gap-4">
-          <div>
-            <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
-          </div>
-
-          <p>Add a location</p>
-        </div>
-        <div class="focus:outline-none p-1">
-          <Icon path={mdiPencil} size="20" />
-        </div>
-      </button>
-    {/if}
-    {#if isShowChangeLocation}
-      <ChangeLocation
-        {asset}
-        on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
-        on:cancel={() => (isShowChangeLocation = false)}
-      />
-    {/if}
+    <DetailPanelLocation {isOwner} {asset} />
   </div>
 </section>
 
@@ -570,7 +446,7 @@
   </div>
 {/if}
 
-{#if currentAlbum && currentAlbum.sharedUsers.length > 0 && asset.owner}
+{#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
@@ -607,10 +483,7 @@
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
             <div class="flex flex-col gap-0 text-sm">
               <div>
-                <span>{album.assetCount} items</span>
-                {#if album.shared}
-                  <span> • Shared</span>
-                {/if}
+                <AlbumListItemDetails {album} />
               </div>
             </div>
           </div>

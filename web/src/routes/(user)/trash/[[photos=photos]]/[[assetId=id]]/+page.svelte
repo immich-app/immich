@@ -9,7 +9,6 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
@@ -24,6 +23,7 @@
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -32,10 +32,18 @@
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
-  let isShowEmptyConfirmation = false;
 
   const handleEmptyTrash = async () => {
-    isShowEmptyConfirmation = false;
+    const isConfirmed = await dialogController.show({
+      id: 'empty-trash',
+      prompt:
+        'Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.\nYou cannot undo this action!',
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       await emptyTrash();
 
@@ -87,7 +95,7 @@
           Restore all
         </div>
       </LinkButton>
-      <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
+      <LinkButton on:click={() => handleEmptyTrash()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteOutline} size="18" />
           Empty trash
@@ -102,19 +110,4 @@
       <EmptyPlaceholder text="Trashed photos and videos will show up here." src={empty3Url} slot="empty" />
     </AssetGrid>
   </UserPageLayout>
-{/if}
-
-{#if isShowEmptyConfirmation}
-  <ConfirmDialogue
-    id="empty-trash-modal"
-    title="Empty trash"
-    confirmText="Empty"
-    onConfirm={handleEmptyTrash}
-    onClose={() => (isShowEmptyConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
-      <p><b>You cannot undo this action!</b></p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}

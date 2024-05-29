@@ -6,12 +6,15 @@ import {
   JobName,
   ThumbnailFormat,
   finishOAuth,
+  getAssetOriginalPath,
+  getAssetThumbnailPath,
   getBaseUrl,
+  getPeopleThumbnailPath,
+  getUserProfileImagePath,
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
   type SharedLinkResponseDto,
-  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
@@ -25,6 +28,7 @@ interface DownloadRequestOptions<T = unknown> {
 
 interface UploadRequestOptions {
   url: string;
+  method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
@@ -64,7 +68,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
       xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
-    xhr.open('POST', url);
+    xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
   });
@@ -158,25 +162,23 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
-  const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey() });
+export const getAssetFileUrl = (
+  ...[assetId, isWeb, isThumb, checksum]:
+    | [assetId: string, isWeb: boolean, isThumb: boolean]
+    | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
+) => createUrl(getAssetOriginalPath(assetId), { isThumb, isWeb, key: getKey(), c: checksum });
+
+export const getAssetThumbnailUrl = (
+  ...[assetId, format, checksum]:
+    | [assetId: string, format: ThumbnailFormat | undefined]
+    | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
+) => {
+  return createUrl(getAssetThumbnailPath(assetId), { format, key: getKey(), c: checksum });
 };
 
-export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
-  const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey() });
-};
+export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
 
-export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/user/profile-image/${userId}`;
-  return createUrl(path);
-};
-
-export const getPeopleThumbnailUrl = (personId: string) => {
-  const path = `/person/${personId}/thumbnail`;
-  return createUrl(path);
-};
+export const getPeopleThumbnailUrl = (personId: string) => createUrl(getPeopleThumbnailPath(personId));
 
 export const getAssetJobName = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
@@ -253,7 +255,7 @@ export const oauth = {
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): Promise<UserResponseDto> => {
+  link: (location: Location) => {
     return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
@@ -279,4 +281,6 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} ${yearsAgo ? 'years' : 'year'} ago`;
+export const s = (count: number) => (count === 1 ? '' : 's');
+
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;

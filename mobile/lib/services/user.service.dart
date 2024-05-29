@@ -37,10 +37,10 @@ class UserService {
     this._partnerService,
   );
 
-  Future<List<User>?> _getAllUsers({required bool isAll}) async {
+  Future<List<User>?> _getAllUsers() async {
     try {
-      final dto = await _apiService.userApi.getAllUsers(isAll);
-      return dto?.map(User.fromUserDto).toList();
+      final dto = await _apiService.userApi.searchUsers();
+      return dto?.map(User.fromSimpleUserDto).toList();
     } catch (e) {
       _log.warning("Failed get all users", e);
       return null;
@@ -71,7 +71,7 @@ class UserService {
   }
 
   Future<List<User>?> getUsersFromServer() async {
-    final List<User>? users = await _getAllUsers(isAll: true);
+    final List<User>? users = await _getAllUsers();
     final List<User>? sharedBy =
         await _partnerService.getPartners(PartnerDirection.sharedBy);
     final List<User>? sharedWith =

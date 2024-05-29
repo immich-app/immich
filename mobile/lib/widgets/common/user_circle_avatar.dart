@@ -24,7 +24,7 @@ class UserCircleAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
+        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${Random().nextInt(1024)}';
 
     final textIcon = Text(
       user.name[0].toUpperCase(),

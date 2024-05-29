@@ -13,10 +13,10 @@
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Icon from '../elements/icon.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -28,7 +28,7 @@
   export let user: UserResponseDto;
 
   let createPartnerFlag = false;
-  let removePartnerDto: PartnerResponseDto | null = null;
+  // let removePartnerDto: PartnerResponseDto | null = null;
   let partners: Array<PartnerSharing> = [];
 
   onMount(async () => {
@@ -75,14 +75,19 @@
     }
   };
 
-  const handleRemovePartner = async () => {
-    if (!removePartnerDto) {
+  const handleRemovePartner = async (partner: PartnerResponseDto) => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-partner',
+      title: 'Stop sharing your photos?',
+      prompt: `${partner.name} will no longer be able to access your photos.`,
+    });
+
+    if (!isConfirmed) {
       return;
     }
 
     try {
-      await removePartner({ id: removePartnerDto.id });
-      removePartnerDto = null;
+      await removePartner({ id: partner.id });
       await refreshPartners();
     } catch (error) {
       handleError(error, 'Unable to remove partner');
@@ -133,7 +138,7 @@
 
           {#if partner.sharedByMe}
             <CircleIconButton
-              on:click={() => (removePartnerDto = partner.user)}
+              on:click={() => handleRemovePartner(partner.user)}
               icon={mdiClose}
               size={'16'}
               title="Stop sharing your photos with this user"
@@ -184,15 +189,5 @@
     {user}
     onClose={() => (createPartnerFlag = false)}
     on:add-users={(event) => handleCreatePartners(event.detail)}
-  />
-{/if}
-
-{#if removePartnerDto}
-  <ConfirmDialogue
-    id="stop-sharing-photos-modal"
-    title="Stop sharing your photos?"
-    prompt="{removePartnerDto.name} will no longer be able to access your photos."
-    onClose={() => (removePartnerDto = null)}
-    onConfirm={() => handleRemovePartner()}
   />
 {/if}

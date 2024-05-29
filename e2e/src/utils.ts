@@ -5,19 +5,19 @@ import {
   CreateAlbumDto,
   CreateAssetDto,
   CreateLibraryDto,
-  CreateUserDto,
   MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UserAdminCreateDto,
   ValidateLibraryDto,
   createAlbum,
   createApiKey,
   createLibrary,
+  createPartner,
   createPerson,
   createSharedLink,
-  createUser,
+  createUserAdmin,
   deleteAssets,
-  getAllAssets,
   getAllJobsStatus,
   getAssetInfo,
   getConfigDefaults,
@@ -273,8 +273,8 @@ export const utils = {
     return response;
   },
 
-  userSetup: async (accessToken: string, dto: CreateUserDto) => {
-    await createUser({ createUserDto: dto }, { headers: asBearerAuth(accessToken) });
+  userSetup: async (accessToken: string, dto: UserAdminCreateDto) => {
+    await createUserAdmin({ userAdminCreateDto: dto }, { headers: asBearerAuth(accessToken) });
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
     });
@@ -340,8 +340,6 @@ export const utils = {
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
-  getAllAssets: (accessToken: string) => getAllAssets({}, { headers: asBearerAuth(accessToken) }),
-
   metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
@@ -387,6 +385,8 @@ export const utils = {
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([

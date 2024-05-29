@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    getMyUserInfo,
+    getMyUser,
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
@@ -12,7 +12,7 @@
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -36,7 +36,7 @@
 
   onMount(async () => {
     try {
-      currentUser = await getMyUserInfo();
+      currentUser = await getMyUser();
     } catch (error) {
       handleError(error, 'Unable to refresh user');
     }
@@ -141,6 +141,7 @@
               </div>
             {:else if user.id == currentUser?.id}
               <button
+                type="button"
                 on:click={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >Leave</button
@@ -154,23 +155,23 @@
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="leave-album-modal"
     title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
     onConfirm={handleRemoveUser}
-    onClose={() => (selectedRemoveUser = null)}
+    onCancel={() => (selectedRemoveUser = null)}
   />
 {/if}
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
-  <ConfirmDialogue
+  <ConfirmDialog
     id="remove-user-modal"
     title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"
     onConfirm={handleRemoveUser}
-    onClose={() => (selectedRemoveUser = null)}
+    onCancel={() => (selectedRemoveUser = null)}
   />
 {/if}

@@ -215,8 +215,11 @@ export class LibraryService {
   }
 
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    await this.findOrFail(id);
-    return this.repository.getStatistics(id);
+    const statistics = await this.repository.getStatistics(id);
+    if (!statistics) {
+      throw new BadRequestException('Library not found');
+    }
+    return statistics;
   }
 
   async get(id: string): Promise<LibraryResponseDto> {

@@ -4,7 +4,7 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { getAllUsers } from '@immich/sdk';
+  import { searchUsersAdmin } from '@immich/sdk';
   import { user } from '$lib/stores/user.store';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
@@ -13,7 +13,7 @@
   let userOptions: { value: string; text: string }[] = [];
 
   onMount(async () => {
-    const users = await getAllUsers({ isAll: true });
+    const users = await searchUsersAdmin({});
     userOptions = users.map((user) => ({ value: user.id, text: user.name }));
   });
 

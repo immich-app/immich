@@ -17,7 +17,7 @@
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import {
     getPerson,
     mergePerson,
@@ -502,6 +502,7 @@
     <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, index (person.id)}
         <button
+          type="button"
           class="relative"
           on:click={() => (person.isHidden = !person.isHidden)}
           on:mouseenter={() => (eyeColorMap[person.id] = 'black')}

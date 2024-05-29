@@ -137,6 +137,7 @@ export class SystemConfigCore {
       return loadYaml(file.toString()) as unknown;
     } catch (error: Error | any) {
       this.logger.error(`Unable to load configuration file: ${filepath}`);
+      this.logger.error(error);
       throw error;
     }
   }

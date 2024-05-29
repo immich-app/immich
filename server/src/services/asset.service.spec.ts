@@ -2,7 +2,6 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -19,7 +18,6 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -162,7 +160,6 @@ describe(AssetService.name, () => {
   let systemMock: Mocked<ISystemMetadataRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
-  let albumMock: Mocked<IAlbumRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
@@ -185,7 +182,6 @@ describe(AssetService.name, () => {
     systemMock = newSystemMetadataRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
-    albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
     sut = new AssetService(
@@ -198,7 +194,6 @@ describe(AssetService.name, () => {
       eventMock,
       partnerMock,
       assetStackMock,
-      albumMock,
       loggerMock,
     );
 
@@ -311,27 +306,6 @@ describe(AssetService.name, () => {
         'upload/upload/admin_id/ra/nd',
       );
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
-    });
-  });
-
-  describe('getMapMarkers', () => {
-    it('should get geo information of assets', async () => {
-      const asset = assetStub.withLocation;
-      const marker = {
-        id: asset.id,
-        lat: asset.exifInfo!.latitude!,
-        lon: asset.exifInfo!.longitude!,
-        city: asset.exifInfo!.city,
-        state: asset.exifInfo!.state,
-        country: asset.exifInfo!.country,
-      };
-      partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getMapMarkers.mockResolvedValue([marker]);
-
-      const markers = await sut.getMapMarkers(authStub.user1, {});
-
-      expect(markers).toHaveLength(1);
-      expect(markers[0]).toEqual(marker);
     });
   });
 

@@ -85,6 +85,8 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Notification
   [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_INVITE]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_UPDATE]: QueueName.NOTIFICATION,
   [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
 
   // Version check

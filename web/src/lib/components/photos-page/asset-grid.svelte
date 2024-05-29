@@ -8,7 +8,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -101,6 +101,12 @@
     }
   };
 
+  const focusElement = () => {
+    if (document.activeElement === document.body) {
+      element.focus();
+    }
+  };
+
   $: shortcutList = (() => {
     if ($isSearchEnabled || $showAssetViewer) {
       return [];
@@ -111,8 +117,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
-      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = element.scrollHeight) },
+      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
     ];
 
     if ($isMultiSelectState) {
@@ -406,7 +412,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto outline-none pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  tabindex="-1"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
