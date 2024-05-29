@@ -1,6 +1,9 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { listNavigation } from '$lib/actions/list-navigation';
 
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
@@ -9,7 +12,8 @@
   export let onClose: (() => unknown) | undefined;
 
   let uniqueKey = {};
-  let contextMenuElement: HTMLDivElement;
+  let contextMenuElement: HTMLUListElement;
+  let selectedId: string | undefined = undefined;
 
   const reopenContextMenu = async (event: MouseEvent) => {
     const contextMenuEvent = new MouseEvent('contextmenu', {
@@ -40,10 +44,39 @@
   const closeContextMenu = () => {
     onClose?.();
   };
+
+  const handleEnter = (event: KeyboardEvent) => {
+    if (selectedId) {
+      event.preventDefault();
+      const node: HTMLLIElement | null = contextMenuElement.querySelector(`#${selectedId}`);
+      node?.click();
+      // closeDropdown();
+    }
+  };
 </script>
 
 {#key uniqueKey}
   {#if isOpen}
+    <FocusTrap>
+      <button
+        type="button"
+        class="sr-only"
+        use:shortcuts={[
+          {
+            shortcut: { key: 'Enter' },
+            onShortcut: handleEnter,
+            preventDefault: false,
+          },
+        ]}
+        use:listNavigation={{
+          container: contextMenuElement,
+          selectedId: selectedId,
+          selectedClass: '!bg-gray-200',
+          closeDropdown: closeContextMenu,
+          selectionChanged: (node) => (selectedId = node?.id),
+        }}>Album options</button
+      >
+    </FocusTrap>
     <section
       class="fixed left-0 top-0 z-10 flex h-screen w-screen"
       on:contextmenu|preventDefault={reopenContextMenu}
@@ -55,6 +88,7 @@
         {direction}
         on:outclick={closeContextMenu}
         on:escape={closeContextMenu}
+        isVisible={true}
         bind:menuElement={contextMenuElement}
       >
         <slot />

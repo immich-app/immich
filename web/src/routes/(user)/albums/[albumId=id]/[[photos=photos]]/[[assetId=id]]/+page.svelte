@@ -22,7 +22,7 @@
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -413,14 +413,14 @@
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+        <ButtonContextMenu icon={mdiPlus} title="Add to...">
           <AddToAlbum />
           <AddToAlbum shared />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
         {#if isAllUserOwned}
           <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
         {/if}
-        <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+        <ButtonContextMenu icon={mdiDotsVertical} title="Menu">
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isAllUserOwned}
             <ChangeDate menuItem />
@@ -440,7 +440,7 @@
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
           {/if}
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}

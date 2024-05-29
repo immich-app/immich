@@ -3,11 +3,15 @@
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
 
+  export let isVisible: boolean = false;
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
+  export let id: string | undefined = undefined;
+  export let ariaLabelledBy: string | undefined = undefined;
+  export let ariaActiveDescendant: string | undefined = undefined;
 
-  export let menuElement: HTMLDivElement | undefined = undefined;
+  export let menuElement: HTMLUListElement | undefined = undefined;
 
   let left: number;
   let top: number;
@@ -29,18 +33,26 @@
 </script>
 
 <div
-  bind:this={menuElement}
+  aria-labelledby={ariaLabelledBy}
   bind:clientHeight={height}
-  transition:slide={{ duration: 250, easing: quintOut }}
   class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
-  style:top="{top}px"
   style:left="{left}px"
-  role="menu"
+  style:top="{top}px"
+  transition:slide={{ duration: 250, easing: quintOut }}
   use:clickOutside
-  on:outclick
   on:escape
+  on:outclick
 >
-  <div class="flex flex-col rounded-lg">
+  <ul
+    {id}
+    aria-activedescendant={ariaActiveDescendant}
+    bind:this={menuElement}
+    class:max-h-[100vh]={isVisible}
+    class:max-h-0={!isVisible}
+    class="flex flex-col transition-all duration-[250ms] ease-in-out"
+    role="menu"
+    tabindex="-1"
+  >
     <slot />
-  </div>
+  </ul>
 </div>

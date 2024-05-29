@@ -403,8 +403,11 @@
                         {#if selectedLibrary}
                           <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
                           <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
-                          <hr />
-                          <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                          <MenuOption
+                            on:click={() => onScanNewLibraryClicked()}
+                            text="Scan New Library Files"
+                            topBorder={true}
+                          />
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
                             text="Re-scan All Library Files"
@@ -415,8 +418,11 @@
                             text="Force Re-scan All Library Files"
                             subtitle={'Refreshes every file'}
                           />
-                          <hr />
-                          <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                          <MenuOption
+                            on:click={() => onRemoveOfflineFilesClicked()}
+                            text="Remove Offline Files"
+                            topBorder={true}
+                          />
                           <MenuOption on:click={() => onDeleteLibraryClicked()}>
                             <p class="text-red-600">Delete library</p>
                           </MenuOption>

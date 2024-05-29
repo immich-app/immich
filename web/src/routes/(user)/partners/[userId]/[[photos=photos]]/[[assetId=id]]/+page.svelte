@@ -4,7 +4,7 @@
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
@@ -29,10 +29,10 @@
   {#if $isMultiSelectState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={clearMultiselect}>
       <CreateSharedLink />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
+      <ButtonContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />
         <AddToAlbum shared />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
       <DownloadAction />
     </AssetSelectControlBar>
   {:else}

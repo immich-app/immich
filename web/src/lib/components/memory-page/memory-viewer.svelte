@@ -9,7 +9,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
@@ -145,20 +145,20 @@
       <CreateSharedLink />
       <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
 
-      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+      <ButtonContextMenu icon={mdiPlus} title="Add to...">
         <AddToAlbum />
         <AddToAlbum shared />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
 
       <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+      <ButtonContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
         <DeleteAssets menuItem {onAssetDelete} />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
     </AssetSelectControlBar>
   </div>
 {/if}

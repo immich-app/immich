@@ -3,7 +3,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { addAssetsToAlbum, addAssetsToNewAlbum } from '$lib/utils/asset-utils';
   import type { AlbumResponseDto } from '@immich/sdk';
-  import { getMenuContext } from '../asset-select-context-menu.svelte';
+  import { getMenuContext } from '../../shared-components/context-menu/button-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
 

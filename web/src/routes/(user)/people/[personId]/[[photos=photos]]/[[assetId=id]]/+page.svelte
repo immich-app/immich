@@ -17,7 +17,7 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -61,6 +61,7 @@
 
   let numberOfAssets = data.statistics.assets;
   let { isViewing: showAssetViewer } = assetViewingStore;
+  let activeSuggestion: string | undefined = undefined;
 
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
@@ -379,25 +380,25 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+      <ButtonContextMenu icon={mdiPlus} title="Add to...">
         <AddToAlbum />
         <AddToAlbum shared />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
       <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+      <ButtonContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <MenuOption icon={mdiAccountMultipleCheckOutline} text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
         <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
-          <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+          <ButtonContextMenu icon={mdiDotsVertical} title="Menu">
             <MenuOption
               text="Select featured photo"
               icon={mdiAccountBoxOutline}
@@ -418,7 +419,7 @@
               icon={mdiAccountMultipleCheckOutline}
               on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)}
             />
-          </AssetSelectContextMenu>
+          </ButtonContextMenu>
         </svelte:fragment>
       </ControlAppBar>
     {/if}
@@ -447,9 +448,16 @@
           class="relative w-fit p-4 sm:px-6"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
-            onEscape: handleCancelEditName,
           }}
-          use:listNavigation={suggestionContainer}
+          use:listNavigation={{
+            container: suggestionContainer,
+            selectedId: activeSuggestion,
+            closeDropdown: handleCancelEditName,
+            selectionChanged: (node) => {
+              activeSuggestion = node?.id;
+              node?.focus();
+            },
+          }}
         >
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
@@ -508,6 +516,7 @@
                 <div bind:this={suggestionContainer}>
                   {#each suggestedPeople as person, index (person.id)}
                     <button
+                      id="suggested-person-{person.id}"
                       type="button"
                       class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                       suggestedPeople.length - 1
