@@ -2,26 +2,26 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
-import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:cancellation_token_http/http.dart' as http;
-// import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -270,10 +270,12 @@ class BackupService {
           );
 
           file = await entity.loadFile(progressHandler: pmProgressHandler);
-          livePhotoFile = await entity.loadFile(
-            withSubtype: true,
-            progressHandler: pmProgressHandler,
-          );
+          if (entity.isLivePhoto) {
+            livePhotoFile = await entity.loadFile(
+              withSubtype: true,
+              progressHandler: pmProgressHandler,
+            );
+          }
         } else {
           if (entity.type == AssetType.video) {
             file = await entity.originFile;
@@ -318,29 +320,6 @@ class BackupService {
 
           var fileSize = file.lengthSync();
 
-          // TODO upload as a separate request
-          // if (entity.isLivePhoto) {
-          //   if (livePhotoFile != null) {
-          //     final livePhotoTitle = p.setExtension(
-          //       originalFileName,
-          //       p.extension(livePhotoFile.path),
-          //     );
-          //     final fileStream = livePhotoFile.openRead();
-          //     final livePhotoRawUploadData = http.MultipartFile(
-          //       "livePhotoData",
-          //       fileStream,
-          //       livePhotoFile.lengthSync(),
-          //       filename: livePhotoTitle,
-          //     );
-          //     req.files.add(livePhotoRawUploadData);
-          //     fileSize += livePhotoFile.lengthSync();
-          //   } else {
-          //     _log.warning(
-          //       "Failed to obtain motion part of the livePhoto - $originalFileName",
-          //     );
-          //   }
-          // }
-
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
@@ -356,6 +335,48 @@ class BackupService {
 
           var response =
               await httpClient.send(req, cancellationToken: cancelToken);
+
+          if (entity.isLivePhoto) {
+            if (livePhotoFile != null) {
+              final livePhotoTitle = p.setExtension(
+                originalFileName,
+                p.extension(livePhotoFile.path),
+              );
+              final fileStream = livePhotoFile.openRead();
+              final livePhotoRawUploadData = http.MultipartFile(
+                "livePhotoData",
+                fileStream,
+                livePhotoFile.lengthSync(),
+                filename: livePhotoTitle,
+              );
+              final livePhotoReq = MultipartRequest(
+                req.method,
+                req.url,
+                onProgress: req.onProgress,
+              )
+                ..headers.addAll(req.headers)
+                ..fields.addAll(req.fields);
+
+              livePhotoReq.files.add(livePhotoRawUploadData);
+
+              // Send live photo only if the non-motion part is successful
+              if (response.statusCode == 200 || response.statusCode == 201) {
+                final data = await response.stream.bytesToString();
+                final mediaResponse = jsonDecode(data);
+                final assetId = mediaResponse['id'].toString();
+                livePhotoReq.fields['livePhotoVideoId'] = assetId;
+
+                response = await httpClient.send(
+                  livePhotoReq,
+                  cancellationToken: cancelToken,
+                );
+              }
+            } else {
+              _log.warning(
+                "Failed to obtain motion part of the livePhoto - $originalFileName",
+              );
+            }
+          }
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
