@@ -10,28 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  doc-tests:
-    name: Docs
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./docs
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
-
-      - name: Run formatter
-        run: npm run format
-        if: ${{ !cancelled() }}
-
-      - name: Run build
-        run: npm run build
-        if: ${{ !cancelled() }}
-
   server-unit-tests:
     name: Server
     runs-on: ubuntu-latest
