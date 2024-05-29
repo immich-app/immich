@@ -36,7 +36,17 @@ jobs:
                 shouldDeploy
               };
             } else if (eventType == "pull_request") {
-              const pull_number = context.payload.workflow_run.pull_requests[0].number;
+              let pull_number = context.payload.workflow_run.pull_requests[0]?.number;
+              if(!pull_number) {
+                const response = await github.rest.search.issuesAndPullRequests({q: 'repo:${{ github.repository }} is:pr sha:${{ github.event.workflow_run.head_sha }}',per_page: 1,})
+                const items = response.data.items
+                if (items.length < 1) {
+                  throw new Error("No pull request found for the commit")
+                }
+                const pullRequestNumber = items[0].number
+                console.info("Pull request number is", pullRequestNumber)
+                pull_number = pullRequestNumber
+              }
               const {data: pr} = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
