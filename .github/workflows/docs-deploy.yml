@@ -52,14 +52,14 @@ jobs:
                 repo: context.repo.repo,
                 pull_number
               });
-              const isApproved = pr.labels.some((l) => l.name == "preview-docs");
 
-              console.log({pull_number, isApproved});
+              console.log({pull_number});
 
               parameters = {
                 event: "pr",
                 name: `pr-${pull_number}`,
-                shouldDeploy: !isFork || isApproved
+                pr_number: pull_number,
+                shouldDeploy: true
               };
             } else if (eventType == "release") {
               parameters = {
@@ -161,7 +161,7 @@ jobs:
         uses: actions-cool/maintain-one-comment@v3
         if: ${{ steps.parameters.outputs.event == 'pr' }}
         with:
-          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}
           body: |
             📖 Documentation deployed to [${{ steps.parameters.outputs.name }}.preview.immich.app](https://${{ steps.parameters.outputs.name }}.preview.immich.app)
           emojis: 'rocket'
