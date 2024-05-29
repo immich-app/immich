@@ -61,6 +61,14 @@
   };
 
   const handleRestoreTrash = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'restore-trash',
+      prompt: 'Are you sure you want to restore all your trashed assets? You cannot undo this action!',
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
     try {
       await restoreTrash();
 
