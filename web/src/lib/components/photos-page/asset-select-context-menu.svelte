@@ -78,10 +78,11 @@
   </div>
   <ContextMenu
     {...contextMenuPosition}
-    id={menuId}
+    ariaActiveDescendant={activeId}
     ariaLabelledBy={buttonId}
-    isVisible={showContextMenu}
     bind:menuElement={menuContainer}
+    id={menuId}
+    isVisible={showContextMenu}
   >
     <slot />
   </ContextMenu>
