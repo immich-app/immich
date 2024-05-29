@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { FALLBACK_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -63,7 +64,7 @@ export class NotificationService {
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
-        baseUrl: server.externalDomain || 'http://localhost:2283',
+        baseUrl: server.externalDomain || FALLBACK_EXTERNAL_DOMAIN,
         displayName: user.name,
         username: user.email,
         password: tempPassword,
@@ -100,7 +101,7 @@ export class NotificationService {
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
-        baseUrl: server.externalDomain || 'http://localhost:2283',
+        baseUrl: server.externalDomain || FALLBACK_EXTERNAL_DOMAIN,
         albumId: album.id,
         albumName: album.albumName,
         senderName: album.owner.name,
@@ -144,7 +145,7 @@ export class NotificationService {
       const { html, text } = this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
-          baseUrl: server.externalDomain || 'http://localhost:2283',
+          baseUrl: server.externalDomain || FALLBACK_EXTERNAL_DOMAIN,
           albumId: album.id,
           albumName: album.albumName,
           recipientName: recipient.name,
