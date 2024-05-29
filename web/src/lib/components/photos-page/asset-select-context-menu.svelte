@@ -11,11 +11,15 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
 
+  export let id: string;
   export let icon: string;
   export let title: string;
 
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
+
+  $: buttonId = `context-menu-button-${id}`;
+  $: menuId = `context-menu-${id}`;
 
   const handleShowMenu = (event: MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, 'top-left');
@@ -26,9 +30,17 @@
 </script>
 
 <div use:clickOutside on:outclick={() => (showContextMenu = false)}>
-  <CircleIconButton {title} {icon} on:click={handleShowMenu} />
+  <CircleIconButton
+    {title}
+    {icon}
+    on:click={handleShowMenu}
+    id={buttonId}
+    ariaExpanded={showContextMenu}
+    ariaHasPopup={true}
+    ariaControls={menuId}
+  />
   {#if showContextMenu}
-    <ContextMenu {...contextMenuPosition}>
+    <ContextMenu {...contextMenuPosition} id={menuId} ariaLabelledBy={buttonId}>
       <slot />
     </ContextMenu>
   {/if}

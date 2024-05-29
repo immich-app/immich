@@ -14,6 +14,10 @@
    * viewBox attribute for the SVG icon.
    */
   export let viewBox: string | undefined = undefined;
+  export let id: string | undefined = undefined;
+  export let ariaHasPopup: boolean | undefined = undefined;
+  export let ariaExpanded: boolean | undefined = undefined;
+  export let ariaControls: string | undefined = undefined;
 
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
@@ -36,11 +40,15 @@
 </script>
 
 <button
+  {id}
   {title}
   {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
   class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  aria-haspopup={ariaHasPopup}
+  aria-expanded={ariaExpanded}
+  aria-controls={ariaControls}
   on:click
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />

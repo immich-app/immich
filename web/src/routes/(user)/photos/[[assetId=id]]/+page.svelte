@@ -62,12 +62,12 @@
   >
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+    <AssetSelectContextMenu id="add-to-menu" icon={mdiPlus} title="Add to...">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
     <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+    <AssetSelectContextMenu id="more-options-menu" icon={mdiDotsVertical} title="More options">
       <DownloadAction menuItem />
       {#if $selectedAssets.size > 1 || isAssetStackSelected}
         <StackAction

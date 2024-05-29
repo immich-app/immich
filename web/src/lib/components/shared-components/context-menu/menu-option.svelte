@@ -6,8 +6,8 @@
   export let icon = '';
 </script>
 
-<button
-  type="button"
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<li
   on:click
   class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
   role="menuitem"
@@ -30,4 +30,4 @@
       {subtitle}
     </p>
   </slot>
-</button>
+</li>

@@ -6,8 +6,10 @@
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
+  export let id: string | undefined = undefined;
+  export let ariaLabelledBy: string | undefined = undefined;
 
-  export let menuElement: HTMLDivElement | undefined = undefined;
+  export let menuElement: HTMLUListElement | undefined = undefined;
 
   let left: number;
   let top: number;
@@ -28,11 +30,13 @@
   }
 </script>
 
-<div
+<ul
+  {id}
+  aria-labelledby={ariaLabelledBy}
   bind:this={menuElement}
   bind:clientHeight={height}
   transition:slide={{ duration: 250, easing: quintOut }}
-  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
+  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg flex flex-col"
   style:top="{top}px"
   style:left="{left}px"
   role="menu"
@@ -40,7 +44,5 @@
   on:outclick
   on:escape
 >
-  <div class="flex flex-col rounded-lg">
-    <slot />
-  </div>
-</div>
+  <slot />
+</ul>
