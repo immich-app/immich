@@ -59,6 +59,7 @@ jobs:
               parameters = {
                 event: "pr",
                 name: `pr-${pull_number}`,
+                pr_number: pull_number,
                 shouldDeploy: !isFork || isApproved
               };
             } else if (eventType == "release") {
@@ -161,7 +162,7 @@ jobs:
         uses: actions-cool/maintain-one-comment@v3
         if: ${{ steps.parameters.outputs.event == 'pr' }}
         with:
-          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}
           body: |
             📖 Documentation deployed to [${{ steps.parameters.outputs.name }}.preview.immich.app](https://${{ steps.parameters.outputs.name }}.preview.immich.app)
           emojis: 'rocket'
