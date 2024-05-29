@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
 
+  export let id: string;
   export let text = '';
   export let subtitle = '';
   export let icon = '';
@@ -8,6 +9,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <li
+  {id}
   on:click
   class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer"
   role="menuitem"

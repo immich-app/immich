@@ -31,23 +31,25 @@
   }
 </script>
 
-{#key `${id}-${x}-${y}`}
+<div
+  {id}
+  aria-labelledby={ariaLabelledBy}
+  bind:clientHeight={height}
+  transition:slide={{ duration: 250, easing: quintOut }}
+  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
+  style:top="{top}px"
+  style:left="{left}px"
+  role="menu"
+  use:clickOutside
+  on:outclick
+  on:escape
+>
   <ul
-    {id}
-    aria-labelledby={ariaLabelledBy}
+    class="flex flex-col transition-all duration-[250ms] ease-in-out"
     bind:this={menuElement}
-    bind:clientHeight={height}
-    transition:slide={{ duration: 250, easing: quintOut }}
-    class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg flex flex-col transition-all duration-300 ease-in-out"
     class:max-h-0={!isVisible}
     class:max-h-[100vh]={isVisible}
-    style:top="{top}px"
-    style:left="{left}px"
-    role="menu"
-    use:clickOutside
-    on:outclick
-    on:escape
   >
     <slot />
   </ul>
-{/key}
+</div>

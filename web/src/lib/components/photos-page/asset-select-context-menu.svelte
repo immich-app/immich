@@ -11,6 +11,8 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { shortcuts } from '$lib/actions/shortcut';
+  import { listNavigationV2 } from '$lib/actions/list-navigation-v2';
+  import { focusOutside } from '$lib/actions/focus-outside';
 
   export let id: string;
   export let icon: string;
@@ -18,6 +20,8 @@
 
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
+  let menuContainer: HTMLUListElement;
+  let activeId: string | undefined = undefined;
 
   $: buttonId = `context-menu-button-${id}`;
   $: menuId = `context-menu-${id}`;
@@ -35,16 +39,12 @@
   setContext(() => (showContextMenu = false));
 </script>
 
-<div use:clickOutside on:outclick={() => (showContextMenu = false)}>
+<div
+  use:clickOutside={{ onOutclick: () => (showContextMenu = false) }}
+  use:focusOutside={{ onFocusOut: () => (showContextMenu = false) }}
+>
   <div
     use:shortcuts={[
-      {
-        shortcut: { key: 'Escape' },
-        onShortcut: (event) => {
-          event.stopPropagation();
-          showContextMenu = false;
-        },
-      },
       {
         shortcut: { key: 'ArrowUp' },
         onShortcut: (event) => {
@@ -58,6 +58,13 @@
         },
       },
     ]}
+    use:listNavigationV2={{
+      container: menuContainer,
+      activeId,
+      openDropdown,
+      closeDropdown: () => (showContextMenu = false),
+      selectionChanged: (node) => (activeId = node?.id),
+    }}
   >
     <CircleIconButton
       {title}
@@ -69,7 +76,13 @@
       ariaControls={menuId}
     />
   </div>
-  <ContextMenu {...contextMenuPosition} id={menuId} ariaLabelledBy={buttonId} isVisible={showContextMenu}>
+  <ContextMenu
+    {...contextMenuPosition}
+    id={menuId}
+    ariaLabelledBy={buttonId}
+    isVisible={showContextMenu}
+    bind:menuElement={menuContainer}
+  >
     <slot />
   </ContextMenu>
 </div>
