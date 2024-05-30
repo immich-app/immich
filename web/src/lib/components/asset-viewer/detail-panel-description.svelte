@@ -12,7 +12,7 @@
 
   $: description = asset.exifInfo?.description || '';
 
-  const handleFocusOut = async (newDescription) => {
+  const handleFocusOut = async (newDescription: string) => {
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description: newDescription } });
       notificationController.show({

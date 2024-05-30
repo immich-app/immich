@@ -7,7 +7,7 @@
   export let description: string;
   export let isOwned: boolean;
 
-  const handleUpdateDescription = async (newDescription) => {
+  const handleUpdateDescription = async (newDescription: string) => {
     try {
       await updateAlbumInfo({
         id,
