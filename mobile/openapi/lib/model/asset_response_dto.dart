@@ -19,7 +19,6 @@ class AssetResponseDto {
     this.duplicateId,
     required this.duration,
     this.exifInfo,
-    this.faces = const [],
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.hasMetadata,
@@ -44,6 +43,7 @@ class AssetResponseDto {
     this.tags = const [],
     required this.thumbhash,
     required this.type,
+    this.unassignedFaces = const [],
     required this.updatedAt,
   });
 
@@ -65,8 +65,6 @@ class AssetResponseDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   ExifResponseDto? exifInfo;
-
-  List<AssetFaceWithoutPersonResponseDto> faces;
 
   DateTime fileCreatedAt;
 
@@ -129,6 +127,8 @@ class AssetResponseDto {
 
   AssetTypeEnum type;
 
+  List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
+
   DateTime updatedAt;
 
   @override
@@ -139,7 +139,6 @@ class AssetResponseDto {
     other.duplicateId == duplicateId &&
     other.duration == duration &&
     other.exifInfo == exifInfo &&
-    _deepEquality.equals(other.faces, faces) &&
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.hasMetadata == hasMetadata &&
@@ -164,6 +163,7 @@ class AssetResponseDto {
     _deepEquality.equals(other.tags, tags) &&
     other.thumbhash == thumbhash &&
     other.type == type &&
+    _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
     other.updatedAt == updatedAt;
 
   @override
@@ -175,7 +175,6 @@ class AssetResponseDto {
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (duration.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
-    (faces.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (hasMetadata.hashCode) +
@@ -200,10 +199,11 @@ class AssetResponseDto {
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
+    (unassignedFaces.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, faces=$faces, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -221,7 +221,6 @@ class AssetResponseDto {
     } else {
     //  json[r'exifInfo'] = null;
     }
-      json[r'faces'] = this.faces;
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'hasMetadata'] = this.hasMetadata;
@@ -274,6 +273,7 @@ class AssetResponseDto {
     //  json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
+      json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -292,7 +292,6 @@ class AssetResponseDto {
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
@@ -317,6 +316,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
+        unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }

@@ -7319,12 +7319,6 @@
           "exifInfo": {
             "$ref": "#/components/schemas/ExifResponseDto"
           },
-          "faces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
-          },
           "fileCreatedAt": {
             "format": "date-time",
             "type": "string"
@@ -7415,6 +7409,12 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
           },
           "updatedAt": {
             "format": "date-time",

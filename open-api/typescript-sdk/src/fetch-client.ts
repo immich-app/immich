@@ -118,7 +118,6 @@ export type AssetResponseDto = {
     duplicateId?: string | null;
     duration: string;
     exifInfo?: ExifResponseDto;
-    faces?: AssetFaceWithoutPersonResponseDto[];
     fileCreatedAt: string;
     fileModifiedAt: string;
     hasMetadata: boolean;
@@ -144,6 +143,7 @@ export type AssetResponseDto = {
     tags?: TagResponseDto[];
     thumbhash: string | null;
     "type": AssetTypeEnum;
+    unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
 };
 export type AlbumResponseDto = {
