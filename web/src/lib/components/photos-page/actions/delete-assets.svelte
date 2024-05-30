@@ -48,7 +48,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={label} icon={mdiDeleteOutline} on:click={handleTrash} />
+  <MenuOption text={label} id="delete-assets-option" icon={mdiDeleteOutline} on:click={handleTrash} />
 {:else if loading}
   <CircleIconButton title="Loading" icon={mdiTimerSand} />
 {:else}

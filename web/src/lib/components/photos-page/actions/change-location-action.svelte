@@ -29,6 +29,7 @@
 {#if menuItem}
   <MenuOption
     text="Change location"
+    id="change-location-option"
     icon={mdiMapMarkerMultipleOutline}
     on:click={() => (isShowChangeLocation = true)}
   />

@@ -56,7 +56,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption {text} {icon} on:click={handleArchive} />
+  <MenuOption {text} id="archive-option" {icon} on:click={handleArchive} />
 {/if}
 
 {#if !menuItem}

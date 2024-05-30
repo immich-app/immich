@@ -39,7 +39,7 @@
 </script>
 
 {#if unstack}
-  <MenuOption text="Un-stack" icon={mdiImageMinusOutline} on:click={handleUnstack} />
+  <MenuOption text="Un-stack" id="un-stack-option" icon={mdiImageMinusOutline} on:click={handleUnstack} />
 {:else}
-  <MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />
+  <MenuOption text="Stack" id="stack-option" icon={mdiImageMultipleOutline} on:click={handleStack} />
 {/if}

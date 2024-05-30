@@ -84,7 +84,6 @@
         on:escape={() => (handleEscapeKey = true)}
         onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
       />
-      <hr />
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>

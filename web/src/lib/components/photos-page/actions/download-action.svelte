@@ -26,7 +26,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Download" icon={menuItemIcon} on:click={handleDownloadFiles} />
+  <MenuOption text="Download" id="download-option" icon={menuItemIcon} on:click={handleDownloadFiles} />
 {:else}
   <CircleIconButton title="Download" icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
 {/if}

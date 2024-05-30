@@ -37,7 +37,7 @@
 
 <MenuOption
   on:click={() => (showAlbumPicker = true)}
-  id={shared ? 'add-to-shared-album' : 'add-to-album'}
+  id={shared ? 'add-to-shared-album-option' : 'add-to-album-option'}
   text={shared ? 'Add to shared album' : 'Add to album'}
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
 />
