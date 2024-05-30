@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
+import { DefaultExiftoolArgs, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -21,13 +21,20 @@ export class MetadataRepository implements IMetadataRepository {
   ) {
     this.logger.setContext(MetadataRepository.name);
   }
+  private exiftool: ExifTool = this.initExiftool();
 
   async teardown() {
-    await exiftool.end();
+    await this.exiftool.end();
+  }
+
+  private initExiftool() {
+    // Enable exiftool LFS to parse metadata for files larger than 2GB.
+    const exiftoolArgs = ['-api', 'largefilesupport=1', ...DefaultExiftoolArgs];
+    return new ExifTool({ exiftoolArgs });
   }
 
   readTags(path: string): Promise<ImmichTags | null> {
-    return exiftool
+    return this.exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
 
@@ -46,12 +53,12 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
-    return exiftool.extractBinaryTagToBuffer(tagName, path);
+    return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
-      await exiftool.write(path, tags, ['-overwrite_original']);
+      await this.exiftool.write(path, tags, ['-overwrite_original']);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
