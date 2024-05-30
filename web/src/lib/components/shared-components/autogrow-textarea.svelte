@@ -6,7 +6,7 @@
 
   export let content: string;
   export let elementClass: string;
-  export let onContentUpdate: (newContent) => void;
+  export let onContentUpdate: (newContent: string) => void;
   export let placeholder: string;
 
   let textarea: HTMLTextAreaElement;
