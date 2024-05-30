@@ -36,6 +36,20 @@
     showContextMenu = !showContextMenu;
   };
 
+  const handleEnter = (event: KeyboardEvent) => {
+    if (activeId) {
+      event.preventDefault();
+      const node: HTMLLIElement | null = menuContainer.querySelector(`#${activeId}`);
+      node?.click();
+      closeDropdown();
+    }
+  };
+
+  const closeDropdown = () => {
+    activeId = undefined;
+    showContextMenu = false;
+  };
+
   setContext(() => (showContextMenu = false));
 </script>
 
@@ -46,23 +60,16 @@
   <div
     use:shortcuts={[
       {
-        shortcut: { key: 'ArrowUp' },
-        onShortcut: (event) => {
-          openDropdown(event);
-        },
-      },
-      {
-        shortcut: { key: 'ArrowDown' },
-        onShortcut: (event) => {
-          openDropdown(event);
-        },
+        shortcut: { key: 'Enter' },
+        onShortcut: handleEnter,
+        preventDefault: false,
       },
     ]}
     use:listNavigationV2={{
       container: menuContainer,
       activeId,
       openDropdown,
-      closeDropdown: () => (showContextMenu = false),
+      closeDropdown,
       selectionChanged: (node) => (activeId = node?.id),
     }}
   >
