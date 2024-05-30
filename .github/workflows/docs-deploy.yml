@@ -132,12 +132,33 @@ jobs:
           tg_dir: "deployment/modules/cloudflare/docs"
           tg_command: "apply"
 
+      - name: Deploy Docs Subdomain Output
+        id: docs-output
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          TF_VAR_prefix_event_type: ${{ steps.parameters.outputs.event }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: "0.58.12"
+          tofu_version: "1.7.1"
+          tg_dir: "deployment/modules/cloudflare/docs"
+          tg_command: "output -json"
+
+      - name: Output Cleaning
+        id: clean
+        run: |
+          TG_OUT=$(echo '${{ steps.docs-output.outputs.tg_action_output }}' | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
+          echo "output=$TG_OUT" >> $GITHUB_OUTPUT
+
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "immich-app"
+          projectName: ${{ fromJson(steps.clean.outputs.output).pages_project_name.value }}
           workingDirectory: "docs"
           directory: "build"
           branch: ${{ steps.parameters.outputs.name }}
@@ -163,6 +184,6 @@ jobs:
         with:
           number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}
           body: |
-            📖 Documentation deployed to [${{ steps.parameters.outputs.name }}.preview.immich.app](https://${{ steps.parameters.outputs.name }}.preview.immich.app)
+            📖 Documentation deployed to [${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }}](https://${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }})
           emojis: 'rocket'
           body-include: '<!-- Docs PR URL -->'
