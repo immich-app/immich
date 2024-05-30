@@ -290,6 +290,15 @@ class BackupService {
 
         if (file != null) {
           String originalFileName = await entity.titleAsync;
+
+          if (entity.isLivePhoto) {
+            if (livePhotoFile == null) {
+              _log.warning(
+                "Failed to obtain motion part of the livePhoto - $originalFileName",
+              );
+            }
+          }
+
           var fileStream = file.openRead();
           var assetRawUploadData = http.MultipartFile(
             "assetData",
@@ -298,25 +307,25 @@ class BackupService {
             filename: originalFileName,
           );
 
-          var req = MultipartRequest(
+          var baseRequest = MultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          req.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
-          req.headers["Transfer-Encoding"] = "chunked";
+          baseRequest.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
+          baseRequest.headers["Transfer-Encoding"] = "chunked";
 
-          req.fields['deviceAssetId'] = entity.id;
-          req.fields['deviceId'] = deviceId;
-          req.fields['fileCreatedAt'] =
+          baseRequest.fields['deviceAssetId'] = entity.id;
+          baseRequest.fields['deviceId'] = deviceId;
+          baseRequest.fields['fileCreatedAt'] =
               entity.createDateTime.toUtc().toIso8601String();
-          req.fields['fileModifiedAt'] =
+          baseRequest.fields['fileModifiedAt'] =
               entity.modifiedDateTime.toUtc().toIso8601String();
-          req.fields['isFavorite'] = entity.isFavorite.toString();
-          req.fields['duration'] = entity.videoDuration.toString();
+          baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
+          baseRequest.fields['duration'] = entity.videoDuration.toString();
 
-          req.files.add(assetRawUploadData);
+          baseRequest.files.add(assetRawUploadData);
 
           var fileSize = file.lengthSync();
 
@@ -334,60 +343,14 @@ class BackupService {
           );
 
           var response =
-              await httpClient.send(req, cancellationToken: cancelToken);
+              await httpClient.send(baseRequest, cancellationToken: cancelToken);
 
-          if (entity.isLivePhoto) {
-            if (livePhotoFile != null) {
-              final livePhotoTitle = p.setExtension(
-                originalFileName,
-                p.extension(livePhotoFile.path),
-              );
-              final fileStream = livePhotoFile.openRead();
-              final livePhotoRawUploadData = http.MultipartFile(
-                "livePhotoData",
-                fileStream,
-                livePhotoFile.lengthSync(),
-                filename: livePhotoTitle,
-              );
-              final livePhotoReq = MultipartRequest(
-                req.method,
-                req.url,
-                onProgress: req.onProgress,
-              )
-                ..headers.addAll(req.headers)
-                ..fields.addAll(req.fields);
+          var responseBody = jsonDecode(await response.stream.bytesToString());
+          var duplicateAssetId = responseBody.containsKey('id') ? responseBody['id'] : null;
+          var isDuplicate = false;
 
-              livePhotoReq.files.add(livePhotoRawUploadData);
-
-              // Send live photo only if the non-motion part is successful
-              if (response.statusCode == 200 || response.statusCode == 201) {
-                final data = await response.stream.bytesToString();
-                final mediaResponse = jsonDecode(data);
-                final assetId = mediaResponse['id'].toString();
-                livePhotoReq.fields['livePhotoVideoId'] = assetId;
-
-                response = await httpClient.send(
-                  livePhotoReq,
-                  cancellationToken: cancelToken,
-                );
-              }
-            } else {
-              _log.warning(
-                "Failed to obtain motion part of the livePhoto - $originalFileName",
-              );
-            }
-          }
-
-          if (response.statusCode == 200) {
-            // asset is a duplicate (already exists on the server)
-            duplicatedAssetIds.add(entity.id);
-            uploadSuccessCb(entity.id, deviceId, true);
-          } else if (response.statusCode == 201) {
-            // stored a new asset on the server
-            uploadSuccessCb(entity.id, deviceId, false);
-          } else {
-            var data = await response.stream.bytesToString();
-            var error = jsonDecode(data);
+          if(![200, 201].contains(response.statusCode)) {
+            var error = responseBody;
             var errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
@@ -411,6 +374,14 @@ class BackupService {
             }
             continue;
           }
+
+          if(response.statusCode == 200) {
+            isDuplicate = true;
+            duplicatedAssetIds.add(entity.id);
+          }
+
+          await uploadLivePhoto(originalFileName, livePhotoFile, duplicateAssetId, baseRequest, response, cancelToken);
+          uploadSuccessCb(entity.id, deviceId, isDuplicate);
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
@@ -435,6 +406,46 @@ class BackupService {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
     return !anyErrors;
+  }
+
+  Future<void> uploadLivePhoto(String originalFileName, File? livePhotoFile, String livePhotoVideoId, MultipartRequest baseRequest, http.StreamedResponse response, http.CancellationToken cancelToken) async {
+    if(livePhotoFile == null) {
+      return;
+    }
+    final livePhotoTitle = p.setExtension(
+      originalFileName,
+      p.extension(livePhotoFile.path),
+    );
+    final fileStream = livePhotoFile.openRead();
+    final livePhotoRawUploadData = http.MultipartFile(
+      "assetData",
+      fileStream,
+      livePhotoFile.lengthSync(),
+      filename: livePhotoTitle,
+    );
+    final livePhotoReq = MultipartRequest(
+      baseRequest.method,
+      baseRequest.url,
+      onProgress: baseRequest.onProgress,
+    )
+      ..headers.addAll(baseRequest.headers)
+      ..fields.addAll(baseRequest.fields);
+
+    livePhotoReq.fields['livePhotoVideoId'] = livePhotoVideoId;
+    livePhotoReq.files.add(livePhotoRawUploadData);
+
+    response = await httpClient.send(
+      livePhotoReq,
+      cancellationToken: cancelToken,
+    );
+
+    if(![200, 201].contains(response.statusCode)) {
+      var error = jsonDecode(await response.stream.bytesToString());
+
+      debugPrint(
+        "Error(${error['statusCode']}) uploading livePhoto ${livePhotoVideoId} | $livePhotoTitle | ${error['error']}",
+      );
+    }
   }
 
   String _getAssetType(AssetType assetType) {
