@@ -22,9 +22,9 @@
   /**
    * Sets the width of the modal.
    *
-   * - `wide`: 750px
-   * - `narrow`: 450px
-   * - `auto`: fits the width of the modal content, up to a maximum of 550px
+   * - `wide`: 48rem
+   * - `narrow`: 28rem
+   * - `auto`: fits the width of the modal content, up to a maximum of 32rem
    */
   export let width: 'wide' | 'narrow' | 'auto' = 'narrow';
 
@@ -34,11 +34,11 @@
   let modalWidth: string;
   $: {
     if (width === 'wide') {
-      modalWidth = 'w-[750px]';
+      modalWidth = 'w-[48rem]';
     } else if (width === 'narrow') {
-      modalWidth = 'w-[450px]';
+      modalWidth = 'w-[28rem]';
     } else {
-      modalWidth = 'sm:max-w-[550px]';
+      modalWidth = 'sm:max-w-lg';
     }
   }
 </script>
@@ -47,15 +47,14 @@
   role="presentation"
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
-  class="fixed left-0 top-0 z-[9999] flex h-screen w-screen place-content-center place-items-center bg-black/40"
+  class="fixed left-0 top-0 z-[9999] flex h-dvh w-screen place-content-center place-items-center bg-black/40"
   on:keydown={(event) => {
     event.stopPropagation();
   }}
 >
   <FocusTrap>
     <div
-      class="z-[9999] max-w-[95vw] max-h-[95vh] {modalWidth} overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
-      style="max-height: min(95vh, 900px);"
+      class="z-[9999] max-w-[95vw] max-h-[min(95dvh,56rem)] {modalWidth} overflow-y-auto rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
       use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
       tabindex="-1"
       aria-modal="true"
