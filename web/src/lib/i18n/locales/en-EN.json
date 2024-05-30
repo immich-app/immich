@@ -1,4 +1,5 @@
 {
+    "settings_require_restart": "Please restart Immich to apply this setting",
     "common": {
         "app_name": "Immich",
         "email": "Email",
@@ -12,7 +13,12 @@
         "owner": "Owner",
         "assets": "Assets",
         "size": "Size",
-        "warning_exclamation": "Warning!"
+        "warning_exclamation": "Warning!",
+        "slideshow": "Slideshow",
+        "download": "Download",
+        "share": "Share",
+        "options": "Options",
+        "done": "Done"
     },
     "page": {
         "error": {
@@ -131,6 +137,38 @@
             },
             "jobs": {
                 "concurrency": "Manage Concurrency"
+            }
+        },
+        "user": {
+            "album": {
+                "activity_enabled": "Activity is enabled",
+                "activity_disabled": "Activity is disabled",
+                "error_enable_activity": "Can't enable activity",
+                "error_disable_activity": "Can't disable activity",
+                "error_change_favorite": "Can't change favorite for asset",
+                "error_get_favorite": "Can't get Favorite",
+                "error_get_comments_count": "Can't get number of comments",
+                "added_assets": "Added {count, plural, one {# asset} other {# assets}}",
+                "error_add_assets": "Error adding assets to album",
+                "error_add_users": "Error adding users to album",
+                "error_delete_shared_user": "Error deleting shared user",
+                "error_delete_album": "Unable to delete album",
+                "error_update_album_cover": "Unable to update album cover",
+                "asset_select_context_menu_add_title": "Add to...",
+                "asset_select_context_menu_title": "Menu",
+                "asset_select_context_album_cover_text": "Set as album cover",
+                "button_add_photos_title": "Add photos",
+                "button_album_options_title": "Album options",
+                "menu_option_album_cover_text": "Select album cover",
+                "menu_option_delete_album_text": "Delete album",
+                "delete_title": "Delete album",
+                "delete_confirm_text": "Delete album",
+                "delete_confirm_question": "Are you sure you want to delete the album <b>{albumName}</b>?",
+                "delete_confirm_shared_info": "If this album is shared, other users will not be able to access it anymore.",
+                "add_to_album": "Add to album",
+                "amount_assets_selected": "{count} selected",
+                "select_from_computer": "Select from computer",
+                "select_album_cover": "Select Album Cover"
             }
         }
     },
