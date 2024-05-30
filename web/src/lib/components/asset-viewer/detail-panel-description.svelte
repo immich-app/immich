@@ -47,13 +47,12 @@
       placeholder="Add a description"
       on:focusout={handleFocusOut}
       on:input={(e) => (newDescription = e.currentTarget.value)}
-      value={description}
       use:clickOutside={{ onOutclick: void handleFocusOut }}
       use:shortcut={{
         shortcut: { key: 'Enter', ctrl: true },
         onShortcut: (e) => e.currentTarget.blur(),
-      }}
-    />
+      }}>{description}</textarea
+    >
   </section>
 {:else if description}
   <section class="px-4 mt-6">
