@@ -76,7 +76,7 @@ export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
   assetType: AssetTypeEnum,
-  photoViewer,
+  photoViewer: HTMLImageElement | null,
 ): Promise<string | null> => {
   let image: HTMLImageElement | null = null;
   if (assetType === AssetTypeEnum.Image) {
