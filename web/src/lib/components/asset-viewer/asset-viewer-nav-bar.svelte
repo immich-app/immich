@@ -50,6 +50,8 @@
   export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
+  export let onZoomImage: () => void;
+  export let onCopyImage: () => void;
 
   $: isOwner = $user && asset.ownerId === $user?.id;
 
@@ -152,22 +154,11 @@
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title="Zoom Image"
-        on:click={() => {
-          const zoomImage = new CustomEvent('zoomImage');
-          window.dispatchEvent(zoomImage);
-        }}
+        on:click={onZoomImage}
       />
     {/if}
     {#if showCopyButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiContentCopy}
-        title="Copy Image"
-        on:click={() => {
-          const copyEvent = new CustomEvent('copyImage');
-          window.dispatchEvent(copyEvent);
-        }}
-      />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title="Copy Image" on:click={onCopyImage} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
