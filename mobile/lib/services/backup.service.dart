@@ -313,7 +313,8 @@ class BackupService {
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          baseRequest.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
+          baseRequest.headers["x-immich-user-token"] =
+              Store.get(StoreKey.accessToken);
           baseRequest.headers["Transfer-Encoding"] = "chunked";
 
           baseRequest.fields['deviceAssetId'] = entity.id;
@@ -342,14 +343,17 @@ class BackupService {
             ),
           );
 
-          var response =
-              await httpClient.send(baseRequest, cancellationToken: cancelToken);
+          var response = await httpClient.send(
+            baseRequest,
+            cancellationToken: cancelToken,
+          );
 
           var responseBody = jsonDecode(await response.stream.bytesToString());
-          var duplicateAssetId = responseBody.containsKey('id') ? responseBody['id'] : null;
+          var duplicateAssetId =
+              responseBody.containsKey('id') ? responseBody['id'] : null;
           var isDuplicate = false;
 
-          if(![200, 201].contains(response.statusCode)) {
+          if (![200, 201].contains(response.statusCode)) {
             var error = responseBody;
             var errorMessage = error['message'] ?? error['error'];
 
@@ -375,12 +379,19 @@ class BackupService {
             continue;
           }
 
-          if(response.statusCode == 200) {
+          if (response.statusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(entity.id);
           }
 
-          await uploadLivePhoto(originalFileName, livePhotoFile, duplicateAssetId, baseRequest, response, cancelToken);
+          await uploadLivePhoto(
+            originalFileName,
+            livePhotoFile,
+            duplicateAssetId,
+            baseRequest,
+            response,
+            cancelToken,
+          );
           uploadSuccessCb(entity.id, deviceId, isDuplicate);
         }
       } on http.CancelledException {
@@ -408,8 +419,15 @@ class BackupService {
     return !anyErrors;
   }
 
-  Future<void> uploadLivePhoto(String originalFileName, File? livePhotoFile, String livePhotoVideoId, MultipartRequest baseRequest, http.StreamedResponse response, http.CancellationToken cancelToken) async {
-    if(livePhotoFile == null) {
+  Future<void> uploadLivePhoto(
+    String originalFileName,
+    File? livePhotoFile,
+    String livePhotoVideoId,
+    MultipartRequest baseRequest,
+    http.StreamedResponse response,
+    http.CancellationToken cancelToken,
+  ) async {
+    if (livePhotoFile == null) {
       return;
     }
     final livePhotoTitle = p.setExtension(
@@ -439,11 +457,11 @@ class BackupService {
       cancellationToken: cancelToken,
     );
 
-    if(![200, 201].contains(response.statusCode)) {
+    if (![200, 201].contains(response.statusCode)) {
       var error = jsonDecode(await response.stream.bytesToString());
 
       debugPrint(
-        "Error(${error['statusCode']}) uploading livePhoto ${livePhotoVideoId} | $livePhotoTitle | ${error['error']}",
+        "Error(${error['statusCode']}) uploading livePhoto for assetId $livePhotoVideoId | $livePhotoTitle | ${error['error']}",
       );
     }
   }

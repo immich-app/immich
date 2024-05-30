@@ -51,7 +51,8 @@ class AlbumThumbnailListTile extends StatelessWidget {
         httpHeaders: {
           "x-immich-user-token": Store.get(StoreKey.accessToken),
         },
-        cacheKey: getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
+        cacheKey:
+            getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
         errorWidget: (context, url, error) =>
             const Icon(Icons.image_not_supported_outlined),
       );
