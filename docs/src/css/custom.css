@@ -42,7 +42,7 @@ button {
 }
 
 div[class^='announcementBar_'] {
-  height: 2rem;
+  min-height: 2rem;
 }
 
 .navbar__brand .navbar__title {
