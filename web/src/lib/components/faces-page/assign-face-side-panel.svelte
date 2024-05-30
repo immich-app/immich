@@ -2,11 +2,12 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { photoViewer } from '$lib/stores/assets.store';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
@@ -16,6 +17,7 @@
   export let allPeople: PersonResponseDto[];
   export let editedFace: AssetFaceResponseDto;
   export let assetId: string;
+  export let assetType: AssetTypeEnum;
 
   // loading spinners
   let isShowLoadingNewPerson = false;
@@ -40,7 +42,7 @@
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
-    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId);
+    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewer);
 
     dispatch('createPerson', newFeaturePhoto);
 

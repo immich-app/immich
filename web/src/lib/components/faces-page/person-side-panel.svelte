@@ -11,6 +11,7 @@
     getAllPeople,
     getFaces,
     reassignFacesById,
+    AssetTypeEnum,
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
@@ -25,8 +26,10 @@
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
+  import { photoViewer } from '$lib/stores/assets.store';
 
   export let assetId: string;
+  export let assetType: AssetTypeEnum;
 
   // keep track of the changes
   let peopleToCreate: string[] = [];
@@ -251,7 +254,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId)}
+                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewer)}
                     <ImageThumbnail
                       curve
                       shadow
@@ -334,6 +337,7 @@
     {allPeople}
     {editedFace}
     {assetId}
+    {assetType}
     on:close={() => (showSelectedFaces = false)}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}

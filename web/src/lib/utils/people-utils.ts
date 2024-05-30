@@ -1,6 +1,6 @@
 import type { Faces } from '$lib/stores/people.store';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import { ThumbnailFormat, type AssetFaceResponseDto } from '@immich/sdk';
+import { ThumbnailFormat, type AssetFaceResponseDto, AssetTypeEnum } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
@@ -72,18 +72,22 @@ export const getBoundingBox = (
   return boxes;
 };
 
-export const zoomImageToBase64 = async (face: AssetFaceResponseDto, assetId: string): Promise<string | null> => {
+export const zoomImageToBase64 = async (face: AssetFaceResponseDto, assetId: string, assetType: AssetTypeEnum, photoViewer: any): Promise<string | null> => {
   let image: HTMLImageElement | null = null;
-  const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
-  const img: HTMLImageElement = new Image();
-  img.src = data;
+  if (assetType === AssetTypeEnum.Image) {
+    image = photoViewer;
+  } else if (assetType === AssetTypeEnum.Video) {
+    const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+    const img: HTMLImageElement = new Image();
+    img.src = data;
 
-  await new Promise<void>((resolve) => {
-    img.addEventListener('load', () => resolve());
-    img.addEventListener('error', () => resolve());
-  });
+    await new Promise<void>((resolve) => {
+      img.addEventListener('load', () => resolve());
+      img.addEventListener('error', () => resolve());
+    });
 
-  image = img;
+    image = img;
+  }
   if (image === null) {
     return null;
   }
