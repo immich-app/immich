@@ -343,15 +343,26 @@ class BackupService {
             ),
           );
 
+          String? livePhotoVideoId;
+          if (entity.isLivePhoto && livePhotoFile != null) {
+            livePhotoVideoId = await uploadLivePhotoVideo(
+              originalFileName,
+              livePhotoFile,
+              baseRequest,
+              cancelToken,
+            );
+          }
+
+          if (livePhotoVideoId != null) {
+            baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
+          }
+
           var response = await httpClient.send(
             baseRequest,
             cancellationToken: cancelToken,
           );
 
           var responseBody = jsonDecode(await response.stream.bytesToString());
-          var duplicateAssetId =
-              responseBody.containsKey('id') ? responseBody['id'] : null;
-          var isDuplicate = false;
 
           if (![200, 201].contains(response.statusCode)) {
             var error = responseBody;
@@ -379,19 +390,12 @@ class BackupService {
             continue;
           }
 
+          var isDuplicate = false;
           if (response.statusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(entity.id);
           }
 
-          await uploadLivePhoto(
-            originalFileName,
-            livePhotoFile,
-            duplicateAssetId,
-            baseRequest,
-            response,
-            cancelToken,
-          );
           uploadSuccessCb(entity.id, deviceId, isDuplicate);
         }
       } on http.CancelledException {
@@ -419,26 +423,24 @@ class BackupService {
     return !anyErrors;
   }
 
-  Future<void> uploadLivePhoto(
+  Future<String?> uploadLivePhotoVideo(
     String originalFileName,
-    File? livePhotoFile,
-    String livePhotoVideoId,
+    File? livePhotoVideoFile,
     MultipartRequest baseRequest,
-    http.StreamedResponse response,
     http.CancellationToken cancelToken,
   ) async {
-    if (livePhotoFile == null) {
-      return;
+    if (livePhotoVideoFile == null) {
+      return null;
     }
     final livePhotoTitle = p.setExtension(
       originalFileName,
-      p.extension(livePhotoFile.path),
+      p.extension(livePhotoVideoFile.path),
     );
-    final fileStream = livePhotoFile.openRead();
+    final fileStream = livePhotoVideoFile.openRead();
     final livePhotoRawUploadData = http.MultipartFile(
       "assetData",
       fileStream,
-      livePhotoFile.lengthSync(),
+      livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
     );
     final livePhotoReq = MultipartRequest(
@@ -449,21 +451,24 @@ class BackupService {
       ..headers.addAll(baseRequest.headers)
       ..fields.addAll(baseRequest.fields);
 
-    livePhotoReq.fields['livePhotoVideoId'] = livePhotoVideoId;
     livePhotoReq.files.add(livePhotoRawUploadData);
 
-    response = await httpClient.send(
+    var response = await httpClient.send(
       livePhotoReq,
       cancellationToken: cancelToken,
     );
 
+    var responseBody = jsonDecode(await response.stream.bytesToString());
+
     if (![200, 201].contains(response.statusCode)) {
-      var error = jsonDecode(await response.stream.bytesToString());
+      var error = responseBody;
 
       debugPrint(
-        "Error(${error['statusCode']}) uploading livePhoto for assetId $livePhotoVideoId | $livePhotoTitle | ${error['error']}",
+        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
       );
     }
+
+    return responseBody.containsKey('id') ? responseBody['id'] : null;
   }
 
   String _getAssetType(AssetType assetType) {
