@@ -410,27 +410,30 @@
 <!-- Context Menu -->
 <RightClickContextMenu {...contextMenuPosition} isOpen={showContextMenu} onClose={closeAlbumContextMenu}>
   {#if showFullContextMenu}
-    <MenuOption on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}>
+    <MenuOption
+      id="edit-right-click-option"
+      on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
+    >
       <p class="flex gap-2">
         <Icon path={mdiRenameOutline} size="18" />
         Edit
       </p>
     </MenuOption>
-    <MenuOption on:click={() => openShareModal()}>
+    <MenuOption id="share-right-click-option" on:click={() => openShareModal()}>
       <p class="flex gap-2">
         <Icon path={mdiShareVariantOutline} size="18" />
         Share
       </p>
     </MenuOption>
   {/if}
-  <MenuOption on:click={() => handleDownloadAlbum()}>
+  <MenuOption id="download-right-click-option" on:click={() => handleDownloadAlbum()}>
     <p class="flex gap-2">
       <Icon path={mdiFolderDownloadOutline} size="18" />
       Download
     </p>
   </MenuOption>
   {#if showFullContextMenu}
-    <MenuOption on:click={() => setAlbumToDelete()}>
+    <MenuOption id="delete-right-click-option" on:click={() => setAlbumToDelete()}>
       <p class="flex gap-2">
         <Icon path={mdiDeleteOutline} size="18" />
         Delete

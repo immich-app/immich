@@ -9,7 +9,7 @@
   export let onClose: (() => unknown) | undefined;
 
   let uniqueKey = {};
-  let contextMenuElement: HTMLDivElement;
+  let contextMenuElement: HTMLUListElement;
 
   const reopenContextMenu = async (event: MouseEvent) => {
     const contextMenuEvent = new MouseEvent('contextmenu', {
@@ -55,6 +55,7 @@
         {direction}
         on:outclick={closeContextMenu}
         on:escape={closeContextMenu}
+        isVisible={true}
         bind:menuElement={contextMenuElement}
       >
         <slot />
