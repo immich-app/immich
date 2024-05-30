@@ -23,8 +23,8 @@
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
-  export let copyImage: () => Promise<void>;
-  export let zoomToggle: () => void;
+  export let copyImage: (() => Promise<void>) | null = null;
+  export let zoomToggle: (() => void) | null = null;
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
