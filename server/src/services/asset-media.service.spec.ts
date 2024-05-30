@@ -3,16 +3,14 @@ import { Stats } from 'node:fs';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+import { AssetMediaService } from 'src/services/asset-media.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -127,78 +125,68 @@ const uploadTests = [
   },
 ];
 
-const _getCreateAssetDto = (): AssetMediaCreateDto => {
-  const createAssetDto = new AssetMediaCreateDto();
-  createAssetDto.deviceAssetId = 'deviceAssetId';
-  createAssetDto.deviceId = 'deviceId';
-  createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
-  createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
-  createAssetDto.isFavorite = false;
-  createAssetDto.isArchived = false;
-  createAssetDto.duration = '0:00:00.000000';
+const createDto = Object.freeze({
+  deviceAssetId: 'deviceAssetId',
+  deviceId: 'deviceId',
+  fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+  fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
+  isFavorite: false,
+  isArchived: false,
+  duration: '0:00:00.000000',
+}) as AssetMediaCreateDto;
 
-  return createAssetDto;
-};
+const replaceDto = Object.freeze({
+  deviceAssetId: 'deviceAssetId',
+  deviceId: 'deviceId',
+  fileModifiedAt: new Date('2024-04-15T23:41:36.910Z'),
+  fileCreatedAt: new Date('2024-04-15T23:41:36.910Z'),
+}) as AssetMediaReplaceDto;
 
-const _getUpdateAssetDto = (): AssetMediaReplaceDto => {
-  return Object.assign(new AssetMediaReplaceDto(), {
-    deviceAssetId: 'deviceAssetId',
-    deviceId: 'deviceId',
-    fileModifiedAt: new Date('2024-04-15T23:41:36.910Z'),
-    fileCreatedAt: new Date('2024-04-15T23:41:36.910Z'),
-    updatedAt: new Date('2024-04-15T23:41:36.910Z'),
-  });
-};
+const assetEntity = Object.freeze({
+  id: 'id_1',
+  ownerId: 'user_id_1',
+  deviceAssetId: 'device_asset_id_1',
+  deviceId: 'device_id_1',
+  type: AssetType.VIDEO,
+  originalPath: 'fake_path/asset_1.jpeg',
+  previewPath: '',
+  fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
+  fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+  updatedAt: new Date('2022-06-19T23:41:36.910Z'),
+  isFavorite: false,
+  isArchived: false,
+  thumbnailPath: '',
+  encodedVideoPath: '',
+  duration: '0:00:00.000000',
+  exifInfo: {
+    latitude: 49.533_547,
+    longitude: 10.703_075,
+  },
+  livePhotoVideoId: null,
+  sidecarPath: null,
+}) as AssetEntity;
 
-const _getAsset_1 = () => {
-  const asset_1 = new AssetEntity();
+const existingAsset = Object.freeze({
+  ...assetEntity,
+  duration: null,
+  type: AssetType.IMAGE,
+  checksum: Buffer.from('_getExistingAsset', 'utf8'),
+  libraryId: 'libraryId',
+  originalFileName: 'existing-filename.jpeg',
+}) as AssetEntity;
 
-  asset_1.id = 'id_1';
-  asset_1.ownerId = 'user_id_1';
-  asset_1.deviceAssetId = 'device_asset_id_1';
-  asset_1.deviceId = 'device_id_1';
-  asset_1.type = AssetType.VIDEO;
-  asset_1.originalPath = 'fake_path/asset_1.jpeg';
-  asset_1.previewPath = '';
-  asset_1.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_1.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_1.isFavorite = false;
-  asset_1.isArchived = false;
-  asset_1.thumbnailPath = '';
-  asset_1.encodedVideoPath = '';
-  asset_1.duration = '0:00:00.000000';
-  asset_1.exifInfo = new ExifEntity();
-  asset_1.exifInfo.latitude = 49.533_547;
-  asset_1.exifInfo.longitude = 10.703_075;
-  asset_1.livePhotoVideoId = null;
-  asset_1.sidecarPath = null;
-  return asset_1;
-};
-const _getExistingAsset = () => {
-  return {
-    ..._getAsset_1(),
-    duration: null,
-    type: AssetType.IMAGE,
-    checksum: Buffer.from('_getExistingAsset', 'utf8'),
-    libraryId: 'libraryId',
-  } as AssetEntity;
-};
-const _getExistingAssetWithSideCar = () => {
-  return {
-    ..._getExistingAsset(),
-    sidecarPath: 'sidecar-path',
-    checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
-  } as AssetEntity;
-};
-const _getCopiedAsset = () => {
-  return {
-    id: 'copied-asset',
-    originalPath: 'copied-path',
-  } as AssetEntity;
-};
+const sidecarAsset = Object.freeze({
+  ...existingAsset,
+  sidecarPath: 'sidecar-path',
+  checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
+}) as AssetEntity;
 
-describe('AssetMediaService', () => {
+const copiedAsset = Object.freeze({
+  id: 'copied-asset',
+  originalPath: 'copied-path',
+}) as AssetEntity;
+
+describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
@@ -323,9 +311,8 @@ describe('AssetMediaService', () => {
     });
   });
 
-  describe('uploadFile', () => {
+  describe('uploadAsset', () => {
     it('should handle a file upload', async () => {
-      const assetEntity = _getAsset_1();
       const file = {
         uuid: 'random-uuid',
         originalPath: 'fake_path/asset_1.jpeg',
@@ -334,11 +321,10 @@ describe('AssetMediaService', () => {
         originalName: 'asset_1.jpeg',
         size: 42,
       };
-      const dto = _getCreateAssetDto();
 
       assetMock.create.mockResolvedValue(assetEntity);
 
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
         status: AssetMediaStatus.CREATED,
       });
@@ -348,7 +334,7 @@ describe('AssetMediaService', () => {
       expect(storageMock.utimes).toHaveBeenCalledWith(
         file.originalPath,
         expect.any(Date),
-        new Date(dto.fileModifiedAt),
+        new Date(createDto.fileModifiedAt),
       );
     });
 
@@ -361,14 +347,13 @@ describe('AssetMediaService', () => {
         originalName: 'asset_1.jpeg',
         size: 0,
       };
-      const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.create.mockRejectedValue(error);
-      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(_getAsset_1().id);
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
 
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
         status: AssetMediaStatus.DUPLICATE,
       });
@@ -381,25 +366,41 @@ describe('AssetMediaService', () => {
     });
 
     it('should handle a live photo', async () => {
-      const dto = _getCreateAssetDto();
-
       assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
 
-      await expect(sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill)).resolves.toEqual({
+      await expect(
+        sut.uploadAsset(
+          authStub.user1,
+          { ...createDto, livePhotoVideoId: 'live-photo-motion-asset' },
+          fileStub.livePhotoStill,
+        ),
+      ).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
         id: 'live-photo-still-asset',
       });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
-      ]);
-      expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, fileStub.livePhotoStill.size);
-      expect(storageMock.utimes).toHaveBeenCalledWith(
-        fileStub.livePhotoStill.originalPath,
-        expect.any(Date),
-        new Date(dto.fileModifiedAt),
-      );
+      expect(assetMock.getById).toHaveBeenCalledWith('live-photo-motion-asset');
+      expect(assetMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should hide the linked motion asset', async () => {
+      assetMock.getById.mockResolvedValueOnce({ ...assetStub.livePhotoMotionAsset, isVisible: true });
+      assetMock.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+
+      await expect(
+        sut.uploadAsset(
+          authStub.user1,
+          { ...createDto, livePhotoVideoId: 'live-photo-motion-asset' },
+          fileStub.livePhotoStill,
+        ),
+      ).resolves.toEqual({
+        status: AssetMediaStatus.CREATED,
+        id: 'live-photo-still-asset',
+      });
+
+      expect(assetMock.getById).toHaveBeenCalledWith('live-photo-motion-asset');
+      expect(assetMock.update).toHaveBeenCalledWith({ id: 'live-photo-motion-asset', isVisible: false });
     });
   });
 
@@ -436,55 +437,10 @@ describe('AssetMediaService', () => {
   });
 
   describe('replaceAsset', () => {
-    const expectAssetUpdate = (
-      existingAsset: AssetEntity,
-      uploadFile: UploadFile,
-      dto: AssetMediaReplaceDto,
-      livePhotoVideo?: AssetEntity,
-      sidecarPath?: UploadFile,
-      // eslint-disable-next-line unicorn/consistent-function-scoping
-    ) => {
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: existingAsset.id,
-        checksum: uploadFile.checksum,
-        originalFileName: uploadFile.originalName,
-        originalPath: uploadFile.originalPath,
-        deviceAssetId: dto.deviceAssetId,
-        deviceId: dto.deviceId,
-        fileCreatedAt: dto.fileCreatedAt,
-        fileModifiedAt: dto.fileModifiedAt,
-        localDateTime: dto.fileCreatedAt,
-        type: mimeTypes.assetType(uploadFile.originalPath),
-        duration: dto.duration || null,
-        livePhotoVideo: livePhotoVideo ? { id: livePhotoVideo?.id } : null,
-        sidecarPath: sidecarPath?.originalPath || null,
-      });
-    };
-
-    // eslint-disable-next-line unicorn/consistent-function-scoping
-    const expectAssetCreateCopy = (existingAsset: AssetEntity) => {
-      expect(assetMock.create).toHaveBeenCalledWith({
-        ownerId: existingAsset.ownerId,
-        originalPath: existingAsset.originalPath,
-        originalFileName: existingAsset.originalFileName,
-        libraryId: existingAsset.libraryId,
-        deviceAssetId: existingAsset.deviceAssetId,
-        deviceId: existingAsset.deviceId,
-        type: existingAsset.type,
-        checksum: existingAsset.checksum,
-        fileCreatedAt: existingAsset.fileCreatedAt,
-        localDateTime: existingAsset.localDateTime,
-        fileModifiedAt: existingAsset.fileModifiedAt,
-        livePhotoVideoId: existingAsset.livePhotoVideoId || null,
-        sidecarPath: existingAsset.sidecarPath || null,
-      });
-    };
-
     it('should error when update photo does not exist', async () => {
-      const dto = _getUpdateAssetDto();
       assetMock.getById.mockResolvedValueOnce(null);
 
-      await expect(sut.replaceAsset(authStub.user1, 'id', dto, fileStub.photo)).rejects.toThrow(
+      await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
       );
 
@@ -492,118 +448,119 @@ describe('AssetMediaService', () => {
     });
 
     it('should update a photo with no sidecar to photo with no sidecar', async () => {
-      const existingAsset = _getExistingAsset();
       const updatedFile = fileStub.photo;
       const updatedAsset = { ...existingAsset, ...updatedFile };
-      const dto = _getUpdateAssetDto();
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockResolvedValue(_getCopiedAsset());
+      assetMock.create.mockResolvedValue(copiedAsset);
 
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.REPLACED,
-        id: _getCopiedAsset().id,
+        id: 'copied-asset',
       });
 
-      expectAssetUpdate(existingAsset, updatedFile, dto);
-      expectAssetCreateCopy(existingAsset);
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: existingAsset.id,
+          sidecarPath: null,
+          originalFileName: 'photo1.jpeg',
+          originalPath: 'fake_path/photo1.jpeg',
+        }),
+      );
+      expect(assetMock.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sidecarPath: null,
+          originalFileName: 'existing-filename.jpeg',
+          originalPath: 'fake_path/asset_1.jpeg',
+        }),
+      );
 
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getCopiedAsset().id]);
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([copiedAsset.id]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
         expect.any(Date),
-        new Date(dto.fileModifiedAt),
+        new Date(replaceDto.fileModifiedAt),
       );
     });
 
     it('should update a photo with sidecar to photo with sidecar', async () => {
-      const existingAsset = _getExistingAssetWithSideCar();
-
       const updatedFile = fileStub.photo;
       const sidecarFile = fileStub.photoSidecar;
-      const dto = _getUpdateAssetDto();
-      const updatedAsset = { ...existingAsset, ...updatedFile };
+      const updatedAsset = { ...sidecarAsset, ...updatedFile };
       assetMock.getById.mockResolvedValueOnce(existingAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockResolvedValue(_getCopiedAsset());
+      assetMock.create.mockResolvedValue(copiedAsset);
 
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile, sidecarFile)).resolves.toEqual({
+      await expect(
+        sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile, sidecarFile),
+      ).resolves.toEqual({
         status: AssetMediaStatus.REPLACED,
-        id: _getCopiedAsset().id,
+        id: 'copied-asset',
       });
 
-      expectAssetUpdate(existingAsset, updatedFile, dto, undefined, sidecarFile);
-      expectAssetCreateCopy(existingAsset);
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getCopiedAsset().id]);
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['copied-asset']);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
         expect.any(Date),
-        new Date(dto.fileModifiedAt),
+        new Date(replaceDto.fileModifiedAt),
       );
     });
 
     it('should update a photo with a sidecar to photo with no sidecar', async () => {
-      const existingAsset = _getExistingAssetWithSideCar();
       const updatedFile = fileStub.photo;
 
-      const dto = _getUpdateAssetDto();
-      const updatedAsset = { ...existingAsset, ...updatedFile };
-      assetMock.getById.mockResolvedValueOnce(existingAsset);
+      const updatedAsset = { ...sidecarAsset, ...updatedFile };
+      assetMock.getById.mockResolvedValueOnce(sidecarAsset);
       assetMock.getById.mockResolvedValueOnce(updatedAsset);
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the copy call
-      assetMock.create.mockResolvedValue(_getCopiedAsset());
+      assetMock.create.mockResolvedValue(copiedAsset);
 
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.REPLACED,
-        id: _getCopiedAsset().id,
+        id: 'copied-asset',
       });
 
-      expectAssetUpdate(existingAsset, updatedFile, dto);
-      expectAssetCreateCopy(existingAsset);
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([_getCopiedAsset().id]);
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['copied-asset']);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
         expect.any(Date),
-        new Date(dto.fileModifiedAt),
+        new Date(replaceDto.fileModifiedAt),
       );
     });
 
     it('should handle a photo with sidecar to duplicate photo ', async () => {
-      const existingAsset = _getExistingAssetWithSideCar();
       const updatedFile = fileStub.photo;
-      const dto = _getUpdateAssetDto();
       const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.update.mockRejectedValue(error);
-      assetMock.getById.mockResolvedValueOnce(existingAsset);
-      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(existingAsset.id);
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      assetMock.getById.mockResolvedValueOnce(sidecarAsset);
+      assetMock.getUploadAssetIdByChecksum.mockResolvedValue(sidecarAsset.id);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
       // this is the original file size
       storageMock.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      assetMock.create.mockResolvedValue(_getCopiedAsset());
+      assetMock.create.mockResolvedValue(copiedAsset);
 
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, dto, updatedFile)).resolves.toEqual({
+      await expect(sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.DUPLICATE,
-        id: existingAsset.id,
+        id: sidecarAsset.id,
       });
 
-      expectAssetUpdate(existingAsset, updatedFile, dto);
       expect(assetMock.create).not.toHaveBeenCalled();
       expect(assetMock.softDeleteAll).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({

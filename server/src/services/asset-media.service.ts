@@ -142,7 +142,7 @@ export class AssetMediaService {
     return folder;
   }
 
-  async uploadFile(
+  async uploadAsset(
     auth: AuthDto,
     dto: AssetMediaCreateDto,
     file: UploadFile,
@@ -156,6 +156,8 @@ export class AssetMediaService {
         auth.user.id,
       );
 
+      this.requireQuota(auth, file.size);
+
       if (dto.livePhotoVideoId) {
         const motionAsset = await this.assetRepository.getById(dto.livePhotoVideoId);
         if (!motionAsset) {
@@ -167,9 +169,10 @@ export class AssetMediaService {
         if (motionAsset.ownerId !== auth.user.id) {
           throw new BadRequestException('Live photo video does not belong to the user');
         }
+        if (motionAsset.isVisible) {
+          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+        }
       }
-
-      this.requireQuota(auth, file.size);
 
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 

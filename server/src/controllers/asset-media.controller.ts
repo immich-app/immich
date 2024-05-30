@@ -66,7 +66,7 @@ export class AssetMediaController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
     const { file, sidecarFile } = getFiles(files);
-    const responseDto = await this.service.uploadFile(auth, dto, file, sidecarFile);
+    const responseDto = await this.service.uploadAsset(auth, dto, file, sidecarFile);
 
     if (responseDto.status === AssetMediaStatus.DUPLICATE) {
       res.status(HttpStatus.OK);
