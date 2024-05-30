@@ -118,6 +118,7 @@ export type AssetResponseDto = {
     duplicateId?: string | null;
     duration: string;
     exifInfo?: ExifResponseDto;
+    faces?: AssetFaceWithoutPersonResponseDto[];
     fileCreatedAt: string;
     fileModifiedAt: string;
     hasMetadata: boolean;
