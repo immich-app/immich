@@ -1,6 +1,6 @@
 import type { Faces } from '$lib/stores/people.store';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import { ThumbnailFormat, type AssetFaceResponseDto, AssetTypeEnum } from '@immich/sdk';
+import { AssetTypeEnum, ThumbnailFormat, type AssetFaceResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
@@ -72,7 +72,12 @@ export const getBoundingBox = (
   return boxes;
 };
 
-export const zoomImageToBase64 = async (face: AssetFaceResponseDto, assetId: string, assetType: AssetTypeEnum, photoViewer: any): Promise<string | null> => {
+export const zoomImageToBase64 = async (
+  face: AssetFaceResponseDto,
+  assetId: string,
+  assetType: AssetTypeEnum,
+  photoViewer,
+): Promise<string | null> => {
   let image: HTMLImageElement | null = null;
   if (assetType === AssetTypeEnum.Image) {
     image = photoViewer;

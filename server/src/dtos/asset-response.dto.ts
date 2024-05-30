@@ -2,7 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, AssetFaceWithoutPersonResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import {
+  AssetFaceWithoutPersonResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';

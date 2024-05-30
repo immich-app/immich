@@ -123,7 +123,7 @@
   const handleRefreshPeople = async () => {
     await getAssetInfo({ id: asset.id }).then((data) => {
       people = data?.people || [];
-      faces = data?.faces;
+      faces = data?.faces || [];
     });
     showEditFaces = false;
   };
