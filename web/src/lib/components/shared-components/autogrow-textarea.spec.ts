@@ -1,10 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event'
 import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 
 describe('AutogrowTextarea component', () => {
-  const getTextarea = () =>
-    screen.getByRole('textbox') as HTMLTextAreaElement;
+  const getTextarea = () => screen.getByRole('textbox') as HTMLTextAreaElement;
 
   it('should render correctly', () => {
     render(AutogrowTextarea);
@@ -25,7 +24,7 @@ describe('AutogrowTextarea component', () => {
   });
 
   it('should execute the passed callback on blur', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup();
     const update = vi.fn();
     render(AutogrowTextarea, { onContentUpdate: update });
     const textarea = getTextarea();
@@ -37,7 +36,7 @@ describe('AutogrowTextarea component', () => {
   });
 
   it('should execute the passed when pressing ctrl+enter in the textarea', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup();
     const update = vi.fn();
     render(AutogrowTextarea, { onContentUpdate: update });
     const textarea = getTextarea();

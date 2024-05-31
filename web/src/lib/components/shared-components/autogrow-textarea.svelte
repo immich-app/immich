@@ -35,5 +35,6 @@
   use:shortcut={{
     shortcut: { key: 'Enter', ctrl: true },
     onShortcut: (e) => e.currentTarget.blur(),
-  }}>{content}</textarea
+  }}
+  {...$$restProps}>{content}</textarea
 >

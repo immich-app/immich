@@ -28,6 +28,7 @@
     elementClass="w-full mt-2 resize-none text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
     onContentUpdate={handleUpdateDescription}
     placeholder="Add a description"
+    data-testid="autogrow-textarea"
   />
 {:else if description}
   <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">
