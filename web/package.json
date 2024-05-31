@@ -73,6 +73,7 @@
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
+    "maplibre-gl-vector-text-protocol": "^0.0.5",
     "socket.io-client": "^4.7.4",
     "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.9.0",

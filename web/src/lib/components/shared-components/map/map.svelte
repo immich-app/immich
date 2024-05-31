@@ -116,10 +116,54 @@
       country: featurePoint.properties.country,
     };
   };
+
+  import { addProtocols } from 'maplibre-gl-vector-text-protocol';
+  addProtocols(maplibregl);
+  function loadKML() {
+    // KML
+    const kmlSourceName = 'Samoens (kml)';
+    const kmlLink = 'kml://./kml/samoens.kml';
+    map.addSource(kmlSourceName, {
+      'type': 'geojson',
+      'data': kmlLink,
+    });
+    map.addLayer({
+      'id': kmlSourceName,
+      'type': 'line',
+      'source': kmlSourceName,
+      'minzoom': 0,
+      'maxzoom': 20,
+      'paint': {
+        'line-opacity': 1,
+        'line-color': 'green',
+        'line-width': 5
+      }
+    });
+
+    const kmlSourceNameJapan = 'Japan 2023 (kml)';
+    const kmlLinkJapan = 'kml://./kml/japan.kml';
+    map.addSource(kmlSourceNameJapan, {
+      'type': 'geojson',
+      'data': kmlLinkJapan,
+    });
+    map.addLayer({
+      'id': kmlSourceNameJapan,
+      'type': 'line',
+      'source': kmlSourceNameJapan,
+      'minzoom': 0,
+      'maxzoom': 20,
+      'paint': {
+        'line-opacity': 1,
+        'line-color': 'green',
+        'line-width': 5
+      }
+    });
+  }
 </script>
 
 {#await style then style}
   <MapLibre
+    on:load={(event) => loadKML(map)}
     {style}
     class="h-full"
     {center}
