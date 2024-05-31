@@ -26,16 +26,15 @@ describe('AutogrowTextarea component', () => {
   it('should execute the passed callback on blur', async () => {
     const user = userEvent.setup();
     const update = vi.fn();
-    render(AutogrowTextarea, { onContentUpdate: update });
+    render(AutogrowTextarea, { content: 'existing', onContentUpdate: update });
     const textarea = getTextarea();
     await user.click(textarea);
-    const string = 'content';
-    await user.keyboard(string);
+    await user.keyboard('extra');
     textarea.blur();
-    await waitFor(() => expect(update).toHaveBeenCalledWith(string));
+    await waitFor(() => expect(update).toHaveBeenCalledWith('existingextra'));
   });
 
-  it('should execute the passed when pressing ctrl+enter in the textarea', async () => {
+  it('should execute the passed callback when pressing ctrl+enter in the textarea', async () => {
     const user = userEvent.setup();
     const update = vi.fn();
     render(AutogrowTextarea, { onContentUpdate: update });
@@ -45,5 +44,17 @@ describe('AutogrowTextarea component', () => {
     await user.keyboard(string);
     await user.keyboard('{Control>}{Enter}{/Control}');
     await waitFor(() => expect(update).toHaveBeenCalledWith(string));
+  });
+
+  it('should not execute the passed callback if the text has not changed', async () => {
+    const user = userEvent.setup();
+    const update = vi.fn();
+    render(AutogrowTextarea, { content: 'initial', onContentUpdate: update });
+    const textarea = getTextarea();
+    await user.click(textarea);
+    await user.clear(textarea);
+    await user.keyboard('initial');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    await waitFor(() => expect(update).not.toHaveBeenCalled());
   });
 });
