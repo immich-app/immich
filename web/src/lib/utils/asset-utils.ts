@@ -11,6 +11,7 @@ import { asByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
+  getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
   updateAssets,
@@ -154,11 +155,13 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
+
   if (asset.livePhotoVideoId) {
+    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
     assets.push({
-      filename: asset.originalFileName,
+      filename: motionAsset.originalFileName,
       id: asset.livePhotoVideoId,
-      size: 0,
+      size: motionAsset.exifInfo?.fileSizeInByte || 0,
     });
   }
 
@@ -177,7 +180,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
-        method: 'POST',
+        method: 'GET',
         url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
