@@ -26,12 +26,12 @@ class ImageViewerService {
       // Download LivePhotos image and motion part
       if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
         var imageResponse =
-            await _apiService.assetApi.downloadAssetWithHttpInfo(
+            await _apiService.assetsApi.downloadAssetWithHttpInfo(
           asset.remoteId!,
         );
 
         var motionResponse =
-            await _apiService.assetApi.downloadAssetWithHttpInfo(
+            await _apiService.assetsApi.downloadAssetWithHttpInfo(
           asset.livePhotoVideoId!,
         );
 
@@ -73,7 +73,7 @@ class ImageViewerService {
 
         return entity != null;
       } else {
-        var res = await _apiService.assetApi
+        var res = await _apiService.assetsApi
             .downloadAssetWithHttpInfo(asset.remoteId!);
 
         if (res.statusCode != 200) {

@@ -37,7 +37,7 @@ class ShareService {
           final tempDir = await getTemporaryDirectory();
           final fileName = asset.fileName;
           final tempFile = await File('${tempDir.path}/$fileName').create();
-          final res = await _apiService.assetApi
+          final res = await _apiService.assetsApi
               .downloadAssetWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
