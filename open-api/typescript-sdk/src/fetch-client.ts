@@ -264,6 +264,24 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
 };
+export type AssetMediaCreateDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isOffline?: boolean;
+    isVisible?: boolean;
+    livePhotoVideoId?: string;
+    sidecarData?: Blob;
+};
+export type AssetMediaResponseDto = {
+    id: string;
+    status: AssetMediaStatus;
+};
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
     duplicateId?: string | null;
@@ -316,24 +334,6 @@ export type AssetStatsResponseDto = {
     total: number;
     videos: number;
 };
-export type CreateAssetDto = {
-    assetData: Blob;
-    deviceAssetId: string;
-    deviceId: string;
-    duration?: string;
-    fileCreatedAt: string;
-    fileModifiedAt: string;
-    isArchived?: boolean;
-    isFavorite?: boolean;
-    isOffline?: boolean;
-    isVisible?: boolean;
-    livePhotoData?: Blob;
-    sidecarData?: Blob;
-};
-export type AssetFileUploadResponseDto = {
-    duplicate: boolean;
-    id: string;
-};
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
@@ -349,10 +349,6 @@ export type AssetMediaReplaceDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
-};
-export type AssetMediaResponseDto = {
-    id: string;
-    status: AssetMediaStatus;
 };
 export type AuditDeletesResponseDto = {
     ids: string[];
@@ -1434,16 +1430,35 @@ export function updateApiKey({ id, apiKeyUpdateDto }: {
 export function deleteAssets({ assetBulkDeleteDto }: {
     assetBulkDeleteDto: AssetBulkDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/asset", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/assets", oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetBulkDeleteDto
     })));
 }
+export function uploadAsset({ key, xImmichChecksum, assetMediaCreateDto }: {
+    key?: string;
+    xImmichChecksum?: string;
+    assetMediaCreateDto: AssetMediaCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AssetMediaResponseDto;
+    }>(`/assets${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: assetMediaCreateDto,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-checksum": xImmichChecksum
+        })
+    })));
+}
 export function updateAssets({ assetBulkUpdateDto }: {
     assetBulkUpdateDto: AssetBulkUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/asset", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/assets", oazapfts.json({
         ...opts,
         method: "PUT",
         body: assetBulkUpdateDto
@@ -1458,7 +1473,7 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetBulkUploadCheckResponseDto;
-    }>("/asset/bulk-upload-check", oazapfts.json({
+    }>("/assets/bulk-upload-check", oazapfts.json({
         ...opts,
         method: "POST",
         body: assetBulkUploadCheckDto
@@ -1473,7 +1488,7 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: string[];
-    }>(`/asset/device/${encodeURIComponent(deviceId)}`, {
+    }>(`/assets/device/${encodeURIComponent(deviceId)}`, {
         ...opts
     }));
 }
@@ -1486,33 +1501,16 @@ export function checkExistingAssets({ checkExistingAssetsDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: CheckExistingAssetsResponseDto;
-    }>("/asset/exist", oazapfts.json({
+    }>("/assets/exist", oazapfts.json({
         ...opts,
         method: "POST",
         body: checkExistingAssetsDto
     })));
 }
-export function serveFile({ id, isThumb, isWeb, key }: {
-    id: string;
-    isThumb?: boolean;
-    isWeb?: boolean;
-    key?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchBlob<{
-        status: 200;
-        data: Blob;
-    }>(`/asset/file/${encodeURIComponent(id)}${QS.query(QS.explode({
-        isThumb,
-        isWeb,
-        key
-    }))}`, {
-        ...opts
-    }));
-}
 export function runAssetJobs({ assetJobsDto }: {
     assetJobsDto: AssetJobsDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/asset/jobs", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/assets/jobs", oazapfts.json({
         ...opts,
         method: "POST",
         body: assetJobsDto
@@ -1525,7 +1523,7 @@ export function getMemoryLane({ day, month }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MemoryLaneResponseDto[];
-    }>(`/asset/memory-lane${QS.query(QS.explode({
+    }>(`/assets/memory-lane${QS.query(QS.explode({
         day,
         month
     }))}`, {
@@ -1538,7 +1536,7 @@ export function getRandom({ count }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto[];
-    }>(`/asset/random${QS.query(QS.explode({
+    }>(`/assets/random${QS.query(QS.explode({
         count
     }))}`, {
         ...opts
@@ -1547,7 +1545,7 @@ export function getRandom({ count }: {
 export function updateStackParent({ updateStackParentDto }: {
     updateStackParentDto: UpdateStackParentDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/asset/stack/parent", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/assets/stack/parent", oazapfts.json({
         ...opts,
         method: "PUT",
         body: updateStackParentDto
@@ -1561,47 +1559,13 @@ export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetStatsResponseDto;
-    }>(`/asset/statistics${QS.query(QS.explode({
+    }>(`/assets/statistics${QS.query(QS.explode({
         isArchived,
         isFavorite,
         isTrashed
     }))}`, {
         ...opts
     }));
-}
-export function getAssetThumbnail({ format, id, key }: {
-    format?: ThumbnailFormat;
-    id: string;
-    key?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchBlob<{
-        status: 200;
-        data: Blob;
-    }>(`/asset/thumbnail/${encodeURIComponent(id)}${QS.query(QS.explode({
-        format,
-        key
-    }))}`, {
-        ...opts
-    }));
-}
-export function uploadFile({ key, xImmichChecksum, createAssetDto }: {
-    key?: string;
-    xImmichChecksum?: string;
-    createAssetDto: CreateAssetDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: AssetFileUploadResponseDto;
-    }>(`/asset/upload${QS.query(QS.explode({
-        key
-    }))}`, oazapfts.multipart({
-        ...opts,
-        method: "POST",
-        body: createAssetDto,
-        headers: oazapfts.mergeHeaders(opts?.headers, {
-            "x-immich-checksum": xImmichChecksum
-        })
-    })));
 }
 export function getAssetInfo({ id, key }: {
     id: string;
@@ -1610,7 +1574,7 @@ export function getAssetInfo({ id, key }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto;
-    }>(`/asset/${encodeURIComponent(id)}${QS.query(QS.explode({
+    }>(`/assets/${encodeURIComponent(id)}${QS.query(QS.explode({
         key
     }))}`, {
         ...opts
@@ -1623,11 +1587,24 @@ export function updateAsset({ id, updateAssetDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto;
-    }>(`/asset/${encodeURIComponent(id)}`, oazapfts.json({
+    }>(`/assets/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "PUT",
         body: updateAssetDto
     })));
+}
+export function downloadAsset({ id, key }: {
+    id: string;
+    key?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        key
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Replace the asset with new file, without changing its id
@@ -1640,13 +1617,41 @@ export function replaceAsset({ id, key, assetMediaReplaceDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetMediaResponseDto;
-    }>(`/asset/${encodeURIComponent(id)}/file${QS.query(QS.explode({
+    }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
         key
     }))}`, oazapfts.multipart({
         ...opts,
         method: "PUT",
         body: assetMediaReplaceDto
     })));
+}
+export function viewAsset({ id, key, size }: {
+    id: string;
+    key?: string;
+    size?: AssetMediaSize;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        key,
+        size
+    }))}`, {
+        ...opts
+    }));
+}
+export function playAssetVideo({ id, key }: {
+    id: string;
+    key?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/video/playback${QS.query(QS.explode({
+        key
+    }))}`, {
+        ...opts
+    }));
 }
 export function getAuditDeletes({ after, entityType, userId }: {
     after: string;
@@ -1732,20 +1737,6 @@ export function downloadArchive({ key, assetIdsDto }: {
         method: "POST",
         body: assetIdsDto
     })));
-}
-export function downloadFile({ id, key }: {
-    id: string;
-    key?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchBlob<{
-        status: 200;
-        data: Blob;
-    }>(`/download/asset/${encodeURIComponent(id)}${QS.query(QS.explode({
-        key
-    }))}`, {
-        ...opts,
-        method: "POST"
-    }));
 }
 export function getDownloadInfo({ key, downloadInfoDto }: {
     key?: string;
@@ -2929,6 +2920,11 @@ export enum Error {
     NotFound = "not_found",
     Unknown = "unknown"
 }
+export enum AssetMediaStatus {
+    Created = "created",
+    Replaced = "replaced",
+    Duplicate = "duplicate"
+}
 export enum Action {
     Accept = "accept",
     Reject = "reject"
@@ -2942,13 +2938,9 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     TranscodeVideo = "transcode-video"
 }
-export enum ThumbnailFormat {
-    Jpeg = "JPEG",
-    Webp = "WEBP"
-}
-export enum AssetMediaStatus {
-    Replaced = "replaced",
-    Duplicate = "duplicate"
+export enum AssetMediaSize {
+    Preview = "preview",
+    Thumbnail = "thumbnail"
 }
 export enum EntityType {
     Asset = "ASSET",

@@ -129,8 +129,8 @@ class _ChewieControllerHookState
       // Use a network URL for the video player controller
       final serverEndpoint = store.Store.get(store.StoreKey.serverEndpoint);
       final String videoUrl = hook.asset.livePhotoVideoId != null
-          ? '$serverEndpoint/asset/file/${hook.asset.livePhotoVideoId}'
-          : '$serverEndpoint/asset/file/${hook.asset.remoteId}';
+          ? '$serverEndpoint/assets/${hook.asset.livePhotoVideoId}/video/playback'
+          : '$serverEndpoint/assets/${hook.asset.remoteId}/video/playback';
 
       final url = Uri.parse(videoUrl);
       final accessToken = store.Store.get(StoreKey.accessToken);

@@ -30,7 +30,6 @@ import 'package:immich_mobile/widgets/photo_view/src/photo_view_computed_scale.d
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart';
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:isar/isar.dart';
-import 'package:openapi/api.dart' show ThumbnailFormat;
 
 @RoutePage()
 // ignore: must_be_immutable
@@ -51,9 +50,6 @@ class GalleryViewerPage extends HookConsumerWidget {
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
-
-  static const jpeg = ThumbnailFormat.JPEG;
-  static const webp = ThumbnailFormat.WEBP;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

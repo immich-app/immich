@@ -1,7 +1,8 @@
 import {
   Action,
   AssetBulkUploadCheckResult,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
+  AssetMediaStatus,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
@@ -167,7 +168,7 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
 
           newAssets.push({ id: response.id, filepath });
 
-          if (response.duplicate) {
+          if (response.status === AssetMediaStatus.Duplicate) {
             duplicateCount++;
             duplicateSize += stats.size ?? 0;
           } else {
@@ -192,7 +193,7 @@ const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptio
   return newAssets;
 };
 
-const uploadFile = async (input: string, stats: Stats): Promise<AssetFileUploadResponseDto> => {
+const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
   const assetPath = path.parse(input);
@@ -225,7 +226,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetFileUploadR
     formData.append('sidecarData', sidecarData);
   }
 
-  const response = await fetch(`${baseUrl}/asset/upload`, {
+  const response = await fetch(`${baseUrl}/assets`, {
     method: 'post',
     redirect: 'error',
     headers: headers as Record<string, string>,

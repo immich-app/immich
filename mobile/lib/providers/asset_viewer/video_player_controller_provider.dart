@@ -22,8 +22,8 @@ Future<VideoPlayerController> videoPlayerController(
     // Use a network URL for the video player controller
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final String videoUrl = asset.livePhotoVideoId != null
-        ? '$serverEndpoint/asset/file/${asset.livePhotoVideoId}'
-        : '$serverEndpoint/asset/file/${asset.remoteId}';
+        ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
+        : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
 
     final url = Uri.parse(videoUrl);
     final accessToken = Store.get(StoreKey.accessToken);

@@ -191,7 +191,7 @@ export class SharedLinkService {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
       imageUrl: assetId
-        ? `/api/asset/thumbnail/${assetId}?key=${sharedLink.key.toString('base64url')}`
+        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
         : '/feature-panel.png',
     };
   }

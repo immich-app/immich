@@ -1,10 +1,10 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { utils } from 'src/utils';
 
 test.describe('Asset Viewer Navbar', () => {
   let admin: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetMediaResponseDto;
 
   test.beforeAll(async () => {
     utils.initSdk();

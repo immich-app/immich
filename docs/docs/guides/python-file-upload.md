@@ -32,7 +32,7 @@ def upload(file):
     }
 
     response = requests.post(
-        f'{BASE_URL}/asset/upload', headers=headers, data=data, files=files)
+        f'{BASE_URL}/assets', headers=headers, data=data, files=files)
 
     print(response.json())
     # {'id': 'ef96f635-61c7-4639-9e60-61a11c4bbfba', 'duplicate': False}

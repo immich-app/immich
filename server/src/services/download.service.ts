@@ -9,8 +9,6 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
-import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -23,25 +21,6 @@ export class DownloadService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
-  }
-
-  async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
-
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-
-    if (asset.isOffline) {
-      throw new BadRequestException('Asset is offline');
-    }
-
-    return new ImmichFileResponse({
-      path: asset.originalPath,
-      contentType: mimeTypes.lookup(asset.originalPath),
-      cacheControl: CacheControl.NONE,
-    });
   }
 
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {

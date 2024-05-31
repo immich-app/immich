@@ -44,7 +44,7 @@ describe('PhotoViewer component', () => {
 
     expect(downloadRequestMock).toBeCalledWith(
       expect.objectContaining({
-        url: `/api/asset/file/${asset.id}?isThumb=false&isWeb=true&c=${asset.checksum}`,
+        url: `/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.checksum}`,
       }),
     );
     await waitFor(() => expect(screen.getByRole('img')).toBeInTheDocument());
@@ -61,7 +61,7 @@ describe('PhotoViewer component', () => {
     await waitFor(() => expect(screen.getByRole('img')).toHaveAttribute('src', 'url-two'));
     expect(downloadRequestMock).toBeCalledWith(
       expect.objectContaining({
-        url: `/api/asset/file/${asset.id}?isThumb=false&isWeb=false&c=${asset.checksum}`,
+        url: `/api/assets/${asset.id}/original?c=${asset.checksum}`,
       }),
     );
   });
@@ -76,7 +76,7 @@ describe('PhotoViewer component', () => {
     await waitFor(() => expect(screen.getByRole('img')).toHaveAttribute('src', 'url-two'));
     expect(downloadRequestMock).toBeCalledWith(
       expect.objectContaining({
-        url: `/api/asset/file/${asset.id}?isThumb=false&isWeb=true&c=new-checksum`,
+        url: `/api/assets/${asset.id}/thumbnail?size=preview&c=new-checksum`,
       }),
     );
   });

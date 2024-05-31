@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
@@ -12,7 +12,7 @@ describe('/map', () => {
   let websocket: Socket;
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetMediaResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();

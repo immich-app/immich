@@ -3,11 +3,11 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { downloadRequest, getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
+  import { type AssetResponseDto, AssetTypeEnum, AssetMediaSize } from '@immich/sdk';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -62,7 +62,9 @@
 
       // TODO: Use sdk once it supports signals
       const res = await downloadRequest({
-        url: getAssetFileUrl(asset.id, !loadOriginal, false, checksum),
+        url: loadOriginal
+          ? getAssetOriginalUrl({ id: asset.id, checksum })
+          : getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Preview, checksum }),
         signal: abortController.signal,
       });
 
@@ -76,7 +78,9 @@
       for (const preloadAsset of preloadAssets) {
         if (preloadAsset.type === AssetTypeEnum.Image) {
           await downloadRequest({
-            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
+            url: loadOriginal
+              ? getAssetOriginalUrl(preloadAsset.id)
+              : getAssetThumbnailUrl({ id: preloadAsset.id, size: AssetMediaSize.Preview }),
             signal: abortController.signal,
           });
         }

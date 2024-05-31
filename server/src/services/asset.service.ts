@@ -1,10 +1,7 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { extname } from 'node:path';
-import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
@@ -12,7 +9,6 @@ import {
   SanitizedAssetResponseDto,
   mapAsset,
 } from 'src/dtos/asset-response.dto';
-import { AssetFileUploadResponseDto } from 'src/dtos/asset-v1-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -20,7 +16,6 @@ import {
   AssetJobsDto,
   AssetStatsDto,
   UpdateAssetDto,
-  UploadFieldName,
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -42,13 +37,9 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { UploadRequest } from 'src/services/asset-media.service';
-import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
-import { fromChecksum } from 'src/utils/request';
 
 export class AssetService {
   private access: AccessCore;
@@ -59,7 +50,6 @@ export class AssetService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
@@ -69,86 +59,6 @@ export class AssetService {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
-
-  async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetFileUploadResponseDto | undefined> {
-    if (!checksum) {
-      return;
-    }
-
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
-    if (!assetId) {
-      return;
-    }
-
-    return { id: assetId, duplicate: true };
-  }
-
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
-    this.access.requireUploadAccess(auth);
-
-    const filename = file.originalName;
-
-    switch (fieldName) {
-      case UploadFieldName.ASSET_DATA: {
-        if (mimeTypes.isAsset(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.LIVE_PHOTO_DATA: {
-        if (mimeTypes.isVideo(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.SIDECAR_DATA: {
-        if (mimeTypes.isSidecar(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.PROFILE_DATA: {
-        if (mimeTypes.isProfile(filename)) {
-          return true;
-        }
-        break;
-      }
-    }
-
-    this.logger.error(`Unsupported file type ${filename}`);
-    throw new BadRequestException(`Unsupported file type ${filename}`);
-  }
-
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
-    this.access.requireUploadAccess(auth);
-
-    const originalExtension = extname(file.originalName);
-
-    const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
-      [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
-      [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
-    };
-
-    return sanitize(`${file.uuid}${lookup[fieldName]}`);
-  }
-
-  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
-    auth = this.access.requireUploadAccess(auth);
-
-    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
-    if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
-    }
-
-    this.storageRepository.mkdirSync(folder);
-
-    return folder;
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
