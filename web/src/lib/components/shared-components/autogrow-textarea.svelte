@@ -4,10 +4,10 @@
   import { shortcut } from '$lib/actions/shortcut';
   import { tick } from 'svelte';
 
-  export let content: string;
-  export let elementClass: string;
-  export let onContentUpdate: (newContent: string) => void;
-  export let placeholder: string;
+  export let content: string = '';
+  export let elementClass: string = '';
+  export let onContentUpdate: (newContent: string) => void = () => null;
+  export let placeholder: string = '';
 
   let textarea: HTMLTextAreaElement;
   $: newContent = content;
