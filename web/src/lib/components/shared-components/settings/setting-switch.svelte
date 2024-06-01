@@ -3,13 +3,15 @@
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
+  import { uniqueIdStore } from '$lib/stores/unique-id.store';
 
-  export let id: string;
   export let title: string;
   export let subtitle = '';
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
+
+  let id: string = uniqueIdStore.generateId();
 
   $: sliderId = `${id}-slider`;
   $: subtitleId = subtitle ? `${id}-subtitle` : undefined;
@@ -40,11 +42,5 @@
     <slot />
   </div>
 
-  <Slider
-    id={sliderId}
-    bind:checked
-    {disabled}
-    on:toggle={({ detail }) => onToggle(detail)}
-    ariaDescribedBy={subtitleId}
-  />
+  <Slider bind:checked {disabled} on:toggle={({ detail }) => onToggle(detail)} ariaDescribedBy={subtitleId} />
 </div>

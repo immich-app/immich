@@ -1,16 +1,18 @@
 <script lang="ts">
+  import { uniqueIdStore } from '$lib/stores/unique-id.store';
   import { createEventDispatcher } from 'svelte';
 
-  /**
-   * Unique identifier for the checkbox element, used to associate labels with the input element.
-   */
-  export let id: string;
   /**
    * Optional aria-describedby attribute to associate the checkbox with a description.
    */
   export let ariaDescribedBy: string | undefined = undefined;
   export let checked = false;
   export let disabled = false;
+
+  /**
+   * Unique identifier for the checkbox element, used to associate labels with the input element.
+   */
+  let id: string = uniqueIdStore.generateId();
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
   const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);

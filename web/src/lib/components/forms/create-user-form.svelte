@@ -74,7 +74,7 @@
   }
 </script>
 
-<FullScreenModal id="create-new-user-modal" title="Create new user" showLogo {onClose}>
+<FullScreenModal title="Create new user" showLogo {onClose}>
   <form on:submit|preventDefault={registerUser} autocomplete="off" id="create-new-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">Email</label>
@@ -84,7 +84,7 @@
     {#if $featureFlags.email}
       <div class="my-4 flex place-items-center justify-between gap-2">
         <label class="text-sm dark:text-immich-dark-fg" for="send-welcome-email"> Send welcome email </label>
-        <Slider id="send-welcome-email" bind:checked={notify} />
+        <Slider bind:checked={notify} />
       </div>
     {/if}
 
@@ -102,7 +102,7 @@
       <label class="text-sm dark:text-immich-dark-fg" for="require-password-change">
         Require user to change password on first login
       </label>
-      <Slider id="require-password-change" bind:checked={shouldChangePassword} />
+      <Slider bind:checked={shouldChangePassword} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">

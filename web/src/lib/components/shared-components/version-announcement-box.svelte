@@ -33,7 +33,7 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal id="new-version-modal" title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
+  <FullScreenModal title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
     <div>
       Hi friend, there is a new version of the application please take your time to visit the
       <span class="font-medium underline"

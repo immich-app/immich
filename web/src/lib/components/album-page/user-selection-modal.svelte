@@ -70,7 +70,7 @@
   };
 </script>
 
-<FullScreenModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
+<FullScreenModal title="Invite to album" showLogo {onClose}>
   {#if Object.keys(selectedUsers).length > 0}
     <div class="mb-2 py-2 sticky">
       <p class="text-xs font-medium">SELECTED</p>

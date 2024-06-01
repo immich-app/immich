@@ -23,7 +23,6 @@
 </script>
 
 <ConfirmDialog
-  id="permanently-delete-asset-modal"
   title="Permanently delete asset{s(size)}"
   confirmText="Delete"
   onConfirm={handleConfirm}

@@ -28,12 +28,7 @@
   const handleSubmit = () => dispatch('submit', { excludePattern: exclusionPattern });
 </script>
 
-<FullScreenModal
-  id="add-exclusion-pattern-modal"
-  title="Add exclusion pattern"
-  icon={mdiFolderRemove}
-  onClose={handleCancel}
->
+<FullScreenModal title="Add exclusion pattern" icon={mdiFolderRemove} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
       Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have

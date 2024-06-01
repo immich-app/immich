@@ -45,7 +45,7 @@
   };
 </script>
 
-<FullScreenModal id="slideshow-settings-modal" title="Slideshow settings" {onClose}>
+<FullScreenModal title="Slideshow settings" {onClose}>
   <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
     <SettingDropdown
       title="Direction"
@@ -63,7 +63,7 @@
         $slideshowLook = handleToggle(option, lookOptions) || $slideshowLook;
       }}
     />
-    <SettingSwitch id="show-progress-bar" title="Show Progress Bar" bind:checked={$showProgressBar} />
+    <SettingSwitch title="Show Progress Bar" bind:checked={$showProgressBar} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label="Duration"
