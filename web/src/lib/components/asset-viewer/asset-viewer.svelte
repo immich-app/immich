@@ -273,7 +273,7 @@
   };
 
   const closeViewer = async () => {
-    if($slideshowState === SlideshowState.None) {
+    if ($slideshowState === SlideshowState.None) {
       dispatch('close');
       await navigate({ targetRoute: 'current', assetId: null });
     } else {
