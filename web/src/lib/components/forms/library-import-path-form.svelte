@@ -30,7 +30,7 @@
   const handleSubmit = () => dispatch('submit', { importPath });
 </script>
 
-<FullScreenModal id="library-import-path-modal" {title} icon={mdiFolderSync} onClose={handleCancel}>
+<FullScreenModal {title} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="library-import-path-form">
     <p class="py-5 text-sm">
       Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.

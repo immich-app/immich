@@ -36,7 +36,7 @@
   };
 </script>
 
-<FullScreenModal id="edit-album-modal" title="Edit album" width="wide" {onClose}>
+<FullScreenModal title="Edit album" width="wide" {onClose}>
   <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">

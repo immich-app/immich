@@ -26,7 +26,6 @@
         <SettingAccordion key="email" title="Email" subtitle="Settings for sending email notifications">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-              id="enable-smtp"
               title="Enabled"
               subtitle="Enable email notifications"
               {disabled}
@@ -76,7 +75,6 @@
             />
 
             <SettingSwitch
-              id="enable-ignore-cert"
               title="Ignore certificate errors"
               subtitle="Ignore TLS certificate validation errors (not recommended)"
               disabled={disabled || !config.notifications.smtp.enabled}

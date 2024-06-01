@@ -107,7 +107,6 @@
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
-        id="storage-template-enabled"
         title="ENABLED"
         {disabled}
         subtitle="Enable storage template engine"
@@ -117,7 +116,6 @@
 
       {#if !minified}
         <SettingSwitch
-          id="hash-verification-enabled"
           title="HASH VERIFICATION ENABLED"
           {disabled}
           subtitle="Enables hash verification, don't disable this unless you're certain of the implications"

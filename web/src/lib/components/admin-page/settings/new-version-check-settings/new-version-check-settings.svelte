@@ -20,7 +20,6 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4">
         <SettingSwitch
-          id="enable-new-version-check"
           title="ENABLED"
           subtitle="Enable periodic requests to GitHub to check for new releases"
           bind:checked={config.newVersionCheck.enabled}

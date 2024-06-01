@@ -20,7 +20,7 @@
   };
 </script>
 
-<FullScreenModal id="set-birth-date-modal" title="Set date of birth" icon={mdiCake} onClose={handleCancel}>
+<FullScreenModal title="Set date of birth" icon={mdiCake} onClose={handleCancel}>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <p class="text-sm dark:text-immich-dark-fg">
       Date of birth is used to calculate the age of this person at the time of a photo.

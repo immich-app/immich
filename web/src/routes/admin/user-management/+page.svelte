@@ -154,7 +154,6 @@
 
       {#if shouldShowPasswordResetSuccess}
         <ConfirmDialog
-          id="password-reset-success-modal"
           title="Password reset success"
           confirmText="Done"
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}

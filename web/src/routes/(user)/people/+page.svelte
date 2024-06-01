@@ -453,7 +453,7 @@
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
+    <FullScreenModal title="Change name" onClose={() => (showChangeNameModal = false)}>
       <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">Name</label>
