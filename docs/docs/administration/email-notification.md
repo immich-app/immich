@@ -51,7 +51,7 @@ Under Email, enter the following details for connection with Gmail servers:
 </TabItem>
 <TabItem value="Mobile" label="Mobile">
 
-Immich does not allow this setting through the mobile app at this time.
+Immich does not support this setting through the mobile app at this time.
 
 </TabItem>
 </Tabs>
@@ -64,4 +64,4 @@ Now for each new user created in the system, the system administrator will be ab
 Email messages sent by a user contain the login password you set as plain text, it is recommended to choose a password that is not too easy but not too personal. In any case, unless otherwise specified, the user will be asked to enter a new password when logging in.
 :::
 
-<img src={require('./img/immich-email-notefaction.webp').default} width='45%' title="Authorised redirect URIs" />
+<img src={require('./img/immich-email-notefaction.webp').default} width='45%' title="New user email preview" />
