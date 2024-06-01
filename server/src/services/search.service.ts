@@ -102,11 +102,7 @@ export class SearchService {
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const embedding = await this.machineLearning.encodeText(
-      machineLearning.url,
-      { text: dto.query },
-      machineLearning.clip,
-    );
+    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
 
     const page = dto.page ?? 1;
     const size = dto.size || 100;

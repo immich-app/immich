@@ -649,16 +649,8 @@ describe(PersonService.name, () => {
       await sut.handleDetectFaces({ id: assetStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
-        {
-          imagePath: assetStub.image.previewPath,
-        },
-        {
-          enabled: true,
-          maxDistance: 0.5,
-          minScore: 0.7,
-          minFaces: 3,
-          modelName: 'buffalo_l',
-        },
+        assetStub.image.previewPath,
+        expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
       expect(personMock.createFaces).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();

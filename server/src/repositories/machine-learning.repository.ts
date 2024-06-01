@@ -10,8 +10,6 @@ import {
   MachineLearningRequest,
   ModelTask,
   ModelType,
-  TextModelInput,
-  VisionModelInput,
 } from 'src/interfaces/machine-learning.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 
@@ -20,12 +18,8 @@ const errorPrefix = 'Machine learning request';
 @Instrumentation()
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private async predict<T>(
-    url: string,
-    input: TextModelInput | VisionModelInput,
-    config: MachineLearningRequest,
-  ): Promise<T> {
-    const formData = await this.getFormData(input, config);
+  private async predict<T>(url: string, config: MachineLearningRequest): Promise<T> {
+    const formData = await this.getFormData(config);
 
     const res = await fetch(new URL('/predict', url), { method: 'POST', body: formData }).catch(
       (error: Error | any) => {
@@ -42,10 +36,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
 
   detectFaces(
     url: string,
-    input: VisionModelInput,
+    imagePath: string,
     { modelName, minScore }: FacialRecognitionOptions,
   ): Promise<FacialRecognitionResponse> {
-    return this.predict<FacialRecognitionResponse>(url, input, {
+    return this.predict<FacialRecognitionResponse>(url, {
+      imagePath,
       modelName,
       minScore,
       modelType: ModelType.PIPELINE,
@@ -53,26 +48,25 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     });
   }
 
-  encodeImage(url: string, input: VisionModelInput, { modelName }: CLIPConfig): Promise<Embedding> {
-    return this.predict<Embedding>(url, input, {
+  encodeImage(url: string, imagePath: string, { modelName }: CLIPConfig): Promise<Embedding> {
+    return this.predict<Embedding>(url, {
+      imagePath,
       modelName,
       modelType: ModelType.VISUAL,
       modelTask: ModelTask.SEARCH,
     });
   }
 
-  encodeText(url: string, input: TextModelInput, { modelName }: CLIPConfig): Promise<Embedding> {
-    return this.predict<Embedding>(url, input, {
+  encodeText(url: string, text: string, { modelName }: CLIPConfig): Promise<Embedding> {
+    return this.predict<Embedding>(url, {
       modelName,
       modelType: ModelType.TEXTUAL,
       modelTask: ModelTask.SEARCH,
+      text,
     });
   }
 
-  private async getFormData(
-    input: TextModelInput | VisionModelInput,
-    config: MachineLearningRequest,
-  ): Promise<FormData> {
+  private async getFormData(config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     const { modelName, modelTask, modelType, ...options } = config;
 
@@ -83,10 +77,10 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     if (!isEmpty(options)) {
       formData.append('options', JSON.stringify(options));
     }
-    if ('imagePath' in input) {
-      formData.append('image', new Blob([await readFile(input.imagePath)]));
-    } else if ('text' in input) {
-      formData.append('text', input.text);
+    if ('imagePath' in config) {
+      formData.append('image', new Blob([await readFile(config.imagePath)]));
+    } else if ('text' in config) {
+      formData.append('text', config.text);
     } else {
       throw new Error('Invalid input');
     }

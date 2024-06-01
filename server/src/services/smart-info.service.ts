@@ -95,7 +95,7 @@ export class SmartInfoService {
 
     const clipEmbedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.clip,
     );
 

@@ -339,7 +339,7 @@ export class PersonService {
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.facialRecognition,
     );
 

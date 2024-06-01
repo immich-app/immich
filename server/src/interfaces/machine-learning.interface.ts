@@ -1,14 +1,4 @@
-import { CLIPConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
-
 export const IMachineLearningRepository = 'IMachineLearningRepository';
-
-export interface VisionModelInput {
-  imagePath: string;
-}
-
-export interface TextModelInput {
-  text: string;
-}
 
 export interface BoundingBox {
   x1: number;
@@ -64,6 +54,7 @@ export interface FacialRecognitionOptions {
 }
 
 export interface ClipVisualRequest extends BaseMachineLearningRequest {
+  imagePath: string;
   modelTask: ModelTask.SEARCH;
   modelType: ModelType.VISUAL;
 }
@@ -71,9 +62,11 @@ export interface ClipVisualRequest extends BaseMachineLearningRequest {
 export interface ClipTextualRequest extends BaseMachineLearningRequest {
   modelTask: ModelTask.SEARCH;
   modelType: ModelType.TEXTUAL;
+  text: string;
 }
 
 export interface FacialRecognitionRequest extends BaseMachineLearningRequest {
+  imagePath: string;
   minScore: number;
   modelTask: ModelTask.FACIAL_RECOGNITION;
   modelType: ModelType.PIPELINE;
@@ -82,11 +75,7 @@ export interface FacialRecognitionRequest extends BaseMachineLearningRequest {
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(url: string, input: VisionModelInput, config: ClipVisualOptions): Promise<Embedding>;
-  encodeText(url: string, input: TextModelInput, config: ClipTextualOptions): Promise<Embedding>;
-  detectFaces(
-    url: string,
-    input: VisionModelInput,
-    config: FacialRecognitionOptions,
-  ): Promise<FacialRecognitionResponse>;
+  encodeImage(url: string, imagePath: string, config: ClipVisualOptions): Promise<Embedding>;
+  encodeText(url: string, text: string, config: ClipTextualOptions): Promise<Embedding>;
+  detectFaces(url: string, imagePath: string, config: FacialRecognitionOptions): Promise<FacialRecognitionResponse>;
 }
