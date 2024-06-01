@@ -72,10 +72,7 @@ async def preload_models(preload: PreloadModelData) -> None:
         await load(model)
 
     if preload.facial_recognition is not None:
-        model = await model_cache.get(preload.facial_recognition, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
-        await load(model)
-
-        model = await model_cache.get(preload.facial_recognition, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+        model = await model_cache.get(preload.facial_recognition, ModelType.PIPELINE, ModelTask.FACIAL_RECOGNITION)
         await load(model)
 
 
