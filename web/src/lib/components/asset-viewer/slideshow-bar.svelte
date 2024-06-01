@@ -25,24 +25,32 @@
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
 
-  const resetTimer = () => {
-    clearTimeout(timer);
-    document.body.style.cursor = '';
-    showControls = true;
-    startTimer();
+  const setCursorStyle = (style: string) => {
+    document.body.style.cursor = style;
   };
 
-  const startTimer = () => {
+  const stopControlsHideTimer = () => {
+    clearTimeout(timer);
+    setCursorStyle('');
+  };
+
+  const showControlBar = () => {
+    showControls = true;
+    stopControlsHideTimer();
+    hideControlsAfterDelay();
+  };
+
+  const hideControlsAfterDelay = () => {
     timer = setTimeout(() => {
       if (!isOverControls) {
         showControls = false;
-        document.body.style.cursor = 'none';
+        setCursorStyle('none');
       }
     }, 10_000);
   };
 
   onMount(() => {
-    startTimer();
+    hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
         progressBar.restart(value);
@@ -52,6 +60,7 @@
     unsubscribeStop = stopProgress.subscribe((value) => {
       if (value) {
         progressBar.restart(false);
+        stopControlsHideTimer();
       }
     });
   });
@@ -75,15 +84,15 @@
   };
 </script>
 
-<svelte:window on:mousemove={resetTimer} />
+<svelte:window on:mousemove={showControlBar} />
 
 {#if showControls}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="m-4 flex gap-2"
     on:mouseenter={() => (isOverControls = true)}
     on:mouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}
+    role="navigation"
   >
     <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title="Exit Slideshow" />
 
