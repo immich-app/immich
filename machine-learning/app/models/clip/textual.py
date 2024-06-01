@@ -9,9 +9,8 @@ from numpy.typing import NDArray
 from tokenizers import Encoding, Tokenizer
 
 from app.config import log
-from app.schemas import ModelSession, ModelTask, ModelType
-
 from app.models.base import InferenceModel
+from app.schemas import ModelSession, ModelTask, ModelType
 
 
 class BaseCLIPTextualEncoder(InferenceModel):

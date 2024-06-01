@@ -1,15 +1,14 @@
 from pathlib import Path
 from typing import Any
 
-import cv2
 import numpy as np
 from insightface.model_zoo import ArcFaceONNX
 from insightface.utils.face_align import norm_crop
 from numpy.typing import NDArray
 
 from app.config import clean_name
-from app.models.transforms import crop_np, crop_bounding_box, resize_np
-from app.schemas import DetectedFace, ModelTask, RecognizedFace, ModelSession, ModelType, is_ndarray
+from app.models.transforms import crop_bounding_box, crop_np, decode_cv2, resize_np
+from app.schemas import DetectedFaces, ModelSession, ModelTask, ModelType
 
 from ..base import InferenceModel
 
@@ -36,30 +35,22 @@ class FaceRecognizer(InferenceModel):
         )
         return session
 
-    # def _predict(self, img: Any, **kwargs: Any) -> Any:
-    def _predict(
-        self, inputs: NDArray[np.uint8] | bytes, faces: list[DetectedFace] = [], **kwargs: Any
-    ) -> list[RecognizedFace]:
-        if isinstance(inputs, bytes):
-            decoded_image = cv2.imdecode(np.frombuffer(inputs, np.uint8), cv2.IMREAD_COLOR)
-        else:
-            decoded_image = inputs
-        assert is_ndarray(decoded_image, np.float32)
+    def _predict(self, inputs: NDArray[np.uint8] | bytes, faces: DetectedFaces, **kwargs: Any) -> NDArray[np.float32]:
+        if faces.bounding_boxes.shape[0] == 0:
+            return np.empty((0, 512), dtype=np.float32)
+        inputs = decode_cv2(inputs)
+        embeddings: NDArray[np.float32] = self.model.get_feat(self._crop(inputs, faces))
+        return embeddings
 
-        results: list[RecognizedFace] = []
-        for detected_face in faces:
-            landmarks = detected_face.get("landmarks", None)
-            if landmarks is not None:
-                cropped_img = norm_crop(decoded_image, np.asarray(landmarks))
+    def _crop(self, image: NDArray[np.uint8], faces: DetectedFaces) -> list[NDArray[np.uint8]]:
+        batch: list[NDArray[np.uint8]] = []
+        for i in range(faces.bounding_boxes.shape[0]):
+            if faces.landmarks is not None:
+                landmark = faces.landmarks[i]
+                cropped: NDArray[np.uint8] = norm_crop(image, landmark)
             else:
-                cropped_img = crop_bounding_box(decoded_image, detected_face["box"])
-                cropped_img = crop_np(resize_np(cropped_img, 112), 112)
-            assert is_ndarray(cropped_img, np.uint8)
+                cropped = crop_bounding_box(image, faces.bounding_boxes[i])
+                cropped = crop_np(resize_np(cropped, 112), 112)
+            batch.append(cropped)
 
-            embedding = self.model.get_feat(cropped_img)[0]
-            assert is_ndarray(embedding, np.float32)
-
-            face: RecognizedFace = {"box": detected_face["box"], "embedding": embedding}
-            results.append(face)
-
-        return results
+        return batch

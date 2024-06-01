@@ -1,11 +1,12 @@
 from typing import Any
-import cv2
+
 import numpy as np
 from numpy.typing import NDArray
 
 from app.models.facial_recognition.detection import FaceDetector
 from app.models.facial_recognition.recognition import FaceRecognizer
-from app.schemas import RecognizedFace, is_ndarray
+from app.models.transforms import decode_cv2
+from app.schemas import DetectedFaces, FacialRecognitionResponse
 
 
 class FacialRecognitionPipeline:
@@ -19,13 +20,28 @@ class FacialRecognitionPipeline:
         self.rec_model.load()
         self.loaded = True
 
-    def predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> list[RecognizedFace]:
-        if isinstance(inputs, bytes):
-            decoded_image = cv2.imdecode(np.frombuffer(inputs, np.uint8), cv2.IMREAD_COLOR)
-        else:
-            decoded_image = inputs
-        assert is_ndarray(decoded_image, np.uint8)
+    def predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> FacialRecognitionResponse:
+        inputs = decode_cv2(inputs)
 
-        faces = self.det_model.predict(decoded_image, **kwargs)
-        results: list[RecognizedFace] = self.rec_model.predict(decoded_image, faces=faces, **kwargs)
-        return results
+        detected_faces: DetectedFaces = self.det_model.predict(inputs, **kwargs)
+        embeddings: NDArray[np.float32] = self.rec_model.predict(inputs, faces=detected_faces, **kwargs)
+        return self.postprocess(inputs, detected_faces, embeddings)
+
+    def postprocess(
+        self, image: NDArray[np.uint8], detected_faces: DetectedFaces, embeddings: NDArray[np.float32]
+    ) -> FacialRecognitionResponse:
+        height, width, _ = image.shape
+        bboxes: list[list[int]] = detected_faces.bounding_boxes.tolist()
+        embeddings_list: list[list[float]] = embeddings.tolist()
+        scores: list[float] = detected_faces.scores.tolist()
+
+        return [
+            {
+                "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+                "embedding": embedding,
+                "imageHeight": height,
+                "imageWidth": width,
+                "score": score,
+            }
+            for (x1, y1, x2, y2), embedding, score in zip(bboxes, embeddings_list, scores)
+        ]

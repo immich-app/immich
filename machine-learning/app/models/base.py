@@ -7,8 +7,8 @@ from typing import Any, ClassVar
 from zipfile import BadZipFile
 
 import onnxruntime as ort
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from huggingface_hub import snapshot_download
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 
 import ann.ann
 from app.models.constants import SUPPORTED_PROVIDERS
@@ -67,14 +67,14 @@ class InferenceModel(ABC):
             self.session = self._load()
         self.loaded = True
 
-    def predict(self, inputs: Any, **model_kwargs: Any) -> Any:
+    def predict(self, *inputs: Any, **model_kwargs: Any) -> Any:
         self.load()
         if model_kwargs:
             self.configure(**model_kwargs)
-        return self._predict(inputs, **model_kwargs)
+        return self._predict(*inputs, **model_kwargs)
 
     @abstractmethod
-    def _predict(self, inputs: Any, **model_kwargs: Any) -> Any: ...
+    def _predict(self, *inputs: Any, **model_kwargs: Any) -> Any: ...
 
     def configure(self, **kwargs: Any) -> None:
         pass

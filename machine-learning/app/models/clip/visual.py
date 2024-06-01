@@ -10,10 +10,9 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from app.config import log
+from app.models.base import InferenceModel
 from app.models.transforms import crop_pil, get_pil_resampling, normalize, resize_pil, to_numpy
 from app.schemas import ModelSession, ModelTask, ModelType
-
-from app.models.base import InferenceModel
 
 
 class BaseCLIPVisualEncoder(InferenceModel):

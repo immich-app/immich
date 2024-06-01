@@ -1,14 +1,13 @@
 from pathlib import Path
 from typing import Any
 
-import cv2
 import numpy as np
 from insightface.model_zoo import RetinaFace
 from numpy.typing import NDArray
 
-from app.schemas import DetectedFace, ModelSession, ModelTask, ModelType, is_ndarray
-
 from app.models.base import InferenceModel
+from app.models.transforms import decode_cv2
+from app.schemas import DetectedFaces, ModelSession, ModelTask, ModelType
 
 
 class FaceDetector(InferenceModel):
@@ -32,29 +31,24 @@ class FaceDetector(InferenceModel):
 
         return session
 
-    def _predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> list[DetectedFace]:
-        if isinstance(inputs, bytes):
-            decoded_image = cv2.imdecode(np.frombuffer(inputs, np.uint8), cv2.IMREAD_COLOR)
-        else:
-            decoded_image = inputs
-        assert is_ndarray(decoded_image, np.uint8)
+    def _predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> DetectedFaces:
+        inputs = decode_cv2(inputs)
 
-        bboxes, landmarks = self.det_model.detect(decoded_image)
-        assert is_ndarray(bboxes, np.float32)
-        assert is_ndarray(landmarks, np.float32)
+        bboxes, landmarks = self._detect(inputs)
+        return DetectedFaces(bounding_boxes=bboxes[:, :4], scores=bboxes[:, 4], landmarks=landmarks)
 
-        if bboxes.size == 0:
-            return []
+    def _detect(self, inputs: NDArray[np.uint8] | bytes) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+        return self.det_model.detect(inputs)  # type: ignore
 
-        scores: list[float] = bboxes[:, 4].tolist()
-        bboxes_list: list[list[int]] = bboxes[:, :4].round().tolist()
+    def postprocess(self, faces: DetectedFaces) -> Any:
+        scores: list[float] = faces.bounding_boxes[:, 4].tolist()
+        bboxes_list: list[list[int]] = faces.bounding_boxes[:, :4].round().tolist()
+        landmarks_list: list[list[float]] = faces.landmarks.tolist() if faces.landmarks is not None else []
 
-        results: list[DetectedFace] = [
+        return [
             {"box": {"x1": x1, "y1": y1, "x2": x2, "y2": y2}, "score": score, "landmarks": face_landmarks}
-            for (x1, y1, x2, y2), score, face_landmarks in zip(bboxes_list, scores, landmarks)
+            for (x1, y1, x2, y2), score, face_landmarks in zip(bboxes_list, scores, landmarks_list)
         ]
-
-        return results
 
     def configure(self, **kwargs: Any) -> None:
         self.det_model.det_thresh = kwargs.pop("minScore", self.det_model.det_thresh)
