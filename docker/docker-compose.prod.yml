@@ -38,6 +38,8 @@ services:
     env_file:
       - .env
     restart: always
+    ports:
+      - 3003:3003
 
   redis:
     container_name: immich_redis
