@@ -84,7 +84,7 @@
     {#if $featureFlags.email}
       <div class="my-4 flex place-items-center justify-between gap-2">
         <label class="text-sm dark:text-immich-dark-fg" for="send-welcome-email"> Send welcome email </label>
-        <Slider bind:checked={notify} />
+        <Slider id="send-welcome-email" bind:checked={notify} />
       </div>
     {/if}
 
@@ -102,7 +102,7 @@
       <label class="text-sm dark:text-immich-dark-fg" for="require-password-change">
         Require user to change password on first login
       </label>
-      <Slider bind:checked={shouldChangePassword} />
+      <Slider id="require-password-change" bind:checked={shouldChangePassword} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
