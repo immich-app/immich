@@ -35,5 +35,5 @@
     shortcut: { key: 'Enter', ctrl: true },
     onShortcut: (e) => e.currentTarget.blur(),
   }}
-  {...$$restProps}>{content}</textarea
+  data-testid="autogrow-textarea">{content}</textarea
 >

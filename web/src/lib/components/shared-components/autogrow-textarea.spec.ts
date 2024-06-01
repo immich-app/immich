@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 
 describe('AutogrowTextarea component', () => {
-  const getTextarea = () => screen.getByRole('textbox') as HTMLTextAreaElement;
+  const getTextarea = () => screen.getByTestId('autogrow-textarea') as HTMLTextAreaElement;
 
   it('should render correctly', () => {
     render(AutogrowTextarea);
