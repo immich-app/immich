@@ -20,8 +20,7 @@ After you have created a new Google account we will have to:
 - Add [2-Step Verification](https://support.google.com/accounts/answer/185839) to your Google account (Required)
 - [Create an app password](https://support.google.com/accounts/answer/185833).
 
-:::tip App password
-
+:::tip app password
 For some people the app password will not be displayed even if you followed the instructions in the attached Google guide, if the option to create an app password does not appear for you, you can [click on this link to create an app password immediately](https://myaccount.google.com/apppasswords).
 :::
 
@@ -61,8 +60,7 @@ Immich does not allow this setting through the mobile app at this time.
 
 Now for each new user created in the system, the system administrator will be able to choose whether to send an email informing the user of the new account.
 
-:::danger Plain password
-
+:::danger plain password
 Email messages sent by a user contain the login password you set as plain text, it is recommended to choose a password that is not too easy but not too personal. In any case, unless otherwise specified, the user will be asked to enter a new password when logging in.
 :::
 
