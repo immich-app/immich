@@ -98,7 +98,8 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
-    const int chunkSize = 10000;
+    const int chunkSize = 1000;
+    int chunkNumber = 0;
     try {
       final List<Asset> allAssets = [];
       DateTime? lastCreationDate;
@@ -119,10 +120,15 @@ class AssetService {
         if (assets.isEmpty) break;
         lastCreationDate = assets.last.fileCreatedAt;
         lastId = assets.last.id;
+        chunkNumber++;
       }
       return allAssets;
     } catch (error, stack) {
-      log.severe('Error while getting remote assets', error, stack);
+      log.severe(
+        'Error while getting remote assets chunk $chunkNumber',
+        error,
+        stack,
+      );
       return null;
     }
   }
