@@ -41,7 +41,7 @@ Under Email, enter the following details for connection with Gmail servers:
 
 | Setting                   | Value                                                                          |
 | :------------------------ | :----------------------------------------------------------------------------- |
-| Host                      | [smtp.gmail.com](smtp.gmail.com)                                               |
+| Host                      | `smtp.gmail.com`                                                               |
 | Port                      | 587 (For TLS) 465 (For SSL)                                                    |
 | Username                  | Your Google account address                                                    |
 | Password                  | Your created password from Google app passwords page                           |
