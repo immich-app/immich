@@ -38,15 +38,6 @@ class ModelCache:
     async def get(
         self, model_name: str, model_type: ModelType, model_task: ModelTask, **model_kwargs: Any
     ) -> Predictor:
-        """
-        Args:
-            model_name: Name of model in the model hub used for the task.
-            model_type: Model type or task, which determines which model zoo is used.
-
-        Returns:
-            model: The requested model.
-        """
-
         key = f"{model_name}{model_type.value}{model_task.value}"
 
         async with OptimisticLock(self.cache, key) as lock:
@@ -62,14 +53,6 @@ class ModelCache:
         return model
 
     async def _get_pipeline(self, model_name: str, model_task: ModelTask, **model_kwargs: Any) -> Predictor:
-        """
-        Args:
-            model_name: Name of model in the model hub used for the task.
-            model_type: Model type or task, which determines which model zoo is used.
-
-        Returns:
-            model: The requested model.
-        """
         match model_task:
             case ModelTask.FACIAL_RECOGNITION:
                 det_model: Any = await self.get(model_name, ModelType.DETECTION, model_task, **model_kwargs)
