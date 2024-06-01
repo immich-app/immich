@@ -30,7 +30,7 @@
   <section class="px-4 mt-10">
     <AutogrowTextarea
       content={description}
-      elementClass="max-h-[500px] w-full resize-none border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
+      class="max-h-[500px] w-full border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
       onContentUpdate={handleFocusOut}
       placeholder="Add a description"
     />

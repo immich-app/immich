@@ -25,7 +25,7 @@
 {#if isOwned}
   <AutogrowTextarea
     content={description}
-    elementClass="w-full mt-2 resize-none text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+    class="w-full mt-2 text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
     onContentUpdate={handleUpdateDescription}
     placeholder="Add a description"
     data-testid="autogrow-textarea"

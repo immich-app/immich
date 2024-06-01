@@ -1,11 +1,11 @@
 <script lang="ts">
   import { autoGrowHeight } from '$lib/actions/autogrow';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { shortcut } from '$lib/actions/shortcut';
   import { tick } from 'svelte';
 
   export let content: string = '';
-  export let elementClass: string = '';
+  let className: string = '';
+  export { className as class };
   export let onContentUpdate: (newContent: string) => void = () => null;
   export let placeholder: string = '';
 
@@ -27,10 +27,9 @@
 
 <textarea
   bind:this={textarea}
-  class={elementClass}
+  class="resize-none {className}"
   on:focusout={updateContent}
   on:input={(e) => (newContent = e.currentTarget.value)}
-  use:clickOutside={{ onOutclick: updateContent }}
   {placeholder}
   use:shortcut={{
     shortcut: { key: 'Enter', ctrl: true },
