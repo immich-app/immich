@@ -28,20 +28,18 @@ class FacialRecognitionPipeline:
         return self.postprocess(inputs, detected_faces, embeddings)
 
     def postprocess(
-        self, image: NDArray[np.uint8], detected_faces: DetectedFaces, embeddings: NDArray[np.float32]
+        self, image: NDArray[np.uint8], faces: DetectedFaces, embeddings: NDArray[np.float32]
     ) -> FacialRecognitionResponse:
         height, width, _ = image.shape
-        bboxes: list[list[int]] = detected_faces.bounding_boxes.tolist()
-        embeddings_list: list[list[float]] = embeddings.tolist()
-        scores: list[float] = detected_faces.scores.tolist()
-
-        return [
-            {
-                "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-                "embedding": embedding,
-                "imageHeight": height,
-                "imageWidth": width,
-                "score": score,
-            }
-            for (x1, y1, x2, y2), embedding, score in zip(bboxes, embeddings_list, scores)
-        ]
+        return {
+            "imageHeight": height,
+            "imageWidth": width,
+            "faces": [
+                {
+                    "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+                    "embedding": embedding,
+                    "score": score,
+                }
+                for (x1, y1, x2, y2), embedding, score in zip(faces.bounding_boxes, embeddings, faces.scores)
+            ],
+        }

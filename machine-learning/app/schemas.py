@@ -82,12 +82,13 @@ class DetectedFaces(NamedTuple):
 class FacialRecognitionResult(TypedDict):
     boundingBox: BoundingBox
     embedding: list[float]
-    imageHeight: int
-    imageWidth: int
     score: float
 
 
-FacialRecognitionResponse = list[FacialRecognitionResult]
+class FacialRecognitionResponse(TypedDict):
+    imageHeight: int
+    imageWidth: int
+    faces: list[FacialRecognitionResult]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
