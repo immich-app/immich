@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { isEmpty } from 'lodash';
 import { readFile } from 'node:fs/promises';
-import { CLIPConfig, ModelConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
+import { CLIPConfig } from 'src/dtos/model-config.dto';
 import {
-  CLIPMode,
-  DetectFaceResult,
+  Embedding,
+  FacialRecognitionOptions,
+  FacialRecognitionResponse,
   IMachineLearningRepository,
+  MachineLearningRequest,
+  ModelTask,
   ModelType,
   TextModelInput,
   VisionModelInput,
@@ -16,7 +20,11 @@ const errorPrefix = 'Machine learning request';
 @Instrumentation()
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
+  private async predict<T>(
+    url: string,
+    input: TextModelInput | VisionModelInput,
+    config: MachineLearningRequest,
+  ): Promise<T> {
     const formData = await this.getFormData(input, config);
 
     const res = await fetch(new URL('/predict', url), { method: 'POST', body: formData }).catch(
@@ -32,38 +40,47 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.json();
   }
 
-  detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
-    return this.predict<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
+  detectFaces(
+    url: string,
+    input: VisionModelInput,
+    { modelName, minScore }: FacialRecognitionOptions,
+  ): Promise<FacialRecognitionResponse> {
+    return this.predict<FacialRecognitionResponse>(url, input, {
+      modelName,
+      minScore,
+      modelType: ModelType.PIPELINE,
+      modelTask: ModelTask.FACIAL_RECOGNITION,
+    });
   }
 
-  encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.predict<number[]>(url, input, {
-      ...config,
-      modelType: ModelType.CLIP,
-      mode: CLIPMode.VISION,
-    } as CLIPConfig);
+  encodeImage(url: string, input: VisionModelInput, { modelName }: CLIPConfig): Promise<Embedding> {
+    return this.predict<Embedding>(url, input, {
+      modelName,
+      modelType: ModelType.VISUAL,
+      modelTask: ModelTask.SEARCH,
+    });
   }
 
-  encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.predict<number[]>(url, input, {
-      ...config,
-      modelType: ModelType.CLIP,
-      mode: CLIPMode.TEXT,
-    } as CLIPConfig);
+  encodeText(url: string, input: TextModelInput, { modelName }: CLIPConfig): Promise<Embedding> {
+    return this.predict<Embedding>(url, input, {
+      modelName,
+      modelType: ModelType.TEXTUAL,
+      modelTask: ModelTask.SEARCH,
+    });
   }
 
-  private async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {
+  private async getFormData(
+    input: TextModelInput | VisionModelInput,
+    config: MachineLearningRequest,
+  ): Promise<FormData> {
     const formData = new FormData();
-    const { enabled, modelName, modelType, ...options } = config;
-    if (!enabled) {
-      throw new Error(`${modelType} is not enabled`);
-    }
+    const { modelName, modelTask, modelType, ...options } = config;
 
     formData.append('modelName', modelName);
-    if (modelType) {
-      formData.append('modelType', modelType);
-    }
-    if (options) {
+    formData.append('modelTask', modelTask);
+    formData.append('modelType', modelType);
+
+    if (!isEmpty(options)) {
       formData.append('options', JSON.stringify(options));
     }
     if ('imagePath' in input) {

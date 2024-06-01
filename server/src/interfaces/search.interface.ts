@@ -1,6 +1,7 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { Embedding } from 'src/interfaces/machine-learning.interface';
 import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -36,8 +37,6 @@ export interface SearchExploreItem<T> {
   fieldName: string;
   items: SearchExploreItemSet<T>;
 }
-
-export type Embedding = number[];
 
 export interface SearchAssetIDOptions {
   checksum?: Buffer;

@@ -333,7 +333,11 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const faces = await this.machineLearningRepository.detectFaces(
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
       { imagePath: asset.previewPath },
       machineLearning.facialRecognition,
@@ -348,8 +352,8 @@ export class PersonService {
       const mappedFaces = faces.map((face) => ({
         assetId: asset.id,
         embedding: face.embedding,
-        imageHeight: face.imageHeight,
-        imageWidth: face.imageWidth,
+        imageHeight,
+        imageWidth,
         boundingBoxX1: face.boundingBox.x1,
         boundingBoxX2: face.boundingBox.x2,
         boundingBoxY1: face.boundingBox.y1,

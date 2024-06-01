@@ -86,9 +86,9 @@ class FacialRecognitionResult(TypedDict):
 
 
 class FacialRecognitionResponse(TypedDict):
+    faces: list[FacialRecognitionResult]
     imageHeight: int
     imageWidth: int
-    faces: list[FacialRecognitionResult]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:

@@ -7,7 +7,7 @@ import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interfac
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { FacialRecognitionResponse, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -46,19 +46,21 @@ const responseDto: PersonResponseDto = {
 
 const statistics = { assets: 3 };
 
-const detectFaceMock = {
-  assetId: 'asset-1',
-  personId: 'person-1',
-  boundingBox: {
-    x1: 100,
-    y1: 100,
-    x2: 200,
-    y2: 200,
-  },
+const detectFaceMock: FacialRecognitionResponse = {
+  faces: [
+    {
+      boundingBox: {
+        x1: 100,
+        y1: 100,
+        x2: 200,
+        y2: 200,
+      },
+      embedding: [1, 2, 3, 4],
+      score: 0.2,
+    },
+  ],
   imageHeight: 500,
   imageWidth: 400,
-  embedding: [1, 2, 3, 4],
-  score: 0.2,
 };
 
 describe(PersonService.name, () => {
@@ -642,7 +644,7 @@ describe(PersonService.name, () => {
     it('should handle no results', async () => {
       const start = Date.now();
 
-      machineLearningMock.detectFaces.mockResolvedValue([]);
+      machineLearningMock.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleDetectFaces({ id: assetStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
@@ -671,7 +673,7 @@ describe(PersonService.name, () => {
 
     it('should create a face with no person and queue recognition job', async () => {
       personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
-      machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
+      machineLearningMock.detectFaces.mockResolvedValue(detectFaceMock);
       searchMock.searchFaces.mockResolvedValue([{ face: faceStub.face1, distance: 0.7 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       const face = {
