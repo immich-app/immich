@@ -18,8 +18,8 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { clickOutside } from '$lib/actions/click-outside';
   import { focusOutside } from '$lib/actions/focus-outside';
+  import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { uniqueIdStore } from '$lib/stores/unique-id.store';
 
   export let label: string;
   export let hideLabel = false;
@@ -30,7 +30,7 @@
   /**
    * Unique identifier for the combobox.
    */
-  let id: string = uniqueIdStore.generateId();
+  let id: string = generateId();
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
    */
