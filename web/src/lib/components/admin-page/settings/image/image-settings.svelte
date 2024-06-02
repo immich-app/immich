@@ -93,7 +93,6 @@
         />
 
         <SettingSwitch
-          id="prefer-wide-gamut"
           title="PREFER WIDE GAMUT"
           subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
           checked={config.image.colorspace === Colorspace.P3}
@@ -103,7 +102,6 @@
         />
 
         <SettingSwitch
-          id="prefer-embedded"
           title="PREFER EMBEDDED PREVIEW"
           subtitle="Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview is camera-dependent and the image may have more compression artifacts."
           checked={config.image.extractEmbedded}

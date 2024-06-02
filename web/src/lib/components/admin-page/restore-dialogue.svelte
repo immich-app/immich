@@ -28,7 +28,6 @@
 </script>
 
 <ConfirmDialog
-  id="restore-user-modal"
   title="Restore user"
   confirmText="Continue"
   confirmColor="green"

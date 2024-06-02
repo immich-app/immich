@@ -46,7 +46,7 @@ class CuratedRow extends StatelessWidget {
       itemBuilder: (context, index) {
         final object = content[index];
         final thumbnailRequestUrl =
-            '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${object.id}';
+            '${Store.get(StoreKey.serverEndpoint)}/assets/${object.id}/thumbnail';
         return SizedBox(
           width: imageSize,
           height: imageSize,

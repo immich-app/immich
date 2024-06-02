@@ -9,7 +9,6 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
     ReactionType,
-    ThumbnailFormat,
     createActivity,
     deleteActivity,
     getActivities,
@@ -182,7 +181,7 @@
                 <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
-                    src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    src={getAssetThumbnailUrl(reaction.assetId)}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
                 </a>
@@ -235,7 +234,7 @@
                   >
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
-                      src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      src={getAssetThumbnailUrl(reaction.assetId)}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
                   </a>

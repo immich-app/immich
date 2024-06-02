@@ -1295,7 +1295,7 @@
         ]
       }
     },
-    "/asset": {
+    "/assets": {
       "delete": {
         "operationId": "deleteAssets",
         "parameters": [],
@@ -1311,6 +1311,65 @@
         },
         "responses": {
           "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      },
+      "post": {
+        "operationId": "uploadAsset",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-checksum",
+            "in": "header",
+            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaCreateDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -1363,7 +1422,7 @@
         ]
       }
     },
-    "/asset/bulk-upload-check": {
+    "/assets/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
@@ -1406,7 +1465,7 @@
         ]
       }
     },
-    "/asset/device/{deviceId}": {
+    "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
@@ -1451,7 +1510,7 @@
         ]
       }
     },
-    "/asset/exist": {
+    "/assets/exist": {
       "post": {
         "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
@@ -1494,76 +1553,7 @@
         ]
       }
     },
-    "/asset/file/{id}": {
-      "get": {
-        "operationId": "serveFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isThumb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is serve thumbnail (resize) file",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isWeb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is request made from web",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
-    "/asset/jobs": {
+    "/assets/jobs": {
       "post": {
         "operationId": "runAssetJobs",
         "parameters": [],
@@ -1598,7 +1588,7 @@
         ]
       }
     },
-    "/asset/memory-lane": {
+    "/assets/memory-lane": {
       "get": {
         "operationId": "getMemoryLane",
         "parameters": [
@@ -1654,7 +1644,7 @@
         ]
       }
     },
-    "/asset/random": {
+    "/assets/random": {
       "get": {
         "operationId": "getRandom",
         "parameters": [
@@ -1699,7 +1689,7 @@
         ]
       }
     },
-    "/asset/stack/parent": {
+    "/assets/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
         "parameters": [],
@@ -1734,7 +1724,7 @@
         ]
       }
     },
-    "/asset/statistics": {
+    "/assets/statistics": {
       "get": {
         "operationId": "getAssetStatistics",
         "parameters": [
@@ -1791,127 +1781,7 @@
         ]
       }
     },
-    "/asset/thumbnail/{id}": {
-      "get": {
-        "operationId": "getAssetThumbnail",
-        "parameters": [
-          {
-            "name": "format",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ThumbnailFormat"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
-    "/asset/upload": {
-      "post": {
-        "operationId": "uploadFile",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-immich-checksum",
-            "in": "header",
-            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAssetDto"
-              }
-            }
-          },
-          "description": "Asset Upload Information",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
-    "/asset/{id}": {
+    "/assets/{id}": {
       "get": {
         "operationId": "getAssetInfo",
         "parameters": [
@@ -2011,7 +1881,56 @@
         ]
       }
     },
-    "/asset/{id}/file": {
+    "/assets/{id}/original": {
+      "get": {
+        "operationId": "downloadAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      },
       "put": {
         "description": "Replace the asset with new file, without changing its id",
         "operationId": "replaceAsset",
@@ -2073,6 +1992,116 @@
         "x-immich-lifecycle": {
           "addedAt": "v1.106.0"
         }
+      }
+    },
+    "/assets/{id}/thumbnail": {
+      "get": {
+        "operationId": "viewAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMediaSize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
+    "/assets/{id}/video/playback": {
+      "get": {
+        "operationId": "playAssetVideo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/audit/deletes": {
@@ -2325,57 +2354,6 @@
           },
           "required": true
         },
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Download"
-        ]
-      }
-    },
-    "/download/asset/{id}": {
-      "post": {
-        "operationId": "downloadFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "content": {
@@ -7417,21 +7395,6 @@
         ],
         "type": "object"
       },
-      "AssetFileUploadResponseDto": {
-        "properties": {
-          "duplicate": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "duplicate",
-          "id"
-        ],
-        "type": "object"
-      },
       "AssetFullSyncDto": {
         "properties": {
           "lastCreationDate": {
@@ -7526,6 +7489,59 @@
         ],
         "type": "object"
       },
+      "AssetMediaCreateDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
       "AssetMediaReplaceDto": {
         "properties": {
           "assetData": {
@@ -7574,8 +7590,16 @@
         ],
         "type": "object"
       },
+      "AssetMediaSize": {
+        "enum": [
+          "preview",
+          "thumbnail"
+        ],
+        "type": "string"
+      },
       "AssetMediaStatus": {
         "enum": [
+          "created",
           "replaced",
           "duplicate"
         ],
@@ -7960,59 +7984,6 @@
         },
         "required": [
           "albumName"
-        ],
-        "type": "object"
-      },
-      "CreateAssetDto": {
-        "properties": {
-          "assetData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "livePhotoData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "sidecarData": {
-            "format": "binary",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetData",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -10869,13 +10840,6 @@
           "OBJECT",
           "FACE",
           "CUSTOM"
-        ],
-        "type": "string"
-      },
-      "ThumbnailFormat": {
-        "enum": [
-          "JPEG",
-          "WEBP"
         ],
         "type": "string"
       },

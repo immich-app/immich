@@ -474,8 +474,9 @@ FROM
 WHERE
   (
     (
-      ("AssetEntity"."libraryId" = $1)
-      AND ("AssetEntity"."checksum" = $2)
+      ("AssetEntity"."ownerId" = $1)
+      AND ("AssetEntity"."libraryId" = $2)
+      AND ("AssetEntity"."checksum" = $3)
     )
   )
   AND ("AssetEntity"."deletedAt" IS NULL)

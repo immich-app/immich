@@ -74,7 +74,7 @@
   }
 </script>
 
-<FullScreenModal id="create-new-user-modal" title="Create new user" showLogo {onClose}>
+<FullScreenModal title="Create new user" showLogo {onClose}>
   <form on:submit|preventDefault={registerUser} autocomplete="off" id="create-new-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">Email</label>

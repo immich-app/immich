@@ -1,27 +1,27 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { shortcuts } from '$lib/actions/shortcut';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { type Viewport } from '$lib/stores/assets.store';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { shortcuts } from '$lib/actions/shortcut';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { ThumbnailFormat, getMemoryLane, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, getMemoryLane, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiChevronDown,
     mdiChevronLeft,
@@ -243,7 +243,7 @@
             {#if previousMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl(previousMemory.assets[0].id, ThumbnailFormat.Jpeg)}
+                src={getAssetThumbnailUrl({ id: previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt="Previous memory"
                 draggable="false"
               />
@@ -275,7 +275,7 @@
               <img
                 transition:fade
                 class="h-full w-full rounded-2xl object-contain transition-all"
-                src={getAssetThumbnailUrl(currentAsset.id, ThumbnailFormat.Jpeg)}
+                src={getAssetThumbnailUrl({ id: currentAsset.id, size: AssetMediaSize.Preview })}
                 alt={currentAsset.exifInfo?.description}
                 draggable="false"
               />
@@ -321,7 +321,7 @@
             {#if nextMemory}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl(nextMemory.assets[0].id, ThumbnailFormat.Jpeg)}
+                src={getAssetThumbnailUrl({ id: nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt="Next memory"
                 draggable="false"
               />

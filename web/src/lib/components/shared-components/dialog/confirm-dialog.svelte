@@ -3,7 +3,6 @@
   import Button from '../../elements/buttons/button.svelte';
   import type { Color } from '$lib/components/elements/buttons/button.svelte';
 
-  export let id: string = 'confirm-dialog';
   export let title = 'Confirm';
   export let prompt = 'Are you sure you want to do this?';
   export let confirmText = 'Confirm';
@@ -24,7 +23,7 @@
   };
 </script>
 
-<FullScreenModal {title} {id} onClose={onCancel} {width}>
+<FullScreenModal {title} onClose={onCancel} {width}>
   <div class="text-md py-5 text-center">
     <slot name="prompt">
       <p>{prompt}</p>

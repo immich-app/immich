@@ -21,21 +21,17 @@
   const handleClose = () => dispatch('close');
 </script>
 
-<FullScreenModal id="map-settings-modal" title="Map settings" onClose={handleClose}>
+<FullScreenModal title="Map settings" onClose={handleClose}>
   <form
     on:submit|preventDefault={() => dispatch('save', settings)}
     class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
     id="map-settings-form"
   >
-    <SettingSwitch id="allow-dark-mode" title="Allow dark mode" bind:checked={settings.allowDarkMode} />
-    <SettingSwitch id="only-favorites" title="Only favorites" bind:checked={settings.onlyFavorites} />
-    <SettingSwitch id="include-archived" title="Include archived" bind:checked={settings.includeArchived} />
-    <SettingSwitch
-      id="include-shared-partner-assets"
-      title="Include shared partner assets"
-      bind:checked={settings.withPartners}
-    />
-    <SettingSwitch id="include-shared-albums" title="Include shared albums" bind:checked={settings.withSharedAlbums} />
+    <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
+    <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
+    <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
+    <SettingSwitch title="Include shared partner assets" bind:checked={settings.withPartners} />
+    <SettingSwitch title="Include shared albums" bind:checked={settings.withSharedAlbums} />
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
         <div class="flex items-center justify-between gap-8">

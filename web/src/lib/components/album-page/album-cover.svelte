@@ -1,15 +1,13 @@
 <script lang="ts">
-  import { ThumbnailFormat, type AlbumResponseDto } from '@immich/sdk';
   import { getAssetThumbnailUrl } from '$lib/utils';
+  import { type AlbumResponseDto } from '@immich/sdk';
 
   export let album: AlbumResponseDto | undefined;
   export let preload = false;
   export let css = '';
 
   $: thumbnailUrl =
-    album && album.albumThumbnailAssetId
-      ? getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-      : null;
+    album && album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null;
 </script>
 
 <div class="relative aspect-square">

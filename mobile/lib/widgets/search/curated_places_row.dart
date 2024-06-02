@@ -115,7 +115,7 @@ class CuratedPlacesRow extends CuratedRow {
         final actualIndex = index - actualContentIndex;
         final object = content[actualIndex];
         final thumbnailRequestUrl =
-            '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${object.id}';
+            '${Store.get(StoreKey.serverEndpoint)}/assets/${object.id}/thumbnail';
         return SizedBox(
           width: imageSize,
           height: imageSize,

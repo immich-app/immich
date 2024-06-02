@@ -3,7 +3,7 @@
   import { photoViewer } from '$lib/stores/assets.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
-  import { AssetTypeEnum, ThumbnailFormat, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
@@ -43,7 +43,7 @@
     if (assetType === AssetTypeEnum.Image) {
       image = $photoViewer;
     } else if (assetType === AssetTypeEnum.Video) {
-      const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+      const data = getAssetThumbnailUrl(assetId);
       const img: HTMLImageElement = new Image();
       img.src = data;
 

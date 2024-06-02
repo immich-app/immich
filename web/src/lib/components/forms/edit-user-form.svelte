@@ -96,7 +96,7 @@
   }
 </script>
 
-<FullScreenModal id="edit-user-modal" title="Edit user" icon={mdiAccountEditOutline} {onClose}>
+<FullScreenModal title="Edit user" icon={mdiAccountEditOutline} {onClose}>
   <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">Email</label>

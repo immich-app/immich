@@ -28,7 +28,7 @@
   };
 </script>
 
-<FullScreenModal id="api-key-modal" {title} icon={mdiKeyVariant} onClose={handleCancel}>
+<FullScreenModal {title} icon={mdiKeyVariant} onClose={handleCancel}>
   <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="api-key-form">
     <div class="mb-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
