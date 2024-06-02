@@ -30,24 +30,12 @@ class BaseCLIPVisualEncoder(InferenceModel):
         pass
 
     @property
-    def model_dir(self) -> Path:
-        return self.cache_dir / "visual"
-
-    @property
     def model_cfg_path(self) -> Path:
         return self.cache_dir / "config.json"
 
     @property
-    def model_path(self) -> Path:
-        return self.model_dir / f"model.{self.preferred_runtime}"
-
-    @property
     def preprocess_cfg_path(self) -> Path:
         return self.model_dir / "preprocess_cfg.json"
-
-    @property
-    def cached(self) -> bool:
-        return self.model_path.is_file()
 
     @cached_property
     def model_cfg(self) -> dict[str, Any]:

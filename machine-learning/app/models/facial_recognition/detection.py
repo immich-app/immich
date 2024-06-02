@@ -26,8 +26,8 @@ class FaceDetector(InferenceModel):
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        self.det_model = RetinaFace(session=session)
-        self.det_model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
+        self.model = RetinaFace(session=session)
+        self.model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
 
         return session
 
@@ -35,20 +35,10 @@ class FaceDetector(InferenceModel):
         inputs = decode_cv2(inputs)
 
         bboxes, landmarks = self._detect(inputs)
-        return DetectedFaces(bounding_boxes=bboxes[:, :4], scores=bboxes[:, 4], landmarks=landmarks)
+        return {"boxes": bboxes[:, :4], "scores": bboxes[:, 4], "landmarks": landmarks}
 
     def _detect(self, inputs: NDArray[np.uint8] | bytes) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-        return self.det_model.detect(inputs)  # type: ignore
-
-    def postprocess(self, faces: DetectedFaces) -> Any:
-        scores: list[float] = faces.bounding_boxes[:, 4].tolist()
-        bboxes_list: list[list[int]] = faces.bounding_boxes[:, :4].round().tolist()
-        landmarks_list: list[list[float]] = faces.landmarks.tolist() if faces.landmarks is not None else []
-
-        return [
-            {"box": {"x1": x1, "y1": y1, "x2": x2, "y2": y2}, "score": score, "landmarks": face_landmarks}
-            for (x1, y1, x2, y2), score, face_landmarks in zip(bboxes_list, scores, landmarks_list)
-        ]
+        return self.model.detect(inputs)  # type: ignore
 
     def configure(self, **kwargs: Any) -> None:
-        self.det_model.det_thresh = kwargs.pop("minScore", self.det_model.det_thresh)
+        self.model.det_thresh = kwargs.pop("minScore", self.model.det_thresh)

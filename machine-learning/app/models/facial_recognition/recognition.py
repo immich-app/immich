@@ -36,7 +36,7 @@ class FaceRecognizer(InferenceModel):
         return session
 
     def _predict(self, inputs: NDArray[np.uint8] | bytes, faces: DetectedFaces, **kwargs: Any) -> NDArray[np.float32]:
-        if faces.bounding_boxes.shape[0] == 0:
+        if faces["boxes"].shape[0] == 0:
             return np.empty((0, 512), dtype=np.float32)
         inputs = decode_cv2(inputs)
         embeddings: NDArray[np.float32] = self.model.get_feat(self._crop(inputs, faces))
@@ -44,12 +44,11 @@ class FaceRecognizer(InferenceModel):
 
     def _crop(self, image: NDArray[np.uint8], faces: DetectedFaces) -> list[NDArray[np.uint8]]:
         batch: list[NDArray[np.uint8]] = []
-        for i in range(faces.bounding_boxes.shape[0]):
-            if faces.landmarks is not None:
-                landmark = faces.landmarks[i]
-                cropped: NDArray[np.uint8] = norm_crop(image, landmark)
+        for i in range(faces["boxes"].shape[0]):
+            if faces["landmarks"] is not None:
+                cropped: NDArray[np.uint8] = norm_crop(image, faces["landmarks"][i])
             else:
-                cropped = crop_bounding_box(image, faces.bounding_boxes[i])
+                cropped = crop_bounding_box(image, faces["boxes"][i])
                 cropped = crop_np(resize_np(cropped, 112), 112)
             batch.append(cropped)
 

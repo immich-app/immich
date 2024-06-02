@@ -40,6 +40,6 @@ class FacialRecognitionPipeline:
                     "embedding": embedding,
                     "score": score,
                 }
-                for (x1, y1, x2, y2), embedding, score in zip(faces.bounding_boxes.round(), embeddings, faces.scores)
+                for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"].round(), embeddings, faces["scores"])
             ],
         }

@@ -37,16 +37,8 @@ class BaseCLIPTextualEncoder(InferenceModel):
         pass
 
     @property
-    def model_dir(self) -> Path:
-        return self.cache_dir / "textual"
-
-    @property
     def model_cfg_path(self) -> Path:
         return self.cache_dir / "config.json"
-
-    @property
-    def model_path(self) -> Path:
-        return self.model_dir / f"model.{self.preferred_runtime}"
 
     @property
     def tokenizer_file_path(self) -> Path:
@@ -55,10 +47,6 @@ class BaseCLIPTextualEncoder(InferenceModel):
     @property
     def tokenizer_cfg_path(self) -> Path:
         return self.model_dir / "tokenizer_config.json"
-
-    @property
-    def cached(self) -> bool:
-        return self.model_path.is_file()
 
     @cached_property
     def model_cfg(self) -> dict[str, Any]:

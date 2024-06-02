@@ -38,7 +38,7 @@ class InferenceModel(ABC):
         self.providers = providers if providers is not None else self.providers_default
         self.provider_options = provider_options if provider_options is not None else self.provider_options_default
         self.sess_options = sess_options if sess_options is not None else self.sess_options_default
-        self.preferred_runtime = preferred_format if preferred_format is not None else self.preferred_runtime_default
+        self.preferred_format = preferred_format if preferred_format is not None else self.preferred_format_default
 
     def download(self) -> None:
         if not self.cached:
@@ -80,7 +80,7 @@ class InferenceModel(ABC):
         pass
 
     def _download(self) -> None:
-        ignore_patterns = [] if self.preferred_runtime == ModelFormat.ARMNN else ["*.armnn"]
+        ignore_patterns = [] if self.preferred_format == ModelFormat.ARMNN else ["*.armnn"]
         snapshot_download(
             f"immich-app/{clean_name(self.model_name)}",
             cache_dir=self.cache_dir,
@@ -140,8 +140,12 @@ class InferenceModel(ABC):
         return session
 
     @property
+    def model_dir(self) -> Path:
+        return self.cache_dir / self.model_type.value
+
+    @property
     def model_path(self) -> Path:
-        return self.cache_dir / self.model_type.value / f"model.{self.preferred_runtime}"
+        return self.model_dir / f"model.{self.preferred_format}"
 
     @property
     def model_task(self) -> ModelTask:
@@ -249,14 +253,14 @@ class InferenceModel(ABC):
         return sess_options
 
     @property
-    def preferred_runtime(self) -> ModelFormat:
+    def preferred_format(self) -> ModelFormat:
         return self._preferred_runtime
 
-    @preferred_runtime.setter
-    def preferred_runtime(self, preferred_runtime: ModelFormat) -> None:
+    @preferred_format.setter
+    def preferred_format(self, preferred_runtime: ModelFormat) -> None:
         log.debug(f"Setting preferred runtime to {preferred_runtime}")
         self._preferred_runtime = preferred_runtime
 
     @property
-    def preferred_runtime_default(self) -> ModelFormat:
+    def preferred_format_default(self) -> ModelFormat:
         return ModelFormat.ARMNN if ann.ann.is_available and settings.ann else ModelFormat.ONNX

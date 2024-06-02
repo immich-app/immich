@@ -12,6 +12,8 @@ from typing import Any, AsyncGenerator, Callable, Iterator
 import orjson
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
+from zipfile import BadZipFile
 from starlette.formparsers import MultiPartParser
 
 from .config import PreloadModelData, log, settings
@@ -141,8 +143,19 @@ async def load(model: Predictor) -> Predictor:
             model.load()
         return model
 
-    await run(_load, model)
-    return model
+    try:
+        await run(_load, model)
+        return model
+    except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
+        log.warning(
+            (
+                f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'."
+                "Clearing cache and retrying."
+            )
+        )
+        model.clear_cache()
+        await run(_load, model)
+        return model
 
 
 async def idle_shutdown_task() -> None:

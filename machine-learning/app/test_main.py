@@ -7,6 +7,8 @@ from types import SimpleNamespace
 from typing import Any, Callable
 from unittest import mock
 
+from app.models.facial_recognition.detection import FaceDetector
+from app.models.facial_recognition.pipeline import FacialRecognitionPipeline
 import cv2
 import numpy as np
 import onnxruntime as ort
@@ -154,29 +156,29 @@ class TestBase:
 
         assert encoder.cache_dir == cache_dir
 
-    def test_sets_default_preferred_runtime(self, mocker: MockerFixture) -> None:
+    def test_sets_default_preferred_format(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
         mocker.patch("ann.ann.is_available", False)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
-        assert encoder.preferred_runtime == ModelFormat.ONNX
+        assert encoder.preferred_format == ModelFormat.ONNX
 
-    def test_sets_default_preferred_runtime_to_armnn_if_available(self, mocker: MockerFixture) -> None:
+    def test_sets_default_preferred_format_to_armnn_if_available(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
         mocker.patch("ann.ann.is_available", True)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
-        assert encoder.preferred_runtime == ModelFormat.ARMNN
+        assert encoder.preferred_format == ModelFormat.ARMNN
 
-    def test_sets_preferred_runtime_kwarg(self, mocker: MockerFixture) -> None:
+    def test_sets_preferred_format_kwarg(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", False)
         mocker.patch("ann.ann.is_available", False)
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", preferred_runtime=ModelFormat.ARMNN)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", preferred_format=ModelFormat.ARMNN)
 
-        assert encoder.preferred_runtime == ModelFormat.ARMNN
+        assert encoder.preferred_format == ModelFormat.ARMNN
 
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
@@ -305,10 +307,10 @@ class TestBase:
             ignore_patterns=["*.armnn"],
         )
 
-    def test_download_downloads_armnn_if_preferred_runtime(self, mocker: MockerFixture) -> None:
+    def test_download_downloads_armnn_if_preferred_format(self, mocker: MockerFixture) -> None:
         mock_snapshot_download = mocker.patch("app.models.base.snapshot_download")
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", preferred_runtime=ModelFormat.ARMNN)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", preferred_format=ModelFormat.ARMNN)
         encoder.download()
 
         mock_snapshot_download.assert_called_once_with(
@@ -337,9 +339,8 @@ class TestCLIP:
 
         mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
         mocked.run.return_value = [[self.embedding]]
-        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="vision")
+        clip_encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache")
         embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, np.ndarray)
@@ -359,9 +360,9 @@ class TestCLIP:
 
         mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
         mocked.run.return_value = [[self.embedding]]
-        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
+        mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
+        clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
         embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, np.ndarray)
@@ -378,12 +379,13 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "download")
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
-        clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
-        clip_encoder._load_tokenizer()
+        clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+        clip_encoder._load()
         tokens = clip_encoder.tokenize("test search query")
 
         assert "text" in tokens
@@ -401,13 +403,14 @@ class TestCLIP:
         mocker.patch.object(MClipTextualEncoder, "download")
         mocker.patch.object(MClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(MClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
-        mock_tokenizer = mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True).return_value
+        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_attention_mask = [randint(0, 1) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids, attention_mask=mock_attention_mask)
 
-        clip_encoder = MClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
-        clip_encoder._load_tokenizer()
+        clip_encoder = MClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+        clip_encoder._load()
         tokens = clip_encoder.tokenize("test search query")
 
         assert "input_ids" in tokens
@@ -427,9 +430,60 @@ class TestFaceRecognition:
 
         assert face_recognizer.min_score == 0.5
 
-    def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+    def test_detection(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceDetector, "load")
+        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
+
+        det_model = mock.Mock()
+        num_faces = 2
+        bbox = np.random.rand(num_faces, 4).astype(np.float32)
+        scores = np.array([[0.67]] * num_faces).astype(np.float32)
+        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
+        det_model.detect.return_value = (np.concatenate([bbox, scores], axis=-1), kpss)
+        face_detector.model = det_model
+
+        faces = face_detector.predict(cv_image)
+
+        assert isinstance(faces, dict)
+        assert "boxes" in faces and isinstance(faces["boxes"], np.ndarray)
+        assert "landmarks" in faces and isinstance(faces["landmarks"], np.ndarray)
+        assert "scores" in faces and isinstance(faces["scores"], np.ndarray)
+        assert np.equal(faces["boxes"], bbox).all()
+        assert np.equal(faces["landmarks"], kpss).all()
+        assert np.equal(faces["scores"], scores).all()
+        det_model.detect.assert_called_once()
+
+    def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
+
+        num_faces = 2
+        bbox = np.random.rand(num_faces, 4).astype(np.float32)
+        scores = np.array([[0.67]] * num_faces).astype(np.float32)
+        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
+        faces = {"boxes": bbox, "landmarks": kpss, "scores": scores}
+
+        rec_model = mock.Mock()
+        embedding = np.random.rand(num_faces, 512).astype(np.float32)
+        rec_model.get_feat.return_value = embedding
+        face_recognizer.model = rec_model
+
+        out = face_recognizer.predict(cv_image, faces)
+
+        assert isinstance(out, np.ndarray)
+        assert np.equal(embedding, out).all()
+        rec_model.get_feat.assert_called_once()
+        call_args = rec_model.get_feat.call_args_list[0].args
+        assert len(call_args) == 1
+        assert isinstance(call_args[0], list)
+        assert isinstance(call_args[0][0], np.ndarray)
+        assert call_args[0][0].shape == (112, 112, 3)
+
+    def test_pipeline(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceDetector, "load")
+        mocker.patch.object(FaceRecognizer, "load")
+        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
 
         det_model = mock.Mock()
         num_faces = 2
@@ -437,25 +491,31 @@ class TestFaceRecognition:
         score = np.array([[0.67]] * num_faces).astype(np.float32)
         kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
         det_model.detect.return_value = (np.concatenate([bbox, score], axis=-1), kpss)
-        face_recognizer.model = det_model
+        face_detector.model = det_model
 
         rec_model = mock.Mock()
         embedding = np.random.rand(num_faces, 512).astype(np.float32)
         rec_model.get_feat.return_value = embedding
         face_recognizer.model = rec_model
 
-        faces = face_recognizer.predict(cv_image)
+        pipeline = FacialRecognitionPipeline(face_detector, face_recognizer)
 
-        assert len(faces) == num_faces
-        for face in faces:
-            assert face["imageHeight"] == 800
-            assert face["imageWidth"] == 600
-            assert isinstance(face["embedding"], np.ndarray)
+        response = pipeline.predict(cv_image)
+
+        assert isinstance(response, dict)
+        assert "imageHeight" in response and isinstance(response["imageHeight"], int)
+        assert "imageWidth" in response and isinstance(response["imageWidth"], int)
+        assert "faces" in response and isinstance(response["faces"], list)
+        assert len(response["faces"]) == num_faces
+        for face in response["faces"]:
+            assert "boundingBox" in face and isinstance(face["boundingBox"], dict)
+            assert set(face["boundingBox"]) == {"x1", "y1", "x2", "y2"}
+            assert "embedding" in face and isinstance(face["embedding"], np.ndarray)
             assert face["embedding"].shape[0] == 512
-            assert face["embedding"].dtype == np.float32
+            assert "score" in face and isinstance(face["score"], np.float32)
 
         det_model.detect.assert_called_once()
-        assert rec_model.get_feat.call_count == num_faces
+        rec_model.get_feat.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -473,17 +533,17 @@ class TestCache:
             "test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache"
         )
         mock_get_model.assert_called_once_with(
-            ModelTask.FACIAL_RECOGNITION, ModelType.RECOGNITION, "test_model_name", cache_dir="test_cache"
+            "test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, cache_dir="test_cache"
         )
 
     async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get("test_image_model_name", ModelType.VISUAL, ModelTask.SEARCH)
-        await model_cache.get("test_text_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
+        await model_cache.get("test_model_name", ModelType.VISUAL, ModelTask.SEARCH)
+        await model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
         mock_get_model.assert_has_calls(
             [
-                mock.call(ModelTask.SEARCH, "test_image_model_name"),
-                mock.call(ModelTask.SEARCH, "test_text_model_name"),
+                mock.call("test_model_name", ModelType.VISUAL, ModelTask.SEARCH),
+                mock.call("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH),
             ]
         )
         assert len(model_cache.cache._cache) == 2
@@ -529,7 +589,47 @@ class TestCache:
         with pytest.raises(ValueError):
             await model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
 
-    async def test_preloads_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+    async def test_preloads_clip_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
+
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.clip == "ViT-B-32__openai"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("app.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
+        mock_get_model.assert_has_calls(
+            [
+                mock.call("ViT-B-32__openai", ModelType.TEXTUAL, ModelTask.SEARCH),
+                mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
+            ],
+            any_order=True,
+        )
+
+    async def test_preloads_facial_recognition_models(
+        self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock
+    ) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
+
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.facial_recognition == "buffalo_s"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("app.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
+        mock_get_model.assert_has_calls(
+            [
+                mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
+                mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
+            ],
+            any_order=True,
+        )
+
+    async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
 
@@ -542,12 +642,15 @@ class TestCache:
         monkeypatch.setattr("app.main.model_cache", model_cache)
 
         await preload_models(settings.preload)
-        assert len(model_cache.cache._cache) == 3
-        assert mock_get_model.call_count == 3
-        await model_cache.get("ViT-B-32__openai", ModelType.TEXTUAL, ModelTask.SEARCH, ttl=100)
-        await model_cache.get("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH, ttl=100)
-        await model_cache.get("buffalo_s", ModelType.PIPELINE, ModelTask.FACIAL_RECOGNITION, ttl=100)
-        assert mock_get_model.call_count == 3
+        mock_get_model.assert_has_calls(
+            [
+                mock.call("ViT-B-32__openai", ModelType.TEXTUAL, ModelTask.SEARCH),
+                mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
+                mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
+                mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
+            ],
+            any_order=True,
+        )
 
 
 @pytest.mark.asyncio
@@ -600,7 +703,7 @@ class TestEndpoints:
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
-            data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
+            data={"modelName": "ViT-B-32__openai", "modelTask": "clip", "modelType": "visual"},
             files={"image": byte_image.getvalue()},
         )
 
@@ -615,9 +718,9 @@ class TestEndpoints:
             "http://localhost:3003/predict",
             data={
                 "modelName": "ViT-B-32__openai",
-                "modelType": "clip",
+                "modelTask": "clip",
+                "modelType": "textual",
                 "text": "test search query",
-                "options": json.dumps({"mode": "text"}),
             },
         )
 
@@ -634,7 +737,8 @@ class TestEndpoints:
             "http://localhost:3003/predict",
             data={
                 "modelName": "buffalo_l",
-                "modelType": "facial-recognition",
+                "modelTask": "facial-recognition",
+                "modelType": "pipeline",
                 "options": json.dumps({"minScore": 0.034}),
             },
             files={"image": byte_image.getvalue()},
@@ -642,10 +746,13 @@ class TestEndpoints:
 
         actual = response.json()
         assert response.status_code == 200
-        assert len(expected) == len(actual)
-        for expected_face, actual_face in zip(expected, actual):
-            assert expected_face["imageHeight"] == actual_face["imageHeight"]
-            assert expected_face["imageWidth"] == actual_face["imageWidth"]
+        assert isinstance(actual, dict)
+        assert actual.get("imageHeight", None) == expected["imageHeight"]
+        assert actual.get("imageWidth", None) == expected["imageWidth"]
+        assert "faces" in actual and isinstance(actual["faces"], list)
+        assert len(actual["faces"]) == len(expected["faces"])
+
+        for expected_face, actual_face in zip(expected["faces"], actual["faces"]):
             assert expected_face["boundingBox"] == actual_face["boundingBox"]
             assert np.allclose(expected_face["embedding"], actual_face["embedding"])
             assert np.allclose(expected_face["score"], actual_face["score"])

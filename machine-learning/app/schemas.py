@@ -73,8 +73,8 @@ class HasProfiling(Protocol):
     profiling: dict[str, float]
 
 
-class DetectedFaces(NamedTuple):
-    bounding_boxes: npt.NDArray[np.float32]
+class DetectedFaces(TypedDict):
+    boxes: npt.NDArray[np.float32]
     scores: npt.NDArray[np.float32]
     landmarks: npt.NDArray[np.float32] | None
 
