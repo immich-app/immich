@@ -126,7 +126,7 @@
                 />
 
                 {#if selectedMenuUser === user}
-                  <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                  <ContextMenu {...position} onClose={() => (selectedMenuUser = null)}>
                     {#if role === AlbumUserRole.Viewer}
                       <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
                     {:else}

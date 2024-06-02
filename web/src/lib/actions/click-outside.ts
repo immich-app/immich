@@ -1,19 +1,12 @@
 import { matchesShortcut } from '$lib/actions/shortcut';
 import type { ActionReturn } from 'svelte/action';
 
-interface Attributes {
-  /** @deprecated */
-  'on:outclick'?: (e: CustomEvent) => void;
-  /** @deprecated **/
-  'on:escape'?: (e: CustomEvent) => void;
-}
-
 interface Options {
   onOutclick?: () => void;
   onEscape?: () => void;
 }
 
-export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn<void, Attributes> {
+export function clickOutside(node: HTMLElement, options: Options = {}): ActionReturn {
   const { onOutclick, onEscape } = options;
 
   const handleClick = (event: MouseEvent) => {
@@ -22,11 +15,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
       return;
     }
 
-    if (onOutclick) {
-      onOutclick();
-    } else {
-      node.dispatchEvent(new CustomEvent('outclick'));
-    }
+    onOutclick?.();
   };
 
   const handleKey = (event: KeyboardEvent) => {
@@ -37,8 +26,6 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
     if (onEscape) {
       event.stopPropagation();
       onEscape();
-    } else {
-      node.dispatchEvent(new CustomEvent('escape'));
     }
   };
 
