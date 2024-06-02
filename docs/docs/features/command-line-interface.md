@@ -166,6 +166,83 @@ By default, hidden files are skipped. If you want to include hidden files, use t
 immich upload --include-hidden --recursive directory/
 ```
 
+### run the `immich upload` command in the background
+To run the `immich upload` command in the background. You can use the following approach. This is useful for large imports, as it allows the process to continue even if the SSH session is closed. Here’s how you can start the `immich upload` command in the background:
+
+```sh
+nohup immich upload /path/to/your/files/ -r &
+```
+
+This command starts the upload process in the background, and `nohup` ensures that it continues running even if the terminal is closed. The output will be directed to `nohup.out` by default, but you can still monitor the logs using the `tail` command:
+
+```sh
+tail -f nohup.out
+```
+
+This command allows you to see the latest lines of the log file and updates in real-time, enabling you to monitor the progress of the upload.
+
+To list background jobs, use the following command:
+
+```sh
+jobs
+```
+
+This will display all current background jobs and their statuses.
+
+To bring a background job to the foreground, use the `fg` command followed by the job number:
+
+```sh
+fg %1
+```
+
+To send the job back to the background, press `Ctrl+Z` to pause it, then use the `bg` command:
+
+```sh
+bg %1
+```
+
+Note that pressing `Ctrl+Z` stops the job temporarily. You need to use `bg %1` to resume it in the background.
+
+This approach allows you to efficiently manage long-running upload processes, ensuring they continue even if your SSH session is interrupted.
+
+### Interactive Inputs
+
+If you need to make interactive inputs while the process is running in the background, follow these steps:
+
+1. **List the running jobs:**
+
+   ```sh
+   jobs
+   ```
+
+   This command will display a list of current background jobs. Assume your job is the first one, it will be shown as `[1]`.
+
+2. **Bring the job to the foreground:**
+
+   ```sh
+   fg %1
+   ```
+
+   This command brings the first job (`%1`) to the foreground, allowing you to make interactive inputs.
+
+3. **Make the necessary interactive inputs.**
+
+4. **Send the job back to the background:**
+
+   Press `Ctrl+Z` to pause the process. Note that this stops the job temporarily. Then, use the `bg` command to resume it in the background:
+
+   ```sh
+   bg %1
+   ```
+
+Alternatively, you can directly resume the process in the background:
+
+   ```sh
+   fg %1 &
+   ```
+
+This method allows you to make interactive inputs while running a process in the background efficiently.
+
 ### Obtain the API Key
 
 The API key can be obtained in the user setting panel on the web interface.
