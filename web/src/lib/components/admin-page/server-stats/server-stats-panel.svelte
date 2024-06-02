@@ -31,16 +31,16 @@
     <p class="text-sm dark:text-immich-dark-fg">{$t('total_usage')}</p>
 
     <div class="mt-5 hidden justify-between lg:flex">
-      <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
-      <StatsCard icon={mdiPlayCircle} title={$t('videos')} value={stats.videos} />
-      <StatsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+      <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={stats.photos} />
+      <StatsCard icon={mdiPlayCircle} title={$t('videos').toUpperCase()} value={stats.videos} />
+      <StatsCard icon={mdiChartPie} title={$t('storage').toUpperCase()} value={statsUsage} unit={statsUsageUnit} />
     </div>
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
             <Icon path={mdiCameraIris} size="25" />
-            <p>{$t('photos')}</p>
+            <p>{$t('photos').toUpperCase()}</p>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-semibold">
@@ -52,7 +52,7 @@
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
             <Icon path={mdiPlayCircle} size="25" />
-            <p>{$t('videos')}</p>
+            <p>{$t('videos').toUpperCase()}</p>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-semibold">
@@ -64,7 +64,7 @@
         <div class="flex flex-wrap gap-x-7">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
             <Icon path={mdiChartPie} size="25" />
-            <p>{$t('storage')}</p>
+            <p>{$t('storage').toUpperCase()}</p>
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-semibold">
