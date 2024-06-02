@@ -31,7 +31,7 @@ describe('AssetStore', () => {
 
     it('should load buckets in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.Month });
+      expect(sdkMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.Day });
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
