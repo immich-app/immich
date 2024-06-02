@@ -273,10 +273,12 @@
   };
 
   const closeViewer = async () => {
-    $slideshowState = SlideshowState.StopSlideshow;
-    document.body.style.cursor = '';
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+    if ($slideshowState === SlideshowState.None) {
+      dispatch('close');
+      await navigate({ targetRoute: 'current', assetId: null });
+    } else {
+      $slideshowState = SlideshowState.StopSlideshow;
+    }
   };
 
   const navigateAssetRandom = async () => {
@@ -793,7 +795,6 @@
       <DeleteAssetDialog
         size={1}
         on:cancel={() => (isShowDeleteConfirmation = false)}
-        on:escape={() => (isShowDeleteConfirmation = false)}
         on:confirm={() => deleteAsset()}
       />
     {/if}

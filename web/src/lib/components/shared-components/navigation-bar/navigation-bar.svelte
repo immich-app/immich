@@ -114,9 +114,10 @@
         {/if}
 
         <div
-          use:clickOutside
-          on:outclick={() => (shouldShowAccountInfoPanel = false)}
-          on:escape={() => (shouldShowAccountInfoPanel = false)}
+          use:clickOutside={{
+            onOutclick: () => (shouldShowAccountInfoPanel = false),
+            onEscape: () => (shouldShowAccountInfoPanel = false),
+          }}
         >
           <button
             type="button"

@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
-  import { uniqueIdStore } from '$lib/stores/unique-id.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let onClose: () => void;
   export let title: string;
@@ -27,7 +27,7 @@
   /**
    * Unique identifier for the modal.
    */
-  let id: string = uniqueIdStore.generateId();
+  let id: string = generateId();
 
   $: titleId = `${id}-title`;
   $: isStickyBottom = !!$$slots['sticky-bottom'];
