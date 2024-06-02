@@ -21,8 +21,8 @@
         userPreferencesUpdateDto: {
           emailNotifications: {
             enabled: emailNotificationsEnabled,
-            albumInvite: emailNotificationsEnabled ? albumInviteNotificationEnabled : false,
-            albumUpdate: emailNotificationsEnabled ? albumUpdateNotificationEnabled : false,
+            albumInvite: emailNotificationsEnabled && albumInviteNotificationEnabled,
+            albumUpdate: emailNotificationsEnabled && albumUpdateNotificationEnabled,
           },
         },
       });
