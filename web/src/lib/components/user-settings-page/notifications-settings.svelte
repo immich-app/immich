@@ -26,7 +26,10 @@
           },
         },
       });
-      $preferences.memories.enabled = data.memories.enabled;
+
+      $preferences.emailNotifications.enabled = data.emailNotifications.enabled;
+      $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
+      $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
 
       notificationController.show({ message: 'Saved settings', type: NotificationType.Info });
     } catch (error) {
