@@ -69,7 +69,7 @@
   };
 </script>
 
-<FullScreenModal id="profile-image-cropper" title="Set profile picture" width="auto" {onClose}>
+<FullScreenModal title="Set profile picture" width="auto" {onClose}>
   <div class="flex place-items-center items-center justify-center">
     <div
       class="relative flex aspect-square w-[250px] overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"

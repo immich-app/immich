@@ -25,7 +25,6 @@
   import { preferences, user } from '$lib/stores/user.store';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  let handleEscapeKey = false;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
@@ -41,10 +40,6 @@
 
   const handleEscape = () => {
     if ($showAssetViewer) {
-      return;
-    }
-    if (handleEscapeKey) {
-      handleEscapeKey = false;
       return;
     }
     if ($isMultiSelectState) {
@@ -79,11 +74,7 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
-      <DeleteAssets
-        menuItem
-        on:escape={() => (handleEscapeKey = true)}
-        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
-      />
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
       <AssetJobActions />
     </ButtonContextMenu>
   </AssetSelectControlBar>

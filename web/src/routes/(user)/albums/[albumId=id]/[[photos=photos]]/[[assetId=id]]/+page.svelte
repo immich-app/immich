@@ -467,7 +467,7 @@
               <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
+                <div use:clickOutside={{ onOutclick: () => (viewMode = ViewMode.VIEW) }}>
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical} />
                   {#if viewMode === ViewMode.ALBUM_OPTIONS}
                     <ContextMenu {...contextMenuPosition}>

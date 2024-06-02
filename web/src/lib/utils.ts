@@ -3,10 +3,11 @@ import { locales } from '$lib/constants';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
+  AssetMediaSize,
   JobName,
-  ThumbnailFormat,
   finishOAuth,
   getAssetOriginalPath,
+  getAssetPlaybackPath,
   getAssetThumbnailPath,
   getBaseUrl,
   getPeopleThumbnailPath,
@@ -162,18 +163,28 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (
-  ...[assetId, isWeb, isThumb, checksum]:
-    | [assetId: string, isWeb: boolean, isThumb: boolean]
-    | [assetId: string, isWeb: boolean, isThumb: boolean, checksum: string]
-) => createUrl(getAssetOriginalPath(assetId), { isThumb, isWeb, key: getKey(), c: checksum });
+export const getAssetOriginalUrl = (options: string | { id: string; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, checksum } = options;
+  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: checksum });
+};
 
-export const getAssetThumbnailUrl = (
-  ...[assetId, format, checksum]:
-    | [assetId: string, format: ThumbnailFormat | undefined]
-    | [assetId: string, format: ThumbnailFormat | undefined, checksum: string]
-) => {
-  return createUrl(getAssetThumbnailPath(assetId), { format, key: getKey(), c: checksum });
+export const getAssetThumbnailUrl = (options: string | { id: string; size?: AssetMediaSize; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, size, checksum } = options;
+  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: checksum });
+};
+
+export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, checksum } = options;
+  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
 };
 
 export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));

@@ -111,7 +111,6 @@
 </script>
 
 <ConfirmDialog
-  id="change-location-modal"
   confirmColor="primary"
   title="Change location"
   width="wide"

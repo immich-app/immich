@@ -63,7 +63,7 @@
         <SettingSelect
           label="PRESET (-preset)"
           {disabled}
-          desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
+          desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above faster."
           bind:value={config.ffmpeg.preset}
           name="preset"
           options={[
@@ -234,7 +234,6 @@
         />
 
         <SettingSwitch
-          id="two-pass-encoding"
           title="TWO-PASS ENCODING"
           {disabled}
           subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
@@ -277,7 +276,6 @@
             />
 
             <SettingSwitch
-              id="hardware-decoding"
               title="HARDWARE DECODING"
               {disabled}
               subtitle="Applies only to NVENC and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos."
@@ -299,7 +297,6 @@
             />
 
             <SettingSwitch
-              id="temporal-aq"
               title="TEMPORAL AQ"
               {disabled}
               subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."

@@ -31,7 +31,7 @@ export class SystemConfigService {
   private core: SystemConfigCore;
 
   constructor(
-    @Inject(ISystemMetadataRepository) private repository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) repository: ISystemMetadataRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
@@ -107,17 +107,6 @@ export class SystemConfigService {
     options.presetOptions = supportedPresetTokens;
 
     return options;
-  }
-
-  async getMapStyle(theme: 'light' | 'dark') {
-    const { map } = await this.getConfig();
-    const styleUrl = theme === 'dark' ? map.darkStyle : map.lightStyle;
-
-    if (styleUrl) {
-      return this.repository.fetchStyle(styleUrl);
-    }
-
-    return JSON.parse(await this.repository.readFile(`./resources/style-${theme}.json`));
   }
 
   async getCustomCss(): Promise<string> {

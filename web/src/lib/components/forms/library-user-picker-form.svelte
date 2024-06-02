@@ -27,12 +27,7 @@
   const handleSubmit = () => dispatch('submit', { ownerId });
 </script>
 
-<FullScreenModal
-  id="select-library-owner-modal"
-  title="Select library owner"
-  icon={mdiFolderSync}
-  onClose={handleCancel}
->
+<FullScreenModal title="Select library owner" icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
     <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
 

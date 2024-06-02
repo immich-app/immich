@@ -1,0 +1,32 @@
+name: Docs destroy
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Destroy Docs Subdomain
+        env:
+          TF_VAR_prefix_name: "pr-${{ github.event.number }}"
+          TF_VAR_prefix_event_type: "pr"
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: "0.58.12"
+          tofu_version: "1.7.1"
+          tg_dir: "deployment/modules/cloudflare/docs"
+          tg_command: "destroy"
+
+      - name: Comment
+        uses: actions-cool/maintain-one-comment@v3
+        with:
+          number: ${{ github.event.number }}
+          delete: true
+          body-include: '<!-- Docs PR URL -->'

@@ -100,9 +100,9 @@ const config = {
             label: 'Docs',
           },
           {
-            to: '/milestones',
+            to: '/roadmap',
             position: 'right',
-            label: 'Milestones',
+            label: 'Roadmap',
           },
           {
             to: '/docs/api',

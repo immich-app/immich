@@ -76,7 +76,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       },
       "post": {
@@ -116,7 +116,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -167,7 +167,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -202,7 +202,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
@@ -246,7 +246,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "post": {
@@ -286,7 +286,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -338,7 +338,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "get": {
@@ -378,7 +378,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "put": {
@@ -428,7 +428,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -470,7 +470,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       },
       "put": {
@@ -520,7 +520,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -562,7 +562,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users (admin)"
         ]
       }
     },
@@ -616,7 +616,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "post": {
@@ -656,7 +656,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -688,7 +688,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -723,7 +723,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "get": {
@@ -779,7 +779,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "patch": {
@@ -829,7 +829,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -884,7 +884,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -945,7 +945,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -988,7 +988,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -1039,7 +1039,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -1091,7 +1091,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
@@ -1126,7 +1126,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "post": {
@@ -1166,7 +1166,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
@@ -1201,7 +1201,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "get": {
@@ -1241,7 +1241,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "put": {
@@ -1291,11 +1291,11 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
-    "/asset": {
+    "/assets": {
       "delete": {
         "operationId": "deleteAssets",
         "parameters": [],
@@ -1326,7 +1326,66 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
+        ]
+      },
+      "post": {
+        "operationId": "uploadAsset",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-checksum",
+            "in": "header",
+            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaCreateDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
         ]
       },
       "put": {
@@ -1359,11 +1418,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/bulk-upload-check": {
+    "/assets/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
@@ -1402,11 +1461,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/device/{deviceId}": {
+    "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
@@ -1447,11 +1506,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/exist": {
+    "/assets/exist": {
       "post": {
         "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
@@ -1490,80 +1549,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/file/{id}": {
-      "get": {
-        "operationId": "serveFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isThumb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is serve thumbnail (resize) file",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isWeb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is request made from web",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/jobs": {
+    "/assets/jobs": {
       "post": {
         "operationId": "runAssetJobs",
         "parameters": [],
@@ -1594,97 +1584,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/map-marker": {
-      "get": {
-        "operationId": "getMapMarkers",
-        "parameters": [
-          {
-            "name": "fileCreatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "fileCreatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withPartners",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withSharedAlbums",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MapMarkerResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/memory-lane": {
+    "/assets/memory-lane": {
       "get": {
         "operationId": "getMemoryLane",
         "parameters": [
@@ -1736,11 +1640,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/random": {
+    "/assets/random": {
       "get": {
         "operationId": "getRandom",
         "parameters": [
@@ -1781,11 +1685,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/stack/parent": {
+    "/assets/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
         "parameters": [],
@@ -1816,11 +1720,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/statistics": {
+    "/assets/statistics": {
       "get": {
         "operationId": "getAssetStatistics",
         "parameters": [
@@ -1873,131 +1777,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/thumbnail/{id}": {
-      "get": {
-        "operationId": "getAssetThumbnail",
-        "parameters": [
-          {
-            "name": "format",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ThumbnailFormat"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/upload": {
-      "post": {
-        "operationId": "uploadFile",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-immich-checksum",
-            "in": "header",
-            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAssetDto"
-              }
-            }
-          },
-          "description": "Asset Upload Information",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/{id}": {
+    "/assets/{id}": {
       "get": {
         "operationId": "getAssetInfo",
         "parameters": [
@@ -2043,7 +1827,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
       "put": {
@@ -2093,11 +1877,60 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/{id}/file": {
+    "/assets/{id}/original": {
+      "get": {
+        "operationId": "downloadAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      },
       "put": {
         "description": "Replace the asset with new file, without changing its id",
         "operationId": "replaceAsset",
@@ -2154,11 +1987,121 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ],
         "x-immich-lifecycle": {
           "addedAt": "v1.106.0"
         }
+      }
+    },
+    "/assets/{id}/thumbnail": {
+      "get": {
+        "operationId": "viewAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMediaSize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
+    "/assets/{id}/video/playback": {
+      "get": {
+        "operationId": "playAssetVideo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/audit/deletes": {
@@ -2440,57 +2383,6 @@
         ]
       }
     },
-    "/download/asset/{id}": {
-      "post": {
-        "operationId": "downloadFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Download"
-        ]
-      }
-    },
     "/download/info": {
       "post": {
         "operationId": "getDownloadInfo",
@@ -2573,7 +2465,7 @@
           }
         ],
         "tags": [
-          "Duplicate"
+          "Duplicates"
         ]
       }
     },
@@ -2618,7 +2510,7 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
@@ -2670,7 +2562,7 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
@@ -2702,7 +2594,7 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
@@ -2753,7 +2645,7 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
@@ -2788,7 +2680,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "post": {
@@ -2828,7 +2720,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2863,7 +2755,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "get": {
@@ -2903,7 +2795,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "put": {
@@ -2953,7 +2845,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -2988,7 +2880,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -3033,7 +2925,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -3075,7 +2967,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
@@ -3127,7 +3019,142 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
+        ]
+      }
+    },
+    "/map/markers": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "parameters": [
+          {
+            "name": "fileCreatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileCreatedBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
+    "/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
         ]
       }
     },
@@ -3162,7 +3189,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "post": {
@@ -3202,7 +3229,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3237,7 +3264,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "get": {
@@ -3277,7 +3304,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -3327,7 +3354,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3382,7 +3409,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -3435,7 +3462,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3633,7 +3660,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
@@ -3668,7 +3695,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "post": {
@@ -3708,7 +3735,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "put": {
@@ -3758,7 +3785,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
@@ -3799,7 +3826,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "post": {
@@ -3839,7 +3866,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -3882,7 +3909,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -3924,7 +3951,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -3974,7 +4001,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4019,7 +4046,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4074,7 +4101,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4129,7 +4156,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4171,7 +4198,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4214,7 +4241,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
@@ -4246,7 +4273,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4291,7 +4318,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4326,7 +4353,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4970,7 +4997,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "post": {
@@ -5010,7 +5037,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5068,7 +5095,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5103,7 +5130,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "get": {
@@ -5143,7 +5170,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "patch": {
@@ -5193,7 +5220,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5256,7 +5283,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "put": {
@@ -5317,7 +5344,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5512,55 +5539,6 @@
         ]
       }
     },
-    "/system-config/map/style.json": {
-      "get": {
-        "operationId": "getMapStyle",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "theme",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/MapTheme"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "System Config"
-        ]
-      }
-    },
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
@@ -5721,7 +5699,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "post": {
@@ -5761,7 +5739,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -5796,7 +5774,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5836,7 +5814,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "patch": {
@@ -5886,7 +5864,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -5941,7 +5919,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5984,7 +5962,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "put": {
@@ -6037,7 +6015,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -6419,7 +6397,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6451,7 +6429,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "put": {
@@ -6491,7 +6469,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6523,7 +6501,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "put": {
@@ -6563,7 +6541,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6588,7 +6566,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "post": {
@@ -6629,7 +6607,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6671,7 +6649,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
@@ -6714,7 +6692,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     }
@@ -7417,21 +7395,6 @@
         ],
         "type": "object"
       },
-      "AssetFileUploadResponseDto": {
-        "properties": {
-          "duplicate": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "duplicate",
-          "id"
-        ],
-        "type": "object"
-      },
       "AssetFullSyncDto": {
         "properties": {
           "lastCreationDate": {
@@ -7526,6 +7489,59 @@
         ],
         "type": "object"
       },
+      "AssetMediaCreateDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
       "AssetMediaReplaceDto": {
         "properties": {
           "assetData": {
@@ -7574,8 +7590,16 @@
         ],
         "type": "object"
       },
+      "AssetMediaSize": {
+        "enum": [
+          "preview",
+          "thumbnail"
+        ],
+        "type": "string"
+      },
       "AssetMediaStatus": {
         "enum": [
+          "created",
           "replaced",
           "duplicate"
         ],
@@ -7960,59 +7984,6 @@
         },
         "required": [
           "albumName"
-        ],
-        "type": "object"
-      },
-      "CreateAssetDto": {
-        "properties": {
-          "assetData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "livePhotoData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "sidecarData": {
-            "format": "binary",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetData",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -10869,13 +10840,6 @@
           "OBJECT",
           "FACE",
           "CUSTOM"
-        ],
-        "type": "string"
-      },
-      "ThumbnailFormat": {
-        "enum": [
-          "JPEG",
-          "WEBP"
         ],
         "type": "string"
       },

@@ -44,7 +44,7 @@ describe('AlbumCard component', () => {
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
-    expect(sdkMock.getAssetThumbnail).not.toHaveBeenCalled();
+    expect(sdkMock.viewAsset).not.toHaveBeenCalled();
 
     expect(albumNameElement).toHaveTextContent(album.albumName);
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));

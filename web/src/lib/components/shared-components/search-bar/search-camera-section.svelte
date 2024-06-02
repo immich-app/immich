@@ -41,7 +41,6 @@
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
       <Combobox
-        id="camera-make"
         label="Make"
         on:select={({ detail }) => (filters.make = detail?.value)}
         options={toComboBoxOptions(makes)}
@@ -52,7 +51,6 @@
 
     <div class="w-full">
       <Combobox
-        id="camera-model"
         label="Model"
         on:select={({ detail }) => (filters.model = detail?.value)}
         options={toComboBoxOptions(models)}

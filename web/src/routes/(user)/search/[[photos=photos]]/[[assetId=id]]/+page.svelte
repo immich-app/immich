@@ -171,7 +171,7 @@
       city: 'City',
       country: 'Country',
       state: 'State',
-      make: 'Camera brand',
+      make: 'Camera make',
       model: 'Camera model',
       personIds: 'People',
       originalFileName: 'File name',

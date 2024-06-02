@@ -28,7 +28,7 @@ class MemoryService {
   Future<List<Memory>?> getMemoryLane() async {
     try {
       final now = DateTime.now();
-      final data = await _apiService.assetApi.getMemoryLane(
+      final data = await _apiService.assetsApi.getMemoryLane(
         now.day,
         now.month,
       );

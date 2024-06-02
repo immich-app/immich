@@ -56,7 +56,6 @@
 </script>
 
 <ConfirmDialog
-  id="edit-date-time-modal"
   confirmColor="primary"
   title="Edit date and time"
   prompt="Please select a new date:"
@@ -75,13 +74,7 @@
       />
     </div>
     <div class="flex flex-col w-full mt-2">
-      <Combobox
-        bind:selectedOption
-        id="settings-timezone"
-        label="Timezone"
-        options={timezones}
-        placeholder="Search timezone..."
-      />
+      <Combobox bind:selectedOption label="Timezone" options={timezones} placeholder="Search timezone..." />
     </div>
   </div>
 </ConfirmDialog>

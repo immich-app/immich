@@ -23,7 +23,6 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
-          id="enable-trash-features"
           title="ENABLED"
           {disabled}
           subtitle="Enable Trash features"

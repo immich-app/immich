@@ -37,12 +37,7 @@
   }>();
 </script>
 
-<FullScreenModal
-  id="keyboard-shortcuts-modal"
-  title="Keyboard shortcuts"
-  width="auto"
-  onClose={() => dispatch('close')}
->
+<FullScreenModal title="Keyboard shortcuts" width="auto" onClose={() => dispatch('close')}>
   <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
     <div class="p-4">
       <h2>General</h2>

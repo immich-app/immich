@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, type AlbumResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import AlbumListItemDetails from './album-list-item-details.svelte';
@@ -35,7 +35,7 @@
   <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
     {#if album.albumThumbnailAssetId}
       <img
-        src={getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)}
+        src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
         alt={album.albumName}
         class="z-0 h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg"
         data-testid="album-image"

@@ -397,7 +397,7 @@
 
                   {#if showContextMenu}
                     <Portal target="body">
-                      <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
+                      <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()}>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 
                         {#if selectedLibrary}

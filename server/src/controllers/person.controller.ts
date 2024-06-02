@@ -21,7 +21,7 @@ import { PersonService } from 'src/services/person.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Person')
+@ApiTags('People')
 @Controller('people')
 export class PersonController {
   constructor(

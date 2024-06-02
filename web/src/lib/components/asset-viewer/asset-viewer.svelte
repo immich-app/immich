@@ -272,15 +272,13 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = async () => {
-    await closeViewer();
-  };
-
   const closeViewer = async () => {
-    $slideshowState = SlideshowState.StopSlideshow;
-    document.body.style.cursor = '';
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+    if ($slideshowState === SlideshowState.None) {
+      dispatch('close');
+      await navigate({ targetRoute: 'current', assetId: null });
+    } else {
+      $slideshowState = SlideshowState.StopSlideshow;
+    }
   };
 
   const navigateAssetRandom = async () => {
@@ -519,7 +517,7 @@
           asset,
         });
       }
-      dispatch('close');
+      await closeViewer();
     }
   };
 
@@ -718,13 +716,7 @@
         class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
-        <DetailPanel
-          {asset}
-          currentAlbum={album}
-          albums={appearsInAlbums}
-          on:close={() => ($isShowDetail = false)}
-          on:closeViewer={handleCloseViewer}
-        />
+        <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
       </div>
     {/if}
 
@@ -803,7 +795,6 @@
       <DeleteAssetDialog
         size={1}
         on:cancel={() => (isShowDeleteConfirmation = false)}
-        on:escape={() => (isShowDeleteConfirmation = false)}
         on:confirm={() => deleteAsset()}
       />
     {/if}

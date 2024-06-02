@@ -86,10 +86,9 @@
         {x}
         {y}
         {direction}
-        on:outclick={closeContextMenu}
-        on:escape={closeContextMenu}
-        isVisible={true}
+        onClose={closeContextMenu}
         bind:menuElement={contextMenuElement}
+        isVisible={true}
       >
         <slot />
       </ContextMenu>

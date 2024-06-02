@@ -13,7 +13,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UserAdminService } from 'src/services/user-admin.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('User')
+@ApiTags('Users (admin)')
 @Controller('admin/users')
 export class UserAdminController {
   constructor(private service: UserAdminService) {}

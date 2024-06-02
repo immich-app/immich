@@ -1,16 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { Optional, ValidateDate } from 'src/validation';
+import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+
+export enum AssetMediaSize {
+  PREVIEW = 'preview',
+  THUMBNAIL = 'thumbnail',
+}
+
+export class AssetMediaOptionsDto {
+  @Optional()
+  @IsEnum(AssetMediaSize)
+  @ApiProperty({ enumName: 'AssetMediaSize', enum: AssetMediaSize })
+  size?: AssetMediaSize;
+}
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
-  LIVE_PHOTO_DATA = 'livePhotoData',
   SIDECAR_DATA = 'sidecarData',
   PROFILE_DATA = 'file',
 }
 
-export class AssetMediaReplaceDto {
+class AssetMediaBase {
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;
@@ -34,6 +45,28 @@ export class AssetMediaReplaceDto {
   @ApiProperty({ type: 'string', format: 'binary' })
   [UploadFieldName.ASSET_DATA]!: any;
 }
+
+export class AssetMediaCreateDto extends AssetMediaBase {
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isArchived?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isVisible?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isOffline?: boolean;
+
+  @ValidateUUID({ optional: true })
+  livePhotoVideoId?: string;
+
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  [UploadFieldName.SIDECAR_DATA]?: any;
+}
+
+export class AssetMediaReplaceDto extends AssetMediaBase {}
 
 export class AssetBulkUploadCheckItem {
   @IsString()

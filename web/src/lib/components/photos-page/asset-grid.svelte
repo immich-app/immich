@@ -48,6 +48,11 @@
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
+  $: {
+    if (isEmpty) {
+      assetInteractionStore.clearMultiselect();
+    }
+  }
 
   $: {
     void assetStore.updateViewport(viewport);

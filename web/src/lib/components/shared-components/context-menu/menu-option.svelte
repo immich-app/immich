@@ -1,13 +1,13 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { uniqueIdStore } from '$lib/stores/unique-id.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let text = '';
   export let subtitle = '';
   export let icon = '';
   export let topBorder = false;
 
-  let id: string = uniqueIdStore.generateId();
+  let id: string = generateId();
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

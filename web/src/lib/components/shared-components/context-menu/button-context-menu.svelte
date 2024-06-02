@@ -13,7 +13,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import { uniqueIdStore } from '$lib/stores/unique-id.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let icon: string;
   export let title: string;
@@ -24,7 +24,7 @@
   let contextMenuPosition = { x: 0, y: 0 };
   let menuContainer: HTMLUListElement;
   let selectedId: string | undefined = undefined;
-  let id = uniqueIdStore.generateId();
+  let id = generateId();
 
   $: buttonId = `context-menu-button-${id}`;
   $: menuId = `context-menu-${id}`;

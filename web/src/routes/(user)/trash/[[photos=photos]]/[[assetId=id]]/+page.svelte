@@ -61,6 +61,14 @@
   };
 
   const handleRestoreTrash = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'restore-trash',
+      prompt: 'Are you sure you want to restore all your trashed assets? You cannot undo this action!',
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
     try {
       await restoreTrash();
 
@@ -89,13 +97,13 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     <div class="flex place-items-center gap-2" slot="buttons">
-      <LinkButton on:click={handleRestoreTrash}>
+      <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
           Restore all
         </div>
       </LinkButton>
-      <LinkButton on:click={() => handleEmptyTrash()}>
+      <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteOutline} size="18" />
           Empty trash

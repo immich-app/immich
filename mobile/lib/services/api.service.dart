@@ -12,20 +12,21 @@ import 'package:http/http.dart';
 class ApiService {
   late ApiClient _apiClient;
 
-  late UserApi userApi;
+  late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
   late OAuthApi oAuthApi;
-  late AlbumApi albumApi;
-  late AssetApi assetApi;
+  late AlbumsApi albumsApi;
+  late AssetsApi assetsApi;
   late SearchApi searchApi;
   late ServerInfoApi serverInfoApi;
-  late PartnerApi partnerApi;
-  late PersonApi personApi;
+  late MapApi mapApi;
+  late PartnersApi partnersApi;
+  late PeopleApi peopleApi;
   late AuditApi auditApi;
-  late SharedLinkApi sharedLinkApi;
+  late SharedLinksApi sharedLinksApi;
   late SyncApi syncApi;
   late SystemConfigApi systemConfigApi;
-  late ActivityApi activityApi;
+  late ActivitiesApi activitiesApi;
   late DownloadApi downloadApi;
   late TrashApi trashApi;
 
@@ -43,20 +44,21 @@ class ApiService {
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
     }
-    userApi = UserApi(_apiClient);
+    usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
     oAuthApi = OAuthApi(_apiClient);
-    albumApi = AlbumApi(_apiClient);
-    assetApi = AssetApi(_apiClient);
+    albumsApi = AlbumsApi(_apiClient);
+    assetsApi = AssetsApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);
     searchApi = SearchApi(_apiClient);
-    partnerApi = PartnerApi(_apiClient);
-    personApi = PersonApi(_apiClient);
+    mapApi = MapApi(_apiClient);
+    partnersApi = PartnersApi(_apiClient);
+    peopleApi = PeopleApi(_apiClient);
     auditApi = AuditApi(_apiClient);
-    sharedLinkApi = SharedLinkApi(_apiClient);
+    sharedLinksApi = SharedLinksApi(_apiClient);
     syncApi = SyncApi(_apiClient);
     systemConfigApi = SystemConfigApi(_apiClient);
-    activityApi = ActivityApi(_apiClient);
+    activitiesApi = ActivitiesApi(_apiClient);
     downloadApi = DownloadApi(_apiClient);
     trashApi = TrashApi(_apiClient);
   }

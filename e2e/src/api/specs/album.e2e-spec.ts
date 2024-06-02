@@ -2,7 +2,7 @@ import {
   addAssetsToAlbum,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   AssetOrder,
   deleteUserAdmin,
   getAlbumInfo,
@@ -26,8 +26,8 @@ const user2NotShared = 'user2NotShared';
 describe('/albums', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
-  let user1Asset1: AssetFileUploadResponseDto;
-  let user1Asset2: AssetFileUploadResponseDto;
+  let user1Asset1: AssetMediaResponseDto;
+  let user1Asset2: AssetMediaResponseDto;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];

@@ -12,6 +12,7 @@
   export let ariaActiveDescendant: string | undefined = undefined;
 
   export let menuElement: HTMLUListElement | undefined = undefined;
+  export let onClose: (() => void) | undefined = undefined;
 
   let left: number;
   let top: number;
@@ -39,9 +40,7 @@
   style:left="{left}px"
   style:top="{top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
-  use:clickOutside
-  on:escape
-  on:outclick
+  use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
 >
   <ul
     {id}

@@ -53,7 +53,7 @@
   };
 </script>
 
-<FullScreenModal id="album-selection-modal" title={getTitle()} {onClose}>
+<FullScreenModal title={getTitle()} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}

@@ -21,8 +21,6 @@ import {
   AssetUpdateOptions,
   IAssetRepository,
   LivePhotoSearchOptions,
-  MapMarker,
-  MapMarkerSearchOptions,
   MonthDay,
   TimeBucketItem,
   TimeBucketOptions,
@@ -31,7 +29,7 @@ import {
   WithoutProperty,
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
-import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
+import { searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
@@ -302,10 +300,19 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(libraryId: string | null, checksum: Buffer): Promise<AssetEntity | null> {
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
+  getByChecksum({
+    ownerId,
+    libraryId,
+    checksum,
+  }: {
+    ownerId: string;
+    checksum: Buffer;
+    libraryId?: string;
+  }): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: {
+        ownerId,
         libraryId: libraryId || IsNull(),
         checksum,
       },
@@ -545,57 +552,6 @@ export class AssetRepository implements IAssetRepository {
       where: { albums: { id: albumId } },
       order: { updatedAt: 'DESC' },
     });
-  }
-
-  async getMapMarkers(
-    ownerIds: string[],
-    albumIds: string[],
-    options: MapMarkerSearchOptions = {},
-  ): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
-    const where = {
-      isVisible: true,
-      isArchived,
-      exifInfo: {
-        latitude: Not(IsNull()),
-        longitude: Not(IsNull()),
-      },
-      isFavorite,
-      fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-    };
-
-    const assets = await this.repository.find({
-      select: {
-        id: true,
-        exifInfo: {
-          city: true,
-          state: true,
-          country: true,
-          latitude: true,
-          longitude: true,
-        },
-      },
-      where: [
-        { ...where, ownerId: In([...ownerIds]) },
-        { ...where, albums: { id: In([...albumIds]) } },
-      ],
-      relations: {
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-    });
-
-    return assets.map((asset) => ({
-      id: asset.id,
-      lat: asset.exifInfo!.latitude!,
-      lon: asset.exifInfo!.longitude!,
-      city: asset.exifInfo!.city,
-      state: asset.exifInfo!.state,
-      country: asset.exifInfo!.country,
-    }));
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
