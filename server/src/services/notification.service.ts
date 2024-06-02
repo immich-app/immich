@@ -19,6 +19,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class NotificationService {
@@ -95,6 +96,12 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
+    const { emailNotifications } = getPreferences(recipient);
+
+    if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
+      return;
+    }
+
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
@@ -142,6 +149,12 @@ export class NotificationService {
     const { server } = await this.configCore.getConfig();
 
     for (const recipient of recipients) {
+      const { emailNotifications } = getPreferences(recipient);
+
+      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+        continue;
+      }
+
       const { html, text } = this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
