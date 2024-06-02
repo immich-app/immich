@@ -3,7 +3,7 @@
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
-  import { uniqueIdStore } from '$lib/stores/unique-id.store';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let title: string;
   export let subtitle = '';
@@ -11,7 +11,7 @@
   export let disabled = false;
   export let isEdited = false;
 
-  let id: string = uniqueIdStore.generateId();
+  let id: string = generateId();
 
   $: sliderId = `${id}-slider`;
   $: subtitleId = subtitle ? `${id}-subtitle` : undefined;
