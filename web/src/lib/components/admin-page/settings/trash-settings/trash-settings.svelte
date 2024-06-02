@@ -24,7 +24,12 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
+<<<<<<< HEAD
           title={$t('enabled')}
+=======
+          id="enable-trash-features"
+          title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
           {disabled}
           subtitle={$t('enable_trash_features')}
           bind:checked={config.trash.enabled}

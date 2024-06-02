@@ -100,7 +100,7 @@
             <LoadingSpinner />
           {:then data}
             <div>
-              <p>{data.shared.toLocaleString($locale)} Albums</p>
+              <p>{data.shared.toLocaleString($locale)} {$t('albums')}</p>
             </div>
           {/await}
         </svelte:fragment>
@@ -108,7 +108,7 @@
     {/if}
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="hidden p-6 group-hover:sm:block md:block">{$t('library')}</p>
+      <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
       <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
     </div>
     <SideBarLink
@@ -122,8 +122,8 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
-            <p>{data.images.toLocaleString($locale)} Photos</p>
+            <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
+            <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
           </div>
         {/await}
       </svelte:fragment>
@@ -134,7 +134,7 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.owned.toLocaleString($locale)} Albums</p>
+            <p>{data.owned.toLocaleString($locale)} {$t('albums')}</p>
           </div>
         {/await}
       </svelte:fragment>
@@ -158,8 +158,8 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
-            <p>{data.images.toLocaleString($locale)} Photos</p>
+            <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
+            <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
           </div>
         {/await}
       </svelte:fragment>
@@ -177,8 +177,8 @@
             <LoadingSpinner />
           {:then data}
             <div>
-              <p>{data.videos.toLocaleString($locale)} Videos</p>
-              <p>{data.images.toLocaleString($locale)} Photos</p>
+              <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
+              <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
             </div>
           {/await}
         </svelte:fragment>

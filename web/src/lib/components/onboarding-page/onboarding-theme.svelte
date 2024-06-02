@@ -16,7 +16,7 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('color_theme')}</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('color_theme').toUpperCase()}</p>
 
   <div>
     <p class="pb-6 font-light">Choose a color theme for your instance. You can change this later in your settings.</p>
@@ -32,7 +32,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
         <Icon path={sunPath} viewBox={sunViewBox} size="96" />
-        <p class="font-semibold text-4xl">{$t('light')}</p>
+        <p class="font-semibold text-4xl">{$t('light').toUpperCase()}</p>
       </div>
     </button>
     <button
@@ -44,7 +44,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
         <Icon path={moonPath} viewBox={moonViewBox} size="96" />
-        <p class="font-semibold text-4xl">{$t('dark')}</p>
+        <p class="font-semibold text-4xl">{$t('dark').toUpperCase()}</p>
       </div>
     </button>
   </div>

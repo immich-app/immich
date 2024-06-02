@@ -19,7 +19,7 @@
 >
   {#if $savedSearchTerms.length > 0}
     <div class="flex items-center justify-between px-5 pt-5 text-xs">
-      <p>{$t('recent_searches')}</p>
+      <p>{$t('recent_searches').toUpperCase()}</p>
       <div class="flex w-18 items-center justify-center">
         <button
           type="button"

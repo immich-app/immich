@@ -276,7 +276,7 @@
   <section class="immich-scrollbar relative overflow-y-auto">
     {#if searchResultAlbums.length > 0}
       <section>
-        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
+        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
         <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
         <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>

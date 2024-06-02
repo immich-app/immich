@@ -56,7 +56,7 @@
 
     <div id="people-selection" class="-mb-4">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="immich-form-label py-3">{$t('people')}</p>
+        <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 

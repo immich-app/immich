@@ -27,7 +27,12 @@
         <SettingAccordion key="map" title={$t('map_settings')} subtitle={$t('manage_map_settings')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
+<<<<<<< HEAD
               title={$t('enabled')}
+=======
+              id="enable-map-features"
+              title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
               {disabled}
               subtitle={$t('enable_map_features')}
               bind:checked={config.map.enabled}
@@ -67,7 +72,12 @@
           </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
+<<<<<<< HEAD
               title={$t('enabled')}
+=======
+              id="enable-reverse-geocoding"
+              title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
               {disabled}
               subtitle={$t('enable_reverse_geocoding')}
               bind:checked={config.reverseGeocoding.enabled}

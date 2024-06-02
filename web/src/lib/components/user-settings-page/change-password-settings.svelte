@@ -45,7 +45,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label={$t('password')}
+          label={$t('password').toUpperCase()}
           bind:value={password}
           required={true}
           passwordAutocomplete="current-password"
@@ -53,7 +53,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label={$t('new_password')}
+          label={$t('new_password').toUpperCase()}
           bind:value={newPassword}
           required={true}
           passwordAutocomplete="new-password"
@@ -61,7 +61,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label={$t('confirm_password')}
+          label={$t('confirm_password').toUpperCase()}
           bind:value={confirmPassword}
           required={true}
           passwordAutocomplete="new-password"

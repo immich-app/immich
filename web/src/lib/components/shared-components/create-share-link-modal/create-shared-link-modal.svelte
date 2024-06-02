@@ -37,7 +37,17 @@
 
   const expiredDateOption: ImmichDropDownOption = {
     default: $t('never'),
-    options: [$t('never'), '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days', '3 months', '1 year'],
+    options: [
+      $t('never'),
+      $t('thirty_minutes'),
+      $t('one_hour'),
+      $t('six_hours'),
+      $t('one_day'),
+      $t('seven_days'),
+      $t('thirty_days'),
+      $t('three_months'),
+      $t('one_year'),
+    ],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -187,7 +197,7 @@
     {/if}
 
     <div class="mb-2 mt-4">
-      <p class="text-xs">{$t('link_options')}</p>
+      <p class="text-xs">{$t('link_options').toUpperCase()}</p>
     </div>
     <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
       <div class="flex flex-col">

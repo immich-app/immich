@@ -27,7 +27,7 @@
   let quotaSize: number | undefined;
   let isCreatingUser = false;
 
-  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, $t('gib')) : null;
+  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, 'GiB') : null;
   $: quotaSizeWarning = quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw;
 
   $: {

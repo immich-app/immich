@@ -35,10 +35,8 @@
       Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have
       folders that contain files you don't want to import, such as RAW files.
       <br /><br />
-      Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named {$t(
-        'raw',
-      )}, use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use
-      "/path/to/ignore/**".
+      Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named "Raw",
+      use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore/**".
     </p>
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="exclusionPattern">{$t('pattern')}</label>

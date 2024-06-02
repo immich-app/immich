@@ -22,13 +22,18 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
+<<<<<<< HEAD
           title={$t('enabled')}
+=======
+          id="enable-logging"
+          title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
           {disabled}
           subtitle={$t('logging')}
           bind:checked={config.logging.enabled}
         />
         <SettingSelect
-          label={$t('level')}
+          label={$t('level').toUpperCase()}
           desc="When enabled, what log level to use."
           bind:value={config.logging.level}
           options={[

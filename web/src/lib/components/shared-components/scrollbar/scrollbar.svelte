@@ -5,7 +5,6 @@
   import { createEventDispatcher } from 'svelte';
   import { clamp } from 'lodash-es';
   import { locale } from '$lib/stores/preferences.store';
-  import { t } from 'svelte-i18n';
 
   export let timelineY = 0;
   export let height = 0;
@@ -84,7 +83,7 @@
     hoverLabel = new Date(attr).toLocaleString($locale, {
       month: 'short',
       year: 'numeric',
-      timeZone: $t('utc'),
+      timeZone: 'UTC',
     });
   };
 

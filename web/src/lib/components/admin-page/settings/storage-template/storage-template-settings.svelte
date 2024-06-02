@@ -55,7 +55,7 @@
     const substitutions: Record<string, string> = {
       filename: 'IMAGE_56437',
       ext: 'jpg',
-      filetype: $t('img'),
+      filetype: $t('img').toUpperCase(),
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       album: $t('album_name'),
@@ -108,7 +108,12 @@
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
+<<<<<<< HEAD
         title={$t('enabled')}
+=======
+        id="storage-template-enabled"
+        title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
         {disabled}
         subtitle={$t('enable_storage_template_engine')}
         bind:checked={config.storageTemplate.enabled}
@@ -117,7 +122,12 @@
 
       {#if !minified}
         <SettingSwitch
+<<<<<<< HEAD
           title={$t('hash_verification_enabled')}
+=======
+          id="hash-verification-enabled"
+          title={$t('hash_verification_enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
           {disabled}
           subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
           bind:checked={config.storageTemplate.hashVerificationEnabled}
@@ -150,7 +160,7 @@
           <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
-            <h4>{$t('preview')}</h4>
+            <h4>{$t('preview').toUpperCase()}</h4>
           </div>
 
           <p class="text-sm">
@@ -173,7 +183,7 @@
 
           <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
             <div class="flex flex-col my-2">
-              <label class="text-sm" for="preset-select">{$t('preset')}</label>
+              <label class="text-sm" for="preset-select">{$t('preset').toUpperCase()}</label>
               <select
                 class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
                 disabled={disabled || !config.storageTemplate.enabled}
@@ -189,7 +199,7 @@
             </div>
             <div class="flex gap-2 align-bottom">
               <SettingInputField
-                label={$t('template')}
+                label={$t('template').toUpperCase()}
                 disabled={disabled || !config.storageTemplate.enabled}
                 required
                 inputType={SettingInputFieldType.TEXT}

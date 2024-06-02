@@ -23,7 +23,6 @@
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { t } from 'svelte-i18n';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -129,8 +128,8 @@
 
     if ($isMultiSelectState) {
       shortcuts.push(
-        { shortcut: { key: $t('delete') }, onShortcut: onDelete },
-        { shortcut: { key: $t('delete'), shift: true }, onShortcut: onForceDelete },
+        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
       );

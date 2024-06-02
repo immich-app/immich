@@ -5,7 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 
 const upstream = {
-  target: process.env.IMMICH_SERVER_URL || 'http://192.168.2.114:3001/',
+  target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
   secure: true,
   changeOrigin: true,
   logLevel: 'info',

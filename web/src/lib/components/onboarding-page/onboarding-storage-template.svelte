@@ -24,7 +24,7 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('storage_template')}</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('storage_template').toUpperCase()}</p>
 
   <p>
     When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the

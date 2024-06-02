@@ -84,7 +84,7 @@
 
             <SettingSwitch
               {disabled}
-              title={$t('enable')}
+              title={$t('enable').toUpperCase()}
               subtitle={$t('login_with_oauth')}
               bind:checked={config.oauth.enabled}
             />
@@ -93,7 +93,7 @@
               <hr />
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('issuer_url')}
+                label={$t('issuer_url').toUpperCase()}
                 bind:value={config.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -102,7 +102,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('client_id')}
+                label={$t('client_id').toUpperCase()}
                 bind:value={config.oauth.clientId}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -111,7 +111,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('client_secret')}
+                label={$t('client_secret').toUpperCase()}
                 bind:value={config.oauth.clientSecret}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -120,7 +120,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('scope')}
+                label={$t('scope').toUpperCase()}
                 bind:value={config.oauth.scope}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -129,7 +129,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('signing_algorithm')}
+                label={$t('signing_algorithm').toUpperCase()}
                 bind:value={config.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -138,7 +138,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('storage_label_claim')}
+                label={$t('storage_label_claim').toUpperCase()}
                 desc="Automatically set the user's storage label to the value of this claim."
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
@@ -148,7 +148,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('storage_quota_claim')}
+                label={$t('storage_quota_claim').toUpperCase()}
                 desc="Automatically set the user's storage quota to the value of this claim."
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
@@ -158,7 +158,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
-                label={$t('default_storage_quota_(gib)')}
+                label={$t('default_storage_quota_(gib)').toUpperCase()}
                 desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
@@ -168,7 +168,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('button_text')}
+                label={$t('button_text').toUpperCase()}
                 bind:value={config.oauth.buttonText}
                 required={false}
                 disabled={disabled || !config.oauth.enabled}
@@ -176,21 +176,36 @@
               />
 
               <SettingSwitch
+<<<<<<< HEAD
                 title={$t('auto_register')}
+=======
+                id="auto-register-new-users"
+                title={$t('auto_register').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
                 subtitle="Automatically register new users after signing in with OAuth"
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
+<<<<<<< HEAD
                 title={$t('auto_launch')}
+=======
+                id="auto-launch-oauth"
+                title={$t('auto_launch').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
                 subtitle="Start the OAuth login flow automatically upon navigating to the login page"
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
+<<<<<<< HEAD
                 title={$t('mobile_redirect_uri_override')}
+=======
+                id="mobile-redirect-uri-override"
+                title={$t('mobile_redirect_uri_override').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
                 subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
@@ -200,7 +215,7 @@
               {#if config.oauth.mobileOverrideEnabled}
                 <SettingInputField
                   inputType={SettingInputFieldType.TEXT}
-                  label={$t('mobile_redirect_uri')}
+                  label={$t('mobile_redirect_uri').toUpperCase()}
                   bind:value={config.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !config.oauth.enabled}

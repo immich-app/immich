@@ -28,7 +28,7 @@
 
 <div class="flex flex-col gap-5">
   <div>
-    <p class="text-sm dark:text-immich-dark-fg">{$t('total_usage')}</p>
+    <p class="text-sm dark:text-immich-dark-fg">{$t('total_usage').toUpperCase()}</p>
 
     <div class="mt-5 hidden justify-between lg:flex">
       <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={stats.photos} />
@@ -79,7 +79,7 @@
   </div>
 
   <div>
-    <p class="text-sm dark:text-immich-dark-fg">{$t('user_usage_detail')}</p>
+    <p class="text-sm dark:text-immich-dark-fg">{$t('user_usage_detail').toUpperCase()}</p>
     <table class="mt-5 w-full text-left">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"

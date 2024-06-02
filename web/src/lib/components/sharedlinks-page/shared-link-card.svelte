@@ -78,7 +78,7 @@
               {link.album?.albumName.toUpperCase()}
             </p>
           {:else if link.type === SharedLinkType.Individual}
-            <p>{$t('individual_share')}</p>
+            <p>{$t('individual_share').toUpperCase()}</p>
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}

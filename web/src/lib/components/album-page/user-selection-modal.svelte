@@ -74,7 +74,7 @@
 <FullScreenModal title={$t('invite_to_album')} showLogo {onClose}>
   {#if Object.keys(selectedUsers).length > 0}
     <div class="mb-2 py-2 sticky">
-      <p class="text-xs font-medium">{$t('selected')}</p>
+      <p class="text-xs font-medium">{$t('selected').toUpperCase()}</p>
       <div class="my-2">
         {#each Object.values(selectedUsers) as { user }}
           {#key user.id}
@@ -116,7 +116,7 @@
 
   <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
     {#if users.length > 0 && users.length !== Object.keys(selectedUsers).length}
-      <p class="text-xs font-medium">{$t('suggestions')}</p>
+      <p class="text-xs font-medium">{$t('suggestions').toUpperCase()}</p>
 
       <div class="my-2">
         {#each users as user}

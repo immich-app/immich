@@ -19,9 +19,9 @@
 
   const cronExpressionOptions = [
     { title: $t('every_night_at_midnight'), expression: '0 0 * * *' },
-    { title: 'Every night at 2am', expression: '0 2 * * *' },
-    { title: 'Every day at 1pm', expression: '0 13 * * *' },
-    { title: 'Every 6 hours', expression: '0 */6 * * *' },
+    { title: $t('every_night_at_twoam'), expression: '0 2 * * *' },
+    { title: $t('every_day_at_onepm'), expression: '0 13 * * *' },
+    { title: $t('every_six_hours'), expression: '0 */6 * * *' },
   ];
 
   const dispatch = createEventDispatcher<SettingsEventType>();
@@ -65,7 +65,12 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
+<<<<<<< HEAD
             title={$t('enabled')}
+=======
+            id="periodic-library-scan"
+            title={$t('enabled').toUpperCase()}
+>>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
             {disabled}
             subtitle={$t('enable_periodic_library_scanning')}
             bind:checked={config.library.scan.enabled}

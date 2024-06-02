@@ -73,7 +73,7 @@
       </div>
     </div>
     <div class="py-2">
-      <div class="text-gray text-sm mb-3">{$t('people')}</div>
+      <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
       <div class="p-2">
         <button type="button" class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
           <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">

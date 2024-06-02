@@ -640,7 +640,7 @@
             {#if album.assetCount === 0}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
-                  <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                  <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
                   <button
                     type="button"
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}

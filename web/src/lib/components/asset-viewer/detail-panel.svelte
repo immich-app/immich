@@ -161,7 +161,7 @@
   {#if !isSharedLink() && people.length > 0}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2>{$t('people')}</h2>
+        <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
@@ -248,10 +248,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2>{$t('details')}</h2>
+        <h2>{$t('details').toUpperCase()}</h2>
       </div>
     {:else}
-      <p class="text-sm">{$t('no_exif_info_available')}</p>
+      <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
 
     {#if asset.exifInfo?.dateTimeOriginal}
@@ -449,7 +449,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="text-sm">{$t('shared_by')}</p>
+    <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -466,7 +466,7 @@
 
 {#if albums.length > 0}
   <section class="p-6 dark:text-immich-dark-fg">
-    <p class="pb-4 text-sm">{$t('appears_in')}</p>
+    <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
         <div class="flex gap-4 py-2 hover:cursor-pointer items-center">

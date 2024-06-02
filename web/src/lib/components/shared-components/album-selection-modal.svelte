@@ -91,7 +91,7 @@
         </button>
         {#if filteredAlbums.length > 0}
           {#if !shared && search.length === 0}
-            <p class="px-5 py-3 text-xs">{$t('recent')}</p>
+            <p class="px-5 py-3 text-xs">{$t('recent').toUpperCase()}</p>
             {#each recentAlbums as album (album.id)}
               <AlbumListItem {album} on:album={() => handleSelect(album)} />
             {/each}

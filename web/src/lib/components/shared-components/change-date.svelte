@@ -25,11 +25,11 @@
   };
 
   const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    label: zone + ` (${DateTime.local({ zone }).toFormat($t('zz'))})`,
-    value: $t('utc') + DateTime.local({ zone }).toFormat($t('zz')),
+    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
+    value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
   }));
 
-  const initialOption = timezones.find((item) => item.value === $t('utc') + initialDate.toFormat($t('zz')));
+  const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
   let selectedOption = initialOption && {
     label: initialOption?.label || '',

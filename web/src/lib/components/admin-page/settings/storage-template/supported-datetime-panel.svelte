@@ -22,7 +22,7 @@
   </div>
   <div class="flex gap-[40px]">
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year').toUpperCase()}</p>
       <ul>
         {#each options.yearOptions as yearFormat}
           <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -31,7 +31,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month').toUpperCase()}</p>
       <ul>
         {#each options.monthOptions as monthFormat}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -40,7 +40,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week').toUpperCase()}</p>
       <ul>
         {#each options.weekOptions as weekFormat}
           <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
@@ -49,7 +49,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day').toUpperCase()}</p>
       <ul>
         {#each options.dayOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -58,7 +58,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour').toUpperCase()}</p>
       <ul>
         {#each options.hourOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -67,7 +67,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute').toUpperCase()}</p>
       <ul>
         {#each options.minuteOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -76,7 +76,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second')}</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second').toUpperCase()}</p>
       <ul>
         {#each options.secondOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>

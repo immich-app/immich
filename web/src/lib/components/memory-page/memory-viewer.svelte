@@ -260,7 +260,7 @@
 
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('previous')}</p>
+                <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
                 <p class="text-xl">{memoryLaneTitle(previousMemory.yearsAgo)}</p>
               </div>
             {/if}
@@ -343,7 +343,7 @@
 
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('up_next')}</p>
+                <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
                 <p class="text-xl">{memoryLaneTitle(nextMemory.yearsAgo)}</p>
               </div>
             {/if}

@@ -19,9 +19,9 @@
   const shortcuts: Shortcuts = {
     general: [
       { key: ['←', '→'], action: $t('previous_or_next_photo') },
-      { key: [$t('esc')], action: 'Back, close, or deselect' },
-      { key: [$t('ctrl'), 'k'], action: $t('search_your_photos') },
-      { key: [$t('ctrl'), '⇧', 'k'], action: $t('open_the_search_filters') },
+      { key: ['Esc'], action: 'Back, close, or deselect' },
+      { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
+      { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
     ],
     actions: [
       { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
@@ -29,8 +29,8 @@
       { key: ['s'], action: $t('stack_selected_photos') },
       { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
       { key: ['⇧', 'd'], action: $t('download') },
-      { key: [$t('space')], action: $t('play_or_pause_video') },
-      { key: [$t('del')], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
+      { key: ['Space'], action: $t('play_or_pause_video') },
+      { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
     ],
   };
   const dispatch = createEventDispatcher<{
