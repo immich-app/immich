@@ -7,6 +7,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let menuItem = false;
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
@@ -20,7 +21,7 @@
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });
     } catch (error) {
-      handleError(error, 'Unable to update location');
+      handleError(error, $t('unable_to_update_location'));
     }
     clearSelect();
   }
@@ -28,7 +29,7 @@
 
 {#if menuItem}
   <MenuOption
-    text="Change location"
+    text={$t('change_location')}
     icon={mdiMapMarkerMultipleOutline}
     on:click={() => (isShowChangeLocation = true)}
   />

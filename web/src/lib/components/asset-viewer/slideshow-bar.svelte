@@ -6,6 +6,7 @@
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   export let isFullScreen: boolean;
   export let onNext = () => {};
@@ -94,23 +95,28 @@
     transition:fly={{ duration: 150 }}
     role="navigation"
   >
-    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title="Exit Slideshow" />
+    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title={$t('exit_slideshow')} />
 
     <CircleIconButton
       buttonSize="50"
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
       on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-      title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
+      title={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
     />
-    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title="Previous" />
-    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title="Next" />
-    <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title={$t('previous')} />
+    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title={$t('next')} />
+    <CircleIconButton
+      buttonSize="50"
+      icon={mdiCog}
+      on:click={() => (showSettings = !showSettings)}
+      title={$t('next')}
+    />
     {#if !isFullScreen}
       <CircleIconButton
         buttonSize="50"
         icon={mdiFullscreen}
         on:click={onSetToFullScreen}
-        title="Set Slideshow to fullscreen"
+        title={$t('set_slideshow_to_fullscreen')}
       />
     {/if}
   </div>

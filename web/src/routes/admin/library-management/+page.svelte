@@ -116,15 +116,16 @@
       dropdownOpen[index] = false;
     }
   }
+
   const handleCreate = async (ownerId: string) => {
     try {
       const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
       notificationController.show({
-        message: $t('page.admin.library_management.library_created', { values: { name: createdLibrary.name } }),
+        message: `Created library: ${createdLibrary.name}`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_create'));
+      handleError(error, $t('unable_to_create_library'));
     } finally {
       toCreateLibrary = false;
       await readLibraryList();
@@ -142,7 +143,7 @@
       closeAll();
       await readLibraryList();
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_update'));
+      handleError(error, $t('unable_to_update_library'));
     }
   };
 
@@ -158,11 +159,11 @@
     try {
       await deleteLibrary({ id: deletedLibrary.id });
       notificationController.show({
-        message: $t('page.admin.library_management.library_deleted'),
+        message: `Library deleted`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_delete'));
+      handleError(error, $t('unable_to_remove_library'));
     } finally {
       confirmDeleteLibrary = null;
       deletedLibrary = null;
@@ -176,25 +177,23 @@
         await scanLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
-        message: $t('page.admin.library_management.message_refresh_all'),
+        message: `Refreshing all libraries`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_scan_libraries'));
+      handleError(error, $t('unable_to_scan_libraries'));
     }
   };
 
-  $t('page.admin.library_management.', { values: {} });
-  $t('page.admin.library_management.');
   const handleScan = async (libraryId: string) => {
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
-        message: $t('page.admin.library_management.message_scan_new'),
+        message: `Scanning library for new files`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_scan_library'));
+      handleError(error, $t('unable_to_scan_library'));
     }
   };
 
@@ -202,11 +201,11 @@
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
-        message: $t('page.admin.library_management.message_scan_changed'),
+        message: `Scanning library for changed files`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_scan_library'));
+      handleError(error, $t('unable_to_scan_library'));
     }
   };
 
@@ -214,11 +213,11 @@
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
-        message: $t('page.admin.library_management.message_force_refresh'),
+        message: `Forcing refresh of all library files`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_scan_library'));
+      handleError(error, $t('unable_to_scan_library'));
     }
   };
 
@@ -226,11 +225,11 @@
     try {
       await removeOfflineFiles({ id: libraryId });
       notificationController.show({
-        message: $t('page.admin.library_management.message_remove_offline_files'),
+        message: `Removing Offline Files`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('page.admin.library_management.error_remove_files'));
+      handleError(error, 'Unable to remove offline files');
     }
   };
 
@@ -330,14 +329,14 @@
       <LinkButton on:click={() => handleScanAll()}>
         <div class="flex gap-1 text-sm">
           <Icon path={mdiSync} size="18" />
-          <span>{$t('page.admin.library_management.scan_all_libraries')}</span>
+          <span>{$t('scan_all_libraries')}</span>
         </div>
       </LinkButton>
     {/if}
     <LinkButton on:click={() => (toCreateLibrary = true)}>
       <div class="flex gap-1 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" />
-        <span>{$t('page.admin.library_management.create_library')}</span>
+        <span>{$t('create_library')}</span>
       </div>
     </LinkButton>
   </div>
@@ -349,11 +348,11 @@
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
           >
             <tr class="grid grid-cols-6 w-full place-items-center">
-              <th class="text-center text-sm font-medium">{$t('common.type')}</th>
-              <th class="text-center text-sm font-medium">{$t('common.name')}</th>
-              <th class="text-center text-sm font-medium">{$t('common.owner')}</th>
-              <th class="text-center text-sm font-medium">{$t('common.assets')}</th>
-              <th class="text-center text-sm font-medium">{$t('common.size')}</th>
+              <th class="text-center text-sm font-medium">{$t('type')}</th>
+              <th class="text-center text-sm font-medium">{$t('name')}</th>
+              <th class="text-center text-sm font-medium">{$t('owner')}</th>
+              <th class="text-center text-sm font-medium">{$t('assets')}</th>
+              <th class="text-center text-sm font-medium">{$t('size')}</th>
               <th class="text-center text-sm font-medium" />
             </tr>
           </thead>
@@ -367,13 +366,7 @@
                 }`}
               >
                 <td class=" px-10 text-sm">
-                  <Icon
-                    path={mdiDatabase}
-                    size="40"
-                    title={$t('page.admin.library_management.library_created_at', {
-                      values: { createdAt: library.createdAt },
-                    })}
-                  />
+                  <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
                 </td>
 
                 <td class=" text-ellipsis px-4 text-sm">{library.name}</td>
@@ -398,7 +391,7 @@
                   <CircleIconButton
                     color="primary"
                     icon={mdiDotsVertical}
-                    title={$t('page.admin.library_management.library_options')}
+                    title={$t('library_options')}
                     size="16"
                     on:click={(e) => showMenu(e, library, index)}
                   />
@@ -409,33 +402,27 @@
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 
                         {#if selectedLibrary}
-                          <MenuOption
-                            on:click={() => onEditImportPathClicked()}
-                            text={$t('page.admin.library_management.menu_edit_import_paths')}
-                          />
-                          <MenuOption
-                            on:click={() => onScanSettingClicked()}
-                            text={$t('page.admin.library_management.menu_scan_settings')}
-                          />
+                          <MenuOption on:click={() => onEditImportPathClicked()} text={$t('edit_import_paths')} />
+                          <MenuOption on:click={() => onScanSettingClicked()} text={$t('scan_settings')} />
                           <hr />
-                          <MenuOption
-                            on:click={() => onScanNewLibraryClicked()}
-                            text={$t('page.admin.library_management.menu_scan_new_files')}
-                          />
+                          <MenuOption on:click={() => onScanNewLibraryClicked()} text={$t('scan_new_library_files')} />
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
-                            text={$t('page.admin.library_management.menu_scan_all_files')}
-                            subtitle={$t('page.admin.library_management.menu_scan_all_files_subtitle')}
+                            text={$t('re-scan_all_library_files')}
+                            subtitle={$t('only_refreshes_modified_files')}
                           />
                           <MenuOption
                             on:click={() => onForceScanAllLibraryFilesClicked()}
-                            text={$t('page.admin.library_management.menu_scan_all_files_force')}
-                            subtitle={$t('page.admin.library_management.menu_scan_all_files_force_subtitle')}
+                            text="Force Re-scan All Library Files"
+                            subtitle={$t('refreshes_every_file')}
                           />
                           <hr />
-                          <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                          <MenuOption
+                            on:click={() => onRemoveOfflineFilesClicked()}
+                            text={$t('remove_offline_files')}
+                          />
                           <MenuOption on:click={() => onDeleteLibraryClicked()}>
-                            <p class="text-red-600">{$t('page.admin.library_management.delete_library')}</p>
+                            <p class="text-red-600">{$t('delete_library')}</p>
                           </MenuOption>
                         {/if}
                       </ContextMenu>
@@ -477,7 +464,7 @@
         <!-- Empty message -->
       {:else}
         <EmptyPlaceholder
-          text={$t('page.admin.library_management.empty_placeholder')}
+          text="Create an external library to view your photos and videos"
           onClick={() => (toCreateLibrary = true)}
         />
       {/if}

@@ -5,6 +5,7 @@
   import { asByteUnitString } from '../../utils/byte-units';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiClose } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   const abort = (downloadKey: string, download: DownloadProgress) => {
     download.abort?.abort();
@@ -17,7 +18,7 @@
     transition:fly={{ x: -100, duration: 350 }}
     class="absolute bottom-10 left-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
   >
-    <p class="mb-2 text-xs text-gray-500">DOWNLOADING</p>
+    <p class="mb-2 text-xs text-gray-500">{$t('downloading')}</p>
     <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
       {#each Object.keys($downloadAssets) as downloadKey (downloadKey)}
         {@const download = $downloadAssets[downloadKey]}
@@ -40,7 +41,7 @@
           </div>
           <div class="absolute right-2">
             <CircleIconButton
-              title="Close"
+              title={$t('close')}
               on:click={() => abort(downloadKey, download)}
               size="20"
               icon={mdiClose}

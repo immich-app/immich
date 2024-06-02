@@ -7,6 +7,7 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -20,9 +21,14 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingSwitch title="ENABLED" {disabled} subtitle="Logging" bind:checked={config.logging.enabled} />
+        <SettingSwitch
+          title={$t('enabled')}
+          {disabled}
+          subtitle={$t('logging')}
+          bind:checked={config.logging.enabled}
+        />
         <SettingSelect
-          label="LEVEL"
+          label={$t('level')}
           desc="When enabled, what log level to use."
           bind:value={config.logging.level}
           options={[

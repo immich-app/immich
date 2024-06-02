@@ -11,6 +11,7 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -25,7 +26,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
-          label="THUMBNAIL FORMAT"
+          label={$t('thumbnail_format')}
           desc="WebP produces smaller files than JPEG, but is slower to encode."
           bind:value={config.image.thumbnailFormat}
           options={[
@@ -38,7 +39,7 @@
         />
 
         <SettingSelect
-          label="THUMBNAIL RESOLUTION"
+          label={$t('thumbnail_resolution')}
           desc="Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
           bind:value={config.image.thumbnailSize}
@@ -55,7 +56,7 @@
         />
 
         <SettingSelect
-          label="PREVIEW FORMAT"
+          label={$t('preview_format')}
           desc="WebP produces smaller files than JPEG, but is slower to encode."
           bind:value={config.image.previewFormat}
           options={[
@@ -68,7 +69,7 @@
         />
 
         <SettingSelect
-          label="PREVIEW RESOLUTION"
+          label={$t('preview_resolution')}
           desc="Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
           number
           bind:value={config.image.previewSize}
@@ -85,7 +86,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
-          label="QUALITY"
+          label={$t('quality')}
           desc="Image quality from 1-100. Higher is better for quality but produces larger files."
           bind:value={config.image.quality}
           isEdited={config.image.quality !== savedConfig.image.quality}
@@ -93,7 +94,7 @@
         />
 
         <SettingSwitch
-          title="PREFER WIDE GAMUT"
+          title={$t('prefer_wide_gamut')}
           subtitle="Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts."
           checked={config.image.colorspace === Colorspace.P3}
           on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
@@ -102,7 +103,7 @@
         />
 
         <SettingSwitch
-          title="PREFER EMBEDDED PREVIEW"
+          title={$t('prefer_embedded_preview')}
           subtitle="Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview is camera-dependent and the image may have more compression artifacts."
           checked={config.image.extractEmbedded}
           on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}

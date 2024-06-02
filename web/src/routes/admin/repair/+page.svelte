@@ -80,12 +80,12 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('page.admin.repair.repaired_items', { values: { count: matches.length } }),
+        message: `Repaired ${matches.length} items`,
       });
 
       matches = [];
     } catch (error) {
-      handleError(error, $t('page.admin.repair.repair_error'));
+      handleError(error, $t('unable_to_repair_items'));
     } finally {
       repairing = false;
     }
@@ -108,9 +108,9 @@
       orphans = report.orphans;
       extras = normalize(report.extras);
 
-      notificationController.show({ message: $t('page.admin.repair.refreshed'), type: NotificationType.Info });
+      notificationController.show({ message: $t('refreshed'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, $t('page.admin.repair.load_error'));
+      handleError(error, $t('unable_to_load_items'));
     }
   };
 
@@ -118,13 +118,10 @@
     try {
       const matched = await loadAndMatch([filename]);
       if (matched) {
-        notificationController.show({
-          message: $t('page.admin.repair.matched_items', { values: { count: 1 } }),
-          type: NotificationType.Info,
-        });
+        notificationController.show({ message: `Matched 1 item`, type: NotificationType.Info });
       }
     } catch (error) {
-      handleError(error, $t('page.admin.repair.check_item_error'));
+      handleError(error, $t('unable_to_check_item'));
     }
   };
 
@@ -140,15 +137,12 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, $t('page.admin.repair.check_items_error'));
+      handleError(error, $t('unable_to_check_items'));
     } finally {
       checking = false;
     }
 
-    notificationController.show({
-      message: $t('page.admin.repair.matched_items', { values: { count: count } }),
-      type: NotificationType.Info,
-    });
+    notificationController.show({ message: `Matched ${count} items`, type: NotificationType.Info });
   };
 
   const loadAndMatch = async (filenames: string[]) => {
@@ -221,8 +215,8 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>{$t('page.admin.repair.matches')} {matches.length > 0 ? `(${matches.length})` : ''}</p>
-                    <p class="text-gray-600 dark:text-gray-300 mt-1">{$t('page.admin.repair.matches_info')}</p>
+                    <p>MATCHES {matches.length > 0 ? `(${matches.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
                   </div>
                 </th>
               </tr>
@@ -255,9 +249,9 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>{$t('page.admin.repair.offline_paths')} {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
+                    <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      {$t('page.admin.repair.offline_paths_info')}
+                      These results may be due to manual deletion of files that are not part of an external library.
                     </p>
                   </div>
                 </th>
@@ -273,7 +267,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -293,9 +287,10 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>{$t('page.admin.repair.untracked_files')} {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>UNTRACKED FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      {$t('page.admin.repair.untracked_files_info')}
+                      These files are not tracked by the application. They can be the results of failed moves,
+                      interrupted uploads, or left behind due to a bug
                     </p>
                   </div>
                 </th>
@@ -312,7 +307,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

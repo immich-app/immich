@@ -10,6 +10,7 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { s } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined;
@@ -56,7 +57,19 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Remove from album" icon={mdiImageRemoveOutline} on:click={removeFromAlbum} />
+  <MenuOption
+    text={$t('remove_from_album')}
+    icon={mdiImageRemoveOutline}
+    on:click={() => {
+      removeFromAlbum;
+    }}
+  />
 {:else}
-  <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={removeFromAlbum} />
+  <CircleIconButton
+    title={$t('remove_from_album')}
+    icon={mdiDeleteOutline}
+    on:click={() => {
+      removeFromAlbum;
+    }}
+  />
 {/if}

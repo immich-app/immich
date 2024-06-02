@@ -86,7 +86,7 @@
       });
       dispatch('merge', mergedPerson);
     } catch (error) {
-      handleError(error, 'Cannot merge people');
+      handleError(error, { $t("cannot_merge_people") });
     }
   };
 </script>
@@ -134,7 +134,7 @@
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
                     <CircleIconButton
-                      title="Swap merge direction"
+                      title={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="24"
                       on:click={handleSwapPeople}

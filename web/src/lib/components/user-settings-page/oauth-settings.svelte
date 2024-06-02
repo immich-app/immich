@@ -9,6 +9,7 @@
   import Button from '../elements/buttons/button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { t } from 'svelte-i18n';
 
   export let user: UserAdminResponseDto;
 
@@ -22,7 +23,7 @@
         user = await oauth.link(window.location);
 
         notificationController.show({
-          message: 'Linked OAuth account',
+          message: $t('linked_oauth_account'),
           type: NotificationType.Info,
         });
       } catch (error) {
@@ -39,11 +40,11 @@
     try {
       user = await oauth.unlink();
       notificationController.show({
-        message: 'Unlinked OAuth account',
+        message: $t('unlinked_oauth_account'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to unlink account');
+      handleError(error, $t('unable_to_unlink_account'));
     }
   };
 </script>
@@ -57,9 +58,9 @@
         </div>
       {:else if $featureFlags.oauth}
         {#if user.oauthId}
-          <Button size="sm" on:click={() => handleUnlink()}>Unlink Oauth</Button>
+          <Button size="sm" on:click={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button size="sm" on:click={() => oauth.authorize(window.location)}>Link to OAuth</Button>
+          <Button size="sm" on:click={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

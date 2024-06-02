@@ -6,7 +6,6 @@
   import { resetSavedUser, user } from '$lib/stores/user.store';
   import { logout } from '@immich/sdk';
   import type { PageData } from './$types';
-  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -19,10 +18,11 @@
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    {$t('page.auth.change_password.salutation', { values: { name: $user.name, email: $user.email } })}
+    Hi {$user.name} ({$user.email}),
     <br />
     <br />
-    {$t('page.auth.change_password.message')}
+    This is either the first time you are signing into the system or a request has been made to change your password. Please
+    enter the new password below.
   </p>
 
   <ChangePasswordForm on:success={onSuccess} />

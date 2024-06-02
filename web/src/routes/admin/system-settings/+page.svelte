@@ -83,92 +83,92 @@
   }> = [
     {
       item: AuthSettings,
-      title: $t('page.admin.system_settings.auth_settings_title'),
-      subtitle: $t('page.admin.system_settings.auth_settings_subtitle'),
+      title: $t('authentication_settings'),
+      subtitle: 'Manage password, OAuth, and other authentication settings',
       key: 'image',
     },
     {
       item: ImageSettings,
-      title: $t('page.admin.system_settings.image_settings_title'),
-      subtitle: $t('page.admin.system_settings.image_settings_subtitle'),
+      title: $t('image_settings'),
+      subtitle: 'Manage the quality and resolution of generated images',
       key: 'image',
     },
     {
       item: JobSettings,
-      title: $t('page.admin.system_settings.job_settings_title'),
-      subtitle: $t('page.admin.system_settings.job_settings_subtitle'),
+      title: $t('job_settings'),
+      subtitle: $t('manage_job_concurrency'),
       key: 'job',
     },
     {
       item: LibrarySettings,
-      title: $t('page.admin.system_settings.library_settings_title'),
-      subtitle: $t('page.admin.system_settings.library_settings_subtitle'),
+      title: $t('external_library'),
+      subtitle: $t('manage_external_library_settings'),
       key: 'external-library',
     },
     {
       item: LoggingSettings,
-      title: $t('page.admin.system_settings.logging_settings_title'),
-      subtitle: $t('page.admin.system_settings.logging_settings_subtitle'),
+      title: $t('logging'),
+      subtitle: $t('manage_log_settings'),
       key: 'logging',
     },
     {
       item: MachineLearningSettings,
-      title: $t('page.admin.system_settings.machine_learning_settings_title'),
-      subtitle: $t('page.admin.system_settings.machine_learning_settings_subtitle'),
+      title: $t('machine_learning_settings'),
+      subtitle: 'Manage machine learning features and settings',
       key: 'machine-learning',
     },
     {
       item: MapSettings,
-      title: $t('page.admin.system_settings.map_settings_title'),
-      subtitle: $t('page.admin.system_settings.map_settings_subtitle'),
+      title: 'Map & GPS Settings',
+      subtitle: 'Manage map related features and setting',
       key: 'location',
     },
     {
       item: NotificationSettings,
-      title: $t('page.admin.system_settings.notification_settings_title'),
-      subtitle: $t('page.admin.system_settings.notification_settings_subtitle'),
+      title: $t('notification_settings'),
+      subtitle: 'Manage notification settings, including email',
       key: 'notifications',
     },
     {
       item: ServerSettings,
-      title: $t('page.admin.system_settings.server_settings_title'),
-      subtitle: $t('page.admin.system_settings.server_settings_subtitle'),
+      title: $t('server_settings'),
+      subtitle: $t('manage_server_settings'),
       key: 'server',
     },
     {
       item: StorageTemplateSettings,
-      title: $t('page.admin.system_settings.storage_template_settings_title'),
-      subtitle: $t('page.admin.system_settings.storage_template_settings_subtitle'),
+      title: $t('storage_template'),
+      subtitle: 'Manage the folder structure and file name of the upload asset',
       key: 'storage-template',
     },
     {
       item: ThemeSettings,
-      title: $t('page.admin.system_settings.theme_settings_title'),
-      subtitle: $t('page.admin.system_settings.theme_settings_subtitle'),
+      title: $t('theme_settings'),
+      subtitle: 'Manage customization of the Immich web interface',
       key: 'theme',
     },
     {
       item: TrashSettings,
-      title: $t('page.admin.system_settings.trash_settings_title'),
-      subtitle: $t('page.admin.system_settings.trash_settings_subtitle'),
+      title: $t('trash_settings'),
+      subtitle: $t('manage_trash_settings'),
       key: 'trash',
     },
     {
       item: UserSettings,
-      title: $t('page.admin.system_settings.user_settings_title'),
-      subtitle: $t('page.admin.system_settings.user_settings_subtitle'),
+      title: $t('user_settings'),
+      subtitle: $t('manage_user_settings'),
       key: 'user-settings',
     },
     {
       item: NewVersionCheckSettings,
-      title: $t('page.admin.system_settings.new_version_check_settings_title'),
-      subtitle: $t('page.admin.system_settings.new_version_check_settings_subtitle'),
+      title: $t('version_check'),
+      subtitle: 'Enable/disable the new version notification',
       key: 'version-check',
     },
     {
       item: FFmpegSettings,
-      title: $t('page.admin.system_settings.ffmpeg_settings_title'),
-      subtitle: $t('page.admin.system_settings.ffmpeg_settings_subtitle'),
+      title: $t('video_transcoding_settings'),
+      subtitle: 'Manage the resolution and encoding information of the video files',
       key: 'video-transcoding',
     },
   ];
@@ -181,7 +181,7 @@
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
       <Icon path={mdiAlert} class="text-yellow-400" size={18} />
       <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-        {$t('page.admin.system_settings.config_file_set')}
+        Config is currently set by a config file
       </h2>
     </div>
   {/if}
@@ -191,19 +191,19 @@
       <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
-          {$t('page.admin.system_settings.clipboard')}
+          Copy to Clipboard
         </div>
       </LinkButton>
       <LinkButton on:click={() => downloadConfig()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
-          {$t('page.admin.system_settings.json_export')}
+          Export as JSON
         </div>
       </LinkButton>
       <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
-          {$t('page.admin.system_settings.json_import')}
+          Import from JSON
         </div>
       </LinkButton>
     </div>

@@ -4,6 +4,7 @@
   import { mdiMagnify, mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{
     selectSearchTerm: string;
@@ -18,12 +19,12 @@
 >
   {#if $savedSearchTerms.length > 0}
     <div class="flex items-center justify-between px-5 pt-5 text-xs">
-      <p>RECENT SEARCHES</p>
+      <p>{$t('recent_searches')}</p>
       <div class="flex w-18 items-center justify-center">
         <button
           type="button"
           class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
-          on:click={() => dispatch('clearAllSearchTerms')}>Clear all</button
+          on:click={() => dispatch('clearAllSearchTerms')}>{$t('clear_all')}</button
         >
       </div>
     </div>

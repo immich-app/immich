@@ -7,6 +7,7 @@
   import { colorTheme } from '$lib/stores/preferences.store';
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { Theme } from '$lib/constants';
+  import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -15,7 +16,7 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">COLOR THEME</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('color_theme')}</p>
 
   <div>
     <p class="pb-6 font-light">Choose a color theme for your instance. You can change this later in your settings.</p>
@@ -31,7 +32,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
         <Icon path={sunPath} viewBox={sunViewBox} size="96" />
-        <p class="font-semibold text-4xl">LIGHT</p>
+        <p class="font-semibold text-4xl">{$t('light')}</p>
       </div>
     </button>
     <button
@@ -43,7 +44,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
         <Icon path={moonPath} viewBox={moonViewBox} size="96" />
-        <p class="font-semibold text-4xl">DARK</p>
+        <p class="font-semibold text-4xl">{$t('dark')}</p>
       </div>
     </button>
   </div>
@@ -51,7 +52,7 @@
   <div class="flex">
     <div class="w-full flex place-content-end">
       <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-        <p>Storage Template</p>
+        <p>{$t('storage_template')}</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>
     </div>

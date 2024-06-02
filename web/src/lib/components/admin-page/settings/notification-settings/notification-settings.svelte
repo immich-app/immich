@@ -10,6 +10,7 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -23,11 +24,11 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault class="mt-4">
       <div class="flex flex-col gap-4">
-        <SettingAccordion key="email" title="Email" subtitle="Settings for sending email notifications">
+        <SettingAccordion key="email" title={$t('email')} subtitle="Settings for sending email notifications">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-              title="Enabled"
-              subtitle="Enable email notifications"
+              title={$t('enabled')}
+              subtitle={$t('enable_email_notifications')}
               {disabled}
               bind:checked={config.notifications.smtp.enabled}
             />
@@ -37,7 +38,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required
-              label="Host"
+              label={$t('host')}
               desc="Host of the email server (e.g. smtp.immich.app)"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.host}
@@ -47,7 +48,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               required
-              label="Port"
+              label={$t('port')}
               desc="Port of the email server (e.g 25, 465, or 587)"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.port}
@@ -56,7 +57,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="Username"
+              label={$t('username')}
               desc="Username to use when authenticating with the email server"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.username}
@@ -66,7 +67,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
-              label="Password"
+              label={$t('password')}
               desc="Password to use when authenticating with the email server"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.password}
@@ -75,7 +76,7 @@
             />
 
             <SettingSwitch
-              title="Ignore certificate errors"
+              title={$t('ignore_certificate_errors')}
               subtitle="Ignore TLS certificate validation errors (not recommended)"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:checked={config.notifications.smtp.transport.ignoreCert}
@@ -86,7 +87,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required
-              label="From address"
+              label={$t('from_address')}
               desc="Sender email address, for example: &quot;Immich Photo Server <noreply@immich.app>&quot;"
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.from}

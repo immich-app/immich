@@ -20,6 +20,7 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -54,10 +55,10 @@
     const substitutions: Record<string, string> = {
       filename: 'IMAGE_56437',
       ext: 'jpg',
-      filetype: 'IMG',
+      filetype: $t('img'),
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
-      album: 'Album Name',
+      album: $t('album_name'),
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -107,16 +108,16 @@
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
-        title="ENABLED"
+        title={$t('enabled')}
         {disabled}
-        subtitle="Enable storage template engine"
+        subtitle={$t('enable_storage_template_engine')}
         bind:checked={config.storageTemplate.enabled}
         isEdited={!(config.storageTemplate.enabled === savedConfig.storageTemplate.enabled)}
       />
 
       {#if !minified}
         <SettingSwitch
-          title="HASH VERIFICATION ENABLED"
+          title={$t('hash_verification_enabled')}
           {disabled}
           subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
           bind:checked={config.storageTemplate.hashVerificationEnabled}
@@ -129,7 +130,7 @@
       {#if config.storageTemplate.enabled}
         <hr />
 
-        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
+        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('variables')}</h3>
 
         <section class="support-date">
           {#await getSupportDateTimeFormat()}
@@ -146,10 +147,10 @@
         </section>
 
         <div class="flex flex-col mt-4">
-          <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
+          <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
-            <h4>PREVIEW</h4>
+            <h4>{$t('preview')}</h4>
           </div>
 
           <p class="text-sm">
@@ -172,7 +173,7 @@
 
           <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
             <div class="flex flex-col my-2">
-              <label class="text-sm" for="preset-select">PRESET</label>
+              <label class="text-sm" for="preset-select">{$t('preset')}</label>
               <select
                 class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
                 disabled={disabled || !config.storageTemplate.enabled}
@@ -188,7 +189,7 @@
             </div>
             <div class="flex gap-2 align-bottom">
               <SettingInputField
-                label="TEMPLATE"
+                label={$t('template')}
                 disabled={disabled || !config.storageTemplate.enabled}
                 required
                 inputType={SettingInputFieldType.TEXT}
@@ -197,19 +198,24 @@
               />
 
               <div class="flex-0">
-                <SettingInputField label="EXTENSION" inputType={SettingInputFieldType.TEXT} value={'.jpg'} disabled />
+                <SettingInputField
+                  label={$t('extension')}
+                  inputType={SettingInputFieldType.TEXT}
+                  value={'.jpg'}
+                  disabled
+                />
               </div>
             </div>
 
             {#if !minified}
               <div id="migration-info" class="mt-2 text-sm">
-                <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Notes</h3>
+                <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('notes')}</h3>
                 <section class="flex flex-col gap-2">
                   <p>
                     Template changes will only apply to new assets. To retroactively apply the template to previously
                     uploaded assets, run the
                     <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >Storage Migration Job</a
+                      >{$t('storage_migration_job')}</a
                     >.
                   </p>
                   <p>
@@ -217,7 +223,7 @@
                     assets, so manually running the
 
                     <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >Storage Migration Job</a
+                      >{$t('storage_migration_job')}</a
                     >
                     is required in order to successfully use the variable.
                   </p>

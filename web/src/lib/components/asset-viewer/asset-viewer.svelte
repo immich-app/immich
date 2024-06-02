@@ -53,6 +53,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { t } from 'svelte-i18n';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -169,7 +170,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        handleError(error, $t('cant_get_favorite'));
       }
     }
   };
@@ -352,11 +353,11 @@
       dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
-        message: 'Moved to trash',
+        message: $t('moved_to_trash'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to trash asset');
+      handleError(error, $t('unable_to_trash_asset'));
     }
   };
 
@@ -367,11 +368,11 @@
       dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
-        message: 'Permanently deleted asset',
+        message: $t('permanently_deleted_asset'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to delete asset');
+      handleError(error, $t('unable_to_delete_asset'));
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -428,7 +429,7 @@
         message: `Restored asset`,
       });
     } catch (error) {
-      handleError(error, 'Error restoring asset');
+      handleError(error, $t('error_restoring_asset'));
     }
   };
 
@@ -483,7 +484,7 @@
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
-      console.error('Error entering fullscreen', error);
+      console.error($t('error_entering_fullscreen'), error);
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -495,7 +496,7 @@
         await document.exitFullscreen();
       }
     } catch (error) {
-      console.error('Error exiting fullscreen', error);
+      console.error($t('error_exiting_fullscreen'), error);
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
@@ -534,7 +535,7 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Album cover updated',
+        message: $t('album_cover_updated'),
         timeout: 1500,
       });
     } catch (error) {
@@ -553,8 +554,8 @@
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
     { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
-    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
-    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: $t('delete') }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: $t('delete'), shift: true }, onShortcut: () => trashOrDelete(true) },
     { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
     { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
     { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
@@ -606,7 +607,7 @@
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
       <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
-        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
       </div>
@@ -703,7 +704,7 @@
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
       <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
-        <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+        <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
       </div>

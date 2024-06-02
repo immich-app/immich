@@ -24,6 +24,7 @@
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -56,7 +57,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error emptying trash');
+      handleError(error, $t('error_emptying_trash'));
     }
   };
 
@@ -81,7 +82,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error restoring trash');
+      handleError(error, $t('error_restoring_trash'));
     }
   };
 </script>

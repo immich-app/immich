@@ -109,7 +109,7 @@
 <noscript
   class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
 >
-  <FullscreenContainer title={$t('common.welcome.title')}>
+  <FullscreenContainer title={$t('welcome_to_immich')}>
     To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
   </FullscreenContainer>
 </noscript>

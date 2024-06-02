@@ -7,6 +7,7 @@
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { mdiClose, mdiArrowRight } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
+  import { t } from 'svelte-i18n';
 
   export let width: number;
   export let selectedPeople: Set<string>;
@@ -28,7 +29,7 @@
       const res = await getAllPeople({ withHidden: false });
       return orderBySelectedPeopleFirst(res.people);
     } catch (error) {
-      handleError(error, 'Failed to get people');
+      handleError(error, $t('failed_to_get_people'));
     }
   }
 
@@ -55,8 +56,8 @@
 
     <div id="people-selection" class="-mb-4">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="immich-form-label py-3">PEOPLE</p>
-        <SearchBar bind:name placeholder="Filter people" showLoadingSpinner={false} />
+        <p class="immich-form-label py-3">{$t('people')}</p>
+        <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">

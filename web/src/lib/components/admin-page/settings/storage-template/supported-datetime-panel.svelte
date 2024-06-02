@@ -2,6 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
 
   export let options: SystemConfigTemplateStorageOptionDto;
 
@@ -21,7 +22,7 @@
   </div>
   <div class="flex gap-[40px]">
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">YEAR</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year')}</p>
       <ul>
         {#each options.yearOptions as yearFormat}
           <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -30,7 +31,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">MONTH</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month')}</p>
       <ul>
         {#each options.monthOptions as monthFormat}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -39,7 +40,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">WEEK</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week')}</p>
       <ul>
         {#each options.weekOptions as weekFormat}
           <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
@@ -48,7 +49,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">DAY</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day')}</p>
       <ul>
         {#each options.dayOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -57,7 +58,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">HOUR</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour')}</p>
       <ul>
         {#each options.hourOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -66,7 +67,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">MINUTE</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute')}</p>
       <ul>
         {#each options.minuteOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -75,7 +76,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">SECOND</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second')}</p>
       <ul>
         {#each options.secondOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>

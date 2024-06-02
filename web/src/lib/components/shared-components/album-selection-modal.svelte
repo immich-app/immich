@@ -7,6 +7,7 @@
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
+  import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -47,9 +48,9 @@
 
   const getTitle = () => {
     if (shared) {
-      return 'Add to shared album';
+      return $t('add_to_shared_album');
     }
-    return 'Add to album';
+    return $t('add_to_album');
   };
 </script>
 
@@ -71,7 +72,7 @@
     {:else}
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
-        placeholder="Search"
+        placeholder={$t('search')}
         bind:value={search}
         use:initInput
       />
@@ -90,7 +91,7 @@
         </button>
         {#if filteredAlbums.length > 0}
           {#if !shared && search.length === 0}
-            <p class="px-5 py-3 text-xs">RECENT</p>
+            <p class="px-5 py-3 text-xs">{$t('recent')}</p>
             {#each recentAlbums as album (album.id)}
               <AlbumListItem {album} on:album={() => handleSelect(album)} />
             {/each}

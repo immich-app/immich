@@ -23,6 +23,7 @@
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -70,16 +71,16 @@
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: 'Perform library tasks',
-      allText: 'ALL',
-      missingText: 'REFRESH',
+      subtitle: $t('perform_library_tasks'),
+      allText: $t('all'),
+      missingText: $t('refresh'),
     },
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
-      allText: 'SYNC',
-      missingText: 'DISCOVER',
+      allText: $t('sync'),
+      missingText: $t('discover'),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
@@ -98,7 +99,7 @@
       icon: mdiFaceRecognition,
       title: getJobName(JobName.FaceDetection),
       subtitle:
-        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
+        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. { $t("all") } (re-)processes all assets. { $t("missing") } queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
@@ -106,7 +107,7 @@
       icon: mdiTagFaces,
       title: getJobName(JobName.FacialRecognition),
       subtitle:
-        'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
+        'Group detected faces into people. This step runs after Face Detection is complete. { $t("all") } (re-)clusters all faces. { $t("missing") } queues faces that don\'t have a person assigned.',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
@@ -159,7 +160,7 @@
       {title}
       {disabled}
       {subtitle}
-      allText={allText || 'ALL'}
+      allText={allText || $t('all')}
       missingText={missingText || 'MISSING'}
       {allowForceCommand}
       {jobCounts}

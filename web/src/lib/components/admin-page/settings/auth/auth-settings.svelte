@@ -11,6 +11,7 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -42,7 +43,11 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDialog title="Disable login" onCancel={() => (isConfirmOpen = false)} onConfirm={() => handleSave(true)}>
+  <ConfirmDialogue
+    title={$t('disable_login')}
+    onCancel={() => (isConfirmOpen = false)}
+    onConfirm={() => handleSave(true)}
+  >
     <svelte:fragment slot="prompt">
       <div class="flex flex-col gap-4">
         <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
@@ -66,7 +71,7 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingAccordion key="oauth" title="OAuth" subtitle="Manage OAuth login settings">
+        <SettingAccordion key="oauth" title={$t('oauth')} subtitle={$t('manage_oauth_login_settings')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
               For more details about this feature, refer to the <a
@@ -77,13 +82,18 @@
               >.
             </p>
 
-            <SettingSwitch {disabled} title="ENABLE" subtitle="Login with OAuth" bind:checked={config.oauth.enabled} />
+            <SettingSwitch
+              {disabled}
+              title={$t('enable')}
+              subtitle={$t('login_with_oauth')}
+              bind:checked={config.oauth.enabled}
+            />
 
             {#if config.oauth.enabled}
               <hr />
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ISSUER URL"
+                label={$t('issuer_url')}
                 bind:value={config.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -92,7 +102,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT ID"
+                label={$t('client_id')}
                 bind:value={config.oauth.clientId}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -101,7 +111,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT SECRET"
+                label={$t('client_secret')}
                 bind:value={config.oauth.clientSecret}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -110,7 +120,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SCOPE"
+                label={$t('scope')}
                 bind:value={config.oauth.scope}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -119,7 +129,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SIGNING ALGORITHM"
+                label={$t('signing_algorithm')}
                 bind:value={config.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -128,7 +138,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="STORAGE LABEL CLAIM"
+                label={$t('storage_label_claim')}
                 desc="Automatically set the user's storage label to the value of this claim."
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
@@ -138,7 +148,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="STORAGE QUOTA CLAIM"
+                label={$t('storage_quota_claim')}
                 desc="Automatically set the user's storage quota to the value of this claim."
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
@@ -148,7 +158,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
-                label="DEFAULT STORAGE QUOTA (GiB)"
+                label={$t('default_storage_quota_(gib)')}
                 desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
@@ -158,7 +168,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="BUTTON TEXT"
+                label={$t('button_text')}
                 bind:value={config.oauth.buttonText}
                 required={false}
                 disabled={disabled || !config.oauth.enabled}
@@ -166,21 +176,21 @@
               />
 
               <SettingSwitch
-                title="AUTO REGISTER"
+                title={$t('auto_register')}
                 subtitle="Automatically register new users after signing in with OAuth"
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
-                title="AUTO LAUNCH"
+                title={$t('auto_launch')}
                 subtitle="Start the OAuth login flow automatically upon navigating to the login page"
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
-                title="MOBILE REDIRECT URI OVERRIDE"
+                title={$t('mobile_redirect_uri_override')}
                 subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
@@ -190,7 +200,7 @@
               {#if config.oauth.mobileOverrideEnabled}
                 <SettingInputField
                   inputType={SettingInputFieldType.TEXT}
-                  label="MOBILE REDIRECT URI"
+                  label={$t('mobile_redirect_uri')}
                   bind:value={config.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !config.oauth.enabled}
@@ -201,11 +211,11 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="password" title="Password" subtitle="Manage password login settings">
+        <SettingAccordion key="password" title={$t('password')} subtitle={$t('manage_password_login_settings')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <div class="ml-4 mt-4 flex flex-col">
               <SettingSwitch
-                title="ENABLED"
+                title={$t('enabled')}
                 {disabled}
                 subtitle="Login with email and password"
                 bind:checked={config.passwordLogin.enabled}

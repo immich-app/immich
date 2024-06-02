@@ -8,6 +8,7 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
@@ -44,7 +45,7 @@
       </div>
       <div class="mx-0.5 flex md:mx-2">
         <CircleIconButton
-          title="Swap merge direction"
+          title={$t('swap_merge_direction')}
           icon={mdiMerge}
           on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
         />
@@ -104,7 +105,7 @@
     <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
   </div>
   <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth color="gray" on:click={() => dispatch('reject')}>No</Button>
-    <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>
+    <Button fullwidth color="gray" on:click={() => dispatch('reject')}>{$t('no')}</Button>
+    <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>{$t('yes')}</Button>
   </svelte:fragment>
 </FullScreenModal>

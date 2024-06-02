@@ -12,6 +12,7 @@
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
+  import { t } from 'svelte-i18n';
 
   let editedUser = cloneDeep($user);
 
@@ -28,11 +29,11 @@
       $user = data;
 
       notificationController.show({
-        message: 'Saved profile',
+        message: $t('saved_profile'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save profile');
+      handleError(error, $t('unable_to_save_profile'));
     }
   };
 </script>
@@ -43,30 +44,30 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="USER ID"
+          label={$t('user_id')}
           bind:value={editedUser.id}
           disabled={true}
         />
 
-        <SettingInputField inputType={SettingInputFieldType.EMAIL} label="EMAIL" bind:value={editedUser.email} />
+        <SettingInputField inputType={SettingInputFieldType.EMAIL} label={$t('email')} bind:value={editedUser.email} />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="NAME"
+          label={$t('name')}
           bind:value={editedUser.name}
           required={true}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="STORAGE LABEL"
+          label={$t('storage_label')}
           disabled={true}
           value={editedUser.storageLabel || ''}
           required={false}
         />
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSaveProfile()}>Save</Button>
+          <Button type="submit" size="sm" on:click={() => handleSaveProfile()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

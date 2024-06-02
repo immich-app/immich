@@ -35,13 +35,13 @@
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
             <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
-              {$t('page.error.message')}
+              🚨 Error - Something went wrong
             </h1>
             <div class="flex justify-end">
               <CircleIconButton
                 color="primary"
                 icon={mdiContentCopy}
-                title="Copy error"
+                title={$t('copy_error')}
                 on:click={() => handleCopy()}
               />
             </div>
@@ -53,7 +53,7 @@
             <div class="flex w-full flex-col gap-2">
               <p class="text-red-500">{$page.error?.message} ({$page.error?.code})</p>
               {#if $page.error?.stack}
-                <label for="stacktrace">Stacktrace</label>
+                <label for="stacktrace">{$t('stacktrace')}</label>
                 <pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
               {/if}
             </div>
@@ -71,7 +71,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
-                <p class="text-sm">{$t('page.error.help')}</p>
+                <p class="text-sm">{$t('get_help')}</p>
               </div>
             </a>
 
@@ -83,7 +83,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
-                <p class="text-sm">{$t('page.error.changelog')}</p>
+                <p class="text-sm">{$t('read_changelog')}</p>
               </div>
             </a>
 
@@ -95,7 +95,7 @@
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
-                <p class="text-sm">{$t('page.error.logs')}</p>
+                <p class="text-sm">{$t('check_logs')}</p>
               </div>
             </a>
           </div>

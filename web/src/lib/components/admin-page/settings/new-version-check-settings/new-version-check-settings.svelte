@@ -6,6 +6,7 @@
   import type { SettingsEventType } from '../admin-settings';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -20,7 +21,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4">
         <SettingSwitch
-          title="ENABLED"
+          title={$t('enabled')}
           subtitle="Enable periodic requests to GitHub to check for new releases"
           bind:checked={config.newVersionCheck.enabled}
           {disabled}

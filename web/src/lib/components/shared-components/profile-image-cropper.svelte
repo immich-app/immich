@@ -8,6 +8,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { NotificationType, notificationController } from './notification/notification';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let onClose: () => void;
@@ -58,18 +59,18 @@
       const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Profile picture set.',
+        message: $t('profile_picture_set'),
         timeout: 3000,
       });
       $user.profileImagePath = profileImagePath;
     } catch (error) {
-      handleError(error, 'Error setting profile picture.');
+      handleError(error, $t('error_setting_profile_picture'));
     }
     onClose();
   };
 </script>
 
-<FullScreenModal title="Set profile picture" width="auto" {onClose}>
+<FullScreenModal title={$t('set_profile_picture')} width="auto" {onClose}>
   <div class="flex place-items-center items-center justify-center">
     <div
       class="relative flex aspect-square w-[250px] overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
@@ -78,6 +79,6 @@
     </div>
   </div>
   <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth on:click={handleSetProfilePicture}>Set as profile picture</Button>
+    <Button fullwidth on:click={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
   </svelte:fragment>
 </FullScreenModal>

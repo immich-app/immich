@@ -8,6 +8,7 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -23,7 +24,7 @@
       <div class="mt-4 ml-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="EXTERNAL DOMAIN"
+          label={$t('external_domain')}
           desc="Domain for public shared links, including http(s)://"
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
@@ -31,7 +32,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="WELCOME MESSAGE"
+          label={$t('welcome_message')}
           desc="A message that is displayed on the login page."
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}

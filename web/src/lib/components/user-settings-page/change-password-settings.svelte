@@ -11,6 +11,7 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   let password = '';
   let newPassword = '';
@@ -21,7 +22,7 @@
       await changePassword({ changePasswordDto: { password, newPassword } });
 
       notificationController.show({
-        message: 'Updated password',
+        message: $t('updated_password'),
         type: NotificationType.Info,
       });
 
@@ -44,7 +45,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="PASSWORD"
+          label={$t('password')}
           bind:value={password}
           required={true}
           passwordAutocomplete="current-password"
@@ -52,7 +53,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="NEW PASSWORD"
+          label={$t('new_password')}
           bind:value={newPassword}
           required={true}
           passwordAutocomplete="new-password"
@@ -60,7 +61,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="CONFIRM PASSWORD"
+          label={$t('confirm_password')}
           bind:value={confirmPassword}
           required={true}
           passwordAutocomplete="new-password"
@@ -71,7 +72,7 @@
             type="submit"
             size="sm"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
-            on:click={() => handleChangePassword()}>Save</Button
+            on:click={() => handleChangePassword()}>{$t('save')}</Button
           >
         </div>
       </div>

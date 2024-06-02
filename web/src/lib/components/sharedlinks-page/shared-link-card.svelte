@@ -8,6 +8,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import { t } from 'svelte-i18n';
 
   export let link: SharedLinkResponseDto;
 
@@ -59,7 +60,7 @@
       <div class="font-mono text-xs font-semibold text-gray-500 dark:text-gray-400">
         {#if link.expiresAt}
           {#if isExpired(link.expiresAt)}
-            <p class="font-bold text-red-600 dark:text-red-400">Expired</p>
+            <p class="font-bold text-red-600 dark:text-red-400">{$t('expired')}</p>
           {:else}
             <p>
               Expires {getCountDownExpirationDate()}
@@ -77,11 +78,11 @@
               {link.album?.albumName.toUpperCase()}
             </p>
           {:else if link.type === SharedLinkType.Individual}
-            <p>INDIVIDUAL SHARE</p>
+            <p>{$t('individual_share')}</p>
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}
-            <a href="{AppRoute.SHARE}/{link.key}" title="Go to share page">
+            <a href="{AppRoute.SHARE}/{link.key}" title={$t('go_to_share_page')}>
               <Icon path={mdiOpenInNew} />
             </a>
           {/if}
@@ -128,9 +129,9 @@
 
   <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
-      <CircleIconButton title="Delete link" icon={mdiDelete} on:click={() => dispatch('delete')} />
-      <CircleIconButton title="Edit link" icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
-      <CircleIconButton title="Copy link" icon={mdiContentCopy} on:click={() => dispatch('copy')} />
+      <CircleIconButton title={$t('delete_link')} icon={mdiDelete} on:click={() => dispatch('delete')} />
+      <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
+      <CircleIconButton title={$t('copy_link')} icon={mdiContentCopy} on:click={() => dispatch('copy')} />
     </div>
   </div>
 </div>
