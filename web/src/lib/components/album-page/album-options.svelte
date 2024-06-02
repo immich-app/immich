@@ -54,7 +54,7 @@
 <FullScreenModal title={$t('options')} onClose={() => dispatch('close')}>
   <div class="items-center justify-center">
     <div class="py-2">
-      <h2 class="text-gray text-sm mb-2">{$t('settings')}</h2>
+      <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
       <div class="grid p-2 gap-y-2">
         {#if order}
           <SettingDropdown
