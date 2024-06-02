@@ -99,7 +99,7 @@ export class NotificationService {
     const { emailNotifications } = getPreferences(recipient);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
-      return;
+      return JobStatus.SKIPPED;
     }
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
