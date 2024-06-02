@@ -126,8 +126,8 @@ Configuration of OAuth in Immich System Settings
 | Setting                      | Value                                                                              |
 | ---------------------------- | ---------------------------------------------------------------------------------- |
 | Issuer URL                   | `https://example.immich.app/application/o/immich/.well-known/openid-configuration` |
-| Client ID                    | AFCj2rM1f4rps********\*********lCLEum6hH9...                                       |
-| Client Secret                | 0v89FXkQOWO**********\*\***********mprbvXD549HH6s1iw...                            |
+| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                               |
+| Client Secret                | 0v89FXkQOWO****\*\*****\*\*****\*\*****mprbvXD549HH6s1iw...                        |
 | Scope                        | openid email profile                                                               |
 | Signing Algorithm            | RS256                                                                              |
 | Storage Label Claim          | preferred_username                                                                 |
