@@ -1,6 +1,6 @@
 import {
   AlbumResponseDto,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
@@ -15,8 +15,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('/shared-links', () => {
   let admin: LoginResponseDto;
-  let asset1: AssetFileUploadResponseDto;
-  let asset2: AssetFileUploadResponseDto;
+  let asset1: AssetMediaResponseDto;
+  let asset2: AssetMediaResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
   let album: AlbumResponseDto;

@@ -411,7 +411,11 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId ?? null, checksum);
+      let motionAsset = await this.assetRepository.getByChecksum({
+        ownerId: asset.ownerId,
+        libraryId: asset.libraryId ?? undefined,
+        checksum,
+      });
       if (motionAsset) {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(

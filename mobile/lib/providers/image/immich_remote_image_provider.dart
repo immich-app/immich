@@ -74,7 +74,7 @@ class ImmichRemoteImageProvider
     if (_loadPreview) {
       final preview = getThumbnailUrlForRemoteId(
         key.assetId,
-        type: api.ThumbnailFormat.WEBP,
+        type: api.AssetMediaSize.thumbnail,
       );
 
       yield await ImageLoader.loadImageFromCache(
@@ -88,7 +88,7 @@ class ImmichRemoteImageProvider
     // Load the higher resolution version of the image
     final url = getThumbnailUrlForRemoteId(
       key.assetId,
-      type: api.ThumbnailFormat.JPEG,
+      type: api.AssetMediaSize.preview,
     );
     final codec = await ImageLoader.loadImageFromCache(
       url,

@@ -7,9 +7,9 @@ import {
   Action,
   AssetMediaStatus,
   checkBulkUpload,
+  getAssetOriginalPath,
   getBaseUrl,
   getSupportedMediaTypes,
-  type AssetFileUploadResponseDto,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { tick } from 'svelte';
@@ -129,26 +129,24 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       if (replaceAssetId) {
         const response = await uploadRequest<AssetMediaResponseDto>({
-          url: getBaseUrl() + '/asset/' + replaceAssetId + '/file' + (key ? `?key=${key}` : ''),
+          url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (key ? `?key=${key}` : ''),
           method: 'PUT',
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
         ({ status, id } = response.data);
       } else {
-        const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: getBaseUrl() + '/asset/upload' + (key ? `?key=${key}` : ''),
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/assets' + (key ? `?key=${key}` : ''),
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
+
         if (![200, 201].includes(response.status)) {
           throw new Error('Failed to upload file');
         }
-        if (response.data.duplicate) {
-          status = AssetMediaStatus.Duplicate;
-        } else {
-          id = response.data.id;
-        }
+
+        ({ status, id } = response.data);
       }
     }
 

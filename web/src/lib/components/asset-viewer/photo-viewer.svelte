@@ -5,11 +5,11 @@
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize } from '@immich/sdk';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy } from 'svelte';
@@ -19,7 +19,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] | null = null;
+  export let preloadAssets: AssetResponseDto[] | undefined = undefined;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
 
@@ -27,19 +27,20 @@
   export let zoomToggle: (() => void) | null = null;
 
   const { slideshowState, slideshowLook } = slideshowStore;
-  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
 
   let assetFileUrl: string = '';
   let imageLoaded: boolean = false;
   let imageError: boolean = false;
+  let forceUseOriginal: boolean = false;
+
+  $: isWebCompatible = isWebCompatibleImage(asset);
+  $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
+  $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
   // when true, will force loading of the original image
-  let forceLoadOriginal: boolean = false;
+  $: forceUseOriginal = forceUseOriginal || ($photoZoomState.currentZoom > 1 && isWebCompatible) ? true : false;
 
-  $: {
-    preload({ preloadAssets, loadOriginal: loadOriginalByDefault });
-  }
-
-  $: imageLoaderUrl = load(asset.id, loadOriginalByDefault || forceLoadOriginal, false, asset.checksum);
+  $: preload(useOriginalImage, preloadAssets);
+  $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
 
   photoZoomState.set({
     currentRotation: 0,
@@ -48,36 +49,25 @@
     currentPositionX: 0,
     currentPositionY: 0,
   });
-
   $zoomed = false;
-
-  const unsubscribeZoomState = photoZoomState.subscribe((state) => {
-    forceLoadOriginal = forceLoadOriginal || (state.currentZoom > 1 && isWebCompatibleImage(asset)) ? true : false;
-    haveFadeTransition = false;
-  });
 
   onDestroy(() => {
     $boundingBoxesArray = [];
-    unsubscribeZoomState();
   });
 
-  const preload = ({
-    preloadAssets,
-    loadOriginal,
-  }: {
-    preloadAssets: AssetResponseDto[] | null;
-    loadOriginal: boolean;
-  }) => {
+  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        img.src = getAssetFileUrl(preloadAsset.id, !loadOriginal, false, preloadAsset.checksum);
+        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
       }
     }
   };
 
-  const load = (assetId: string, isOriginal: boolean, isThumb: boolean, checksum: string) => {
-    return getAssetFileUrl(assetId, !isOriginal, isThumb, checksum);
+  const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+    return useOriginal
+      ? getAssetOriginalUrl({ id, checksum })
+      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
   };
 
   copyImage = async () => {

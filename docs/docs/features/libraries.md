@@ -44,16 +44,16 @@ If the import paths are edited in a way that an external file is no longer in an
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if immich_server or immich_microservices can't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if Immich can't access the files. Here are some things to check:
 
 - In the docker-compose file, are the volumes mounted correctly?
-- Are the volumes identical between the `server` and `microservices` container?
+- Are the volumes also mounted to any worker containers?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
 - Make sure you don't use symlinks in your import libraries, and that you aren't linking across docker mounts.
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
-To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_microservices /bin/bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the `immich_server` container. If you cannot access this directory in both the `microservices` and `server` containers, Immich won't be able to import files.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the same in any microservices containers.
 
 ### Exclusion Patterns
 
@@ -98,19 +98,10 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 
 ### Mount Docker Volumes
 
-`immich-server` and `immich-microservices` containers will need access to the gallery. Modify your docker compose file as follows
+The `immich-server` container will need access to the gallery. Modify your docker compose file as follows
 
 ```diff title="docker-compose.yml"
   immich-server:
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
-+     - /home/user/old-pics:/mnt/media/old-pics:ro
-+     - /mnt/media/videos:/mnt/media/videos:ro
-+     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
-
-
-  immich-microservices:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro

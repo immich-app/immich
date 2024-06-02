@@ -2,7 +2,7 @@ import {
   ActivityCreateDto,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   LoginResponseDto,
   ReactionType,
   createActivity as create,
@@ -17,7 +17,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 describe('/activities', () => {
   let admin: LoginResponseDto;
   let nonOwner: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetMediaResponseDto;
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>

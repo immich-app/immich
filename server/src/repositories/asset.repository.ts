@@ -300,10 +300,19 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(libraryId: string | null, checksum: Buffer): Promise<AssetEntity | null> {
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
+  getByChecksum({
+    ownerId,
+    libraryId,
+    checksum,
+  }: {
+    ownerId: string;
+    checksum: Buffer;
+    libraryId?: string;
+  }): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: {
+        ownerId,
         libraryId: libraryId || IsNull(),
         checksum,
       },

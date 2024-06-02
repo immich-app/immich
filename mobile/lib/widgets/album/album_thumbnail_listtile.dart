@@ -46,12 +46,13 @@ class AlbumThumbnailListTile extends StatelessWidget {
         fadeInDuration: const Duration(milliseconds: 200),
         imageUrl: getAlbumThumbnailUrl(
           album,
-          type: ThumbnailFormat.WEBP,
+          type: AssetMediaSize.thumbnail,
         ),
         httpHeaders: {
           "x-immich-user-token": Store.get(StoreKey.accessToken),
         },
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.WEBP),
+        cacheKey:
+            getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
         errorWidget: (context, url, error) =>
             const Icon(Icons.image_not_supported_outlined),
       );

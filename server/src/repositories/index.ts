@@ -4,7 +4,6 @@ import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
-import { IAssetRepositoryV1 } from 'src/interfaces/asset-v1.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -37,7 +36,6 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetStackRepository } from 'src/repositories/asset-stack.repository';
-import { AssetRepositoryV1 } from 'src/repositories/asset-v1.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -71,7 +69,6 @@ export const repositories = [
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
-  { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
   { provide: IAssetStackRepository, useClass: AssetStackRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },

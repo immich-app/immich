@@ -2,7 +2,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
+  import { type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
@@ -56,7 +56,7 @@
         <button type="button" on:click={() => onSelectAsset(asset)} class="block relative">
           <!-- THUMBNAIL-->
           <img
-            src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+            src={getAssetThumbnailUrl(asset.id)}
             alt={asset.id}
             title={`${assetData}`}
             class={`w-[250px] h-[250px] object-cover rounded-t-xl border-t-[4px] border-l-[4px] border-r-[4px] border-gray-300 ${isSelected ? 'border-immich-primary dark:border-immich-dark-primary' : 'dark:border-gray-800'} transition-all`}

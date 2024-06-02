@@ -6,23 +6,23 @@ import 'package:openapi/api.dart';
 
 String getThumbnailUrl(
   final Asset asset, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
   return getThumbnailUrlForRemoteId(asset.remoteId!, type: type);
 }
 
 String getThumbnailCacheKey(
   final Asset asset, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
   return getThumbnailCacheKeyForRemoteId(asset.remoteId!, type: type);
 }
 
 String getThumbnailCacheKeyForRemoteId(
   final String id, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
-  if (type == ThumbnailFormat.WEBP) {
+  if (type == AssetMediaSize.thumbnail) {
     return 'thumbnail-image-$id';
   } else {
     return '${id}_previewStage';
@@ -31,7 +31,7 @@ String getThumbnailCacheKeyForRemoteId(
 
 String getAlbumThumbnailUrl(
   final Album album, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
   if (album.thumbnail.value?.remoteId == null) {
     return '';
@@ -44,7 +44,7 @@ String getAlbumThumbnailUrl(
 
 String getAlbumThumbNailCacheKey(
   final Album album, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
   if (album.thumbnail.value?.remoteId == null) {
     return '';
@@ -60,7 +60,7 @@ String getImageUrl(final Asset asset) {
 }
 
 String getImageUrlFromId(final String id) {
-  return '${Store.get(StoreKey.serverEndpoint)}/asset/file/$id?isThumb=false';
+  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=preview';
 }
 
 String getImageCacheKey(final Asset asset) {
@@ -71,9 +71,9 @@ String getImageCacheKey(final Asset asset) {
 
 String getThumbnailUrlForRemoteId(
   final String id, {
-  ThumbnailFormat type = ThumbnailFormat.WEBP,
+  AssetMediaSize type = AssetMediaSize.thumbnail,
 }) {
-  return '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$id?format=${type.value}';
+  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?format=${type.value}';
 }
 
 String getFaceThumbnailUrl(final String personId) {

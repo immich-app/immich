@@ -7,7 +7,7 @@ To alleviate [performance issues on low-memory systems](/docs/FAQ.mdx#why-is-imm
 - Start the container by running `docker compose up -d`.
 
 :::info
-Starting with version v1.93.0 face detection work and face recognize were split. From now on face detection is done in the immich_machine_learning service, but facial recognition is done in the immich_microservices service.
+Starting with version v1.93.0 face detection work and face recognize were split. From now on face detection is done in the immich_machine_learning container, but facial recognition is done in the `microservices` worker.
 :::
 
 :::note
