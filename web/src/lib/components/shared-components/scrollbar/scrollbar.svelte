@@ -43,6 +43,7 @@
     public timeGroup = '';
     public date!: DateTime;
     public hasLabel = false;
+    public hasDotIndicator = false;
   }
 
   const calculateSegments = (buckets: AssetBucket[]) => {
@@ -58,6 +59,10 @@
       if (previous?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
         previous.hasLabel = true;
         height = 0;
+      }
+
+      if (previous?.date.month !== segment.date.month) {
+        segment.hasDotIndicator = true;
       }
 
       height += segment.height;
@@ -164,7 +169,7 @@
           >
             {segment.date.year}
           </div>
-        {:else if segment.height > 5}
+        {:else if segment.height > 5 && segment.hasDotIndicator}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
             class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"

@@ -86,7 +86,7 @@ export class AssetStore {
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
-    this.options = { ...options, size: TimeBucketSize.Month };
+    this.options = { ...options, size: TimeBucketSize.Day };
     this.store$.set(this);
   }
 
