@@ -1,4 +1,4 @@
-import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
 import { Page, expect, test } from '@playwright/test';
 import { loginDto } from 'src/fixtures';
 import { utils } from 'src/utils';
@@ -40,7 +40,7 @@ test.describe('Photo Viewer', () => {
     await expect(page.getByRole('status')).toBeVisible();
   });
 
-  test('loads high resolution photo when zoomed', async ({ playwright, page }) => {
+  test('loads high resolution photo when zoomed', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
     await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
     const box = await imageLocator(page).boundingBox();
