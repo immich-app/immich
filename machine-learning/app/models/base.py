@@ -19,6 +19,7 @@ from .ann import AnnSession
 
 
 class InferenceModel(ABC):
+    depends: ClassVar[list[tuple[ModelType, ModelTask]]]
     _model_task: ClassVar[ModelTask]
     _model_type: ClassVar[ModelType]
 

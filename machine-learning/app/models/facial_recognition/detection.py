@@ -11,6 +11,7 @@ from app.schemas import DetectedFaces, ModelSession, ModelTask, ModelType
 
 
 class FaceDetector(InferenceModel):
+    depends = []
     _model_task = ModelTask.FACIAL_RECOGNITION
     _model_type = ModelType.DETECTION
 
@@ -35,7 +36,11 @@ class FaceDetector(InferenceModel):
         inputs = decode_cv2(inputs)
 
         bboxes, landmarks = self._detect(inputs)
-        return {"boxes": bboxes[:, :4], "scores": bboxes[:, 4], "landmarks": landmarks}
+        return {
+            "boxes": np.ascontiguousarray(bboxes[:, :4]),
+            "scores": np.ascontiguousarray(bboxes[:, 4]),
+            "landmarks": landmarks,
+        }
 
     def _detect(self, inputs: NDArray[np.uint8] | bytes) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
         return self.model.detect(inputs)  # type: ignore

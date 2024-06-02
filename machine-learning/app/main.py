@@ -1,4 +1,5 @@
 import asyncio
+from collections import defaultdict
 import gc
 import os
 import signal
@@ -9,6 +10,7 @@ from contextlib import asynccontextmanager
 from functools import partial
 from typing import Any, AsyncGenerator, Callable, Iterator
 
+from app.models.transforms import decode_cv2
 import orjson
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
@@ -22,6 +24,7 @@ from .schemas import (
     MessageResponse,
     ModelTask,
     ModelType,
+    PipelineRequest,
     Predictor,
     TextResponse,
 )
@@ -125,6 +128,32 @@ async def predict(
     model = await load(model)
     outputs = await run(model.predict, inputs, **kwargs)
     return ORJSONResponse(outputs)
+
+
+@app.post("/pipeline", dependencies=[Depends(update_state)])
+async def pipeline(image_bytes: UploadFile, entries: str = Form()) -> Any:
+    image = decode_cv2(await image_bytes.read())
+    outputs = defaultdict(lambda: defaultdict(dict))
+    for entry in orjson.loads(entries):
+        inputs = [image]
+        model = await get(entry["modelName"], entry["modelType"], entry["modelTask"], ttl=settings.model_ttl)
+
+        for model_type, model_task in model.depends:
+            if model_task not in outputs or model_type not in outputs[model_task]:
+                dep_model = await get(entry["modelName"], model_type, model_task, ttl=settings.model_ttl)
+                dep_model = await load(dep_model)
+                outputs[model_task][model_type] = await run(dep_model.predict, *inputs, **entry["options"])
+            inputs.append(outputs[model_task][model_type])
+
+        model = await load(model)
+        output = await run(model.predict, *inputs, **entry["options"])
+        outputs[entry["modelTask"]][entry["modelType"]] = output
+
+    return ORJSONResponse(outputs)
+
+
+async def get(model_name: str, model_type: ModelType, model_task: ModelTask, *inputs: Any, **kwargs: Any) -> Predictor:
+    return await model_cache.get(model_name, ModelType(model_type), ModelTask(model_task), **kwargs)
 
 
 async def run(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:

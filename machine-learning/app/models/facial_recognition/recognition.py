@@ -14,6 +14,7 @@ from ..base import InferenceModel
 
 
 class FaceRecognizer(InferenceModel):
+    depends = [(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)]
     _model_task = ModelTask.FACIAL_RECOGNITION
     _model_type = ModelType.RECOGNITION
 

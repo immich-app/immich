@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, NamedTuple, Protocol, TypedDict, TypeGuard
+from typing import Any, Protocol, TypedDict, TypeGuard
 
 import numpy as np
 import numpy.typing as npt
@@ -62,6 +62,7 @@ class ModelSession(Protocol):
 
 
 class Predictor(Protocol):
+    depends: list[tuple[ModelType, ModelTask]]
     loaded: bool
 
     def load(self) -> None: ...
@@ -89,6 +90,16 @@ class FacialRecognitionResponse(TypedDict):
     faces: list[FacialRecognitionResult]
     imageHeight: int
     imageWidth: int
+
+
+class PipelineEntry(TypedDict):
+    modelName: str
+    modelTask: ModelTask
+    modelType: ModelType
+    options: dict[str, Any]
+
+
+PipelineRequest = list[PipelineEntry]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
