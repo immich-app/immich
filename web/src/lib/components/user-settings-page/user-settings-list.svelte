@@ -46,7 +46,7 @@
     <MemoriesSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="notification" title="Notification" subtitle="Manage notification">
+  <SettingAccordion key="notifications" title="Notifications" subtitle="Manage notifications">
     <NotificationsSettings />
   </SettingAccordion>
 
