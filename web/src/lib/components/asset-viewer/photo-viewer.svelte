@@ -37,7 +37,7 @@
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
   $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
   // when true, will force loading of the original image
-  $: forceUseOriginal = forceUseOriginal || ($photoZoomState.currentZoom > 1 && isWebCompatible) ? true : false;
+  $: forceUseOriginal = forceUseOriginal || ($photoZoomState.currentZoom > 1 && isWebCompatible);
 
   $: preload(useOriginalImage, preloadAssets);
   $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
