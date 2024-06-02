@@ -795,7 +795,6 @@
       <DeleteAssetDialog
         size={1}
         on:cancel={() => (isShowDeleteConfirmation = false)}
-        on:escape={() => (isShowDeleteConfirmation = false)}
         on:confirm={() => deleteAsset()}
       />
     {/if}
