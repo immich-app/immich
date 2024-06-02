@@ -323,6 +323,40 @@ export const utils = {
     return body as AssetMediaResponseDto;
   },
 
+  replaceAsset: async (
+    accessToken: string,
+    assetId: string,
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+  ) => {
+    const _dto = {
+      deviceAssetId: 'test-1',
+      deviceId: 'test',
+      fileCreatedAt: new Date().toISOString(),
+      fileModifiedAt: new Date().toISOString(),
+      ...dto,
+    };
+
+    const assetData = dto?.assetData?.bytes || makeRandomImage();
+    const filename = dto?.assetData?.filename || 'example.png';
+
+    if (dto?.assetData?.bytes) {
+      console.log(`Uploading ${filename}`);
+    }
+
+    const builder = request(app)
+      .put(`/assets/${assetId}/original`)
+      .attach('assetData', assetData, filename)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    for (const [key, value] of Object.entries(_dto)) {
+      void builder.field(key, String(value));
+    }
+
+    const { body } = await builder;
+
+    return body as AssetMediaResponseDto;
+  },
+
   createImageFile: (path: string) => {
     if (!existsSync(dirname(path))) {
       mkdirSync(dirname(path), { recursive: true });
