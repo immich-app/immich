@@ -13,7 +13,7 @@
   const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 </script>
 
-<FullScreenModal id="avatar-selector-modal" title="Select avatar color" width="auto" onClose={() => dispatch('close')}>
+<FullScreenModal title="Select avatar color" width="auto" onClose={() => dispatch('close')}>
   <div class="flex items-center justify-center mt-4">
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
       {#each colors as color}

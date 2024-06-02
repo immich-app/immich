@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { groupBy, orderBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto } from '@immich/sdk';
+  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
@@ -267,9 +267,19 @@
   };
 
   const handleDeleteAlbum = async (albumToDelete: AlbumResponseDto) => {
-    await deleteAlbum({
-      id: albumToDelete.id,
-    });
+    try {
+      await deleteAlbum({
+        id: albumToDelete.id,
+      });
+    } catch (error) {
+      // In rare cases deleting an album completes after the list of albums has been requested,
+      // leading to a bad request error.
+      // Since the album is already deleted, the error is ignored.
+      const isBadRequest = isHttpError(error) && error.status === 400;
+      if (!isBadRequest) {
+        throw error;
+      }
+    }
 
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);

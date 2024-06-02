@@ -3,13 +3,9 @@
   import { fade } from 'svelte/transition';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let onClose: () => void;
-
-  /**
-   * Unique identifier for the modal.
-   */
-  export let id: string;
   export let title: string;
   /**
    * If true, the logo will be displayed next to the modal title.
@@ -27,6 +23,11 @@
    * - `auto`: fits the width of the modal content, up to a maximum of 32rem
    */
   export let width: 'wide' | 'narrow' | 'auto' = 'narrow';
+
+  /**
+   * Unique identifier for the modal.
+   */
+  let id: string = generateId();
 
   $: titleId = `${id}-title`;
   $: isStickyBottom = !!$$slots['sticky-bottom'];

@@ -201,8 +201,7 @@
                   <button
                     type="button"
                     class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                    use:clickOutside
-                    on:outclick={() => (showDeleteReaction[index] = false)}
+                    use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
                     Remove
@@ -254,8 +253,7 @@
                     <button
                       type="button"
                       class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                      use:clickOutside
-                      on:outclick={() => (showDeleteReaction[index] = false)}
+                      use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                       on:click={() => handleDeleteReaction(reaction, index)}
                     >
                       Remove

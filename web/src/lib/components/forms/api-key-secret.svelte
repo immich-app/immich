@@ -13,7 +13,7 @@
   const handleDone = () => dispatch('done');
 </script>
 
-<FullScreenModal id="api-key-secret-modal" title="API key" icon={mdiKeyVariant} onClose={() => handleDone()}>
+<FullScreenModal title="API key" icon={mdiKeyVariant} onClose={() => handleDone()}>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <p class="text-sm dark:text-immich-dark-fg">
       This value will only be shown once. Please be sure to copy it before closing the window.

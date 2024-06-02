@@ -159,7 +159,7 @@
   };
 </script>
 
-<FullScreenModal id="create-shared-link-modal" title={getTitle()} icon={mdiLink} {onClose}>
+<FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
   <section>
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
@@ -204,33 +204,25 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch id="require-password" bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch id="show-metadata" bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch
-            id="allow-public-download"
-            bind:checked={allowDownload}
-            title={'Allow public user to download'}
-          />
+          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch id="allow-public-upload" bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
         </div>
 
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch
-                id="change-expiration-time"
-                bind:checked={shouldChangeExpirationTime}
-                title={'Change expiration time'}
-              />
+              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
             </p>
           {:else}
             <p class="immich-form-label my-2">Expire after</p>

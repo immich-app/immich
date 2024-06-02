@@ -42,12 +42,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDialog
-    id="disable-login-modal"
-    title="Disable login"
-    onCancel={() => (isConfirmOpen = false)}
-    onConfirm={() => handleSave(true)}
-  >
+  <ConfirmDialog title="Disable login" onCancel={() => (isConfirmOpen = false)} onConfirm={() => handleSave(true)}>
     <svelte:fragment slot="prompt">
       <div class="flex flex-col gap-4">
         <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
@@ -82,13 +77,7 @@
               >.
             </p>
 
-            <SettingSwitch
-              id="login-with-oauth"
-              {disabled}
-              title="ENABLE"
-              subtitle="Login with OAuth"
-              bind:checked={config.oauth.enabled}
-            />
+            <SettingSwitch {disabled} title="ENABLE" subtitle="Login with OAuth" bind:checked={config.oauth.enabled} />
 
             {#if config.oauth.enabled}
               <hr />
@@ -177,7 +166,6 @@
               />
 
               <SettingSwitch
-                id="auto-register-new-users"
                 title="AUTO REGISTER"
                 subtitle="Automatically register new users after signing in with OAuth"
                 bind:checked={config.oauth.autoRegister}
@@ -185,7 +173,6 @@
               />
 
               <SettingSwitch
-                id="auto-launch-oauth"
                 title="AUTO LAUNCH"
                 subtitle="Start the OAuth login flow automatically upon navigating to the login page"
                 disabled={disabled || !config.oauth.enabled}
@@ -193,7 +180,6 @@
               />
 
               <SettingSwitch
-                id="mobile-redirect-uri-override"
                 title="MOBILE REDIRECT URI OVERRIDE"
                 subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
                 disabled={disabled || !config.oauth.enabled}
@@ -219,7 +205,6 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <div class="ml-4 mt-4 flex flex-col">
               <SettingSwitch
-                id="enable-password-login"
                 title="ENABLED"
                 {disabled}
                 subtitle="Login with email and password"

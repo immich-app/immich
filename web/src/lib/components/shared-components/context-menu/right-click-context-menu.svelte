@@ -49,14 +49,7 @@
       on:contextmenu|preventDefault={reopenContextMenu}
       role="presentation"
     >
-      <ContextMenu
-        {x}
-        {y}
-        {direction}
-        on:outclick={closeContextMenu}
-        on:escape={closeContextMenu}
-        bind:menuElement={contextMenuElement}
-      >
+      <ContextMenu {x} {y} {direction} onClose={closeContextMenu} bind:menuElement={contextMenuElement}>
         <slot />
       </ContextMenu>
     </section>

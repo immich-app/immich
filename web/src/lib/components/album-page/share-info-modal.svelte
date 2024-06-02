@@ -87,7 +87,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <FullScreenModal id="share-info-modal" title="Options" {onClose}>
+  <FullScreenModal title="Options" {onClose}>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -126,7 +126,7 @@
                 />
 
                 {#if selectedMenuUser === user}
-                  <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                  <ContextMenu {...position} onClose={() => (selectedMenuUser = null)}>
                     {#if role === AlbumUserRole.Viewer}
                       <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
                     {:else}
@@ -156,7 +156,6 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
-    id="leave-album-modal"
     title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
     confirmText="Leave"
@@ -167,7 +166,6 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
-    id="remove-user-modal"
     title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
     confirmText="Remove"

@@ -31,7 +31,6 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
-            id="time-based-memories"
             title="Time-based memories"
             subtitle="Photos from previous years"
             bind:checked={memoriesEnabled}

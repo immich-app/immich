@@ -30,7 +30,7 @@
   };
 </script>
 
-<FullScreenModal id="merge-people-modal" title="Merge people - {title}" onClose={() => dispatch('close')}>
+<FullScreenModal title="Merge people - {title}" onClose={() => dispatch('close')}>
   <div class="flex items-center justify-center py-4 md:h-36 md:py-4">
     {#if !choosePersonToMerge}
       <div class="flex h-20 w-20 items-center px-1 md:h-24 md:w-24 md:px-2">

@@ -63,7 +63,6 @@
   <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
     <div class="w-full">
       <Combobox
-        id="location-country"
         label="Country"
         on:select={({ detail }) => (filters.country = detail?.value)}
         options={toComboBoxOptions(countries)}
@@ -74,7 +73,6 @@
 
     <div class="w-full">
       <Combobox
-        id="location-state"
         label="State"
         on:select={({ detail }) => (filters.state = detail?.value)}
         options={toComboBoxOptions(states)}
@@ -85,7 +83,6 @@
 
     <div class="w-full">
       <Combobox
-        id="location-city"
         label="City"
         on:select={({ detail }) => (filters.city = detail?.value)}
         options={toComboBoxOptions(cities)}
