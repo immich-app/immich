@@ -54,7 +54,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
-          label={$t('constant_rate_factor_(-crf)')}
+          label={$t('constant_rate_factor_crf')}
           desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, 31 for VP9, and 35 for AV1. Lower is better, but produces larger files."
           bind:value={config.ffmpeg.crf}
           required={true}
@@ -62,7 +62,7 @@
         />
 
         <SettingSelect
-          label={$t('preset_(-preset)')}
+          label={$t('preset_preset')}
           {disabled}
           desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above faster."
           bind:value={config.ffmpeg.preset}
