@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { zip } from 'lodash';
 import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
@@ -39,7 +40,7 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMachineLearningRepository, ModelTask } from 'src/interfaces/machine-learning.interface';
 import { CropOptions, IMediaRepository, ImageDimensions } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
@@ -337,27 +338,27 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
+    const response = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
       asset.previewPath,
       machineLearning.facialRecognition,
     );
+    const { imageHeight, imageWidth, [ModelTask.FACIAL_RECOGNITION]: faces } = response;
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
-    this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
+    this.logger.debug(`${faces.detection.boxes.length} faces detected in ${asset.previewPath}`);
 
-    if (faces.length > 0) {
+    if (faces.detection.boxes.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
 
-      const mappedFaces = faces.map((face) => ({
+      const mappedFaces = zip(faces.detection.boxes, faces.recognition).map(([box, embedding]) => ({
         assetId: asset.id,
-        embedding: face.embedding,
+        embedding,
         imageHeight,
         imageWidth,
-        boundingBoxX1: face.boundingBox.x1,
-        boundingBoxX2: face.boundingBox.x2,
-        boundingBoxY1: face.boundingBox.y1,
-        boundingBoxY2: face.boundingBox.y2,
+        boundingBoxX1: box![0],
+        boundingBoxY1: box![1],
+        boundingBoxX2: box![2],
+        boundingBoxY2: box![3],
       }));
 
       const faceIds = await this.repository.createFaces(mappedFaces);

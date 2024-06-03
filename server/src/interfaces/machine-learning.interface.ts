@@ -1,26 +1,5 @@
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
-export interface BoundingBox {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-export type Embedding = number[];
-
-export interface FacialRecognitionResult {
-  boundingBox: BoundingBox;
-  score: number;
-  embedding: Embedding;
-}
-
-export interface FacialRecognitionResponse {
-  faces: FacialRecognitionResult[];
-  imageHeight: number;
-  imageWidth: number;
-}
-
 export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
@@ -34,48 +13,37 @@ export enum ModelType {
   VISUAL = 'visual',
 }
 
-interface BaseMachineLearningRequest {
-  modelName: string;
-  modelTask: string;
-  modelType: string;
-}
+export type ModelPayload = { imagePath: string } | { text: string };
 
-export interface ClipVisualOptions {
-  modelName: string;
-}
+type ModelOptions = { modelName: string };
 
-export interface ClipTextualOptions {
-  modelName: string;
-}
+export type FaceDetectionOptions = ModelOptions & { minScore: number };
 
-export interface FacialRecognitionOptions {
-  modelName: string;
-  minScore: number;
-}
+type VisualResponse = { imageHeight: number; imageWidth: number };
+export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
+export type ClipVisualResponse = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: number[] } } & VisualResponse;
 
-export interface ClipVisualRequest extends BaseMachineLearningRequest {
-  imagePath: string;
-  modelTask: ModelTask.SEARCH;
-  modelType: ModelType.VISUAL;
-}
+export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
+export type ClipTextualResponse = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: number[] } };
 
-export interface ClipTextualRequest extends BaseMachineLearningRequest {
-  modelTask: ModelTask.SEARCH;
-  modelType: ModelType.TEXTUAL;
-  text: string;
-}
+export type FacialRecognitionRequest = {
+  [ModelTask.FACIAL_RECOGNITION]: {
+    [ModelType.DETECTION]: FaceDetectionOptions;
+    [ModelType.RECOGNITION]: ModelOptions;
+  };
+};
 
-export interface FacialRecognitionRequest extends BaseMachineLearningRequest {
-  imagePath: string;
-  minScore: number;
-  modelTask: ModelTask.FACIAL_RECOGNITION;
-  modelType: ModelType.PIPELINE;
-}
+export type Faces = {
+  [ModelType.DETECTION]: { scores: number[]; boxes: number[][]; landmarks: number[][] };
+  [ModelType.RECOGNITION]: number[][];
+};
+
+export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Faces } & VisualResponse;
 
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(url: string, imagePath: string, config: ClipVisualOptions): Promise<Embedding>;
-  encodeText(url: string, text: string, config: ClipTextualOptions): Promise<Embedding>;
-  detectFaces(url: string, imagePath: string, config: FacialRecognitionOptions): Promise<FacialRecognitionResponse>;
+  encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<ClipVisualResponse>;
+  encodeText(url: string, text: string, config: ModelOptions): Promise<ClipTextualResponse>;
+  detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<FacialRecognitionResponse>;
 }

@@ -1,7 +1,6 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { Embedding } from 'src/interfaces/machine-learning.interface';
 import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -105,7 +104,7 @@ export interface SearchExifOptions {
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: Embedding;
+  embedding: number[];
   userIds: string[];
 }
 
@@ -153,7 +152,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 
 export interface AssetDuplicateSearch {
   assetId: string;
-  embedding: Embedding;
+  embedding: number[];
   maxDistance?: number;
   type: AssetType;
   userIds: string[];

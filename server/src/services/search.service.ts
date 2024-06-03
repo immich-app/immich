@@ -18,7 +18,7 @@ import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMachineLearningRepository, ModelTask } from 'src/interfaces/machine-learning.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -102,13 +102,12 @@ export class SearchService {
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
-
+    const response = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds, embedding },
+      { ...dto, userIds, embedding: response.clip.textual },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
