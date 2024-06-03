@@ -101,7 +101,7 @@
     on:mouseleave={onMouseLeave}
     role={clickable ? 'button' : undefined}
     tabindex={clickable ? 0 : undefined}
-    on:click={isMultiSelectMode ? thumbnailClickedHandler : undefined}
+    on:click={isMultiSelectMode ? onIconClickedHandler : undefined}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
