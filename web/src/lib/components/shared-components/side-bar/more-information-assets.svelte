@@ -4,12 +4,10 @@
   import { getAssetStatistics } from '@immich/sdk';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
-  export let assetStats: { [typeof getAssetStatistics]: boolean };
-
-  const getStats = (dto: Parameters<typeof getAssetStatistics>[0]) => getAssetStatistics(dto);
+  export let assetStats: NonNullable<Parameters<typeof getAssetStatistics>[0]>;
 </script>
 
-{#await getStats(assetStats)}
+{#await getAssetStatistics(assetStats)}
   <LoadingSpinner />
 {:then data}
   <div>
