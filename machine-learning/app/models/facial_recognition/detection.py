@@ -37,7 +37,7 @@ class FaceDetector(InferenceModel):
 
         bboxes, landmarks = self._detect(inputs)
         return {
-            "boxes": np.ascontiguousarray(bboxes[:, :4]),
+            "boxes": np.ascontiguousarray(bboxes[:, :4].round()),
             "scores": np.ascontiguousarray(bboxes[:, 4]),
             "landmarks": landmarks,
         }

@@ -10,22 +10,27 @@ from contextlib import asynccontextmanager
 from functools import partial
 from typing import Any, AsyncGenerator, Callable, Iterator
 
-from app.models.transforms import decode_cv2
+from app.models import get_model_deps
+from app.models.base import InferenceModel
+from app.models.transforms import decode_pil
 import orjson
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from zipfile import BadZipFile
 from starlette.formparsers import MultiPartParser
+from PIL.Image import Image
 
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
+    T,
+    Entries,
+    InferenceEntry,
     MessageResponse,
     ModelTask,
     ModelType,
     PipelineRequest,
-    Predictor,
     TextResponse,
 )
 
@@ -77,7 +82,10 @@ async def preload_models(preload: PreloadModelData) -> None:
         await load(model)
 
     if preload.facial_recognition is not None:
-        model = await model_cache.get(preload.facial_recognition, ModelType.PIPELINE, ModelTask.FACIAL_RECOGNITION)
+        model = await model_cache.get(preload.facial_recognition, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
+        await load(model)
+
+        model = await model_cache.get(preload.facial_recognition, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
         await load(model)
 
 
@@ -89,6 +97,30 @@ def update_state() -> Iterator[None]:
         yield
     finally:
         active_requests -= 1
+
+
+def get_entries(entries: str = Form()) -> Entries:
+    try:
+        request: PipelineRequest = orjson.loads(entries)
+        without_deps, with_deps = [], []
+        for model_task, model_types in request.items():
+            for model_type, entry in model_types.items():
+                dep = get_model_deps(entry["modelName"], model_type, model_task)
+                (with_deps if dep else without_deps).append({"modelTask": model_task, "modelType": model_type, **entry})
+        return without_deps, with_deps
+    except (orjson.JSONDecodeError, KeyError, AttributeError):
+        raise HTTPException(422)
+
+
+async def get_inputs(image: UploadFile | None = None, text: str | None = None) -> Image:
+    if image is not None:
+        read = await image.read()
+        return await run(lambda: decode_pil(read))
+
+    if text is not None:
+        return text
+
+    raise HTTPException(422)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -105,69 +137,42 @@ def ping() -> str:
 
 
 @app.post("/predict", dependencies=[Depends(update_state)])
-async def predict(
-    model_name: str = Form(alias="modelName"),
-    model_type: ModelType = Form(alias="modelType"),
-    model_task: ModelTask = Form(alias="modelTask"),
-    options: str = Form(default="{}"),
-    text: str | None = Form(default=None),
-    image: UploadFile | None = None,
-) -> Any:
-    if image is not None:
-        inputs: str | bytes = await image.read()
-    elif text is not None:
-        inputs = text
-    else:
-        raise HTTPException(400, "Either image or text must be provided")
-    try:
-        kwargs = orjson.loads(options)
-    except orjson.JSONDecodeError:
-        raise HTTPException(400, f"Invalid options JSON: {options}")
-
-    model = await model_cache.get(model_name, model_type, model_task, ttl=settings.model_ttl, **kwargs)
-    model = await load(model)
-    outputs = await run(model.predict, inputs, **kwargs)
-    return ORJSONResponse(outputs)
-
-
-@app.post("/pipeline", dependencies=[Depends(update_state)])
-async def pipeline(image_bytes: UploadFile, entries: str = Form()) -> Any:
-    image = decode_cv2(await image_bytes.read())
+async def predict(inputs: Image | str = Depends(get_inputs), entries: Entries = Depends(get_entries)) -> Any:
     outputs = defaultdict(lambda: defaultdict(dict))
-    for entry in orjson.loads(entries):
-        inputs = [image]
-        model = await get(entry["modelName"], entry["modelType"], entry["modelTask"], ttl=settings.model_ttl)
-
-        for model_type, model_task in model.depends:
-            if model_task not in outputs or model_type not in outputs[model_task]:
-                dep_model = await get(entry["modelName"], model_type, model_task, ttl=settings.model_ttl)
-                dep_model = await load(dep_model)
-                outputs[model_task][model_type] = await run(dep_model.predict, *inputs, **entry["options"])
-            inputs.append(outputs[model_task][model_type])
-
-        model = await load(model)
-        output = await run(model.predict, *inputs, **entry["options"])
-        outputs[entry["modelTask"]][entry["modelType"]] = output
+    without_deps, with_deps = entries
+    await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in without_deps])
+    if with_deps:
+        await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in with_deps])
 
     return ORJSONResponse(outputs)
 
 
-async def get(model_name: str, model_type: ModelType, model_task: ModelTask, *inputs: Any, **kwargs: Any) -> Predictor:
-    return await model_cache.get(model_name, ModelType(model_type), ModelTask(model_task), **kwargs)
+async def run_inference(image: Image, entry: InferenceEntry, outputs: dict[str, Any]) -> None:
+    model = await model_cache.get(entry["modelName"], entry["modelType"], entry["modelTask"], ttl=settings.model_ttl)
+    inputs = [image]
+    for model_type in model.depends:
+        try:
+            inputs.append(outputs[entry["modelTask"]][model_type])
+        except KeyError:
+            message = f"Task {entry['modelTask']} of type {entry['modelType']} depends on output of type {model_type}"
+            raise HTTPException(400, message)
+    model = await load(model)
+    output = await run(model.predict, *inputs, **entry["options"])
+    outputs[entry["modelTask"]][entry["modelType"]] = output
 
 
-async def run(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     if thread_pool is None:
         return func(*args, **kwargs)
     partial_func = partial(func, *args, **kwargs)
     return await asyncio.get_running_loop().run_in_executor(thread_pool, partial_func)
 
 
-async def load(model: Predictor) -> Predictor:
+async def load(model: InferenceModel) -> InferenceModel:
     if model.loaded:
         return model
 
-    def _load(model: Predictor) -> Predictor:
+    def _load(model: InferenceModel) -> InferenceModel:
         with lock:
             model.load()
         return model

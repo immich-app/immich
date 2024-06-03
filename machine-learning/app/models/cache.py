@@ -5,9 +5,9 @@ from aiocache.lock import OptimisticLock
 from aiocache.plugins import TimingPlugin
 
 from app.models import from_model_type
-from app.models.facial_recognition.pipeline import FacialRecognitionPipeline
+from app.models.base import InferenceModel
 
-from ..schemas import ModelTask, ModelType, Predictor, has_profiling
+from ..schemas import ModelTask, ModelType, has_profiling
 
 
 class ModelCache:
@@ -37,30 +37,17 @@ class ModelCache:
 
     async def get(
         self, model_name: str, model_type: ModelType, model_task: ModelTask, **model_kwargs: Any
-    ) -> Predictor:
-        key = f"{model_name}{model_type.value}{model_task.value}"
+    ) -> InferenceModel:
+        key = f"{model_name}{model_type}{model_task}"
 
         async with OptimisticLock(self.cache, key) as lock:
-            model: Predictor | None = await self.cache.get(key)
+            model: InferenceModel | None = await self.cache.get(key)
             if model is None:
-                if model_type == ModelType.PIPELINE:
-                    model = await self._get_pipeline(model_name, model_task, **model_kwargs)
-                else:
-                    model = from_model_type(model_name, model_type, model_task, **model_kwargs)
+                model = from_model_type(model_name, model_type, model_task, **model_kwargs)
                 await lock.cas(model, ttl=model_kwargs.get("ttl", None))
             elif self.should_revalidate:
                 await self.revalidate(key, model_kwargs.get("ttl", None))
         return model
-
-    async def _get_pipeline(self, model_name: str, model_task: ModelTask, **model_kwargs: Any) -> Predictor:
-        match model_task:
-            case ModelTask.FACIAL_RECOGNITION:
-                det_model: Any = await self.get(model_name, ModelType.DETECTION, model_task, **model_kwargs)
-                rec_model: Any = await self.get(model_name, ModelType.RECOGNITION, model_task, **model_kwargs)
-                return FacialRecognitionPipeline(det_model, rec_model)
-
-            case _:
-                raise ValueError(f"Unknown model task: {model_task}")
 
     async def get_profiling(self) -> dict[str, float] | None:
         if not has_profiling(self.cache):

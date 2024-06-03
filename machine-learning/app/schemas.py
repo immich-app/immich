@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Protocol, TypedDict, TypeGuard
+from typing import Any, Protocol, TypeVar, TypedDict, TypeGuard
 
 import numpy as np
 import numpy.typing as npt
@@ -35,7 +35,6 @@ class ModelTask(StrEnum):
 
 class ModelType(StrEnum):
     DETECTION = "detection"
-    PIPELINE = "pipeline"
     RECOGNITION = "recognition"
     TEXTUAL = "textual"
     VISUAL = "visual"
@@ -61,15 +60,6 @@ class ModelSession(Protocol):
     ) -> list[npt.NDArray[np.float32]]: ...
 
 
-class Predictor(Protocol):
-    depends: list[tuple[ModelType, ModelTask]]
-    loaded: bool
-
-    def load(self) -> None: ...
-
-    def predict(self, inputs: Any, **model_kwargs: Any) -> Any: ...
-
-
 class HasProfiling(Protocol):
     profiling: dict[str, float]
 
@@ -80,26 +70,20 @@ class DetectedFaces(TypedDict):
     landmarks: npt.NDArray[np.float32] | None
 
 
-class FacialRecognitionResult(TypedDict):
-    boundingBox: BoundingBox
-    embedding: list[float]
-    score: float
-
-
-class FacialRecognitionResponse(TypedDict):
-    faces: list[FacialRecognitionResult]
-    imageHeight: int
-    imageWidth: int
-
-
 class PipelineEntry(TypedDict):
     modelName: str
-    modelTask: ModelTask
-    modelType: ModelType
     options: dict[str, Any]
 
 
-PipelineRequest = list[PipelineEntry]
+PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
+
+
+class InferenceEntry(PipelineEntry):
+    modelTask: ModelTask
+    modelType: ModelType
+
+
+Entries = tuple[list[InferenceEntry], list[InferenceEntry]]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
@@ -108,3 +92,6 @@ def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
 
 def is_ndarray(obj: Any, dtype: "type[np._DTypeScalar_co]") -> "TypeGuard[npt.NDArray[np._DTypeScalar_co]]":
     return isinstance(obj, np.ndarray) and obj.dtype == dtype
+
+
+T = TypeVar("T")

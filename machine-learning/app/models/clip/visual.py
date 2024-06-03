@@ -1,7 +1,6 @@
 import json
 from abc import abstractmethod
 from functools import cached_property
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +10,7 @@ from PIL import Image
 
 from app.config import log
 from app.models.base import InferenceModel
-from app.models.transforms import crop_pil, get_pil_resampling, normalize, resize_pil, to_numpy
+from app.models.transforms import crop_pil, decode_pil, get_pil_resampling, normalize, resize_pil, to_numpy
 from app.schemas import ModelSession, ModelTask, ModelType
 
 
@@ -21,9 +20,8 @@ class BaseCLIPVisualEncoder(InferenceModel):
     _model_type = ModelType.VISUAL
 
     def _predict(self, inputs: Image.Image | bytes, **kwargs: Any) -> NDArray[np.float32]:
-        if isinstance(inputs, bytes):
-            inputs = Image.open(BytesIO(inputs))
-        res: NDArray[np.float32] = self.session.run(None, self.transform(inputs))[0][0]
+        image = decode_pil(inputs)
+        res: NDArray[np.float32] = self.session.run(None, self.transform(image))[0][0]
         return res
 
     @abstractmethod
