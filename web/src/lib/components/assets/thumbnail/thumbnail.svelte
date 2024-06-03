@@ -37,7 +37,7 @@
   export let thumbnailHeight: number | undefined = undefined;
   export let selected = false;
   export let selectionCandidate = false;
-  export let isMultiSelectMode = false;
+  export let isMultiSelectState = false;
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
@@ -89,7 +89,7 @@
 
 <IntersectionObserver once={false} on:intersected let:intersecting>
   <a
-    href={isMultiSelectMode ? undefined : `${currentUrlReplaceAssetId(asset.id)}`}
+    href={isMultiSelectState ? undefined : `${currentUrlReplaceAssetId(asset.id)}`}
     style:width="{width}px"
     style:height="{height}px"
     class="group focus-visible:outline-none flex overflow-hidden {disabled
@@ -101,7 +101,7 @@
     on:mouseleave={onMouseLeave}
     role={clickable ? 'button' : undefined}
     tabindex={clickable ? 0 : undefined}
-    on:click={isMultiSelectMode ? onIconClickedHandler : undefined}
+    on:click={isMultiSelectState ? onIconClickedHandler : undefined}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
