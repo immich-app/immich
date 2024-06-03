@@ -84,13 +84,13 @@
     {
       item: AuthSettings,
       title: $t('authentication_settings'),
-      subtitle: 'Manage password, OAuth, and other authentication settings',
+      subtitle: $t("placeholder_52"),
       key: 'image',
     },
     {
       item: ImageSettings,
       title: $t('image_settings'),
-      subtitle: 'Manage the quality and resolution of generated images',
+      subtitle: $t("placeholder_54"),
       key: 'image',
     },
     {
@@ -114,19 +114,19 @@
     {
       item: MachineLearningSettings,
       title: $t('machine_learning_settings'),
-      subtitle: 'Manage machine learning features and settings',
+      subtitle: $t("placeholder_49"),
       key: 'machine-learning',
     },
     {
       item: MapSettings,
       title: 'Map & GPS Settings',
-      subtitle: 'Manage map related features and setting',
+      subtitle: $t("placeholder_50"),
       key: 'location',
     },
     {
       item: NotificationSettings,
       title: $t('notification_settings'),
-      subtitle: 'Manage notification settings, including email',
+      subtitle: $t("placeholder_51"),
       key: 'notifications',
     },
     {
@@ -138,13 +138,13 @@
     {
       item: StorageTemplateSettings,
       title: $t('storage_template'),
-      subtitle: 'Manage the folder structure and file name of the upload asset',
+      subtitle: $t("placeholder_53"),
       key: 'storage-template',
     },
     {
       item: ThemeSettings,
       title: $t('theme_settings'),
-      subtitle: 'Manage customization of the Immich web interface',
+      subtitle: $t("placeholder_48"),
       key: 'theme',
     },
     {
@@ -162,13 +162,13 @@
     {
       item: NewVersionCheckSettings,
       title: $t('version_check'),
-      subtitle: 'Enable/disable the new version notification',
+      subtitle: $t("placeholder_45"),
       key: 'version-check',
     },
     {
       item: FFmpegSettings,
       title: $t('video_transcoding_settings'),
-      subtitle: 'Manage the resolution and encoding information of the video files',
+      subtitle: $t("placeholder_55"),
       key: 'video-transcoding',
     },
   ];

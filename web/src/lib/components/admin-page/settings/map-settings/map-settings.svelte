@@ -27,12 +27,7 @@
         <SettingAccordion key="map" title={$t('map_settings')} subtitle={$t('manage_map_settings')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-<<<<<<< HEAD
-              title={$t('enabled')}
-=======
-              id="enable-map-features"
               title={$t('enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
               {disabled}
               subtitle={$t('enable_map_features')}
               bind:checked={config.map.enabled}
@@ -43,7 +38,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('light_style')}
-              desc="URL to a style.json map theme"
+              desc={$t('placeholder_36')}
               bind:value={config.map.lightStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
@@ -51,7 +46,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('dark_style')}
-              desc="URL to a style.json map theme"
+              desc={$t('placeholder_36')}
               bind:value={config.map.darkStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
@@ -72,12 +67,7 @@
           </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-<<<<<<< HEAD
-              title={$t('enabled')}
-=======
-              id="enable-reverse-geocoding"
               title={$t('enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
               {disabled}
               subtitle={$t('enable_reverse_geocoding')}
               bind:checked={config.reverseGeocoding.enabled}

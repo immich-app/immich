@@ -68,7 +68,7 @@
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}
-      desc="Number of seconds to display each image"
+      desc="{ $t("placeholder_21") }"
       min={1}
       bind:value={$slideshowDelay}
     />

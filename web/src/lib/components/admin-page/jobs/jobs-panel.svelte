@@ -61,12 +61,12 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
+      subtitle: $t("placeholder_47"),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
+      subtitle: $t("placeholder_46"),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
@@ -78,7 +78,7 @@
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
+      subtitle: $t("placeholder_44"),
       allText: $t('sync').toUpperCase(),
       missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
@@ -86,13 +86,13 @@
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: 'Run machine learning on assets to support smart search',
+      subtitle: $t("placeholder_58"),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      subtitle: $t("placeholder_57"),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -114,7 +114,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
+      subtitle: $t("placeholder_59"),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
@@ -125,7 +125,7 @@
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
+      subtitle: $t("placeholder_56"),
       allowForceCommand: false,
     },
   };

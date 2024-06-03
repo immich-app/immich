@@ -25,7 +25,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('external_domain').toUpperCase()}
-          desc="Domain for public shared links, including http(s)://"
+          desc="{ $t("placeholder_8") }"
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
         />
@@ -33,7 +33,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('welcome_message').toUpperCase()}
-          desc="A message that is displayed on the login page."
+          desc="{ $t("placeholder_0") }"
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}
         />

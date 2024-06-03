@@ -108,12 +108,7 @@
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
-<<<<<<< HEAD
-        title={$t('enabled')}
-=======
-        id="storage-template-enabled"
         title={$t('enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
         {disabled}
         subtitle={$t('enable_storage_template_engine')}
         bind:checked={config.storageTemplate.enabled}
@@ -122,14 +117,9 @@
 
       {#if !minified}
         <SettingSwitch
-<<<<<<< HEAD
-          title={$t('hash_verification_enabled')}
-=======
-          id="hash-verification-enabled"
           title={$t('hash_verification_enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
           {disabled}
-          subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
+          subtitle={$t('placeholder_71')}
           bind:checked={config.storageTemplate.hashVerificationEnabled}
           isEdited={!(
             config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled

@@ -139,7 +139,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('storage_label_claim').toUpperCase()}
-                desc="Automatically set the user's storage label to the value of this claim."
+                desc="{ $t("placeholder_3") }"
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -149,7 +149,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('storage_quota_claim').toUpperCase()}
-                desc="Automatically set the user's storage quota to the value of this claim."
+                desc="{ $t("placeholder_4") }"
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -159,7 +159,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('default_storage_quota_(gib)').toUpperCase()}
-                desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
+                desc="{ $t("placeholder_26") }"
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -176,37 +176,22 @@
               />
 
               <SettingSwitch
-<<<<<<< HEAD
-                title={$t('auto_register')}
-=======
-                id="auto-register-new-users"
                 title={$t('auto_register').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
-                subtitle="Automatically register new users after signing in with OAuth"
+                subtitle="{ $t("placeholder_62") }"
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
-<<<<<<< HEAD
-                title={$t('auto_launch')}
-=======
-                id="auto-launch-oauth"
                 title={$t('auto_launch').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
-                subtitle="Start the OAuth login flow automatically upon navigating to the login page"
+                subtitle="{ $t("placeholder_89") }"
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
-<<<<<<< HEAD
-                title={$t('mobile_redirect_uri_override')}
-=======
-                id="mobile-redirect-uri-override"
                 title={$t('mobile_redirect_uri_override').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
-                subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
+                subtitle="{ $t("placeholder_70") }"
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
                 bind:checked={config.oauth.mobileOverrideEnabled}
@@ -232,7 +217,7 @@
               <SettingSwitch
                 title={$t('enabled')}
                 {disabled}
-                subtitle="Login with email and password"
+                subtitle="{ $t("placeholder_80") }"
                 bind:checked={config.passwordLogin.enabled}
               />
             </div>

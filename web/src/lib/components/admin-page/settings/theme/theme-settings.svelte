@@ -23,7 +23,7 @@
         <SettingTextarea
           {disabled}
           label={$t('custom_css')}
-          desc="Cascading Style Sheets allow the design of Immich to be customized."
+          desc="{ $t("placeholder_5") }"
           bind:value={config.theme.customCss}
           required={true}
           isEdited={config.theme.customCss !== savedConfig.theme.customCss}

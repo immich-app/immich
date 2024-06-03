@@ -74,7 +74,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('theme_selection')}
-          subtitle="Automatically set the theme to light or dark based on your browser's system preference"
+          subtitle="{ $t("placeholder_63") }"
           bind:checked={$colorTheme.system}
           on:toggle={handleToggleColorTheme}
         />
@@ -83,7 +83,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('default_locale')}
-          subtitle="Format dates and numbers based on your browser locale"
+          subtitle="{ $t("placeholder_74") }"
           checked={$locale == undefined}
           on:toggle={handleToggleLocaleBrowser}
         >
@@ -97,7 +97,7 @@
             {selectedOption}
             options={getAllLanguages()}
             title={$t('custom_locale')}
-            subtitle="Format dates and numbers based on the language and the region"
+            subtitle="{ $t("placeholder_73") }"
             onSelect={(combobox) => handleLocaleChange(combobox?.value)}
           />
         </div>
@@ -106,7 +106,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('display_original_photos')}
-          subtitle="Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds."
+          subtitle="{ $t("placeholder_84") }"
           bind:checked={$alwaysLoadOriginalFile}
           on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
@@ -114,7 +114,7 @@
       <div class="ml-4">
         <SettingSwitch
           title="Play video thumbnail on hover"
-          subtitle="Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon."
+          subtitle="{ $t("placeholder_83") }"
           bind:checked={$playVideoThumbnailOnHover}
           on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
@@ -122,7 +122,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('loop_videos')}
-          subtitle="Enable to automatically loop a video in the detail viewer."
+          subtitle="{ $t("placeholder_69") }"
           bind:checked={$loopVideo}
           on:toggle={() => ($loopVideo = !$loopVideo)}
         />
@@ -131,7 +131,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('permanent_deletion_warning')}
-          subtitle="Show a warning when permanently deleting assets"
+          subtitle="{ $t("placeholder_87") }"
           bind:checked={$showDeleteModal}
         />
       </div>
@@ -139,14 +139,14 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('people')}
-          subtitle="Display a link to People in the sidebar"
+          subtitle="{ $t("placeholder_66") }"
           bind:checked={$sidebarSettings.people}
         />
       </div>
       <div class="ml-4">
         <SettingSwitch
           title={$t('sharing')}
-          subtitle="Display a link to Sharing in the sidebar"
+          subtitle="{ $t("placeholder_67") }"
           bind:checked={$sidebarSettings.sharing}
         />
       </div>

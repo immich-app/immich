@@ -46,7 +46,7 @@
     <DeviceList bind:devices={sessions} />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title={$t('memories')} subtitle="Manage what you see in your memories">
+  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('placeholder_81')}>
     <MemoriesSettings />
   </SettingAccordion>
 

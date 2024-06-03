@@ -21,13 +21,8 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4">
         <SettingSwitch
-<<<<<<< HEAD
-          title={$t('enabled')}
-=======
-          id="enable-new-version-check"
           title={$t('enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
-          subtitle="Enable periodic requests to GitHub to check for new releases"
+          subtitle={$t('placeholder_68')}
           bind:checked={config.newVersionCheck.enabled}
           {disabled}
         />

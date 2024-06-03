@@ -27,7 +27,7 @@
           inputType={SettingInputFieldType.NUMBER}
           min={1}
           label={$t('delete_delay').toUpperCase()}
-          desc="Number of days after removal to permanently delete a user's account and assets. The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution."
+          desc="{ $t("placeholder_19") }"
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />

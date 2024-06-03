@@ -32,7 +32,7 @@
     <SettingAccordion
       key="library-watching"
       title={$t('library_watching_(experimental)')}
-      subtitle="Automatically watch for changed files"
+      subtitle={$t('placeholder_64')}
       isOpen
     >
       <form autocomplete="off" on:submit|preventDefault>
@@ -40,7 +40,7 @@
           <SettingSwitch
             title={$t('watch_filesystem')}
             {disabled}
-            subtitle="Watch external libraries for file changes"
+            subtitle={$t('placeholder_94')}
             bind:checked={config.library.watch.enabled}
           />
         </div>
@@ -65,12 +65,7 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-<<<<<<< HEAD
-            title={$t('enabled')}
-=======
-            id="periodic-library-scan"
             title={$t('enabled').toUpperCase()}
->>>>>>> 4dcb5a3a3 (Fix lower and uppercase strings. Add a few additional string. Fix a few unnecessary replacements)
             {disabled}
             subtitle={$t('enable_periodic_library_scanning')}
             bind:checked={config.library.scan.enabled}
