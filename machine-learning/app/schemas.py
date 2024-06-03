@@ -78,11 +78,11 @@ class PipelineEntry(TypedDict):
 PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
 
 
-class InferenceEntry(BaseModel):
-    model_name: str = Field(..., alias="modelName")
-    model_task: ModelTask = Field(..., alias="modelTask")
-    model_type: ModelType = Field(..., alias="modelType")
-    options: dict[str, Any] = {}
+class InferenceEntry(TypedDict):
+    model_name: str
+    model_task: ModelTask
+    model_type: ModelType
+    options: dict[str, Any]
 
 
 InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
