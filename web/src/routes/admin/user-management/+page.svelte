@@ -154,7 +154,7 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <ConfirmDialogue
+        <ConfirmDialog
           title={$t('password_reset_success')}
           confirmText={$t('done')}
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}

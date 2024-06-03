@@ -43,7 +43,7 @@
 </script>
 
 {#if isConfirmOpen}
-  <ConfirmDialogue
+  <ConfirmDialog
     title={$t('disable_login')}
     onCancel={() => (isConfirmOpen = false)}
     onConfirm={() => handleSave(true)}

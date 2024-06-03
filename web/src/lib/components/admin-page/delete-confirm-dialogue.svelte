@@ -43,7 +43,7 @@
   };
 </script>
 
-<ConfirmDialogue
+<ConfirmDialog
   title={$t('delete_user')}
   confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
   onConfirm={handleDeleteUser}
