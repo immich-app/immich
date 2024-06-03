@@ -21,7 +21,7 @@
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal } });
     } catch (error) {
-      handleError(error, $t('unable_to_change_date'));
+      handleError(error, $t('errors.unable_to_change_date'));
     }
     clearSelect();
   };

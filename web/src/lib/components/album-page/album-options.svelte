@@ -46,7 +46,7 @@
       });
       onChangeOrder(order);
     } catch (error) {
-      handleError(error, $t('error_updating_album_order'));
+      handleError(error, $t('errors.unable_to_save_album'));
     }
   };
 </script>

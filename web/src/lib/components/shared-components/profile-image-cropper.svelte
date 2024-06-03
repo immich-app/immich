@@ -64,7 +64,7 @@
       });
       $user.profileImagePath = profileImagePath;
     } catch (error) {
-      handleError(error, $t('error_setting_profile_picture'));
+      handleError(error, $t('errors.unable_to_set_profile_picture'));
     }
     onClose();
   };

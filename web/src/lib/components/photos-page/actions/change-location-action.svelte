@@ -21,7 +21,7 @@
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });
     } catch (error) {
-      handleError(error, $t('unable_to_update_location'));
+      handleError(error, $t('errors.unable_to_update_location'));
     }
     clearSelect();
   }

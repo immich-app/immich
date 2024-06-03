@@ -32,7 +32,7 @@
       await video.play();
       dispatch('onVideoStarted');
     } catch (error) {
-      handleError(error, $t('unable_to_play_video'));
+      handleError(error, $t('errors.unable_to_play_video'));
     } finally {
       isVideoLoading = false;
     }

@@ -21,7 +21,7 @@
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, $t('unable_to_update_settings'));
+      handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
 </script>

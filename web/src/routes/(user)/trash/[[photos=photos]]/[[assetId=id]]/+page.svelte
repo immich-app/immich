@@ -57,7 +57,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('error_emptying_trash'));
+      handleError(error, $t('errors.unable_to_empty_trash'));
     }
   };
 
@@ -82,7 +82,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('error_restoring_trash'));
+      handleError(error, $t('errors.unable_to_restore_trash'));
     }
   };
 </script>

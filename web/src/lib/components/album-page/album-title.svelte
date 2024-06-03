@@ -23,7 +23,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update album name');
+      handleError(error, $t('errors.unable_to_save_album'));
       return;
     }
     albumName = newAlbumName;

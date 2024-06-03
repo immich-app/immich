@@ -1,15 +1,15 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
   import { Duration } from 'luxon';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import LinkButton from '../elements/buttons/link-button.svelte';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import DateInput from '../elements/date-input.svelte';
-  import { t } from 'svelte-i18n';
 
   export let settings: MapSettings;
   let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
@@ -74,23 +74,23 @@
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
-              text: $t('past_durations.hours', { values: { count: 24 } }),
+              text: $t('past_durations.hours', { values: { hours: 24 } }),
             },
             {
               value: Duration.fromObject({ days: 7 }).toISO() || '',
-              text: $t('past_durations.days', { values: { count: 7 } }),
+              text: $t('past_durations.days', { values: { days: 7 } }),
             },
             {
               value: Duration.fromObject({ days: 30 }).toISO() || '',
-              text: $t('past_durations.days', { values: { count: 30 } }),
+              text: $t('past_durations.days', { values: { days: 30 } }),
             },
             {
               value: Duration.fromObject({ years: 1 }).toISO() || '',
-              text: $t('past_durations.years', { values: { count: 1 } }),
+              text: $t('past_durations.years', { values: { years: 1 } }),
             },
             {
               value: Duration.fromObject({ years: 3 }).toISO() || '',
-              text: $t('past_durations.years', { values: { count: 3 } }),
+              text: $t('past_durations.years', { values: { years: 3 } }),
             },
           ]}
         />

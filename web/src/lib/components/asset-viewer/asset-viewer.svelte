@@ -170,7 +170,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        handleError(error, $t('cant_get_favorite'));
+        handleError(error, $t('errors.unable_to_load_liked_status'));
       }
     }
   };
@@ -357,7 +357,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_trash_asset'));
+      handleError(error, $t('errors.unable_to_trash_asset'));
     }
   };
 
@@ -372,7 +372,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_delete_asset'));
+      handleError(error, $t('errors.unable_to_delete_asset'));
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -429,7 +429,7 @@
         message: `Restored asset`,
       });
     } catch (error) {
-      handleError(error, $t('error_restoring_asset'));
+      handleError(error, $t('errors.unable_to_restore_assets'));
     }
   };
 
@@ -484,7 +484,7 @@
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
-      console.error($t('error_entering_fullscreen'), error);
+      handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -496,7 +496,7 @@
         await document.exitFullscreen();
       }
     } catch (error) {
-      console.error($t('error_exiting_fullscreen'), error);
+      handleError(error, $t('errors.unable_to_exit_fullscreen'));
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;

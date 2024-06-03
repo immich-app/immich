@@ -110,16 +110,16 @@
       <SettingSwitch
         title={$t('enabled').toUpperCase()}
         {disabled}
-        subtitle={$t('enable_storage_template_engine')}
+        subtitle={$t('admin.storage_template_enable_description')}
         bind:checked={config.storageTemplate.enabled}
         isEdited={!(config.storageTemplate.enabled === savedConfig.storageTemplate.enabled)}
       />
 
       {#if !minified}
         <SettingSwitch
-          title={$t('hash_verification_enabled').toUpperCase()}
+          title={$t('admin.storage_template_hash_verification_enabled').toUpperCase()}
           {disabled}
-          subtitle={$t('hash_verification_enabled_description')}
+          subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
           bind:checked={config.storageTemplate.hashVerificationEnabled}
           isEdited={!(
             config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled
@@ -215,7 +215,7 @@
                     Template changes will only apply to new assets. To retroactively apply the template to previously
                     uploaded assets, run the
                     <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >{$t('storage_migration_job')}</a
+                      >{$t('admin.storage_template_migration_job')}</a
                     >.
                   </p>
                   <p>
@@ -223,7 +223,7 @@
                     assets, so manually running the
 
                     <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >{$t('storage_migration_job')}</a
+                      >{$t('admin.storage_template_migration_job')}</a
                     >
                     is required in order to successfully use the variable.
                   </p>

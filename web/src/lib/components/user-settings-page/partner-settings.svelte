@@ -91,7 +91,7 @@
       await removePartner({ id: partner.id });
       await refreshPartners();
     } catch (error) {
-      handleError(error, $t('unable_to_remove_partner'));
+      handleError(error, $t('errors.unable_to_remove_partner'));
     }
   };
 
@@ -104,7 +104,7 @@
       await refreshPartners();
       createPartnerFlag = false;
     } catch (error) {
-      handleError(error, $t('unable_to_add_partners'));
+      handleError(error, $t('errors.unable_to_add_partners'));
     }
   };
 

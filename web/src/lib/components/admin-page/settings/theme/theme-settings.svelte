@@ -22,8 +22,8 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingTextarea
           {disabled}
-          label={$t('custom_css')}
-          desc={$t('custom_css_description')}
+          label={$t('admin.theme_custom_css_settings')}
+          desc={$t('admin.theme_custom_css_settings_description')}
           bind:value={config.theme.customCss}
           required={true}
           isEdited={config.theme.customCss !== savedConfig.theme.customCss}

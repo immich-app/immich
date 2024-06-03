@@ -32,7 +32,7 @@
         dispatch('success');
       }
     } catch (error) {
-      handleError(error, $t('unable_to_delete_user'));
+      handleError(error, $t('errors.unable_to_delete_user'));
       dispatch('fail');
     }
   };

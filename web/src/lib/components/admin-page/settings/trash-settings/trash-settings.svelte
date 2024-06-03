@@ -26,7 +26,7 @@
         <SettingSwitch
           title={$t('enabled').toUpperCase()}
           {disabled}
-          subtitle={$t('enable_trash_features')}
+          subtitle={$t('admin.trash_enabled_description')}
           bind:checked={config.trash.enabled}
         />
 
@@ -34,8 +34,8 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
-          label={$t('number_of_days')}
-          desc={$t('number_of_days_description')}
+          label={$t('admin.trash_number_of_days')}
+          desc={$t('admin.trash_number_of_days_description')}
           bind:value={config.trash.days}
           required={true}
           disabled={disabled || !config.trash.enabled}

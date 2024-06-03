@@ -33,7 +33,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_profile'));
+      handleError(error, $t('errors.unable_to_save_profile'));
     }
   };
 </script>

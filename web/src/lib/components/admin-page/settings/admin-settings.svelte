@@ -41,7 +41,7 @@
 
       dispatch('save');
     } catch (error) {
-      handleError(error, $t('unable_to_save_settings'));
+      handleError(error, $t('errors.unable_to_save_settings'));
     }
   };
 

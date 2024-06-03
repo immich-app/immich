@@ -33,7 +33,7 @@
 
       clearSelect();
     } catch (error) {
-      handleError(error, $t('error_restoring_assets'));
+      handleError(error, $t('errors.unable_to_restore_assets'));
     } finally {
       loading = false;
     }

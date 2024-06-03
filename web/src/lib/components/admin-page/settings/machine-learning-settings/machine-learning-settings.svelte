@@ -28,7 +28,7 @@
       <div class="flex flex-col gap-4">
         <SettingSwitch
           title={$t('enabled').toUpperCase()}
-          subtitle={$t('machine_learning_enabled_description')}
+          subtitle={$t('admin.machine_learning_enabled_description')}
           {disabled}
           bind:checked={config.machineLearning.enabled}
         />
@@ -38,7 +38,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('url').toUpperCase()}
-          desc={$t('machine_learning_url_description')}
+          desc={$t('admin.machine_learning_url_description')}
           bind:value={config.machineLearning.url}
           required={true}
           disabled={disabled || !config.machineLearning.enabled}
@@ -46,11 +46,15 @@
         />
       </div>
 
-      <SettingAccordion key="smart-search" title={$t('smart_search')} subtitle={$t('smart_search_description')}>
+      <SettingAccordion
+        key="smart-search"
+        title={$t('admin.machine_learning_smart_search')}
+        subtitle={$t('admin.machine_learning_smart_search_description')}
+      >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('enabled').toUpperCase()}
-            subtitle={$t('smart_search_enabled_description')}
+            subtitle={$t('admin.machine_learning_smart_search_enabled_description')}
             bind:checked={config.machineLearning.clip.enabled}
             disabled={disabled || !config.machineLearning.enabled}
           />
@@ -59,7 +63,7 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
-            label={$t('clip_model').toUpperCase()}
+            label={$t('admin.machine_learning_clip_model').toUpperCase()}
             bind:value={config.machineLearning.clip.modelName}
             required={true}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
@@ -75,13 +79,13 @@
 
       <SettingAccordion
         key="duplicate-detection"
-        title={$t('duplicate_detection')}
-        subtitle={$t('duplicate_detection_setting_description')}
+        title={$t('admin.machine_learning_duplicate_detection')}
+        subtitle={$t('admin.machine_learning_duplicate_detection_setting_description')}
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('enabled').toUpperCase()}
-            subtitle={$t('duplicate_detection_enabled_description')}
+            subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
             bind:checked={config.machineLearning.duplicateDetection.enabled}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
           />
@@ -90,12 +94,12 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('max_detection_distance').toUpperCase()}
+            label={$t('admin.machine_learning_max_detection_distance').toUpperCase()}
             bind:value={config.machineLearning.duplicateDetection.maxDistance}
             step="0.0005"
             min={0.001}
             max={0.1}
-            desc={$t('max_detection_distance_description')}
+            desc={$t('admin.machine_learning_max_detection_distance_description')}
             disabled={disabled || !$featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
@@ -105,13 +109,13 @@
 
       <SettingAccordion
         key="facial-recognition"
-        title={$t('facial_recognition')}
-        subtitle={$t('facial_recognition_description')}
+        title={$t('admin.machine_learning_facial_recognition')}
+        subtitle={$t('admin.machine_learning_facial_recognition_description')}
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('enabled').toUpperCase()}
-            subtitle={$t('facial_recognition_setting_description')}
+            subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}
             bind:checked={config.machineLearning.facialRecognition.enabled}
             disabled={disabled || !config.machineLearning.enabled}
           />
@@ -119,8 +123,8 @@
           <hr />
 
           <SettingSelect
-            label={$t('facial_recognition_model').toUpperCase()}
-            desc={$t('facial_recognition_model_description')}
+            label={$t('admin.machine_learning_facial_recognition_model').toUpperCase()}
+            desc={$t('admin.machine_learning_facial_recognition_model_description')}
             name="facial-recognition-model"
             bind:value={config.machineLearning.facialRecognition.modelName}
             options={[
@@ -136,8 +140,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('min_detection_score').toUpperCase()}
-            desc={$t('min_detection_score_description')}
+            label={$t('admin.machine_learning_min_detection_score').toUpperCase()}
+            desc={$t('admin.machine_learning_min_detection_score_description')}
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
             min={0}
@@ -149,8 +153,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('max_recognition_distance').toUpperCase()}
-            desc={$t('max_recognition_distance_description')}
+            label={$t('admin.machine_learning_max_recognition_distance').toUpperCase()}
+            desc={$t('admin.machine_learning_max_recognition_distance_description')}
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
             min={0}
@@ -162,8 +166,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('min_recognized_faces').toUpperCase()}
-            desc={$t('min_recognized_faces_description')}
+            label={$t('admin.machine_learning_min_recognized_faces').toUpperCase()}
+            desc={$t('admin.machine_learning_min_recognized_faces_description')}
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
             min={1}

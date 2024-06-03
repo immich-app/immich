@@ -26,8 +26,8 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           min={1}
-          label={$t('delete_delay').toUpperCase()}
-          desc={$t('delete_delay_description')}
+          label={$t('admin.user_delete_delay_settings').toUpperCase()}
+          desc={$t('admin.user_delete_delay_settings_description')}
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />

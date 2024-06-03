@@ -67,7 +67,7 @@
 
         return;
       } catch (error) {
-        handleError(error, $t('unable_to_create_user'));
+        handleError(error, $t('errors.unable_to_create_user'));
       } finally {
         isCreatingUser = false;
       }

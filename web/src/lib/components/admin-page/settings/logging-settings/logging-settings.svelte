@@ -24,12 +24,12 @@
         <SettingSwitch
           title={$t('enabled').toUpperCase()}
           {disabled}
-          subtitle={$t('logging')}
+          subtitle={$t('admin.logging_enable_description')}
           bind:checked={config.logging.enabled}
         />
         <SettingSelect
           label={$t('level').toUpperCase()}
-          desc={$t('log_level_description')}
+          desc={$t('admin.logging_level_description')}
           bind:value={config.logging.level}
           options={[
             { value: LogLevel.Fatal, text: 'Fatal' },

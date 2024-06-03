@@ -315,7 +315,7 @@
       await handleDeleteAlbum(albumToDelete);
     } catch {
       notificationController.show({
-        message: $t('error_deleting_album'),
+        message: $t('errors.errors.unable_to_delete_album'),
         type: NotificationType.Error,
       });
     } finally {
@@ -363,7 +363,7 @@
       });
       updateAlbumInfo(album);
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      handleError(error, $t('errors.unable_to_add_album_users'));
     } finally {
       albumToShare = null;
     }

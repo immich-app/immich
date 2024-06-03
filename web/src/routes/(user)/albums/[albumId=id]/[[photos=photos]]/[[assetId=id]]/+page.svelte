@@ -211,7 +211,7 @@
           isLiked = data[0];
         }
       } catch (error) {
-        handleError(error, $t('cant_get_favorite'));
+        handleError(error, $t('errors.unable_to_load_liked_status'));
       }
     }
   };
@@ -341,7 +341,7 @@
       await refreshAlbum();
       viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, $t('error_deleting_shared_user'));
+      handleError(error, $t('errors.unable_to_load_album'));
     }
   };
 

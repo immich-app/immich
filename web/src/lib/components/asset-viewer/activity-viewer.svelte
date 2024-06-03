@@ -92,7 +92,7 @@
     try {
       reactions = await getActivities({ assetId, albumId });
     } catch (error) {
-      handleError(error, $t('error_when_fetching_reactions'));
+      handleError(error, $t('errors.unable_to_load_asset_activity'));
     }
   };
 
@@ -121,7 +121,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, `Can't remove ${reaction.type}`);
+      handleError(error, $t('errors.unable_to_remove_reaction'));
     }
   };
 
@@ -141,7 +141,7 @@
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
-      handleError(error, $t('cant_add_your_comment'));
+      handleError(error, $t('errors.unable_to_add_comment'));
     } finally {
       clearTimeout(timeout);
     }

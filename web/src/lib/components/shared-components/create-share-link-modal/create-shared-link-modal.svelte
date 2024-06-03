@@ -39,14 +39,14 @@
     default: $t('never'),
     options: [
       $t('never'),
-      $t('thirty_minutes'),
-      $t('one_hour'),
-      $t('six_hours'),
-      $t('one_day'),
-      $t('seven_days'),
-      $t('thirty_days'),
-      $t('three_months'),
-      $t('one_year'),
+      $t('durations.minutes', { values: { minutes: 30 } }),
+      $t('durations.hours', { values: { hours: 1 } }),
+      $t('durations.hours', { values: { hours: 6 } }),
+      $t('durations.days', { values: { days: 1 } }),
+      $t('durations.days', { values: { days: 7 } }),
+      $t('durations.days', { values: { days: 30 } }),
+      $t('durations.months', { values: { months: 3 } }),
+      $t('durations.years', { values: { years: 1 } }),
     ],
   };
 

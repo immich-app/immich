@@ -48,7 +48,7 @@
 
       dispatch('editSuccess');
     } catch (error) {
-      handleError(error, $t('unable_to_update_user'));
+      handleError(error, $t('errors.unable_to_update_user'));
     }
   };
 
@@ -75,7 +75,7 @@
 
       dispatch('resetPasswordSuccess');
     } catch (error) {
-      handleError(error, $t('unable_to_reset_password'));
+      handleError(error, $t('errors.unable_to_reset_password'));
     }
   };
 

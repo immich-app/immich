@@ -39,7 +39,7 @@
     try {
       currentUser = await getMyUser();
     } catch (error) {
-      handleError(error, $t('unable_to_refresh_user'));
+      handleError(error, $t('errors.unable_to_refresh_user'));
     }
   });
 
@@ -67,7 +67,7 @@
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      handleError(error, $t('unable_to_remove_user'));
+      handleError(error, $t('errors.unable_to_remove_album_users'));
     } finally {
       selectedRemoveUser = null;
     }
@@ -80,7 +80,7 @@
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      handleError(error, 'Unable to set user role');
+      handleError(error, $t('errors.unable_to_change_album_user_role'));
     } finally {
       selectedRemoveUser = null;
     }

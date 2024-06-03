@@ -22,7 +22,7 @@
         dispatch('fail');
       }
     } catch (error) {
-      handleError(error, $t('unable_to_restore_user'));
+      handleError(error, $t('errors.unable_to_restore_user'));
       dispatch('fail');
     }
   };

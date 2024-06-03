@@ -52,7 +52,7 @@
   <div class="flex">
     <div class="w-full flex place-content-end">
       <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-        <p>{$t('storage_template')}</p>
+        <p>{$t('admin.storage_template_settings')}</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>
     </div>

@@ -27,7 +27,7 @@
       notificationController.show({ message: getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();
     } catch (error) {
-      handleError(error, $t('unable_to_submit_job'));
+      handleError(error, $t('errors.unable_to_submit_job'));
     }
   };
 </script>

@@ -44,7 +44,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_unlink_account'));
+      handleError(error, $t('errors.unable_to_unlink_account'));
     }
   };
 </script>

@@ -21,7 +21,7 @@
         updateAssetDto: { latitude: gps.lat, longitude: gps.lng },
       });
     } catch (error) {
-      handleError(error, $t('unable_to_change_location'));
+      handleError(error, $t('errors.unable_to_change_location'));
     }
   }
 </script>
