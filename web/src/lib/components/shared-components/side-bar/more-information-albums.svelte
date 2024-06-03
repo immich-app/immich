@@ -4,7 +4,7 @@
   import { type AlbumCountResponseDto, getAlbumCount } from '@immich/sdk';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
-  export let show: keyof AlbumCountResponseDto;
+  export let albumCountType: keyof AlbumCountResponseDto;
 
   const handleAlbumCount = async () => {
     try {
@@ -19,6 +19,6 @@
   <LoadingSpinner />
 {:then data}
   <div data-testid="data">
-    <p>{data[show].toLocaleString($locale)} Album{s(data[show])}</p>
+    <p>{data[albumCountType].toLocaleString($locale)} Album{s(data[albumCountType])}</p>
   </div>
 {/await}
