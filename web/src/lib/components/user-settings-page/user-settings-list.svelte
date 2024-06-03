@@ -15,6 +15,7 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -43,6 +44,10 @@
 
   <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">
     <MemoriesSettings />
+  </SettingAccordion>
+
+  <SettingAccordion key="notifications" title="Notifications" subtitle="Manage notifications">
+    <NotificationsSettings />
   </SettingAccordion>
 
   {#if $featureFlags.loaded && $featureFlags.oauth}
