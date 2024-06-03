@@ -31,7 +31,7 @@
   <div in:fade={{ duration: 500 }}>
     <SettingAccordion
       key="library-watching"
-      title={$t('library_watching_(experimental)')}
+      title={$t('library_watching_experimental')}
       subtitle={$t('placeholder_64')}
       isOpen
     >
