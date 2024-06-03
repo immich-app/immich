@@ -57,19 +57,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption
-    text={$t('remove_from_album')}
-    icon={mdiImageRemoveOutline}
-    on:click={() => {
-      removeFromAlbum;
-    }}
-  />
+  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} on:click={removeFromAlbum} />
 {:else}
-  <CircleIconButton
-    title={$t('remove_from_album')}
-    icon={mdiDeleteOutline}
-    on:click={() => {
-      removeFromAlbum;
-    }}
-  />
+  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} on:click={removeFromAlbum} />
 {/if}
