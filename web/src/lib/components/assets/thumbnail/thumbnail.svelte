@@ -23,6 +23,7 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { shortcut } from '$lib/actions/shortcut';
+  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };
@@ -36,6 +37,7 @@
   export let thumbnailHeight: number | undefined = undefined;
   export let selected = false;
   export let selectionCandidate = false;
+  export let isMultiSelectMode = false;
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
@@ -70,6 +72,7 @@
 
   const onIconClickedHandler = (e: MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!disabled) {
       dispatch('select', { asset });
     }
@@ -85,11 +88,11 @@
 </script>
 
 <IntersectionObserver once={false} on:intersected let:intersecting>
-  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-  <div
+  <a
+    href={isMultiSelectMode ? undefined : `${currentUrlReplaceAssetId(asset.id)}`}
     style:width="{width}px"
     style:height="{height}px"
-    class="group focus-visible:outline-none relative overflow-hidden {disabled
+    class="group focus-visible:outline-none flex overflow-hidden {disabled
       ? 'bg-gray-300'
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
@@ -98,7 +101,7 @@
     on:mouseleave={onMouseLeave}
     role={clickable ? 'button' : undefined}
     tabindex={clickable ? 0 : undefined}
-    on:click={thumbnailClickedHandler}
+    on:click={isMultiSelectMode ? thumbnailClickedHandler : undefined}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
@@ -227,5 +230,5 @@
         />
       {/if}
     {/if}
-  </div>
+  </a>
 </IntersectionObserver>
