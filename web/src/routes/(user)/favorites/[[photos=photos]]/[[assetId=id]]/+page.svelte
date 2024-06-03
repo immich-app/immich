@@ -51,6 +51,6 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" slot="empty" />
+    <EmptyPlaceholder text="{ $t("placeholder_107") }" slot="empty" />
   </AssetGrid>
 </UserPageLayout>

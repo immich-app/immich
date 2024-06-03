@@ -116,7 +116,7 @@
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>
-      <EmptyPlaceholder text="Trashed photos and videos will show up here." src={empty3Url} slot="empty" />
+      <EmptyPlaceholder text="{ $t("placeholder_114") }" src={empty3Url} slot="empty" />
     </AssetGrid>
   </UserPageLayout>
 {/if}

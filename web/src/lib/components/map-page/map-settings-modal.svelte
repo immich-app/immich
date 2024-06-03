@@ -74,23 +74,23 @@
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
-              text: 'Past 24 hours',
+              text: $t("placeholder_98"),
             },
             {
               value: Duration.fromObject({ days: 7 }).toISO() || '',
-              text: 'Past 7 days',
+              text: $t("placeholder_101"),
             },
             {
               value: Duration.fromObject({ days: 30 }).toISO() || '',
-              text: 'Past 30 days',
+              text: $t("placeholder_100"),
             },
             {
               value: Duration.fromObject({ years: 1 }).toISO() || '',
-              text: 'Past year',
+              text: $t("placeholder_102"),
             },
             {
               value: Duration.fromObject({ years: 3 }).toISO() || '',
-              text: 'Past 3 years',
+              text: $t("placeholder_99"),
             },
           ]}
         />

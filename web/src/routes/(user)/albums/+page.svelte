@@ -44,7 +44,7 @@
   >
     <EmptyPlaceholder
       slot="empty"
-      text="Create an album to organize your photos and videos"
+      text="{ $t("placeholder_110") }"
       onClick={() => createAlbumAndRedirect()}
     />
   </Albums>

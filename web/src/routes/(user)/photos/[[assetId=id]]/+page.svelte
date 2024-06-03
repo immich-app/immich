@@ -93,6 +93,6 @@
     {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
+    <EmptyPlaceholder text="{ $t("placeholder_109") }" onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

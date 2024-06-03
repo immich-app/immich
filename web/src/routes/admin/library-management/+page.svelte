@@ -413,7 +413,7 @@
                           />
                           <MenuOption
                             on:click={() => onForceScanAllLibraryFilesClicked()}
-                            text="Force Re-scan All Library Files"
+                            text="{ $t("placeholder_113") }"
                             subtitle={$t('refreshes_every_file')}
                           />
                           <hr />
@@ -464,7 +464,7 @@
         <!-- Empty message -->
       {:else}
         <EmptyPlaceholder
-          text="Create an external library to view your photos and videos"
+          text="{ $t("placeholder_112") }"
           onClick={() => (toCreateLibrary = true)}
         />
       {/if}

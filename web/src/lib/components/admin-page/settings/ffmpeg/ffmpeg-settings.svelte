@@ -108,7 +108,7 @@
           options={[
             { value: AudioCodec.Aac, text: 'AAC' },
             { value: AudioCodec.Mp3, text: 'MP3' },
-            { value: AudioCodec.Libopus, text: 'Opus' },
+            { value: AudioCodec.Libopus, text: $t("placeholder_97") },
           ]}
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />
@@ -189,15 +189,15 @@
             { value: TranscodePolicy.All, text: 'All videos' },
             {
               value: TranscodePolicy.Optimal,
-              text: 'Videos higher than target resolution or not in an accepted format',
+              text: $t("placeholder_106"),
             },
             {
               value: TranscodePolicy.Bitrate,
-              text: 'Videos higher than max bitrate or not in an accepted format',
+              text: $t("placeholder_105"),
             },
             {
               value: TranscodePolicy.Required,
-              text: 'Only videos not in an accepted format',
+              text: $t("placeholder_96"),
             },
             {
               value: TranscodePolicy.Disabled,
@@ -255,10 +255,10 @@
               bind:value={config.ffmpeg.accel}
               name="accel"
               options={[
-                { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
+                { value: TranscodeHWAccel.Nvenc, text: $t("placeholder_95") },
                 {
                   value: TranscodeHWAccel.Qsv,
-                  text: 'Quick Sync (requires 7th gen Intel CPU or later)',
+                  text: $t("placeholder_103"),
                 },
                 {
                   value: TranscodeHWAccel.Vaapi,
@@ -266,7 +266,7 @@
                 },
                 {
                   value: TranscodeHWAccel.Rkmpp,
-                  text: 'RKMPP (only on Rockchip SOCs)',
+                  text: $t("placeholder_104"),
                 },
                 {
                   value: TranscodeHWAccel.Disabled,

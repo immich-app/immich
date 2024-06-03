@@ -92,7 +92,7 @@
           <!-- Empty List -->
           <EmptyPlaceholder
             slot="empty"
-            text="Create an album to share photos and videos with people in your network"
+            text="{ $t("placeholder_111") }"
             src={empty2Url}
           />
         </Albums>
