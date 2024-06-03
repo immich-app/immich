@@ -36,6 +36,11 @@ export interface UserPreferences {
   avatar: {
     color: UserAvatarColor;
   };
+  emailNotifications: {
+    enabled: boolean;
+    albumInvite: boolean;
+    albumUpdate: boolean;
+  };
 }
 
 export const getDefaultPreferences = (user: { email: string }): UserPreferences => {
@@ -50,6 +55,11 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     avatar: {
       color: values[randomIndex],
+    },
+    emailNotifications: {
+      enabled: true,
+      albumInvite: true,
+      albumUpdate: true,
     },
   };
 };

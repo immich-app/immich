@@ -15,6 +15,7 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import { t } from 'svelte-i18n';
 
   export let keys: ApiKeyResponseDto[] = [];
@@ -44,6 +45,10 @@
 
   <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
     <MemoriesSettings />
+  </SettingAccordion>
+
+  <SettingAccordion key="notifications" title="Notifications" subtitle="Manage notifications">
+    <NotificationsSettings />
   </SettingAccordion>
 
   {#if $featureFlags.loaded && $featureFlags.oauth}

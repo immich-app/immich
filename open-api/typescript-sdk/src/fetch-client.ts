@@ -78,21 +78,33 @@ export type UserAdminUpdateDto = {
 export type AvatarResponse = {
     color: UserAvatarColor;
 };
+export type EmailNotificationsResponse = {
+    albumInvite: boolean;
+    albumUpdate: boolean;
+    enabled: boolean;
+};
 export type MemoryResponse = {
     enabled: boolean;
 };
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
+    emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type EmailNotificationsUpdate = {
+    albumInvite?: boolean;
+    albumUpdate?: boolean;
+    enabled?: boolean;
 };
 export type MemoryUpdate = {
     enabled?: boolean;
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
 };
 export type AlbumUserResponseDto = {

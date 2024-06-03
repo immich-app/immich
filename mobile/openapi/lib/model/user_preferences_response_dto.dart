@@ -14,30 +14,36 @@ class UserPreferencesResponseDto {
   /// Returns a new [UserPreferencesResponseDto] instance.
   UserPreferencesResponseDto({
     required this.avatar,
+    required this.emailNotifications,
     required this.memories,
   });
 
   AvatarResponse avatar;
+
+  EmailNotificationsResponse emailNotifications;
 
   MemoryResponse memories;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
+    other.emailNotifications == emailNotifications &&
     other.memories == memories;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (avatar.hashCode) +
+    (emailNotifications.hashCode) +
     (memories.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, memories=$memories]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, emailNotifications=$emailNotifications, memories=$memories]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'avatar'] = this.avatar;
+      json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
     return json;
   }
@@ -51,6 +57,7 @@ class UserPreferencesResponseDto {
 
       return UserPreferencesResponseDto(
         avatar: AvatarResponse.fromJson(json[r'avatar'])!,
+        emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
       );
     }
@@ -100,6 +107,7 @@ class UserPreferencesResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'avatar',
+    'emailNotifications',
     'memories',
   };
 }
