@@ -139,7 +139,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('storage_label_claim').toUpperCase()}
-                desc={$t('placeholder_3')}
+                desc={$t('storage_label_claim_description')}
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -149,7 +149,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('storage_quota_claim').toUpperCase()}
-                desc={$t('placeholder_4')}
+                desc={$t('storage_quota_claim_description')}
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -159,7 +159,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('default_storage_quota_gib').toUpperCase()}
-                desc={$t('placeholder_26')}
+                desc={$t('default_storage_quota_description')}
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -177,21 +177,21 @@
 
               <SettingSwitch
                 title={$t('auto_register').toUpperCase()}
-                subtitle={$t('placeholder_62')}
+                subtitle={$t('auto_register_description')}
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
                 title={$t('auto_launch').toUpperCase()}
-                subtitle={$t('placeholder_89')}
+                subtitle={$t('auto_launch_description')}
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
                 title={$t('mobile_redirect_uri_override').toUpperCase()}
-                subtitle={$t('placeholder_70')}
+                subtitle={$t('mobile_redirect_uri_override_description')}
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
                 bind:checked={config.oauth.mobileOverrideEnabled}
@@ -217,7 +217,7 @@
               <SettingSwitch
                 title={$t('enabled')}
                 {disabled}
-                subtitle={$t('placeholder_80')}
+                subtitle={$t('password_login_enabled_description')}
                 bind:checked={config.passwordLogin.enabled}
               />
             </div>

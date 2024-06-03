@@ -42,10 +42,6 @@
     {searchQuery}
     bind:albumGroupIds={albumGroups}
   >
-    <EmptyPlaceholder
-      slot="empty"
-      text="{ $t("placeholder_110") }"
-      onClick={() => createAlbumAndRedirect()}
-    />
+    <EmptyPlaceholder slot="empty" text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
   </Albums>
 </UserPageLayout>

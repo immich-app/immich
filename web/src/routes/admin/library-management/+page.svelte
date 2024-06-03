@@ -408,12 +408,12 @@
                           <MenuOption on:click={() => onScanNewLibraryClicked()} text={$t('scan_new_library_files')} />
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
-                            text={$t('re-scan_all_library_files')}
+                            text={$t('scan_all_library_files')}
                             subtitle={$t('only_refreshes_modified_files')}
                           />
                           <MenuOption
                             on:click={() => onForceScanAllLibraryFilesClicked()}
-                            text="{ $t("placeholder_113") }"
+                            text={$t('force_re-scan_library_files')}
                             subtitle={$t('refreshes_every_file')}
                           />
                           <hr />
@@ -463,10 +463,7 @@
 
         <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder
-          text="{ $t("placeholder_112") }"
-          onClick={() => (toCreateLibrary = true)}
-        />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={() => (toCreateLibrary = true)} />
       {/if}
     </div>
   </section>

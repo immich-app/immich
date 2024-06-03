@@ -241,7 +241,7 @@
 
             {#if isOwner}
               {#if hasStackChildren}
-                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text={$t('un-stack')} />
+                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text={$t('unstack')} />
               {/if}
               {#if album}
                 <MenuOption

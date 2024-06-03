@@ -23,7 +23,7 @@
         <SettingTextarea
           {disabled}
           label={$t('custom_css')}
-          desc="{ $t("placeholder_5") }"
+          desc={$t('custom_css_description')}
           bind:value={config.theme.customCss}
           required={true}
           isEdited={config.theme.customCss !== savedConfig.theme.customCss}

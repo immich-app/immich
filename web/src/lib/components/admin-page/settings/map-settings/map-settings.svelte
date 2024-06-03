@@ -38,7 +38,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('light_style')}
-              desc={$t('placeholder_36')}
+              desc={$t('map_style_setting_description')}
               bind:value={config.map.lightStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
@@ -46,7 +46,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('dark_style')}
-              desc={$t('placeholder_36')}
+              desc={$t('map_style_setting_description')}
               bind:value={config.map.darkStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}

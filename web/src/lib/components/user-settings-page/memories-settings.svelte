@@ -32,7 +32,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
-            title={$t('time-based_memories')}
+            title={$t('time_based_memories')}
             subtitle={$t('photos_from_previous_years')}
             bind:checked={memoriesEnabled}
           />

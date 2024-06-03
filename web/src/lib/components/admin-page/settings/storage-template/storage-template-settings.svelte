@@ -119,7 +119,7 @@
         <SettingSwitch
           title={$t('hash_verification_enabled').toUpperCase()}
           {disabled}
-          subtitle={$t('placeholder_71')}
+          subtitle={$t('hash_verification_enabled_description')}
           bind:checked={config.storageTemplate.hashVerificationEnabled}
           isEdited={!(
             config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled

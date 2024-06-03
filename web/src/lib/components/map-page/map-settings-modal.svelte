@@ -74,23 +74,23 @@
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
-              text: $t("placeholder_98"),
+              text: $t('past_durations.hours', { values: { count: 24 } }),
             },
             {
               value: Duration.fromObject({ days: 7 }).toISO() || '',
-              text: $t("placeholder_101"),
+              text: $t('past_durations.days', { values: { count: 7 } }),
             },
             {
               value: Duration.fromObject({ days: 30 }).toISO() || '',
-              text: $t("placeholder_100"),
+              text: $t('past_durations.days', { values: { count: 30 } }),
             },
             {
               value: Duration.fromObject({ years: 1 }).toISO() || '',
-              text: $t("placeholder_102"),
+              text: $t('past_durations.years', { values: { count: 1 } }),
             },
             {
               value: Duration.fromObject({ years: 3 }).toISO() || '',
-              text: $t("placeholder_99"),
+              text: $t('past_durations.years', { values: { count: 3 } }),
             },
           ]}
         />

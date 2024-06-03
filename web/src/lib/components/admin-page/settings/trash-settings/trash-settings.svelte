@@ -35,7 +35,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('number_of_days')}
-          desc={$t('placeholder_20')}
+          desc={$t('number_of_days_description')}
           bind:value={config.trash.days}
           required={true}
           disabled={disabled || !config.trash.enabled}

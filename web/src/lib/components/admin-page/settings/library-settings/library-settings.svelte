@@ -32,7 +32,7 @@
     <SettingAccordion
       key="library-watching"
       title={$t('library_watching_experimental')}
-      subtitle={$t('placeholder_64')}
+      subtitle={$t('library_watching_description')}
       isOpen
     >
       <form autocomplete="off" on:submit|preventDefault>
@@ -40,7 +40,7 @@
           <SettingSwitch
             title={$t('watch_filesystem')}
             {disabled}
-            subtitle={$t('placeholder_94')}
+            subtitle={$t('watch_filesystem_setting_description')}
             bind:checked={config.library.watch.enabled}
           />
         </div>

@@ -29,7 +29,7 @@
         />
         <SettingSelect
           label={$t('level').toUpperCase()}
-          desc={$t('placeholder_43')}
+          desc={$t('log_level_description')}
           bind:value={config.logging.level}
           options={[
             { value: LogLevel.Fatal, text: 'Fatal' },

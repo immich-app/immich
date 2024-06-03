@@ -61,12 +61,12 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: $t("placeholder_47"),
+      subtitle: $t('thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: $t("placeholder_46"),
+      subtitle: $t('metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
@@ -78,7 +78,7 @@
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: $t("placeholder_44"),
+      subtitle: $t('sidecar_job_description'),
       allText: $t('sync').toUpperCase(),
       missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
@@ -86,13 +86,13 @@
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: $t("placeholder_58"),
+      subtitle: $t('smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: $t("placeholder_57"),
+      subtitle: $t('duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -114,7 +114,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: $t("placeholder_59"),
+      subtitle: $t('video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
@@ -125,7 +125,7 @@
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: $t("placeholder_56"),
+      subtitle: $t('migration_job_description'),
       allowForceCommand: false,
     },
   };

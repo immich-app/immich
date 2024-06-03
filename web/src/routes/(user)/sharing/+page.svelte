@@ -90,11 +90,7 @@
         <!-- Shared Album List -->
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
-          <EmptyPlaceholder
-            slot="empty"
-            text="{ $t("placeholder_111") }"
-            src={empty2Url}
-          />
+          <EmptyPlaceholder slot="empty" text={$t('no_shared_albums_message')} src={empty2Url} />
         </Albums>
       </div>
     </div>

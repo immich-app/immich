@@ -169,7 +169,7 @@
             <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
             <SettingSwitch
               title={$t('show_in_timeline')}
-              subtitle="{ $t("placeholder_88") }"
+              subtitle={$t('show_in_timeline_setting_description')}
               bind:checked={partner.inTimeline}
               on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
             />

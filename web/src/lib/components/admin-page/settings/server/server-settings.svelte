@@ -25,7 +25,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('external_domain').toUpperCase()}
-          desc="{ $t("placeholder_8") }"
+          desc={$t('external_domain_description')}
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
         />
@@ -33,7 +33,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('welcome_message').toUpperCase()}
-          desc="{ $t("placeholder_0") }"
+          desc={$t('welcome_message_description')}
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}
         />

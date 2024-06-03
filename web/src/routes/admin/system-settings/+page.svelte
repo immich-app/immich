@@ -84,13 +84,13 @@
     {
       item: AuthSettings,
       title: $t('authentication_settings'),
-      subtitle: $t("placeholder_52"),
+      subtitle: $t('authentication_settings_description'),
       key: 'image',
     },
     {
       item: ImageSettings,
       title: $t('image_settings'),
-      subtitle: $t("placeholder_54"),
+      subtitle: $t('image_settings_description'),
       key: 'image',
     },
     {
@@ -114,19 +114,19 @@
     {
       item: MachineLearningSettings,
       title: $t('machine_learning_settings'),
-      subtitle: $t("placeholder_49"),
+      subtitle: $t('machine_learning_settings_description'),
       key: 'machine-learning',
     },
     {
       item: MapSettings,
       title: 'Map & GPS Settings',
-      subtitle: $t("placeholder_50"),
+      subtitle: $t('map_settings_description'),
       key: 'location',
     },
     {
       item: NotificationSettings,
       title: $t('notification_settings'),
-      subtitle: $t("placeholder_51"),
+      subtitle: $t('notification_settings_description'),
       key: 'notifications',
     },
     {
@@ -138,13 +138,13 @@
     {
       item: StorageTemplateSettings,
       title: $t('storage_template'),
-      subtitle: $t("placeholder_53"),
+      subtitle: $t('storage_template_description'),
       key: 'storage-template',
     },
     {
       item: ThemeSettings,
       title: $t('theme_settings'),
-      subtitle: $t("placeholder_48"),
+      subtitle: $t('theme_settings_description'),
       key: 'theme',
     },
     {
@@ -162,13 +162,13 @@
     {
       item: NewVersionCheckSettings,
       title: $t('version_check'),
-      subtitle: $t("placeholder_45"),
+      subtitle: $t('version_check_description'),
       key: 'version-check',
     },
     {
       item: FFmpegSettings,
       title: $t('video_transcoding_settings'),
-      subtitle: $t("placeholder_55"),
+      subtitle: $t('video_transcoding_settings_description'),
       key: 'video-transcoding',
     },
   ];

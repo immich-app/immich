@@ -38,15 +38,11 @@
     <UserAPIKeyList bind:keys />
   </SettingAccordion>
 
-  <SettingAccordion
-    key="authorized-devices"
-    title={$t('authorized_devices')}
-    subtitle={$t('manage_your_logged-in_devices')}
-  >
+  <SettingAccordion key="authorized-devices" title={$t('authorized_devices')} subtitle={$t('manage_your_devices')}>
     <DeviceList bind:devices={sessions} />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('placeholder_81')}>
+  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
     <MemoriesSettings />
   </SettingAccordion>
 

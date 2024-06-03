@@ -27,7 +27,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
           label={$t('thumbnail_format').toUpperCase()}
-          desc={$t('placeholder_42')}
+          desc={$t('thumbnail_format_description')}
           bind:value={config.image.thumbnailFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -40,7 +40,7 @@
 
         <SettingSelect
           label={$t('thumbnail_resolution').toUpperCase()}
-          desc={$t('placeholder_38')}
+          desc={$t('thumbnail_resolution_description')}
           number
           bind:value={config.image.thumbnailSize}
           options={[
@@ -57,7 +57,7 @@
 
         <SettingSelect
           label={$t('preview_format').toUpperCase()}
-          desc={$t('placeholder_42')}
+          desc={$t('thumbnail_format_description')}
           bind:value={config.image.previewFormat}
           options={[
             { value: ImageFormat.Jpeg, text: 'JPEG' },
@@ -70,7 +70,7 @@
 
         <SettingSelect
           label={$t('preview_resolution').toUpperCase()}
-          desc={$t('placeholder_37')}
+          desc={$t('preview_resolution_setting_description')}
           number
           bind:value={config.image.previewSize}
           options={[
@@ -87,7 +87,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('quality').toUpperCase()}
-          desc={$t('placeholder_14')}
+          desc={$t('quality_description')}
           bind:value={config.image.quality}
           isEdited={config.image.quality !== savedConfig.image.quality}
           {disabled}
@@ -95,7 +95,7 @@
 
         <SettingSwitch
           title={$t('prefer_wide_gamut').toUpperCase()}
-          subtitle={$t('placeholder_92')}
+          subtitle={$t('prefer_wide_gamut_setting_description')}
           checked={config.image.colorspace === Colorspace.P3}
           on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
           isEdited={config.image.colorspace !== savedConfig.image.colorspace}
@@ -104,7 +104,7 @@
 
         <SettingSwitch
           title={$t('prefer_embedded_preview').toUpperCase()}
-          subtitle={$t('placeholder_93')}
+          subtitle={$t('prefer_embedded_preview_setting_description')}
           checked={config.image.extractEmbedded}
           on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
           isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}

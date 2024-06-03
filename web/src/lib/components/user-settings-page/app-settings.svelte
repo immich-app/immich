@@ -74,7 +74,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('theme_selection')}
-          subtitle="{ $t("placeholder_63") }"
+          subtitle={$t('theme_selection_description')}
           bind:checked={$colorTheme.system}
           on:toggle={handleToggleColorTheme}
         />
@@ -83,7 +83,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('default_locale')}
-          subtitle="{ $t("placeholder_74") }"
+          subtitle={$t('default_locale_description')}
           checked={$locale == undefined}
           on:toggle={handleToggleLocaleBrowser}
         >
@@ -97,7 +97,7 @@
             {selectedOption}
             options={getAllLanguages()}
             title={$t('custom_locale')}
-            subtitle="{ $t("placeholder_73") }"
+            subtitle={$t('custom_locale_description')}
             onSelect={(combobox) => handleLocaleChange(combobox?.value)}
           />
         </div>
@@ -106,7 +106,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('display_original_photos')}
-          subtitle="{ $t("placeholder_84") }"
+          subtitle={$t('display_original_photos_setting_description')}
           bind:checked={$alwaysLoadOriginalFile}
           on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
@@ -114,7 +114,7 @@
       <div class="ml-4">
         <SettingSwitch
           title="Play video thumbnail on hover"
-          subtitle="{ $t("placeholder_83") }"
+          subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
           on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
@@ -122,7 +122,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('loop_videos')}
-          subtitle="{ $t("placeholder_69") }"
+          subtitle={$t('loop_videos_description')}
           bind:checked={$loopVideo}
           on:toggle={() => ($loopVideo = !$loopVideo)}
         />
@@ -131,7 +131,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('permanent_deletion_warning')}
-          subtitle="{ $t("placeholder_87") }"
+          subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
         />
       </div>
@@ -139,14 +139,14 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('people')}
-          subtitle="{ $t("placeholder_66") }"
+          subtitle={$t('people_sidebar_description')}
           bind:checked={$sidebarSettings.people}
         />
       </div>
       <div class="ml-4">
         <SettingSwitch
           title={$t('sharing')}
-          subtitle="{ $t("placeholder_67") }"
+          subtitle={$t('sharing_sidebar_description')}
           bind:checked={$sidebarSettings.sharing}
         />
       </div>
