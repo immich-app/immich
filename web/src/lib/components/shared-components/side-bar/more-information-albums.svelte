@@ -18,7 +18,7 @@
 {#await handleAlbumCount()}
   <LoadingSpinner />
 {:then data}
-  <div data-testid="data">
+  <div>
     <p>{data[albumCountType].toLocaleString($locale)} Album{s(data[albumCountType])}</p>
   </div>
 {/await}

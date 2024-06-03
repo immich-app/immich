@@ -10,7 +10,7 @@
 </script>
 
 {#await getStats(assetStats)}
-  <LoadingSpinner data-testid="loading-spinner" />
+  <LoadingSpinner />
 {:then data}
   <div>
     <p>{data.videos.toLocaleString($locale)} Video{s(data.videos)}</p>
