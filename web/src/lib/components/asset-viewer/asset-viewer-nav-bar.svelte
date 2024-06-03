@@ -207,7 +207,7 @@
       >
         <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowAssetOptions}
-          <ContextMenu {...contextMenuPosition} direction="left">
+          <ContextMenu {...contextMenuPosition} direction="left" isVisible>
             {#if showSlideshow}
               <MenuOption icon={mdiPresentationPlay} on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
             {/if}
@@ -257,7 +257,7 @@
                 icon={mdiDatabaseRefreshOutline}
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
                 text={getAssetJobName(AssetJobName.RefreshMetadata)}
-                topBorder={true}
+                topBorder
               />
               <MenuOption
                 icon={mdiImageRefreshOutline}

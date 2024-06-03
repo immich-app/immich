@@ -82,14 +82,7 @@
       on:contextmenu|preventDefault={reopenContextMenu}
       role="presentation"
     >
-      <ContextMenu
-        {x}
-        {y}
-        {direction}
-        onClose={closeContextMenu}
-        bind:menuElement={contextMenuElement}
-        isVisible={true}
-      >
+      <ContextMenu {x} {y} {direction} onClose={closeContextMenu} bind:menuElement={contextMenuElement} isVisible>
         <slot />
       </ContextMenu>
     </section>

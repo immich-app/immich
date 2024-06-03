@@ -397,7 +397,7 @@
 
                   {#if showContextMenu}
                     <Portal target="body">
-                      <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()}>
+                      <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()} isVisible>
                         <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
 
                         {#if selectedLibrary}
@@ -406,7 +406,7 @@
                           <MenuOption
                             on:click={() => onScanNewLibraryClicked()}
                             text="Scan New Library Files"
-                            topBorder={true}
+                            topBorder
                           />
                           <MenuOption
                             on:click={() => onScanAllLibraryFilesClicked()}
@@ -421,7 +421,7 @@
                           <MenuOption
                             on:click={() => onRemoveOfflineFilesClicked()}
                             text="Remove Offline Files"
-                            topBorder={true}
+                            topBorder
                           />
                           <MenuOption on:click={() => onDeleteLibraryClicked()}>
                             <p class="text-red-600">Delete library</p>

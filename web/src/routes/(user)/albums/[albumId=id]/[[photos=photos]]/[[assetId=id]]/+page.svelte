@@ -470,7 +470,7 @@
                 <div use:clickOutside={{ onOutclick: () => (viewMode = ViewMode.VIEW) }}>
                   <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical} />
                   {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                    <ContextMenu {...contextMenuPosition}>
+                    <ContextMenu {...contextMenuPosition} isVisible>
                       <MenuOption
                         icon={mdiImageOutline}
                         text="Select album cover"
