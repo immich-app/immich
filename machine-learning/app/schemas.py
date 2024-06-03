@@ -3,7 +3,7 @@ from typing import Any, Protocol, TypeVar, TypedDict, TypeGuard
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class StrEnum(str, Enum):
@@ -78,12 +78,14 @@ class PipelineEntry(TypedDict):
 PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
 
 
-class InferenceEntry(PipelineEntry):
-    modelTask: ModelTask
-    modelType: ModelType
+class InferenceEntry(BaseModel):
+    model_name: str = Field(..., alias="modelName")
+    model_task: ModelTask = Field(..., alias="modelTask")
+    model_type: ModelType = Field(..., alias="modelType")
+    options: dict[str, Any] = {}
 
 
-Entries = tuple[list[InferenceEntry], list[InferenceEntry]]
+InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:

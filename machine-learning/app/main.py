@@ -18,6 +18,7 @@ from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from zipfile import BadZipFile
+from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 from PIL.Image import Image
 
@@ -25,7 +26,7 @@ from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
     T,
-    Entries,
+    InferenceEntries,
     InferenceEntry,
     MessageResponse,
     ModelTask,
@@ -99,20 +100,21 @@ def update_state() -> Iterator[None]:
         active_requests -= 1
 
 
-def get_entries(entries: str = Form()) -> Entries:
+def get_entries(entries: str = Form()) -> InferenceEntries:
     try:
         request: PipelineRequest = orjson.loads(entries)
         without_deps, with_deps = [], []
         for model_task, model_types in request.items():
             for model_type, entry in model_types.items():
-                dep = get_model_deps(entry["modelName"], model_type, model_task)
-                (with_deps if dep else without_deps).append({"modelTask": model_task, "modelType": model_type, **entry})
+                parsed = InferenceEntry.parse_obj(entry)
+                dep = get_model_deps(parsed.model_name, model_type, model_task)
+                (with_deps if dep else without_deps).append(parsed)
         return without_deps, with_deps
-    except (orjson.JSONDecodeError, KeyError, AttributeError):
+    except (orjson.JSONDecodeError, ValidationError, KeyError, AttributeError):
         raise HTTPException(422)
 
 
-async def get_inputs(image: UploadFile | None = None, text: str | None = None) -> Image:
+async def get_payload(image: UploadFile | None = None, text: str | None = None) -> Image:
     if image is not None:
         read = await image.read()
         return await run(lambda: decode_pil(read))
@@ -137,28 +139,28 @@ def ping() -> str:
 
 
 @app.post("/predict", dependencies=[Depends(update_state)])
-async def predict(inputs: Image | str = Depends(get_inputs), entries: Entries = Depends(get_entries)) -> Any:
+async def predict(payload: Image | str = Depends(get_payload), entries: InferenceEntries = Depends(get_entries)) -> Any:
     outputs = defaultdict(lambda: defaultdict(dict))
     without_deps, with_deps = entries
-    await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in without_deps])
+    await asyncio.gather(*[run_inference(payload, entry, outputs) for entry in without_deps])
     if with_deps:
-        await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in with_deps])
+        await asyncio.gather(*[run_inference(payload, entry, outputs) for entry in with_deps])
 
     return ORJSONResponse(outputs)
 
 
-async def run_inference(image: Image, entry: InferenceEntry, outputs: dict[str, Any]) -> None:
-    model = await model_cache.get(entry["modelName"], entry["modelType"], entry["modelTask"], ttl=settings.model_ttl)
-    inputs = [image]
+async def run_inference(payload: Image | str, entry: InferenceEntry, outputs: dict[str, Any]) -> None:
+    model = await model_cache.get(entry.model_name, entry.model_type, entry.model_task, ttl=settings.model_ttl)
+    inputs = [payload]
     for model_type in model.depends:
         try:
-            inputs.append(outputs[entry["modelTask"]][model_type])
+            inputs.append(outputs[entry.model_task][model_type])
         except KeyError:
-            message = f"Task {entry['modelTask']} of type {entry['modelType']} depends on output of type {model_type}"
+            message = f"Task {entry.model_task} of type {entry.model_type} depends on output of type {model_type}"
             raise HTTPException(400, message)
     model = await load(model)
-    output = await run(model.predict, *inputs, **entry["options"])
-    outputs[entry["modelTask"]][entry["modelType"]] = output
+    output = await run(model.predict, *inputs, **entry.options)
+    outputs[entry.model_task][entry.model_type] = output
 
 
 async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
