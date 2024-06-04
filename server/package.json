@@ -50,7 +50,7 @@
     "@opentelemetry/context-async-hooks": "^1.24.0",
     "@opentelemetry/exporter-prometheus": "^0.51.0",
     "@opentelemetry/sdk-node": "^0.51.0",
-    "@react-email/components": "^0.0.18",
+    "@react-email/components": "^0.0.19",
     "@socket.io/postgres-adapter": "^0.3.1",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
@@ -133,6 +133,6 @@
     "vitest": "^1.5.0"
   },
   "volta": {
-    "node": "20.13.1"
+    "node": "20.14.0"
   }
 }
