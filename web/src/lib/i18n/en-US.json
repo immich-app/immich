@@ -147,7 +147,6 @@
     "storage_template_settings_description": "Manage the folder structure and file name of the upload asset",
     "theme_custom_css_settings": "Custom CSS",
     "theme_custom_css_settings_description": "Cascading Style Sheets allow the design of Immich to be customized.",
-    "theme_selection_description": "Automatically set the theme to light or dark based on your browser's system preference",
     "theme_settings": "Theme Settings",
     "theme_settings_description": "Manage customization of the Immich web interface",
     "thumbnail_generation_job_description": "Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person",
@@ -774,5 +773,8 @@
   "welcome_to_immich": "Welcome to immich",
   "year": "Year",
   "yes": "Yes",
+  "theme_selection_description": "Automatically set the theme to light or dark based on your browser's system preference",
+  "language_setting_description": "Select your preferred language",
+  "language": "Language",
   "zoom_image": "Zoom Image"
 }

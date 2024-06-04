@@ -2,10 +2,11 @@
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { fallbackLocale, locales } from '$lib/constants';
+  import { fallbackLang, fallbackLocale, langs, locales } from '$lib/constants';
   import {
     alwaysLoadOriginalFile,
     colorTheme,
+    lang,
     locale,
     loopVideo,
     playVideoThumbnailOnHover,
@@ -15,7 +16,8 @@
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { t } from 'svelte-i18n';
+  import { t, locale as i18nLocale, init } from 'svelte-i18n';
+  import { get } from 'svelte/store';
 
   let time = new Date();
 
@@ -63,6 +65,20 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
+  const handleLanguageChange = async (newLang: string | undefined) => {
+    newLang = newLang || fallbackLang;
+    $lang = newLang;
+
+    const previousLang = get(i18nLocale);
+
+    if (newLang === 'dev') {
+      await init({ fallbackLocale: 'dev', initialLocale: 'dev' });
+    } else if (previousLang == 'dev' && newLang !== 'dev') {
+      await init({ fallbackLocale: 'en-US', initialLocale: newLang });
+    }
+    $i18nLocale = newLang;
+  };
+
   const handleLocaleChange = (newLocale: string | undefined) => {
     $locale = newLocale;
   };
@@ -77,6 +93,17 @@
           subtitle={$t('theme_selection_description')}
           bind:checked={$colorTheme.system}
           on:toggle={handleToggleColorTheme}
+        />
+      </div>
+
+      <div class="ml-4">
+        <SettingCombobox
+          comboboxPlaceholder={$t('language')}
+          {selectedOption}
+          options={langs.map((lang) => ({ label: lang.name, value: lang.code }))}
+          title={$t('language')}
+          subtitle={$t('language_setting_description')}
+          onSelect={(combobox) => handleLanguageChange(combobox?.value)}
         />
       </div>
 
