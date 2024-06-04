@@ -1,6 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
-import { AssetMediaResponseDto } from 'src/dtos/asset-media-response.dto';
+import { of } from 'rxjs';
+import { AssetMediaResponseDto, AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { ImmichHeader } from 'src/dtos/auth.dto';
 import { AuthenticatedRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
@@ -17,7 +18,10 @@ export class AssetUploadInterceptor implements NestInterceptor {
     const checksum = fromMaybeArray(req.headers[ImmichHeader.CHECKSUM]);
     const response = await this.service.getUploadAssetIdByChecksum(req.user, checksum);
     if (response) {
-      res.status(200).send(response);
+      res.status(200);
+      // Returning the response body wrapped in an Observable will cause nestjs
+      // to use it, and skip all downstream request processing.
+      return of({ status: AssetMediaStatus.DUPLICATE, id: response.id });
     }
 
     return next.handle();
