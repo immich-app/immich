@@ -99,6 +99,8 @@ class AssetService {
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
     const int chunkSize = 10000;
+    int chunkNumber = 0;
+    int miniChunkCount = 0;
     try {
       final List<Asset> allAssets = [];
       DateTime? lastCreationDate;
@@ -112,17 +114,35 @@ class AssetService {
           lastCreationDate: lastCreationDate,
           userId: user.id,
         );
+        log.fine('Requesting assets older than ($lastCreationDate,$lastId)');
         final List<AssetResponseDto>? assets =
             await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.isEmpty) break;
+        log.fine(
+          'Received ${assets.length} assets ranging from (${assets.first.fileCreatedAt},${assets.first.id}) to (${assets.last.fileCreatedAt},${assets.last.id})',
+        );
+        if (assets.length < 100) {
+          miniChunkCount++;
+          if (miniChunkCount > 50) {
+            log.severe(
+              'getRemoteAssets received too many almost empty chunks, stopping. Not all remote assets could be fetched from the server for user ${user.name}.',
+            );
+            break;
+          }
+        }
         lastCreationDate = assets.last.fileCreatedAt;
         lastId = assets.last.id;
+        chunkNumber++;
       }
       return allAssets;
     } catch (error, stack) {
-      log.severe('Error while getting remote assets', error, stack);
+      log.severe(
+        'Error while getting remote assets chunk $chunkNumber',
+        error,
+        stack,
+      );
       return null;
     }
   }
