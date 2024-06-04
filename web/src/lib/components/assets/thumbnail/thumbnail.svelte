@@ -89,7 +89,7 @@
 
 <IntersectionObserver once={false} on:intersected let:intersecting>
   <a
-    href={isMultiSelectState ? undefined : `${currentUrlReplaceAssetId(asset.id)}`}
+    href={currentUrlReplaceAssetId(asset.id)}
     style:width="{width}px"
     style:height="{height}px"
     class="group focus-visible:outline-none flex overflow-hidden {disabled
