@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Protocol, TypedDict, TypeGuard, TypeVar
+from typing import Any, Literal, Protocol, TypedDict, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -98,6 +98,9 @@ class InferenceEntry(TypedDict):
 
 
 InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
+
+
+InferenceResponse = dict[ModelTask | Literal["imageHeight"] | Literal["imageWidth"], Any]
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:

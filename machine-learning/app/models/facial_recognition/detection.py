@@ -37,7 +37,7 @@ class FaceDetector(InferenceModel):
         bboxes, landmarks = self._detect(inputs)
         return {
             "boxes": bboxes[:, :4].round(),
-            "scores": bboxes[:, 4].squeeze(),
+            "scores": bboxes[:, 4],
             "landmarks": landmarks,
         }
 

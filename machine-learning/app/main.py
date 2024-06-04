@@ -4,7 +4,6 @@ import os
 import signal
 import threading
 import time
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from functools import partial
@@ -28,6 +27,7 @@ from .models.cache import ModelCache
 from .schemas import (
     InferenceEntries,
     InferenceEntry,
+    InferenceResponse,
     MessageResponse,
     ModelIdentity,
     ModelTask,
@@ -152,9 +152,9 @@ async def predict(
     return ORJSONResponse(response)
 
 
-async def run_inference(payload: Image | str, entries: InferenceEntries) -> dict[ModelTask | str, Any]:
+async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
     outputs: dict[ModelIdentity, Any] = {}
-    response: dict[ModelTask | str, Any] = defaultdict(lambda: defaultdict(dict))
+    response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
         model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)
