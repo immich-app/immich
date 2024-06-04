@@ -48,7 +48,6 @@
   export { className as class };
 
   let mouseOver = false;
-  $: clickable = !disabled && onClick;
 
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
@@ -65,7 +64,7 @@
   })();
 
   const thumbnailClickedHandler = () => {
-    if (clickable) {
+    if (!disabled) {
       onClick?.(asset);
     }
   };
@@ -89,18 +88,17 @@
 
 <IntersectionObserver once={false} on:intersected let:intersecting>
   <a
-    href={currentUrlReplaceAssetId(asset.id)}
+    href={disabled ? '' : currentUrlReplaceAssetId(asset.id)}
     style:width="{width}px"
     style:height="{height}px"
     class="group focus-visible:outline-none flex overflow-hidden {disabled
       ? 'bg-gray-300'
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
-    class:hover:cursor-pointer={clickable}
+    class:hover:cursor-pointer={!disabled}
     on:mouseenter={onMouseEnter}
     on:mouseleave={onMouseLeave}
-    role={clickable ? 'button' : undefined}
-    tabindex={clickable ? 0 : undefined}
+    tabindex={0}
     on:click={isMultiSelectState ? onIconClickedHandler : undefined}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
