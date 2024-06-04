@@ -234,21 +234,18 @@ export class AlbumRepository implements IAlbumRepository {
    * @returns Set of Asset IDs for the given album ID.
    */
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] }, { name: 'no assets', params: [DummyValue.UUID] })
-  async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
-    const query = this.dataSource
-      .createQueryBuilder()
-      .select('albums_assets.assetsId', 'assetId')
-      .from('albums_assets_assets', 'albums_assets')
-      .where('"albums_assets"."albumsId" = :albumId', { albumId });
-
-    if (!assetIds?.length) {
-      const result = await query.getRawMany();
-      return new Set(result.map((row) => row['assetId']));
+  async getAssetIds(albumId: string, assetIds: string[]): Promise<Set<string>> {
+    if (assetIds.length === 0) {
+      return new Set();
     }
 
     return Promise.all(
       _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        query
+        this.dataSource
+          .createQueryBuilder()
+          .select('albums_assets.assetsId', 'assetId')
+          .from('albums_assets_assets', 'albums_assets')
+          .where('"albums_assets"."albumsId" = :albumId', { albumId })
           .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds: idChunk })
           .getRawMany()
           .then((result) => new Set(result.map((row) => row['assetId']))),

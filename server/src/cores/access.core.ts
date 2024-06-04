@@ -46,6 +46,13 @@ export enum Permission {
   PERSON_REASSIGN = 'person.reassign',
 
   PARTNER_UPDATE = 'partner.update',
+
+  STACK_READ = 'stack.read',
+  STACK_WRITE = 'stack.write',
+  STACK_MERGE = 'stack.merge',
+  STACK_DELETE = 'stack.delete',
+  STACK_ADD_ASSET = 'stack.addAsset',
+  STACK_REMOVE_ASSET = 'stack.removeAsset',
 }
 
 let instance: AccessCore | null;

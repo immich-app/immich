@@ -585,14 +585,6 @@ WHERE
   "albums_assets"."albumsId" = $1
   AND "albums_assets"."assetsId" IN ($2)
 
--- AlbumRepository.getAssetIds (no assets)
-SELECT
-  "albums_assets"."assetsId" AS "assetId"
-FROM
-  "albums_assets_assets" "albums_assets"
-WHERE
-  "albums_assets"."albumsId" = $1
-
 -- AlbumRepository.hasAsset
 SELECT
   1 AS "row_exists"

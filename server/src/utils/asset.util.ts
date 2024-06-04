@@ -2,7 +2,6 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { setDifference, setUnion } from 'src/utils/set';
 
 export interface IBulkAsset {
   getAssetIds: (id: string, assetIds: string[]) => Promise<Set<string>>;
@@ -51,20 +50,13 @@ export const addAssets = async (
 export const removeAssets = async (
   auth: AuthDto,
   repositories: { accessRepository: IAccessRepository; repository: IBulkAsset },
-  dto: { id: string; assetIds: string[]; permissions: Permission[] },
+  dto: { id: string; assetIds: string[] },
 ) => {
   const { accessRepository, repository } = repositories;
   const access = AccessCore.create(accessRepository);
 
   const existingAssetIds = await repository.getAssetIds(dto.id, dto.assetIds);
-  let allowedAssetIds = new Set<string>();
-  let remainingAssetIds = existingAssetIds;
-
-  for (const permission of dto.permissions) {
-    const newAssetIds = await access.checkAccess(auth, permission, setDifference(remainingAssetIds, allowedAssetIds));
-    remainingAssetIds = setDifference(remainingAssetIds, newAssetIds);
-    allowedAssetIds = setUnion(allowedAssetIds, newAssetIds);
-  }
+  const allowedAssetIds = await access.checkAccess(auth, Permission.ASSET_SHARE, existingAssetIds);
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {

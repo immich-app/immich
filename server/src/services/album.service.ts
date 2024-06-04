@@ -206,7 +206,7 @@ export class AlbumService {
     const results = await removeAssets(
       auth,
       { accessRepository: this.accessRepository, repository: this.albumRepository },
-      { id, assetIds: dto.ids, permissions: [Permission.ASSET_SHARE, Permission.ALBUM_REMOVE_ASSET] },
+      { id, assetIds: dto.ids },
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);

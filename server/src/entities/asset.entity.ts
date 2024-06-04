@@ -1,12 +1,12 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetStackEntity } from 'src/entities/asset-stack.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
+import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
@@ -164,9 +164,9 @@ export class AssetEntity {
   @Column({ nullable: true })
   stackId?: string | null;
 
-  @ManyToOne(() => AssetStackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @ManyToOne(() => StackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn()
-  stack?: AssetStackEntity | null;
+  stack?: StackEntity | null;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;

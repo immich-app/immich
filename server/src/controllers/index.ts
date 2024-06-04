@@ -21,6 +21,7 @@ import { SearchController } from 'src/controllers/search.controller';
 import { ServerInfoController } from 'src/controllers/server-info.controller';
 import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
+import { StackController } from 'src/controllers/stack.controller';
 import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
 import { SystemMetadataController } from 'src/controllers/system-metadata.controller';
@@ -37,6 +38,7 @@ export const controllers = [
   AppController,
   AssetController,
   AssetMediaController,
+  StackController,
   AuditController,
   AuthController,
   DownloadController,
