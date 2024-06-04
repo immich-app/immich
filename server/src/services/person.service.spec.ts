@@ -7,7 +7,12 @@ import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interfac
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { FacialRecognitionResponse, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import {
+  DetectedFaces,
+  FacialRecognitionResponse,
+  IMachineLearningRepository,
+  ModelTask,
+} from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
@@ -46,7 +51,7 @@ const responseDto: PersonResponseDto = {
 
 const statistics = { assets: 3 };
 
-const detectFaceMock: FacialRecognitionResponse = {
+const detectFaceMock: DetectedFaces = {
   faces: [
     {
       boundingBox: {
