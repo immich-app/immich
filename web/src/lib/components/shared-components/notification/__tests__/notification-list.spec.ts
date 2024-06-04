@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
+import { init } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { NotificationType, notificationController } from '../notification';
 import NotificationList from '../notification-list.svelte';
@@ -11,7 +12,8 @@ function _getNotificationListElement(sut: RenderResult<NotificationList>): HTMLA
 describe('NotificationList component', () => {
   const sut: RenderResult<NotificationList> = render(NotificationList);
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await init({ fallbackLocale: 'en-US' });
     // https://testing-library.com/docs/svelte-testing-library/faq#why-arent-transition-events-running
     vi.stubGlobal('requestAnimationFrame', (fn: FrameRequestCallback) => {
       setTimeout(() => fn(Date.now()), 16);

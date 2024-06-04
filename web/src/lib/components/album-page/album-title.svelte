@@ -2,6 +2,7 @@
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcut } from '$lib/actions/shortcut';
+  import { t } from 'svelte-i18n';
 
   export let id: string;
   export let albumName: string;
@@ -22,7 +23,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update album name');
+      handleError(error, $t('errors.unable_to_save_album'));
       return;
     }
     albumName = newAlbumName;
@@ -38,6 +39,6 @@
   type="text"
   bind:value={newAlbumName}
   disabled={!isOwned}
-  title="Edit Title"
-  placeholder="Add a title"
+  title={$t('edit_title')}
+  placeholder={$t('add_a_title')}
 />

@@ -26,6 +26,7 @@
   import SideBarLink from './side-bar-link.svelte';
   import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
+  import { t } from 'svelte-i18n';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -38,9 +39,9 @@
 </script>
 
 <SideBarSection>
-  <nav aria-label="Primary">
+  <nav aria-label={$t('primary')}>
     <SideBarLink
-      title="Photos"
+      title={$t('photos')}
       routeId="/(user)/photos"
       bind:isSelected={isPhotosSelected}
       icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
@@ -50,12 +51,12 @@
       </svelte:fragment>
     </SideBarLink>
     {#if $featureFlags.search}
-      <SideBarLink title="Explore" routeId="/(user)/explore" icon={mdiMagnify} />
+      <SideBarLink title={$t('explore')} routeId="/(user)/explore" icon={mdiMagnify} />
     {/if}
 
     {#if $featureFlags.map}
       <SideBarLink
-        title="Map"
+        title={$t('map')}
         routeId="/(user)/map"
         bind:isSelected={isMapSelected}
         icon={isMapSelected ? mdiMap : mdiMapOutline}
@@ -64,7 +65,7 @@
 
     {#if $sidebarSettings.people}
       <SideBarLink
-        title="People"
+        title={$t('people')}
         routeId="/(user)/people"
         bind:isSelected={isPeopleSelected}
         icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
@@ -72,7 +73,7 @@
     {/if}
     {#if $sidebarSettings.sharing}
       <SideBarLink
-        title="Sharing"
+        title={$t('sharing')}
         routeId="/(user)/sharing"
         icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
         bind:isSelected={isSharingSelected}
@@ -84,11 +85,11 @@
     {/if}
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
+      <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
       <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
     </div>
     <SideBarLink
-      title="Favorites"
+      title={$t('favorites')}
       routeId="/(user)/favorites"
       icon={isFavoritesSelected ? mdiHeart : mdiHeartOutline}
       bind:isSelected={isFavoritesSelected}
@@ -97,21 +98,21 @@
         <MoreInformationAssets assetStats={{ isFavorite: true }} />
       </svelte:fragment>
     </SideBarLink>
-    <SideBarLink title="Albums" routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
+    <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
         <MoreInformationAlbums albumCountType="owned" />
       </svelte:fragment>
     </SideBarLink>
 
     <SideBarLink
-      title="Utilities"
+      title={$t('utilities')}
       routeId="/(user)/utilities"
       bind:isSelected={isUtilitiesSelected}
       icon={isUtilitiesSelected ? mdiToolbox : mdiToolboxOutline}
     ></SideBarLink>
 
     <SideBarLink
-      title="Archive"
+      title={$t('archive')}
       routeId="/(user)/archive"
       bind:isSelected={isArchiveSelected}
       icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
@@ -123,7 +124,7 @@
 
     {#if $featureFlags.trash}
       <SideBarLink
-        title="Trash"
+        title={$t('trash')}
         routeId="/(user)/trash"
         bind:isSelected={isTrashSelected}
         icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}

@@ -1,10 +1,15 @@
 import '@testing-library/jest-dom';
 import { cleanup, render, type RenderResult } from '@testing-library/svelte';
+import { init } from 'svelte-i18n';
 import { NotificationType } from '../notification';
 import NotificationCard from '../notification-card.svelte';
 
 describe('NotificationCard component', () => {
   let sut: RenderResult<NotificationCard>;
+
+  beforeAll(async () => {
+    await init({ fallbackLocale: 'en-US' });
+  });
 
   it('disposes timeout if already removed from the DOM', () => {
     vi.spyOn(window, 'clearTimeout');

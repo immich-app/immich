@@ -42,6 +42,13 @@ export const locale = persisted<string | undefined>('locale', undefined, {
   },
 });
 
+export const lang = persisted<string | undefined>('lang', undefined, {
+  serializer: {
+    parse: (text) => text,
+    stringify: (object) => object ?? '',
+  },
+});
+
 export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
