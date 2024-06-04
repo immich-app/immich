@@ -54,8 +54,8 @@ def decode_pil(image_bytes: bytes | IO[bytes] | Image.Image) -> Image.Image:
 
 
 def decode_cv2(image_bytes: NDArray[np.uint8] | bytes | Image.Image) -> NDArray[np.uint8]:
+    if isinstance(image_bytes, bytes):
+        image_bytes = decode_pil(image_bytes)  # pillow is much faster than cv2
     if isinstance(image_bytes, Image.Image):
         return pil_to_cv2(image_bytes)
-    if isinstance(image_bytes, bytes):
-        return cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
     return image_bytes  # type: ignore

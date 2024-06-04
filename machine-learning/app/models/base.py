@@ -14,14 +14,13 @@ import ann.ann
 from app.models.constants import SUPPORTED_PROVIDERS
 
 from ..config import clean_name, log, settings
-from ..schemas import ModelFormat, ModelSession, ModelTask, ModelType
+from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
 from .ann import AnnSession
 
 
 class InferenceModel(ABC):
-    depends: ClassVar[list[tuple[ModelType, ModelTask]]]
-    _model_task: ClassVar[ModelTask]
-    _model_type: ClassVar[ModelType]
+    depends: ClassVar[list[ModelIdentity]]
+    identity = ClassVar[ModelIdentity]
 
     def __init__(
         self,
@@ -150,11 +149,11 @@ class InferenceModel(ABC):
 
     @property
     def model_task(self) -> ModelTask:
-        return self._model_task
+        return self.identity[1]
 
     @property
     def model_type(self) -> ModelType:
-        return self._model_type
+        return self.identity[0]
 
     @property
     def cache_dir(self) -> Path:

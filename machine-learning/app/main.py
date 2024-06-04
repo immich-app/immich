@@ -104,26 +104,15 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
     try:
         request: PipelineRequest = orjson.loads(entries)
         without_deps, with_deps = [], []
-        for model_task, model_types in request.items():
-            for model_type, entry in model_types.items():
-                parsed = {**entry, "model_name": entry["modelName"], "model_task": model_task, "model_type": model_type}
-                dep = get_model_deps(parsed["model_name"], model_type, model_task)
+        for task, types in request.items():
+            for type, entry in types.items():
+                parsed = {"name": entry["modelName"], "task": task, "type": type, "options": entry.get("options", {})}
+                dep = get_model_deps(parsed["name"], type, task)
                 (with_deps if dep else without_deps).append(parsed)
         return without_deps, with_deps
     except (orjson.JSONDecodeError, ValidationError, KeyError, AttributeError) as e:
         log.error(f"Invalid request format: {e}")
         raise HTTPException(422, "Invalid request format.")
-
-
-async def get_payload(image: UploadFile | None = None, text: str | None = None) -> Image | str:
-    if image is not None:
-        read = await image.read()
-        return await run(lambda: decode_pil(read))
-
-    if text is not None:
-        return text
-
-    raise HTTPException(422, "Must provide image or text payload.")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -142,7 +131,6 @@ def ping() -> str:
 @app.post("/predict", dependencies=[Depends(update_state)])
 async def predict(
     entries: InferenceEntries = Depends(get_entries),
-    # inputs: Image | str = Depends(get_payload),
     image: bytes | None = File(default=None),
     text: str | None = Form(default=None),
 ) -> Any:
@@ -152,28 +140,36 @@ async def predict(
         inputs = text
     else:
         raise HTTPException(400, "Either image or text must be provided")
-    outputs = defaultdict(lambda: defaultdict(dict))
+    response = await run_inference(inputs, entries)
+    return ORJSONResponse(response)
+
+
+async def run_inference(payload: Image | str, entries: InferenceEntries) -> None:
+    outputs = {}
+    response = defaultdict(lambda: defaultdict(dict))
+
+    async def _run_inference(entry: InferenceEntry) -> None:
+        model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)
+        inputs = [payload]
+        for dep in model.depends:
+            try:
+                inputs.append(outputs[dep])
+            except KeyError:
+                message = f"Task {entry['task']} of type {entry['type']} depends on output of {dep}"
+                raise HTTPException(400, message)
+        model = await load(model)
+        output = await run(model.predict, *inputs, **entry["options"])
+        outputs[model.identity] = output
+        response[entry["task"]] = output
+
     without_deps, with_deps = entries
-    await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in without_deps])
+    await asyncio.gather(*[_run_inference(entry) for entry in without_deps])
     if with_deps:
-        await asyncio.gather(*[run_inference(inputs, entry, outputs) for entry in with_deps])
-    if isinstance(inputs, Image):
-        outputs["imageHeight"], outputs["imageWidth"] = inputs.height, inputs.width
-    return ORJSONResponse(outputs)
+        await asyncio.gather(*[_run_inference(entry) for entry in with_deps])
+    if isinstance(payload, Image):
+        response["imageHeight"], response["imageWidth"] = payload.height, payload.width
 
-
-async def run_inference(payload: Image | str, entry: InferenceEntry, outputs: dict[str, Any]) -> None:
-    model = await model_cache.get(entry["model_name"], entry["model_type"], entry["model_task"], ttl=settings.model_ttl)
-    inputs = [payload]
-    for model_type in model.depends:
-        try:
-            inputs.append(outputs[entry["model_task"]][model_type])
-        except KeyError:
-            message = f"Task {entry['model_task']} of type {entry['model_type']} depends on output of type {model_type}"
-            raise HTTPException(400, message)
-    model = await load(model)
-    output = await run(model.predict, *inputs, **entry.get("options", {}))
-    outputs[entry["model_task"]][entry["model_type"]] = output
+    return response
 
 
 async def run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:

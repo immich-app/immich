@@ -7,13 +7,12 @@ from numpy.typing import NDArray
 
 from app.models.base import InferenceModel
 from app.models.transforms import decode_cv2
-from app.schemas import DetectedFaces, ModelSession, ModelTask, ModelType
+from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelSession, ModelTask, ModelType
 
 
 class FaceDetector(InferenceModel):
     depends = []
-    _model_task = ModelTask.FACIAL_RECOGNITION
-    _model_type = ModelType.DETECTION
+    identity = (ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
 
     def __init__(
         self,
@@ -32,12 +31,12 @@ class FaceDetector(InferenceModel):
 
         return session
 
-    def _predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> DetectedFaces:
+    def _predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> FaceDetectionOutput:
         inputs = decode_cv2(inputs)
 
         bboxes, landmarks = self._detect(inputs)
         return {
-            "boxes": np.ascontiguousarray(bboxes[:, :4].round()),
+            "boxes": np.ascontiguousarray(bboxes[:, :4]),
             "scores": np.ascontiguousarray(bboxes[:, 4]),
             "landmarks": landmarks,
         }

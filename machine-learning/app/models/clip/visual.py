@@ -16,8 +16,7 @@ from app.schemas import ModelSession, ModelTask, ModelType
 
 class BaseCLIPVisualEncoder(InferenceModel):
     depends = []
-    _model_task = ModelTask.SEARCH
-    _model_type = ModelType.VISUAL
+    identity = (ModelType.VISUAL, ModelTask.SEARCH)
 
     def _predict(self, inputs: Image.Image | bytes, **kwargs: Any) -> NDArray[np.float32]:
         image = decode_pil(inputs)

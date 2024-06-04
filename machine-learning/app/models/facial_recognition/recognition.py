@@ -9,15 +9,14 @@ from PIL import Image
 
 from app.config import clean_name
 from app.models.transforms import decode_cv2
-from app.schemas import DetectedFaces, ModelSession, ModelTask, ModelType
+from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelSession, ModelTask, ModelType
 
 from ..base import InferenceModel
 
 
 class FaceRecognizer(InferenceModel):
-    depends = [ModelType.DETECTION]
-    _model_task = ModelTask.FACIAL_RECOGNITION
-    _model_type = ModelType.RECOGNITION
+    depends = [(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)]
+    identity = (ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
 
     def __init__(
         self,
@@ -38,13 +37,23 @@ class FaceRecognizer(InferenceModel):
         return session
 
     def _predict(
-        self, inputs: NDArray[np.uint8] | bytes | Image.Image, faces: DetectedFaces, **kwargs: Any
-    ) -> NDArray[np.float32]:
+        self, inputs: NDArray[np.uint8] | bytes | Image.Image, faces: FaceDetectionOutput, **kwargs: Any
+    ) -> FacialRecognitionOutput:
         if faces["boxes"].shape[0] == 0:
-            return np.empty((0, 512), dtype=np.float32)
+            return []
         inputs = decode_cv2(inputs)
         embeddings: NDArray[np.float32] = self.model.get_feat(self._crop(inputs, faces))
-        return embeddings
+        return self.postprocess(faces, embeddings)
 
-    def _crop(self, image: NDArray[np.uint8], faces: DetectedFaces) -> list[NDArray[np.uint8]]:
-        return [norm_crop(image, faces["landmarks"][i]) for i in range(faces["boxes"].shape[0])]
+    def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
+        return [
+            {
+                "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+                "embedding": embedding,
+                "score": score,
+            }
+            for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"].round(), embeddings, faces["scores"])
+        ]
+
+    def _crop(self, image: NDArray[np.uint8], faces: FaceDetectionOutput) -> list[NDArray[np.uint8]]:
+        return [norm_crop(image, landmark) for landmark in faces["landmarks"]]

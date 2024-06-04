@@ -51,6 +51,9 @@ class ModelSource(StrEnum):
     OPENCLIP = "openclip"
 
 
+ModelIdentity = tuple[ModelType, ModelTask]
+
+
 class ModelSession(Protocol):
     def run(
         self,
@@ -64,10 +67,20 @@ class HasProfiling(Protocol):
     profiling: dict[str, float]
 
 
-class DetectedFaces(TypedDict):
+class FaceDetectionOutput(TypedDict):
     boxes: npt.NDArray[np.float32]
     scores: npt.NDArray[np.float32]
     landmarks: npt.NDArray[np.float32] | None
+
+
+class DetectedFace(TypedDict):
+    boundingBox: BoundingBox
+    embedding: npt.NDArray[np.float32]
+    score: float
+
+
+class FacialRecognitionOutput(TypedDict):
+    faces: list[DetectedFace]
 
 
 class PipelineEntry(TypedDict):
@@ -79,9 +92,9 @@ PipelineRequest = dict[ModelTask, dict[ModelType, PipelineEntry]]
 
 
 class InferenceEntry(TypedDict):
-    model_name: str
-    model_task: ModelTask
-    model_type: ModelType
+    name: str
+    task: ModelTask
+    type: ModelType
     options: dict[str, Any]
 
 

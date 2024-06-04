@@ -15,8 +15,7 @@ from app.schemas import ModelSession, ModelTask, ModelType
 
 class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
-    _model_task = ModelTask.SEARCH
-    _model_type = ModelType.TEXTUAL
+    identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
 
     def _predict(self, inputs: str, **kwargs: Any) -> NDArray[np.float32]:
         res: NDArray[np.float32] = self.session.run(None, self.tokenize(inputs))[0][0]
