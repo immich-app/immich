@@ -338,27 +338,25 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const response = await this.machineLearningRepository.detectFaces(
+    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
       asset.previewPath,
       machineLearning.facialRecognition,
     );
-    const { imageHeight, imageWidth, [ModelTask.FACIAL_RECOGNITION]: faces } = response;
 
-    this.logger.debug(`${faces.detection.boxes.length} faces detected in ${asset.previewPath}`);
+    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
 
-    if (faces.detection.boxes.length > 0) {
+    if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
-
-      const mappedFaces = zip(faces.detection.boxes, faces.recognition).map(([box, embedding]) => ({
+      const mappedFaces = faces.map((face) => ({
         assetId: asset.id,
-        embedding,
+        embedding: face.embedding,
         imageHeight,
         imageWidth,
-        boundingBoxX1: box![0],
-        boundingBoxY1: box![1],
-        boundingBoxX2: box![2],
-        boundingBoxY2: box![3],
+        boundingBoxX1: face.boundingBox.x1,
+        boundingBoxY1: face.boundingBox.y1,
+        boundingBoxX2: face.boundingBox.x2,
+        boundingBoxY2: face.boundingBox.y2,
       }));
 
       const faceIds = await this.repository.createFaces(mappedFaces);

@@ -34,24 +34,31 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.json();
   }
 
-  detectFaces(url: string, imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectFaces(url: string, imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, minScore },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
-    return this.predict<FacialRecognitionResponse>(url, { imagePath }, request);
+    const response = await this.predict<FacialRecognitionResponse>(url, { imagePath }, request);
+    return {
+      imageHeight: response.imageHeight,
+      imageWidth: response.imageWidth,
+      faces: response[ModelTask.FACIAL_RECOGNITION],
+    };
   }
 
-  encodeImage(url: string, imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(url: string, imagePath: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
-    return this.predict<ClipVisualResponse>(url, { imagePath }, request);
+    const response = await this.predict<ClipVisualResponse>(url, { imagePath }, request);
+    return response[ModelTask.SEARCH];
   }
 
-  encodeText(url: string, text: string, { modelName }: CLIPConfig) {
+  async encodeText(url: string, text: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName } } };
-    return this.predict<ClipTextualResponse>(url, { text }, request);
+    const response = await this.predict<ClipTextualResponse>(url, { text }, request);
+    return response[ModelTask.SEARCH];
   }
 
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {

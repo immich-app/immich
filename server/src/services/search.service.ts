@@ -102,12 +102,12 @@ export class SearchService {
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const response = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
+    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds, embedding: response.clip.textual },
+      { ...dto, userIds, embedding },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);

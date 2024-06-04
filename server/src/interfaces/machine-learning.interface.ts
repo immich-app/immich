@@ -1,5 +1,12 @@
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
+export interface BoundingBox {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
@@ -21,10 +28,10 @@ export type FaceDetectionOptions = ModelOptions & { minScore: number };
 
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
-export type ClipVisualResponse = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: number[] } } & VisualResponse;
+export type ClipVisualResponse = { [ModelTask.SEARCH]: number[] } & VisualResponse;
 
 export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
-export type ClipTextualResponse = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: number[] } };
+export type ClipTextualResponse = { [ModelTask.SEARCH]: number[] };
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
@@ -33,17 +40,18 @@ export type FacialRecognitionRequest = {
   };
 };
 
-export type Faces = {
-  [ModelType.DETECTION]: { scores: number[]; boxes: number[][]; landmarks: number[][] };
-  [ModelType.RECOGNITION]: number[][];
-};
+export interface Face {
+  boundingBox: BoundingBox;
+  embedding: number[];
+  score: number;
+}
 
-export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Faces } & VisualResponse;
-
+export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
+export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<ClipVisualResponse>;
-  encodeText(url: string, text: string, config: ModelOptions): Promise<ClipTextualResponse>;
-  detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<FacialRecognitionResponse>;
+  encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<number[]>;
+  encodeText(url: string, text: string, config: ModelOptions): Promise<number[]>;
+  detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
 }
