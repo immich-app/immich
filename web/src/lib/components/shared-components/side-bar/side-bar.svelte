@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { locale, sidebarSettings } from '$lib/stores/preferences.store';
+  import { sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAlbumCount, getAssetStatistics } from '@immich/sdk';
   import {
     mdiAccount,
     mdiAccountOutline,
@@ -22,21 +21,12 @@
     mdiToolbox,
     mdiToolboxOutline,
   } from '@mdi/js';
-  import LoadingSpinner from '../loading-spinner.svelte';
   import StatusBox from '../status-box.svelte';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
+  import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
+  import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
-
-  const getStats = (dto: Parameters<typeof getAssetStatistics>[0]) => getAssetStatistics(dto);
-
-  const handleAlbumCount = async () => {
-    try {
-      return await getAlbumCount();
-    } catch {
-      return { owned: 0, shared: 0, notShared: 0 };
-    }
-  };
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -57,14 +47,7 @@
       icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
     >
       <svelte:fragment slot="moreInformation">
-        {#await getStats({ isArchived: false })}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
-            <p>{data.images.toLocaleString($locale)} Photos</p>
-          </div>
-        {/await}
+        <MoreInformationAssets assetStats={{ isArchived: false }} />
       </svelte:fragment>
     </SideBarLink>
     {#if $featureFlags.search}
@@ -96,13 +79,7 @@
         bind:isSelected={isSharingSelected}
       >
         <svelte:fragment slot="moreInformation">
-          {#await handleAlbumCount()}
-            <LoadingSpinner />
-          {:then data}
-            <div>
-              <p>{data.shared.toLocaleString($locale)} {$t('albums')}</p>
-            </div>
-          {/await}
+          <MoreInformationAlbums albumCountType="shared" />
         </svelte:fragment>
       </SideBarLink>
     {/if}
@@ -118,25 +95,12 @@
       bind:isSelected={isFavoritesSelected}
     >
       <svelte:fragment slot="moreInformation">
-        {#await getStats({ isFavorite: true })}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
-            <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
-          </div>
-        {/await}
+        <MoreInformationAssets assetStats={{ isFavorite: true }} />
       </svelte:fragment>
     </SideBarLink>
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
-        {#await handleAlbumCount()}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.owned.toLocaleString($locale)} {$t('albums')}</p>
-          </div>
-        {/await}
+        <MoreInformationAlbums albumCountType="owned" />
       </svelte:fragment>
     </SideBarLink>
 
@@ -154,14 +118,7 @@
       icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
     >
       <svelte:fragment slot="moreInformation">
-        {#await getStats({ isArchived: true })}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
-            <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
-          </div>
-        {/await}
+        <MoreInformationAssets assetStats={{ isArchived: true }} />
       </svelte:fragment>
     </SideBarLink>
 
@@ -173,14 +130,7 @@
         icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}
       >
         <svelte:fragment slot="moreInformation">
-          {#await getStats({ isTrashed: true })}
-            <LoadingSpinner />
-          {:then data}
-            <div>
-              <p>{data.videos.toLocaleString($locale)} {$t('videos')}</p>
-              <p>{data.images.toLocaleString($locale)} {$t('photos')}</p>
-            </div>
-          {/await}
+          <MoreInformationAssets assetStats={{ isTrashed: true }} />
         </svelte:fragment>
       </SideBarLink>
     {/if}
