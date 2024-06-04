@@ -20,7 +20,7 @@ from .ann import AnnSession
 
 class InferenceModel(ABC):
     depends: ClassVar[list[ModelIdentity]]
-    identity = ClassVar[ModelIdentity]
+    identity: ClassVar[ModelIdentity]
 
     def __init__(
         self,
@@ -254,12 +254,12 @@ class InferenceModel(ABC):
 
     @property
     def preferred_format(self) -> ModelFormat:
-        return self._preferred_runtime
+        return self._preferred_format
 
     @preferred_format.setter
-    def preferred_format(self, preferred_runtime: ModelFormat) -> None:
-        log.debug(f"Setting preferred runtime to {preferred_runtime}")
-        self._preferred_runtime = preferred_runtime
+    def preferred_format(self, preferred_format: ModelFormat) -> None:
+        log.debug(f"Setting preferred format to {preferred_format}")
+        self._preferred_format = preferred_format
 
     @property
     def preferred_format_default(self) -> ModelFormat:

@@ -1,5 +1,6 @@
 from io import BytesIO
 from typing import IO
+
 import cv2
 import numpy as np
 from numpy.typing import NDArray
@@ -40,14 +41,14 @@ def get_pil_resampling(resample: str) -> Image.Resampling:
 
 
 def pil_to_cv2(image: Image.Image) -> NDArray[np.uint8]:
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
 
 def decode_pil(image_bytes: bytes | IO[bytes] | Image.Image) -> Image.Image:
     if isinstance(image_bytes, Image.Image):
         return image_bytes
     image = Image.open(BytesIO(image_bytes) if isinstance(image_bytes, bytes) else image_bytes)
-    image.load()
+    image.load()  # type: ignore
     if not image.mode == "RGB":
         image = image.convert("RGB")
     return image
@@ -58,4 +59,4 @@ def decode_cv2(image_bytes: NDArray[np.uint8] | bytes | Image.Image) -> NDArray[
         image_bytes = decode_pil(image_bytes)  # pillow is much faster than cv2
     if isinstance(image_bytes, Image.Image):
         return pil_to_cv2(image_bytes)
-    return image_bytes  # type: ignore
+    return image_bytes

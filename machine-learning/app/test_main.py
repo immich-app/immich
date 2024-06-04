@@ -7,8 +7,6 @@ from types import SimpleNamespace
 from typing import Any, Callable
 from unittest import mock
 
-from app.models.facial_recognition.detection import FaceDetector
-from app.models.facial_recognition.pipeline import FacialRecognitionPipeline
 import cv2
 import numpy as np
 import onnxruntime as ort
@@ -21,6 +19,7 @@ from pytest_mock import MockerFixture
 from app.main import load, preload_models
 from app.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from app.models.clip.visual import OpenClipVisualEncoder
+from app.models.facial_recognition.detection import FaceDetector
 from app.models.facial_recognition.recognition import FaceRecognizer
 
 from .config import Settings, log, settings
@@ -445,10 +444,10 @@ class TestFaceRecognition:
         faces = face_detector.predict(cv_image)
 
         assert isinstance(faces, dict)
-        assert "boxes" in faces and isinstance(faces["boxes"], np.ndarray)
-        assert "landmarks" in faces and isinstance(faces["landmarks"], np.ndarray)
-        assert "scores" in faces and isinstance(faces["scores"], np.ndarray)
-        assert np.equal(faces["boxes"], bbox).all()
+        assert isinstance(faces.get("boxes", None), np.ndarray)
+        assert isinstance(faces.get("landmarks", None), np.ndarray)
+        assert isinstance(faces.get("scores", None), np.ndarray)
+        assert np.equal(faces["boxes"], bbox.round()).all()
         assert np.equal(faces["landmarks"], kpss).all()
         assert np.equal(faces["scores"], scores).all()
         det_model.detect.assert_called_once()
@@ -459,7 +458,7 @@ class TestFaceRecognition:
 
         num_faces = 2
         bbox = np.random.rand(num_faces, 4).astype(np.float32)
-        scores = np.array([[0.67]] * num_faces).astype(np.float32)
+        scores = np.array([0.67] * num_faces).astype(np.float32)
         kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
         faces = {"boxes": bbox, "landmarks": kpss, "scores": scores}
 
@@ -468,54 +467,24 @@ class TestFaceRecognition:
         rec_model.get_feat.return_value = embedding
         face_recognizer.model = rec_model
 
-        out = face_recognizer.predict(cv_image, faces)
+        faces = face_recognizer.predict(cv_image, faces)
 
-        assert isinstance(out, np.ndarray)
-        assert np.equal(embedding, out).all()
+        assert isinstance(faces, list)
+        assert len(faces) == num_faces
+        for face in faces:
+            assert isinstance(face.get("boundingBox"), dict)
+            assert set(face["boundingBox"]) == {"x1", "y1", "x2", "y2"}
+            assert all(isinstance(val, np.float32) for val in face["boundingBox"].values())
+            assert isinstance(face.get("embedding"), np.ndarray)
+            assert face["embedding"].shape[0] == 512
+            assert isinstance(face.get("score", None), np.float32)
+
         rec_model.get_feat.assert_called_once()
         call_args = rec_model.get_feat.call_args_list[0].args
         assert len(call_args) == 1
         assert isinstance(call_args[0], list)
         assert isinstance(call_args[0][0], np.ndarray)
         assert call_args[0][0].shape == (112, 112, 3)
-
-    def test_pipeline(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
-        mocker.patch.object(FaceDetector, "load")
-        mocker.patch.object(FaceRecognizer, "load")
-        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
-        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
-
-        det_model = mock.Mock()
-        num_faces = 2
-        bbox = np.random.rand(num_faces, 4).astype(np.float32)
-        score = np.array([[0.67]] * num_faces).astype(np.float32)
-        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
-        det_model.detect.return_value = (np.concatenate([bbox, score], axis=-1), kpss)
-        face_detector.model = det_model
-
-        rec_model = mock.Mock()
-        embedding = np.random.rand(num_faces, 512).astype(np.float32)
-        rec_model.get_feat.return_value = embedding
-        face_recognizer.model = rec_model
-
-        pipeline = FacialRecognitionPipeline(face_detector, face_recognizer)
-
-        response = pipeline.predict(cv_image)
-
-        assert isinstance(response, dict)
-        assert "imageHeight" in response and isinstance(response["imageHeight"], int)
-        assert "imageWidth" in response and isinstance(response["imageWidth"], int)
-        assert "faces" in response and isinstance(response["faces"], list)
-        assert len(response["faces"]) == num_faces
-        for face in response["faces"]:
-            assert "boundingBox" in face and isinstance(face["boundingBox"], dict)
-            assert set(face["boundingBox"]) == {"x1", "y1", "x2", "y2"}
-            assert "embedding" in face and isinstance(face["embedding"], np.ndarray)
-            assert face["embedding"].shape[0] == 512
-            assert "score" in face and isinstance(face["score"], np.float32)
-
-        det_model.detect.assert_called_once()
-        rec_model.get_feat.assert_called_once()
 
 
 @pytest.mark.asyncio

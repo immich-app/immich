@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Protocol, TypeVar, TypedDict, TypeGuard
+from typing import Any, Protocol, TypedDict, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class StrEnum(str, Enum):
@@ -70,7 +70,7 @@ class HasProfiling(Protocol):
 class FaceDetectionOutput(TypedDict):
     boxes: npt.NDArray[np.float32]
     scores: npt.NDArray[np.float32]
-    landmarks: npt.NDArray[np.float32] | None
+    landmarks: npt.NDArray[np.float32]
 
 
 class DetectedFace(TypedDict):
@@ -79,8 +79,7 @@ class DetectedFace(TypedDict):
     score: float
 
 
-class FacialRecognitionOutput(TypedDict):
-    faces: list[DetectedFace]
+FacialRecognitionOutput = list[DetectedFace]
 
 
 class PipelineEntry(TypedDict):

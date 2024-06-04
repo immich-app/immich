@@ -1,37 +1,39 @@
 import asyncio
-from collections import defaultdict
 import gc
 import os
 import signal
 import threading
 import time
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from functools import partial
 from typing import Any, AsyncGenerator, Callable, Iterator
+from zipfile import BadZipFile
+
+import orjson
+from fastapi import Depends, FastAPI, File, Form, HTTPException
+from fastapi.responses import ORJSONResponse
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
+from PIL.Image import Image
+from pydantic import ValidationError
+from starlette.formparsers import MultiPartParser
 
 from app.models import get_model_deps
 from app.models.base import InferenceModel
 from app.models.transforms import decode_pil
-import orjson
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import ORJSONResponse
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
-from zipfile import BadZipFile
-from pydantic import ValidationError
-from starlette.formparsers import MultiPartParser
-from PIL.Image import Image
 
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
-    T,
     InferenceEntries,
     InferenceEntry,
     MessageResponse,
+    ModelIdentity,
     ModelTask,
     ModelType,
     PipelineRequest,
+    T,
     TextResponse,
 )
 
@@ -103,10 +105,16 @@ def update_state() -> Iterator[None]:
 def get_entries(entries: str = Form()) -> InferenceEntries:
     try:
         request: PipelineRequest = orjson.loads(entries)
-        without_deps, with_deps = [], []
+        without_deps: list[InferenceEntry] = []
+        with_deps: list[InferenceEntry] = []
         for task, types in request.items():
             for type, entry in types.items():
-                parsed = {"name": entry["modelName"], "task": task, "type": type, "options": entry.get("options", {})}
+                parsed: InferenceEntry = {
+                    "name": entry["modelName"],
+                    "task": task,
+                    "type": type,
+                    "options": entry.get("options", {}),
+                }
                 dep = get_model_deps(parsed["name"], type, task)
                 (with_deps if dep else without_deps).append(parsed)
         return without_deps, with_deps
@@ -135,7 +143,7 @@ async def predict(
     text: str | None = Form(default=None),
 ) -> Any:
     if image is not None:
-        inputs = await run(lambda: decode_pil(image))
+        inputs: Image | str = await run(lambda: decode_pil(image))
     elif text is not None:
         inputs = text
     else:
@@ -144,9 +152,9 @@ async def predict(
     return ORJSONResponse(response)
 
 
-async def run_inference(payload: Image | str, entries: InferenceEntries) -> None:
-    outputs = {}
-    response = defaultdict(lambda: defaultdict(dict))
+async def run_inference(payload: Image | str, entries: InferenceEntries) -> dict[ModelTask | str, Any]:
+    outputs: dict[ModelIdentity, Any] = {}
+    response: dict[ModelTask | str, Any] = defaultdict(lambda: defaultdict(dict))
 
     async def _run_inference(entry: InferenceEntry) -> None:
         model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)

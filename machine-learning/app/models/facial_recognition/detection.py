@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 
 from app.models.base import InferenceModel
 from app.models.transforms import decode_cv2
-from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelSession, ModelTask, ModelType
+from app.schemas import FaceDetectionOutput, ModelSession, ModelTask, ModelType
 
 
 class FaceDetector(InferenceModel):
@@ -36,8 +36,8 @@ class FaceDetector(InferenceModel):
 
         bboxes, landmarks = self._detect(inputs)
         return {
-            "boxes": np.ascontiguousarray(bboxes[:, :4]),
-            "scores": np.ascontiguousarray(bboxes[:, 4]),
+            "boxes": bboxes[:, :4].round(),
+            "scores": bboxes[:, 4].squeeze(),
             "landmarks": landmarks,
         }
 

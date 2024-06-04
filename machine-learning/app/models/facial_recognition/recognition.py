@@ -52,7 +52,7 @@ class FaceRecognizer(InferenceModel):
                 "embedding": embedding,
                 "score": score,
             }
-            for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"].round(), embeddings, faces["scores"])
+            for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"], embeddings, faces["scores"])
         ]
 
     def _crop(self, image: NDArray[np.uint8], faces: FaceDetectionOutput) -> list[NDArray[np.uint8]]:
