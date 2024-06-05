@@ -4,11 +4,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import rmtree
 from typing import Any, ClassVar
-from zipfile import BadZipFile
 
 import onnxruntime as ort
 from huggingface_hub import snapshot_download
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 
 import ann.ann
 from app.models.constants import SUPPORTED_PROVIDERS
