@@ -189,9 +189,8 @@
         <div>Let anyone with the link see the selected photo(s)</div>
       {:else}
         <div class="text-sm">
-          {$t('individual_share')} | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.description || ''}</span
-          >
+          {$t('individual_share')} |
+          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
         </div>
       {/if}
     {/if}

@@ -16,7 +16,12 @@
   {#if link?.album}
     <AlbumCover album={link.album} class={className} {preload} />
   {:else if link.assets[0]}
-    <AssetCover alt={$t('individual_share')} class={className} {preload} src={getAssetThumbnailUrl(link.assets[0].id)} />
+    <AssetCover
+      alt={$t('individual_share')}
+      class={className}
+      {preload}
+      src={getAssetThumbnailUrl(link.assets[0].id)}
+    />
   {:else}
     <NoCover alt={$t('unnamed_share')} class={className} {preload} />
   {/if}
