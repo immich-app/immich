@@ -209,7 +209,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {@const personName = face.person ? face.person?.name : 'Unassigned'}
+          {@const personName = face.person?.name == '' ? 'Unassigned' : face.person?.name}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div
               role="button"
@@ -289,7 +289,7 @@
                   {#if selectedPersonToReassign[face.id]?.id}
                     {selectedPersonToReassign[face.id]?.name}
                   {:else}
-                    {personName}
+                    <span class={personName == 'Unassigned' ? 'dark:text-gray-500' : ''}>{personName}</span>
                   {/if}
                 </p>
               {/if}

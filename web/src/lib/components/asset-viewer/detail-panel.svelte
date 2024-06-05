@@ -169,7 +169,13 @@
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
           {#if unassignedFaces.length > 0}
-            <Icon ariaLabel="Asset has unassigned faces" color="currentColor" path={mdiAccountOff} size="24" />
+            <Icon
+              ariaLabel="Asset has unassigned faces"
+              title="Asset has unassigned faces"
+              color="currentColor"
+              path={mdiAccountOff}
+              size="24"
+            />
           {/if}
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
