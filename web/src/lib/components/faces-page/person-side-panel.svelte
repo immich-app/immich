@@ -209,7 +209,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {@const personName = face.person?.name == '' ? 'Unassigned' : face.person?.name}
+          {@const personName = face.person ? face.person?.name : 'Unassigned'}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div
               role="button"
