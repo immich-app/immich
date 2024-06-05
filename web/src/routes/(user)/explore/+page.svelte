@@ -104,6 +104,6 @@
   {/if}
 
   {#if !hasPeople && places.length === 0}
-    <EmptyPlaceholder text={$t('no_explore_results_message')} slot="empty" />
+    <EmptyPlaceholder text={$t('no_explore_results_message')} />
   {/if}
 </UserPageLayout>
