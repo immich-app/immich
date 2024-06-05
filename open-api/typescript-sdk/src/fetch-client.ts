@@ -194,6 +194,7 @@ export type AssetResponseDto = {
     tags?: TagResponseDto[];
     thumbhash: string | null;
     "type": AssetTypeEnum;
+    unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
 };
 export type AlbumResponseDto = {
