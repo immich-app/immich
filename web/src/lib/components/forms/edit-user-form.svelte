@@ -9,6 +9,7 @@
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let user: UserAdminResponseDto;
   export let canResetPassword = true;
@@ -47,7 +48,7 @@
 
       dispatch('editSuccess');
     } catch (error) {
-      handleError(error, 'Unable to update user');
+      handleError(error, $t('errors.unable_to_update_user'));
     }
   };
 
@@ -74,7 +75,7 @@
 
       dispatch('resetPasswordSuccess');
     } catch (error) {
-      handleError(error, 'Unable to reset password');
+      handleError(error, $t('errors.unable_to_reset_password'));
     }
   };
 
@@ -96,15 +97,15 @@
   }
 </script>
 
-<FullScreenModal title="Edit user" icon={mdiAccountEditOutline} {onClose}>
+<FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
   <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="email">Email</label>
+      <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="name">Name</label>
+      <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
@@ -119,7 +120,7 @@
     </div>
 
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="storage-label">Storage Label</label>
+      <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
       <input
         class="immich-form-input"
         id="storage-label"
@@ -146,8 +147,8 @@
   </form>
   <svelte:fragment slot="sticky-bottom">
     {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
+      <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
     {/if}
-    <Button type="submit" fullwidth form="edit-user-form">Confirm</Button>
+    <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
   </svelte:fragment>
 </FullScreenModal>

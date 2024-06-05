@@ -18,6 +18,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -34,11 +35,11 @@
     <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <ButtonContextMenu icon={mdiPlus} title="Add to...">
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <ButtonContextMenu icon={mdiDotsVertical} title="Menu">
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
@@ -50,6 +51,6 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" slot="empty" />
+    <EmptyPlaceholder text={$t('no_favorites_message')} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

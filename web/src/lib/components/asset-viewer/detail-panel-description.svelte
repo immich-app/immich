@@ -6,6 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let isOwner: boolean;
@@ -20,7 +21,7 @@
         message: 'Asset description has been updated',
       });
     } catch (error) {
-      handleError(error, 'Cannot update the description');
+      handleError(error, $t('cannot_update_the_description'));
     }
     description = newDescription;
   };
@@ -32,7 +33,7 @@
       content={description}
       class="max-h-[500px] w-full border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
       onContentUpdate={handleFocusOut}
-      placeholder="Add a description"
+      placeholder={$t('add_a_description')}
     />
   </section>
 {:else if description}

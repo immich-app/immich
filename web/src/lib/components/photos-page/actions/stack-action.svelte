@@ -4,6 +4,7 @@
   import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { stackAssets, unstackAssets } from '$lib/utils/asset-utils';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
+  import { t } from 'svelte-i18n';
 
   export let unstack = false;
   export let onStack: OnStack | undefined;
@@ -39,7 +40,7 @@
 </script>
 
 {#if unstack}
-  <MenuOption text="Un-stack" icon={mdiImageMinusOutline} on:click={handleUnstack} />
+  <MenuOption text={$t('un-stack')} icon={mdiImageMinusOutline} on:click={handleUnstack} />
 {:else}
-  <MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />
+  <MenuOption text={$t('stack')} icon={mdiImageMultipleOutline} on:click={handleStack} />
 {/if}

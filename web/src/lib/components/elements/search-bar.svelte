@@ -4,6 +4,7 @@
   import type { SearchOptions } from '$lib/utils/dipatch';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let name: string;
   export let roundedBottom = true;
@@ -34,7 +35,7 @@
 >
   <CircleIconButton
     icon={mdiMagnify}
-    title="Search"
+    title={$t('search')}
     size="16"
     padding="2"
     on:click={() => dispatch('search', { force: true })}
@@ -54,6 +55,6 @@
     </div>
   {/if}
   {#if name}
-    <CircleIconButton icon={mdiClose} title="Clear value" size="16" padding="2" on:click={resetSearch} />
+    <CircleIconButton icon={mdiClose} title={$t('clear_value')} size="16" padding="2" on:click={resetSearch} />
   {/if}
 </div>

@@ -18,6 +18,7 @@
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let showUploadButton = true;
 
@@ -42,7 +43,7 @@
 <svelte:window bind:innerWidth />
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
-  <SkipLink>Skip to content</SkipLink>
+  <SkipLink>{$t('skip_to_content')}</SkipLink>
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
@@ -59,7 +60,7 @@
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
         {#if $featureFlags.search}
           <a href={AppRoute.SEARCH} id="search-button" class="ml-4 sm:hidden">
-            <CircleIconButton title="Go to search" icon={mdiMagnify} />
+            <CircleIconButton title={$t('go_to_search')} icon={mdiMagnify} />
           </a>
         {/if}
 
@@ -70,7 +71,7 @@
             <LinkButton on:click={() => dispatch('uploadClicked')}>
               <div class="flex gap-2">
                 <Icon path={mdiTrayArrowUp} size="1.5em" />
-                <span class="hidden md:block">Upload</span>
+                <span class="hidden md:block">{$t('upload')}</span>
               </div>
             </LinkButton>
           </div>
@@ -80,7 +81,7 @@
           <a
             data-sveltekit-preload-data="hover"
             href={AppRoute.ADMIN_USER_MANAGEMENT}
-            aria-label="Administration"
+            aria-label={$t('administration')}
             aria-current={$page.url.pathname.includes('/admin') ? 'page' : null}
           >
             <div

@@ -13,6 +13,7 @@
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -29,7 +30,7 @@
   {#if $isMultiSelectState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={clearMultiselect}>
       <CreateSharedLink />
-      <ButtonContextMenu icon={mdiPlus} title="Add">
+      <ButtonContextMenu icon={mdiPlus} title={$t('add')}>
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>

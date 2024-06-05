@@ -8,6 +8,7 @@
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { sortBy } from 'lodash-es';
+  import { t } from 'svelte-i18n';
 
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -67,7 +68,7 @@
           <div
             class={`absolute bottom-2 right-3 ${isSelected ? 'bg-green-400/90' : 'bg-red-300/90'} px-4 py-1 rounded-xl text-xs font-semibold`}
           >
-            {isSelected ? 'Keep' : 'Trash'}
+            {isSelected ? $t('keep') : $t('trash')}
           </div>
 
           <!-- EXTERNAL LIBRARY CHIP-->
@@ -125,7 +126,7 @@
     {:else}
       <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
         ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
-          ? 'Trash All'
+          ? $t('trash_all')
           : `Trash ${trashCount}`}
       </Button>
     {/if}

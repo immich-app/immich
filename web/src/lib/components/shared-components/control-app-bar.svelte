@@ -6,6 +6,7 @@
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
   import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
 
   export let showBackButton = true;
   export let backIcon = mdiClose;
@@ -59,7 +60,7 @@
   >
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton title="Close" on:click={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
+        <CircleIconButton title={$t('close')} on:click={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
       {/if}
       <slot name="leading" />
     </div>

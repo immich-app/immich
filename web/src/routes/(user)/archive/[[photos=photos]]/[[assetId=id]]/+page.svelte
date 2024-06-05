@@ -16,6 +16,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -31,12 +32,12 @@
     <ArchiveAction unarchive onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <ButtonContextMenu icon={mdiPlus} title="Add to...">
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
     <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <ButtonContextMenu icon={mdiDotsVertical} title="Add">
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
       <DownloadAction menuItem />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
@@ -45,6 +46,6 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
-    <EmptyPlaceholder text="Archive photos and videos to hide them from your Photos view" slot="empty" />
+    <EmptyPlaceholder text={$t('no_archived_assets_message')} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

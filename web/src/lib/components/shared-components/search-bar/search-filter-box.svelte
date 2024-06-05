@@ -34,6 +34,7 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
   import SearchTextSection from './search-text-section.svelte';
+  import { t } from 'svelte-i18n';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
 
@@ -153,8 +154,8 @@
       id="button-row"
       class="flex justify-end gap-4 border-t dark:border-gray-800 dark:bg-immich-dark-gray px-4 sm:py-6 py-4 mt-2 rounded-b-3xl"
     >
-      <Button type="reset" color="gray">Clear all</Button>
-      <Button type="submit">Search</Button>
+      <Button type="reset" color="gray">{$t('clear_all')}</Button>
+      <Button type="submit">{$t('search')}</Button>
     </div>
   </form>
 </div>

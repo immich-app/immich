@@ -9,6 +9,7 @@
   import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
   import { requestServerInfo } from '$lib/utils/auth';
+  import { t } from 'svelte-i18n';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -52,7 +53,7 @@
       <Icon path={mdiChartPie} size="24" />
     </div>
     <div class="hidden group-hover:sm:block md:block">
-      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
+      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">{$t('storage')}</p>
       {#if $serverInfo}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
@@ -76,20 +77,20 @@
       <Icon path={mdiDns} size="26" />
     </div>
     <div class="hidden text-xs group-hover:sm:block md:block">
-      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
+      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">{$t('server')}</p>
 
       <div class="mt-2 flex justify-between justify-items-center">
-        <p>Status</p>
+        <p>{$t('status')}</p>
 
         {#if $connected}
-          <p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
+          <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('online')}</p>
         {:else}
-          <p class="font-medium text-red-500">Offline</p>
+          <p class="font-medium text-red-500">{$t('offline')}</p>
         {/if}
       </div>
 
       <div class="mt-2 flex justify-between justify-items-center">
-        <p>Version</p>
+        <p>{$t('version')}</p>
         {#if $connected && version}
           <a
             href="https://github.com/immich-app/immich/releases"
@@ -99,7 +100,7 @@
             {version}
           </a>
         {:else}
-          <p class="font-medium text-red-500">Unknown</p>
+          <p class="font-medium text-red-500">{$t('unknown')}</p>
         {/if}
       </div>
     </div>

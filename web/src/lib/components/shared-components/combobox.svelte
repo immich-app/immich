@@ -21,6 +21,7 @@
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import { t } from 'svelte-i18n';
 
   export let label: string;
   export let hideLabel = false;
@@ -183,7 +184,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <CircleIconButton on:click={onClear} title="Clear value" icon={mdiClose} size="16" padding="2" />
+        <CircleIconButton on:click={onClear} title={$t('clear_value')} icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}

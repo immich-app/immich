@@ -16,6 +16,17 @@ class MemoryUpdate {
   enabled?: boolean;
 }
 
+class EmailNotificationsUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  albumInvite?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  albumUpdate?: boolean;
+}
+
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
@@ -26,6 +37,11 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => MemoryUpdate)
   memories?: MemoryUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => EmailNotificationsUpdate)
+  emailNotifications?: EmailNotificationsUpdate;
 }
 
 class AvatarResponse {
@@ -37,9 +53,16 @@ class MemoryResponse {
   enabled!: boolean;
 }
 
+class EmailNotificationsResponse {
+  enabled!: boolean;
+  albumInvite!: boolean;
+  albumUpdate!: boolean;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
+  emailNotifications!: EmailNotificationsResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {

@@ -10,6 +10,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let library: LibraryResponseDto;
 
@@ -149,8 +150,8 @@
 
 {#if addImportPath}
   <LibraryImportPathForm
-    title="Add import path"
-    submitText="Add"
+    title={$t('add_import_path')}
+    submitText={$t('add')}
     bind:importPath={importPathToAdd}
     {importPaths}
     on:submit={handleAddImportPath}
@@ -163,8 +164,8 @@
 
 {#if editImportPath != undefined}
   <LibraryImportPathForm
-    title="Edit import path"
-    submitText="Save"
+    title={$t('edit_import_path')}
+    submitText={$t('save')}
     isEditing={true}
     bind:importPath={editedImportPath}
     {importPaths}
@@ -210,7 +211,7 @@
             <CircleIconButton
               color="primary"
               icon={mdiPencilOutline}
-              title="Edit import path"
+              title={$t('edit_import_path')}
               size="16"
               on:click={() => {
                 editImportPath = listIndex;
@@ -238,7 +239,7 @@
             size="sm"
             on:click={() => {
               addImportPath = true;
-            }}>Add path</Button
+            }}>{$t('add_path')}</Button
           ></td
         >
       </tr>
@@ -246,11 +247,13 @@
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
+      <Button size="sm" color="gray" on:click={() => revalidate()}
+        ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
+      >
     </div>
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-      <Button size="sm" type="submit">Save</Button>
+      <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button size="sm" type="submit">{$t('save')}</Button>
     </div>
   </div>
 </form>

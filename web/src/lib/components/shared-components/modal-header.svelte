@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { mdiClose } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   /**
    * Unique identifier for the header text.
@@ -32,5 +33,5 @@
     </h1>
   </div>
 
-  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title="Close" />
+  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
 </div>

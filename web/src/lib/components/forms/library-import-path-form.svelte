@@ -4,12 +4,13 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   export let importPath: string | null;
   export let importPaths: string[] = [];
-  export let title = 'Import path';
-  export let cancelText = 'Cancel';
-  export let submitText = 'Save';
+  export let title = $t('import_path');
+  export let cancelText = $t('cancel');
+  export let submitText = $t('save');
   export let isEditing = false;
 
   onMount(() => {
@@ -37,7 +38,7 @@
     </p>
 
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="path">Path</label>
+      <label class="immich-form-label" for="path">{$t('path')}</label>
       <input class="immich-form-input" id="path" name="path" type="text" bind:value={importPath} />
     </div>
 
@@ -50,7 +51,7 @@
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+      <Button color="red" fullwidth on:click={() => dispatch('delete')}>{$t('delete')}</Button>
     {/if}
     <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
   </svelte:fragment>

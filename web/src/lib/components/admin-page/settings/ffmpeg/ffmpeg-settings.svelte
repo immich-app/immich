@@ -22,6 +22,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -42,7 +43,7 @@
             >H.264 codec</a
           >,
           <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer"
-            >HEVC codec</a
+            >{$t('admin.transcoding_hevc_codec')}</a
           >
           and
           <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer"
@@ -53,17 +54,17 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
-          label="CONSTANT RATE FACTOR (-crf)"
-          desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, 31 for VP9, and 35 for AV1. Lower is better, but produces larger files."
+          label={$t('admin.transcoding_constant_rate_factor')}
+          desc={$t('admin.transcoding_constant_rate_factor_description')}
           bind:value={config.ffmpeg.crf}
           required={true}
           isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
         />
 
         <SettingSelect
-          label="PRESET (-preset)"
+          label={$t('admin.transcoding_preset_preset')}
           {disabled}
-          desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above faster."
+          desc={$t('admin.transcoding_preset_preset_description')}
           bind:value={config.ffmpeg.preset}
           name="preset"
           options={[
@@ -81,9 +82,9 @@
         />
 
         <SettingSelect
-          label="AUDIO CODEC"
+          label={$t('admin.transcoding_audio_codec').toUpperCase()}
           {disabled}
-          desc="Opus is the highest quality option, but has lower compatibility with old devices or software."
+          desc={$t('admin.transcoding_audio_codec_description')}
           bind:value={config.ffmpeg.targetAudioCodec}
           options={[
             { value: AudioCodec.Aac, text: 'aac' },
@@ -99,9 +100,9 @@
         />
 
         <SettingCheckboxes
-          label="ACCEPTED AUDIO CODECS"
+          label={$t('admin.transcoding_accepted_audio_codecs').toUpperCase()}
           {disabled}
-          desc="Select which audio codecs do not need to be transcoded. Only used for certain transcode policies."
+          desc={$t('admin.transcoding_accepted_audio_codecs_description')}
           bind:value={config.ffmpeg.acceptedAudioCodecs}
           name="audioCodecs"
           options={[
@@ -113,9 +114,9 @@
         />
 
         <SettingSelect
-          label="VIDEO CODEC"
+          label={$t('admin.transcoding_video_codec').toUpperCase()}
           {disabled}
-          desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files. AV1 is the most efficient codec but lacks support on older devices."
+          desc={$t('admin.transcoding_video_codec_description')}
           bind:value={config.ffmpeg.targetVideoCodec}
           options={[
             { value: VideoCodec.H264, text: 'h264' },
@@ -129,9 +130,9 @@
         />
 
         <SettingCheckboxes
-          label="ACCEPTED VIDEO CODECS"
+          label={$t('admin.transcoding_accepted_video_codecs').toUpperCase()}
           {disabled}
-          desc="Select which video codecs do not need to be transcoded. Only used for certain transcode policies."
+          desc={$t('admin.transcoding_accepted_video_codecs_description')}
           bind:value={config.ffmpeg.acceptedVideoCodecs}
           name="videoCodecs"
           options={[
@@ -144,9 +145,9 @@
         />
 
         <SettingSelect
-          label="TARGET RESOLUTION"
+          label={$t('admin.transcoding_target_resolution').toUpperCase()}
           {disabled}
-          desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
+          desc={$t('admin.transcoding_target_resolution_description')}
           bind:value={config.ffmpeg.targetResolution}
           options={[
             { value: '2160', text: '4k' },
@@ -163,8 +164,8 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           {disabled}
-          label="MAX BITRATE"
-          desc="Setting a max bitrate can make file sizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
+          label={$t('admin.transcoding_max_bitrate').toUpperCase()}
+          desc={$t('admin.transcoding_max_bitrate_description')}
           bind:value={config.ffmpeg.maxBitrate}
           isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
         />
@@ -172,44 +173,44 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
-          label="THREADS"
-          desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0."
+          label={$t('admin.transcoding_threads').toUpperCase()}
+          desc={$t('admin.transcoding_threads_description')}
           bind:value={config.ffmpeg.threads}
           isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
         />
 
         <SettingSelect
-          label="TRANSCODE POLICY"
+          label={$t('admin.transcoding_transcode_policy').toUpperCase()}
           {disabled}
-          desc="Policy for when a video should be transcoded. HDR videos will always be transcoded (except if transcoding is disabled)."
+          desc={$t('admin.transcoding_transcode_policy_description')}
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
             { value: TranscodePolicy.All, text: 'All videos' },
             {
               value: TranscodePolicy.Optimal,
-              text: 'Videos higher than target resolution or not in an accepted format',
+              text: $t('admin.transcoding_optimal_description'),
             },
             {
               value: TranscodePolicy.Bitrate,
-              text: 'Videos higher than max bitrate or not in an accepted format',
+              text: $t('admin.transcoding_bitrate_description'),
             },
             {
               value: TranscodePolicy.Required,
-              text: 'Only videos not in an accepted format',
+              text: $t('admin.transcoding_required_description'),
             },
             {
               value: TranscodePolicy.Disabled,
-              text: "Don't transcode any videos, may break playback on some clients",
+              text: $t('admin.transcoding_disabled_description'),
             },
           ]}
           isEdited={config.ffmpeg.transcode !== savedConfig.ffmpeg.transcode}
         />
 
         <SettingSelect
-          label="TONE-MAPPING"
+          label={$t('admin.transcoding_tone_mapping').toUpperCase()}
           {disabled}
-          desc="Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness."
+          desc={$t('admin.transcoding_tone_mapping_description')}
           bind:value={config.ffmpeg.tonemap}
           name="tonemap"
           options={[
@@ -234,58 +235,58 @@
         />
 
         <SettingSwitch
-          title="TWO-PASS ENCODING"
+          title={$t('admin.transcoding_two_pass_encoding').toUpperCase()}
           {disabled}
-          subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
+          subtitle={$t('admin.transcoding_two_pass_encoding_setting_description')}
           bind:checked={config.ffmpeg.twoPass}
           isEdited={config.ffmpeg.twoPass !== savedConfig.ffmpeg.twoPass}
         />
 
         <SettingAccordion
           key="hardware-acceleration"
-          title="Hardware Acceleration"
-          subtitle="Experimental; much faster, but will have lower quality at the same bitrate"
+          title={$t('admin.transcoding_hardware_acceleration')}
+          subtitle={$t('admin.transcoding_hardware_acceleration_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSelect
-              label="ACCELERATION API"
+              label={$t('admin.transcoding_acceleration_api').toUpperCase()}
               {disabled}
-              desc="The API that will interact with your device to accelerate transcoding. This setting is 'best effort': it will fallback to software transcoding on failure. VP9 may or may not work depending on your hardware."
+              desc={$t('admin.transcoding_acceleration_api_description')}
               bind:value={config.ffmpeg.accel}
               name="accel"
               options={[
-                { value: TranscodeHWAccel.Nvenc, text: 'NVENC (requires NVIDIA GPU)' },
+                { value: TranscodeHWAccel.Nvenc, text: $t('admin.transcoding_acceleration_nvenc') },
                 {
                   value: TranscodeHWAccel.Qsv,
-                  text: 'Quick Sync (requires 7th gen Intel CPU or later)',
+                  text: $t('admin.transcoding_acceleration_qsv'),
                 },
                 {
                   value: TranscodeHWAccel.Vaapi,
-                  text: 'VAAPI',
+                  text: $t('admin.transcoding_acceleration_vaapi'),
                 },
                 {
                   value: TranscodeHWAccel.Rkmpp,
-                  text: 'RKMPP (only on Rockchip SOCs)',
+                  text: $t('admin.transcoding_acceleration_rkmpp'),
                 },
                 {
                   value: TranscodeHWAccel.Disabled,
-                  text: 'Disabled',
+                  text: $t('disabled'),
                 },
               ]}
               isEdited={config.ffmpeg.accel !== savedConfig.ffmpeg.accel}
             />
 
             <SettingSwitch
-              title="HARDWARE DECODING"
+              title={$t('admin.transcoding_hardware_decoding').toUpperCase()}
               {disabled}
-              subtitle="Applies only to NVENC and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos."
+              subtitle={$t('admin.transcoding_hardware_decoding_setting_description')}
               bind:checked={config.ffmpeg.accelDecode}
               isEdited={config.ffmpeg.accelDecode !== savedConfig.ffmpeg.accelDecode}
             />
 
             <SettingSelect
-              label="CONSTANT QUALITY MODE"
-              desc="ICQ is better than CQP, but some hardware acceleration devices do not support this mode. Setting this option will prefer the specified mode when using quality-based encoding. Ignored by NVENC as it does not support ICQ."
+              label={$t('admin.transcoding_constant_quality_mode').toUpperCase()}
+              desc={$t('admin.transcoding_constant_quality_mode_description')}
               bind:value={config.ffmpeg.cqMode}
               options={[
                 { value: CQMode.Auto, text: 'Auto' },
@@ -297,17 +298,17 @@
             />
 
             <SettingSwitch
-              title="TEMPORAL AQ"
+              title={$t('admin.transcoding_temporal_aq').toUpperCase()}
               {disabled}
-              subtitle="Applies only to NVENC. Increases quality of high-detail, low-motion scenes. May not be compatible with older devices."
+              subtitle={$t('admin.transcoding_temporal_aq_description')}
               bind:checked={config.ffmpeg.temporalAQ}
               isEdited={config.ffmpeg.temporalAQ !== savedConfig.ffmpeg.temporalAQ}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="PREFERRED HARDWARE DEVICE"
-              desc="Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding."
+              label={$t('admin.transcoding_preferred_hardware_device').toUpperCase()}
+              desc={$t('admin.transcoding_preferred_hardware_device_description')}
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
               {disabled}
@@ -317,14 +318,14 @@
 
         <SettingAccordion
           key="advanced-options"
-          title="Advanced"
-          subtitle="Options most users should not need to change"
+          title={$t('advanced')}
+          subtitle={$t('admin.transcoding_advanced_options_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="TONE-MAPPING NPL"
-              desc="Colors will be adjusted to look normal for a display of this brightness. Counter-intuitively, lower values increase the brightness of the video and vice versa since it compensates for the brightness of the display. 0 sets this value automatically."
+              label={$t('admin.transcoding_tone_mapping_npl').toUpperCase()}
+              desc={$t('admin.transcoding_tone_mapping_npl_description')}
               bind:value={config.ffmpeg.npl}
               isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
               {disabled}
@@ -332,8 +333,8 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="MAX B-FRAMES"
-              desc="Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically."
+              label={$t('admin.transcoding_max_b_frames').toUpperCase()}
+              desc={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
               {disabled}
@@ -341,8 +342,8 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="REFERENCE FRAMES"
-              desc="The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically."
+              label={$t('admin.transcoding_reference_frames').toUpperCase()}
+              desc={$t('admin.transcoding_reference_frames_description')}
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
               {disabled}
@@ -350,8 +351,8 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="MAX KEYFRAME INTERVAL"
-              desc="Sets the maximum frame distance between keyframes. Lower values worsen compression efficiency, but improve seek times and may improve quality in scenes with fast movement. 0 sets this value automatically."
+              label={$t('admin.transcoding_max_keyframe_interval').toUpperCase()}
+              desc={$t('admin.transcoding_max_keyframe_interval_description')}
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
               {disabled}
