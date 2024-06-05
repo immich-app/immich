@@ -19,8 +19,6 @@ export class AssetUploadInterceptor implements NestInterceptor {
     const response = await this.service.getUploadAssetIdByChecksum(req.user, checksum);
     if (response) {
       res.status(200);
-      // Returning the response body wrapped in an Observable will cause nestjs
-      // to use it, and skip all downstream request processing.
       return of({ status: AssetMediaStatus.DUPLICATE, id: response.id });
     }
 
