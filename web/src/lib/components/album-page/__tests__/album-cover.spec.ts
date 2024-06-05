@@ -2,10 +2,17 @@ import AlbumCover from '$lib/components/album-page/album-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
 import type { AlbumResponseDto } from '@immich/sdk';
 import { render } from '@testing-library/svelte';
+import { init, register, waitLocale } from 'svelte-i18n';
 
 vi.mock('$lib/utils');
 
 describe('AlbumCover component', () => {
+  beforeAll(async () => {
+    await init({ fallbackLocale: 'en-US' });
+    register('en-US', () => import('$lib/i18n/en-US.json'));
+    await waitLocale('en-US');
+  });
+
   it('renders an image when the album has a thumbnail', () => {
     vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
     const component = render(AlbumCover, {

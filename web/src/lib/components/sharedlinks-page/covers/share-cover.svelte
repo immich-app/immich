@@ -4,6 +4,7 @@
   import NoCover from '$lib/components/sharedlinks-page/covers/no-cover.svelte';
   import AssetCover from '$lib/components/sharedlinks-page/covers/asset-cover.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let link: SharedLinkResponseDto;
   export let preload = false;
@@ -15,8 +16,8 @@
   {#if link?.album}
     <AlbumCover album={link.album} class={className} {preload} />
   {:else if link.assets[0]}
-    <AssetCover alt="Individual Share" class={className} {preload} src={getAssetThumbnailUrl(link.assets[0].id)} />
+    <AssetCover alt={$t('individual_share')} class={className} {preload} src={getAssetThumbnailUrl(link.assets[0].id)} />
   {:else}
-    <NoCover alt="Unnamed Share" class={className} {preload} />
+    <NoCover alt={$t('unnamed_share')} class={className} {preload} />
   {/if}
 </div>

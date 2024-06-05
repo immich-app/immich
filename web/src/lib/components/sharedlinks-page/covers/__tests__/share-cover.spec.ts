@@ -2,10 +2,17 @@ import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svel
 import { getAssetThumbnailUrl } from '$lib/utils';
 import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
 import { render } from '@testing-library/svelte';
+import { init, register, waitLocale } from 'svelte-i18n';
 
 vi.mock('$lib/utils');
 
 describe('ShareCover component', () => {
+  beforeAll(async () => {
+    await init({ fallbackLocale: 'en-US' });
+    register('en-US', () => import('$lib/i18n/en-US.json'));
+    await waitLocale('en-US');
+  });
+
   it('renders an image when the shared link is an album', () => {
     const component = render(ShareCover, {
       link: {
@@ -36,7 +43,7 @@ describe('ShareCover component', () => {
       class: 'text',
     });
     const img = component.getByTestId('album-image') as HTMLImageElement;
-    expect(img.alt).toBe('Individual Share');
+    expect(img.alt).toBe('Individual share');
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.className).toBe('z-0 rounded-xl object-cover text');
     expect(img.getAttribute('src')).toBe('/asdf');
