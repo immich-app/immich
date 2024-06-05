@@ -51,20 +51,9 @@ class InferenceModel(ABC):
         if self.loaded:
             return
 
-        try:
-            self.download()
-            log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
-            self.session = self._load()
-        except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
-            log.warning(
-                (
-                    f"Failed to load {self.model_type.replace('_', ' ')} model '{self.model_name}'."
-                    "Clearing cache and retrying."
-                )
-            )
-            self.clear_cache()
-            self.download()
-            self.session = self._load()
+        self.download()
+        log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
+        self.session = self._load()
         self.loaded = True
 
     def predict(self, *inputs: Any, **model_kwargs: Any) -> Any:
