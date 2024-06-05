@@ -2,7 +2,7 @@
   import Button from '$lib/ui/Button.svelte';
   import { Template } from '@storybook/addon-svelte-csf';
   export const meta = {
-    title: 'Button',
+    title: 'Components/Buttons/Button',
     component: Button,
   };
 </script>
