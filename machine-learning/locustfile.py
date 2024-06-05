@@ -85,24 +85,3 @@ class RecognitionFormDataLoadTest(InferenceLoadTest):
         files = {"image": self.data}
 
         self.client.post("/predict", data=data, files=files)
-
-
-# class UnifiedFormDataLoadTest(InferenceLoadTest):
-#     @task
-#     def unified(self) -> None:
-#         request = {
-#             "clip": {"visual": {"modelName": self.environment.parsed_options.clip_model}},
-#             "facial-recognition": {
-#                 "recognition": {
-#                     "modelName": self.environment.parsed_options.face_model,
-#                     "options": {"minScore": self.environment.parsed_options.face_min_score},
-#                 },
-#                 "detection": {
-#                     "modelName": self.environment.parsed_options.face_model,
-#                 },
-#             },
-#         }
-#         data = [("entries", json.dumps(request))]
-#         files = {"image": self.data}
-
-#         self.client.post("/predict", data=data, files=files)
