@@ -1,15 +1,13 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AssetJobName, AssetStatsResponseDto, UploadFieldName } from 'src/dtos/asset.dto';
+import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
@@ -19,19 +17,15 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
-
-const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
 const stats: AssetStats = {
   [AssetType.IMAGE]: 10,
@@ -46,123 +40,16 @@ const statResponse: AssetStatsResponseDto = {
   total: 33,
 };
 
-const uploadFile = {
-  nullAuth: {
-    auth: null,
-    fieldName: UploadFieldName.ASSET_DATA,
-    file: {
-      uuid: 'random-uuid',
-      checksum: Buffer.from('checksum', 'utf8'),
-      originalPath: 'upload/admin/image.jpeg',
-      originalName: 'image.jpeg',
-      size: 1000,
-    },
-  },
-  filename: (fieldName: UploadFieldName, filename: string) => {
-    return {
-      auth: authStub.admin,
-      fieldName,
-      file: {
-        uuid: 'random-uuid',
-        mimeType: 'image/jpeg',
-        checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: `upload/admin/${filename}`,
-        originalName: filename,
-        size: 1000,
-      },
-    };
-  },
-};
-
-const validImages = [
-  '.3fr',
-  '.ari',
-  '.arw',
-  '.avif',
-  '.cap',
-  '.cin',
-  '.cr2',
-  '.cr3',
-  '.crw',
-  '.dcr',
-  '.dng',
-  '.erf',
-  '.fff',
-  '.gif',
-  '.heic',
-  '.heif',
-  '.iiq',
-  '.jpeg',
-  '.jpg',
-  '.jxl',
-  '.k25',
-  '.kdc',
-  '.mrw',
-  '.nef',
-  '.orf',
-  '.ori',
-  '.pef',
-  '.png',
-  '.psd',
-  '.raf',
-  '.raw',
-  '.rwl',
-  '.sr2',
-  '.srf',
-  '.srw',
-  '.svg',
-  '.tiff',
-  '.webp',
-  '.x3f',
-];
-
-const validVideos = ['.3gp', '.avi', '.flv', '.m2ts', '.mkv', '.mov', '.mp4', '.mpg', '.mts', '.webm', '.wmv'];
-
-const uploadTests = [
-  {
-    label: 'asset images',
-    fieldName: UploadFieldName.ASSET_DATA,
-    valid: validImages,
-    invalid: ['.html', '.xml'],
-  },
-  {
-    label: 'asset videos',
-    fieldName: UploadFieldName.ASSET_DATA,
-    valid: validVideos,
-    invalid: ['.html', '.xml'],
-  },
-  {
-    label: 'live photo',
-    fieldName: UploadFieldName.LIVE_PHOTO_DATA,
-    valid: validVideos,
-    invalid: ['.html', '.jpeg', '.jpg', '.xml'],
-  },
-  {
-    label: 'sidecar',
-    fieldName: UploadFieldName.SIDECAR_DATA,
-    valid: ['.xmp'],
-    invalid: ['.html', '.jpeg', '.jpg', '.mov', '.mp4', '.xml'],
-  },
-  {
-    label: 'profile',
-    fieldName: UploadFieldName.PROFILE_DATA,
-    valid: ['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp'],
-    invalid: ['.arf', '.cr2', '.html', '.mov', '.mp4', '.xml'],
-  },
-];
-
 describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
-  let albumMock: Mocked<IAlbumRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
@@ -180,12 +67,10 @@ describe(AssetService.name, () => {
     assetMock = newAssetRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
-    storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
-    albumMock = newAlbumRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
     sut = new AssetService(
@@ -193,146 +78,14 @@ describe(AssetService.name, () => {
       assetMock,
       jobMock,
       systemMock,
-      storageMock,
       userMock,
       eventMock,
       partnerMock,
       assetStackMock,
-      albumMock,
       loggerMock,
     );
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
-  });
-
-  describe('getUploadAssetIdByChecksum', () => {
-    it('should handle a non-existent asset', async () => {
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
-      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
-    });
-
-    it('should find an existing asset', async () => {
-      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
-        id: 'asset-id',
-        duplicate: true,
-      });
-      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
-    });
-
-    it('should find an existing asset by base64', async () => {
-      assetMock.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
-        id: 'asset-id',
-        duplicate: true,
-      });
-      expect(assetMock.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
-    });
-  });
-
-  describe('canUpload', () => {
-    it('should require an authenticated user', () => {
-      expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
-    for (const { fieldName, valid, invalid } of uploadTests) {
-      describe(fieldName, () => {
-        for (const filetype of valid) {
-          it(`should accept ${filetype}`, () => {
-            expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
-          });
-        }
-
-        for (const filetype of invalid) {
-          it(`should reject ${filetype}`, () => {
-            expect(() => sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toThrowError(
-              BadRequestException,
-            );
-          });
-        }
-
-        it('should be sorted (valid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(valid).toEqual([...valid].sort());
-        });
-
-        it('should be sorted (invalid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(invalid).toEqual([...invalid].sort());
-        });
-      });
-    }
-  });
-
-  describe('getUploadFilename', () => {
-    it('should require authentication', () => {
-      expect(() => sut.getUploadFilename(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
-    it('should be the original extension for asset upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'random-uuid.jpg',
-      );
-    });
-
-    it('should be the mov extension for live photo upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.LIVE_PHOTO_DATA, 'image.mp4'))).toEqual(
-        'random-uuid.mov',
-      );
-    });
-
-    it('should be the xmp extension for sidecar upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.SIDECAR_DATA, 'image.html'))).toEqual(
-        'random-uuid.xmp',
-      );
-    });
-
-    it('should be the original extension for profile upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'random-uuid.jpg',
-      );
-    });
-  });
-
-  describe('getUploadFolder', () => {
-    it('should require authentication', () => {
-      expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
-    it('should return profile for profile uploads', () => {
-      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'upload/profile/admin_id',
-      );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
-    });
-
-    it('should return upload for everything else', () => {
-      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id/ra/nd',
-      );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
-    });
-  });
-
-  describe('getMapMarkers', () => {
-    it('should get geo information of assets', async () => {
-      const asset = assetStub.withLocation;
-      const marker = {
-        id: asset.id,
-        lat: asset.exifInfo!.latitude!,
-        lon: asset.exifInfo!.longitude!,
-        city: asset.exifInfo!.city,
-        state: asset.exifInfo!.state,
-        country: asset.exifInfo!.country,
-      };
-      partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getMapMarkers.mockResolvedValue([marker]);
-
-      const markers = await sut.getMapMarkers(authStub.user1, {});
-
-      expect(markers).toHaveLength(1);
-      expect(markers[0]).toEqual(marker);
-    });
   });
 
   describe('getMemoryLane', () => {

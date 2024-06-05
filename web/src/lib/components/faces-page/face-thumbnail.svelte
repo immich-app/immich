@@ -21,6 +21,7 @@
 </script>
 
 <button
+  type="button"
   class="relative rounded-lg transition-all"
   on:click={handleOnClicked}
   disabled={!selectable}

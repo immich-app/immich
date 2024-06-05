@@ -1,23 +1,23 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
   export let onClose: () => void;
 
   let error: string;
   let success: string;
-  let isShowResetPasswordConfirmation = false;
   let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
 
   const previousQutoa = user.quotaSizeInBytes;
@@ -36,9 +36,9 @@
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel } = user;
-      await updateUser({
-        updateUserDto: {
-          id,
+      await updateUserAdmin({
+        id,
+        userAdminUpdateDto: {
           email,
           name,
           storageLabel: storageLabel || '',
@@ -48,17 +48,26 @@
 
       dispatch('editSuccess');
     } catch (error) {
-      handleError(error, 'Unable to update user');
+      handleError(error, $t('errors.unable_to_update_user'));
     }
   };
 
   const resetPassword = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'confirm-reset-password',
+      prompt: `Are you sure you want to reset ${user.name}'s password?`,
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       newPassword = generatePassword();
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
+      await updateUserAdmin({
+        id: user.id,
+        userAdminUpdateDto: {
           password: newPassword,
           shouldChangePassword: true,
         },
@@ -66,9 +75,7 @@
 
       dispatch('resetPasswordSuccess');
     } catch (error) {
-      handleError(error, 'Unable to reset password');
-    } finally {
-      isShowResetPasswordConfirmation = false;
+      handleError(error, $t('errors.unable_to_reset_password'));
     }
   };
 
@@ -90,15 +97,15 @@
   }
 </script>
 
-<FullScreenModal id="edit-user-modal" title="Edit user" icon={mdiAccountEditOutline} {onClose}>
+<FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
   <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="email">Email</label>
+      <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="name">Name</label>
+      <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
@@ -113,7 +120,7 @@
     </div>
 
     <div class="my-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="storage-label">Storage Label</label>
+      <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
       <input
         class="immich-form-input"
         id="storage-label"
@@ -140,26 +147,8 @@
   </form>
   <svelte:fragment slot="sticky-bottom">
     {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
-        >Reset password</Button
-      >
+      <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
     {/if}
-    <Button type="submit" fullwidth form="edit-user-form">Confirm</Button>
+    <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
   </svelte:fragment>
 </FullScreenModal>
-
-{#if isShowResetPasswordConfirmation}
-  <ConfirmDialogue
-    id="reset-password-modal"
-    title="Reset password"
-    confirmText="Reset"
-    onConfirm={resetPassword}
-    onClose={() => (isShowResetPasswordConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>
-        Are you sure you want to reset <b>{user.name}</b>'s password?
-      </p>
-    </svelte:fragment>
-  </ConfirmDialogue>
-{/if}

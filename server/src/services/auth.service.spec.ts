@@ -138,6 +138,7 @@ describe('AuthService', () => {
         email: 'test@immich.com',
         password: 'hash-password',
       } as UserEntity);
+      userMock.update.mockResolvedValue(userStub.user1);
 
       await sut.changePassword(auth, dto);
 

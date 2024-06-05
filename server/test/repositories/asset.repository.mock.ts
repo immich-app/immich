@@ -31,7 +31,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     update: vitest.fn(),
     remove: vitest.fn(),
     findLivePhotoMatch: vitest.fn(),
-    getMapMarkers: vitest.fn(),
     getStatistics: vitest.fn(),
     getTimeBucket: vitest.fn(),
     getTimeBuckets: vitest.fn(),

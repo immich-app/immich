@@ -7,6 +7,7 @@
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -24,7 +25,7 @@
 
 <svelte:window bind:innerHeight />
 
-<UserPageLayout title="Places">
+<UserPageLayout title={$t('places')}>
   {#if hasPlaces}
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.id)}
@@ -47,7 +48,7 @@
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiMapMarkerOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium">No places</p>
+        <p class="mt-5 text-3xl font-medium">{$t('no_places')}</p>
       </div>
     </div>
   {/if}

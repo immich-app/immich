@@ -7,6 +7,7 @@
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
+  import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -47,13 +48,13 @@
 
   const getTitle = () => {
     if (shared) {
-      return 'Add to shared album';
+      return $t('add_to_shared_album');
     }
-    return 'Add to album';
+    return $t('add_to_album');
   };
 </script>
 
-<FullScreenModal id="album-selection-modal" title={getTitle()} {onClose}>
+<FullScreenModal title={getTitle()} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
@@ -71,12 +72,13 @@
     {:else}
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
-        placeholder="Search"
+        placeholder={$t('search')}
         bind:value={search}
         use:initInput
       />
       <div class="immich-scrollbar overflow-y-auto">
         <button
+          type="button"
           on:click={handleNew}
           class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
@@ -89,7 +91,7 @@
         </button>
         {#if filteredAlbums.length > 0}
           {#if !shared && search.length === 0}
-            <p class="px-5 py-3 text-xs">RECENT</p>
+            <p class="px-5 py-3 text-xs">{$t('recent').toUpperCase()}</p>
             {#each recentAlbums as album (album.id)}
               <AlbumListItem {album} on:album={() => handleSelect(album)} />
             {/each}

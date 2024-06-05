@@ -13,7 +13,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ActivityService } from 'src/services/activity.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Activity')
+@ApiTags('Activities')
 @Controller('activities')
 export class ActivityController {
   constructor(private service: ActivityService) {}

@@ -27,6 +27,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { photoViewer } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
@@ -67,7 +68,7 @@
       allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
-      handleError(error, "Can't get faces");
+      handleError(error, $t('cant_get_faces'));
     } finally {
       clearTimeout(timeout);
     }
@@ -145,7 +146,7 @@
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, "Can't apply changes");
+        handleError(error, $t('cant_apply_changes'));
       }
     }
 
@@ -184,11 +185,12 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <CircleIconButton icon={mdiArrowLeftThin} title="Back" on:click={handleBackButton} />
-      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
       <button
+        type="button"
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
       >

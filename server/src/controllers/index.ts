@@ -3,7 +3,6 @@ import { AlbumController } from 'src/controllers/album.controller';
 import { APIKeyController } from 'src/controllers/api-key.controller';
 import { AppController } from 'src/controllers/app.controller';
 import { AssetMediaController } from 'src/controllers/asset-media.controller';
-import { AssetControllerV1 } from 'src/controllers/asset-v1.controller';
 import { AssetController } from 'src/controllers/asset.controller';
 import { AuditController } from 'src/controllers/audit.controller';
 import { AuthController } from 'src/controllers/auth.controller';
@@ -13,6 +12,7 @@ import { FaceController } from 'src/controllers/face.controller';
 import { ReportController } from 'src/controllers/file-report.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
+import { MapController } from 'src/controllers/map.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
 import { OAuthController } from 'src/controllers/oauth.controller';
 import { PartnerController } from 'src/controllers/partner.controller';
@@ -27,6 +27,7 @@ import { SystemMetadataController } from 'src/controllers/system-metadata.contro
 import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
+import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 
 export const controllers = [
@@ -35,7 +36,6 @@ export const controllers = [
   AlbumController,
   AppController,
   AssetController,
-  AssetControllerV1,
   AssetMediaController,
   AuditController,
   AuthController,
@@ -44,6 +44,7 @@ export const controllers = [
   FaceController,
   JobController,
   LibraryController,
+  MapController,
   MemoryController,
   OAuthController,
   PartnerController,
@@ -59,5 +60,6 @@ export const controllers = [
   TagController,
   TimelineController,
   TrashController,
+  UserAdminController,
   UserController,
 ];

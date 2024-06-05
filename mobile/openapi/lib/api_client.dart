@@ -238,8 +238,6 @@ class ApiClient {
           return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFaceWithoutPersonResponseDto':
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
-        case 'AssetFileUploadResponseDto':
-          return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetFullSyncDto':
           return AssetFullSyncDto.fromJson(value);
         case 'AssetIdsDto':
@@ -252,6 +250,8 @@ class ApiClient {
           return AssetJobsDto.fromJson(value);
         case 'AssetMediaResponseDto':
           return AssetMediaResponseDto.fromJson(value);
+        case 'AssetMediaSize':
+          return AssetMediaSizeTypeTransformer().decode(value);
         case 'AssetMediaStatus':
           return AssetMediaStatusTypeTransformer().decode(value);
         case 'AssetOrder':
@@ -266,6 +266,10 @@ class ApiClient {
           return AudioCodecTypeTransformer().decode(value);
         case 'AuditDeletesResponseDto':
           return AuditDeletesResponseDto.fromJson(value);
+        case 'AvatarResponse':
+          return AvatarResponse.fromJson(value);
+        case 'AvatarUpdate':
+          return AvatarUpdate.fromJson(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -292,10 +296,6 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
           return CreateTagDto.fromJson(value);
-        case 'CreateUserDto':
-          return CreateUserDto.fromJson(value);
-        case 'DeleteUserDto':
-          return DeleteUserDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -306,6 +306,10 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EmailNotificationsResponse':
+          return EmailNotificationsResponse.fromJson(value);
+        case 'EmailNotificationsUpdate':
+          return EmailNotificationsUpdate.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
@@ -356,10 +360,14 @@ class ApiClient {
           return MemoryCreateDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MemoryResponse':
+          return MemoryResponse.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemoryType':
           return MemoryTypeTypeTransformer().decode(value);
+        case 'MemoryUpdate':
+          return MemoryUpdate.fromJson(value);
         case 'MemoryUpdateDto':
           return MemoryUpdateDto.fromJson(value);
         case 'MergePersonDto':
@@ -510,8 +518,6 @@ class ApiClient {
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
           return TagTypeEnumTypeTransformer().decode(value);
-        case 'ThumbnailFormat':
-          return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':
@@ -536,18 +542,28 @@ class ApiClient {
           return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
-        case 'UpdateUserDto':
-          return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
+        case 'UserAdminCreateDto':
+          return UserAdminCreateDto.fromJson(value);
+        case 'UserAdminDeleteDto':
+          return UserAdminDeleteDto.fromJson(value);
+        case 'UserAdminResponseDto':
+          return UserAdminResponseDto.fromJson(value);
+        case 'UserAdminUpdateDto':
+          return UserAdminUpdateDto.fromJson(value);
         case 'UserAvatarColor':
           return UserAvatarColorTypeTransformer().decode(value);
-        case 'UserDto':
-          return UserDto.fromJson(value);
+        case 'UserPreferencesResponseDto':
+          return UserPreferencesResponseDto.fromJson(value);
+        case 'UserPreferencesUpdateDto':
+          return UserPreferencesUpdateDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'UserStatus':
           return UserStatusTypeTransformer().decode(value);
+        case 'UserUpdateMeDto':
+          return UserUpdateMeDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
         case 'ValidateLibraryDto':

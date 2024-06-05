@@ -10,13 +10,14 @@
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onArchive: OnArchive;
 
   export let menuItem = false;
   export let unarchive = false;
 
-  $: text = unarchive ? 'Unarchive' : 'Archive';
+  $: text = unarchive ? $t('unarchive') : $t('archive');
   $: icon = unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline;
 
   let loading = false;
@@ -42,7 +43,7 @@
       onArchive(ids, isArchived);
 
       notificationController.show({
-        message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
+        message: `${isArchived ? $t('archived') : $t('unarchived')} ${ids.length}`,
         type: NotificationType.Info,
       });
 
@@ -61,7 +62,7 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
   {:else}
     <CircleIconButton title={text} {icon} on:click={handleArchive} />
   {/if}

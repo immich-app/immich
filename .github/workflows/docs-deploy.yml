@@ -1,0 +1,189 @@
+name: Docs deploy
+on:
+  workflow_run:
+    workflows: ["Docs build"]
+    types:
+      - completed
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    outputs:
+      parameters: ${{ steps.parameters.outputs.result }}
+    steps:
+      - if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        run: echo 'The triggering workflow failed' && exit 1
+
+      - name: Determine deploy parameters
+        id: parameters
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventType = context.payload.workflow_run.event;
+            const isFork = context.payload.workflow_run.repository.fork;
+
+            let parameters;
+
+            console.log({eventType, isFork});
+
+            if (eventType == "push") {
+              const branch = context.payload.workflow_run.head_branch;
+              console.log({branch});
+              const shouldDeploy = !isFork && branch == "main";
+              parameters = {
+                event: "branch",
+                name: "main",
+                shouldDeploy
+              };
+            } else if (eventType == "pull_request") {
+              let pull_number = context.payload.workflow_run.pull_requests[0]?.number;
+              if(!pull_number) {
+                const response = await github.rest.search.issuesAndPullRequests({q: 'repo:${{ github.repository }} is:pr sha:${{ github.event.workflow_run.head_sha }}',per_page: 1,})
+                const items = response.data.items
+                if (items.length < 1) {
+                  throw new Error("No pull request found for the commit")
+                }
+                const pullRequestNumber = items[0].number
+                console.info("Pull request number is", pullRequestNumber)
+                pull_number = pullRequestNumber
+              }
+              const {data: pr} = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number
+              });
+
+              console.log({pull_number});
+
+              parameters = {
+                event: "pr",
+                name: `pr-${pull_number}`,
+                pr_number: pull_number,
+                shouldDeploy: true
+              };
+            } else if (eventType == "release") {
+              parameters = {
+                event: "release",
+                name: context.payload.workflow_run.head_branch,
+                shouldDeploy: !isFork
+              };
+            }
+
+            console.log(parameters);
+            return parameters;
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: checks
+    if: ${{ fromJson(needs.checks.outputs.parameters).shouldDeploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load parameters
+        id: parameters
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const json = `${{ needs.checks.outputs.parameters }}`;
+            const parameters = JSON.parse(json);
+            core.setOutput("event", parameters.event);
+            core.setOutput("name", parameters.name);
+            core.setOutput("shouldDeploy", parameters.shouldDeploy);
+
+      - run: |
+          echo "Starting docs deployment for ${{ steps.parameters.outputs.event }} ${{ steps.parameters.outputs.name }}"
+
+      - name: Download artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "docs-build-output"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/docs-build-output.zip`, Buffer.from(download.data));
+
+      - name: Unzip artifact
+        run: unzip "${{ github.workspace }}/docs-build-output.zip" -d "${{ github.workspace }}/docs/build"
+
+      - name: Deploy Docs Subdomain
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          TF_VAR_prefix_event_type: ${{ steps.parameters.outputs.event }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: "0.58.12"
+          tofu_version: "1.7.1"
+          tg_dir: "deployment/modules/cloudflare/docs"
+          tg_command: "apply"
+
+      - name: Deploy Docs Subdomain Output
+        id: docs-output
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          TF_VAR_prefix_event_type: ${{ steps.parameters.outputs.event }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: "0.58.12"
+          tofu_version: "1.7.1"
+          tg_dir: "deployment/modules/cloudflare/docs"
+          tg_command: "output -json"
+
+      - name: Output Cleaning
+        id: clean
+        run: |
+          TG_OUT=$(echo '${{ steps.docs-output.outputs.tg_action_output }}' | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
+          echo "output=$TG_OUT" >> $GITHUB_OUTPUT
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ fromJson(steps.clean.outputs.output).pages_project_name.value }}
+          workingDirectory: "docs"
+          directory: "build"
+          branch: ${{ steps.parameters.outputs.name }}
+          wranglerVersion: '3'
+
+      - name: Deploy Docs Release Domain
+        if: ${{ steps.parameters.outputs.event == 'release' }}
+        env:
+          TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_version: '0.58.12'
+          tofu_version: '1.7.1'
+          tg_dir: 'deployment/modules/cloudflare/docs-release'
+          tg_command: 'apply'
+
+      - name: Comment
+        uses: actions-cool/maintain-one-comment@v3
+        if: ${{ steps.parameters.outputs.event == 'pr' }}
+        with:
+          number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}
+          body: |
+            📖 Documentation deployed to [${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }}](https://${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }})
+          emojis: 'rocket'
+          body-include: '<!-- Docs PR URL -->'

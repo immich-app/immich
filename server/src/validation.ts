@@ -154,7 +154,7 @@ export function validateCronExpression(expression: string) {
 
 type IValue = { value: string };
 
-export const toEmail = ({ value }: IValue) => value?.toLowerCase();
+export const toEmail = ({ value }: IValue) => (value ? value.toLowerCase() : value);
 
 export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
 

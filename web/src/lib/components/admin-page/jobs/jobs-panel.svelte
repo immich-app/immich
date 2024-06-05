@@ -20,9 +20,10 @@
     mdiVideo,
   } from '@mdi/js';
   import type { ComponentType } from 'svelte';
-  import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -38,61 +39,60 @@
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
-  let confirmJob: JobName | null = null;
-
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
-      confirmJob = jobId;
+      const isConfirmed = await dialogController.show({
+        id: 'confirm-reprocess-all-faces',
+        prompt: 'Are you sure you want to reprocess all faces? This will also clear named people.',
+      });
+
+      if (isConfirmed) {
+        await handleCommand(jobId, { command: JobCommand.Start, force: true });
+        return;
+      }
+
       return;
     }
 
     await handleCommand(jobId, dto);
   };
 
-  const onConfirm = async () => {
-    if (!confirmJob) {
-      return;
-    }
-    await handleCommand(confirmJob, { command: JobCommand.Start, force: true });
-    confirmJob = null;
-  };
-
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
+      subtitle: $t('thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
+      subtitle: $t('metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: 'Perform library tasks',
-      allText: 'ALL',
-      missingText: 'REFRESH',
+      subtitle: $t('perform_library_tasks'),
+      allText: $t('all').toUpperCase(),
+      missingText: $t('refresh').toUpperCase(),
     },
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
-      allText: 'SYNC',
-      missingText: 'DISCOVER',
+      subtitle: $t('sidecar_job_description'),
+      allText: $t('sync').toUpperCase(),
+      missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: 'Run machine learning on assets to support smart search',
+      subtitle: $t('smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      subtitle: $t('duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -114,7 +114,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
+      subtitle: $t('video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
@@ -125,7 +125,7 @@
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
+      subtitle: $t('migration_job_description'),
       allowForceCommand: false,
     },
   };
@@ -152,15 +152,6 @@
   }
 </script>
 
-{#if confirmJob}
-  <ConfirmDialogue
-    id="reprocess-faces-modal"
-    prompt="Are you sure you want to reprocess all faces? This will also clear named people."
-    {onConfirm}
-    onClose={() => (confirmJob = null)}
-  />
-{/if}
-
 <div class="flex flex-col gap-7">
   {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
@@ -169,8 +160,8 @@
       {title}
       {disabled}
       {subtitle}
-      allText={allText || 'ALL'}
-      missingText={missingText || 'MISSING'}
+      allText={allText || $t('all').toUpperCase()}
+      missingText={missingText || $t('missing').toUpperCase()}
       {allowForceCommand}
       {jobCounts}
       {queueStatus}

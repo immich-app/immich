@@ -16,6 +16,7 @@
 
 <th class="text-sm font-medium {option.columnStyle}">
   <button
+    type="button"
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
     on:click={handleSort}
   >

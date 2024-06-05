@@ -2,9 +2,9 @@ import {
   addAssetsToAlbum,
   AlbumResponseDto,
   AlbumUserRole,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   AssetOrder,
-  deleteUser,
+  deleteUserAdmin,
   getAlbumInfo,
   LoginResponseDto,
   SharedLinkType,
@@ -26,8 +26,8 @@ const user2NotShared = 'user2NotShared';
 describe('/albums', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
-  let user1Asset1: AssetFileUploadResponseDto;
-  let user1Asset2: AssetFileUploadResponseDto;
+  let user1Asset1: AssetMediaResponseDto;
+  let user1Asset2: AssetMediaResponseDto;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
@@ -107,7 +107,7 @@ describe('/albums', () => {
       }),
     ]);
 
-    await deleteUser({ id: user3.userId, deleteUserDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    await deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
   describe('GET /albums', () => {

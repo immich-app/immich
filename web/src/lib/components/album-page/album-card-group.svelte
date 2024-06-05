@@ -30,6 +30,7 @@
 {#if group}
   <div class="grid">
     <button
+      type="button"
       on:click={() => toggleAlbumGroupCollapsing(group.id)}
       class="w-fit mt-2 pt-2 pr-2 mb-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}

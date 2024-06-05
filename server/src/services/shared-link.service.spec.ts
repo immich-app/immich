@@ -271,7 +271,7 @@ describe(SharedLinkService.name, () => {
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
         imageUrl:
-          '/api/asset/thumbnail/asset-id?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
+          '/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
         title: 'Public Share',
       });
       expect(shareMock.get).toHaveBeenCalled();

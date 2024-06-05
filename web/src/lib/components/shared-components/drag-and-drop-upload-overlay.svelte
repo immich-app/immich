@@ -5,6 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import { t } from 'svelte-i18n';
 
   $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
   $: isShare = isSharedLinkRoute($page.route?.id);
@@ -12,7 +13,7 @@
   let dragStartTarget: EventTarget | null = null;
 
   const onDragEnter = (e: DragEvent) => {
-    if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+    if (e.dataTransfer && e.dataTransfer.types.includes($t('files'))) {
       dragStartTarget = e.target;
     }
   };

@@ -12,6 +12,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -26,9 +27,8 @@
     <form autocomplete="off" on:submit|preventDefault class="mx-4 mt-4">
       <div class="flex flex-col gap-4">
         <SettingSwitch
-          id="enable-machine-learning"
-          title="ENABLED"
-          subtitle="If disabled, all ML features will be disabled regardless of the below settings."
+          title={$t('enabled').toUpperCase()}
+          subtitle={$t('admin.machine_learning_enabled_description')}
           {disabled}
           bind:checked={config.machineLearning.enabled}
         />
@@ -37,8 +37,8 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="URL"
-          desc="URL of the machine learning server"
+          label={$t('url').toUpperCase()}
+          desc={$t('admin.machine_learning_url_description')}
           bind:value={config.machineLearning.url}
           required={true}
           disabled={disabled || !config.machineLearning.enabled}
@@ -48,14 +48,13 @@
 
       <SettingAccordion
         key="smart-search"
-        title="Smart Search"
-        subtitle="Search for images semantically using CLIP embeddings"
+        title={$t('admin.machine_learning_smart_search')}
+        subtitle={$t('admin.machine_learning_smart_search_description')}
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            id="enable-clip"
-            title="ENABLED"
-            subtitle="If disabled, images will not be encoded for smart search."
+            title={$t('enabled').toUpperCase()}
+            subtitle={$t('admin.machine_learning_smart_search_enabled_description')}
             bind:checked={config.machineLearning.clip.enabled}
             disabled={disabled || !config.machineLearning.enabled}
           />
@@ -64,7 +63,7 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
-            label="CLIP MODEL"
+            label={$t('admin.machine_learning_clip_model').toUpperCase()}
             bind:value={config.machineLearning.clip.modelName}
             required={true}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
@@ -80,14 +79,13 @@
 
       <SettingAccordion
         key="duplicate-detection"
-        title="Duplicate Detection"
-        subtitle="Use CLIP embeddings to find likely duplicates"
+        title={$t('admin.machine_learning_duplicate_detection')}
+        subtitle={$t('admin.machine_learning_duplicate_detection_setting_description')}
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            id="enable-duplicate-detection"
-            title="ENABLED"
-            subtitle="If disabled, exactly identical assets will still be de-duplicated."
+            title={$t('enabled').toUpperCase()}
+            subtitle={$t('admin.machine_learning_duplicate_detection_enabled_description')}
             bind:checked={config.machineLearning.duplicateDetection.enabled}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
           />
@@ -96,13 +94,13 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label="MAX DETECTION DISTANCE"
+            label={$t('admin.machine_learning_max_detection_distance').toUpperCase()}
             bind:value={config.machineLearning.duplicateDetection.maxDistance}
-            step="0.01"
+            step="0.0005"
             min={0.001}
             max={0.1}
-            desc="Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives."
-            disabled={disabled || $featureFlags.duplicateDetection}
+            desc={$t('admin.machine_learning_max_detection_distance_description')}
+            disabled={disabled || !$featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
           />
@@ -111,14 +109,13 @@
 
       <SettingAccordion
         key="facial-recognition"
-        title="Facial Recognition"
-        subtitle="Detect, recognize and group faces in images"
+        title={$t('admin.machine_learning_facial_recognition')}
+        subtitle={$t('admin.machine_learning_facial_recognition_description')}
       >
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            id="enable-facial-recognition"
-            title="ENABLED"
-            subtitle="If disabled, images will not be encoded for facial recognition and will not populate the People section in the Explore page."
+            title={$t('enabled').toUpperCase()}
+            subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}
             bind:checked={config.machineLearning.facialRecognition.enabled}
             disabled={disabled || !config.machineLearning.enabled}
           />
@@ -126,8 +123,8 @@
           <hr />
 
           <SettingSelect
-            label="FACIAL RECOGNITION MODEL"
-            desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model."
+            label={$t('admin.machine_learning_facial_recognition_model').toUpperCase()}
+            desc={$t('admin.machine_learning_facial_recognition_model_description')}
             name="facial-recognition-model"
             bind:value={config.machineLearning.facialRecognition.modelName}
             options={[
@@ -143,8 +140,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label="MIN DETECTION SCORE"
-            desc="Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives."
+            label={$t('admin.machine_learning_min_detection_score').toUpperCase()}
+            desc={$t('admin.machine_learning_min_detection_score_description')}
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
             min={0}
@@ -156,8 +153,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label="MAX RECOGNITION DISTANCE"
-            desc="Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible."
+            label={$t('admin.machine_learning_max_recognition_distance').toUpperCase()}
+            desc={$t('admin.machine_learning_max_recognition_distance_description')}
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
             min={0}
@@ -169,8 +166,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label="MIN RECOGNIZED FACES"
-            desc="The minimum number of recognized faces for a person to be created. Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person."
+            label={$t('admin.machine_learning_min_recognized_faces').toUpperCase()}
+            desc={$t('admin.machine_learning_min_recognized_faces_description')}
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
             min={1}

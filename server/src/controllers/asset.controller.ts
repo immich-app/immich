@@ -12,23 +12,17 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
+import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Asset')
+@ApiTags('Assets')
 @Controller(Route.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}
-
-  @Get('map-marker')
-  @Authenticated()
-  getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.service.getMapMarkers(auth, options);
-  }
 
   @Get('memory-lane')
   @Authenticated()

@@ -4,7 +4,7 @@ import { AllJobStatusResponseDto, JobCommandDto, JobIdParamDto, JobStatusDto } f
 import { Authenticated } from 'src/middleware/auth.guard';
 import { JobService } from 'src/services/job.service';
 
-@ApiTags('Job')
+@ApiTags('Jobs')
 @Controller('jobs')
 export class JobController {
   constructor(private service: JobService) {}

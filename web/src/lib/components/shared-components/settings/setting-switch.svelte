@@ -3,13 +3,15 @@
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
+  import { generateId } from '$lib/utils/generate-id';
 
-  export let id: string;
   export let title: string;
   export let subtitle = '';
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
+
+  let id: string = generateId();
 
   $: sliderId = `${id}-slider`;
   $: subtitleId = subtitle ? `${id}-subtitle` : undefined;

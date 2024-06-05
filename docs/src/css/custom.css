@@ -15,6 +15,10 @@ button {
   font-family: 'Overpass', sans-serif;
 }
 
+img {
+  border-radius: 15px;
+}
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #4250af;
@@ -42,7 +46,7 @@ button {
 }
 
 div[class^='announcementBar_'] {
-  height: 2rem;
+  min-height: 2rem;
 }
 
 .navbar__brand .navbar__title {

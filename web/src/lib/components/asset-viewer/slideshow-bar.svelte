@@ -6,6 +6,7 @@
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   export let isFullScreen: boolean;
   export let onNext = () => {};
@@ -25,24 +26,32 @@
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
 
-  const resetTimer = () => {
-    clearTimeout(timer);
-    document.body.style.cursor = '';
-    showControls = true;
-    startTimer();
+  const setCursorStyle = (style: string) => {
+    document.body.style.cursor = style;
   };
 
-  const startTimer = () => {
+  const stopControlsHideTimer = () => {
+    clearTimeout(timer);
+    setCursorStyle('');
+  };
+
+  const showControlBar = () => {
+    showControls = true;
+    stopControlsHideTimer();
+    hideControlsAfterDelay();
+  };
+
+  const hideControlsAfterDelay = () => {
     timer = setTimeout(() => {
       if (!isOverControls) {
         showControls = false;
-        document.body.style.cursor = 'none';
+        setCursorStyle('none');
       }
     }, 10_000);
   };
 
   onMount(() => {
-    startTimer();
+    hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
         progressBar.restart(value);
@@ -52,6 +61,7 @@
     unsubscribeStop = stopProgress.subscribe((value) => {
       if (value) {
         progressBar.restart(false);
+        stopControlsHideTimer();
       }
     });
   });
@@ -75,33 +85,38 @@
   };
 </script>
 
-<svelte:window on:mousemove={resetTimer} />
+<svelte:window on:mousemove={showControlBar} />
 
 {#if showControls}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="m-4 flex gap-2"
     on:mouseenter={() => (isOverControls = true)}
     on:mouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}
+    role="navigation"
   >
-    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title="Exit Slideshow" />
+    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title={$t('exit_slideshow')} />
 
     <CircleIconButton
       buttonSize="50"
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
       on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-      title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
+      title={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
     />
-    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title="Previous" />
-    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title="Next" />
-    <CircleIconButton buttonSize="50" icon={mdiCog} on:click={() => (showSettings = !showSettings)} title="Next" />
+    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title={$t('previous')} />
+    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title={$t('next')} />
+    <CircleIconButton
+      buttonSize="50"
+      icon={mdiCog}
+      on:click={() => (showSettings = !showSettings)}
+      title={$t('next')}
+    />
     {#if !isFullScreen}
       <CircleIconButton
         buttonSize="50"
         icon={mdiFullscreen}
         on:click={onSetToFullScreen}
-        title="Set Slideshow to fullscreen"
+        title={$t('set_slideshow_to_fullscreen')}
       />
     {/if}
   </div>

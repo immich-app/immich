@@ -3,6 +3,7 @@
   import FullScreenModal from './full-screen-modal.svelte';
   import { mdiInformationOutline } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
+  import { t } from 'svelte-i18n';
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -17,18 +18,18 @@
 
   const shortcuts: Shortcuts = {
     general: [
-      { key: ['←', '→'], action: 'Previous or next photo' },
+      { key: ['←', '→'], action: $t('previous_or_next_photo') },
       { key: ['Esc'], action: 'Back, close, or deselect' },
-      { key: ['Ctrl', 'k'], action: 'Search your photos' },
-      { key: ['Ctrl', '⇧', 'k'], action: 'Open the search filters' },
+      { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
+      { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
     ],
     actions: [
-      { key: ['f'], action: 'Favorite or unfavorite photo' },
-      { key: ['i'], action: 'Show or hide info' },
-      { key: ['s'], action: 'Stack selected photos' },
-      { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
-      { key: ['⇧', 'd'], action: 'Download' },
-      { key: ['Space'], action: 'Play or pause video' },
+      { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
+      { key: ['i'], action: $t('show_or_hide_info') },
+      { key: ['s'], action: $t('stack_selected_photos') },
+      { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
+      { key: ['⇧', 'd'], action: $t('download') },
+      { key: ['Space'], action: $t('play_or_pause_video') },
       { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
     ],
   };
@@ -37,15 +38,10 @@
   }>();
 </script>
 
-<FullScreenModal
-  id="keyboard-shortcuts-modal"
-  title="Keyboard shortcuts"
-  width="auto"
-  onClose={() => dispatch('close')}
->
+<FullScreenModal title={$t('keyboard_shortcuts')} width="auto" onClose={() => dispatch('close')}>
   <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
     <div class="p-4">
-      <h2>General</h2>
+      <h2>{$t('general')}</h2>
       <div class="text-sm">
         {#each shortcuts.general as shortcut}
           <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
@@ -63,7 +59,7 @@
     </div>
 
     <div class="p-4">
-      <h2>Actions</h2>
+      <h2>{$t('actions')}</h2>
       <div class="text-sm">
         {#each shortcuts.actions as shortcut}
           <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">

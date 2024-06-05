@@ -10,7 +10,6 @@ import {
   Param,
   Post,
   Put,
-  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -18,8 +17,9 @@ import {
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto } from 'src/dtos/user.dto';
+import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
@@ -27,7 +27,7 @@ import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('User')
+@ApiTags('Users')
 @Controller(Route.USER)
 export class UserController {
   constructor(
@@ -37,56 +37,41 @@ export class UserController {
 
   @Get()
   @Authenticated()
-  getAllUsers(@Auth() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
-    return this.service.getAll(auth, isAll);
-  }
-
-  @Post()
-  @Authenticated({ admin: true })
-  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.service.create(createUserDto);
+  searchUsers(): Promise<UserResponseDto[]> {
+    return this.service.search();
   }
 
   @Get('me')
   @Authenticated()
-  getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
+  getMyUser(@Auth() auth: AuthDto): UserAdminResponseDto {
     return this.service.getMe(auth);
+  }
+
+  @Put('me')
+  @Authenticated()
+  updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
+    return this.service.updateMe(auth, dto);
+  }
+
+  @Get('me/preferences')
+  @Authenticated()
+  getMyPreferences(@Auth() auth: AuthDto): UserPreferencesResponseDto {
+    return this.service.getMyPreferences(auth);
+  }
+
+  @Put('me/preferences')
+  @Authenticated()
+  updateMyPreferences(
+    @Auth() auth: AuthDto,
+    @Body() dto: UserPreferencesUpdateDto,
+  ): Promise<UserPreferencesResponseDto> {
+    return this.service.updateMyPreferences(auth, dto);
   }
 
   @Get(':id')
   @Authenticated()
-  getUserById(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  getUser(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.get(id);
-  }
-
-  @Delete('profile-image')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
-  deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.deleteProfileImage(auth);
-  }
-
-  @Delete(':id')
-  @Authenticated({ admin: true })
-  deleteUser(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: DeleteUserDto,
-  ): Promise<UserResponseDto> {
-    return this.service.delete(auth, id, dto);
-  }
-
-  @Post(':id/restore')
-  @Authenticated({ admin: true })
-  restoreUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.restore(auth, id);
-  }
-
-  // TODO: replace with @Put(':id')
-  @Put()
-  @Authenticated()
-  updateUser(@Auth() auth: AuthDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    return this.service.update(auth, updateUserDto);
   }
 
   @UseInterceptors(FileUploadInterceptor)
@@ -99,6 +84,13 @@ export class UserController {
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
     return this.service.createProfileImage(auth, fileInfo);
+  }
+
+  @Delete('profile-image')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
+  deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.deleteProfileImage(auth);
   }
 
   @Get(':id/profile-image')

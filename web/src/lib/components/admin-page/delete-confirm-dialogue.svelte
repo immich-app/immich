@@ -1,10 +1,11 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteUser, type UserResponseDto } from '@immich/sdk';
+  import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
+  import { t } from 'svelte-i18n';
 
   export let user: UserResponseDto;
 
@@ -20,9 +21,9 @@
 
   const handleDeleteUser = async () => {
     try {
-      const { deletedAt } = await deleteUser({
+      const { deletedAt } = await deleteUserAdmin({
         id: user.id,
-        deleteUserDto: { force: forceDelete },
+        userAdminDeleteDto: { force: forceDelete },
       });
 
       if (deletedAt == undefined) {
@@ -31,7 +32,7 @@
         dispatch('success');
       }
     } catch (error) {
-      handleError(error, 'Unable to delete user');
+      handleError(error, $t('errors.unable_to_delete_user'));
       dispatch('fail');
     }
   };
@@ -42,12 +43,11 @@
   };
 </script>
 
-<ConfirmDialogue
-  id="delete-user-confirmation-modal"
-  title="Delete user"
-  confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
+<ConfirmDialog
+  title={$t('delete_user')}
+  confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
   onConfirm={handleDeleteUser}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
   disabled={deleteButtonDisabled}
 >
   <svelte:fragment slot="prompt">
@@ -96,4 +96,4 @@
       {/if}
     </div>
   </svelte:fragment>
-</ConfirmDialogue>
+</ConfirmDialog>
