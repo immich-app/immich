@@ -8,6 +8,7 @@
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { t } from 'svelte-i18n';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 
   export let data: PageData;
 
@@ -102,5 +103,7 @@
     </div>
   {/if}
 
-  <hr class="mb-4 dark:border-immich-dark-gray" />
+  {#if !hasPeople && places.length === 0}
+    <EmptyPlaceholder text={$t('no_explore_results_message')} />
+  {/if}
 </UserPageLayout>
