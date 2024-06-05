@@ -732,5 +732,5 @@ class TestEndpoints:
 
         for expected_face, actual_face in zip(responses["facial-recognition"], actual["facial-recognition"]):
             assert expected_face["boundingBox"] == actual_face["boundingBox"]
-            assert np.allclose([expected_face["embedding"]], actual_face["embedding"])
+            assert np.allclose(expected_face["embedding"], actual_face["embedding"])
             assert np.allclose(expected_face["score"], actual_face["score"])
