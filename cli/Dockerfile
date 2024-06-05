@@ -1,4 +1,4 @@
-FROM node:20-alpine3.19@sha256:db6fa523bc20b4e4448bc77a9d8ff31e00ffbe511f83f7603abb438aa151bf7d as core
+FROM node:20-alpine3.19@sha256:696ae41fb5880949a15ade7879a2deae93b3f0723f757bdb5b8a9e4a744ce27f as core
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
