@@ -38,16 +38,17 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 
 ## General
 
-| Variable                        | Description                                     |         Default          | Containers               | Workers            |
-| :------------------------------ | :---------------------------------------------- | :----------------------: | :----------------------- | :----------------- |
-| `TZ`                            | Timezone                                        |                          | server                   | microservices      |
-| `IMMICH_ENV`                    | Environment (production, development)           |       `production`       | server, machine learning | api, microservices |
-| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error)    |          `log`           | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`         | Media Location                                  | `./upload`<sup>\*1</sup> | server                   | api, microservices |
-| `IMMICH_CONFIG_FILE`            | Path to config file                             |                          | server                   | api, microservices |
-| `IMMICH_WEB_ROOT`               | Path of root index.html                         |    `/usr/src/app/www`    | server                   | api                |
-| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory        |   `/usr/src/resources`   | server                   | microservices      |
-| `NO_COLOR`                      | Set to `true` to disable color-coded log output |         `false`          | server, machine learning |                    |
+| Variable                        | Description                                     |           Default            | Containers               | Workers            |
+| :------------------------------ | :---------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
+| `TZ`                            | Timezone                                        |                              | server                   | microservices      |
+| `IMMICH_ENV`                    | Environment (production, development)           |         `production`         | server, machine learning | api, microservices |
+| `IMMICH_LOG_LEVEL`              | Log Level (verbose, debug, log, warn, error)    |            `log`             | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`         | Media Location                                  |   `./upload`<sup>\*1</sup>   | server                   | api, microservices |
+| `IMMICH_CONFIG_FILE`            | Path to config file                             |                              | server                   | api, microservices |
+| `IMMICH_WEB_ROOT`               | Path of root index.html                         |      `/usr/src/app/www`      | server                   | api                |
+| `IMMICH_REVERSE_GEOCODING_ROOT` | Path of reverse geocoding dump directory        |     `/usr/src/resources`     | server                   | microservices      |
+| `NO_COLOR`                      | Set to `true` to disable color-coded log output |           `false`            | server, machine learning |                    |
+| `CPU_CORES`                     | Amount of cores available to the immich server  | auto-detected cpu core count | server                   |                    |
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.

@@ -54,6 +54,7 @@ COPY --from=web /usr/src/app/build ./www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./
+COPY "docker/scripts/get-cpus.sh" ./
 RUN npm link && npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
