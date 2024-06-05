@@ -672,13 +672,15 @@ class TestEndpoints:
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
-            data={"modelName": "ViT-B-32__openai", "modelTask": "clip", "modelType": "visual"},
+            data={"entries": json.dumps({"clip": {"visual": {"modelName": "ViT-B-32__openai"}}})},
             files={"image": byte_image.getvalue()},
         )
 
         actual = response.json()
         assert response.status_code == 200
-        assert np.allclose(expected, actual)
+        assert isinstance(actual, dict)
+        assert isinstance(actual.get("clip", None), list)
+        assert np.allclose(expected, actual["clip"])
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         expected = responses["clip"]["text"]
@@ -686,29 +688,36 @@ class TestEndpoints:
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
-                "modelName": "ViT-B-32__openai",
-                "modelTask": "clip",
-                "modelType": "textual",
+                "entries": json.dumps(
+                    {
+                        "clip": {"textual": {"modelName": "ViT-B-32__openai"}},
+                    },
+                ),
                 "text": "test search query",
             },
         )
 
         actual = response.json()
         assert response.status_code == 200
-        assert np.allclose(expected, actual)
+        assert isinstance(actual, dict)
+        assert isinstance(actual.get("clip", None), list)
+        assert np.allclose(expected, actual["clip"])
 
     def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
-        expected = responses["facial-recognition"]
 
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
-                "modelName": "buffalo_l",
-                "modelTask": "facial-recognition",
-                "modelType": "pipeline",
-                "options": json.dumps({"minScore": 0.034}),
+                "entries": json.dumps(
+                    {
+                        "facial-recognition": {
+                            "detection": {"modelName": "buffalo_l", "options": {"minScore": 0.034}},
+                            "recognition": {"modelName": "buffalo_l"},
+                        }
+                    }
+                )
             },
             files={"image": byte_image.getvalue()},
         )
@@ -716,12 +725,12 @@ class TestEndpoints:
         actual = response.json()
         assert response.status_code == 200
         assert isinstance(actual, dict)
-        assert actual.get("imageHeight", None) == expected["imageHeight"]
-        assert actual.get("imageWidth", None) == expected["imageWidth"]
-        assert "faces" in actual and isinstance(actual["faces"], list)
-        assert len(actual["faces"]) == len(expected["faces"])
+        assert actual.get("imageHeight", None) == responses["imageHeight"]
+        assert actual.get("imageWidth", None) == responses["imageWidth"]
+        assert "facial-recognition" in actual and isinstance(actual["facial-recognition"], list)
+        assert len(actual["facial-recognition"]) == len(responses["facial-recognition"])
 
-        for expected_face, actual_face in zip(expected["faces"], actual["faces"]):
+        for expected_face, actual_face in zip(responses["facial-recognition"], actual["facial-recognition"]):
             assert expected_face["boundingBox"] == actual_face["boundingBox"]
-            assert np.allclose(expected_face["embedding"], actual_face["embedding"])
+            assert np.allclose([expected_face["embedding"]], actual_face["embedding"])
             assert np.allclose(expected_face["score"], actual_face["score"])
