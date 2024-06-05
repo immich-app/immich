@@ -8,7 +8,7 @@ vi.mock('$lib/utils');
 
 describe('AlbumCover component', () => {
   beforeAll(async () => {
-    await init({ fallbackLocale: 'en-US' });
+    await init({ fallbackLocale: 'dev' });
   });
 
   it('renders an image when the album has a thumbnail', () => {
