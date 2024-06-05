@@ -1,6 +1,6 @@
 import type { Faces } from '$lib/stores/people.store';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import { AssetTypeEnum, ThumbnailFormat, type AssetFaceResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
@@ -82,7 +82,7 @@ export const zoomImageToBase64 = async (
   if (assetType === AssetTypeEnum.Image) {
     image = photoViewer;
   } else if (assetType === AssetTypeEnum.Video) {
-    const data = getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+    const data = getAssetThumbnailUrl(assetId);
     const img: HTMLImageElement = new Image();
     img.src = data;
 
