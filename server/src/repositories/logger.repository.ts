@@ -30,17 +30,20 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
   }
 
   protected formatContext(context: string): string {
-    let formattedContext = super.formatContext(context);
+    let prefix = LoggerRepository.appName || '';
+    if (context) {
+      prefix += (prefix ? ':' : '') + context;
+    }
 
     const correlationId = this.cls?.getId();
-    if (correlationId && this.isLevelEnabled(LogLevel.VERBOSE)) {
-      formattedContext += `[${correlationId}] `;
+    if (correlationId) {
+      prefix += `~${correlationId}`;
     }
 
-    if (LoggerRepository.appName) {
-      formattedContext = LogColor.blue(`[${LoggerRepository.appName}] `) + formattedContext;
+    if (!prefix) {
+      return '';
     }
 
-    return formattedContext;
+    return LogColor.yellow(`[${prefix}]`) + ' ';
   }
 }

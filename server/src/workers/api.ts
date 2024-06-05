@@ -20,10 +20,10 @@ async function bootstrap() {
 
   const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  const logger = await app.resolve(ILoggerRepository);
+  const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
 
-  logger.setAppName('ImmichServer');
-  logger.setContext('ImmichServer');
+  logger.setAppName('Api');
+  logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
