@@ -23,6 +23,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { preferences, user } from '$lib/stores/user.store';
+  import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
@@ -57,12 +58,12 @@
   >
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+    <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
     <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+    <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if $selectedAssets.size > 1 || isAssetStackSelected}
         <StackAction
@@ -92,6 +93,6 @@
     {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
+    <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

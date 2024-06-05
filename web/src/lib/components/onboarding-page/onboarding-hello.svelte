@@ -6,6 +6,7 @@
   import { createEventDispatcher } from 'svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { user } from '$lib/stores/user.store';
+  import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -21,7 +22,7 @@
 
   <div class="w-full flex place-content-end">
     <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-      <p>Theme</p>
+      <p>{$t('theme')}</p>
       <Icon path={mdiArrowRight} size="18" />
     </Button>
   </div>

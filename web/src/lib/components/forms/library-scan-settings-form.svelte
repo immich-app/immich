@@ -6,6 +6,7 @@
   import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let library: Partial<LibraryResponseDto>;
 
@@ -102,7 +103,7 @@
 
 {#if addExclusionPattern}
   <LibraryExclusionPatternForm
-    submitText="Add"
+    submitText={$t('add')}
     bind:exclusionPattern={exclusionPatternToAdd}
     {exclusionPatterns}
     on:submit={handleAddExclusionPattern}
@@ -114,7 +115,7 @@
 
 {#if editExclusionPattern != undefined}
   <LibraryExclusionPatternForm
-    submitText="Save"
+    submitText={$t('save')}
     isEditing={true}
     bind:exclusionPattern={editedExclusionPattern}
     {exclusionPatterns}
@@ -142,7 +143,7 @@
             <CircleIconButton
               color="primary"
               icon={mdiPencilOutline}
-              title="Edit exclusion pattern"
+              title={$t('edit_exclusion_pattern')}
               size="16"
               on:click={() => {
                 editExclusionPattern = listIndex;
@@ -169,7 +170,7 @@
             size="sm"
             on:click={() => {
               addExclusionPattern = true;
-            }}>Add exclusion pattern</Button
+            }}>{$t('add_exclusion_pattern')}</Button
           ></td
         ></tr
       >
@@ -177,7 +178,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-    <Button size="sm" type="submit">Save</Button>
+    <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+    <Button size="sm" type="submit">{$t('save')}</Button>
   </div>
 </form>

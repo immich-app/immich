@@ -9,6 +9,7 @@
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let notification: Notification;
 
@@ -81,7 +82,7 @@
     </div>
     <CircleIconButton
       icon={mdiWindowClose}
-      title="Close"
+      title={$t('close')}
       class="dark:text-immich-dark-gray"
       size="20"
       padding="2"

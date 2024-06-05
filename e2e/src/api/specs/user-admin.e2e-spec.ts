@@ -250,10 +250,18 @@ describe('/admin/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({ avatar: { color: 'orange' }, memories: { enabled: false } });
+      expect(body).toEqual({
+        avatar: { color: 'orange' },
+        memories: { enabled: false },
+        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true },
+      });
 
       const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(after).toEqual({ avatar: { color: 'orange' }, memories: { enabled: false } });
+      expect(after).toEqual({
+        avatar: { color: 'orange' },
+        memories: { enabled: false },
+        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true },
+      });
     });
   });
 

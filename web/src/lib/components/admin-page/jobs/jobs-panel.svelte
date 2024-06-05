@@ -23,6 +23,7 @@
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -60,38 +61,38 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
+      subtitle: $t('thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
+      subtitle: $t('metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: 'Perform library tasks',
-      allText: 'ALL',
-      missingText: 'REFRESH',
+      subtitle: $t('perform_library_tasks'),
+      allText: $t('all').toUpperCase(),
+      missingText: $t('refresh').toUpperCase(),
     },
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
-      allText: 'SYNC',
-      missingText: 'DISCOVER',
+      subtitle: $t('sidecar_job_description'),
+      allText: $t('sync').toUpperCase(),
+      missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: 'Run machine learning on assets to support smart search',
+      subtitle: $t('smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      subtitle: $t('duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -113,7 +114,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
+      subtitle: $t('video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
@@ -124,7 +125,7 @@
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
+      subtitle: $t('migration_job_description'),
       allowForceCommand: false,
     },
   };
@@ -159,8 +160,8 @@
       {title}
       {disabled}
       {subtitle}
-      allText={allText || 'ALL'}
-      missingText={missingText || 'MISSING'}
+      allText={allText || $t('all').toUpperCase()}
+      missingText={missingText || $t('missing').toUpperCase()}
       {allowForceCommand}
       {jobCounts}
       {queueStatus}

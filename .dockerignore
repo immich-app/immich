@@ -4,6 +4,7 @@
 
 design/
 docker/
+!docker/scripts
 docs/
 e2e/
 fastlane/

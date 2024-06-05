@@ -10,6 +10,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { mdiRefresh, mdiCancel } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let uploadAsset: UploadAsset;
 
@@ -59,10 +60,10 @@
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}
           <div class="h-[15px] rounded-md bg-immich-dark-gray transition-all dark:bg-immich-gray" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Pending</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">{$t('pending')}</p>
         {:else if uploadAsset.state === UploadState.ERROR}
           <div class="h-[15px] rounded-md bg-immich-error transition-all" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Error</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">{$t('error')}</p>
         {:else if uploadAsset.state === UploadState.DUPLICATED}
           <div class="h-[15px] rounded-md bg-immich-warning transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
@@ -84,13 +85,13 @@
     </div>
     {#if uploadAsset.state === UploadState.ERROR}
       <div class="flex h-full flex-col place-content-evenly place-items-center justify-items-center pr-2">
-        <button type="button" on:click={() => handleRetry(uploadAsset)} title="Retry upload" class="flex text-sm">
+        <button type="button" on:click={() => handleRetry(uploadAsset)} title={$t('retry_upload')} class="flex text-sm">
           <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Icon path={mdiRefresh} size="20" /></span>
         </button>
         <button
           type="button"
           on:click={() => uploadAssetsStore.removeUploadAsset(uploadAsset.id)}
-          title="Dismiss error"
+          title={$t('dismiss_error')}
           class="flex text-sm"
         >
           <span class="text-immich-error"><Icon path={mdiCancel} size="20" /></span>

@@ -3,6 +3,7 @@
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   let showModal = false;
 
@@ -54,7 +55,7 @@
     </div>
 
     <svelte:fragment slot="sticky-bottom">
-      <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
+      <Button fullwidth on:click={onAcknowledge}>{$t('acknowledge')}</Button>
     </svelte:fragment>
   </FullScreenModal>
 {/if}

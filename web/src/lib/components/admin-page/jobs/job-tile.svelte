@@ -16,6 +16,7 @@
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let title: string;
   export let subtitle: string | undefined;
@@ -43,9 +44,9 @@
 >
   <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
-      <JobTileStatus color="warning">Paused</JobTileStatus>
+      <JobTileStatus color="warning">{$t('paused')}</JobTileStatus>
     {:else if queueStatus.isActive}
-      <JobTileStatus color="success">Active</JobTileStatus>
+      <JobTileStatus color="success">{$t('active')}</JobTileStatus>
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
       <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
@@ -63,7 +64,7 @@
                 <CircleIconButton
                   color="primary"
                   icon={mdiClose}
-                  title="Clear message"
+                  title={$t('clear_message')}
                   size="12"
                   padding="1"
                   on:click={() => dispatch('command', { command: JobCommand.ClearFailed, force: false })}
@@ -95,7 +96,7 @@
         <div
           class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
         >
-          <p>Active</p>
+          <p>{$t('active')}</p>
           <p class="text-2xl">
             {jobCounts.active.toLocaleString($locale)}
           </p>
@@ -107,7 +108,7 @@
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
           </p>
-          <p>Waiting</p>
+          <p>{$t('waiting')}</p>
         </div>
       </div>
     </div>
