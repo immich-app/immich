@@ -12,6 +12,6 @@ describe('NoCover component', () => {
     expect(img.alt).toBe('123');
     expect(img.className).toBe('z-0 rounded-xl object-cover asdf');
     expect(img.getAttribute('loading')).toBe('eager');
-    expect(img.src).toBeTruthy();
+    expect(img.src).toStrictEqual(expect.any(String));
   });
 });
