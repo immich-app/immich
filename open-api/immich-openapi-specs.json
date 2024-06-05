@@ -7725,6 +7725,12 @@
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
