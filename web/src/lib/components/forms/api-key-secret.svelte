@@ -4,6 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let secret = '';
 
@@ -13,7 +14,7 @@
   const handleDone = () => dispatch('done');
 </script>
 
-<FullScreenModal title="API key" icon={mdiKeyVariant} onClose={() => handleDone()}>
+<FullScreenModal title={$t('api_key')} icon={mdiKeyVariant} onClose={() => handleDone()}>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <p class="text-sm dark:text-immich-dark-fg">
       This value will only be shown once. Please be sure to copy it before closing the window.
@@ -21,12 +22,12 @@
   </div>
 
   <div class="my-4 flex flex-col gap-2">
-    <!-- <label class="immich-form-label" for="secret">API Key</label> -->
+    <!-- <label class="immich-form-label" for="secret">{ $t("api_key") }</label> -->
     <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret} />
   </div>
 
   <svelte:fragment slot="sticky-bottom">
-    <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
-    <Button on:click={() => handleDone()} fullwidth>Done</Button>
+    <Button on:click={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
+    <Button on:click={() => handleDone()} fullwidth>{$t('done')}</Button>
   </svelte:fragment>
 </FullScreenModal>

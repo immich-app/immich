@@ -4,6 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let user: UserResponseDto;
   export let onClose: () => void;
@@ -32,7 +33,7 @@
   };
 </script>
 
-<FullScreenModal title="Add partner" showLogo {onClose}>
+<FullScreenModal title={$t('add_partner')} showLogo {onClose}>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
       {#each availableUsers as user}
@@ -68,7 +69,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="pt-5">
-        <Button size="sm" fullwidth on:click={() => dispatch('add-users', selectedUsers)}>Add</Button>
+        <Button size="sm" fullwidth on:click={() => dispatch('add-users', selectedUsers)}>{$t('add')}</Button>
       </div>
     {/if}
   </div>

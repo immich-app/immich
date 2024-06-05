@@ -19,6 +19,7 @@
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
   import Albums from '$lib/components/album-page/albums-list.svelte';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -38,14 +39,14 @@
     <LinkButton on:click={() => createAlbumAndRedirect()}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Create album</span>
+        <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
       </div>
     </LinkButton>
 
     <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiLink} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Shared links</span>
+        <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
       </div>
     </LinkButton>
   </div>
@@ -54,7 +55,7 @@
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
         <div>
-          <p class="mb-4 font-medium dark:text-immich-dark-fg">Partners</p>
+          <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('partners')}</p>
         </div>
 
         <div class="flex flex-row flex-wrap gap-4">
@@ -82,18 +83,14 @@
 
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">Albums</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('albums')}</p>
       </div>
 
       <div>
         <!-- Shared Album List -->
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
-          <EmptyPlaceholder
-            slot="empty"
-            text="Create an album to share photos and videos with people in your network"
-            src={empty2Url}
-          />
+          <EmptyPlaceholder slot="empty" text={$t('no_shared_albums_message')} src={empty2Url} />
         </Albums>
       </div>
     </div>

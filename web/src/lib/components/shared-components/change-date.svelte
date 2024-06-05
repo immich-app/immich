@@ -4,6 +4,7 @@
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
+  import { t } from 'svelte-i18n';
 
   export let initialDate: DateTime = DateTime.now();
 
@@ -57,7 +58,7 @@
 
 <ConfirmDialog
   confirmColor="primary"
-  title="Edit date and time"
+  title={$t('edit_date_and_time')}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onConfirm={handleConfirm}
@@ -65,7 +66,7 @@
 >
   <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
     <div class="flex flex-col">
-      <label for="datetime">Date and Time</label>
+      <label for="datetime">{$t('date_and_time')}</label>
       <DateInput
         class="immich-form-input text-sm my-4 w-full"
         id="datetime"
@@ -74,7 +75,7 @@
       />
     </div>
     <div class="flex flex-col w-full mt-2">
-      <Combobox bind:selectedOption label="Timezone" options={timezones} placeholder="Search timezone..." />
+      <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
     </div>
   </div>
 </ConfirmDialog>

@@ -8,6 +8,7 @@
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let showOwner = false;
@@ -35,7 +36,7 @@
     >
       <CircleIconButton
         color="opaque"
-        title="Show album options"
+        title={$t('show_album_options')}
         icon={mdiDotsVertical}
         size="20"
         padding="2"
@@ -76,14 +77,14 @@
 
       {#if showOwner}
         {#if $user.id === album.ownerId}
-          <p>Owned</p>
+          <p>{$t('owned')}</p>
         {:else if album.owner}
           <p>Shared by {album.owner.name}</p>
         {:else}
-          <p>Shared</p>
+          <p>{$t('shared')}</p>
         {/if}
       {:else if album.shared}
-        <p>Shared</p>
+        <p>{$t('shared')}</p>
       {/if}
     </span>
   </div>

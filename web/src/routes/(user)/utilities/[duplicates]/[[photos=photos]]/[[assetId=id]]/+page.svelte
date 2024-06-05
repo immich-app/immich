@@ -10,6 +10,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { s } from '$lib/utils';
   import { deleteAssets, getConfig, updateAssets } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -39,7 +40,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to resolve duplicate');
+      handleError(error, $t('unable_to_resolve_duplicate'));
     }
   };
 </script>

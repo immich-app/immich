@@ -14,6 +14,7 @@
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -35,8 +36,18 @@
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
-    default: 'Never',
-    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days', '3 months', '1 year'],
+    default: $t('never'),
+    options: [
+      $t('never'),
+      $t('durations.minutes', { values: { minutes: 30 } }),
+      $t('durations.hours', { values: { hours: 1 } }),
+      $t('durations.hours', { values: { hours: 6 } }),
+      $t('durations.days', { values: { days: 1 } }),
+      $t('durations.days', { values: { days: 7 } }),
+      $t('durations.days', { values: { days: 30 } }),
+      $t('durations.months', { values: { months: 3 } }),
+      $t('durations.years', { values: { years: 1 } }),
+    ],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -142,7 +153,7 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Edited',
+        message: $t('edited'),
       });
 
       onClose();
@@ -153,9 +164,9 @@
 
   const getTitle = () => {
     if (editingLink) {
-      return 'Edit link';
+      return $t('edit_link');
     }
-    return 'Create link to share';
+    return $t('create_link_to_share');
   };
 </script>
 
@@ -186,29 +197,33 @@
     {/if}
 
     <div class="mb-2 mt-4">
-      <p class="text-xs">LINK OPTIONS</p>
+      <p class="text-xs">{$t('link_options').toUpperCase()}</p>
     </div>
     <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
       <div class="flex flex-col">
         <div class="mb-2">
-          <SettingInputField inputType={SettingInputFieldType.TEXT} label="Description" bind:value={description} />
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('description')}
+            bind:value={description}
+          />
         </div>
 
         <div class="mb-2">
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
-            label="Password"
+            label={$t('password')}
             bind:value={password}
             disabled={!enablePassword}
           />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
         </div>
 
         <div class="my-3">
@@ -222,10 +237,10 @@
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
+              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
             </p>
           {:else}
-            <p class="immich-form-label my-2">Expire after</p>
+            <p class="immich-form-label my-2">{$t('expire_after')}</p>
           {/if}
 
           <DropdownButton
@@ -241,16 +256,16 @@
   <svelte:fragment slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}
-        <Button size="sm" fullwidth on:click={handleEditLink}>Confirm</Button>
+        <Button size="sm" fullwidth on:click={handleEditLink}>{$t('confirm')}</Button>
       {:else}
-        <Button size="sm" fullwidth on:click={handleCreateSharedLink}>Create link</Button>
+        <Button size="sm" fullwidth on:click={handleCreateSharedLink}>{$t('create_link')}</Button>
       {/if}
     {:else}
       <div class="flex w-full gap-2">
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
         <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
           <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} ariaLabel="Copy link to clipboard" size="18" />
+            <Icon path={mdiContentCopy} ariaLabel={$t('copy_link_to_clipboard')} size="18" />
           </div>
         </LinkButton>
       </div>
