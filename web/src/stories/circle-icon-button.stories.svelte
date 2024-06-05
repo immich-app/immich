@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import CircleIconButton from '$lib/ui/CircleIconButton.svelte';
+  import CircleIconButton from '$lib/ui/circle-icon-button.svelte';
   import { mdiDotsVertical, mdiInformation, mdiPartyPopper } from '@mdi/js';
   export const meta = {
     title: 'Components/Buttons/Circle Icon Button',

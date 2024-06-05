@@ -1,5 +1,5 @@
 <script context="module">
-  import Button from '$lib/ui/Button.svelte';
+  import Button from '$lib/ui/button.svelte';
   import { Template } from '@storybook/addon-svelte-csf';
   export const meta = {
     title: 'Components/Buttons/Button',
