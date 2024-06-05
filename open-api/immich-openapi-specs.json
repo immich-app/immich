@@ -7872,14 +7872,8 @@
           "enabled": {
             "type": "boolean"
           },
-          "mode": {
-            "$ref": "#/components/schemas/CLIPMode"
-          },
           "modelName": {
             "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
           }
         },
         "required": [
@@ -7887,13 +7881,6 @@
           "modelName"
         ],
         "type": "object"
-      },
-      "CLIPMode": {
-        "enum": [
-          "vision",
-          "text"
-        ],
-        "type": "string"
       },
       "CQMode": {
         "enum": [
@@ -8314,6 +8301,40 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "FacialRecognitionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minFaces": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minScore": {
+            "format": "float",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance",
+          "minFaces",
+          "minScore",
+          "modelName"
         ],
         "type": "object"
       },
@@ -9033,13 +9054,6 @@
         },
         "type": "object"
       },
-      "ModelType": {
-        "enum": [
-          "facial-recognition",
-          "clip"
-        ],
-        "type": "string"
-      },
       "OAuthAuthorizeResponseDto": {
         "properties": {
           "url": {
@@ -9372,43 +9386,6 @@
           "like"
         ],
         "type": "string"
-      },
-      "RecognitionConfig": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "maxDistance": {
-            "format": "float",
-            "maximum": 2,
-            "minimum": 0,
-            "type": "number"
-          },
-          "minFaces": {
-            "minimum": 1,
-            "type": "integer"
-          },
-          "minScore": {
-            "format": "float",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "modelName": {
-            "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxDistance",
-          "minFaces",
-          "minScore",
-          "modelName"
-        ],
-        "type": "object"
       },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
@@ -10515,7 +10492,7 @@
             "type": "boolean"
           },
           "facialRecognition": {
-            "$ref": "#/components/schemas/RecognitionConfig"
+            "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
             "type": "string"
