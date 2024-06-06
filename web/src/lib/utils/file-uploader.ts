@@ -123,8 +123,6 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
       }
     }
 
-    let status;
-    let id;
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       if (replaceAssetId) {
@@ -134,7 +132,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
-        ({ status, id } = response.data);
+        responseData = response.data;
       } else {
         const response = await uploadRequest<AssetMediaResponseDto>({
           url: getBaseUrl() + '/assets' + (key ? `?key=${key}` : ''),
@@ -146,30 +144,31 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
           throw new Error('Failed to upload file');
         }
 
-        ({ status, id } = response.data);
+        responseData = response.data;
       }
     }
 
-    if (status === AssetMediaStatus.Duplicate) {
+    if (responseData.status === AssetMediaStatus.Duplicate) {
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
-      if (albumId && id) {
-        uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-        await addAssetsToAlbum(albumId, [id]);
-        uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
-      }
+    }
+
+    if (albumId) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+      await addAssetsToAlbum(albumId, [responseData.id]);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
     }
 
     uploadAssetsStore.updateAsset(deviceAssetId, {
-      state: status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
+      state: responseData.status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
     });
 
     setTimeout(() => {
       uploadAssetsStore.removeUploadAsset(deviceAssetId);
     }, 1000);
 
-    return id;
+    return responseData.id;
   } catch (error) {
     handleError(error, 'Unable to upload file');
     const reason = getServerErrorMessage(error) || error;
