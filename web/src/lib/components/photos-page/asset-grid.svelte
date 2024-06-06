@@ -49,6 +49,11 @@
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
   $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
+  $: {
+    if (isEmpty) {
+      assetInteractionStore.clearMultiselect();
+    }
+  }
 
   $: {
     void assetStore.updateViewport(viewport);

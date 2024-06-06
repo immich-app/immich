@@ -11,6 +11,7 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -43,8 +44,7 @@
 
 {#if isConfirmOpen}
   <ConfirmDialog
-    id="disable-login-modal"
-    title="Disable login"
+    title={$t('admin.disable_login')}
     onCancel={() => (isConfirmOpen = false)}
     onConfirm={() => handleSave(true)}
   >
@@ -71,7 +71,11 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingAccordion key="oauth" title="OAuth" subtitle="Manage OAuth login settings">
+        <SettingAccordion
+          key="oauth"
+          title={$t('admin.oauth_settings')}
+          subtitle={$t('admin.oauth_settings_description')}
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
               For more details about this feature, refer to the <a
@@ -83,10 +87,9 @@
             </p>
 
             <SettingSwitch
-              id="login-with-oauth"
               {disabled}
-              title="ENABLE"
-              subtitle="Login with OAuth"
+              title={$t('enable').toUpperCase()}
+              subtitle={$t('admin.oauth_enable_description')}
               bind:checked={config.oauth.enabled}
             />
 
@@ -94,7 +97,7 @@
               <hr />
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ISSUER URL"
+                label={$t('admin.oauth_issuer_url').toUpperCase()}
                 bind:value={config.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -103,7 +106,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT ID"
+                label={$t('admin.oauth_client_id').toUpperCase()}
                 bind:value={config.oauth.clientId}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -112,7 +115,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT SECRET"
+                label={$t('admin.oauth_client_secret').toUpperCase()}
                 bind:value={config.oauth.clientSecret}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -121,7 +124,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SCOPE"
+                label={$t('admin.oauth_scope').toUpperCase()}
                 bind:value={config.oauth.scope}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -130,7 +133,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SIGNING ALGORITHM"
+                label={$t('admin.oauth_signing_algorithm').toUpperCase()}
                 bind:value={config.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -139,8 +142,8 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="STORAGE LABEL CLAIM"
-                desc="Automatically set the user's storage label to the value of this claim."
+                label={$t('admin.oauth_storage_label_claim').toUpperCase()}
+                desc={$t('admin.oauth_storage_label_claim_description')}
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -149,8 +152,8 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="STORAGE QUOTA CLAIM"
-                desc="Automatically set the user's storage quota to the value of this claim."
+                label={$t('admin.oauth_storage_quota_claim').toUpperCase()}
+                desc={$t('admin.oauth_storage_quota_claim_description')}
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -159,8 +162,8 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
-                label="DEFAULT STORAGE QUOTA (GiB)"
-                desc="Quota in GiB to be used when no claim is provided (Enter 0 for unlimited quota)."
+                label={$t('admin.oauth_storage_quota_default').toUpperCase()}
+                desc={$t('admin.oauth_storage_quota_default_description')}
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -169,7 +172,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="BUTTON TEXT"
+                label={$t('admin.oauth_button_text').toUpperCase()}
                 bind:value={config.oauth.buttonText}
                 required={false}
                 disabled={disabled || !config.oauth.enabled}
@@ -177,25 +180,22 @@
               />
 
               <SettingSwitch
-                id="auto-register-new-users"
-                title="AUTO REGISTER"
-                subtitle="Automatically register new users after signing in with OAuth"
+                title={$t('admin.oauth_auto_register').toUpperCase()}
+                subtitle={$t('admin.oauth_auto_register_description')}
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
-                id="auto-launch-oauth"
-                title="AUTO LAUNCH"
-                subtitle="Start the OAuth login flow automatically upon navigating to the login page"
+                title={$t('admin.oauth_auto_launch').toUpperCase()}
+                subtitle={$t('admin.oauth_auto_launch_description')}
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
-                id="mobile-redirect-uri-override"
-                title="MOBILE REDIRECT URI OVERRIDE"
-                subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
+                title={$t('admin.oauth_mobile_redirect_uri_override').toUpperCase()}
+                subtitle={$t('admin.oauth_mobile_redirect_uri_override_description')}
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
                 bind:checked={config.oauth.mobileOverrideEnabled}
@@ -204,7 +204,7 @@
               {#if config.oauth.mobileOverrideEnabled}
                 <SettingInputField
                   inputType={SettingInputFieldType.TEXT}
-                  label="MOBILE REDIRECT URI"
+                  label={$t('admin.oauth_mobile_redirect_uri').toUpperCase()}
                   bind:value={config.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !config.oauth.enabled}
@@ -215,14 +215,17 @@
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="password" title="Password" subtitle="Manage password login settings">
+        <SettingAccordion
+          key="password"
+          title={$t('admin.password_settings')}
+          subtitle={$t('admin.password_settings_description')}
+        >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <div class="ml-4 mt-4 flex flex-col">
               <SettingSwitch
-                id="enable-password-login"
-                title="ENABLED"
+                title={$t('enabled')}
                 {disabled}
-                subtitle="Login with email and password"
+                subtitle={$t('admin.password_enable_description')}
                 bind:checked={config.passwordLogin.enabled}
               />
             </div>

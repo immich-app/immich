@@ -16,6 +16,7 @@
   import { mdiArrowLeft } from '@mdi/js';
   import { onMount } from 'svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
@@ -42,7 +43,7 @@
 
     try {
       await removeSharedLink({ id });
-      notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
+      notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
       await refresh();
     } catch (error) {
       handleError(error, 'Unable to delete shared link');
@@ -60,12 +61,12 @@
 </script>
 
 <ControlAppBar backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
-  <svelte:fragment slot="leading">Shared links</svelte:fragment>
+  <svelte:fragment slot="leading">{$t('shared_links')}</svelte:fragment>
 </ControlAppBar>
 
 <section class="mt-[120px] flex flex-col pb-[120px]">
   <div class="m-auto mb-4 w-[50%] dark:text-immich-gray">
-    <p>Manage shared links</p>
+    <p>{$t('manage_shared_links')}</p>
   </div>
   {#if sharedLinks.length === 0}
     <div

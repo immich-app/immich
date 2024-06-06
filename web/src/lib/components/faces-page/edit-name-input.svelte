@@ -4,6 +4,7 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import { t } from 'svelte-i18n';
 
   export let person: PersonResponseDto;
   export let name: string;
@@ -35,6 +36,6 @@
       inputClass="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
       bind:showLoadingSpinner={isSearchingPeople}
     />
-    <Button size="sm" type="submit">Done</Button>
+    <Button size="sm" type="submit">{$t('done')}</Button>
   </form>
 </div>

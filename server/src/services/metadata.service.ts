@@ -26,6 +26,7 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -108,6 +109,7 @@ export class MetadataService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
@@ -144,7 +146,7 @@ export class MetadataService {
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.repository.init());
+      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.mapRepository.init());
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);
@@ -337,7 +339,7 @@ export class MetadataService {
     }
 
     try {
-      const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
+      const reverseGeocode = await this.mapRepository.reverseGeocode({ latitude, longitude });
       if (!reverseGeocode) {
         return;
       }
@@ -409,7 +411,11 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      let motionAsset = await this.assetRepository.getByChecksum(asset.libraryId ?? null, checksum);
+      let motionAsset = await this.assetRepository.getByChecksum({
+        ownerId: asset.ownerId,
+        libraryId: asset.libraryId ?? undefined,
+        checksum,
+      });
       if (motionAsset) {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(

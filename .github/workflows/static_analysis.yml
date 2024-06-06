@@ -23,7 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.22.0'
+          flutter-version-file: ./mobile/pubspec.yaml
 
       - name: Install dependencies
         run: dart pub get

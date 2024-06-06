@@ -19,7 +19,7 @@ class ActivityService with ErrorLoggerMixin {
   }) async {
     return logError(
       () async {
-        final list = await _apiService.activityApi
+        final list = await _apiService.activitiesApi
             .getActivities(albumId, assetId: assetId);
         return list != null ? list.map(Activity.fromDto).toList() : [];
       },
@@ -31,7 +31,7 @@ class ActivityService with ErrorLoggerMixin {
   Future<int> getStatistics(String albumId, {String? assetId}) async {
     return logError(
       () async {
-        final dto = await _apiService.activityApi
+        final dto = await _apiService.activitiesApi
             .getActivityStatistics(albumId, assetId: assetId);
         return dto?.comments ?? 0;
       },
@@ -43,7 +43,7 @@ class ActivityService with ErrorLoggerMixin {
   Future<bool> removeActivity(String id) async {
     return logError(
       () async {
-        await _apiService.activityApi.deleteActivity(id);
+        await _apiService.activitiesApi.deleteActivity(id);
         return true;
       },
       defaultValue: false,
@@ -59,7 +59,7 @@ class ActivityService with ErrorLoggerMixin {
   }) async {
     return guardError(
       () async {
-        final dto = await _apiService.activityApi.createActivity(
+        final dto = await _apiService.activitiesApi.createActivity(
           ActivityCreateDto(
             albumId: albumId,
             type: type == ActivityType.comment

@@ -3,6 +3,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   export let user: UserResponseDto;
 
@@ -21,16 +22,15 @@
         dispatch('fail');
       }
     } catch (error) {
-      handleError(error, 'Unable to restore user');
+      handleError(error, $t('errors.unable_to_restore_user'));
       dispatch('fail');
     }
   };
 </script>
 
 <ConfirmDialog
-  id="restore-user-modal"
-  title="Restore user"
-  confirmText="Continue"
+  title={$t('restore_user')}
+  confirmText={$t('continue')}
   confirmColor="green"
   onConfirm={handleRestoreUser}
   onCancel={() => dispatch('cancel')}

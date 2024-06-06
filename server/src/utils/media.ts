@@ -226,9 +226,8 @@ export class BaseConfig implements VideoCodecSWConfig {
     return videoStream.isHDR && this.config.tonemap !== ToneMapping.DISABLED;
   }
 
-  getScaling(videoStream: VideoStreamInfo) {
+  getScaling(videoStream: VideoStreamInfo, mult = 2) {
     const targetResolution = this.getTargetResolution(videoStream);
-    const mult = this.config.accel === TranscodeHWAccel.QSV ? 1 : 2; // QSV doesn't support scaling numbers below -1
     return this.isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
@@ -679,7 +678,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   getBitrateOptions() {
     const options = [];
-    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality'} ${this.config.crf}`);
+    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`);
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
@@ -708,6 +707,10 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   useCQP() {
     return this.config.cqMode === CQMode.CQP || this.config.targetVideoCodec === VideoCodec.VP9;
+  }
+
+  getScaling(videoStream: VideoStreamInfo): string {
+    return super.getScaling(videoStream, 1);
   }
 }
 
@@ -818,9 +821,9 @@ export class VAAPIConfig extends BaseHWConfig {
         '-rc_mode 3',
       ); // variable bitrate
     } else if (this.useCQP()) {
-      options.push(`-qp ${this.config.crf}`, `-global_quality ${this.config.crf}`, '-rc_mode 1');
+      options.push(`-qp:v ${this.config.crf}`, `-global_quality:v ${this.config.crf}`, '-rc_mode 1');
     } else {
-      options.push(`-global_quality ${this.config.crf}`, '-rc_mode 4');
+      options.push(`-global_quality:v ${this.config.crf}`, '-rc_mode 4');
     }
 
     return options;

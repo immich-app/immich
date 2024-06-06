@@ -7,9 +7,9 @@ import {
   Action,
   AssetMediaStatus,
   checkBulkUpload,
+  getAssetOriginalPath,
   getBaseUrl,
   getSupportedMediaTypes,
-  type AssetFileUploadResponseDto,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { tick } from 'svelte';
@@ -123,55 +123,52 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
       }
     }
 
-    let status;
-    let id;
     if (!responseData) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
       if (replaceAssetId) {
         const response = await uploadRequest<AssetMediaResponseDto>({
-          url: getBaseUrl() + '/asset/' + replaceAssetId + '/file' + (key ? `?key=${key}` : ''),
+          url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (key ? `?key=${key}` : ''),
           method: 'PUT',
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
-        ({ status, id } = response.data);
+        responseData = response.data;
       } else {
-        const response = await uploadRequest<AssetFileUploadResponseDto>({
-          url: getBaseUrl() + '/asset/upload' + (key ? `?key=${key}` : ''),
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/assets' + (key ? `?key=${key}` : ''),
           data: formData,
           onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
         });
+
         if (![200, 201].includes(response.status)) {
           throw new Error('Failed to upload file');
         }
-        if (response.data.duplicate) {
-          status = AssetMediaStatus.Duplicate;
-        } else {
-          id = response.data.id;
-        }
+
+        responseData = response.data;
       }
     }
 
-    if (status === AssetMediaStatus.Duplicate) {
+    if (responseData.status === AssetMediaStatus.Duplicate) {
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
-      if (albumId && id) {
-        uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-        await addAssetsToAlbum(albumId, [id]);
-        uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
-      }
+    }
+
+    if (albumId) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
+      await addAssetsToAlbum(albumId, [responseData.id]);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
     }
 
     uploadAssetsStore.updateAsset(deviceAssetId, {
-      state: status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
+      state: responseData.status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
     });
 
     setTimeout(() => {
       uploadAssetsStore.removeUploadAsset(deviceAssetId);
     }, 1000);
 
-    return id;
+    return responseData.id;
   } catch (error) {
     handleError(error, 'Unable to upload file');
     const reason = getServerErrorMessage(error) || error;

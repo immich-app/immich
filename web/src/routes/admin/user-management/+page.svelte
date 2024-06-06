@@ -25,6 +25,7 @@
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -154,9 +155,8 @@
 
       {#if shouldShowPasswordResetSuccess}
         <ConfirmDialog
-          id="password-reset-success-modal"
-          title="Password reset success"
-          confirmText="Done"
+          title={$t('password_reset_success')}
+          confirmText={$t('done')}
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
           onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
@@ -172,7 +172,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
+                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>
@@ -193,10 +193,12 @@
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
           <tr class="flex w-full place-items-center">
-            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
-            <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
-            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Has quota</th>
-            <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
+            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium"
+              >{$t('email')}</th
+            >
+            <th class="hidden sm:block w-3/12 text-center text-sm font-medium">{$t('name')}</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">{$t('has_quota')}</th>
+            <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
@@ -228,7 +230,7 @@
                   {#if !immichUser.deletedAt}
                     <CircleIconButton
                       icon={mdiPencilOutline}
-                      title="Edit user"
+                      title={$t('edit_user')}
                       color="primary"
                       size="16"
                       on:click={() => editUserHandler(immichUser)}
@@ -236,7 +238,7 @@
                     {#if immichUser.id !== $user.id}
                       <CircleIconButton
                         icon={mdiTrashCanOutline}
-                        title="Delete user"
+                        title={$t('delete_user')}
                         color="primary"
                         size="16"
                         on:click={() => deleteUserHandler(immichUser)}
@@ -259,7 +261,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>Create user</Button>
+      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

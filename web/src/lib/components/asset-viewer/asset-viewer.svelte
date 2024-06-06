@@ -59,6 +59,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { t } from 'svelte-i18n';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -175,7 +176,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        handleError(error, $t('errors.unable_to_load_liked_status'));
       }
     }
   };
@@ -278,15 +279,13 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = async () => {
-    await closeViewer();
-  };
-
   const closeViewer = async () => {
-    $slideshowState = SlideshowState.StopSlideshow;
-    document.body.style.cursor = '';
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+    if ($slideshowState === SlideshowState.None) {
+      dispatch('close');
+      await navigate({ targetRoute: 'current', assetId: null });
+    } else {
+      $slideshowState = SlideshowState.StopSlideshow;
+    }
   };
 
   const navigateAssetRandom = async () => {
@@ -360,11 +359,11 @@
       dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
-        message: 'Moved to trash',
+        message: $t('moved_to_trash'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to trash asset');
+      handleError(error, $t('errors.unable_to_trash_asset'));
     }
   };
 
@@ -375,11 +374,11 @@
       dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
-        message: 'Permanently deleted asset',
+        message: $t('permanently_deleted_asset'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to delete asset');
+      handleError(error, $t('errors.unable_to_delete_asset'));
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -436,7 +435,7 @@
         message: `Restored asset`,
       });
     } catch (error) {
-      handleError(error, 'Error restoring asset');
+      handleError(error, $t('errors.unable_to_restore_assets'));
     }
   };
 
@@ -477,7 +476,7 @@
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
-      console.error('Error entering fullscreen', error);
+      handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -489,7 +488,7 @@
         await document.exitFullscreen();
       }
     } catch (error) {
-      console.error('Error exiting fullscreen', error);
+      handleError(error, $t('errors.unable_to_exit_fullscreen'));
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
@@ -511,7 +510,7 @@
           asset,
         });
       }
-      dispatch('close');
+      await closeViewer();
     }
   };
 
@@ -528,7 +527,7 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Album cover updated',
+        message: $t('album_cover_updated'),
         timeout: 1500,
       });
     } catch (error) {
@@ -600,7 +599,7 @@
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
       <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
-        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
       </div>
@@ -697,7 +696,7 @@
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
       <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
-        <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+        <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
       </div>
@@ -710,13 +709,7 @@
         class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
-        <DetailPanel
-          {asset}
-          currentAlbum={album}
-          albums={appearsInAlbums}
-          on:close={() => ($isShowDetail = false)}
-          on:closeViewer={handleCloseViewer}
-        />
+        <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
       </div>
     {/if}
 
@@ -795,7 +788,6 @@
       <DeleteAssetDialog
         size={1}
         on:cancel={() => (isShowDeleteConfirmation = false)}
-        on:escape={() => (isShowDeleteConfirmation = false)}
         on:confirm={() => deleteAsset()}
       />
     {/if}

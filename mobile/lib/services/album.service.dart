@@ -151,7 +151,7 @@ class AlbumService {
     bool changes = false;
     try {
       await _userService.refreshUsers();
-      final List<AlbumResponseDto>? serverAlbums = await _apiService.albumApi
+      final List<AlbumResponseDto>? serverAlbums = await _apiService.albumsApi
           .getAllAlbums(shared: isShared ? true : null);
       if (serverAlbums == null) {
         return false;
@@ -161,7 +161,7 @@ class AlbumService {
         isShared: isShared,
         loadDetails: (dto) async => dto.assetCount == dto.assets.length
             ? dto
-            : (await _apiService.albumApi.getAlbumInfo(dto.id)) ?? dto,
+            : (await _apiService.albumsApi.getAlbumInfo(dto.id)) ?? dto,
       );
     } finally {
       _remoteCompleter.complete(changes);
@@ -176,7 +176,7 @@ class AlbumService {
     Iterable<User> sharedUsers = const [],
   ]) async {
     try {
-      AlbumResponseDto? remote = await _apiService.albumApi.createAlbum(
+      AlbumResponseDto? remote = await _apiService.albumsApi.createAlbum(
         CreateAlbumDto(
           albumName: albumName,
           assetIds: assets.map((asset) => asset.remoteId!).toList(),
@@ -231,7 +231,7 @@ class AlbumService {
     Album album,
   ) async {
     try {
-      var response = await _apiService.albumApi.addAssetsToAlbum(
+      var response = await _apiService.albumsApi.addAssetsToAlbum(
         album.remoteId!,
         BulkIdsDto(ids: assets.map((asset) => asset.remoteId!).toList()),
       );
@@ -290,7 +290,7 @@ class AlbumService {
           .map((userId) => AlbumUserAddDto(userId: userId))
           .toList();
 
-      final result = await _apiService.albumApi.addUsersToAlbum(
+      final result = await _apiService.albumsApi.addUsersToAlbum(
         album.remoteId!,
         AddUsersDto(albumUsers: albumUsers),
       );
@@ -312,7 +312,7 @@ class AlbumService {
 
   Future<bool> setActivityEnabled(Album album, bool enabled) async {
     try {
-      final result = await _apiService.albumApi.updateAlbumInfo(
+      final result = await _apiService.albumsApi.updateAlbumInfo(
         album.remoteId!,
         UpdateAlbumDto(isActivityEnabled: enabled),
       );
@@ -331,7 +331,7 @@ class AlbumService {
     try {
       final userId = Store.get(StoreKey.currentUser).isarId;
       if (album.owner.value?.isarId == userId) {
-        await _apiService.albumApi.deleteAlbum(album.remoteId!);
+        await _apiService.albumsApi.deleteAlbum(album.remoteId!);
       }
       if (album.shared) {
         final foreignAssets =
@@ -362,7 +362,7 @@ class AlbumService {
 
   Future<bool> leaveAlbum(Album album) async {
     try {
-      await _apiService.albumApi.removeUserFromAlbum(album.remoteId!, "me");
+      await _apiService.albumsApi.removeUserFromAlbum(album.remoteId!, "me");
       return true;
     } catch (e) {
       debugPrint("Error leaveAlbum ${e.toString()}");
@@ -375,7 +375,7 @@ class AlbumService {
     Iterable<Asset> assets,
   ) async {
     try {
-      final response = await _apiService.albumApi.removeAssetFromAlbum(
+      final response = await _apiService.albumsApi.removeAssetFromAlbum(
         album.remoteId!,
         BulkIdsDto(
           ids: assets.map((asset) => asset.remoteId!).toList(),
@@ -401,7 +401,7 @@ class AlbumService {
     User user,
   ) async {
     try {
-      await _apiService.albumApi.removeUserFromAlbum(
+      await _apiService.albumsApi.removeUserFromAlbum(
         album.remoteId!,
         user.id,
       );
@@ -426,7 +426,7 @@ class AlbumService {
     String newAlbumTitle,
   ) async {
     try {
-      await _apiService.albumApi.updateAlbumInfo(
+      await _apiService.albumsApi.updateAlbumInfo(
         album.remoteId!,
         UpdateAlbumDto(
           albumName: newAlbumTitle,

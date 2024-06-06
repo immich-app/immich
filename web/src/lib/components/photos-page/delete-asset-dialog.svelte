@@ -4,6 +4,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let size: number;
 
@@ -23,9 +24,8 @@
 </script>
 
 <ConfirmDialog
-  id="permanently-delete-asset-modal"
   title="Permanently delete asset{s(size)}"
-  confirmText="Delete"
+  confirmText={$t('delete')}
   onConfirm={handleConfirm}
   onCancel={() => dispatch('cancel')}
 >

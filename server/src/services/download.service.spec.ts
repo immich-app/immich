@@ -4,7 +4,6 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -41,46 +40,7 @@ describe(DownloadService.name, () => {
     sut = new DownloadService(accessMock, assetMock, storageMock);
   });
 
-  describe('downloadFile', () => {
-    it('should require the asset.download permission', async () => {
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-    });
-
-    it('should throw an error if the asset is not found', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should throw an error if the asset is offline', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.offline]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should download a file', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual(
-        new ImmichFileResponse({
-          path: '/original/path.jpg',
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.NONE,
-        }),
-      );
-    });
-
+  describe('downloadArchive', () => {
     it('should download an archive', async () => {
       const archiveMock = {
         addFile: vitest.fn(),

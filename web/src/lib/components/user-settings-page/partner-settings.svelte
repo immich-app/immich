@@ -17,6 +17,7 @@
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -90,7 +91,7 @@
       await removePartner({ id: partner.id });
       await refreshPartners();
     } catch (error) {
-      handleError(error, 'Unable to remove partner');
+      handleError(error, $t('errors.unable_to_remove_partner'));
     }
   };
 
@@ -103,7 +104,7 @@
       await refreshPartners();
       createPartnerFlag = false;
     } catch (error) {
-      handleError(error, 'Unable to add partners');
+      handleError(error, $t('errors.unable_to_add_partners'));
     }
   };
 
@@ -167,9 +168,8 @@
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
             <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
             <SettingSwitch
-              id="show-in-timeline"
-              title="Show in timeline"
-              subtitle="Show photos and videos from this user in your timeline"
+              title={$t('show_in_timeline')}
+              subtitle={$t('show_in_timeline_setting_description')}
               bind:checked={partner.inTimeline}
               on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
             />
@@ -180,7 +180,7 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartnerFlag = true)}>Add partner</Button>
+    <Button size="sm" on:click={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
   </div>
 </section>
 

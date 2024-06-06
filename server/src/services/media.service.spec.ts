@@ -363,6 +363,23 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use scaling divisible by 2 even when using quick sync', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleGeneratePreview({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        {
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should run successfully', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleGeneratePreview({ id: assetStub.image.id });
@@ -1410,7 +1427,7 @@ describe(MediaService.name, () => {
             '-v verbose',
             '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
             '-preset 7',
-            '-global_quality 23',
+            '-global_quality:v 23',
             '-maxrate 10000k',
             '-bufsize 20000k',
           ]),
@@ -1641,8 +1658,8 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             `-c:v h264_vaapi`,
             '-c:a copy',
-            '-qp 23',
-            '-global_quality 23',
+            '-qp:v 23',
+            '-global_quality:v 23',
             '-rc_mode 1',
           ]),
           twoPass: false,

@@ -19,6 +19,11 @@ this advice improves throughput, not latency, for example, it will make Smart Se
 
 It is important to remember that jobs like Smart Search, Face Detection, Facial Recognition, and Transcode Videos require a **lot** of processing power and therefore do not exaggerate the amount of jobs because you're probably thoroughly overloading the server.
 
+:::danger IMPORTANT
+If you increase the concurrency from the defaults we set, especially for thumbnail generation, make sure you do not increase them past the amount of CPU cores you have available.
+Doing so can impact API responsiveness with no gain in thumbnail generation speed.
+:::
+
 :::info Facial Recognition Concurrency
 The Facial Recognition Concurrency value cannot be changed because
 [DBSCAN](https://www.youtube.com/watch?v=RDZUdRSDOok) is traditionally sequential, but there are parallel implementations of it out there. Our implementation isn't parallel.

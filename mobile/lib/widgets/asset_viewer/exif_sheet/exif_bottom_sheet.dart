@@ -192,7 +192,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                                 exifInfo.mm != null ||
                                 exifInfo.iso != null
                             ? Text(
-                                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
+                                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime} s   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
                                 style: context.textTheme.bodySmall,
                               )
                             : null,

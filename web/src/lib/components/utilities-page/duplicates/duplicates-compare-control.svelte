@@ -2,12 +2,13 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { ThumbnailFormat, type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
+  import { type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { sortBy } from 'lodash-es';
+  import { t } from 'svelte-i18n';
 
   export let duplicate: DuplicateResponseDto;
   export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -56,7 +57,7 @@
         <button type="button" on:click={() => onSelectAsset(asset)} class="block relative">
           <!-- THUMBNAIL-->
           <img
-            src={getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+            src={getAssetThumbnailUrl(asset.id)}
             alt={asset.id}
             title={`${assetData}`}
             class={`w-[250px] h-[250px] object-cover rounded-t-xl border-t-[4px] border-l-[4px] border-r-[4px] border-gray-300 ${isSelected ? 'border-immich-primary dark:border-immich-dark-primary' : 'dark:border-gray-800'} transition-all`}
@@ -67,7 +68,7 @@
           <div
             class={`absolute bottom-2 right-3 ${isSelected ? 'bg-green-400/90' : 'bg-red-300/90'} px-4 py-1 rounded-xl text-xs font-semibold`}
           >
-            {isSelected ? 'Keep' : 'Trash'}
+            {isSelected ? $t('keep') : $t('trash')}
           </div>
 
           <!-- EXTERNAL LIBRARY CHIP-->
@@ -125,7 +126,7 @@
     {:else}
       <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
         ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
-          ? 'Trash All'
+          ? $t('trash_all')
           : `Trash ${trashCount}`}
       </Button>
     {/if}

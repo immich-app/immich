@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UploadFieldName } from 'src/dtos/asset.dto';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 
 export class CreateProfileImageDto {
   @ApiProperty({ type: 'string', format: 'binary' })

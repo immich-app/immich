@@ -11,6 +11,7 @@
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import SearchBar from '../elements/search-bar.svelte';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -88,7 +89,7 @@
           // skip error when a newer search is happening
           if (latestSearchTimeout === searchTimeout) {
             places = [];
-            handleError(error, "Can't search places");
+            handleError(error, $t('cant_search_places'));
             showLoadingSpinner = false;
           }
         });
@@ -104,9 +105,8 @@
 </script>
 
 <ConfirmDialog
-  id="change-location-modal"
   confirmColor="primary"
-  title="Change location"
+  title={$t('change_location')}
   width="wide"
   onConfirm={handleConfirm}
   onCancel={handleCancel}
@@ -119,7 +119,7 @@
     >
       <button type="button" class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
-          placeholder="Search places"
+          placeholder={$t('search_places')}
           bind:name={searchWord}
           {showLoadingSpinner}
           on:reset={() => {
@@ -148,7 +148,7 @@
         {/if}
       </div>
     </div>
-    <label for="datetime">Pick a location</label>
+    <label for="datetime">{$t('pick_a_location')}</label>
     <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
         {#await delay(timeToLoadTheMap) then}

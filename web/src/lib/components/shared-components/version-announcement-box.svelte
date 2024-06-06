@@ -3,6 +3,7 @@
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   let showModal = false;
 
@@ -33,7 +34,7 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal id="new-version-modal" title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
+  <FullScreenModal title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
     <div>
       Hi friend, there is a new version of the application please take your time to visit the
       <span class="font-medium underline"
@@ -54,7 +55,7 @@
     </div>
 
     <svelte:fragment slot="sticky-bottom">
-      <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
+      <Button fullwidth on:click={onAcknowledge}>{$t('acknowledge')}</Button>
     </svelte:fragment>
   </FullScreenModal>
 {/if}

@@ -238,8 +238,6 @@ class ApiClient {
           return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFaceWithoutPersonResponseDto':
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
-        case 'AssetFileUploadResponseDto':
-          return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetFullSyncDto':
           return AssetFullSyncDto.fromJson(value);
         case 'AssetIdsDto':
@@ -252,6 +250,8 @@ class ApiClient {
           return AssetJobsDto.fromJson(value);
         case 'AssetMediaResponseDto':
           return AssetMediaResponseDto.fromJson(value);
+        case 'AssetMediaSize':
+          return AssetMediaSizeTypeTransformer().decode(value);
         case 'AssetMediaStatus':
           return AssetMediaStatusTypeTransformer().decode(value);
         case 'AssetOrder':
@@ -306,6 +306,10 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EmailNotificationsResponse':
+          return EmailNotificationsResponse.fromJson(value);
+        case 'EmailNotificationsUpdate':
+          return EmailNotificationsUpdate.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
@@ -514,8 +518,6 @@ class ApiClient {
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
           return TagTypeEnumTypeTransformer().decode(value);
-        case 'ThumbnailFormat':
-          return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':

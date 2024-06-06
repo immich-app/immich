@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -18,6 +19,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class NotificationService {
@@ -63,7 +65,7 @@ export class NotificationService {
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
-        baseUrl: server.externalDomain || 'http://localhost:2283',
+        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
         displayName: user.name,
         username: user.email,
         password: tempPassword,
@@ -94,13 +96,19 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
+    const { emailNotifications } = getPreferences(recipient);
+
+    if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
+      return JobStatus.SKIPPED;
+    }
+
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
-        baseUrl: server.externalDomain || 'http://localhost:2283',
+        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
         albumId: album.id,
         albumName: album.albumName,
         senderName: album.owner.name,
@@ -141,10 +149,16 @@ export class NotificationService {
     const { server } = await this.configCore.getConfig();
 
     for (const recipient of recipients) {
+      const { emailNotifications } = getPreferences(recipient);
+
+      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+        continue;
+      }
+
       const { html, text } = this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
-          baseUrl: server.externalDomain || 'http://localhost:2283',
+          baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
           albumId: album.id,
           albumName: album.albumName,
           recipientName: recipient.name,

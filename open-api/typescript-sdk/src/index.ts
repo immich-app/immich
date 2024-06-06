@@ -23,3 +23,16 @@ export const setApiKey = (apiKey: string) => {
   defaults.headers = defaults.headers || {};
   defaults.headers['x-api-key'] = apiKey;
 };
+
+export const getAssetOriginalPath = (id: string) => `/assets/${id}/original`;
+
+export const getAssetThumbnailPath = (id: string) => `/assets/${id}/thumbnail`;
+
+export const getAssetPlaybackPath = (id: string) =>
+  `/assets/${id}/video/playback`;
+
+export const getUserProfileImagePath = (userId: string) =>
+  `/users/${userId}/profile-image`;
+
+export const getPeopleThumbnailPath = (personId: string) =>
+  `/people/${personId}/thumbnail`;

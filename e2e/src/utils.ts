@@ -1,9 +1,9 @@
 import {
   AllJobStatusResponseDto,
-  AssetFileUploadResponseDto,
+  AssetMediaCreateDto,
+  AssetMediaResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
-  CreateAssetDto,
   CreateLibraryDto,
   MetadataSearchDto,
   PersonCreateDto,
@@ -292,7 +292,7 @@ export const utils = {
 
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -310,7 +310,7 @@ export const utils = {
     }
 
     const builder = request(app)
-      .post(`/asset/upload`)
+      .post(`/assets`)
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
@@ -320,7 +320,7 @@ export const utils = {
 
     const { body } = await builder;
 
-    return body as AssetFileUploadResponseDto;
+    return body as AssetMediaResponseDto;
   },
 
   createImageFile: (path: string) => {

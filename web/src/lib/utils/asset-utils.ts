@@ -11,6 +11,7 @@ import { asByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
+  getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
   updateAsset,
@@ -23,6 +24,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { t as translate } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
@@ -155,11 +157,13 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
+
   if (asset.livePhotoVideoId) {
+    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
     assets.push({
-      filename: asset.originalFileName,
+      filename: motionAsset.originalFileName,
       id: asset.livePhotoVideoId,
-      size: 0,
+      size: motionAsset.exifInfo?.fileSizeInByte || 0,
     });
   }
 
@@ -178,8 +182,8 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
-        method: 'POST',
-        url: getBaseUrl() + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        method: 'GET',
+        url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
@@ -430,8 +434,9 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
       asset.isArchived = isArchived;
     }
 
+    const t = get(translate);
     notificationController.show({
-      message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
+      message: `${isArchived ? t('archived') : t('unarchived')} ${ids.length}`,
       type: NotificationType.Info,
     });
   } catch (error) {

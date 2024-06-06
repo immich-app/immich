@@ -9,7 +9,6 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
     ReactionType,
-    ThumbnailFormat,
     createActivity,
     deleteActivity,
     getActivities,
@@ -26,6 +25,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { shortcut } from '$lib/actions/shortcut';
+  import { t } from 'svelte-i18n';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -92,7 +92,7 @@
     try {
       reactions = await getActivities({ assetId, albumId });
     } catch (error) {
-      handleError(error, 'Error when fetching reactions');
+      handleError(error, $t('errors.unable_to_load_asset_activity'));
     }
   };
 
@@ -121,7 +121,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, `Can't remove ${reaction.type}`);
+      handleError(error, $t('errors.unable_to_remove_reaction'));
     }
   };
 
@@ -141,7 +141,7 @@
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
-      handleError(error, "Can't add your comment");
+      handleError(error, $t('errors.unable_to_add_comment'));
     } finally {
       clearTimeout(timeout);
     }
@@ -160,9 +160,9 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title="Close" />
+        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title={$t('close')} />
 
-        <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
+        <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>
     </div>
     {#if innerHeight}
@@ -182,7 +182,7 @@
                 <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
-                    src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    src={getAssetThumbnailUrl(reaction.assetId)}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
                 </a>
@@ -191,7 +191,7 @@
                 <div class="flex items-start w-fit pt-[5px]">
                   <CircleIconButton
                     icon={mdiDotsVertical}
-                    title="Comment options"
+                    title={$t('comment_options')}
                     size="16"
                     on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
                   />
@@ -202,8 +202,7 @@
                   <button
                     type="button"
                     class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                    use:clickOutside
-                    on:outclick={() => (showDeleteReaction[index] = false)}
+                    use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
                     Remove
@@ -235,7 +234,7 @@
                   >
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"
-                      src={getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      src={getAssetThumbnailUrl(reaction.assetId)}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
                   </a>
@@ -244,7 +243,7 @@
                   <div class="flex items-start w-fit">
                     <CircleIconButton
                       icon={mdiDotsVertical}
-                      title="Reaction options"
+                      title={$t('reaction_options')}
                       size="16"
                       on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
                     />
@@ -255,8 +254,7 @@
                     <button
                       type="button"
                       class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                      use:clickOutside
-                      on:outclick={() => (showDeleteReaction[index] = false)}
+                      use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                       on:click={() => handleDeleteReaction(reaction, index)}
                     >
                       Remove
@@ -292,7 +290,7 @@
               bind:this={textArea}
               bind:value={message}
               use:autoGrowHeight={'5px'}
-              placeholder={disabled ? 'Comments are disabled' : 'Say something'}
+              placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
               on:input={() => autoGrowHeight(textArea, '5px')}
               use:shortcut={{
                 shortcut: { key: 'Enter' },
@@ -311,7 +309,12 @@
             </div>
           {:else if message}
             <div class="flex items-end w-fit ml-0">
-              <CircleIconButton title="Send message" size="15" icon={mdiSend} class="dark:text-immich-dark-gray" />
+              <CircleIconButton
+                title={$t('send_message')}
+                size="15"
+                icon={mdiSend}
+                class="dark:text-immich-dark-gray"
+              />
             </div>
           {/if}
         </form>

@@ -10,6 +10,7 @@
   import type { RenderedOption } from '../elements/dropdown.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { findKey } from 'lodash-es';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
@@ -17,8 +18,8 @@
   export let onChangeOrder: (order: AssetOrder) => void;
 
   const options: Record<AssetOrder, RenderedOption> = {
-    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: 'Oldest first' },
-    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: 'Newest first' },
+    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
+    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: $t('newest_first') },
   };
 
   $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
@@ -45,48 +46,47 @@
       });
       onChangeOrder(order);
     } catch (error) {
-      handleError(error, 'Error updating album order');
+      handleError(error, $t('errors.unable_to_save_album'));
     }
   };
 </script>
 
-<FullScreenModal id="album-options-modal" title="Options" onClose={() => dispatch('close')}>
+<FullScreenModal title={$t('options')} onClose={() => dispatch('close')}>
   <div class="items-center justify-center">
     <div class="py-2">
-      <h2 class="text-gray text-sm mb-2">SETTINGS</h2>
+      <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
       <div class="grid p-2 gap-y-2">
         {#if order}
           <SettingDropdown
-            title="Display order"
+            title={$t('display_order')}
             options={Object.values(options)}
             selectedOption={options[order]}
             onToggle={handleToggle}
           />
         {/if}
         <SettingSwitch
-          id="comments-likes"
           title="Comments & likes"
-          subtitle="Let others respond"
+          subtitle={$t('let_others_respond')}
           checked={album.isActivityEnabled}
           on:toggle={() => dispatch('toggleEnableActivity')}
         />
       </div>
     </div>
     <div class="py-2">
-      <div class="text-gray text-sm mb-3">PEOPLE</div>
+      <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
       <div class="p-2">
         <button type="button" class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
           <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
             <div><Icon path={mdiPlus} size="25" /></div>
           </div>
-          <div>Invite People</div>
+          <div>{$t('invite_people')}</div>
         </button>
         <div class="flex items-center gap-2 py-2 mt-2">
           <div>
             <UserAvatar {user} size="md" />
           </div>
           <div class="w-full">{user.name}</div>
-          <div>Owner</div>
+          <div>{$t('owner')}</div>
         </div>
         {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">

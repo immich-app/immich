@@ -18,6 +18,7 @@
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
+  import { t } from 'svelte-i18n';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -72,14 +73,18 @@
       <svelte:fragment slot="trailing">
         {#if sharedLink.allowUpload}
           <CircleIconButton
-            title="Add Photos"
+            title={$t('add_photos')}
             on:click={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum(album)} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton
+            title={$t('download')}
+            on:click={() => downloadAlbum(album)}
+            icon={mdiFolderDownloadOutline}
+          />
         {/if}
 
         <ThemeButton />

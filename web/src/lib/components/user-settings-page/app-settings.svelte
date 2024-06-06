@@ -2,10 +2,11 @@
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { fallbackLocale, locales } from '$lib/constants';
+  import { fallbackLang, fallbackLocale, langs, locales } from '$lib/constants';
   import {
     alwaysLoadOriginalFile,
     colorTheme,
+    lang,
     locale,
     loopVideo,
     playVideoThumbnailOnHover,
@@ -15,6 +16,8 @@
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { t, locale as i18nLocale, init } from 'svelte-i18n';
+  import { get } from 'svelte/store';
 
   let time = new Date();
 
@@ -62,8 +65,24 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
+  const handleLanguageChange = async (newLang: string | undefined) => {
+    newLang = newLang || fallbackLang;
+    $lang = newLang;
+
+    const previousLang = get(i18nLocale);
+
+    if (newLang === 'dev') {
+      await init({ fallbackLocale: 'dev', initialLocale: 'dev' });
+    } else if (previousLang == 'dev' && newLang !== 'dev') {
+      await init({ fallbackLocale: 'en-US', initialLocale: newLang });
+    }
+    $i18nLocale = newLang;
+  };
+
   const handleLocaleChange = (newLocale: string | undefined) => {
-    $locale = newLocale;
+    if (newLocale) {
+      $locale = newLocale;
+    }
   };
 </script>
 
@@ -72,19 +91,28 @@
     <div class="ml-4 mt-4 flex flex-col gap-4">
       <div class="ml-4">
         <SettingSwitch
-          id="theme-selection"
-          title="Theme selection"
-          subtitle="Automatically set the theme to light or dark based on your browser's system preference"
+          title={$t('theme_selection')}
+          subtitle={$t('theme_selection_description')}
           bind:checked={$colorTheme.system}
           on:toggle={handleToggleColorTheme}
         />
       </div>
 
       <div class="ml-4">
+        <SettingCombobox
+          comboboxPlaceholder={$t('language')}
+          {selectedOption}
+          options={langs.map((lang) => ({ label: lang.name, value: lang.code }))}
+          title={$t('language')}
+          subtitle={$t('language_setting_description')}
+          onSelect={(combobox) => handleLanguageChange(combobox?.value)}
+        />
+      </div>
+
+      <div class="ml-4">
         <SettingSwitch
-          id="default-locale"
-          title="Default Locale"
-          subtitle="Format dates and numbers based on your browser locale"
+          title={$t('default_locale')}
+          subtitle={$t('default_locale_description')}
           checked={$locale == undefined}
           on:toggle={handleToggleLocaleBrowser}
         >
@@ -94,12 +122,11 @@
       {#if $locale !== undefined}
         <div class="ml-4">
           <SettingCombobox
-            id="custom-locale"
-            comboboxPlaceholder="Searching locales..."
+            comboboxPlaceholder={$t('searching_locales')}
             {selectedOption}
             options={getAllLanguages()}
-            title="Custom Locale"
-            subtitle="Format dates and numbers based on the language and the region"
+            title={$t('custom_locale')}
+            subtitle={$t('custom_locale_description')}
             onSelect={(combobox) => handleLocaleChange(combobox?.value)}
           />
         </div>
@@ -107,27 +134,24 @@
 
       <div class="ml-4">
         <SettingSwitch
-          id="always-load-original-file"
-          title="Display original photos"
-          subtitle="Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds."
+          title={$t('display_original_photos')}
+          subtitle={$t('display_original_photos_setting_description')}
           bind:checked={$alwaysLoadOriginalFile}
           on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
       <div class="ml-4">
         <SettingSwitch
-          id="play-video-thumbnail-on-hover"
           title="Play video thumbnail on hover"
-          subtitle="Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon."
+          subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
           on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
       </div>
       <div class="ml-4">
         <SettingSwitch
-          id="loop-video"
-          title="Loop videos"
-          subtitle="Enable to automatically loop a video in the detail viewer."
+          title={$t('loop_videos')}
+          subtitle={$t('loop_videos_description')}
           bind:checked={$loopVideo}
           on:toggle={() => ($loopVideo = !$loopVideo)}
         />
@@ -135,26 +159,23 @@
 
       <div class="ml-4">
         <SettingSwitch
-          id="show-delete-warning"
-          title="Permanent deletion warning"
-          subtitle="Show a warning when permanently deleting assets"
+          title={$t('permanent_deletion_warning')}
+          subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
         />
       </div>
 
       <div class="ml-4">
         <SettingSwitch
-          id="people-sidebar-link"
-          title="People"
-          subtitle="Display a link to People in the sidebar"
+          title={$t('people')}
+          subtitle={$t('people_sidebar_description')}
           bind:checked={$sidebarSettings.people}
         />
       </div>
       <div class="ml-4">
         <SettingSwitch
-          id="sharing-sidebar-link"
-          title="Sharing"
-          subtitle="Display a link to Sharing in the sidebar"
+          title={$t('sharing')}
+          subtitle={$t('sharing_sidebar_description')}
           bind:checked={$sidebarSettings.sharing}
         />
       </div>
