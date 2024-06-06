@@ -29,9 +29,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       };
     }
 
-    response.status(status).json({
-      ...responseBody,
-      correlationId: this.cls.getId(),
-    });
+    if (!response.headersSent) {
+      response.status(status).json({
+        ...responseBody,
+        correlationId: this.cls.getId(),
+      });
+    }
   }
 }
