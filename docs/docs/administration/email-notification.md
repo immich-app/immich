@@ -3,11 +3,11 @@ import TabItem from '@theme/TabItem';
 
 # Email Notifications
 
-Immich supports the option to send notifications via email, this option is supported for:
+Immich supports the option to send notifications via email. Currently, this is supported for:
 
-- Creating a new user .
-- A user is added to a shared album (send email to the newly shared user).
-- A shared album is added with new assets (send an email to all shared users beside the one that is adding assets).
+- Creating a new user
+- Notifying a user when they get added to a shared album
+- Informing other users about the addition of new assets to a shared album
 
 The easiest way to set up a mail server for notifications is through Google, you may want to avoid using Gmail for privacy reasons or as part of your degoogle plan, you can use any SMTP server that can support login using name and password.
 
@@ -22,7 +22,7 @@ After you have created a new Google account we will have to:
 - Add [2-Step Verification](https://support.google.com/accounts/answer/185839) to your Google account (Required)
 - [Create an app password](https://support.google.com/accounts/answer/185833).
 
-:::tip app password
+:::tip App password
 For some people the app password will not be displayed even if you followed the instructions in the attached Google guide, if the option to create an app password does not appear for you, you can [click on this link to create an app password immediately](https://myaccount.google.com/apppasswords).
 :::
 
@@ -60,8 +60,8 @@ Immich does not support this setting through the mobile app at this time.
 
 ---
 
-:::danger plain password
-Email messages sent by a user contain the login password you set as plain text, it is recommended to choose a password that is not too easy but not too personal. In any case, unless otherwise specified, the user will be asked to enter a new password when logging in.
+:::danger Plain password
+Invitation emails contain the initial password you set as plain text. It is recommended to choose a password that is neither too easy nor too personal. In any case, unless otherwise specified, the user will be asked to enter a new password when logging in.
 :::
 
 <img src={require('./img/immich-email-notefaction.webp').default} width='45%' title="New user email preview" />
