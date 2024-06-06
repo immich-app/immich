@@ -157,7 +157,7 @@ export const locales = [
   { code: 'en-TT', name: 'English (Trinidad and Tobago)' },
   { code: 'en-VI', name: 'English (U.S. Virgin Islands)' },
   { code: 'en-GB', name: 'English (United Kingdom)' },
-  { code: 'en-US', name: 'English (United States)', loader: () => import('$lib/i18n/en-US.json') },
+  { code: 'en-US', name: 'English (United States)', loader: () => import('$lib/i18n/en.json') },
   { code: 'en-ZW', name: 'English (Zimbabwe)' },
   { code: 'et-EE', name: 'Estonian (Estonia)' },
   { code: 'fo-FO', name: 'Faroese (Faroe Islands)' },

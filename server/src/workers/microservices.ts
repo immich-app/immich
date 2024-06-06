@@ -11,8 +11,8 @@ export async function bootstrap() {
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
-  logger.setAppName('ImmichMicroservices');
-  logger.setContext('ImmichMicroservices');
+  logger.setAppName('Microservices');
+  logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 

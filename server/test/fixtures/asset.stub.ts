@@ -492,7 +492,7 @@ export const assetStub = {
     originalFileName: fileStub.livePhotoStill.originalName,
     ownerId: authStub.user1.user.id,
     type: AssetType.IMAGE,
-    livePhotoVideoId: 'live-photo-motion-asset123',
+    livePhotoVideoId: 'live-photo-motion-asset',
     isVisible: true,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
     fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
