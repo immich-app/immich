@@ -18,7 +18,9 @@
   export let icon: string;
   export let title: string;
   export let align: Align = 'top-left';
+  export let direction: 'left' | 'right' = 'right';
   export let buttonColor: Color = 'transparent';
+  export let buttonSize: string | undefined = undefined;
 
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
@@ -56,10 +58,7 @@
   setContext(() => (showContextMenu = false));
 </script>
 
-<div
-  use:clickOutside={{ onOutclick: () => (showContextMenu = false) }}
-  use:focusOutside={{ onFocusOut: () => (showContextMenu = false) }}
->
+<div use:clickOutside={{ onOutclick: closeDropdown }} use:focusOutside={{ onFocusOut: closeDropdown }}>
   <div
     use:shortcuts={[
       {
@@ -86,10 +85,12 @@
       ariaExpanded={showContextMenu}
       ariaHasPopup={true}
       ariaControls={menuId}
+      size={buttonSize}
     />
   </div>
   <ContextMenu
     {...contextMenuPosition}
+    {direction}
     ariaActiveDescendant={selectedId}
     ariaLabelledBy={buttonId}
     bind:menuElement={menuContainer}

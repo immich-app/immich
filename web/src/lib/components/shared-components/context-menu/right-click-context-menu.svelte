@@ -74,8 +74,10 @@
           selectedClass: '!bg-gray-200',
           closeDropdown: closeContextMenu,
           selectionChanged: (node) => (selectedId = node?.id),
-        }}>Album options</button
+        }}
       >
+        Album options
+      </button>
     </FocusTrap>
     <section
       class="fixed left-0 top-0 z-10 flex h-screen w-screen"
