@@ -8,6 +8,7 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
+  IEntityJob,
   IJobRepository,
   INotifyAlbumInviteJob,
   INotifyAlbumUpdateJob,
@@ -53,6 +54,35 @@ export class NotificationService {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
       throw new Error(`Invalid SMTP configuration: ${error}`);
     }
+  }
+
+  async handleTestEmailSetup({ id }: IEntityJob) {
+    const user = await this.userRepository.get(id, { withDeleted: false });
+
+    if (!user) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { server } = await this.configCore.getConfig();
+    const { html, text } = this.notificationRepository.renderEmail({
+      template: EmailTemplate.TEST_EMAIL,
+      data: {
+        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+        displayName: user.name,
+      },
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.SEND_EMAIL,
+      data: {
+        to: user.email,
+        subject: 'Test Email From Immich Notification',
+        html,
+        text,
+      },
+    });
+
+    return JobStatus.SUCCESS;
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
