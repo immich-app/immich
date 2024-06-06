@@ -134,7 +134,7 @@
         "server_external_domain_settings_description": "",
         "server_settings": "",
         "server_settings_description": "",
-        "server_welcome_message": "",
+        "server_welcome_message": "Hola",
         "server_welcome_message_description": "",
         "sidecar_job_description": "",
         "slideshow_duration_description": "",
