@@ -10,6 +10,7 @@
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import type { PageData } from './$types';
   import { setSharedLink } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
@@ -24,7 +25,7 @@
       setSharedLink(sharedLink);
       passwordRequired = false;
       isOwned = $user ? $user.id === sharedLink.userId : false;
-      title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
+      title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
       description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
     } catch (error) {
       handleError(error, 'Failed to get shared link');
@@ -54,14 +55,14 @@
     class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
   >
     <div class="flex flex-col items-center justify-center mt-20">
-      <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">Password Required</div>
+      <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>
       <div class="mt-4 text-lg text-immich-primary dark:text-immich-dark-primary">
         Please enter the password to view this page.
       </div>
       <div class="mt-4">
         <form novalidate autocomplete="off" on:submit|preventDefault={handlePasswordSubmit}>
-          <input type="password" class="immich-form-input mr-2" placeholder="Password" bind:value={password} />
-          <Button type="submit">Submit</Button>
+          <input type="password" class="immich-form-input mr-2" placeholder={$t('password')} bind:value={password} />
+          <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
     </div>

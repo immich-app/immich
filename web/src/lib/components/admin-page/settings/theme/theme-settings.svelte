@@ -6,6 +6,7 @@
   import type { SettingsEventType } from '../admin-settings';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -21,8 +22,8 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingTextarea
           {disabled}
-          label="Custom CSS"
-          desc="Cascading Style Sheets allow the design of Immich to be customized."
+          label={$t('admin.theme_custom_css_settings')}
+          desc={$t('admin.theme_custom_css_settings_description')}
           bind:value={config.theme.customCss}
           required={true}
           isEdited={config.theme.customCss !== savedConfig.theme.customCss}

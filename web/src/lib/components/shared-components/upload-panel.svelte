@@ -9,6 +9,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiCog, mdiWindowMinimize, mdiCancel, mdiCloudUploadOutline } from '@mdi/js';
   import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   let showDetail = false;
   let showOptions = false;
@@ -75,14 +76,14 @@
           <div class="flex flex-col items-end">
             <div class="flex flex-row">
               <CircleIconButton
-                title="Toggle settings"
+                title={$t('toggle_settings')}
                 icon={mdiCog}
                 size="14"
                 padding="1"
                 on:click={() => (showOptions = !showOptions)}
               />
               <CircleIconButton
-                title="Minimize"
+                title={$t('minimize')}
                 icon={mdiWindowMinimize}
                 size="14"
                 padding="1"
@@ -91,7 +92,7 @@
             </div>
             {#if $hasError}
               <CircleIconButton
-                title="Dismiss all errors"
+                title={$t('dismiss_all_errors')}
                 icon={mdiCancel}
                 size="14"
                 padding="1"
@@ -103,13 +104,13 @@
         {#if showOptions}
           <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg pr-2">
             <div class="flex h-[26px] place-items-center gap-1">
-              <label class="immich-form-label" for="upload-concurrency">Upload concurrency</label>
+              <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
             <input
               class="immich-form-input w-full"
-              aria-labelledby="Upload concurrency"
+              aria-labelledby={$t('upload_concurrency')}
               id="upload-concurrency"
-              name="Upload concurrency"
+              name={$t('upload_concurrency')}
               type="number"
               min="1"
               max="50"

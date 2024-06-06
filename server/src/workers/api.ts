@@ -3,7 +3,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
-import { isMainThread } from 'node:worker_threads';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
 import { envName, excludePaths, isDev, serverVersion, WEB_ROOT } from 'src/constants';
@@ -16,14 +15,15 @@ import { useSwagger } from 'src/utils/misc';
 const host = process.env.HOST;
 
 async function bootstrap() {
+  process.title = 'immich-api';
   otelSDK.start();
 
   const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  const logger = await app.resolve(ILoggerRepository);
+  const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
 
-  logger.setAppName('ImmichServer');
-  logger.setContext('ImmichServer');
+  logger.setAppName('Api');
+  logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
@@ -60,9 +60,7 @@ async function bootstrap() {
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
 }
 
-if (!isMainThread) {
-  bootstrap().catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
+bootstrap().catch((error) => {
+  console.error(error);
+  throw error;
+});

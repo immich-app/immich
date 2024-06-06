@@ -7725,6 +7725,12 @@
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -8150,6 +8156,39 @@
           "assets",
           "duplicateId"
         ],
+        "type": "object"
+      },
+      "EmailNotificationsResponse": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "EmailNotificationsUpdate": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "EntityType": {
@@ -11205,12 +11244,16 @@
           "avatar": {
             "$ref": "#/components/schemas/AvatarResponse"
           },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsResponse"
+          },
           "memories": {
             "$ref": "#/components/schemas/MemoryResponse"
           }
         },
         "required": [
           "avatar",
+          "emailNotifications",
           "memories"
         ],
         "type": "object"
@@ -11219,6 +11262,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryUpdate"

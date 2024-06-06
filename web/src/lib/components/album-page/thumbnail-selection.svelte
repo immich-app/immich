@@ -6,6 +6,7 @@
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
 
@@ -26,7 +27,7 @@
 >
   <ControlAppBar on:close={() => dispatch('close')}>
     <svelte:fragment slot="leading">
-      <p class="text-lg">Select album cover</p>
+      <p class="text-lg">{$t('select_album_cover')}</p>
     </svelte:fragment>
 
     <svelte:fragment slot="trailing">

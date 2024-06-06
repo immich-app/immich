@@ -6,6 +6,7 @@
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let shared = false;
 
@@ -37,7 +38,7 @@
 
 <MenuOption
   on:click={() => (showAlbumPicker = true)}
-  text={shared ? 'Add to shared album' : 'Add to album'}
+  text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
 />
 

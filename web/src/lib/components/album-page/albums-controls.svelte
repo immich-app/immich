@@ -34,6 +34,7 @@
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   export let albumGroups: string[];
   export let searchQuery: string;
@@ -100,20 +101,20 @@
 
 <!-- Search Albums -->
 <div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
-  <SearchBar placeholder="Search albums" bind:name={searchQuery} showLoadingSpinner={false} />
+  <SearchBar placeholder={$t('search_albums')} bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
 <!-- Create Album -->
 <LinkButton on:click={() => createAlbumAndRedirect()}>
   <div class="flex place-items-center gap-2 text-sm">
     <Icon path={mdiPlusBoxOutline} size="18" />
-    <p class="hidden md:block">Create album</p>
+    <p class="hidden md:block">{$t('create_album')}</p>
   </div>
 </LinkButton>
 
 <!-- Sort Albums -->
 <Dropdown
-  title="Sort albums by..."
+  title={$t('sort_albums_by')}
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
   on:select={({ detail }) => handleChangeSortBy(detail)}
@@ -125,7 +126,7 @@
 
 <!-- Group Albums -->
 <Dropdown
-  title="Group albums by..."
+  title={$t('group_albums_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
   on:select={({ detail }) => handleChangeGroupBy(detail)}
@@ -141,7 +142,7 @@
     <!-- Expand Album Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
+        <LinkButton title={$t('expand_all')} on:click={() => expandAllAlbumGroups()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldMoreHorizontal} size="18" />
           </div>
@@ -150,7 +151,7 @@
 
       <!-- Collapse Album Groups -->
       <div class="block">
-        <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
+        <LinkButton title={$t('collapse_all')} on:click={() => collapseAllAlbumGroups(albumGroups)}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldLessHorizontal} size="18" />
           </div>
@@ -165,10 +166,10 @@
   <div class="flex place-items-center gap-2 text-sm">
     {#if $albumViewSettings.view === AlbumViewMode.List}
       <Icon path={mdiViewGridOutline} size="18" />
-      <p class="hidden md:block">Covers</p>
+      <p class="hidden md:block">{$t('covers')}</p>
     {:else}
       <Icon path={mdiFormatListBulletedSquare} size="18" />
-      <p class="hidden md:block">List</p>
+      <p class="hidden md:block">{$t('list')}</p>
     {/if}
   </div>
 </LinkButton>

@@ -2,6 +2,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import type { ResetOptions } from '$lib/utils/dipatch';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{
     reset: ResetOptions;
@@ -26,7 +27,9 @@
   </div>
 
   <div class="right">
-    <Button {disabled} size="sm" color="gray" on:click={() => dispatch('reset', { default: false })}>Reset</Button>
-    <Button type="submit" {disabled} size="sm" on:click={() => dispatch('save')}>Save</Button>
+    <Button {disabled} size="sm" color="gray" on:click={() => dispatch('reset', { default: false })}
+      >{$t('reset')}</Button
+    >
+    <Button type="submit" {disabled} size="sm" on:click={() => dispatch('save')}>{$t('save')}</Button>
   </div>
 </div>

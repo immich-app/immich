@@ -306,6 +306,10 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EmailNotificationsResponse':
+          return EmailNotificationsResponse.fromJson(value);
+        case 'EmailNotificationsUpdate':
+          return EmailNotificationsUpdate.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':

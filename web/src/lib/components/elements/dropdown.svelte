@@ -72,7 +72,7 @@
   $: renderedSelectedOption = renderOption(selectedOption);
 </script>
 
-<div use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
+<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
   <!-- BUTTON TITLE -->
   <LinkButton on:click={() => (showMenu = true)} fullwidth {title}>
     <div class="flex place-items-center gap-2 text-sm">
