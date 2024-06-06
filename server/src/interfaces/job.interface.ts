@@ -104,7 +104,6 @@ export enum JobName {
   NOTIFY_ALBUM_INVITE = 'notify-album-invite',
   NOTIFY_ALBUM_UPDATE = 'notify-album-update',
   SEND_EMAIL = 'notification-send-email',
-  SEND_TEST_EMAIL = 'notification-send-test-email',
 
   // Version check
   VERSION_CHECK = 'version-check',
@@ -260,7 +259,6 @@ export type JobItem =
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
-  | { name: JobName.SEND_TEST_EMAIL; data: IEmailJob }
   | { name: JobName.NOTIFY_ALBUM_INVITE; data: INotifyAlbumInviteJob }
   | { name: JobName.NOTIFY_ALBUM_UPDATE; data: INotifyAlbumUpdateJob }
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
