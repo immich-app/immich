@@ -80,7 +80,9 @@
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {
-    $locale = newLocale;
+    if (newLocale) {
+      $locale = newLocale;
+    }
   };
 </script>
 
