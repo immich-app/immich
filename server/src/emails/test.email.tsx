@@ -63,7 +63,7 @@ export const TestEmail = ({ baseUrl, displayName }: TestEmailProps) => (
           />
 
           <Text style={text}>
-            Hey <strong>{displayName}</strong>!
+            Hey <strong>{displayName}</strong>, this is the test email from your Immich Instance
           </Text>
 
           <Row>

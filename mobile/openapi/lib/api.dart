@@ -43,6 +43,7 @@ part 'api/jobs_api.dart';
 part 'api/libraries_api.dart';
 part 'api/map_api.dart';
 part 'api/memories_api.dart';
+part 'api/notification_api.dart';
 part 'api/o_auth_api.dart';
 part 'api/partners_api.dart';
 part 'api/people_api.dart';

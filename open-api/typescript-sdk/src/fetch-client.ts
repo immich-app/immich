@@ -2025,6 +2025,15 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
+export function testEmailNotification(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 204;
+        data: object;
+    }>("/notification/test-email", {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;
 }, opts?: Oazapfts.RequestOpts) {

@@ -3466,6 +3466,38 @@
         ]
       }
     },
+    "/notification/test-email": {
+      "post": {
+        "operationId": "testEmailNotification",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notification"
+        ]
+      }
+    },
     "/oauth/authorize": {
       "post": {
         "operationId": "startOAuth",
