@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { isConnectionAborted, routeToErrorMessage } from 'src/utils/misc';
+import { routeToErrorMessage } from 'src/utils/misc';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {
@@ -21,15 +21,13 @@ export class ErrorInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error) =>
         throwError(() => {
-          if (error instanceof HttpException === false) {
-            const errorMessage = routeToErrorMessage(context.getHandler().name);
-            if (!isConnectionAborted(error)) {
-              this.logger.error(errorMessage, error, error?.errors, error?.stack);
-            }
-            return new InternalServerErrorException(errorMessage);
-          } else {
+          if (error instanceof HttpException) {
             return error;
           }
+
+          const errorMessage = routeToErrorMessage(context.getHandler().name);
+          this.logger.error(errorMessage, error, error?.errors, error?.stack);
+          return new InternalServerErrorException(errorMessage);
         }),
       ),
     );
