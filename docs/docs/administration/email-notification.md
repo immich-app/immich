@@ -13,7 +13,9 @@ The easiest way to set up a mail server for notifications is through Google, you
 
 ## Create an app password
 
-First, it is recommended to create a dedicated Google account for your Immich instance, and not to mix it with your main Google account.
+:::tip separate Google account
+It is recommended to create a dedicated Google account for your Immich instance, and not to mix it with your main Google account.
+:::
 
 After you have created a new Google account we will have to:
 
@@ -57,8 +59,6 @@ Immich does not support this setting through the mobile app at this time.
 </Tabs>
 
 ---
-
-Now for each new user created in the system, the system administrator will be able to choose whether to send an email informing the user of the new account.
 
 :::danger plain password
 Email messages sent by a user contain the login password you set as plain text, it is recommended to choose a password that is not too easy but not too personal. In any case, unless otherwise specified, the user will be asked to enter a new password when logging in.
