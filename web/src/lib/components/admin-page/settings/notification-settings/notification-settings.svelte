@@ -12,6 +12,11 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import { user } from '$lib/stores/user.store';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -22,6 +27,10 @@
 
   const handleSendTestEmail = async () => {
     await testEmailNotification();
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
+    });
   };
 </script>
 
