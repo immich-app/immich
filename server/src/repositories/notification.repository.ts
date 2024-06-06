@@ -4,7 +4,7 @@ import { createTransport } from 'nodemailer';
 import React from 'react';
 import { AlbumInviteEmail } from 'src/emails/album-invite.email';
 import { AlbumUpdateEmail } from 'src/emails/album-update.email';
-import TestEmail from 'src/emails/test.email';
+import { TestEmail } from 'src/emails/test.email';
 import { WelcomeEmail } from 'src/emails/welcome.email';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
