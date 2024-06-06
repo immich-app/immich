@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@immich/sdk';
+  import { testEmailNotification, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -11,6 +11,7 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -18,6 +19,10 @@
   export let disabled = false;
 
   const dispatch = createEventDispatcher<SettingsEventType>();
+
+  const handleSendTestEmail = async () => {
+    await testEmailNotification();
+  };
 </script>
 
 <div>
@@ -93,6 +98,12 @@
               bind:value={config.notifications.smtp.from}
               isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}
             />
+
+            <div class="w-1/2">
+              <Button size="sm" disabled={disabled || !config.notifications.smtp.enabled} on:click={handleSendTestEmail}
+                >Send test email</Button
+              >
+            </div>
           </div>
         </SettingAccordion>
       </div>
