@@ -1,13 +1,14 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
   import { Duration } from 'luxon';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import LinkButton from '../elements/buttons/link-button.svelte';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import DateInput from '../elements/date-input.svelte';
 
   export let settings: MapSettings;
@@ -21,21 +22,21 @@
   const handleClose = () => dispatch('close');
 </script>
 
-<FullScreenModal title="Map settings" onClose={handleClose}>
+<FullScreenModal title={$t('map_settings')} onClose={handleClose}>
   <form
     on:submit|preventDefault={() => dispatch('save', settings)}
     class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
     id="map-settings-form"
   >
-    <SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
-    <SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
-    <SettingSwitch title="Include archived" bind:checked={settings.includeArchived} />
-    <SettingSwitch title="Include shared partner assets" bind:checked={settings.withPartners} />
-    <SettingSwitch title="Include shared albums" bind:checked={settings.withSharedAlbums} />
+    <SettingSwitch title={$t('allow_dark_mode')} bind:checked={settings.allowDarkMode} />
+    <SettingSwitch title={$t('only_favorites')} bind:checked={settings.onlyFavorites} />
+    <SettingSwitch title={$t('include_archived')} bind:checked={settings.includeArchived} />
+    <SettingSwitch title={$t('include_shared_partner_assets')} bind:checked={settings.withPartners} />
+    <SettingSwitch title={$t('include_shared_albums')} bind:checked={settings.withSharedAlbums} />
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
         <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-after">Date after</label>
+          <label class="immich-form-label shrink-0 text-sm" for="date-after">{$t('date_after')}</label>
           <DateInput
             class="immich-form-input w-40"
             type="date"
@@ -45,7 +46,7 @@
           />
         </div>
         <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-before">Date before</label>
+          <label class="immich-form-label shrink-0 text-sm" for="date-before">{$t('date_before')}</label>
           <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
         </div>
         <div class="flex justify-center text-xs">
@@ -63,7 +64,7 @@
     {:else}
       <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
         <SettingSelect
-          label="Date range"
+          label={$t('date_range')}
           name="date-range"
           bind:value={settings.relativeDate}
           options={[
@@ -73,23 +74,23 @@
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
-              text: 'Past 24 hours',
+              text: $t('past_durations.hours', { values: { hours: 24 } }),
             },
             {
               value: Duration.fromObject({ days: 7 }).toISO() || '',
-              text: 'Past 7 days',
+              text: $t('past_durations.days', { values: { days: 7 } }),
             },
             {
               value: Duration.fromObject({ days: 30 }).toISO() || '',
-              text: 'Past 30 days',
+              text: $t('past_durations.days', { values: { days: 30 } }),
             },
             {
               value: Duration.fromObject({ years: 1 }).toISO() || '',
-              text: 'Past year',
+              text: $t('past_durations.years', { values: { years: 1 } }),
             },
             {
               value: Duration.fromObject({ years: 3 }).toISO() || '',
-              text: 'Past 3 years',
+              text: $t('past_durations.years', { values: { years: 3 } }),
             },
           ]}
         />
@@ -107,7 +108,7 @@
     {/if}
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" size="sm" fullwidth on:click={handleClose}>Cancel</Button>
-    <Button type="submit" size="sm" fullwidth form="map-settings-form">Save</Button>
+    <Button color="gray" size="sm" fullwidth on:click={handleClose}>{$t('cancel')}</Button>
+    <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>
   </svelte:fragment>
 </FullScreenModal>

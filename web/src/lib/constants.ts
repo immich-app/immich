@@ -1,3 +1,5 @@
+import type { register } from 'svelte-i18n';
+
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
@@ -155,7 +157,7 @@ export const locales = [
   { code: 'en-TT', name: 'English (Trinidad and Tobago)' },
   { code: 'en-VI', name: 'English (U.S. Virgin Islands)' },
   { code: 'en-GB', name: 'English (United Kingdom)' },
-  { code: 'en-US', name: 'English (United States)' },
+  { code: 'en-US', name: 'English (United States)', loader: () => import('$lib/i18n/en.json') },
   { code: 'en-ZW', name: 'English (Zimbabwe)' },
   { code: 'et-EE', name: 'Estonian (Estonia)' },
   { code: 'fo-FO', name: 'Faroese (Faroe Islands)' },
@@ -232,8 +234,6 @@ export const locales = [
   { code: 'sw-KE', name: 'Swahili (Kenya)' },
   { code: 'sv-FI', name: 'Swedish (Finland)' },
   { code: 'sv-SE', name: 'Swedish (Sweden)' },
-  { code: 'syr-SY', name: 'Syriac (Syria)' },
-  { code: 'ta-IN', name: 'Tamil (India)' },
   { code: 'te-IN', name: 'Telugu (India)' },
   { code: 'th-TH', name: 'Thai (Thailand)' },
   { code: 'tn-ZA', name: 'Tswana (South Africa)' },
@@ -244,4 +244,12 @@ export const locales = [
   { code: 'cy-GB', name: 'Welsh (United Kingdom)' },
   { code: 'xh-ZA', name: 'Xhosa (South Africa)' },
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
+];
+
+export const fallbackLang = 'en-US';
+
+type LanguageLoader = { code: string; name: string; loader: Parameters<typeof register>[1] };
+export const langs = [
+  ...locales.filter((item): item is LanguageLoader => !!item.loader),
+  { name: 'Development', code: 'dev', loader: () => Promise.resolve({}) },
 ];

@@ -10,13 +10,14 @@
   import { updateAssets } from '@immich/sdk';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onFavorite: OnFavorite;
 
   export let menuItem = false;
   export let removeFavorite: boolean;
 
-  $: text = removeFavorite ? 'Remove from favorites' : 'Favorite';
+  $: text = removeFavorite ? $t('remove_from_favorites') : $t('favorite');
   $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
 
   let loading = false;
@@ -62,7 +63,7 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
   {:else}
     <CircleIconButton title={text} {icon} on:click={handleFavorite} />
   {/if}

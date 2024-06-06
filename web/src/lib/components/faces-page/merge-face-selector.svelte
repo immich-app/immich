@@ -17,6 +17,7 @@
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -86,7 +87,7 @@
       });
       dispatch('merge', mergedPerson);
     } catch (error) {
-      handleError(error, 'Cannot merge people');
+      handleError(error, $t('cannot_merge_people'));
     }
   };
 </script>
@@ -134,7 +135,7 @@
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">
                     <CircleIconButton
-                      title="Swap merge direction"
+                      title={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="24"
                       on:click={handleSwapPeople}

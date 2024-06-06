@@ -10,6 +10,7 @@
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onSuccess: () => unknown | Promise<unknown>;
   export let onFirstLogin: () => unknown | Promise<unknown>;
@@ -99,7 +100,7 @@
     {/if}
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="email">Email</label>
+      <label class="immich-form-label" for="email">{$t('email')}</label>
       <input
         class="immich-form-input"
         id="email"
@@ -112,7 +113,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
+      <label class="immich-form-label" for="password">{$t('password')}</label>
       <PasswordField id="password" bind:password autocomplete="current-password" />
     </div>
 
@@ -165,5 +166,5 @@
 {/if}
 
 {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-  <p class="p-4 text-center dark:text-immich-dark-fg">Login has been disabled.</p>
+  <p class="p-4 text-center dark:text-immich-dark-fg">{$t('login_has_been_disabled')}</p>
 {/if}

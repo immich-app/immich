@@ -5,6 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let isOwner: boolean;
   export let asset: AssetResponseDto;
@@ -20,7 +21,7 @@
         updateAssetDto: { latitude: gps.lat, longitude: gps.lng },
       });
     } catch (error) {
-      handleError(error, 'Unable to change location');
+      handleError(error, $t('errors.unable_to_change_location'));
     }
   }
 </script>
@@ -30,7 +31,7 @@
     type="button"
     class="flex w-full text-left justify-between place-items-start gap-4 py-4"
     on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
-    title={isOwner ? 'Edit location' : ''}
+    title={isOwner ? $t('edit_location') : ''}
     class:hover:dark:text-immich-dark-primary={isOwner}
     class:hover:text-immich-primary={isOwner}
   >
@@ -63,12 +64,12 @@
     type="button"
     class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
     on:click={() => (isShowChangeLocation = true)}
-    title="Add location"
+    title={$t('add_location')}
   >
     <div class="flex gap-4">
       <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
-      <p>Add a location</p>
+      <p>{$t('add_a_location')}</p>
     </div>
     <div class="focus:outline-none p-1">
       <Icon path={mdiPencil} size="20" />

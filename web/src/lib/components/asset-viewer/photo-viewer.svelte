@@ -17,6 +17,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -79,7 +80,7 @@
       await copyImageToClipboard(assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Copied image to clipboard.',
+        message: $t('copied_image_to_clipboard'),
         timeout: 3000,
       });
     } catch (error) {
@@ -96,7 +97,7 @@
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {
-    if (window.getSelection()?.type === 'Range') {
+    if (window.getSelection()?.type === $t('range')) {
       return;
     }
     event.preventDefault();

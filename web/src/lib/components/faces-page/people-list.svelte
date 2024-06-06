@@ -3,6 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import { t } from 'svelte-i18n';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -25,7 +26,7 @@
 </script>
 
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
-  <SearchPeople type="searchBar" placeholder="Search people" bind:searchName={name} bind:searchedPeopleLocal />
+  <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
 </div>
 
 <div

@@ -2,6 +2,7 @@
   import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
   import type { HTMLInputAttributes } from 'svelte/elements';
   import Icon from '../elements/icon.svelte';
+  import { t } from 'svelte-i18n';
 
   interface $$Props extends HTMLInputAttributes {
     password: string;
@@ -36,7 +37,7 @@
       tabindex="-1"
       class="absolute inset-y-0 end-0 px-4 text-gray-700 dark:text-gray-200"
       on:click={() => (showPassword = !showPassword)}
-      title={showPassword ? 'Hide password' : 'Show password'}
+      title={showPassword ? $t('hide_password') : $t('show_password')}
     >
       <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
     </button>
