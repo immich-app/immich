@@ -41,7 +41,7 @@ import { promisify } from 'node:util';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
-import { makeRandomImage, makeRandomImageBlob } from 'src/generators';
+import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
