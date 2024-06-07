@@ -1,7 +1,6 @@
 import messages from '$lib/i18n/en.json';
 import { exec as execCallback } from 'node:child_process';
 import { promisify } from 'node:util';
-import { init } from 'svelte-i18n';
 
 type Messages = { [key: string]: string | Messages };
 
@@ -23,8 +22,6 @@ function setEmptyMessages(messages: Messages) {
 }
 
 describe('i18n', () => {
-  beforeEach(() => init({ fallbackLocale: 'dev' }));
-
   test('no missing messages', async () => {
     const { stdout } = await exec('npx svelte-i18n extract -c svelte.config.js "src/**/*"');
     const extractedMessages: Messages = JSON.parse(stdout);
