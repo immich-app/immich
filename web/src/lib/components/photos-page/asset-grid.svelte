@@ -18,7 +18,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
@@ -48,6 +48,7 @@
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
+  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
   $: {
     if (isEmpty) {
       assetInteractionStore.clearMultiselect();
@@ -106,6 +107,14 @@
     }
   };
 
+  const toggleArchive = async () => {
+    const ids = await archiveAssets(Array.from($selectedAssets), !isAllArchived);
+    if (ids) {
+      assetStore.removeAssets(ids);
+      deselectAllAssets();
+    }
+  };
+
   const focusElement = () => {
     if (document.activeElement === document.body) {
       element.focus();
@@ -132,6 +141,7 @@
         { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );
     }
 

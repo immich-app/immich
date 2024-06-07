@@ -19,6 +19,7 @@ export enum ImmichHeader {
   SESSION_TOKEN = 'x-immich-session-token',
   SHARED_LINK_KEY = 'x-immich-share-key',
   CHECKSUM = 'x-immich-checksum',
+  CID = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
