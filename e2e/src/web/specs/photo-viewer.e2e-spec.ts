@@ -1,6 +1,5 @@
 import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
 import { Page, expect, test } from '@playwright/test';
-import { loginDto } from 'src/fixtures';
 import { utils } from 'src/utils';
 
 function imageLocator(page: Page) {
@@ -17,13 +16,10 @@ test.describe('Photo Viewer', () => {
     asset = await utils.createAsset(admin.accessToken);
   });
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ context, page }) => {
     // before each test, login as user
-    await page.goto(`/auth/login`);
-    await page.locator('#email').fill(loginDto.admin.email);
-    await page.locator('#password').fill(loginDto.admin.password);
-    await page.locator('button[type=submit]').click();
-    await page.waitForURL('/photos');
+    await utils.setAuthCookies(context, admin.accessToken);
+    await page.goto('/photos');
     await page.waitForLoadState('networkidle');
   });
 

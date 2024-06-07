@@ -148,7 +148,7 @@
           on:click={() => dispatch('playMotionPhoto')}
         />
       {/if}
-    {/if} on:click={onZoomImage}
+    {/if}
     {#if showZoomButton}
       <CircleIconButton
         color="opaque"
