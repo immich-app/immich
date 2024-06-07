@@ -3,15 +3,19 @@ import { locales } from '$lib/constants';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
+  AssetMediaSize,
   JobName,
-  ThumbnailFormat,
-  defaults,
   finishOAuth,
+  getAssetOriginalPath,
+  getAssetPlaybackPath,
+  getAssetThumbnailPath,
+  getBaseUrl,
+  getPeopleThumbnailPath,
+  getUserProfileImagePath,
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
   type SharedLinkResponseDto,
-  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 
@@ -25,6 +29,7 @@ interface DownloadRequestOptions<T = unknown> {
 
 interface UploadRequestOptions {
   url: string;
+  method?: 'POST' | 'PUT';
   data: FormData;
   onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
@@ -64,7 +69,7 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
       xhr.upload.addEventListener('progress', (event) => onProgress(event));
     }
 
-    xhr.open('POST', url);
+    xhr.open(options.method || 'POST', url);
     xhr.responseType = 'json';
     xhr.send(data);
   });
@@ -116,6 +121,7 @@ export const getJobName = (jobName: JobName) => {
     [JobName.MetadataExtraction]: 'Extract Metadata',
     [JobName.Sidecar]: 'Sidecar Metadata',
     [JobName.SmartSearch]: 'Smart Search',
+    [JobName.DuplicateDetection]: 'Duplicate Detection',
     [JobName.FaceDetection]: 'Face Detection',
     [JobName.FacialRecognition]: 'Facial Recognition',
     [JobName.VideoConversion]: 'Transcode Videos',
@@ -154,28 +160,36 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const url = new URL(path, 'https://example.com');
   url.search = searchParameters.toString();
 
-  return defaults.baseUrl + url.pathname + url.search + url.hash;
+  return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetFileUrl = (...[assetId, isWeb, isThumb]: [string, boolean, boolean]) => {
-  const path = `/asset/file/${assetId}`;
-  return createUrl(path, { isThumb, isWeb, key: getKey() });
+export const getAssetOriginalUrl = (options: string | { id: string; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, checksum } = options;
+  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: checksum });
 };
 
-export const getAssetThumbnailUrl = (...[assetId, format]: [string, ThumbnailFormat | undefined]) => {
-  const path = `/asset/thumbnail/${assetId}`;
-  return createUrl(path, { format, key: getKey() });
+export const getAssetThumbnailUrl = (options: string | { id: string; size?: AssetMediaSize; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, size, checksum } = options;
+  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (...[userId]: [string]) => {
-  const path = `/user/profile-image/${userId}`;
-  return createUrl(path);
+export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: string }) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, checksum } = options;
+  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
 };
 
-export const getPeopleThumbnailUrl = (personId: string) => {
-  const path = `/person/${personId}/thumbnail`;
-  return createUrl(path);
-};
+export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
+
+export const getPeopleThumbnailUrl = (personId: string) => createUrl(getPeopleThumbnailPath(personId));
 
 export const getAssetJobName = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
@@ -252,7 +266,7 @@ export const oauth = {
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): Promise<UserResponseDto> => {
+  link: (location: Location) => {
     return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
@@ -278,4 +292,6 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} ${yearsAgo ? 'years' : 'year'} ago`;
+export const s = (count: number) => (count === 1 ? '' : 's');
+
+export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;

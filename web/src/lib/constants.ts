@@ -39,6 +39,9 @@ export enum AppRoute {
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
+
+  UTILITIES = '/utilities',
+  DUPLICATES = '/utilities/duplicates',
 }
 
 export enum ProjectionType {
@@ -229,8 +232,6 @@ export const locales = [
   { code: 'sw-KE', name: 'Swahili (Kenya)' },
   { code: 'sv-FI', name: 'Swedish (Finland)' },
   { code: 'sv-SE', name: 'Swedish (Sweden)' },
-  { code: 'syr-SY', name: 'Syriac (Syria)' },
-  { code: 'ta-IN', name: 'Tamil (India)' },
   { code: 'te-IN', name: 'Telugu (India)' },
   { code: 'th-TH', name: 'Thai (Thailand)' },
   { code: 'tn-ZA', name: 'Tswana (South Africa)' },
@@ -241,4 +242,42 @@ export const locales = [
   { code: 'cy-GB', name: 'Welsh (United Kingdom)' },
   { code: 'xh-ZA', name: 'Xhosa (South Africa)' },
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
+];
+
+export const defaultLang = { name: 'English', code: 'en', loader: () => import('$lib/i18n/en.json') };
+
+export const langs = [
+  { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
+  { name: 'Catalan', code: 'ca', loader: () => import('$lib/i18n/ca.json') },
+  { name: 'Czech', code: 'cs', loader: () => import('$lib/i18n/cs.json') },
+  { name: 'Danish', code: 'da', loader: () => import('$lib/i18n/da.json') },
+  { name: 'German', code: 'de', loader: () => import('$lib/i18n/de.json') },
+  defaultLang,
+  { name: 'Spanish', code: 'es', loader: () => import('$lib/i18n/es.json') },
+  { name: 'Finnish', code: 'fi', loader: () => import('$lib/i18n/fi.json') },
+  { name: 'French', code: 'fr', loader: () => import('$lib/i18n/fr.json') },
+  { name: 'Hebrew', code: 'he', loader: () => import('$lib/i18n/he.json') },
+  { name: 'Hindi', code: 'hi', loader: () => import('$lib/i18n/hi.json') },
+  { name: 'Hungarian', code: 'hu', loader: () => import('$lib/i18n/hu.json') },
+  { name: 'Italian', code: 'it', loader: () => import('$lib/i18n/it.json') },
+  { name: 'Japanese', code: 'ja', loader: () => import('$lib/i18n/ja.json') },
+  { name: 'Korean', code: 'ko', loader: () => import('$lib/i18n/ko.json') },
+  { name: 'Lithuanian', code: 'lt', loader: () => import('$lib/i18n/lt.json') },
+  { name: 'Latvian', code: 'lv', loader: () => import('$lib/i18n/lv.json') },
+  { name: 'Mongolian', code: 'mn', loader: () => import('$lib/i18n/mn.json') },
+  { name: 'Norwegian Bokmål', code: 'nb_NO', loader: () => import('$lib/i18n/nb_NO.json') },
+  { name: 'Dutch', code: 'nl', loader: () => import('$lib/i18n/nl.json') },
+  { name: 'Polish', code: 'pl', loader: () => import('$lib/i18n/pl.json') },
+  { name: 'Portuguese', code: 'pt', loader: () => import('$lib/i18n/pt.json') },
+  { name: 'Romanian', code: 'ro', loader: () => import('$lib/i18n/ro.json') },
+  { name: 'Russian', code: 'ru', loader: () => import('$lib/i18n/ru.json') },
+  { name: 'Slovak', code: 'sk', loader: () => import('$lib/i18n/sk.json') },
+  { name: 'Slovenian', code: 'sl', loader: () => import('$lib/i18n/sl.json') },
+  { name: 'Serbian', code: 'sr', loader: () => import('$lib/i18n/sr.json') },
+  { name: 'Swedish', code: 'sv', loader: () => import('$lib/i18n/sv.json') },
+  { name: 'Thai', code: 'th', loader: () => import('$lib/i18n/th.json') },
+  { name: 'Ukrainian', code: 'uk', loader: () => import('$lib/i18n/uk.json') },
+  { name: 'Vietnamese', code: 'vi', loader: () => import('$lib/i18n/vi.json') },
+  { name: 'Chinese (Simplified)', code: 'zh_SIMPLIFIED', loader: () => import('$lib/i18n/zh_SIMPLIFIED.json') },
+  { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];

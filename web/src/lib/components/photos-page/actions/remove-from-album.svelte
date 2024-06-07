@@ -1,6 +1,5 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     NotificationType,
     notificationController,
@@ -9,6 +8,9 @@
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { s } from '$lib/utils';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined;
@@ -16,9 +18,16 @@
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
-  let isShowConfirmation = false;
-
   const removeFromAlbum = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-from-album',
+      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from the album?`,
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       const ids = [...getAssets()].map((a) => a.id);
       const results = await removeAssetFromAlbum({
@@ -33,7 +42,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Removed ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Removed ${count} asset${s(count)}`,
       });
 
       clearSelect();
@@ -43,36 +52,12 @@
         type: NotificationType.Error,
         message: 'Error removing assets from album, check console for more details',
       });
-    } finally {
-      isShowConfirmation = false;
     }
   };
 </script>
 
 {#if menuItem}
-  <MenuOption text="Remove from album" icon={mdiImageRemoveOutline} on:click={() => (isShowConfirmation = true)} />
+  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} on:click={removeFromAlbum} />
 {:else}
-  <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
-{/if}
-
-{#if isShowConfirmation}
-  <ConfirmDialogue
-    id="remove-from-album-modal"
-    title="Remove from {album.albumName}"
-    confirmText="Remove"
-    onConfirm={removeFromAlbum}
-    onClose={() => (isShowConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>
-        Are you sure you want to remove
-        {#if getAssets().size > 1}
-          these <b>{getAssets().size}</b> assets
-        {:else}
-          this asset
-        {/if}
-        from the album?
-      </p>
-    </svelte:fragment>
-  </ConfirmDialogue>
+  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} on:click={removeFromAlbum} />
 {/if}

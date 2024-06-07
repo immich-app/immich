@@ -4,8 +4,8 @@ import { FileChecksumDto, FileChecksumResponseDto, FileReportDto, FileReportFixD
 import { Authenticated } from 'src/middleware/auth.guard';
 import { AuditService } from 'src/services/audit.service';
 
-@ApiTags('File Report')
-@Controller('report')
+@ApiTags('File Reports')
+@Controller('reports')
 export class ReportController {
   constructor(private service: AuditService) {}
 

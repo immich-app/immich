@@ -1,8 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
+  import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let size: number;
 
@@ -21,12 +23,11 @@
   };
 </script>
 
-<ConfirmDialogue
-  id="permanently-delete-asset-modal"
-  title="Permanently delete asset{size > 1 ? 's' : ''}"
-  confirmText="Delete"
+<ConfirmDialog
+  title="Permanently delete asset{s(size)}"
+  confirmText={$t('delete')}
   onConfirm={handleConfirm}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p>
@@ -43,4 +44,4 @@
       <Checkbox id="confirm-deletion-input" label="Do not show this message again" bind:checked />
     </div>
   </svelte:fragment>
-</ConfirmDialogue>
+</ConfirmDialog>

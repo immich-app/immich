@@ -65,6 +65,10 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
   [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
 
+  // duplicate detection
+  [JobName.QUEUE_DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
+  [JobName.DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
+
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
@@ -81,7 +85,12 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Notification
   [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_INVITE]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_UPDATE]: QueueName.NOTIFICATION,
   [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
+
+  // Version check
+  [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()

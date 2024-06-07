@@ -36,7 +36,7 @@ describe('AlbumCard component', () => {
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
-    const detailsText = `${count} items` + (shared ? ' . Shared' : '');
+    const detailsText = `${count} items` + (shared ? ' . shared' : '');
 
     expect(albumImgElement).toHaveAttribute('src');
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
@@ -44,7 +44,7 @@ describe('AlbumCard component', () => {
     await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);
-    expect(sdkMock.getAssetThumbnail).not.toHaveBeenCalled();
+    expect(sdkMock.viewAsset).not.toHaveBeenCalled();
 
     expect(albumNameElement).toHaveTextContent(album.albumName);
     expect(albumDetailsElement).toHaveTextContent(new RegExp(detailsText));

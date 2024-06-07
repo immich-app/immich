@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { createContext } from '$lib/utils/context';
 
   const { get: getMenuContext, set: setContext } = createContext<() => void>();
@@ -25,7 +25,7 @@
   setContext(() => (showContextMenu = false));
 </script>
 
-<div use:clickOutside on:outclick={() => (showContextMenu = false)}>
+<div use:clickOutside={{ onOutclick: () => (showContextMenu = false) }}>
   <CircleIconButton {title} {icon} on:click={handleShowMenu} />
   {#if showContextMenu}
     <ContextMenu {...contextMenuPosition}>

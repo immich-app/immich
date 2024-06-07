@@ -14,9 +14,10 @@
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
@@ -74,7 +75,7 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
       {#if sharedLink?.allowDownload}
         <DownloadAction filename="immich-shared.zip" />
       {/if}
@@ -85,18 +86,20 @@
   {:else}
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
-          <ImmichLogo class="h-[24px] w-[24px] max-w-none md:w-auto md:h-10 md:max-w-full" noText={innerWidth < 768} />
-        </a>
+        <ImmichLogoSmallLink width={innerWidth} />
       </svelte:fragment>
 
       <svelte:fragment slot="trailing">
         {#if sharedLink?.allowUpload}
-          <CircleIconButton title="Add Photos" on:click={() => handleUploadAssets()} icon={mdiFileImagePlusOutline} />
+          <CircleIconButton
+            title={$t('add_photos')}
+            on:click={() => handleUploadAssets()}
+            icon={mdiFileImagePlusOutline}
+          />
         {/if}
 
         {#if sharedLink?.allowDownload}
-          <CircleIconButton title="Download" on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title={$t('download')} on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
         {/if}
       </svelte:fragment>
     </ControlAppBar>

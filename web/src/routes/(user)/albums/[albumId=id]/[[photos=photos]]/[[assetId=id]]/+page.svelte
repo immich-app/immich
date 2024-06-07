@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -24,7 +24,6 @@
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -42,9 +41,9 @@
   import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError, s } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -81,6 +80,8 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -98,7 +99,6 @@
   }
 
   enum ViewMode {
-    CONFIRM_DELETE = 'confirm-delete',
     LINK_SHARING = 'link-sharing',
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
@@ -136,7 +136,7 @@
     assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
   }
   $: showActivityStatus =
-    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   $: isEditor =
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -158,7 +158,7 @@
 
     backUrl = url || AppRoute.ALBUMS;
 
-    if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0 && !album.hasSharedLink) {
+    if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     }
   });
@@ -211,7 +211,7 @@
           isLiked = data[0];
         }
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        handleError(error, $t('errors.unable_to_load_liked_status'));
       }
     }
   };
@@ -229,7 +229,7 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.sharedUsers.length > 0) {
+  $: if (album.albumUsers.length > 0) {
     handlePromiseError(getFavorite());
     handlePromiseError(getNumberOfComments());
   }
@@ -248,10 +248,7 @@
       viewMode = ViewMode.VIEW;
       return;
     }
-    if (viewMode === ViewMode.CONFIRM_DELETE) {
-      viewMode = ViewMode.VIEW;
-      return;
-    }
+
     if (viewMode === ViewMode.SELECT_ASSETS) {
       handleCloseSelectAssets();
       return;
@@ -291,7 +288,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${count === 1 ? '' : 's'}`,
+        message: `Added ${count} asset${s(count)}`,
       });
 
       await refreshAlbum();
@@ -314,7 +311,7 @@
   };
 
   const handleSelectFromComputer = async () => {
-    await openFileUploadDialog(album.id);
+    await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
     viewMode = ViewMode.VIEW;
   };
@@ -342,9 +339,9 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.sharedUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error deleting shared user');
+      handleError(error, $t('errors.unable_to_load_album'));
     }
   };
 
@@ -353,11 +350,21 @@
   };
 
   const handleRemoveAlbum = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'remove-album',
+      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+    });
+
+    if (!isConfirmed) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+
     try {
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
     } catch (error) {
-      handleError(error, 'Unable to delete album');
+      handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -399,6 +406,12 @@
       handleError(error, 'Unable to update album cover');
     }
   };
+
+  onNavigate(async () => {
+    if (album.assetCount === 0 && !album.albumName) {
+      await deleteAlbum(album);
+    }
+  });
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -407,21 +420,21 @@
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+        <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
         {#if isAllUserOwned}
           <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
         {/if}
-        <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+        <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
             {#if $selectedAssets.size === 1}
               <MenuOption
-                text="Set as album cover"
+                text={$t('set_as_album_cover')}
                 icon={mdiImageOutline}
                 on:click={() => updateThumbnailUsingCurrentSelection()}
               />
@@ -442,7 +455,7 @@
           <svelte:fragment slot="trailing">
             {#if isEditor}
               <CircleIconButton
-                title="Add photos"
+                title={$t('add_photos')}
                 on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                 icon={mdiImagePlusOutline}
               />
@@ -450,31 +463,39 @@
 
             {#if isOwned}
               <CircleIconButton
-                title="Share"
+                title={$t('share')}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
               />
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title="Slideshow" on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+              <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
+              <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                  <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical} />
+                <div use:clickOutside={{ onOutclick: () => (viewMode = ViewMode.VIEW) }}>
+                  <CircleIconButton
+                    title={$t('album_options')}
+                    on:click={handleOpenAlbumOptions}
+                    icon={mdiDotsVertical}
+                  />
                   {#if viewMode === ViewMode.ALBUM_OPTIONS}
                     <ContextMenu {...contextMenuPosition}>
                       <MenuOption
                         icon={mdiImageOutline}
-                        text="Select album cover"
+                        text={$t('select_album_cover')}
                         on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                       />
-                      <MenuOption icon={mdiCogOutline} text="Options" on:click={() => (viewMode = ViewMode.OPTIONS)} />
+                      <MenuOption
+                        icon={mdiCogOutline}
+                        text={$t('options')}
+                        on:click={() => (viewMode = ViewMode.OPTIONS)}
+                      />
                       <MenuOption
                         icon={mdiDeleteOutline}
-                        text="Delete album"
-                        on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                        text={$t('delete_album')}
+                        on:click={() => handleRemoveAlbum()}
                       />
                     </ContextMenu>
                   {/if}
@@ -482,7 +503,7 @@
               {/if}
             {/if}
 
-            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
               <Button
                 size="sm"
                 rounded="lg"
@@ -510,13 +531,14 @@
 
           <svelte:fragment slot="trailing">
             <button
+              type="button"
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
               Select from computer
             </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
-              >Done</Button
+              >{$t('done')}</Button
             >
           </svelte:fragment>
         </ControlAppBar>
@@ -524,7 +546,7 @@
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
         <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW)}>
-          <svelte:fragment slot="leading">Select Album Cover</svelte:fragment>
+          <svelte:fragment slot="leading">{$t('select_album_cover')}</svelte:fragment>
         </ControlAppBar>
       {/if}
     {/if}
@@ -546,7 +568,7 @@
             {album}
             {assetStore}
             {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
+            isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
@@ -556,19 +578,19 @@
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-24">
-                <AlbumTitle id={album.id} albumName={album.albumName} {isOwned} />
+                <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
 
                 {#if album.assetCount > 0}
                   <AlbumSummary {album} />
                 {/if}
 
                 <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
                   <div class="my-3 flex gap-x-1">
                     <!-- link -->
                     {#if album.hasSharedLink && isOwned}
                       <CircleIconButton
-                        title="Create link to share"
+                        title={$t('create_link_to_share')}
                         color="gray"
                         size="20"
                         icon={mdiLink}
@@ -577,13 +599,13 @@
                     {/if}
 
                     <!-- owner -->
-                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -591,7 +613,7 @@
                     <!-- display ellipsis if there are readonly users too -->
                     {#if albumHasViewers}
                       <CircleIconButton
-                        title="View all users"
+                        title={$t('view_all_users')}
                         color="gray"
                         size="20"
                         icon={mdiDotsVertical}
@@ -605,7 +627,7 @@
                         size="20"
                         icon={mdiPlus}
                         on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                        title="Add more users"
+                        title={$t('add_more_users')}
                       />
                     {/if}
                   </div>
@@ -618,15 +640,16 @@
             {#if album.assetCount === 0}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
-                  <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+                  <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
                   <button
+                    type="button"
                     on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
                     <span class="text-text-immich-primary dark:text-immich-dark-primary"
                       ><Icon path={mdiPlus} size="24" />
                     </span>
-                    <span class="text-lg">Select photos</span>
+                    <span class="text-lg">{$t('select_photos')}</span>
                   </button>
                 </div>
               </section>
@@ -649,7 +672,7 @@
       {/key}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -693,21 +716,6 @@
     on:remove={({ detail: userId }) => handleRemoveUser(userId)}
     on:refreshAlbum={refreshAlbum}
   />
-{/if}
-
-{#if viewMode === ViewMode.CONFIRM_DELETE}
-  <ConfirmDialogue
-    id="delete-album-modal"
-    title="Delete album"
-    confirmText="Delete"
-    onConfirm={handleRemoveAlbum}
-    onClose={() => (viewMode = ViewMode.VIEW)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
-      <p>If this album is shared, other users will not be able to access it anymore.</p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}
 
 {#if viewMode === ViewMode.OPTIONS && $user}

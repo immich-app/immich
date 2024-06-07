@@ -1,60 +1,39 @@
-import { serverVersion } from 'src/constants';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let eventMock: Mocked<IEventRepository>;
-  let configMock: Mocked<ISystemConfigRepository>;
-  let serverInfoMock: Mocked<IServerInfoRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
-  let systemMetadataMock: Mocked<ISystemMetadataRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    configMock = newSystemConfigRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
-    systemMetadataMock = newSystemMetadataRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new ServerInfoService(
-      eventMock,
-      configMock,
-      userMock,
-      serverInfoMock,
-      storageMock,
-      systemMetadataMock,
-      loggerMock,
-    );
+    sut = new ServerInfoService(userMock, storageMock, systemMock, loggerMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getInfo', () => {
+  describe('getStorage', () => {
     it('should return the disk space as B', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200, available: 300, total: 500 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '300 B',
         diskAvailableRaw: 300,
         diskSize: '500 B',
@@ -70,7 +49,7 @@ describe(ServerInfoService.name, () => {
     it('should return the disk space as KiB', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000, available: 300_000, total: 500_000 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '293.0 KiB',
         diskAvailableRaw: 300_000,
         diskSize: '488.3 KiB',
@@ -86,7 +65,7 @@ describe(ServerInfoService.name, () => {
     it('should return the disk space as MiB', async () => {
       storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000_000, available: 300_000_000, total: 500_000_000 });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '286.1 MiB',
         diskAvailableRaw: 300_000_000,
         diskSize: '476.8 MiB',
@@ -106,7 +85,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '279.4 GiB',
         diskAvailableRaw: 300_000_000_000,
         diskSize: '465.7 GiB',
@@ -126,7 +105,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '272.8 TiB',
         diskAvailableRaw: 300_000_000_000_000,
         diskSize: '454.7 TiB',
@@ -146,7 +125,7 @@ describe(ServerInfoService.name, () => {
         total: 500_000_000_000_000_000,
       });
 
-      await expect(sut.getInfo()).resolves.toEqual({
+      await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '266.5 PiB',
         diskAvailableRaw: 300_000_000_000_000_000,
         diskSize: '444.1 PiB',
@@ -166,16 +145,11 @@ describe(ServerInfoService.name, () => {
     });
   });
 
-  describe('getVersion', () => {
-    it('should respond the server version', () => {
-      expect(sut.getVersion()).toEqual(serverVersion);
-    });
-  });
-
   describe('getFeatures', () => {
     it('should respond the server features', async () => {
       await expect(sut.getFeatures()).resolves.toEqual({
         smartSearch: true,
+        duplicateDetection: true,
         facialRecognition: true,
         map: true,
         reverseGeocoding: true,
@@ -188,7 +162,7 @@ describe(ServerInfoService.name, () => {
         trash: true,
         email: false,
       });
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
   });
 
@@ -203,7 +177,7 @@ describe(ServerInfoService.name, () => {
         isOnboarded: false,
         externalDomain: '',
       });
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
     });
   });
 

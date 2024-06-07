@@ -1,11 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { groupBy, orderBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto } from '@immich/sdk';
+  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
     NotificationType,
@@ -33,6 +32,8 @@
   } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let ownedAlbums: AlbumResponseDto[] = [];
   export let sharedAlbums: AlbumResponseDto[] = [];
@@ -55,8 +56,8 @@
     [AlbumGroupBy.None]: (order, albums): AlbumGroup[] => {
       return [
         {
-          id: 'Albums',
-          name: 'Albums',
+          id: $t('albums'),
+          name: $t('albums'),
           albums,
         },
       ];
@@ -64,7 +65,7 @@
 
     /** Group by year */
     [AlbumGroupBy.Year]: (order, albums): AlbumGroup[] => {
-      const unknownYear = 'Unknown Year';
+      const unknownYear = $t('unknown_year');
       const useStartDate = userSettings.sortBy === AlbumSortBy.OldestPhoto;
 
       const groupedByYear = groupBy(albums, (album) => {
@@ -111,7 +112,7 @@
 
       return sortedByOwnerNames.map(([ownerId, albums]) => ({
         id: ownerId,
-        name: ownerId === currentUserId ? 'My albums' : albums[0].owner.name,
+        name: ownerId === currentUserId ? $t('my_albums') : albums[0].owner.name,
         albums,
       }));
     },
@@ -267,17 +268,28 @@
   };
 
   const handleDeleteAlbum = async (albumToDelete: AlbumResponseDto) => {
-    await deleteAlbum({
-      id: albumToDelete.id,
-    });
+    try {
+      await deleteAlbum({
+        id: albumToDelete.id,
+      });
+    } catch (error) {
+      // In rare cases deleting an album completes after the list of albums has been requested,
+      // leading to a bad request error.
+      // Since the album is already deleted, the error is ignored.
+      const isBadRequest = isHttpError(error) && error.status === 400;
+      if (!isBadRequest) {
+        throw error;
+      }
+    }
 
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);
   };
 
-  const setAlbumToDelete = () => {
+  const setAlbumToDelete = async () => {
     albumToDelete = contextMenuTargetAlbum ?? null;
     closeAlbumContextMenu();
+    await deleteSelectedAlbum();
   };
 
   const handleEdit = (album: AlbumResponseDto) => {
@@ -289,11 +301,21 @@
     if (!albumToDelete) {
       return;
     }
+
+    const isConfirmed = await dialogController.show({
+      id: 'delete-album',
+      prompt: `Are you sure you want to delete the album ${albumToDelete.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       await handleDeleteAlbum(albumToDelete);
     } catch {
       notificationController.show({
-        message: 'Error deleting album',
+        message: $t('errors.unable_to_delete_album'),
         type: NotificationType.Error,
       });
     } finally {
@@ -315,7 +337,7 @@
     albumToEdit = null;
 
     notificationController.show({
-      message: 'Album info updated',
+      message: $t('album_info_updated'),
       type: NotificationType.Info,
       button: {
         text: 'View Album',
@@ -341,7 +363,7 @@
       });
       updateAlbumInfo(album);
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      handleError(error, $t('errors.unable_to_add_album_users'));
     } finally {
       albumToShare = null;
     }
@@ -455,21 +477,5 @@
         onClose={() => closeShareModal()}
       />
     {/if}
-  {/if}
-
-  <!-- Delete Modal -->
-  {#if albumToDelete}
-    <ConfirmDialogue
-      id="delete-album-dialogue-modal"
-      title="Delete album"
-      confirmText="Delete"
-      onConfirm={deleteSelectedAlbum}
-      onClose={() => (albumToDelete = null)}
-    >
-      <svelte:fragment slot="prompt">
-        <p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>
-        <p>If this album is shared, other users will not be able to access it anymore.</p>
-      </svelte:fragment>
-    </ConfirmDialogue>
   {/if}
 {/if}

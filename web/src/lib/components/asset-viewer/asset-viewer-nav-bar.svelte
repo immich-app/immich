@@ -3,9 +3,10 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName } from '$lib/utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import {
     mdiAccountCircleOutline,
     mdiAlertOutline,
@@ -32,10 +33,12 @@
     mdiPlaySpeed,
     mdiPresentationPlay,
     mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
@@ -48,21 +51,12 @@
   export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
+  export let onZoomImage: () => void;
+  export let onCopyImage: () => void;
 
-  $: isOwner = asset.ownerId === $user?.id;
+  $: isOwner = $user && asset.ownerId === $user?.id;
 
-  type MenuItemEvent =
-    | 'addToAlbum'
-    | 'restoreAsset'
-    | 'addToSharedAlbum'
-    | 'asProfileImage'
-    | 'setAsAlbumCover'
-    | 'download'
-    | 'playSlideShow'
-    | 'runJob'
-    | 'unstack';
-
-  const dispatch = createEventDispatcher<{
+  type EventTypes = {
     back: void;
     stopMotionPhoto: void;
     playMotionPhoto: void;
@@ -80,7 +74,9 @@
     playSlideShow: void;
     unstack: void;
     showShareModal: void;
-  }>();
+  };
+
+  const dispatch = createEventDispatcher<EventTypes>();
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
@@ -95,7 +91,7 @@
     dispatch('runJob', name);
   };
 
-  const onMenuClick = (eventName: MenuItemEvent) => {
+  const onMenuClick = (eventName: keyof EventTypes) => {
     isShowAssetOptions = false;
     dispatch(eventName);
   };
@@ -105,15 +101,18 @@
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton color="opaque" icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
+    <CircleIconButton color="opaque" icon={mdiArrowLeft} title={$t('go_back')} on:click={() => dispatch('back')} />
   </div>
-  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
+  <div
+    class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
+    data-testid="asset-viewer-navbar-actions"
+  >
     {#if showShareButton}
       <CircleIconButton
         color="opaque"
         icon={mdiShareVariantOutline}
         on:click={() => dispatch('showShareModal')}
-        title="Share"
+        title={$t('share')}
       />
     {/if}
     {#if asset.isOffline}
@@ -121,7 +120,7 @@
         color="opaque"
         icon={mdiAlertOutline}
         on:click={() => dispatch('showDetail')}
-        title="Asset Offline"
+        title={$t('asset_offline')}
       />
     {/if}
     {#if showMotionPlayButton}
@@ -129,14 +128,14 @@
         <CircleIconButton
           color="opaque"
           icon={mdiMotionPauseOutline}
-          title="Stop Motion Photo"
+          title={$t('stop_motion_photo')}
           on:click={() => dispatch('stopMotionPhoto')}
         />
       {:else}
         <CircleIconButton
           color="opaque"
           icon={mdiPlaySpeed}
-          title="Play Motion Photo"
+          title={$t('play_motion_photo')}
           on:click={() => dispatch('playMotionPhoto')}
         />
       {/if}
@@ -146,23 +145,12 @@
         color="opaque"
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        title="Zoom Image"
-        on:click={() => {
-          const zoomImage = new CustomEvent('zoomImage');
-          window.dispatchEvent(zoomImage);
-        }}
+        title={$t('zoom_image')}
+        on:click={onZoomImage}
       />
     {/if}
     {#if showCopyButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiContentCopy}
-        title="Copy Image"
-        on:click={() => {
-          const copyEvent = new CustomEvent('copyImage');
-          window.dispatchEvent(copyEvent);
-        }}
-      />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -170,7 +158,7 @@
         color="opaque"
         icon={mdiFolderDownloadOutline}
         on:click={() => dispatch('download')}
-        title="Download"
+        title={$t('download')}
       />
     {/if}
 
@@ -179,7 +167,7 @@
         color="opaque"
         icon={mdiInformationOutline}
         on:click={() => dispatch('showDetail')}
-        title="Info"
+        title={$t('info')}
       />
     {/if}
 
@@ -188,45 +176,58 @@
         color="opaque"
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
+        title={asset.isFavorite ? $t('unfavorite') : $t('favorite')}
       />
     {/if}
 
     {#if isOwner}
-      <CircleIconButton color="opaque" icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+      <CircleIconButton
+        color="opaque"
+        icon={mdiDeleteOutline}
+        on:click={() => dispatch('delete')}
+        title={$t('delete')}
+      />
       <div
         use:clickOutside={{
           onOutclick: () => (isShowAssetOptions = false),
           onEscape: () => (isShowAssetOptions = false),
         }}
       >
-        <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
+        <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title={$t('more')} />
         {#if isShowAssetOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
             {#if showSlideshow}
-              <MenuOption icon={mdiPresentationPlay} on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+              <MenuOption
+                icon={mdiPresentationPlay}
+                on:click={() => onMenuClick('playSlideShow')}
+                text={$t('slideshow')}
+              />
             {/if}
             {#if showDownloadButton}
-              <MenuOption icon={mdiFolderDownloadOutline} on:click={() => onMenuClick('download')} text="Download" />
+              <MenuOption
+                icon={mdiFolderDownloadOutline}
+                on:click={() => onMenuClick('download')}
+                text={$t('download')}
+              />
             {/if}
             {#if asset.isTrashed}
-              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text="Restore" />
+              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text={$t('restore')} />
             {:else}
-              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
+              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text={$t('add_to_album')} />
               <MenuOption
                 icon={mdiShareVariantOutline}
                 on:click={() => onMenuClick('addToSharedAlbum')}
-                text="Add to shared album"
+                text={$t('add_to_shared_album')}
               />
             {/if}
 
             {#if isOwner}
               {#if hasStackChildren}
-                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text="Un-stack" />
+                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text={$t('unstack')} />
               {/if}
               {#if album}
                 <MenuOption
-                  text="Set as album cover"
+                  text={$t('set_as_album_cover')}
                   icon={mdiImageOutline}
                   on:click={() => onMenuClick('setAsAlbumCover')}
                 />
@@ -235,13 +236,18 @@
                 <MenuOption
                   icon={mdiAccountCircleOutline}
                   on:click={() => onMenuClick('asProfileImage')}
-                  text="Set as profile picture"
+                  text={$t('set_as_profile_picture')}
                 />
               {/if}
               <MenuOption
-                on:click={() => dispatch('toggleArchive')}
+                on:click={() => onMenuClick('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
-                text={asset.isArchived ? 'Unarchive' : 'Archive'}
+                text={asset.isArchived ? $t('unarchive') : $t('archive')}
+              />
+              <MenuOption
+                icon={mdiUpload}
+                on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                text={$t('replace_with_upload')}
               />
               <hr />
               <MenuOption

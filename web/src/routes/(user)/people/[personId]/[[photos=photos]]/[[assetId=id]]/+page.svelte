@@ -31,8 +31,8 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { getPeopleThumbnailUrl, handlePromiseError, s } from '$lib/utils';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
@@ -55,7 +55,8 @@
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
-  import { listNavigation } from '$lib/utils/list-navigation';
+  import { listNavigation } from '$lib/actions/list-navigation';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -182,13 +183,13 @@
       });
 
       notificationController.show({
-        message: 'Changed visibility successfully',
+        message: $t('changed_visibility_successfully'),
         type: NotificationType.Info,
       });
 
       await goto(previousRoute, { replaceState: true });
     } catch (error) {
-      handleError(error, 'Unable to hide person');
+      handleError(error, $t('errors.unable_to_hide_person'));
     }
   };
 
@@ -208,7 +209,7 @@
 
     await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
-    notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
+    notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
 
     viewMode = ViewMode.VIEW_ASSETS;
@@ -224,7 +225,7 @@
         mergePersonDto: { ids: [personToMerge.id] },
       });
       notificationController.show({
-        message: 'Merge people successfully',
+        message: $t('merge_people_successfully'),
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
@@ -235,7 +236,7 @@
       }
       await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -257,11 +258,11 @@
       await updatePerson({ id: data.person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
-        message: 'Change name successfully',
+        message: $t('change_name_successfully'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -379,14 +380,18 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+      <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
       <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+      <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('add')}>
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <MenuOption icon={mdiAccountMultipleCheckOutline} text="Fix incorrect match" on:click={handleReassignAssets} />
+        <MenuOption
+          icon={mdiAccountMultipleCheckOutline}
+          text={$t('fix_incorrect_match')}
+          on:click={handleReassignAssets}
+        />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
@@ -397,24 +402,24 @@
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
-          <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+          <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <MenuOption
-              text="Select featured photo"
+              text={$t('select_featured_photo')}
               icon={mdiAccountBoxOutline}
               on:click={() => (viewMode = ViewMode.SELECT_PERSON)}
             />
             <MenuOption
-              text={data.person.isHidden ? 'Unhide person' : 'Hide person'}
+              text={data.person.isHidden ? $t('unhide_person') : $t('hide_person')}
               icon={data.person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               on:click={() => toggleHidePerson()}
             />
             <MenuOption
-              text="Set date of birth"
+              text={$t('set_date_of_birth')}
               icon={mdiCalendarEditOutline}
               on:click={() => (viewMode = ViewMode.BIRTH_DATE)}
             />
             <MenuOption
-              text="Merge people"
+              text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
               on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)}
             />
@@ -425,7 +430,7 @@
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-        <svelte:fragment slot="leading">Select featured photo</svelte:fragment>
+        <svelte:fragment slot="leading">{$t('select_featured_photo')}</svelte:fragment>
       </ControlAppBar>
     {/if}
   {/if}
@@ -464,8 +469,9 @@
             {:else}
               <div class="relative">
                 <button
+                  type="button"
                   class="flex items-center justify-center"
-                  title="Edit name"
+                  title={$t('edit_name')}
                   on:click={() => (isEditingName = true)}
                 >
                   <ImageThumbnail
@@ -482,10 +488,10 @@
                     {#if data.person.name}
                       <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
                       <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
+                        {`${numberOfAssets} asset${s(numberOfAssets)}`}
                       </p>
                     {:else}
-                      <p class="font-medium">Add a name</p>
+                      <p class="font-medium">{$t('add_a_name')}</p>
                       <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
                     {/if}
                   </div>
@@ -507,6 +513,7 @@
                 <div bind:this={suggestionContainer}>
                   {#each suggestedPeople as person, index (person.id)}
                     <button
+                      type="button"
                       class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                       suggestedPeople.length - 1
                         ? 'rounded-b-lg border-b'

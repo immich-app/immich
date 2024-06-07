@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
-import { UserDto, mapSimpleUser } from 'src/dtos/user.dto';
+import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
 import { Optional, ValidateUUID } from 'src/validation';
 
@@ -20,7 +20,7 @@ export class ActivityResponseDto {
   id!: string;
   createdAt!: Date;
   type!: ReactionType;
-  user!: UserDto;
+  user!: UserResponseDto;
   assetId!: string | null;
   comment?: string | null;
 }
@@ -73,6 +73,6 @@ export function mapActivity(activity: ActivityEntity): ActivityResponseDto {
     createdAt: activity.createdAt,
     comment: activity.comment,
     type: activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,
-    user: mapSimpleUser(activity.user),
+    user: mapUser(activity.user),
   };
 }

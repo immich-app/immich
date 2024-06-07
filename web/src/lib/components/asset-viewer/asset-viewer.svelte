@@ -12,9 +12,15 @@
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
-  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
+  import {
+    addAssetsToAlbum,
+    addAssetsToNewAlbum,
+    downloadFile,
+    unstackAssets,
+    toggleArchive,
+  } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcuts } from '$lib/utils/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -52,6 +58,9 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
+  import { t } from 'svelte-i18n';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -88,9 +97,8 @@
   let isShowProfileImageCrop = false;
   let sharedLink = getSharedLink();
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
-  let shouldShowDetailButton = asset.hasMetadata;
+  let enableDetailPanel = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
-  let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
@@ -98,7 +106,9 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-
+  let unsubscribe: () => void;
+  let zoomToggle = () => void 0;
+  let copyImage: () => Promise<void>;
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
@@ -168,7 +178,7 @@
         });
         isLiked = data.length > 0 ? data[0] : null;
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        handleError(error, $t('errors.unable_to_load_liked_status'));
       }
     }
   };
@@ -192,6 +202,11 @@
   }
 
   onMount(async () => {
+    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
     await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
@@ -214,11 +229,6 @@
       await handleGetAllAlbums();
     }
 
-    // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-    // TODO: Move to regular import once the package correctly supports ESM.
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
-
     if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
@@ -237,6 +247,7 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
+    unsubscribe?.();
   });
 
   $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
@@ -265,15 +276,13 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const handleCloseViewer = async () => {
-    await closeViewer();
-  };
-
   const closeViewer = async () => {
-    $slideshowState = SlideshowState.StopSlideshow;
-    document.body.style.cursor = '';
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+    if ($slideshowState === SlideshowState.None) {
+      dispatch('close');
+      await navigate({ targetRoute: 'current', assetId: null });
+    } else {
+      $slideshowState = SlideshowState.StopSlideshow;
+    }
   };
 
   const navigateAssetRandom = async () => {
@@ -347,11 +356,11 @@
       dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
-        message: 'Moved to trash',
+        message: $t('moved_to_trash'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to trash asset');
+      handleError(error, $t('errors.unable_to_trash_asset'));
     }
   };
 
@@ -362,11 +371,11 @@
       dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
-        message: 'Permanently deleted asset',
+        message: $t('permanently_deleted_asset'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to delete asset');
+      handleError(error, $t('errors.unable_to_delete_asset'));
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -423,28 +432,14 @@
         message: `Restored asset`,
       });
     } catch (error) {
-      handleError(error, 'Error restoring asset');
+      handleError(error, $t('errors.unable_to_restore_assets'));
     }
   };
 
-  const toggleArchive = async () => {
-    try {
-      const data = await updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          isArchived: !asset.isArchived,
-        },
-      });
-
-      asset.isArchived = data.isArchived;
-      dispatch('action', { type: data.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: data });
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: asset.isArchived ? `Added to archive` : `Removed from archive`,
-      });
-    } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+  const toggleAssetArchive = async () => {
+    const updatedAsset = await toggleArchive(asset);
+    if (updatedAsset) {
+      dispatch('action', { type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: asset });
     }
   };
 
@@ -478,7 +473,7 @@
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
-      console.error('Error entering fullscreen', error);
+      handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -490,7 +485,7 @@
         await document.exitFullscreen();
       }
     } catch (error) {
-      console.error('Error exiting fullscreen', error);
+      handleError(error, $t('errors.unable_to_exit_fullscreen'));
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
@@ -512,7 +507,7 @@
           asset,
         });
       }
-      dispatch('close');
+      await closeViewer();
     }
   };
 
@@ -529,7 +524,7 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Album cover updated',
+        message: $t('album_cover_updated'),
         timeout: 1500,
       });
     } catch (error) {
@@ -544,7 +539,7 @@
 
 <svelte:window
   use:shortcuts={[
-    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
     { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
@@ -570,14 +565,16 @@
           {asset}
           {album}
           isMotionPhotoPlaying={shouldPlayMotionPhoto}
-          showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+          showCopyButton={canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
           showZoomButton={asset.type === AssetTypeEnum.Image}
           showMotionPlayButton={!!asset.livePhotoVideoId}
           showDownloadButton={shouldShowDownloadButton}
-          showDetailButton={shouldShowDetailButton}
+          showDetailButton={enableDetailPanel}
           showSlideshow={!!assetStore}
           hasStackChildren={$stackAssetsStore.length > 0}
           showShareButton={shouldShowShareModal}
+          onZoomImage={zoomToggle}
+          onCopyImage={copyImage}
           on:back={closeViewer}
           on:showDetail={showDetailInfoHandler}
           on:download={() => downloadFile(asset)}
@@ -588,7 +585,7 @@
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-          on:toggleArchive={toggleArchive}
+          on:toggleArchive={toggleAssetArchive}
           on:asProfileImage={() => (isShowProfileImageCrop = true)}
           on:setAsAlbumCover={handleUpdateThumbnail}
           on:runJob={({ detail: job }) => handleRunJob(job)}
@@ -600,8 +597,8 @@
     {/if}
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 justify-self-start">
-        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label="View previous asset">
+      <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+        <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
           <Icon path={mdiChevronLeft} size="36" ariaHidden />
         </NavigationArea>
       </div>
@@ -625,6 +622,8 @@
         {#key previewStackedAsset.id}
           {#if previewStackedAsset.type === AssetTypeEnum.Image}
             <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
               asset={previewStackedAsset}
               {preloadAssets}
               on:close={closeViewer}
@@ -633,7 +632,9 @@
           {:else}
             <VideoViewer
               assetId={previewStackedAsset.id}
+              checksum={previewStackedAsset.checksum}
               projectionType={previewStackedAsset.exifInfo?.projectionType}
+              loopVideo={true}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -654,7 +655,9 @@
             {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
               <VideoViewer
                 assetId={asset.livePhotoVideoId}
+                checksum={asset.checksum}
                 projectionType={asset.exifInfo?.projectionType}
+                loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
                 on:close={closeViewer}
                 on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
               />
@@ -663,12 +666,14 @@
                   .endsWith('.insp'))}
               <PanoramaViewer {asset} />
             {:else}
-              <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
+              <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} />
             {/if}
           {:else}
             <VideoViewer
               assetId={asset.id}
+              checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
+              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               on:close={closeViewer}
               on:onVideoEnded={() => navigateAsset()}
               on:onVideoStarted={handleVideoStarted}
@@ -691,27 +696,21 @@
     </div>
 
     {#if $slideshowState === SlideshowState.None && showNavigation}
-      <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 justify-self-end">
-        <NavigationArea onClick={(e) => navigateAsset('next', e)} label="View next asset">
+      <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
+        <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
           <Icon path={mdiChevronRight} size="36" ariaHidden />
         </NavigationArea>
       </div>
     {/if}
 
-    {#if $slideshowState === SlideshowState.None && $isShowDetail}
+    {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
       <div
         transition:fly={{ duration: 150 }}
         id="detail-panel"
         class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
-        <DetailPanel
-          {asset}
-          currentAlbum={album}
-          albums={appearsInAlbums}
-          on:close={() => ($isShowDetail = false)}
-          on:closeViewer={handleCloseViewer}
-        />
+        <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
       </div>
     {/if}
 
@@ -790,7 +789,6 @@
       <DeleteAssetDialog
         size={1}
         on:cancel={() => (isShowDeleteConfirmation = false)}
-        on:escape={() => (isShowDeleteConfirmation = false)}
         on:confirm={() => deleteAsset()}
       />
     {/if}

@@ -2,16 +2,17 @@
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { handlePromiseError } from '$lib/utils';
-  import { shortcuts } from '$lib/utils/shortcut';
-  import { focusOutside } from '$lib/utils/focus-outside';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { focusOutside } from '$lib/actions/focus-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let value = '';
   export let grayTheme: boolean;
@@ -103,9 +104,9 @@
     on:submit|preventDefault={onSubmit}
   >
     <div class="absolute inset-y-0 left-0 flex items-center pl-2">
-      <CircleIconButton type="submit" title="Search" icon={mdiMagnify} size="20" />
+      <CircleIconButton type="submit" title={$t('search')} icon={mdiMagnify} size="20" />
     </div>
-    <label for="main-search-bar" class="sr-only">Search your photos</label>
+    <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
     <input
       type="text"
       name="q"
@@ -117,7 +118,7 @@
       showFilter
         ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
         : 'rounded-3xl border border-transparent bg-gray-200'}"
-      placeholder="Search your photos"
+      placeholder={$t('search_your_photos')}
       required
       pattern="^(?!m:$).*$"
       bind:value
@@ -132,11 +133,11 @@
     />
 
     <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-2'} flex items-center pl-6 transition-all">
-      <CircleIconButton title="Show search options" icon={mdiTune} on:click={onFilterClick} size="20" />
+      <CircleIconButton title={$t('show_search_options')} icon={mdiTune} on:click={onFilterClick} size="20" />
     </div>
     {#if showClearIcon}
       <div class="absolute inset-y-0 right-0 flex items-center pr-2">
-        <CircleIconButton type="reset" icon={mdiClose} title="Clear" size="20" />
+        <CircleIconButton type="reset" icon={mdiClose} title={$t('clear')} size="20" />
       </div>
     {/if}
 

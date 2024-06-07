@@ -105,7 +105,7 @@ class AppLogPage extends HookConsumerWidget {
         ],
         leading: IconButton(
           onPressed: () {
-            context.popRoute();
+            context.maybePop();
           },
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,

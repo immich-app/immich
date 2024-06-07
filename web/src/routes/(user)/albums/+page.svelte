@@ -8,6 +8,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -29,7 +30,7 @@
       />
     </div>
     <div class="w-60">
-      <SearchBar placeholder="Search albums" bind:name={searchQuery} showLoadingSpinner={false} />
+      <SearchBar placeholder={$t('search_albums')} bind:name={searchQuery} showLoadingSpinner={false} />
     </div>
   </div>
 
@@ -41,10 +42,6 @@
     {searchQuery}
     bind:albumGroupIds={albumGroups}
   >
-    <EmptyPlaceholder
-      slot="empty"
-      text="Create an album to organize your photos and videos"
-      onClick={() => createAlbumAndRedirect()}
-    />
+    <EmptyPlaceholder slot="empty" text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
   </Albums>
 </UserPageLayout>

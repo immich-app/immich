@@ -8,7 +8,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { type ShortcutOptions, shortcuts } from '$lib/utils/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -18,7 +18,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
@@ -48,6 +48,12 @@
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
+  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
+  $: {
+    if (isEmpty) {
+      assetInteractionStore.clearMultiselect();
+    }
+  }
 
   $: {
     void assetStore.updateViewport(viewport);
@@ -101,6 +107,20 @@
     }
   };
 
+  const toggleArchive = async () => {
+    const ids = await archiveAssets(Array.from($selectedAssets), !isAllArchived);
+    if (ids) {
+      assetStore.removeAssets(ids);
+      deselectAllAssets();
+    }
+  };
+
+  const focusElement = () => {
+    if (document.activeElement === document.body) {
+      element.focus();
+    }
+  };
+
   $: shortcutList = (() => {
     if ($isSearchEnabled || $showAssetViewer) {
       return [];
@@ -111,8 +131,8 @@
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageUp' }, onShortcut: () => (element.scrollTop = 0) },
-      { shortcut: { key: 'PageDown' }, onShortcut: () => (element.scrollTop = element.scrollHeight) },
+      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
     ];
 
     if ($isMultiSelectState) {
@@ -121,6 +141,7 @@
         { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
         { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );
     }
 
@@ -406,7 +427,8 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto outline-none pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  tabindex="-1"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}

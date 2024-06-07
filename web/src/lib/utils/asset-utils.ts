@@ -5,13 +5,16 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
-import { downloadRequest, getKey } from '$lib/utils';
+import { downloadRequest, getKey, s } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
+import { asByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
-  defaults,
+  getAssetInfo,
+  getBaseUrl,
   getDownloadInfo,
+  updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
@@ -21,6 +24,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { t as translate } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
@@ -38,7 +42,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
     timeout: 5000,
     message:
       count > 0
-        ? `Added ${count} asset${count === 1 ? '' : 's'} to the album`
+        ? `Added ${count} asset${s(count)} to the album`
         : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
     button: {
       text: 'View Album',
@@ -58,7 +62,7 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
   notificationController.show({
     type: NotificationType.Info,
     timeout: 5000,
-    message: `Added ${assetIds.length} asset${assetIds.length === 1 ? '' : 's'} to ${displayName}`,
+    message: `Added ${assetIds.length} asset${s(assetIds.length)} to ${displayName}`,
     html: true,
     button: {
       text: 'View Album',
@@ -121,7 +125,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: defaults.baseUrl + '/download/archive' + (key ? `?key=${key}` : ''),
+        url: getBaseUrl() + '/download/archive' + (key ? `?key=${key}` : ''),
         data: { assetIds: archive.assetIds },
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
@@ -153,11 +157,13 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
+
   if (asset.livePhotoVideoId) {
+    const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
     assets.push({
-      filename: asset.originalFileName,
+      filename: motionAsset.originalFileName,
       id: asset.livePhotoVideoId,
-      size: 0,
+      size: motionAsset.exifInfo?.fileSizeInByte || 0,
     });
   }
 
@@ -176,8 +182,8 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
-        method: 'POST',
-        url: defaults.baseUrl + `/download/asset/${id}` + (key ? `?key=${key}` : ''),
+        method: 'GET',
+        url: getBaseUrl() + `/assets/${id}/original` + (key ? `?key=${key}` : ''),
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
@@ -221,6 +227,21 @@ function isRotated270CW(orientation: number) {
 export function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
+}
+
+export function getFileSize(asset: AssetResponseDto): string {
+  const size = asset.exifInfo?.fileSizeInByte || 0;
+  return size > 0 ? asByteUnitString(size, undefined, 4) : 'Invalid Data';
+}
+
+export function getAssetResolution(asset: AssetResponseDto): string {
+  const { width, height } = getAssetRatio(asset);
+
+  if (width === 235 && height === 235) {
+    return 'Invalid Data';
+  }
+
+  return `${width} x ${height}`;
 }
 
 /**
@@ -267,7 +288,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
   if (numberOfIssues > 0) {
     notificationController.show({
-      message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,
+      message: `Can't change metadata of ${numberOfIssues} asset${s(numberOfIssues)}`,
       type: NotificationType.Warning,
     });
   }
@@ -376,6 +397,53 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     handleError(error, 'Error selecting all assets');
     isSelectingAllAssets.set(false);
   }
+};
+
+export const toggleArchive = async (asset: AssetResponseDto) => {
+  try {
+    const data = await updateAsset({
+      id: asset.id,
+      updateAssetDto: {
+        isArchived: !asset.isArchived,
+      },
+    });
+
+    asset.isArchived = data.isArchived;
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: asset.isArchived ? `Added to archive` : `Removed from archive`,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${asset.isArchived ? `remove asset from` : `add asset to`} archive`);
+  }
+
+  return asset;
+};
+
+export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
+  const isArchived = archive;
+  const ids = assets.map(({ id }) => id);
+
+  try {
+    if (ids.length > 0) {
+      await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+    }
+
+    for (const asset of assets) {
+      asset.isArchived = isArchived;
+    }
+
+    const t = get(translate);
+    notificationController.show({
+      message: `${isArchived ? t('archived') : t('unarchived')} ${ids.length}`,
+      type: NotificationType.Info,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+  }
+
+  return ids;
 };
 
 export const delay = async (ms: number) => {

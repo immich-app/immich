@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -48,7 +48,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
-  Future<UserResponseDto?> changePassword(ChangePasswordDto changePasswordDto,) async {
+  Future<UserAdminResponseDto?> changePassword(ChangePasswordDto changePasswordDto,) async {
     final response = await changePasswordWithHttpInfo(changePasswordDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -57,7 +57,7 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
     
     }
     return null;
@@ -183,7 +183,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
-  Future<UserResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
+  Future<UserAdminResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
     final response = await signUpAdminWithHttpInfo(signUpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -192,7 +192,7 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
     
     }
     return null;

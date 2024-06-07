@@ -2,11 +2,12 @@
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetFileUrl, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
-  import { AssetTypeEnum, ThumbnailFormat, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -21,7 +22,7 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };
@@ -33,7 +34,6 @@
   export let thumbnailSize: number | undefined = undefined;
   export let thumbnailWidth: number | undefined = undefined;
   export let thumbnailHeight: number | undefined = undefined;
-  export let format: ThumbnailFormat = ThumbnailFormat.Webp;
   export let selected = false;
   export let selectionCandidate = false;
   export let disabled = false;
@@ -106,6 +106,7 @@
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
+            type="button"
             on:click={onIconClickedHandler}
             class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
@@ -180,7 +181,7 @@
 
         {#if asset.resized}
           <ImageThumbnail
-            url={getAssetThumbnailUrl(asset.id, format)}
+            url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
             altText={getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
@@ -196,7 +197,7 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={getAssetFileUrl(asset.id, false, true)}
+              url={getAssetPlaybackUrl({ id: asset.id, checksum: asset.checksum })}
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
@@ -208,7 +209,7 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              url={getAssetFileUrl(asset.livePhotoVideoId, false, true)}
+              url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, checksum: asset.checksum })}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
               showTime={false}

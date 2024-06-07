@@ -2,7 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import {
+  AssetFaceWithoutPersonResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -26,7 +31,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  libraryId!: string;
+  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
   fileCreatedAt!: Date;
@@ -36,20 +42,18 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isExternal?: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.104.0' })
-  isReadOnly?: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
+  unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
   stackCount!: number | null;
+  duplicateId?: string | null;
 }
 
 export type AssetMapOptions = {
@@ -118,6 +122,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
+    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack
@@ -127,16 +132,12 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       : undefined,
     stackCount: entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
-    isExternal: false,
-    isReadOnly: false,
     hasMetadata: true,
+    duplicateId: entity.duplicateId,
   };
 }
 
 export class MemoryLaneResponseDto {
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  title!: string;
-
   @ApiProperty({ type: 'integer' })
   yearsAgo!: number;
 

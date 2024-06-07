@@ -22,7 +22,7 @@ class PersonService {
 
   Future<List<PersonResponseDto>> getAllPeople() async {
     try {
-      final peopleResponseDto = await _apiService.personApi.getAllPeople();
+      final peopleResponseDto = await _apiService.peopleApi.getAllPeople();
       return peopleResponseDto?.people ?? [];
     } catch (error, stack) {
       _log.severe("Error while fetching curated people", error, stack);
@@ -32,7 +32,7 @@ class PersonService {
 
   Future<List<Asset>?> getPersonAssets(String id) async {
     try {
-      final assets = await _apiService.personApi.getPersonAssets(id);
+      final assets = await _apiService.peopleApi.getPersonAssets(id);
       if (assets == null) return null;
       return await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
     } catch (error, stack) {
@@ -43,7 +43,7 @@ class PersonService {
 
   Future<PersonResponseDto?> updateName(String id, String name) async {
     try {
-      return await _apiService.personApi.updatePerson(
+      return await _apiService.peopleApi.updatePerson(
         id,
         PersonUpdateDto(
           name: name,

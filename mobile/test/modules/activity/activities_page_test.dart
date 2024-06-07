@@ -1,5 +1,6 @@
 @Skip('currently failing due to mock HTTP client to download ISAR binaries')
 @Tags(['widget'])
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

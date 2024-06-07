@@ -1,13 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayUnique, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
-  @IsEnum(LibraryType)
-  @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
-  type!: LibraryType;
-
   @ValidateUUID()
   ownerId!: string;
 
@@ -15,9 +11,6 @@ export class CreateLibraryDto {
   @Optional()
   @IsNotEmpty()
   name?: string;
-
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
 
   @Optional()
   @IsString({ each: true })
@@ -39,9 +32,6 @@ export class UpdateLibraryDto {
   @IsString()
   @IsNotEmpty()
   name?: string;
-
-  @ValidateBoolean({ optional: true })
-  isVisible?: boolean;
 
   @Optional()
   @IsString({ each: true })
@@ -103,20 +93,10 @@ export class ScanLibraryDto {
   refreshAllFiles?: boolean;
 }
 
-export class SearchLibraryDto {
-  @IsEnum(LibraryType)
-  @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
-  @Optional()
-  type?: LibraryType;
-}
-
 export class LibraryResponseDto {
   id!: string;
   ownerId!: string;
   name!: string;
-
-  @ApiProperty({ enumName: 'LibraryType', enum: LibraryType })
-  type!: LibraryType;
 
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
@@ -152,7 +132,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
   return {
     id: entity.id,
     ownerId: entity.ownerId,
-    type: entity.type,
     name: entity.name,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,

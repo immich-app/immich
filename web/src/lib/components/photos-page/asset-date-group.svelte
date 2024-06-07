@@ -153,7 +153,7 @@
           </div>
         {/if}
 
-        <span class="truncate first-letter:capitalize" title={groupTitle}>
+        <span class="w-full truncate first-letter:capitalize" title={groupTitle}>
           {groupTitle}
         </span>
       </div>

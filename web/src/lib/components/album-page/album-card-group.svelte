@@ -29,17 +29,20 @@
 
 {#if group}
   <div class="grid">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <p on:click={() => toggleAlbumGroupCollapsing(group.id)} class="w-fit mt-2 pt-2 pr-2 mb-2 hover:cursor-pointer">
+    <button
+      type="button"
+      on:click={() => toggleAlbumGroupCollapsing(group.id)}
+      class="w-fit mt-2 pt-2 pr-2 mb-2 dark:text-immich-dark-fg"
+      aria-expanded={!isCollapsed}
+    >
       <Icon
         path={mdiChevronRight}
         size="24"
         class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
       />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
-      <span class="ml-1.5 dark:text-immich-dark-fg">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
-    </p>
+      <span class="ml-1.5">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
+    </button>
     <hr class="dark:border-immich-dark-gray" />
   </div>
 {/if}

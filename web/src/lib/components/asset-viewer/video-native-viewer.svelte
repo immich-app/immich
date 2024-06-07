@@ -1,16 +1,28 @@
 <script lang="ts">
-  import { videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
-  import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { ThumbnailFormat } from '@immich/sdk';
+  import { AssetMediaSize } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { t } from 'svelte-i18n';
 
   export let assetId: string;
+  export let loopVideo: boolean;
+  export let checksum: string;
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+  let assetFileUrl: string;
+
+  $: {
+    const next = getAssetPlaybackUrl({ id: assetId, checksum });
+    if (assetFileUrl !== next) {
+      assetFileUrl = next;
+      element && element.load();
+    }
+  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
@@ -20,7 +32,7 @@
       await video.play();
       dispatch('onVideoStarted');
     } catch (error) {
-      handleError(error, 'Unable to play video');
+      handleError(error, $t('errors.unable_to_play_video'));
     } finally {
       isVideoLoading = false;
     }
@@ -34,6 +46,7 @@
 >
   <video
     bind:this={element}
+    loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
     controls
@@ -42,9 +55,9 @@
     on:ended={() => dispatch('onVideoEnded')}
     bind:muted={$videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
   >
-    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
   </video>
 

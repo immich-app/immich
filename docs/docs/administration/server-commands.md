@@ -77,7 +77,6 @@ immich-admin list-users
     deletedAt: null,
     updatedAt: 2023-09-21T15:42:28.129Z,
     oauthId: '',
-    memoriesEnabled: true
   }
 ]
 ```

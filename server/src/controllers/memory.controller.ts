@@ -7,7 +7,7 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MemoryService } from 'src/services/memory.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Memory')
+@ApiTags('Memories')
 @Controller('memories')
 export class MemoryController {
   constructor(private service: MemoryService) {}

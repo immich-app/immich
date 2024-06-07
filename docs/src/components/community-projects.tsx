@@ -10,7 +10,7 @@ interface CommunityProjectProps {
 const projects: CommunityProjectProps[] = [
   {
     title: 'immich-go',
-    description: `An alternative to the immich-CLI command that doesn't depend on nodejs installation. It tries its best for importing google photos takeout archives.`,
+    description: `An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives.`,
     url: 'https://github.com/simulot/immich-go',
   },
   {

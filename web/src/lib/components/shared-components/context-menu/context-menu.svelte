@@ -1,13 +1,14 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
 
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
 
   export let menuElement: HTMLDivElement | undefined = undefined;
+  export let onClose: (() => void) | undefined = undefined;
 
   let left: number;
   let top: number;
@@ -36,9 +37,7 @@
   style:top="{top}px"
   style:left="{left}px"
   role="menu"
-  use:clickOutside
-  on:outclick
-  on:escape
+  use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
 >
   <div class="flex flex-col rounded-lg">
     <slot />

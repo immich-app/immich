@@ -9,7 +9,7 @@ It is important to remember to update the backup settings after following the gu
 In our `.env` file, we will define variables that will help us in the future when we want to move to a more advanced server in the future
 
 ```diff title=".env"
-# You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
+# You can find documentation for all the supported env variables [here](/docs/install/environment-variables)
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - UPLOAD_LOCATION=./library

@@ -1,29 +1,29 @@
 import {
   AllJobStatusResponseDto,
-  AssetFileUploadResponseDto,
+  AssetMediaCreateDto,
+  AssetMediaResponseDto,
   AssetResponseDto,
   CreateAlbumDto,
-  CreateAssetDto,
   CreateLibraryDto,
-  CreateUserDto,
   MetadataSearchDto,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UserAdminCreateDto,
   ValidateLibraryDto,
   createAlbum,
   createApiKey,
   createLibrary,
+  createPartner,
   createPerson,
   createSharedLink,
-  createUser,
-  defaults,
+  createUserAdmin,
   deleteAssets,
-  getAllAssets,
   getAllJobsStatus,
   getAssetInfo,
   getConfigDefaults,
   login,
   searchMetadata,
+  setBaseUrl,
   signUpAdmin,
   updateAdminOnboarding,
   updateAlbumUser,
@@ -145,7 +145,6 @@ export const utils = {
         'sessions',
         'users',
         'system_metadata',
-        'system_config',
       ];
 
       const sql: string[] = [];
@@ -256,8 +255,8 @@ export const utils = {
     });
   },
 
-  setApiEndpoint: () => {
-    defaults.baseUrl = app;
+  initSdk: () => {
+    setBaseUrl(app);
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
@@ -274,8 +273,8 @@ export const utils = {
     return response;
   },
 
-  userSetup: async (accessToken: string, dto: CreateUserDto) => {
-    await createUser({ createUserDto: dto }, { headers: asBearerAuth(accessToken) });
+  userSetup: async (accessToken: string, dto: UserAdminCreateDto) => {
+    await createUserAdmin({ userAdminCreateDto: dto }, { headers: asBearerAuth(accessToken) });
     return login({
       loginCredentialDto: { email: dto.email, password: dto.password },
     });
@@ -293,7 +292,7 @@ export const utils = {
 
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<CreateAssetDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -311,7 +310,7 @@ export const utils = {
     }
 
     const builder = request(app)
-      .post(`/asset/upload`)
+      .post(`/assets`)
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
@@ -321,7 +320,41 @@ export const utils = {
 
     const { body } = await builder;
 
-    return body as AssetFileUploadResponseDto;
+    return body as AssetMediaResponseDto;
+  },
+
+  replaceAsset: async (
+    accessToken: string,
+    assetId: string,
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+  ) => {
+    const _dto = {
+      deviceAssetId: 'test-1',
+      deviceId: 'test',
+      fileCreatedAt: new Date().toISOString(),
+      fileModifiedAt: new Date().toISOString(),
+      ...dto,
+    };
+
+    const assetData = dto?.assetData?.bytes || makeRandomImage();
+    const filename = dto?.assetData?.filename || 'example.png';
+
+    if (dto?.assetData?.bytes) {
+      console.log(`Uploading ${filename}`);
+    }
+
+    const builder = request(app)
+      .put(`/assets/${assetId}/original`)
+      .attach('assetData', assetData, filename)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    for (const [key, value] of Object.entries(_dto)) {
+      void builder.field(key, String(value));
+    }
+
+    const { body } = await builder;
+
+    return body as AssetMediaResponseDto;
   },
 
   createImageFile: (path: string) => {
@@ -340,8 +373,6 @@ export const utils = {
   },
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-
-  getAllAssets: (accessToken: string) => getAllAssets({}, { headers: asBearerAuth(accessToken) }),
 
   metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
@@ -388,6 +419,8 @@ export const utils = {
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string) =>
     await context.addCookies([
@@ -463,7 +496,7 @@ export const utils = {
   },
 };
 
-utils.setApiEndpoint();
+utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {
   throw new Error(

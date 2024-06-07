@@ -10,6 +10,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { mdiRefresh, mdiCancel } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let uploadAsset: UploadAsset;
 
@@ -24,8 +25,8 @@
   out:fade={{ duration: 100 }}
   class="flex flex-col rounded-lg bg-immich-bg text-xs dark:bg-immich-dark-bg"
 >
-  <div class="grid grid-cols-[65px_auto_auto]">
-    <div class="relative h-[65px]">
+  <div class="grid grid-cols-[65px_auto_auto] max-h-[70px]">
+    <div class="relative">
       <div in:fade={{ duration: 250 }}>
         <ImmichLogo noText class="h-[65px] w-[65px] rounded-bl-lg rounded-tl-lg object-cover p-2" />
       </div>
@@ -59,10 +60,10 @@
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}
           <div class="h-[15px] rounded-md bg-immich-dark-gray transition-all dark:bg-immich-gray" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Pending</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">{$t('pending')}</p>
         {:else if uploadAsset.state === UploadState.ERROR}
           <div class="h-[15px] rounded-md bg-immich-error transition-all" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Error</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">{$t('error')}</p>
         {:else if uploadAsset.state === UploadState.DUPLICATED}
           <div class="h-[15px] rounded-md bg-immich-warning transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
@@ -83,18 +84,15 @@
       </div>
     </div>
     {#if uploadAsset.state === UploadState.ERROR}
-      <div class="flex h-full flex-col place-content-center place-items-center justify-items-center pr-2">
-        <button
-          on:click={() => handleRetry(uploadAsset)}
-          title="Retry upload"
-          class="flex h-full w-full place-content-center place-items-center text-sm"
-        >
+      <div class="flex h-full flex-col place-content-evenly place-items-center justify-items-center pr-2">
+        <button type="button" on:click={() => handleRetry(uploadAsset)} title={$t('retry_upload')} class="flex text-sm">
           <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Icon path={mdiRefresh} size="20" /></span>
         </button>
         <button
+          type="button"
           on:click={() => uploadAssetsStore.removeUploadAsset(uploadAsset.id)}
-          title="Dismiss error"
-          class="flex h-full w-full place-content-center place-items-center text-sm"
+          title={$t('dismiss_error')}
+          class="flex text-sm"
         >
           <span class="text-immich-error"><Icon path={mdiCancel} size="20" /></span>
         </button>
@@ -104,7 +102,7 @@
 
   {#if uploadAsset.state === UploadState.ERROR}
     <div class="flex flex-row justify-between">
-      <p class="w-full rounded-md p-1 px-2 text-justify text-[10px] text-immich-error">
+      <p class="w-full rounded-md py-1 px-2 text-justify text-[10px] text-immich-error">
         {uploadAsset.error}
       </p>
     </div>

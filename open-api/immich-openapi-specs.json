@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/activity": {
+    "/activities": {
       "get": {
         "operationId": "getActivities",
         "parameters": [
@@ -76,7 +76,7 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       },
       "post": {
@@ -116,11 +116,11 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
-    "/activity/statistics": {
+    "/activities/statistics": {
       "get": {
         "operationId": "getActivityStatistics",
         "parameters": [
@@ -167,11 +167,11 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
-    "/activity/{id}": {
+    "/activities/{id}": {
       "delete": {
         "operationId": "deleteActivity",
         "parameters": [
@@ -202,11 +202,371 @@
           }
         ],
         "tags": [
-          "Activity"
+          "Activities"
         ]
       }
     },
-    "/album": {
+    "/admin/users": {
+      "get": {
+        "operationId": "searchUsersAdmin",
+        "parameters": [
+          {
+            "name": "withDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserAdminResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      },
+      "post": {
+        "operationId": "createUserAdmin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAdminCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/admin/users/{id}": {
+      "delete": {
+        "operationId": "deleteUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAdminDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      },
+      "get": {
+        "operationId": "getUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      },
+      "put": {
+        "operationId": "updateUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAdminUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/admin/users/{id}/preferences": {
+      "get": {
+        "operationId": "getUserPreferencesAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      },
+      "put": {
+        "operationId": "updateUserPreferencesAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/admin/users/{id}/restore": {
+      "post": {
+        "operationId": "restoreUserAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ]
+      }
+    },
+    "/albums": {
       "get": {
         "operationId": "getAllAlbums",
         "parameters": [
@@ -256,7 +616,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "post": {
@@ -296,11 +656,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/album/count": {
+    "/albums/count": {
       "get": {
         "operationId": "getAlbumCount",
         "parameters": [],
@@ -328,11 +688,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/album/{id}": {
+    "/albums/{id}": {
       "delete": {
         "operationId": "deleteAlbum",
         "parameters": [
@@ -363,7 +723,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "get": {
@@ -419,7 +779,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "patch": {
@@ -469,11 +829,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/album/{id}/assets": {
+    "/albums/{id}/assets": {
       "delete": {
         "operationId": "removeAssetFromAlbum",
         "parameters": [
@@ -524,7 +884,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -585,11 +945,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/album/{id}/user/{userId}": {
+    "/albums/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
         "parameters": [
@@ -628,7 +988,7 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       },
       "put": {
@@ -679,11 +1039,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/album/{id}/users": {
+    "/albums/{id}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
         "parameters": [
@@ -731,11 +1091,11 @@
           }
         ],
         "tags": [
-          "Album"
+          "Albums"
         ]
       }
     },
-    "/api-key": {
+    "/api-keys": {
       "get": {
         "operationId": "getApiKeys",
         "parameters": [],
@@ -766,7 +1126,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "post": {
@@ -806,11 +1166,11 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
-    "/api-key/{id}": {
+    "/api-keys/{id}": {
       "delete": {
         "operationId": "deleteApiKey",
         "parameters": [
@@ -841,7 +1201,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "get": {
@@ -881,7 +1241,7 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       },
       "put": {
@@ -931,11 +1291,11 @@
           }
         ],
         "tags": [
-          "API Key"
+          "API Keys"
         ]
       }
     },
-    "/asset": {
+    "/assets": {
       "delete": {
         "operationId": "deleteAssets",
         "parameters": [],
@@ -966,91 +1326,47 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
-      "get": {
-        "description": "Get all AssetEntity belong to the user",
-        "operationId": "getAllAssets",
+      "post": {
+        "operationId": "uploadAsset",
         "parameters": [
           {
-            "name": "if-none-match",
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-checksum",
             "in": "header",
-            "description": "ETag of data already cached on the client",
+            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
             "required": false,
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "updatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "updatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaCreateDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
                 }
               }
             },
@@ -1069,7 +1385,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
       "put": {
@@ -1102,11 +1418,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/bulk-upload-check": {
+    "/assets/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
@@ -1145,11 +1461,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/device/{deviceId}": {
+    "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
@@ -1190,11 +1506,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/exist": {
+    "/assets/exist": {
       "post": {
         "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
@@ -1233,80 +1549,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/file/{id}": {
-      "get": {
-        "operationId": "serveFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isThumb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is serve thumbnail (resize) file",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isWeb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is request made from web",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/jobs": {
+    "/assets/jobs": {
       "post": {
         "operationId": "runAssetJobs",
         "parameters": [],
@@ -1337,97 +1584,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/map-marker": {
-      "get": {
-        "operationId": "getMapMarkers",
-        "parameters": [
-          {
-            "name": "fileCreatedAfter",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "fileCreatedBefore",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withPartners",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "withSharedAlbums",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MapMarkerResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/memory-lane": {
+    "/assets/memory-lane": {
       "get": {
         "operationId": "getMemoryLane",
         "parameters": [
@@ -1479,11 +1640,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/random": {
+    "/assets/random": {
       "get": {
         "operationId": "getRandom",
         "parameters": [
@@ -1524,11 +1685,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/stack/parent": {
+    "/assets/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
         "parameters": [],
@@ -1559,11 +1720,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/statistics": {
+    "/assets/statistics": {
       "get": {
         "operationId": "getAssetStatistics",
         "parameters": [
@@ -1616,131 +1777,11 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       }
     },
-    "/asset/thumbnail/{id}": {
-      "get": {
-        "operationId": "getAssetThumbnail",
-        "parameters": [
-          {
-            "name": "format",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ThumbnailFormat"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/upload": {
-      "post": {
-        "operationId": "uploadFile",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-immich-checksum",
-            "in": "header",
-            "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAssetDto"
-              }
-            }
-          },
-          "description": "Asset Upload Information",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/{id}": {
+    "/assets/{id}": {
       "get": {
         "operationId": "getAssetInfo",
         "parameters": [
@@ -1786,7 +1827,7 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
         ]
       },
       "put": {
@@ -1836,7 +1877,230 @@
           }
         ],
         "tags": [
-          "Asset"
+          "Assets"
+        ]
+      }
+    },
+    "/assets/{id}/original": {
+      "get": {
+        "operationId": "downloadAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      },
+      "put": {
+        "description": "Replace the asset with new file, without changing its id",
+        "operationId": "replaceAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaReplaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.106.0"
+        }
+      }
+    },
+    "/assets/{id}/thumbnail": {
+      "get": {
+        "operationId": "viewAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMediaSize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
+    "/assets/{id}/video/playback": {
+      "get": {
+        "operationId": "playAssetVideo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
         ]
       }
     },
@@ -1918,7 +2182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -1949,7 +2213,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -2119,57 +2383,6 @@
         ]
       }
     },
-    "/download/asset/{id}": {
-      "post": {
-        "operationId": "downloadFile",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Download"
-        ]
-      }
-    },
     "/download/info": {
       "post": {
         "operationId": "getDownloadInfo",
@@ -2221,7 +2434,42 @@
         ]
       }
     },
-    "/face": {
+    "/duplicates": {
+      "get": {
+        "operationId": "getAssetDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
+    "/faces": {
       "get": {
         "operationId": "getFaces",
         "parameters": [
@@ -2262,11 +2510,11 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
-    "/face/{id}": {
+    "/faces/{id}": {
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -2314,7 +2562,7 @@
           }
         ],
         "tags": [
-          "Face"
+          "Faces"
         ]
       }
     },
@@ -2346,7 +2594,7 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
@@ -2397,23 +2645,14 @@
           }
         ],
         "tags": [
-          "Job"
+          "Jobs"
         ]
       }
     },
-    "/library": {
+    "/libraries": {
       "get": {
         "operationId": "getAllLibraries",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LibraryType"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -2441,7 +2680,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "post": {
@@ -2481,11 +2720,11 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
-    "/library/{id}": {
+    "/libraries/{id}": {
       "delete": {
         "operationId": "deleteLibrary",
         "parameters": [
@@ -2516,7 +2755,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "get": {
@@ -2556,7 +2795,7 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       },
       "put": {
@@ -2606,11 +2845,11 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
-    "/library/{id}/removeOffline": {
+    "/libraries/{id}/removeOffline": {
       "post": {
         "operationId": "removeOfflineFiles",
         "parameters": [
@@ -2641,11 +2880,11 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
-    "/library/{id}/scan": {
+    "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
         "parameters": [
@@ -2686,11 +2925,11 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
-    "/library/{id}/statistics": {
+    "/libraries/{id}/statistics": {
       "get": {
         "operationId": "getLibraryStatistics",
         "parameters": [
@@ -2728,11 +2967,11 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
         ]
       }
     },
-    "/library/{id}/validate": {
+    "/libraries/{id}/validate": {
       "post": {
         "operationId": "validate",
         "parameters": [
@@ -2780,7 +3019,142 @@
           }
         ],
         "tags": [
-          "Library"
+          "Libraries"
+        ]
+      }
+    },
+    "/map/markers": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "parameters": [
+          {
+            "name": "fileCreatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileCreatedBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
+    "/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
         ]
       }
     },
@@ -2815,7 +3189,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "post": {
@@ -2855,7 +3229,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -2890,7 +3264,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "get": {
@@ -2930,7 +3304,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -2980,7 +3354,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       }
     },
@@ -3035,7 +3409,7 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
         ]
       },
       "put": {
@@ -3088,7 +3462,42 @@
           }
         ],
         "tags": [
-          "Memory"
+          "Memories"
+        ]
+      }
+    },
+    "/notifications/test-email": {
+      "post": {
+        "operationId": "sendTestEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
         ]
       }
     },
@@ -3173,7 +3582,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -3219,7 +3628,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -3242,7 +3651,7 @@
         ]
       }
     },
-    "/partner": {
+    "/partners": {
       "get": {
         "operationId": "getPartners",
         "parameters": [
@@ -3286,11 +3695,11 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
-    "/partner/{id}": {
+    "/partners/{id}": {
       "delete": {
         "operationId": "removePartner",
         "parameters": [
@@ -3321,7 +3730,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "post": {
@@ -3361,7 +3770,7 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       },
       "put": {
@@ -3411,11 +3820,11 @@
           }
         ],
         "tags": [
-          "Partner"
+          "Partners"
         ]
       }
     },
-    "/person": {
+    "/people": {
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -3452,7 +3861,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "post": {
@@ -3492,7 +3901,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -3535,11 +3944,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}": {
+    "/people/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -3577,7 +3986,7 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       },
       "put": {
@@ -3627,11 +4036,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}/assets": {
+    "/people/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -3672,11 +4081,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}/merge": {
+    "/people/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
         "parameters": [
@@ -3727,11 +4136,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}/reassign": {
+    "/people/{id}/reassign": {
       "put": {
         "operationId": "reassignFaces",
         "parameters": [
@@ -3782,11 +4191,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}/statistics": {
+    "/people/{id}/statistics": {
       "get": {
         "operationId": "getPersonStatistics",
         "parameters": [
@@ -3824,11 +4233,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/person/{id}/thumbnail": {
+    "/people/{id}/thumbnail": {
       "get": {
         "operationId": "getPersonThumbnail",
         "parameters": [
@@ -3867,11 +4276,11 @@
           }
         ],
         "tags": [
-          "Person"
+          "People"
         ]
       }
     },
-    "/report": {
+    "/reports": {
       "get": {
         "operationId": "getAuditFiles",
         "parameters": [],
@@ -3899,11 +4308,11 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
-    "/report/checksum": {
+    "/reports/checksum": {
       "post": {
         "operationId": "getFileChecksums",
         "parameters": [],
@@ -3944,11 +4353,11 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
-    "/report/fix": {
+    "/reports/fix": {
       "post": {
         "operationId": "fixAuditFiles",
         "parameters": [],
@@ -3979,7 +4388,7 @@
           }
         ],
         "tags": [
-          "File Report"
+          "File Reports"
         ]
       }
     },
@@ -4309,38 +4718,6 @@
         ]
       }
     },
-    "/server-info": {
-      "get": {
-        "operationId": "getServerInfo",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -4435,6 +4812,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/storage": {
+      "get": {
+        "operationId": "getStorage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
                 }
               }
             },
@@ -4592,7 +5001,7 @@
         ]
       }
     },
-    "/shared-link": {
+    "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
         "parameters": [],
@@ -4623,7 +5032,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "post": {
@@ -4663,11 +5072,11 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
-    "/shared-link/me": {
+    "/shared-links/me": {
       "get": {
         "operationId": "getMySharedLink",
         "parameters": [
@@ -4721,11 +5130,11 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
-    "/shared-link/{id}": {
+    "/shared-links/{id}": {
       "delete": {
         "operationId": "removeSharedLink",
         "parameters": [
@@ -4756,7 +5165,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "get": {
@@ -4796,7 +5205,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "patch": {
@@ -4846,11 +5255,11 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
-    "/shared-link/{id}/assets": {
+    "/shared-links/{id}/assets": {
       "delete": {
         "operationId": "removeSharedLinkAssets",
         "parameters": [
@@ -4909,7 +5318,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       },
       "put": {
@@ -4970,7 +5379,7 @@
           }
         ],
         "tags": [
-          "Shared Link"
+          "Shared Links"
         ]
       }
     },
@@ -5165,55 +5574,6 @@
         ]
       }
     },
-    "/system-config/map/style.json": {
-      "get": {
-        "operationId": "getMapStyle",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "theme",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/MapTheme"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "System Config"
-        ]
-      }
-    },
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
@@ -5343,7 +5703,7 @@
         ]
       }
     },
-    "/tag": {
+    "/tags": {
       "get": {
         "operationId": "getAllTags",
         "parameters": [],
@@ -5374,7 +5734,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "post": {
@@ -5414,11 +5774,11 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
-    "/tag/{id}": {
+    "/tags/{id}": {
       "delete": {
         "operationId": "deleteTag",
         "parameters": [
@@ -5449,7 +5809,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5489,7 +5849,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "patch": {
@@ -5539,11 +5899,11 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
-    "/tag/{id}/assets": {
+    "/tags/{id}/assets": {
       "delete": {
         "operationId": "untagAssets",
         "parameters": [
@@ -5594,7 +5954,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "get": {
@@ -5637,7 +5997,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       },
       "put": {
@@ -5690,7 +6050,7 @@
           }
         ],
         "tags": [
-          "Tag"
+          "Tags"
         ]
       }
     },
@@ -6041,19 +6401,10 @@
         ]
       }
     },
-    "/user": {
+    "/users": {
       "get": {
-        "operationId": "getAllUsers",
-        "parameters": [
-          {
-            "name": "isAll",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
+        "operationId": "searchUsers",
+        "parameters": [],
         "responses": {
           "200": {
             "content": {
@@ -6081,28 +6432,20 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
-      },
-      "post": {
-        "operationId": "createUser",
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "getMyUser",
         "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -6121,17 +6464,17 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "put": {
-        "operationId": "updateUser",
+        "operationId": "updateMyUser",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
+                "$ref": "#/components/schemas/UserUpdateMeDto"
               }
             }
           },
@@ -6142,7 +6485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
                 }
               }
             },
@@ -6161,62 +6504,20 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
-    "/user/info/{id}": {
+    "/users/me/preferences": {
       "get": {
-        "operationId": "getUserById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/me": {
-      "get": {
-        "operationId": "getMyUserInfo",
+        "operationId": "getMyPreferences",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
                 }
               }
             },
@@ -6235,11 +6536,51 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "updateMyPreferences",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferencesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
         ]
       }
     },
-    "/user/profile-image": {
+    "/users/profile-image": {
       "delete": {
         "operationId": "deleteProfileImage",
         "parameters": [],
@@ -6260,7 +6601,7 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       },
       "post": {
@@ -6301,11 +6642,53 @@
           }
         ],
         "tags": [
-          "User"
+          "Users"
         ]
       }
     },
-    "/user/profile-image/{id}": {
+    "/users/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/profile-image": {
       "get": {
         "operationId": "getProfileImage",
         "parameters": [
@@ -6344,101 +6727,7 @@
           }
         ],
         "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/{id}": {
-      "delete": {
-        "operationId": "deleteUser",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteUserDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/{id}/restore": {
-      "post": {
-        "operationId": "restoreUser",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
+          "Users"
         ]
       }
     }
@@ -6446,7 +6735,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.104.0",
+    "version": "1.105.1",
     "contact": {}
   },
   "tags": [],
@@ -6582,7 +6871,7 @@
             "type": "string"
           },
           "user": {
-            "$ref": "#/components/schemas/UserDto"
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
@@ -6610,15 +6899,6 @@
           "albumUsers": {
             "items": {
               "$ref": "#/components/schemas/AlbumUserAddDto"
-            },
-            "type": "array"
-          },
-          "sharedUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
             },
             "type": "array"
           }
@@ -6718,14 +6998,6 @@
           "shared": {
             "type": "boolean"
           },
-          "sharedUsers": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.102.0",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            },
-            "type": "array"
-          },
           "startDate": {
             "format": "date-time",
             "type": "string"
@@ -6749,7 +7021,6 @@
           "owner",
           "ownerId",
           "shared",
-          "sharedUsers",
           "updatedAt"
         ],
         "type": "object"
@@ -6812,6 +7083,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6851,6 +7125,7 @@
         },
         "required": [
           "backgroundTask",
+          "duplicateDetection",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -6887,6 +7162,10 @@
       "AssetBulkUpdateDto": {
         "properties": {
           "dateTimeOriginal": {
+            "type": "string"
+          },
+          "duplicateId": {
+            "nullable": true,
             "type": "string"
           },
           "ids": {
@@ -7151,21 +7430,6 @@
         ],
         "type": "object"
       },
-      "AssetFileUploadResponseDto": {
-        "properties": {
-          "duplicate": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "duplicate",
-          "id"
-        ],
-        "type": "object"
-      },
       "AssetFullSyncDto": {
         "properties": {
           "lastCreationDate": {
@@ -7260,6 +7524,122 @@
         ],
         "type": "object"
       },
+      "AssetMediaCreateDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
+      "AssetMediaReplaceDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
+      "AssetMediaResponseDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetMediaStatus"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "AssetMediaSize": {
+        "enum": [
+          "preview",
+          "thumbnail"
+        ],
+        "type": "string"
+      },
+      "AssetMediaStatus": {
+        "enum": [
+          "created",
+          "replaced",
+          "duplicate"
+        ],
+        "type": "string"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -7277,6 +7657,10 @@
             "type": "string"
           },
           "deviceId": {
+            "type": "string"
+          },
+          "duplicateId": {
+            "nullable": true,
             "type": "string"
           },
           "duration": {
@@ -7302,26 +7686,19 @@
           "isArchived": {
             "type": "boolean"
           },
-          "isExternal": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "type": "boolean"
-          },
           "isFavorite": {
             "type": "boolean"
           },
           "isOffline": {
             "type": "boolean"
           },
-          "isReadOnly": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "type": "boolean"
-          },
           "isTrashed": {
             "type": "boolean"
           },
           "libraryId": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.106.0",
+            "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
@@ -7383,6 +7760,12 @@
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -7401,7 +7784,6 @@
           "isFavorite",
           "isOffline",
           "isTrashed",
-          "libraryId",
           "localDateTime",
           "originalFileName",
           "originalPath",
@@ -7468,6 +7850,25 @@
         ],
         "type": "object"
       },
+      "AvatarResponse": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          }
+        },
+        "required": [
+          "color"
+        ],
+        "type": "object"
+      },
+      "AvatarUpdate": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          }
+        },
+        "type": "object"
+      },
       "BulkIdResponseDto": {
         "properties": {
           "error": {
@@ -7512,14 +7913,8 @@
           "enabled": {
             "type": "boolean"
           },
-          "mode": {
-            "$ref": "#/components/schemas/CLIPMode"
-          },
           "modelName": {
             "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
           }
         },
         "required": [
@@ -7527,13 +7922,6 @@
           "modelName"
         ],
         "type": "object"
-      },
-      "CLIPMode": {
-        "enum": [
-          "vision",
-          "text"
-        ],
-        "type": "string"
       },
       "CQMode": {
         "enum": [
@@ -7606,7 +7994,6 @@
             "type": "string"
           },
           "albumUsers": {
-            "description": "This property was added in v1.104.0",
             "items": {
               "$ref": "#/components/schemas/AlbumUserCreateDto"
             },
@@ -7621,76 +8008,10 @@
           },
           "description": {
             "type": "string"
-          },
-          "sharedWithUserIds": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.104.0",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [
           "albumName"
-        ],
-        "type": "object"
-      },
-      "CreateAssetDto": {
-        "properties": {
-          "assetData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
-            "type": "boolean"
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "livePhotoData": {
-            "format": "binary",
-            "type": "string"
-          },
-          "sidecarData": {
-            "format": "binary",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetData",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -7708,23 +8029,16 @@
             },
             "type": "array"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
           "ownerId": {
             "format": "uuid",
             "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
           }
         },
         "required": [
-          "ownerId",
-          "type"
+          "ownerId"
         ],
         "type": "object"
       },
@@ -7768,52 +8082,6 @@
           "name",
           "type"
         ],
-        "type": "object"
-      },
-      "CreateUserDto": {
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "notify": {
-            "type": "boolean"
-          },
-          "password": {
-            "type": "string"
-          },
-          "quotaSizeInBytes": {
-            "format": "int64",
-            "minimum": 1,
-            "nullable": true,
-            "type": "integer"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "storageLabel": {
-            "nullable": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "email",
-          "name",
-          "password"
-        ],
-        "type": "object"
-      },
-      "DeleteUserDto": {
-        "properties": {
-          "force": {
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -7874,6 +8142,75 @@
           "archives",
           "totalSize"
         ],
+        "type": "object"
+      },
+      "DuplicateDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 0.1,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
+        ],
+        "type": "object"
+      },
+      "DuplicateResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "duplicateId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assets",
+          "duplicateId"
+        ],
+        "type": "object"
+      },
+      "EmailNotificationsResponse": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "EmailNotificationsUpdate": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "EntityType": {
@@ -8005,6 +8342,40 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "FacialRecognitionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minFaces": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minScore": {
+            "format": "float",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance",
+          "minFaces",
+          "minScore",
+          "modelName"
         ],
         "type": "object"
       },
@@ -8170,6 +8541,7 @@
           "faceDetection",
           "facialRecognition",
           "smartSearch",
+          "duplicateDetection",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -8242,9 +8614,6 @@
             "nullable": true,
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/LibraryType"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -8259,7 +8628,6 @@
           "name",
           "ownerId",
           "refreshedAt",
-          "type",
           "updatedAt"
         ],
         "type": "object"
@@ -8291,13 +8659,6 @@
           "videos"
         ],
         "type": "object"
-      },
-      "LibraryType": {
-        "enum": [
-          "UPLOAD",
-          "EXTERNAL"
-        ],
-        "type": "string"
       },
       "LogLevel": {
         "enum": [
@@ -8462,19 +8823,24 @@
             },
             "type": "array"
           },
-          "title": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "yearsAgo": {
             "type": "integer"
           }
         },
         "required": [
           "assets",
-          "title",
           "yearsAgo"
+        ],
+        "type": "object"
+      },
+      "MemoryResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },
@@ -8543,6 +8909,14 @@
           "on_this_day"
         ],
         "type": "string"
+      },
+      "MemoryUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -8664,11 +9038,6 @@
           "previewPath": {
             "type": "string"
           },
-          "resizePath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -8707,11 +9076,6 @@
             "format": "date-time",
             "type": "string"
           },
-          "webpPath": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.100.0",
-            "type": "string"
-          },
           "withArchived": {
             "default": false,
             "type": "boolean"
@@ -8730,13 +9094,6 @@
           }
         },
         "type": "object"
-      },
-      "ModelType": {
-        "enum": [
-          "facial-recognition",
-          "clip"
-        ],
-        "type": "string"
       },
       "OAuthAuthorizeResponseDto": {
         "properties": {
@@ -8788,15 +9145,6 @@
           "avatarColor": {
             "$ref": "#/components/schemas/UserAvatarColor"
           },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "nullable": true,
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
@@ -8806,62 +9154,19 @@
           "inTimeline": {
             "type": "boolean"
           },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
-          "oauthId": {
-            "type": "string"
-          },
           "profileImagePath": {
-            "type": "string"
-          },
-          "quotaSizeInBytes": {
-            "format": "int64",
-            "nullable": true,
-            "type": "integer"
-          },
-          "quotaUsageInBytes": {
-            "format": "int64",
-            "nullable": true,
-            "type": "integer"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "status": {
-            "$ref": "#/components/schemas/UserStatus"
-          },
-          "storageLabel": {
-            "nullable": true,
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
             "type": "string"
           }
         },
         "required": [
           "avatarColor",
-          "createdAt",
-          "deletedAt",
           "email",
           "id",
-          "isAdmin",
           "name",
-          "oauthId",
-          "profileImagePath",
-          "quotaSizeInBytes",
-          "quotaUsageInBytes",
-          "shouldChangePassword",
-          "status",
-          "storageLabel",
-          "updatedAt"
+          "profileImagePath"
         ],
         "type": "object"
       },
@@ -9123,43 +9428,6 @@
         ],
         "type": "string"
       },
-      "RecognitionConfig": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "maxDistance": {
-            "format": "float",
-            "maximum": 2,
-            "minimum": 0,
-            "type": "number"
-          },
-          "minFaces": {
-            "minimum": 1,
-            "type": "integer"
-          },
-          "minScore": {
-            "format": "float",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "modelName": {
-            "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxDistance",
-          "minFaces",
-          "minScore",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -9382,6 +9650,9 @@
           "configFile": {
             "type": "boolean"
           },
+          "duplicateDetection": {
+            "type": "boolean"
+          },
           "email": {
             "type": "boolean"
           },
@@ -9418,6 +9689,7 @@
         },
         "required": [
           "configFile",
+          "duplicateDetection",
           "email",
           "facialRecognition",
           "map",
@@ -9429,45 +9701,6 @@
           "sidecar",
           "smartSearch",
           "trash"
-        ],
-        "type": "object"
-      },
-      "ServerInfoResponseDto": {
-        "properties": {
-          "diskAvailable": {
-            "type": "string"
-          },
-          "diskAvailableRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskSizeRaw": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "diskUsagePercentage": {
-            "format": "float",
-            "type": "number"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskUseRaw": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "diskAvailable",
-          "diskAvailableRaw",
-          "diskSize",
-          "diskSizeRaw",
-          "diskUsagePercentage",
-          "diskUse",
-          "diskUseRaw"
         ],
         "type": "object"
       },
@@ -9548,6 +9781,45 @@
           "usage",
           "usageByUser",
           "videos"
+        ],
+        "type": "object"
+      },
+      "ServerStorageResponseDto": {
+        "properties": {
+          "diskAvailable": {
+            "type": "string"
+          },
+          "diskAvailableRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskSizeRaw": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "diskUsagePercentage": {
+            "format": "float",
+            "type": "number"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskUseRaw": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "diskAvailable",
+          "diskAvailableRaw",
+          "diskSize",
+          "diskSizeRaw",
+          "diskUsagePercentage",
+          "diskUse",
+          "diskUseRaw"
         ],
         "type": "object"
       },
@@ -10002,6 +10274,9 @@
           "accel": {
             "$ref": "#/components/schemas/TranscodeHWAccel"
           },
+          "accelDecode": {
+            "type": "boolean"
+          },
           "acceptedAudioCodecs": {
             "items": {
               "$ref": "#/components/schemas/AudioCodec"
@@ -10077,6 +10352,7 @@
         },
         "required": [
           "accel",
+          "accelDecode",
           "acceptedAudioCodecs",
           "acceptedVideoCodecs",
           "bframes",
@@ -10250,11 +10526,14 @@
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/DuplicateDetectionConfig"
+          },
           "enabled": {
             "type": "boolean"
           },
           "facialRecognition": {
-            "$ref": "#/components/schemas/RecognitionConfig"
+            "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
             "type": "string"
@@ -10262,6 +10541,7 @@
         },
         "required": [
           "clip",
+          "duplicateDetection",
           "enabled",
           "facialRecognition",
           "url"
@@ -10614,13 +10894,6 @@
         ],
         "type": "string"
       },
-      "ThumbnailFormat": {
-        "enum": [
-          "JPEG",
-          "WEBP"
-        ],
-        "type": "string"
-      },
       "TimeBucketResponseDto": {
         "properties": {
           "count": {
@@ -10741,9 +11014,6 @@
             },
             "type": "array"
           },
-          "isVisible": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           }
@@ -10786,48 +11056,6 @@
         },
         "type": "object"
       },
-      "UpdateUserDto": {
-        "properties": {
-          "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
-          },
-          "email": {
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "memoriesEnabled": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "quotaSizeInBytes": {
-            "format": "int64",
-            "minimum": 1,
-            "nullable": true,
-            "type": "integer"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
-          "storageLabel": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "type": "object"
-      },
       "UsageByUserDto": {
         "properties": {
           "photos": {
@@ -10862,49 +11090,50 @@
         ],
         "type": "object"
       },
-      "UserAvatarColor": {
-        "enum": [
-          "primary",
-          "pink",
-          "red",
-          "yellow",
-          "blue",
-          "green",
-          "purple",
-          "orange",
-          "gray",
-          "amber"
-        ],
-        "type": "string"
-      },
-      "UserDto": {
+      "UserAdminCreateDto": {
         "properties": {
-          "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
-          },
           "email": {
-            "type": "string"
-          },
-          "id": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "profileImagePath": {
+          "notify": {
+            "type": "boolean"
+          },
+          "password": {
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "storageLabel": {
+            "nullable": true,
             "type": "string"
           }
         },
         "required": [
-          "avatarColor",
           "email",
-          "id",
           "name",
-          "profileImagePath"
+          "password"
         ],
         "type": "object"
       },
-      "UserResponseDto": {
+      "UserAdminDeleteDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "UserAdminResponseDto": {
         "properties": {
           "avatarColor": {
             "$ref": "#/components/schemas/UserAvatarColor"
@@ -10925,9 +11154,6 @@
             "type": "string"
           },
           "isAdmin": {
-            "type": "boolean"
-          },
-          "memoriesEnabled": {
             "type": "boolean"
           },
           "name": {
@@ -10983,6 +11209,108 @@
         ],
         "type": "object"
       },
+      "UserAdminUpdateDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserAvatarColor": {
+        "enum": [
+          "primary",
+          "pink",
+          "red",
+          "yellow",
+          "blue",
+          "green",
+          "purple",
+          "orange",
+          "gray",
+          "amber"
+        ],
+        "type": "string"
+      },
+      "UserPreferencesResponseDto": {
+        "properties": {
+          "avatar": {
+            "$ref": "#/components/schemas/AvatarResponse"
+          },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsResponse"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoryResponse"
+          }
+        },
+        "required": [
+          "avatar",
+          "emailNotifications",
+          "memories"
+        ],
+        "type": "object"
+      },
+      "UserPreferencesUpdateDto": {
+        "properties": {
+          "avatar": {
+            "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsUpdate"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoryUpdate"
+          }
+        },
+        "type": "object"
+      },
+      "UserResponseDto": {
+        "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "email",
+          "id",
+          "name",
+          "profileImagePath"
+        ],
+        "type": "object"
+      },
       "UserStatus": {
         "enum": [
           "active",
@@ -10990,6 +11318,20 @@
           "deleted"
         ],
         "type": "string"
+      },
+      "UserUpdateMeDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       },
       "ValidateAccessTokenResponseDto": {
         "properties": {

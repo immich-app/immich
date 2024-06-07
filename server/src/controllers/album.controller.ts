@@ -16,8 +16,8 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
-@ApiTags('Album')
-@Controller('album')
+@ApiTags('Albums')
+@Controller('albums')
 export class AlbumController {
   constructor(private service: AlbumService) {}
 

@@ -5,6 +5,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   const handleCopy = async () => {
     //
@@ -40,7 +41,7 @@
               <CircleIconButton
                 color="primary"
                 icon={mdiContentCopy}
-                title="Copy error"
+                title={$t('copy_error')}
                 on:click={() => handleCopy()}
               />
             </div>
@@ -52,7 +53,7 @@
             <div class="flex w-full flex-col gap-2">
               <p class="text-red-500">{$page.error?.message} ({$page.error?.code})</p>
               {#if $page.error?.stack}
-                <label for="stacktrace">Stacktrace</label>
+                <label for="stacktrace">{$t('stacktrace')}</label>
                 <pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
               {/if}
             </div>
@@ -68,10 +69,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
-                <p class="text-sm">Get Help</p>
-              </button>
+                <p class="text-sm">{$t('get_help')}</p>
+              </div>
             </a>
 
             <a
@@ -80,10 +81,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
-                <p class="text-sm">Read Changelog</p>
-              </button>
+                <p class="text-sm">{$t('read_changelog')}</p>
+              </div>
             </a>
 
             <a
@@ -92,10 +93,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
-                <p class="text-sm">Check Logs</p>
-              </button>
+                <p class="text-sm">{$t('check_logs')}</p>
+              </div>
             </a>
           </div>
         </div>
