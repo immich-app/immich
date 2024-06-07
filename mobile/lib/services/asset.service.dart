@@ -116,8 +116,8 @@ class AssetService {
             await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
         allAssets.addAll(assets.map(Asset.remote));
-        if (assets.isEmpty) break;
-        lastCreationDate = assets.last.fileCreatedAt;
+        if (assets.length != chunkSize) break;
+        lastCreationDate = assets.last.createdAt;
         lastId = assets.last.id;
       }
       return allAssets;
