@@ -139,7 +139,7 @@
       </div>
 
       <div
-        class="absolute h-full w-full select-none bg-transparent transition-transform dark:bg-immich-dark-gray"
+        class="absolute h-full w-full select-none bg-transparent transition-transform"
         class:scale-[0.85]={selected}
         class:rounded-xl={selected}
       >
