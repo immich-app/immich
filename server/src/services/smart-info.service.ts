@@ -93,9 +93,9 @@ export class SmartInfoService {
       return JobStatus.FAILED;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage(
+    const embedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.clip,
     );
 
@@ -104,7 +104,7 @@ export class SmartInfoService {
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
     }
 
-    await this.repository.upsert(asset.id, clipEmbedding);
+    await this.repository.upsert(asset.id, embedding);
 
     return JobStatus.SUCCESS;
   }

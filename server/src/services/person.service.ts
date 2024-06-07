@@ -333,26 +333,28 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const faces = await this.machineLearningRepository.detectFaces(
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.facialRecognition,
     );
 
     this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
-    this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
-
       const mappedFaces = faces.map((face) => ({
         assetId: asset.id,
         embedding: face.embedding,
-        imageHeight: face.imageHeight,
-        imageWidth: face.imageWidth,
+        imageHeight,
+        imageWidth,
         boundingBoxX1: face.boundingBox.x1,
-        boundingBoxX2: face.boundingBox.x2,
         boundingBoxY1: face.boundingBox.y1,
+        boundingBoxX2: face.boundingBox.x2,
         boundingBoxY2: face.boundingBox.y2,
       }));
 
