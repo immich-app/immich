@@ -38,6 +38,7 @@
   export let selected = false;
   export let selectionCandidate = false;
   export let isMultiSelectState = false;
+  export let isStackSlideshow = false;
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
@@ -63,7 +64,9 @@
     return [235, 235];
   })();
 
-  const thumbnailClickedHandler = () => {
+  const thumbnailClickedHandler = (e: Event) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (!disabled) {
       onClick?.(asset);
     }
@@ -98,11 +101,11 @@
     on:mouseenter={onMouseEnter}
     on:mouseleave={onMouseLeave}
     tabindex={0}
-    on:click={isMultiSelectState ? onIconClickedHandler : undefined}
+    on:click={isMultiSelectState ? onIconClickedHandler : isStackSlideshow ? thumbnailClickedHandler : undefined}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
-      <div class="absolute z-20 h-full w-full {className}">
+      <div class="absolute z-20 h-[{height}px] w-[{width}px] {className}">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
@@ -128,7 +131,7 @@
       </div>
 
       <div
-        class="absolute h-full w-full select-none bg-gray-100 transition-transform dark:bg-immich-dark-gray"
+        class="absolute h-full w-full select-none bg-transparent transition-transform dark:bg-immich-dark-gray"
         class:scale-[0.85]={selected}
         class:rounded-xl={selected}
       >

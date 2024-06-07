@@ -739,6 +739,7 @@
                 readonly
                 thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
                 showStackedIcon={false}
+                isStackSlideshow={true}
               />
 
               {#if stackedAsset.id == asset.id}

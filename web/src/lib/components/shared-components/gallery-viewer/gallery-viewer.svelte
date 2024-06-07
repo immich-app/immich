@@ -128,6 +128,7 @@
           on:intersected={(event) =>
             i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
           selected={selectedAssets.has(asset)}
+          isMultiSelectState={isMultiSelectionMode}
           {showArchiveIcon}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}
