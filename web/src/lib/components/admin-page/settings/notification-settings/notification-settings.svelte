@@ -56,7 +56,7 @@
       });
 
       dispatch('save', { notifications: config.notifications });
-    } catch (error: any) {
+    } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));
     } finally {
       isSending = false;
