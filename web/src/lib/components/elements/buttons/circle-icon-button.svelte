@@ -9,7 +9,13 @@
   export let icon: string;
   export let color: Color = 'transparent';
   export let title: string;
+  /**
+   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
+   */
   export let padding = '3';
+  /**
+   * Size of the button, used for a CSS value.
+   */
   export let size = '24';
   export let hideMobile = false;
   export let buttonSize: string | undefined = undefined;

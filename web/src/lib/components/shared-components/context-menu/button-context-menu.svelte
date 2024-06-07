@@ -18,17 +18,30 @@
 
   export let icon: string;
   export let title: string;
+  /**
+   * The alignment of the context menu relative to the button.
+   */
   export let align: Align = 'top-left';
+  /**
+   * The direction in which the context menu should open.
+   */
   export let direction: 'left' | 'right' = 'right';
   export let buttonColor: Color = 'transparent';
   export let buttonSize: string | undefined = undefined;
   export let buttonPadding: string | undefined = undefined;
+  /**
+   * Additional classes to apply to the button.
+   */
   export let buttonClass: string | undefined = undefined;
+  /**
+   * Whether or not to use a portal to render the context menu into the body of the DOM.
+   */
   export let usePortal: boolean = false;
 
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
   let menuContainer: HTMLUListElement;
+  let buttonContainer: HTMLDivElement;
   let selectedId: string | undefined = undefined;
   let id = generateId();
 
@@ -59,7 +72,11 @@
     showContextMenu = false;
   };
 
-  setContext(() => (showContextMenu = false));
+  setContext(() => {
+    showContextMenu = false;
+    const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
+    button?.focus();
+  });
 </script>
 
 <div use:clickOutside={{ onOutclick: closeDropdown }} use:focusOutside={{ onFocusOut: closeDropdown }}>
@@ -79,6 +96,7 @@
       closeDropdown,
       selectionChanged: (node) => (selectedId = node?.id),
     }}
+    bind:this={buttonContainer}
   >
     <CircleIconButton
       {icon}
