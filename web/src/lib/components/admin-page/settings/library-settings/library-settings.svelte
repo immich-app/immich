@@ -100,7 +100,7 @@
                   href="https://crontab.guru"
                   class="underline"
                   target="_blank"
-                  rel="noreferrer">{$t('crontab_guru')}</a
+                  rel="noreferrer">{$t('admin.crontab_guru')}</a
                 >
               </p>
             </svelte:fragment>

@@ -473,7 +473,7 @@
   "info": "Info",
   "interval": {
     "day_at_onepm": "Every day at 1pm",
-    "hours": "Every {hours, plural, one {hour} other {{hours, number} hours}",
+    "hours": "Every {hours, plural, one {hour} other {{hours, number} hours}}",
     "night_at_midnight": "Every night at midnight",
     "night_at_twoam": "Every night at 2am"
   },
@@ -552,6 +552,7 @@
   "no_shared_albums_message": "Create an album to share photos and videos with people in your network",
   "not_in_any_album": "Not in any album",
   "notes": "Notes",
+  "oauth": "OAuth",
   "offline": "Offline",
   "ok": "Ok",
   "oldest_first": "Oldest first",

@@ -364,7 +364,7 @@
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
     } catch (error) {
-      handleError(error, $t('unable_to_delete_album'));
+      handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
       viewMode = ViewMode.VIEW;
     }
