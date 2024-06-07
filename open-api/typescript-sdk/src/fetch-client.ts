@@ -554,13 +554,18 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
-export type SmtpVerificationDto = {
-    "from": string;
+export type SystemConfigSmtpTransportDto = {
     host: string;
-    ignoreCert?: boolean;
-    password?: string;
-    port?: number;
-    username?: string;
+    ignoreCert: boolean;
+    password: string;
+    port: number;
+    username: string;
+};
+export type SystemConfigSmtpDto = {
+    enabled: boolean;
+    "from": string;
+    replyTo: string;
+    transport: SystemConfigSmtpTransportDto;
 };
 export type OAuthConfigDto = {
     redirectUri: string;
@@ -1000,19 +1005,6 @@ export type SystemConfigMapDto = {
 };
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
-};
-export type SystemConfigSmtpTransportDto = {
-    host: string;
-    ignoreCert: boolean;
-    password: string;
-    port: number;
-    username: string;
-};
-export type SystemConfigSmtpDto = {
-    enabled: boolean;
-    "from": string;
-    replyTo: string;
-    transport: SystemConfigSmtpTransportDto;
 };
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
@@ -2033,13 +2025,13 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function testEmailNotification({ smtpVerificationDto }: {
-    smtpVerificationDto: SmtpVerificationDto;
+export function sendTestEmail({ systemConfigSmtpDto }: {
+    systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
         ...opts,
         method: "POST",
-        body: smtpVerificationDto
+        body: systemConfigSmtpDto
     })));
 }
 export function startOAuth({ oAuthConfigDto }: {

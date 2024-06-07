@@ -468,8 +468,6 @@ class ApiClient {
           return SmartInfoResponseDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
-        case 'SmtpVerificationDto':
-          return SmtpVerificationDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

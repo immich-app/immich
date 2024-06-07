@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
-import { SmtpVerificationDto } from 'src/dtos/notification.dto';
+import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -17,7 +17,12 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
+import {
+  EmailImageAttachment,
+  EmailTemplate,
+  INotificationRepository,
+  SendEmailResponse,
+} from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getPreferences } from 'src/utils/preferences';
@@ -56,13 +61,17 @@ export class NotificationService {
     }
   }
 
-  async handleTestEmailSetup(id: string, dto: SmtpVerificationDto) {
+  async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       throw new Error('User not found');
     }
 
-    await this.notificationRepository.verifySmtp(dto);
+    try {
+      await this.notificationRepository.verifySmtp(dto.transport);
+    } catch (error) {
+      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST);
+    }
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -75,12 +84,12 @@ export class NotificationService {
 
     await this.notificationRepository.sendEmail({
       to: user.email,
-      subject: 'Test Email From Immich',
+      subject: 'Test email from Immich',
       html,
       text,
       from: dto.from,
-      replyTo: dto.from,
-      smtp: dto,
+      replyTo: dto.replyTo || dto.from,
+      smtp: dto.transport,
     });
   }
 

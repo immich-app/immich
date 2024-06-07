@@ -3468,20 +3468,20 @@
     },
     "/notifications/test-email": {
       "post": {
-        "operationId": "testEmailNotification",
+        "operationId": "sendTestEmail",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SmtpVerificationDto"
+                "$ref": "#/components/schemas/SystemConfigSmtpDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
@@ -10214,33 +10214,6 @@
         },
         "required": [
           "query"
-        ],
-        "type": "object"
-      },
-      "SmtpVerificationDto": {
-        "properties": {
-          "from": {
-            "type": "string"
-          },
-          "host": {
-            "type": "string"
-          },
-          "ignoreCert": {
-            "type": "boolean"
-          },
-          "password": {
-            "type": "string"
-          },
-          "port": {
-            "type": "number"
-          },
-          "username": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "from",
-          "host"
         ],
         "type": "object"
       },

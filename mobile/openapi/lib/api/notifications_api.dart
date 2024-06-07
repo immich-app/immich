@@ -19,13 +19,13 @@ class NotificationsApi {
   /// Performs an HTTP 'POST /notifications/test-email' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [SmtpVerificationDto] smtpVerificationDto (required):
-  Future<Response> testEmailNotificationWithHttpInfo(SmtpVerificationDto smtpVerificationDto,) async {
+  /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
+  Future<Response> sendTestEmailWithHttpInfo(SystemConfigSmtpDto systemConfigSmtpDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/notifications/test-email';
 
     // ignore: prefer_final_locals
-    Object? postBody = smtpVerificationDto;
+    Object? postBody = systemConfigSmtpDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -47,9 +47,9 @@ class NotificationsApi {
 
   /// Parameters:
   ///
-  /// * [SmtpVerificationDto] smtpVerificationDto (required):
-  Future<void> testEmailNotification(SmtpVerificationDto smtpVerificationDto,) async {
-    final response = await testEmailNotificationWithHttpInfo(smtpVerificationDto,);
+  /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
+  Future<void> sendTestEmail(SystemConfigSmtpDto systemConfigSmtpDto,) async {
+    final response = await sendTestEmailWithHttpInfo(systemConfigSmtpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
