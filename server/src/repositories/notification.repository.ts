@@ -89,6 +89,7 @@ export class NotificationRepository implements INotificationRepository {
               pass: options.password,
             }
           : undefined,
+      connectionTimeout: 5000,
     });
   }
 }

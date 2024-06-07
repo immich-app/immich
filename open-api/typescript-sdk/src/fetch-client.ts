@@ -554,6 +554,14 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
+export type SmtpVerificationDto = {
+    "from": string;
+    host: string;
+    ignoreCert?: boolean;
+    password?: string;
+    port?: number;
+    username?: string;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -2025,14 +2033,14 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function testEmailNotification(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 204;
-        data: object;
-    }>("/notification/test-email", {
+export function testEmailNotification({ smtpVerificationDto }: {
+    smtpVerificationDto: SmtpVerificationDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
         ...opts,
-        method: "POST"
-    }));
+        method: "POST",
+        body: smtpVerificationDto
+    })));
 }
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;

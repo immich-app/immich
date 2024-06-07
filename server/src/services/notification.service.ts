@@ -2,13 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
+import { SmtpVerificationDto } from 'src/dtos/notification.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
-  IEntityJob,
   IJobRepository,
   INotifyAlbumInviteJob,
   INotifyAlbumUpdateJob,
@@ -56,12 +56,13 @@ export class NotificationService {
     }
   }
 
-  async handleTestEmailSetup({ id }: IEntityJob) {
+  async handleTestEmailSetup(id: string, dto: SmtpVerificationDto) {
     const user = await this.userRepository.get(id, { withDeleted: false });
-
     if (!user) {
-      return JobStatus.SKIPPED;
+      throw new Error('User not found');
     }
+
+    await this.notificationRepository.verifySmtp(dto);
 
     const { server } = await this.configCore.getConfig();
     const { html, text } = this.notificationRepository.renderEmail({
@@ -72,17 +73,15 @@ export class NotificationService {
       },
     });
 
-    await this.jobRepository.queue({
-      name: JobName.SEND_EMAIL,
-      data: {
-        to: user.email,
-        subject: 'Test Email From Immich Notification',
-        html,
-        text,
-      },
+    await this.notificationRepository.sendEmail({
+      to: user.email,
+      subject: 'Test Email From Immich',
+      html,
+      text,
+      from: dto.from,
+      replyTo: dto.from,
+      smtp: dto,
     });
-
-    return JobStatus.SUCCESS;
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {

@@ -20,7 +20,7 @@ import { TestEmailProps } from 'src/interfaces/notification.interface';
 export const TestEmail = ({ baseUrl, displayName }: TestEmailProps) => (
   <Html>
     <Head />
-    <Preview>This is a test email from Immich Notification</Preview>
+    <Preview>This is a test email from Immich</Preview>
     <Body
       style={{
         margin: 0,

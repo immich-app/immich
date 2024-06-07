@@ -17,20 +17,41 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
+  let isSending = false;
   const dispatch = createEventDispatcher<SettingsEventType>();
 
   const handleSendTestEmail = async () => {
-    await testEmailNotification();
-    notificationController.show({
-      type: NotificationType.Info,
-      message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
-    });
+    try {
+      isSending = true;
+      await testEmailNotification({
+        smtpVerificationDto: {
+          host: config.notifications.smtp.transport.host,
+          port: config.notifications.smtp.transport.port,
+          username: config.notifications.smtp.transport.username,
+          password: config.notifications.smtp.transport.password,
+          ignoreCert: config.notifications.smtp.transport.ignoreCert,
+          from: config.notifications.smtp.from,
+        },
+      });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
+      });
+
+      isSending = false;
+      dispatch('save', { notifications: config.notifications });
+    } catch (error) {
+      handleError(error, $t('admin.notification_email_test_email_failed'));
+      isSending = false;
+    }
   };
 </script>
 
@@ -108,10 +129,13 @@
               isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}
             />
 
-            <div class="w-1/2">
+            <div class="flex gap-2 place-items-center">
               <Button size="sm" disabled={disabled || !config.notifications.smtp.enabled} on:click={handleSendTestEmail}
-                >Send test email</Button
-              >
+                >Send test email and save
+              </Button>
+              {#if isSending}
+                <LoadingSpinner />
+              {/if}
             </div>
           </div>
         </SettingAccordion>

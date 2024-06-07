@@ -144,7 +144,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
-*NotificationApi* | [**testEmailNotification**](doc//NotificationApi.md#testemailnotification) | **POST** /notification/test-email | 
+*NotificationsApi* | [**testEmailNotification**](doc//NotificationsApi.md#testemailnotification) | **POST** /notifications/test-email | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
@@ -376,6 +376,7 @@ Class | Method | HTTP request | Description
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [SmtpVerificationDto](doc//SmtpVerificationDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
