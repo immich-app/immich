@@ -209,7 +209,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
     if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
@@ -235,7 +235,7 @@
         // trigger reactivity
         people = people;
       } catch (error) {
-        handleError(error, $t('unable_to_save_name'));
+        handleError(error, $t('errors.unable_to_save_name'));
       }
     }
   };
@@ -279,7 +279,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_hide_person'));
+      handleError(error, $t('errors.unable_to_hide_person'));
     }
   };
 
@@ -350,7 +350,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -377,7 +377,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 

@@ -85,7 +85,7 @@
 
       matches = [];
     } catch (error) {
-      handleError(error, $t('unable_to_repair_items'));
+      handleError(error, $t('errors.unable_to_repair_items'));
     } finally {
       repairing = false;
     }
@@ -110,7 +110,7 @@
 
       notificationController.show({ message: $t('refreshed'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, $t('unable_to_load_items'));
+      handleError(error, $t('errors.unable_to_load_items'));
     }
   };
 
@@ -121,7 +121,7 @@
         notificationController.show({ message: `Matched 1 item`, type: NotificationType.Info });
       }
     } catch (error) {
-      handleError(error, $t('unable_to_check_item'));
+      handleError(error, $t('errors.unable_to_check_item'));
     }
   };
 
@@ -137,7 +137,7 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, $t('unable_to_check_items'));
+      handleError(error, $t('errors.unable_to_check_items'));
     } finally {
       checking = false;
     }

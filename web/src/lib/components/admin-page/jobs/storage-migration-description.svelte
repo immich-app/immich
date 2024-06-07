@@ -5,6 +5,6 @@
 
 Apply the current
 <a href="{AppRoute.ADMIN_SETTINGS}?open=storageTemplate" class="text-immich-primary dark:text-immich-dark-primary"
-  >{$t('storage_template_settings')}</a
+  >{$t('admin.storage_template_settings')}</a
 >
 to previously uploaded assets
