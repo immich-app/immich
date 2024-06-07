@@ -144,6 +144,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
+*NotificationsApi* | [**sendTestEmail**](doc//NotificationsApi.md#sendtestemail) | **POST** /notifications/test-email | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
 *OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 

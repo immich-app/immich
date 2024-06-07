@@ -3466,6 +3466,41 @@
         ]
       }
     },
+    "/notifications/test-email": {
+      "post": {
+        "operationId": "sendTestEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/oauth/authorize": {
       "post": {
         "operationId": "startOAuth",

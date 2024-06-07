@@ -394,7 +394,7 @@ class SystemConfigSmtpTransportDto {
   password!: string;
 }
 
-class SystemConfigSmtpDto {
+export class SystemConfigSmtpDto {
   @IsBoolean()
   enabled!: boolean;
 
