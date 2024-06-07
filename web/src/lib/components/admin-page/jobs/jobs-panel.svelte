@@ -71,7 +71,7 @@
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: $t('perform_library_tasks'),
+      subtitle: $t('admin.library_tasks_description'),
       allText: $t('all').toUpperCase(),
       missingText: $t('refresh').toUpperCase(),
     },
