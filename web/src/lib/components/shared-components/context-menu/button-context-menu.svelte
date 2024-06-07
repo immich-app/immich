@@ -14,6 +14,7 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { generateId } from '$lib/utils/generate-id';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
   export let icon: string;
   export let title: string;
@@ -21,6 +22,9 @@
   export let direction: 'left' | 'right' = 'right';
   export let buttonColor: Color = 'transparent';
   export let buttonSize: string | undefined = undefined;
+  export let buttonPadding: string | undefined = undefined;
+  export let buttonClass: string | undefined = undefined;
+  export let usePortal: boolean = false;
 
   let showContextMenu = false;
   let contextMenuPosition = { x: 0, y: 0 };
@@ -77,26 +81,44 @@
     }}
   >
     <CircleIconButton
-      {title}
       {icon}
-      color={buttonColor}
-      on:click={handleClick}
-      id={buttonId}
+      {title}
+      ariaControls={menuId}
       ariaExpanded={showContextMenu}
       ariaHasPopup={true}
-      ariaControls={menuId}
+      class={buttonClass}
+      color={buttonColor}
+      id={buttonId}
+      on:click={handleClick}
+      padding={buttonPadding}
       size={buttonSize}
     />
   </div>
-  <ContextMenu
-    {...contextMenuPosition}
-    {direction}
-    ariaActiveDescendant={selectedId}
-    ariaLabelledBy={buttonId}
-    bind:menuElement={menuContainer}
-    id={menuId}
-    isVisible={showContextMenu}
-  >
-    <slot />
-  </ContextMenu>
+  {#if usePortal}
+    <Portal target="body">
+      <ContextMenu
+        {...contextMenuPosition}
+        {direction}
+        ariaActiveDescendant={selectedId}
+        ariaLabelledBy={buttonId}
+        bind:menuElement={menuContainer}
+        id={menuId}
+        isVisible={showContextMenu}
+      >
+        <slot />
+      </ContextMenu>
+    </Portal>
+  {:else}
+    <ContextMenu
+      {...contextMenuPosition}
+      {direction}
+      ariaActiveDescendant={selectedId}
+      ariaLabelledBy={buttonId}
+      bind:menuElement={menuContainer}
+      id={menuId}
+      isVisible={showContextMenu}
+    >
+      <slot />
+    </ContextMenu>
+  {/if}
 </div>
