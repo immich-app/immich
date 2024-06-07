@@ -276,8 +276,6 @@ class ApiClient {
           return BulkIdsDto.fromJson(value);
         case 'CLIPConfig':
           return CLIPConfig.fromJson(value);
-        case 'CLIPMode':
-          return CLIPModeTypeTransformer().decode(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
         case 'ChangePasswordDto':
@@ -316,6 +314,8 @@ class ApiClient {
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':
           return FaceDto.fromJson(value);
+        case 'FacialRecognitionConfig':
+          return FacialRecognitionConfig.fromJson(value);
         case 'FileChecksumDto':
           return FileChecksumDto.fromJson(value);
         case 'FileChecksumResponseDto':
@@ -374,8 +374,6 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
-        case 'ModelType':
-          return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':
           return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
@@ -414,8 +412,6 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
-        case 'RecognitionConfig':
-          return RecognitionConfig.fromJson(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'ScanLibraryDto':

@@ -61,24 +61,24 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: $t('thumbnail_generation_job_description'),
+      subtitle: $t('admin.thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: $t('metadata_extraction_job_description'),
+      subtitle: $t('admin.metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: $t('perform_library_tasks'),
+      subtitle: $t('admin.library_tasks_description'),
       allText: $t('all').toUpperCase(),
       missingText: $t('refresh').toUpperCase(),
     },
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: $t('sidecar_job_description'),
+      subtitle: $t('admin.sidecar_job_description'),
       allText: $t('sync').toUpperCase(),
       missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
@@ -86,13 +86,13 @@
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: $t('smart_search_job_description'),
+      subtitle: $t('admin.smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: $t('duplicate_detection_job_description'),
+      subtitle: $t('admin.duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -114,7 +114,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: $t('video_conversion_job_description'),
+      subtitle: $t('admin.video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
@@ -125,7 +125,7 @@
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: $t('migration_job_description'),
+      subtitle: $t('admin.migration_job_description'),
       allowForceCommand: false,
     },
   };

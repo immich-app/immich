@@ -2,7 +2,7 @@
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { fallbackLang, fallbackLocale, langs, locales } from '$lib/constants';
+  import { defaultLang, fallbackLocale, langs, locales } from '$lib/constants';
   import {
     alwaysLoadOriginalFile,
     colorTheme,
@@ -16,8 +16,7 @@
   import { findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { t, locale as i18nLocale, init } from 'svelte-i18n';
-  import { get } from 'svelte/store';
+  import { t, init } from 'svelte-i18n';
 
   let time = new Date();
 
@@ -65,18 +64,20 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
+  const langOptions = langs.map((lang) => ({ label: lang.name, value: lang.code }));
+  const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
+
   const handleLanguageChange = async (newLang: string | undefined) => {
-    newLang = newLang || fallbackLang;
-    $lang = newLang;
+    if (newLang) {
+      $lang = newLang;
 
-    const previousLang = get(i18nLocale);
+      if (newLang === 'dev') {
+        // Reload required, because fallbackLocale cannot be cleared.
+        window.location.reload();
+      }
 
-    if (newLang === 'dev') {
-      await init({ fallbackLocale: 'dev', initialLocale: 'dev' });
-    } else if (previousLang == 'dev' && newLang !== 'dev') {
-      await init({ fallbackLocale: 'en-US', initialLocale: newLang });
+      await init({ fallbackLocale: defaultLang.code, initialLocale: newLang });
     }
-    $i18nLocale = newLang;
   };
 
   const handleLocaleChange = (newLocale: string | undefined) => {
@@ -101,8 +102,8 @@
       <div class="ml-4">
         <SettingCombobox
           comboboxPlaceholder={$t('language')}
-          {selectedOption}
-          options={langs.map((lang) => ({ label: lang.name, value: lang.code }))}
+          selectedOption={langOptions.find(({ value }) => value === $lang) || defaultLangOption}
+          options={langOptions}
           title={$t('language')}
           subtitle={$t('language_setting_description')}
           onSelect={(combobox) => handleLanguageChange(combobox?.value)}
