@@ -17,12 +17,7 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import {
-  EmailImageAttachment,
-  EmailTemplate,
-  INotificationRepository,
-  SendEmailResponse,
-} from 'src/interfaces/notification.interface';
+import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getPreferences } from 'src/utils/preferences';
@@ -70,7 +65,7 @@ export class NotificationService {
     try {
       await this.notificationRepository.verifySmtp(dto.transport);
     } catch (error) {
-      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
     }
 
     const { server } = await this.configCore.getConfig();
