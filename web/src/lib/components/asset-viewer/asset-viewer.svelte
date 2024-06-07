@@ -12,7 +12,13 @@
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
-  import { addAssetsToAlbum, addAssetsToNewAlbum, downloadFile, unstackAssets } from '$lib/utils/asset-utils';
+  import {
+    addAssetsToAlbum,
+    addAssetsToNewAlbum,
+    downloadFile,
+    unstackAssets,
+    toggleArchive,
+  } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcuts } from '$lib/actions/shortcut';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -430,24 +436,10 @@
     }
   };
 
-  const toggleArchive = async () => {
-    try {
-      const data = await updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          isArchived: !asset.isArchived,
-        },
-      });
-
-      asset.isArchived = data.isArchived;
-      dispatch('action', { type: data.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: data });
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: asset.isArchived ? `Added to archive` : `Removed from archive`,
-      });
-    } catch (error) {
-      handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+  const toggleAssetArchive = async () => {
+    const updatedAsset = await toggleArchive(asset);
+    if (updatedAsset) {
+      dispatch('action', { type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: asset });
     }
   };
 
@@ -547,7 +539,7 @@
 
 <svelte:window
   use:shortcuts={[
-    { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+    { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
     { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
@@ -593,7 +585,7 @@
           on:addToSharedAlbum={() => openAlbumPicker(true)}
           on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
           on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-          on:toggleArchive={toggleArchive}
+          on:toggleArchive={toggleAssetArchive}
           on:asProfileImage={() => (isShowProfileImageCrop = true)}
           on:setAsAlbumCover={handleUpdateThumbnail}
           on:runJob={({ detail: job }) => handleRunJob(job)}

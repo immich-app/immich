@@ -56,18 +56,7 @@
 
   $: isOwner = $user && asset.ownerId === $user?.id;
 
-  type MenuItemEvent =
-    | 'addToAlbum'
-    | 'restoreAsset'
-    | 'addToSharedAlbum'
-    | 'asProfileImage'
-    | 'setAsAlbumCover'
-    | 'download'
-    | 'playSlideShow'
-    | 'runJob'
-    | 'unstack';
-
-  const dispatch = createEventDispatcher<{
+  type EventTypes = {
     back: void;
     stopMotionPhoto: void;
     playMotionPhoto: void;
@@ -85,7 +74,9 @@
     playSlideShow: void;
     unstack: void;
     showShareModal: void;
-  }>();
+  };
+
+  const dispatch = createEventDispatcher<EventTypes>();
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
@@ -100,7 +91,7 @@
     dispatch('runJob', name);
   };
 
-  const onMenuClick = (eventName: MenuItemEvent) => {
+  const onMenuClick = (eventName: keyof EventTypes) => {
     isShowAssetOptions = false;
     dispatch(eventName);
   };
@@ -249,7 +240,7 @@
                 />
               {/if}
               <MenuOption
-                on:click={() => dispatch('toggleArchive')}
+                on:click={() => onMenuClick('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
                 text={asset.isArchived ? $t('unarchive') : $t('archive')}
               />
