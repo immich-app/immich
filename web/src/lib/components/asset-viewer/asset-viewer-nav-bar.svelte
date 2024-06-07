@@ -181,12 +181,14 @@
     {/if}
 
     {#if isOwner}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiDeleteOutline}
-        on:click={() => dispatch('delete')}
-        title={$t('delete')}
-      />
+      {#if !asset.isTrashed}
+        <CircleIconButton
+          color="opaque"
+          icon={mdiDeleteOutline}
+          on:click={() => dispatch('delete')}
+          title={$t('delete')}
+        />
+      {/if}
       <div
         use:clickOutside={{
           onOutclick: () => (isShowAssetOptions = false),
