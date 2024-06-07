@@ -80,6 +80,14 @@
     }
   };
 
+  const handleClick = (e: Event) => {
+    if (isMultiSelectState) {
+      onIconClickedHandler(e as MouseEvent);
+    } else if (isStackSlideshow) {
+      thumbnailClickedHandler(e);
+    }
+  };
+
   const onMouseEnter = () => {
     mouseOver = true;
   };
@@ -101,7 +109,7 @@
     on:mouseenter={onMouseEnter}
     on:mouseleave={onMouseLeave}
     tabindex={0}
-    on:click={isMultiSelectState ? onIconClickedHandler : isStackSlideshow ? thumbnailClickedHandler : undefined}
+    on:click={handleClick}
     use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
