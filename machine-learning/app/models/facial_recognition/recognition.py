@@ -2,16 +2,15 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import onnx
 import onnxruntime as ort
 from insightface.model_zoo import ArcFaceONNX
 from insightface.utils.face_align import norm_crop
 from numpy.typing import NDArray
-from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from PIL import Image
 
 from app.config import clean_name, log
 from app.models.base import InferenceModel
+from app.models.session import ort_add_batch_dim, ort_has_batch_dim
 from app.models.transforms import decode_cv2
 from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelSession, ModelTask, ModelType
 
@@ -32,8 +31,9 @@ class FaceRecognizer(InferenceModel):
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        if not self._has_batch_dim(session):
-            self._add_batch_dim(self.model_path)
+        if isinstance(session, ort.InferenceSession) and not ort_has_batch_dim(session):
+            log.debug(f"Adding batch dimension to model {self.model_path}")
+            ort_add_batch_dim(self.model_path, self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
             self.model_path.with_suffix(".onnx").as_posix(),
@@ -62,16 +62,3 @@ class FaceRecognizer(InferenceModel):
 
     def _crop(self, image: NDArray[np.uint8], faces: FaceDetectionOutput) -> list[NDArray[np.uint8]]:
         return [norm_crop(image, landmark) for landmark in faces["landmarks"]]
-
-    def _has_batch_dim(self, session: ort.InferenceSession) -> bool:
-        return not isinstance(session, ort.InferenceSession) or session.get_inputs()[0].shape[0] == "batch"
-
-    def _add_batch_dim(self, model_path: Path) -> None:
-        log.debug(f"Adding batch dimension to model {model_path}")
-        proto = onnx.load(model_path)
-        static_input_dims = [shape.dim_value for shape in proto.graph.input[0].type.tensor_type.shape.dim[1:]]
-        static_output_dims = [shape.dim_value for shape in proto.graph.output[0].type.tensor_type.shape.dim[1:]]
-        input_dims = {proto.graph.input[0].name: ["batch"] + static_input_dims}
-        output_dims = {proto.graph.output[0].name: ["batch"] + static_output_dims}
-        updated_proto = update_inputs_outputs_dims(proto, input_dims, output_dims)
-        onnx.save(updated_proto, model_path)
