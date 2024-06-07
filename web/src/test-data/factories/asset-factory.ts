@@ -16,6 +16,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   fileCreatedAt: Sync.each(() => faker.date.past().toISOString()),
   fileModifiedAt: Sync.each(() => faker.date.past().toISOString()),
   localDateTime: Sync.each(() => faker.date.past().toISOString()),
+  createdAt: Sync.each(() => faker.date.past().toISOString()),
   updatedAt: Sync.each(() => faker.date.past().toISOString()),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   isArchived: Sync.each(() => faker.datatype.boolean()),
