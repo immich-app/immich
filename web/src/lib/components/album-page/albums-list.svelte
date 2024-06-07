@@ -315,7 +315,7 @@
       await handleDeleteAlbum(albumToDelete);
     } catch {
       notificationController.show({
-        message: $t('errors.errors.unable_to_delete_album'),
+        message: $t('errors.unable_to_delete_album'),
         type: NotificationType.Error,
       });
     } finally {

@@ -392,7 +392,13 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    return ['fps=12', 'thumbnail=12', `select=gt(scene\\,0.1)+gt(n\\,20)`, ...super.getFilterOptions(videoStream)];
+    const options = ['fps=12', 'thumbnail=12', `select=gt(scene\\,0.1)+gt(n\\,20)`];
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale=${this.getScaling(videoStream)}`);
+    }
+
+    options.push(...this.getToneMapping(videoStream), 'format=gbrpf32le');
+    return options;
   }
 
   getPresetOptions() {
