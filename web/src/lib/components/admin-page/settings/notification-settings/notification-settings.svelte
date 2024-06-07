@@ -28,8 +28,13 @@
   const dispatch = createEventDispatcher<SettingsEventType>();
 
   const handleSendTestEmail = async () => {
+    if (isSending) {
+      return;
+    }
+
+    isSending = true;
+
     try {
-      isSending = true;
       await testEmailNotification({
         smtpVerificationDto: {
           host: config.notifications.smtp.transport.host,
