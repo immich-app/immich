@@ -18,6 +18,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { user } from '$lib/stores/user.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -56,10 +57,7 @@
 
       dispatch('save', { notifications: config.notifications });
     } catch (error: any) {
-      notificationController.show({
-        type: NotificationType.Error,
-        message: $t('admin.notification_email_test_email_failed'),
-      });
+      handleError(error, $t('admin.notification_email_test_email_failed'));
     } finally {
       isSending = false;
     }
