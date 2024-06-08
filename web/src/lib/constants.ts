@@ -80,7 +80,7 @@ export enum QueryParameter {
 export enum OpenSettingQueryParameterValue {
   OAUTH = 'oauth',
   JOB = 'job',
-  STORAGE_TEMPLATE = 'storageTemplate',
+  STORAGE_TEMPLATE = 'storage-template',
 }
 
 export enum ActionQueryParameterValue {
@@ -244,7 +244,7 @@ export const locales = [
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
 ];
 
-export const fallbackLang = 'en-US';
+export const defaultLang = { name: 'English', code: 'en', loader: () => import('$lib/i18n/en.json') };
 
 export const langs = [
   { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
@@ -252,7 +252,7 @@ export const langs = [
   { name: 'Czech', code: 'cs', loader: () => import('$lib/i18n/cs.json') },
   { name: 'Danish', code: 'da', loader: () => import('$lib/i18n/da.json') },
   { name: 'German', code: 'de', loader: () => import('$lib/i18n/de.json') },
-  { name: 'English', code: 'en', loader: () => import('$lib/i18n/en.json') },
+  defaultLang,
   { name: 'Spanish', code: 'es', loader: () => import('$lib/i18n/es.json') },
   { name: 'Finnish', code: 'fi', loader: () => import('$lib/i18n/fi.json') },
   { name: 'French', code: 'fr', loader: () => import('$lib/i18n/fr.json') },

@@ -125,7 +125,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_create_library'));
+      handleError(error, $t('errors.unable_to_create_library'));
     } finally {
       toCreateLibrary = false;
       await readLibraryList();
@@ -143,7 +143,7 @@
       closeAll();
       await readLibraryList();
     } catch (error) {
-      handleError(error, $t('unable_to_update_library'));
+      handleError(error, $t('errors.unable_to_update_library'));
     }
   };
 
@@ -163,7 +163,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_remove_library'));
+      handleError(error, $t('errors.unable_to_remove_library'));
     } finally {
       confirmDeleteLibrary = null;
       deletedLibrary = null;
@@ -181,7 +181,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_scan_libraries'));
+      handleError(error, $t('errors.unable_to_scan_libraries'));
     }
   };
 
@@ -193,7 +193,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_scan_library'));
+      handleError(error, $t('errors.unable_to_scan_library'));
     }
   };
 
@@ -205,7 +205,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_scan_library'));
+      handleError(error, $t('errors.unable_to_scan_library'));
     }
   };
 
@@ -217,7 +217,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_scan_library'));
+      handleError(error, $t('errors.unable_to_scan_library'));
     }
   };
 

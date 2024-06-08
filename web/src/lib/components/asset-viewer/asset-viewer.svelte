@@ -59,6 +59,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
   import { t } from 'svelte-i18n';
 
   export let assetStore: AssetStore | null = null;
@@ -98,7 +99,6 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let enableDetailPanel = asset.hasMetadata;
   let shouldShowShareModal = !asset.isTrashed;
-  let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
@@ -107,6 +107,8 @@
   let numberOfComments: number;
   let fullscreenElement: Element;
   let unsubscribe: () => void;
+  let zoomToggle = () => void 0;
+  let copyImage: () => Promise<void>;
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
@@ -226,11 +228,6 @@
     if (!sharedLink) {
       await handleGetAllAlbums();
     }
-
-    // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-    // TODO: Move to regular import once the package correctly supports ESM.
-    const module = await import('copy-image-clipboard');
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard();
 
     if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
@@ -568,7 +565,7 @@
           {asset}
           {album}
           isMotionPhotoPlaying={shouldPlayMotionPhoto}
-          showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+          showCopyButton={canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
           showZoomButton={asset.type === AssetTypeEnum.Image}
           showMotionPlayButton={!!asset.livePhotoVideoId}
           showDownloadButton={shouldShowDownloadButton}
@@ -576,6 +573,8 @@
           showSlideshow={!!assetStore}
           hasStackChildren={$stackAssetsStore.length > 0}
           showShareButton={shouldShowShareModal}
+          onZoomImage={zoomToggle}
+          onCopyImage={copyImage}
           on:back={closeViewer}
           on:showDetail={showDetailInfoHandler}
           on:download={() => downloadFile(asset)}
@@ -623,6 +622,8 @@
         {#key previewStackedAsset.id}
           {#if previewStackedAsset.type === AssetTypeEnum.Image}
             <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
               asset={previewStackedAsset}
               {preloadAssets}
               on:close={closeViewer}
@@ -665,7 +666,7 @@
                   .endsWith('.insp'))}
               <PanoramaViewer {asset} />
             {:else}
-              <PhotoViewer {asset} {preloadAssets} on:close={closeViewer} />
+              <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} />
             {/if}
           {:else}
             <VideoViewer
