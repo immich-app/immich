@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/svelte';
 import DeleteButton from './delete-button.svelte';
 
-export let asset: AssetResponseDto;
+let asset: AssetResponseDto;
 
 describe('DeleteButton component', () => {
   describe('given an asset which is not trashed yet', () => {

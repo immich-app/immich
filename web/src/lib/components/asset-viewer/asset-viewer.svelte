@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { ShortcutOptions } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
@@ -536,26 +535,21 @@
   $: if (!$user) {
     shouldShowShareModal = false;
   }
+</script>
 
-  const defaultShortcutOptions: ShortcutOptions<unknown>[] = [
+<svelte:window
+  use:shortcuts={[
     { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
     { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
     { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
     { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
     { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
-  ];
-  const deleteShortcutOption: ShortcutOptions<unknown> = {
-    shortcut: { key: 'Delete' },
-    onShortcut: () => trashOrDelete(false),
-  };
-
-  $: shortcutOptions = asset.isTrashed ? defaultShortcutOptions : [...defaultShortcutOptions, deleteShortcutOption];
-</script>
-
-<svelte:window use:shortcuts={shortcutOptions} />
+  ]}
+/>
 
 <svelte:document bind:fullscreenElement />
 
