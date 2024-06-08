@@ -763,7 +763,7 @@ export class AssetRepository implements IAssetRepository {
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const { ownerId, lastId, updatedUntil, limit } = options;
     const builder = this.getBuilder({
       userIds: [ownerId],
       exifInfo: false, // need to do this manually because `exifInfo: true` also loads stacked assets messing with `limit`
@@ -773,16 +773,12 @@ export class AssetRepository implements IAssetRepository {
       .leftJoinAndSelect('asset.stack', 'stack')
       .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount');
 
-    if (lastCreationDate !== undefined && lastId !== undefined) {
-      builder.andWhere('(asset.createdAt, asset.id) < (:lastCreationDate, :lastId)', {
-        lastCreationDate,
-        lastId,
-      });
+    if (lastId !== undefined) {
+      builder.andWhere('asset.id > :lastId)', { lastId });
     }
     builder
       .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
-      .orderBy('asset.createdAt', 'DESC')
-      .addOrderBy('asset.id', 'DESC')
+      .orderBy('asset.id', 'ASC')
       .limit(limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();

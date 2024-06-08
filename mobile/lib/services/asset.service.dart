@@ -112,9 +112,13 @@ class AssetService {
           lastCreationDate: lastCreationDate,
           userId: user.id,
         );
+        log.fine("Requesting $chunkSize assets from $lastId");
         final List<AssetResponseDto>? assets =
             await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
+        log.fine(
+          "Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}",
+        );
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length != chunkSize) break;
         lastCreationDate = assets.last.createdAt;
