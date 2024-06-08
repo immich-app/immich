@@ -80,7 +80,7 @@ export enum QueryParameter {
 export enum OpenSettingQueryParameterValue {
   OAUTH = 'oauth',
   JOB = 'job',
-  STORAGE_TEMPLATE = 'storageTemplate',
+  STORAGE_TEMPLATE = 'storage-template',
 }
 
 export enum ActionQueryParameterValue {

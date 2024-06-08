@@ -30,12 +30,12 @@
   interface JobDetails {
     title: string;
     subtitle?: string;
+    description?: ComponentType;
     allText?: string;
     missingText?: string;
     disabled?: boolean;
     icon: string;
     allowForceCommand?: boolean;
-    component?: ComponentType;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
@@ -120,7 +120,7 @@
       icon: mdiFolderMove,
       title: getJobName(JobName.StorageTemplateMigration),
       allowForceCommand: false,
-      component: StorageMigrationDescription,
+      description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
@@ -153,23 +153,20 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, missingText, allowForceCommand, icon, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
       {title}
       {disabled}
       {subtitle}
+      {description}
       allText={allText || $t('all').toUpperCase()}
       missingText={missingText || $t('missing').toUpperCase()}
       {allowForceCommand}
       {jobCounts}
       {queueStatus}
       on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
-    >
-      {#if component}
-        <svelte:component this={component} slot="description" />
-      {/if}
-    </JobTile>
+    />
   {/each}
 </div>

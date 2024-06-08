@@ -543,7 +543,7 @@
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
     { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
-    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
     { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
     { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
@@ -579,6 +579,7 @@
           on:showDetail={showDetailInfoHandler}
           on:download={() => downloadFile(asset)}
           on:delete={() => trashOrDelete()}
+          on:permanentlyDelete={() => trashOrDelete(true)}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
           on:restoreAsset={() => handleRestoreAsset()}
