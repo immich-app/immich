@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import DeleteButton from './delete-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName } from '$lib/utils';
@@ -16,7 +17,6 @@
     mdiCogRefreshOutline,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
-    mdiDeleteOutline,
     mdiDotsVertical,
     mdiFolderDownloadOutline,
     mdiHeart,
@@ -64,6 +64,7 @@
     showDetail: void;
     favorite: void;
     delete: void;
+    permanentlyDelete: void;
     toggleArchive: void;
     addToAlbum: void;
     restoreAsset: void;
@@ -181,14 +182,11 @@
     {/if}
 
     {#if isOwner}
-      {#if !asset.isTrashed}
-        <CircleIconButton
-          color="opaque"
-          icon={mdiDeleteOutline}
-          on:click={() => dispatch('delete')}
-          title={$t('delete')}
-        />
-      {/if}
+      <DeleteButton
+        {asset}
+        on:delete={() => dispatch('delete')}
+        on:permanentlyDelete={() => dispatch('permanentlyDelete')}
+      />
       <div
         use:clickOutside={{
           onOutclick: () => (isShowAssetOptions = false),

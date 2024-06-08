@@ -537,7 +537,7 @@
     shouldShowShareModal = false;
   }
 
-  let shortcutOptions: ShortcutOptions<unknown>[] = [
+  const defaultShortcutOptions: ShortcutOptions<unknown>[] = [
     { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
@@ -547,10 +547,12 @@
     { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
     { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
   ];
+  const deleteShortcutOption: ShortcutOptions<unknown> = {
+    shortcut: { key: 'Delete' },
+    onShortcut: () => trashOrDelete(false),
+  };
 
-  if (!asset.isTrashed) {
-    shortcutOptions.push({ shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(false) });
-  }
+  $: shortcutOptions = asset.isTrashed ? defaultShortcutOptions : [...defaultShortcutOptions, deleteShortcutOption];
 </script>
 
 <svelte:window use:shortcuts={shortcutOptions} />
@@ -583,6 +585,7 @@
           on:showDetail={showDetailInfoHandler}
           on:download={() => downloadFile(asset)}
           on:delete={() => trashOrDelete()}
+          on:permanentlyDelete={() => trashOrDelete(true)}
           on:favorite={toggleFavorite}
           on:addToAlbum={() => openAlbumPicker(false)}
           on:restoreAsset={() => handleRestoreAsset()}
