@@ -37,7 +37,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   async detectFaces(url: string, imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
-        [ModelType.DETECTION]: { modelName, minScore },
+        [ModelType.DETECTION]: { modelName, options: { minScore } },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
