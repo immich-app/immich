@@ -12,7 +12,7 @@
     mdiPlay,
     mdiSelectionSearch,
   } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, type ComponentType } from 'svelte';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -20,6 +20,7 @@
 
   export let title: string;
   export let subtitle: string | undefined;
+  export let description: ComponentType | undefined;
   export let jobCounts: JobCountsDto;
   export let queueStatus: QueueStatusDto;
   export let allowForceCommand = true;
@@ -28,8 +29,6 @@
 
   export let allText: string;
   export let missingText: string;
-
-  const slots = $$props.$$slots;
 
   $: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
   $: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
@@ -86,9 +85,9 @@
         <div class="whitespace-pre-line text-sm dark:text-white">{subtitle}</div>
       {/if}
 
-      {#if slots?.description}
+      {#if description}
         <div class="text-sm dark:text-white">
-          <slot name="description" />
+          <svelte:component this={description} />
         </div>
       {/if}
 
