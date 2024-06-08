@@ -774,7 +774,7 @@ export class AssetRepository implements IAssetRepository {
       .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount');
 
     if (lastId !== undefined) {
-      builder.andWhere('asset.id > :lastId)', { lastId });
+      builder.andWhere('asset.id > :lastId', { lastId });
     }
     builder
       .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
