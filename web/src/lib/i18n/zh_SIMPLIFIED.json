@@ -29,7 +29,7 @@
         "duplicate_detection_job_description": "在照片上运行机器学习以检测相似项目。依赖于 Smart Search",
         "image_format_description": "WebP 文件比 JPEG 文件小，但编码速度较慢",
         "image_prefer_embedded_preview": "首选嵌入式预览",
-        "image_prefer_embedded_preview_setting_description": "",
+        "image_prefer_embedded_preview_setting_description": "在可用时，使用 RAW 照片的嵌入式预览作为图像处理的输入。这可能为某些图像产生更准确的颜色，但预览的质量取决于相机，图像可能具有更多的压缩失真。",
         "image_prefer_wide_gamut": "偏好广色域",
         "image_prefer_wide_gamut_setting_description": "对缩略图使用 Display P3。这可以更好地保留宽色域图像的鲜艳度，但在旧设备和旧版浏览器上图像可能会显得不同。sRGB 图像保持为 sRGB 以避免颜色偏移。",
         "image_preview_format": "预览格式",
