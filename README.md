@@ -31,6 +31,7 @@
   <a href="readme_i18n/README_zh_CN.md">中文</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
   <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
+  <a href="readme_i18n/README_sv_SE.md">Svenska</a>
   <a href="readme_i18n/README_ar_JO.md">العربية</a>
 </p>
 
