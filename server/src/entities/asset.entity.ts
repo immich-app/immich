@@ -83,7 +83,6 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 
-  @Index('idx_asset_created_at')
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
