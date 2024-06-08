@@ -35,7 +35,7 @@ export type ClipTextualResponse = { [ModelTask.SEARCH]: number[] };
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
-    [ModelType.DETECTION]: FaceDetectionOptions;
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
     [ModelType.RECOGNITION]: ModelOptions;
   };
 };
