@@ -164,8 +164,6 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
     checksum: string;
-    /** This property was added in NEXT_RELEASE */
-    createdAt: string;
     deviceAssetId: string;
     deviceId: string;
     duplicateId?: string | null;
@@ -906,7 +904,6 @@ export type AssetDeltaSyncResponseDto = {
     upserted: AssetResponseDto[];
 };
 export type AssetFullSyncDto = {
-    lastCreationDate?: string;
     lastId?: string;
     limit: number;
     updatedUntil: string;

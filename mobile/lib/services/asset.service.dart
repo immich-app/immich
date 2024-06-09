@@ -101,7 +101,6 @@ class AssetService {
     const int chunkSize = 10000;
     try {
       final List<Asset> allAssets = [];
-      DateTime? lastCreationDate;
       String? lastId;
       // will break on error or once all assets are loaded
       while (true) {
@@ -109,7 +108,6 @@ class AssetService {
           limit: chunkSize,
           updatedUntil: until,
           lastId: lastId,
-          lastCreationDate: lastCreationDate,
           userId: user.id,
         );
         log.fine("Requesting $chunkSize assets from $lastId");
@@ -121,7 +119,6 @@ class AssetService {
         );
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length != chunkSize) break;
-        lastCreationDate = assets.last.createdAt;
         lastId = assets.last.id;
       }
       return allAssets;

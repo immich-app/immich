@@ -32,7 +32,6 @@ export class SyncService {
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
-      lastCreationDate: dto.lastCreationDate,
       updatedUntil: dto.updatedUntil,
       lastId: dto.lastId,
       limit: dto.limit,

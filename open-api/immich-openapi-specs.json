@@ -7432,10 +7432,6 @@
       },
       "AssetFullSyncDto": {
         "properties": {
-          "lastCreationDate": {
-            "format": "date-time",
-            "type": "string"
-          },
           "lastId": {
             "format": "uuid",
             "type": "string"
@@ -7653,11 +7649,6 @@
             "description": "base64 encoded sha1 hash",
             "type": "string"
           },
-          "createdAt": {
-            "description": "This property was added in NEXT_RELEASE",
-            "format": "date-time",
-            "type": "string"
-          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -7778,7 +7769,6 @@
         },
         "required": [
           "checksum",
-          "createdAt",
           "deviceAssetId",
           "deviceId",
           "duration",

@@ -37,8 +37,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   originalFileName!: string;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
-  @PropertyLifecycle({ addedAt: 'NEXT_RELEASE' })
-  createdAt!: Date;
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
@@ -114,7 +112,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
-    createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.isArchived,

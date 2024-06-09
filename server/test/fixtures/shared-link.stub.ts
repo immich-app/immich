@@ -60,7 +60,6 @@ const assetResponse: AssetResponseDto = {
   isOffline: false,
   fileCreatedAt: today,
   localDateTime: today,
-  createdAt: today,
   updatedAt: today,
   isFavorite: false,
   isArchived: false,

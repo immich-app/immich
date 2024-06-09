@@ -1057,11 +1057,10 @@ FROM
 WHERE
   "asset"."isVisible" = true
   AND "asset"."ownerId" IN ($1)
-  AND ("asset"."createdAt", "asset"."id") < ($2, $3)
-  AND "asset"."updatedAt" <= $4
+  AND "asset"."id" > $2
+  AND "asset"."updatedAt" <= $3
 ORDER BY
-  "asset"."createdAt" DESC,
-  "asset"."id" DESC
+  "asset"."id" ASC
 LIMIT
   10
 

@@ -122,7 +122,6 @@ export interface AssetExploreOptions extends AssetExploreFieldOptions {
 
 export interface AssetFullSyncOptions {
   ownerId: string;
-  lastCreationDate?: Date;
   lastId?: string;
   updatedUntil: Date;
   limit: number;
