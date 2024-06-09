@@ -3,6 +3,10 @@ name: Enforce PR labels
 on:
   pull_request:
     types: [labeled, unlabeled, opened, edited, synchronize]
+  workflow_run:
+    workflows: ["Pull Request Labeler"]
+    types:
+      - completed
 jobs:
   enforce-label:
     name: Enforce label
