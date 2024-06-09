@@ -32,7 +32,7 @@ class FaceRecognizer(InferenceModel):
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
         if isinstance(session, ort.InferenceSession) and not ort_has_batch_dim(session):
-            log.debug(f"Adding batch dimension to model {self.model_path}")
+            log.info(f"Adding batch dimension to recognition model {self.model_name}")
             ort_add_batch_dim(self.model_path, self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
