@@ -10,12 +10,6 @@ dev-update:
 dev-scale:
 	docker compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
-stage:
-	docker compose -f ./docker/docker-compose.staging.yml up --build -V --remove-orphans
-
-pull-stage:
-	docker compose -f ./docker/docker-compose.staging.yml pull
-
 .PHONY: e2e
 e2e:
 	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
