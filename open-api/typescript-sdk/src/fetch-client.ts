@@ -554,6 +554,19 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
+export type SystemConfigSmtpTransportDto = {
+    host: string;
+    ignoreCert: boolean;
+    password: string;
+    port: number;
+    username: string;
+};
+export type SystemConfigSmtpDto = {
+    enabled: boolean;
+    "from": string;
+    replyTo: string;
+    transport: SystemConfigSmtpTransportDto;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -891,7 +904,6 @@ export type AssetDeltaSyncResponseDto = {
     upserted: AssetResponseDto[];
 };
 export type AssetFullSyncDto = {
-    lastCreationDate?: string;
     lastId?: string;
     limit: number;
     updatedUntil: string;
@@ -962,27 +974,24 @@ export type SystemConfigLoggingDto = {
 };
 export type ClipConfig = {
     enabled: boolean;
-    mode?: CLIPMode;
     modelName: string;
-    modelType?: ModelType;
 };
 export type DuplicateDetectionConfig = {
     enabled: boolean;
     maxDistance: number;
 };
-export type RecognitionConfig = {
+export type FacialRecognitionConfig = {
     enabled: boolean;
     maxDistance: number;
     minFaces: number;
     minScore: number;
     modelName: string;
-    modelType?: ModelType;
 };
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
-    facialRecognition: RecognitionConfig;
+    facialRecognition: FacialRecognitionConfig;
     url: string;
 };
 export type SystemConfigMapDto = {
@@ -992,19 +1001,6 @@ export type SystemConfigMapDto = {
 };
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
-};
-export type SystemConfigSmtpTransportDto = {
-    host: string;
-    ignoreCert: boolean;
-    password: string;
-    port: number;
-    username: string;
-};
-export type SystemConfigSmtpDto = {
-    enabled: boolean;
-    "from": string;
-    replyTo: string;
-    transport: SystemConfigSmtpTransportDto;
 };
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
@@ -2023,6 +2019,15 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
+    })));
+}
+export function sendTestEmail({ systemConfigSmtpDto }: {
+    systemConfigSmtpDto: SystemConfigSmtpDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: systemConfigSmtpDto
     })));
 }
 export function startOAuth({ oAuthConfigDto }: {
@@ -3073,14 +3078,6 @@ export enum LogLevel {
     Warn = "warn",
     Error = "error",
     Fatal = "fatal"
-}
-export enum CLIPMode {
-    Vision = "vision",
-    Text = "text"
-}
-export enum ModelType {
-    FacialRecognition = "facial-recognition",
-    Clip = "clip"
 }
 export enum TimeBucketSize {
     Day = "DAY",

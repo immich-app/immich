@@ -25,7 +25,7 @@
 
 <OnboardingCard>
   <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-    {$t('storage_template_settings').toUpperCase()}
+    {$t('admin.storage_template_settings').toUpperCase()}
   </p>
 
   <p>

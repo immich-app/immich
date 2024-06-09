@@ -1,4 +1,4 @@
-import { fallbackLang, langs } from '$lib/constants';
+import { defaultLang, langs } from '$lib/constants';
 import { lang } from '$lib/stores/preferences.store';
 import { defaults } from '@immich/sdk';
 import { init, register } from 'svelte-i18n';
@@ -20,7 +20,7 @@ export const load = (async ({ fetch }) => {
 
   const preferenceLang = get(lang);
 
-  await init({ fallbackLocale: fallbackLang, initialLocale: preferenceLang || fallbackLang });
+  await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
 
   return {
     meta: {

@@ -20,7 +20,7 @@
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
+  import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
@@ -106,7 +106,7 @@
       </LinkButton>
       <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDeleteOutline} size="18" />
+          <Icon path={mdiDeleteForeverOutline} size="18" />
           Empty trash
         </div>
       </LinkButton>
