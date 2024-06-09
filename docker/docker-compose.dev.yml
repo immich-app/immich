@@ -43,6 +43,8 @@ services:
     build:
       context: ../web
     command: ['/usr/src/app/bin/immich-web']
+    environment:
+      IMMICH_SERVER_URL: "http://immich-server:3001/"
     env_file:
       - .env
     ports:
