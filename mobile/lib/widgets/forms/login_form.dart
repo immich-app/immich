@@ -15,11 +15,13 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
@@ -45,8 +47,31 @@ class LoginForm extends HookConsumerWidget {
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
     )..repeat();
+    final serverInfo = ref.watch(serverInfoProvider);
+    final warningMessage = useState<String>('');
 
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
+
+    checkVersionMismatch() async {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+      final appMajorVersion = int.parse(appVersion.split('.')[0]);
+      final appMinorVersion = int.parse(appVersion.split('.')[1]);
+      final serverMajorVersion = serverInfo.serverVersion.major;
+      final serverMinorVersion = serverInfo.serverVersion.minor;
+
+      final (isCompat, compatType, compatVersion) = checkVersionCompatibility(
+        appMajorVersion,
+        appMinorVersion,
+        serverMajorVersion,
+        serverMinorVersion,
+      );
+
+      if (!isCompat) {
+        warningMessage.value =
+            'Your app $compatType version is not compatible with the server. Please update your server to version $compatVersion to login';
+      }
+    }
 
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
@@ -308,11 +333,35 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
+    buildVersionCompatWarning() {
+      checkVersionMismatch();
+
+      if (warningMessage.value.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color:
+                context.isDarkTheme ? Colors.red.shade900 : Colors.red.shade100,
+          ),
+          child: Text(
+            warningMessage.value,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     buildLogin() {
       return AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            buildVersionCompatWarning(),
             Text(
               sanitizeUrl(serverEndpointController.text),
               style: context.textTheme.displaySmall,
@@ -416,7 +465,6 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
 
                   // Note: This used to have an AnimatedSwitcher, but was removed
                   // because of https://github.com/flutter/flutter/issues/120874
