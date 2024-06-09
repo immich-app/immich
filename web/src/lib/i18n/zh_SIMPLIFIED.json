@@ -784,5 +784,10 @@
     "zoom_image": "缩放图像",
     "album_added": "相册已添加",
     "album_updated": "相册已更新",
-    "album_added_notification_setting_description": "当您被添加到共享相册时，会收到邮件通知"
+    "album_added_notification_setting_description": "当您被添加到共享相册时，会收到邮件通知",
+    "notification_toggle_setting_description": "",
+    "notifications": "",
+    "notifications_setting_description": "",
+    "oauth": "",
+    "album_updated_setting_description": ""
 }
