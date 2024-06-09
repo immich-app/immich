@@ -904,7 +904,6 @@ export type AssetDeltaSyncResponseDto = {
     upserted: AssetResponseDto[];
 };
 export type AssetFullSyncDto = {
-    lastCreationDate?: string;
     lastId?: string;
     limit: number;
     updatedUntil: string;

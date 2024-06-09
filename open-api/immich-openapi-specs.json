@@ -7432,10 +7432,6 @@
       },
       "AssetFullSyncDto": {
         "properties": {
-          "lastCreationDate": {
-            "format": "date-time",
-            "type": "string"
-          },
           "lastId": {
             "format": "uuid",
             "type": "string"
