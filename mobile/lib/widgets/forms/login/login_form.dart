@@ -20,6 +20,12 @@ import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/forms/login/email_input.dart';
+import 'package:immich_mobile/widgets/forms/login/loading_icon.dart';
+import 'package:immich_mobile/widgets/forms/login/login_button.dart';
+import 'package:immich_mobile/widgets/forms/login/o_auth_login_button.dart';
+import 'package:immich_mobile/widgets/forms/login/password_input.dart';
+import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -53,23 +59,26 @@ class LoginForm extends HookConsumerWidget {
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
     checkVersionMismatch() async {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final appVersion = packageInfo.version;
-      final appMajorVersion = int.parse(appVersion.split('.')[0]);
-      final appMinorVersion = int.parse(appVersion.split('.')[1]);
-      final serverMajorVersion = serverInfo.serverVersion.major;
-      final serverMinorVersion = serverInfo.serverVersion.minor;
+      try {
+        final packageInfo = await PackageInfo.fromPlatform();
+        final appVersion = packageInfo.version;
+        final appMajorVersion = int.parse(appVersion.split('.')[0]);
+        final appMinorVersion = int.parse(appVersion.split('.')[1]);
+        final serverMajorVersion = serverInfo.serverVersion.major;
+        final serverMinorVersion = serverInfo.serverVersion.minor;
 
-      final (isCompat, compatType, compatVersion) = checkVersionCompatibility(
-        appMajorVersion,
-        appMinorVersion,
-        serverMajorVersion,
-        serverMinorVersion,
-      );
+        final message = getVersionCompatibilityMessage(
+          appMajorVersion,
+          appMinorVersion,
+          serverMajorVersion,
+          serverMinorVersion,
+        );
 
-      if (!isCompat) {
-        warningMessage.value =
-            'Your app $compatType version is not compatible with the server. Please update your server to version $compatVersion to login';
+        if (message != null) {
+          warningMessage.value = message;
+        }
+      } catch (error) {
+        warningMessage.value = 'Error checking version compatibility';
       }
     }
 
@@ -343,10 +352,15 @@ class LoginForm extends HookConsumerWidget {
       return Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color:
-                context.isDarkTheme ? Colors.red.shade900 : Colors.red.shade100,
+                context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,
+            ),
           ),
           child: Text(
             warningMessage.value,
@@ -475,221 +489,6 @@ class LoginForm extends HookConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class ServerEndpointInput extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final Function()? onSubmit;
-
-  const ServerEndpointInput({
-    super.key,
-    required this.controller,
-    required this.focusNode,
-    this.onSubmit,
-  });
-
-  String? _validateInput(String? url) {
-    if (url == null || url.isEmpty) return null;
-
-    final parsedUrl = Uri.tryParse(sanitizeUrl(url));
-    if (parsedUrl == null ||
-        !parsedUrl.isAbsolute ||
-        !parsedUrl.scheme.startsWith("http") ||
-        parsedUrl.host.isEmpty) {
-      return 'login_form_err_invalid_url'.tr();
-    }
-
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: 'login_form_endpoint_url'.tr(),
-        border: const OutlineInputBorder(),
-        hintText: 'login_form_endpoint_hint'.tr(),
-        errorMaxLines: 4,
-      ),
-      validator: _validateInput,
-      autovalidateMode: AutovalidateMode.always,
-      focusNode: focusNode,
-      autofillHints: const [AutofillHints.url],
-      keyboardType: TextInputType.url,
-      autocorrect: false,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      textInputAction: TextInputAction.go,
-    );
-  }
-}
-
-class EmailInput extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode? focusNode;
-  final Function()? onSubmit;
-
-  const EmailInput({
-    super.key,
-    required this.controller,
-    this.focusNode,
-    this.onSubmit,
-  });
-
-  String? _validateInput(String? email) {
-    if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
-    if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
-    if (email.contains(' ') || !email.contains('@')) {
-      return 'login_form_err_invalid_email'.tr();
-    }
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      autofocus: true,
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: 'login_form_label_email'.tr(),
-        border: const OutlineInputBorder(),
-        hintText: 'login_form_email_hint'.tr(),
-        hintStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
-      ),
-      validator: _validateInput,
-      autovalidateMode: AutovalidateMode.always,
-      autofillHints: const [AutofillHints.email],
-      keyboardType: TextInputType.emailAddress,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      focusNode: focusNode,
-      textInputAction: TextInputAction.next,
-    );
-  }
-}
-
-class PasswordInput extends HookConsumerWidget {
-  final TextEditingController controller;
-  final FocusNode? focusNode;
-  final Function()? onSubmit;
-
-  const PasswordInput({
-    super.key,
-    required this.controller,
-    this.focusNode,
-    this.onSubmit,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isPasswordVisible = useState<bool>(false);
-
-    return TextFormField(
-      obscureText: !isPasswordVisible.value,
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: 'login_form_label_password'.tr(),
-        border: const OutlineInputBorder(),
-        hintText: 'login_form_password_hint'.tr(),
-        hintStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
-        suffixIcon: IconButton(
-          onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
-          icon: Icon(
-            isPasswordVisible.value
-                ? Icons.visibility_off_sharp
-                : Icons.visibility_sharp,
-          ),
-        ),
-      ),
-      autofillHints: const [AutofillHints.password],
-      keyboardType: TextInputType.text,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      focusNode: focusNode,
-      textInputAction: TextInputAction.go,
-    );
-  }
-}
-
-class LoginButton extends ConsumerWidget {
-  final Function() onPressed;
-
-  const LoginButton({
-    super.key,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      onPressed: onPressed,
-      icon: const Icon(Icons.login_rounded),
-      label: const Text(
-        "login_form_button_text",
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ).tr(),
-    );
-  }
-}
-
-class OAuthLoginButton extends ConsumerWidget {
-  final TextEditingController serverEndpointController;
-  final ValueNotifier<bool> isLoading;
-  final String buttonLabel;
-  final Function() onPressed;
-
-  const OAuthLoginButton({
-    super.key,
-    required this.serverEndpointController,
-    required this.isLoading,
-    required this.buttonLabel,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: context.primaryColor.withAlpha(230),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      onPressed: onPressed,
-      icon: const Icon(Icons.pin_rounded),
-      label: Text(
-        buttonLabel,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class LoadingIcon extends StatelessWidget {
-  const LoadingIcon({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 18.0),
-      child: SizedBox(
-        width: 24,
-        height: 24,
-        child: FittedBox(
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-          ),
-        ),
-      ),
     );
   }
 }
