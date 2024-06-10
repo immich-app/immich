@@ -27,7 +27,7 @@ import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
-  IEntityJob,
+  IAssetDeleteJob,
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
@@ -256,15 +256,21 @@ export class AssetService {
 
     for await (const assets of assetPagination) {
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: true,
+          },
+        })),
       );
     }
 
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IEntityJob): Promise<JobStatus> {
-    const { id } = job;
+  async handleAssetDeletion(job: IAssetDeleteJob): Promise<JobStatus> {
+    const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
       faces: {
@@ -301,12 +307,14 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      await this.jobRepository.queue({
+        name: JobName.ASSET_DELETION,
+        data: { id: asset.livePhotoVideoId, deleteOnDisk },
+      });
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    // skip originals if the user deleted the whole library
-    if (!asset.library?.deletedAt) {
+    if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
@@ -321,7 +329,12 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
+      await this.jobRepository.queueAll(
+        ids.map((id) => ({
+          name: JobName.ASSET_DELETION,
+          data: { id, deleteOnDisk: true },
+        })),
+      );
     } else {
       await this.assetRepository.softDeleteAll(ids);
       this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, ids);
