@@ -63,6 +63,7 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
+  mdiContentDuplicate,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
@@ -216,6 +217,12 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  // withRelease({
+  //   icon: mdiContentDuplicate,
+  //   title: 'Similar image detection',
+  //   description: 'Detect duplicate assets that aren’t exactly identical',
+  //   release: 'v1.106.0',
+  // }),
   // withRelease({
   //   icon: mdiVectorCombine,
   //   title: 'Container consolidation',
