@@ -389,8 +389,8 @@ describe(AssetService.name, () => {
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: 'asset1' } },
-        { name: JobName.ASSET_DELETION, data: { id: 'asset2' } },
+        { name: JobName.ASSET_DELETION, data: { id: 'asset1', deleteOnDisk: true } },
+        { name: JobName.ASSET_DELETION, data: { id: 'asset2', deleteOnDisk: true } },
       ]);
     });
 
@@ -410,7 +410,7 @@ describe(AssetService.name, () => {
 
       assetMock.getById.mockResolvedValue(assetWithFace);
 
-      await sut.handleAssetDeletion({ id: assetWithFace.id });
+      await sut.handleAssetDeletion({ id: assetWithFace.id, deleteOnDisk: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -435,7 +435,7 @@ describe(AssetService.name, () => {
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
       assetMock.getById.mockResolvedValue(assetStub.primaryImage as AssetEntity);
 
-      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id });
+      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
       expect(assetStackMock.update).toHaveBeenCalledWith({
         id: 'stack-1',
@@ -446,10 +446,21 @@ describe(AssetService.name, () => {
     it('should delete a live photo', async () => {
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
 
-      await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
+      await sut.handleAssetDeletion({
+        id: assetStub.livePhotoStillAsset.id,
+        deleteOnDisk: true,
+      });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: assetStub.livePhotoMotionAsset.id } }],
+        [
+          {
+            name: JobName.ASSET_DELETION,
+            data: {
+              id: assetStub.livePhotoMotionAsset.id,
+              deleteOnDisk: true,
+            },
+          },
+        ],
         [
           {
             name: JobName.DELETE_FILES,
@@ -463,7 +474,7 @@ describe(AssetService.name, () => {
 
     it('should update usage', async () => {
       assetMock.getById.mockResolvedValue(assetStub.image);
-      await sut.handleAssetDeletion({ id: assetStub.image.id });
+      await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
     });
   });
