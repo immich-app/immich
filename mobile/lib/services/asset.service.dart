@@ -101,7 +101,6 @@ class AssetService {
     const int chunkSize = 10000;
     try {
       final List<Asset> allAssets = [];
-      DateTime? lastCreationDate;
       String? lastId;
       // will break on error or once all assets are loaded
       while (true) {
@@ -109,15 +108,17 @@ class AssetService {
           limit: chunkSize,
           updatedUntil: until,
           lastId: lastId,
-          lastCreationDate: lastCreationDate,
           userId: user.id,
         );
+        log.fine("Requesting $chunkSize assets from $lastId");
         final List<AssetResponseDto>? assets =
             await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
+        log.fine(
+          "Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}",
+        );
         allAssets.addAll(assets.map(Asset.remote));
-        if (assets.isEmpty) break;
-        lastCreationDate = assets.last.fileCreatedAt;
+        if (assets.length != chunkSize) break;
         lastId = assets.last.id;
       }
       return allAssets;

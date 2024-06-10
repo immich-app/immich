@@ -40,7 +40,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_resolve_duplicate'));
+      handleError(error, $t('errors.unable_to_resolve_duplicate'));
     }
   };
 </script>

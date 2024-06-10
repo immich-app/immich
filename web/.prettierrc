@@ -1,9 +1,9 @@
 {
-  "singleQuote": true,
-  "trailingComma": "all",
+  "organizeImportsSkipDestructiveCodeActions": true,
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
+  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-svelte", "prettier-plugin-sort-json"],
   "printWidth": 120,
   "semi": true,
-  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-svelte"],
-  "organizeImportsSkipDestructiveCodeActions": true,
-  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+  "singleQuote": true,
+  "trailingComma": "all"
 }

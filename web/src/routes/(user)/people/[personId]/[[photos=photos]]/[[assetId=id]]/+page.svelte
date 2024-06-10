@@ -189,7 +189,7 @@
 
       await goto(previousRoute, { replaceState: true });
     } catch (error) {
-      handleError(error, $t('unable_to_hide_person'));
+      handleError(error, $t('errors.unable_to_hide_person'));
     }
   };
 
@@ -236,7 +236,7 @@
       }
       await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -262,7 +262,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 

@@ -130,7 +130,13 @@ SELECT
       "assets"."type" = 'VIDEO'
       AND "assets"."isVisible"
   ) AS "videos",
-  COALESCE(SUM("exif"."fileSizeInByte"), 0) AS "usage"
+  COALESCE(
+    SUM("exif"."fileSizeInByte") FILTER (
+      WHERE
+        "assets"."libraryId" IS NULL
+    ),
+    0
+  ) AS "usage"
 FROM
   "users" "users"
   LEFT JOIN "assets" "assets" ON "assets"."ownerId" = "users"."id"

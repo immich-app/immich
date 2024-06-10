@@ -26,7 +26,7 @@ class SystemConfigMachineLearningDto {
 
   bool enabled;
 
-  RecognitionConfig facialRecognition;
+  FacialRecognitionConfig facialRecognition;
 
   String url;
 
@@ -71,7 +71,7 @@ class SystemConfigMachineLearningDto {
         clip: CLIPConfig.fromJson(json[r'clip'])!,
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        facialRecognition: RecognitionConfig.fromJson(json[r'facialRecognition'])!,
+        facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
         url: mapValueOfType<String>(json, r'url')!,
       );
     }

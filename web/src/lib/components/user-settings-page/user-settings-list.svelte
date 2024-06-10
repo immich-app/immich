@@ -47,7 +47,7 @@
     <MemoriesSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="notifications" title="Notifications" subtitle="Manage notifications">
+  <SettingAccordion key="notifications" title={$t('notifications')} subtitle={$t('notifications_setting_description')}>
     <NotificationsSettings />
   </SettingAccordion>
 
