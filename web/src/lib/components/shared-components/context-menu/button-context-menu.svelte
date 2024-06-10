@@ -2,7 +2,7 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { createContext } from '$lib/utils/context';
 
-  const { get: getMenuContext, set: setContext } = createContext<() => void>();
+  const { get: getMenuContext, set: setContext } = createContext<() => void>('context-menu');
   export { getMenuContext };
 </script>
 

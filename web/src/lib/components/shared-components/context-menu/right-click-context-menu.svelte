@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { setContext, tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import FocusTrap from '$lib/components/shared-components/focus-trap.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import { listNavigation } from '$lib/actions/list-navigation';
 
+  export let title: string;
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
@@ -14,6 +14,15 @@
   let uniqueKey = {};
   let contextMenuElement: HTMLUListElement;
   let selectedId: string | undefined = undefined;
+  let triggerElement: HTMLElement | undefined = undefined;
+  let buttonElement: HTMLButtonElement;
+
+  $: {
+    if (isOpen && buttonElement) {
+      triggerElement = document.activeElement as HTMLElement;
+      buttonElement?.focus();
+    }
+  }
 
   const reopenContextMenu = async (event: MouseEvent) => {
     const contextMenuEvent = new MouseEvent('contextmenu', {
@@ -42,6 +51,7 @@
   };
 
   const closeContextMenu = () => {
+    triggerElement?.focus();
     onClose?.();
   };
 
@@ -50,35 +60,43 @@
       event.preventDefault();
       const node: HTMLLIElement | null = contextMenuElement.querySelector(`#${selectedId}`);
       node?.click();
-      // closeDropdown();
     }
   };
+
+  setContext('context-menu', closeContextMenu);
 </script>
 
 {#key uniqueKey}
   {#if isOpen}
-    <FocusTrap>
-      <button
-        type="button"
-        class="sr-only"
-        use:shortcuts={[
-          {
-            shortcut: { key: 'Enter' },
-            onShortcut: handleEnter,
-            preventDefault: false,
-          },
-        ]}
-        use:listNavigation={{
-          container: contextMenuElement,
-          selectedId: selectedId,
-          selectedClass: '!bg-gray-200',
-          closeDropdown: closeContextMenu,
-          selectionChanged: (node) => (selectedId = node?.id),
-        }}
-      >
-        Album options
-      </button>
-    </FocusTrap>
+    <button
+      bind:this={buttonElement}
+      type="button"
+      class="sr-only"
+      use:shortcuts={[
+        {
+          shortcut: { key: 'Enter' },
+          onShortcut: handleEnter,
+          preventDefault: false,
+        },
+        {
+          shortcut: { key: 'Tab' },
+          onShortcut: closeContextMenu,
+        },
+        {
+          shortcut: { key: 'Tab', shift: true },
+          onShortcut: closeContextMenu,
+        },
+      ]}
+      use:listNavigation={{
+        container: contextMenuElement,
+        selectedId: selectedId,
+        selectedClass: '!bg-gray-200',
+        closeDropdown: closeContextMenu,
+        selectionChanged: (node) => (selectedId = node?.id),
+      }}
+    >
+      {title}
+    </button>
     <section
       class="fixed left-0 top-0 z-10 flex h-screen w-screen"
       on:contextmenu|preventDefault={reopenContextMenu}
