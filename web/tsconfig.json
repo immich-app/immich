@@ -1,5 +1,4 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
@@ -13,5 +12,6 @@
     "strict": true,
     "target": "es2020",
     "types": ["vitest/globals"]
-  }
+  },
+  "extends": "./.svelte-kit/tsconfig.json"
 }

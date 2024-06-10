@@ -490,6 +490,8 @@
   "jobs": "Jobs",
   "keep": "Keep",
   "keyboard_shortcuts": "Keyboard shortcuts",
+  "language": "Language",
+  "language_setting_description": "Select your preferred language",
   "last_seen": "Last seen",
   "leave": "Leave",
   "let_others_respond": "Let others respond",
@@ -734,6 +736,7 @@
   "template": "Template",
   "theme": "Theme",
   "theme_selection": "Theme selection",
+  "theme_selection_description": "Automatically set the theme to light or dark based on your browser's system preference",
   "time_based_memories": "Time-based memories",
   "timezone": "Timezone",
   "toggle_settings": "Toggle settings",
@@ -784,8 +787,5 @@
   "welcome_to_immich": "Welcome to immich",
   "year": "Year",
   "yes": "Yes",
-  "theme_selection_description": "Automatically set the theme to light or dark based on your browser's system preference",
-  "language_setting_description": "Select your preferred language",
-  "language": "Language",
   "zoom_image": "Zoom Image"
 }
