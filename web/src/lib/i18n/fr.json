@@ -218,7 +218,11 @@
     "version_check_enabled_description": "",
     "version_check_settings": "",
     "version_check_settings_description": "",
-    "video_conversion_job_description": ""
+    "video_conversion_job_description": "",
+    "library_tasks_description": "",
+    "notification_email_test_email_failed": "",
+    "notification_email_test_email_sent": "",
+    "notification_email_sent_test_email_button": ""
   },
   "admin_email": "",
   "admin_password": "",
@@ -777,5 +781,13 @@
   "theme_selection_description": "",
   "language_setting_description": "",
   "language": "",
-  "zoom_image": ""
+  "zoom_image": "",
+  "oauth": "",
+  "notification_toggle_setting_description": "",
+  "notifications_setting_description": "",
+  "album_updated_setting_description": "",
+  "album_updated": "",
+  "notifications": "",
+  "album_added_notification_setting_description": "",
+  "album_added": ""
 }
