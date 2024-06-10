@@ -1,9 +1,7 @@
 {
-  "name": "Immich",
-  "short_name": "Immich",
-  "start_url": "/",
-  "display": "standalone",
   "background_color": "#ffffff",
+  "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
+  "display": "standalone",
   "icons": [
     {
       "src": "manifest-icon-192.maskable.png",
@@ -30,6 +28,8 @@
       "purpose": "maskable"
     }
   ],
-  "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
-  "lang": "en"
+  "lang": "en",
+  "name": "Immich",
+  "short_name": "Immich",
+  "start_url": "/"
 }
