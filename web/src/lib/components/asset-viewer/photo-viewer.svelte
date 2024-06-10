@@ -106,7 +106,6 @@
 </script>
 
 <svelte:window
-  on:wheel|preventDefault|nonpassive
   use:shortcuts={[
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
