@@ -510,7 +510,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(jobMock.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
-        data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId },
+        data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId, deleteOnDisk: true },
       });
       expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
         name: JobName.METADATA_EXTRACTION,
