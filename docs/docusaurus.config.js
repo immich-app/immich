@@ -95,6 +95,10 @@ const config = {
         },
         items: [
           {
+            type: 'custom-versionSwitcher',
+            position: 'right',
+          },
+          {
             to: '/docs/overview/introduction',
             position: 'right',
             label: 'Docs',
