@@ -120,6 +120,10 @@ export interface IEntityJob extends IBaseJob {
   source?: 'upload' | 'sidecar-write' | 'copy';
 }
 
+export interface IAssetDeleteJob extends IEntityJob {
+  deleteOnDisk: boolean;
+}
+
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
@@ -246,7 +250,7 @@ export type JobItem =
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
-  | { name: JobName.ASSET_DELETION; data: IEntityJob }
+  | { name: JobName.ASSET_DELETION; data: IAssetDeleteJob }
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management

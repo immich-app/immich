@@ -68,7 +68,7 @@
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}
-      desc={$t('slideshow_duration_description')}
+      desc={$t('admin.slideshow_duration_description')}
       min={1}
       bind:value={$slideshowDelay}
     />

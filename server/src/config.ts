@@ -374,7 +374,8 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
     IMMICH_PORT: Joi.number().optional(),
-    IMMICH_METRICS_PORT: Joi.number().optional(),
+    IMMICH_API_METRICS_PORT: Joi.number().optional(),
+    IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
     IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),

@@ -179,6 +179,7 @@
               on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
               selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
               selectionCandidate={$assetSelectionCandidates.has(asset)}
+              isMultiSelectState={$isMultiSelectState || isSelectionMode}
               disabled={$assetStore.albumAssets.has(asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}

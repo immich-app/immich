@@ -37,8 +37,6 @@ export interface SearchExploreItem<T> {
   items: SearchExploreItemSet<T>;
 }
 
-export type Embedding = number[];
-
 export interface SearchAssetIDOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
@@ -106,7 +104,7 @@ export interface SearchExifOptions {
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: Embedding;
+  embedding: number[];
   userIds: string[];
 }
 
@@ -154,7 +152,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 
 export interface AssetDuplicateSearch {
   assetId: string;
-  embedding: Embedding;
+  embedding: number[];
   maxDistance?: number;
   type: AssetType;
   userIds: string[];

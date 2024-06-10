@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.105.1",
+  "version": "1.106.0",
   "description": "",
   "author": "",
   "private": true,
@@ -102,7 +102,6 @@
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
-    "@types/imagemin": "^8.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",

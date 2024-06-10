@@ -1,0 +1,23 @@
+cli:
+- changed-files:
+  - any-glob-to-any-file: cli/**
+
+documentation:
+- changed-files:
+  - any-glob-to-any-file: docs/**
+
+🖥️web:
+- changed-files:
+  - any-glob-to-any-file: web/**
+
+📱mobile:
+- changed-files:
+  - any-glob-to-any-file: mobile/**
+
+🗄️server:
+- changed-files:
+  - any-glob-to-any-file: server/**
+
+🧠machine-learning:
+- changed-files:
+  - any-glob-to-any-file: machine-learning/**

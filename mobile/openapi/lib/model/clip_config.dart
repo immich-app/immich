@@ -14,63 +14,31 @@ class CLIPConfig {
   /// Returns a new [CLIPConfig] instance.
   CLIPConfig({
     required this.enabled,
-    this.mode,
     required this.modelName,
-    this.modelType,
   });
 
   bool enabled;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  CLIPMode? mode;
-
   String modelName;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  ModelType? modelType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CLIPConfig &&
     other.enabled == enabled &&
-    other.mode == mode &&
-    other.modelName == modelName &&
-    other.modelType == modelType;
+    other.modelName == modelName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
-    (mode == null ? 0 : mode!.hashCode) +
-    (modelName.hashCode) +
-    (modelType == null ? 0 : modelType!.hashCode);
+    (modelName.hashCode);
 
   @override
-  String toString() => 'CLIPConfig[enabled=$enabled, mode=$mode, modelName=$modelName, modelType=$modelType]';
+  String toString() => 'CLIPConfig[enabled=$enabled, modelName=$modelName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
-    if (this.mode != null) {
-      json[r'mode'] = this.mode;
-    } else {
-    //  json[r'mode'] = null;
-    }
       json[r'modelName'] = this.modelName;
-    if (this.modelType != null) {
-      json[r'modelType'] = this.modelType;
-    } else {
-    //  json[r'modelType'] = null;
-    }
     return json;
   }
 
@@ -83,9 +51,7 @@ class CLIPConfig {
 
       return CLIPConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        mode: CLIPMode.fromJson(json[r'mode']),
         modelName: mapValueOfType<String>(json, r'modelName')!,
-        modelType: ModelType.fromJson(json[r'modelType']),
       );
     }
     return null;

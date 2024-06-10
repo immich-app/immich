@@ -17,7 +17,7 @@ import { StorageService } from 'src/services/storage.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
-import { otelSDK } from 'src/utils/instrumentation';
+import { otelShutdown } from 'src/utils/instrumentation';
 
 @Injectable()
 export class MicroservicesService {
@@ -102,6 +102,6 @@ export class MicroservicesService {
   async teardown() {
     await this.libraryService.teardown();
     await this.metadataService.teardown();
-    await otelSDK.shutdown();
+    await otelShutdown();
   }
 }

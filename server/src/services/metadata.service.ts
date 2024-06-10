@@ -460,7 +460,10 @@ export class MetadataService {
         // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
         // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
-          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+          await this.jobRepository.queue({
+            name: JobName.ASSET_DELETION,
+            data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
+          });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
       }
