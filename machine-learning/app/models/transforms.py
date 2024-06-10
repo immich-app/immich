@@ -3,6 +3,7 @@ from typing import IO
 
 import cv2
 import numpy as np
+from numba import njit
 from numpy.typing import NDArray
 from PIL import Image
 
@@ -30,10 +31,11 @@ def to_numpy(img: Image.Image) -> NDArray[np.float32]:
     return np.asarray(img if img.mode == "RGB" else img.convert("RGB"), dtype=np.float32) / 255.0
 
 
+@njit(cache=True, fastmath=True, nogil=True)
 def normalize(
     img: NDArray[np.float32], mean: float | NDArray[np.float32], std: float | NDArray[np.float32]
 ) -> NDArray[np.float32]:
-    return np.divide(img - mean, std, dtype=np.float32)
+    return (img - mean) / std
 
 
 def get_pil_resampling(resample: str) -> Image.Resampling:
