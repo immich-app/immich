@@ -182,7 +182,12 @@ export class NotificationService {
     const { server } = await this.configCore.getConfig();
 
     for (const recipient of recipients) {
-      const { emailNotifications } = getPreferences(recipient);
+      const user = await this.userRepository.get(recipient.id, { withDeleted: false });
+      if (!user) {
+        continue;
+      }
+
+      const { emailNotifications } = getPreferences(user);
 
       if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
         continue;
