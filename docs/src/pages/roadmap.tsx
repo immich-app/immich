@@ -217,19 +217,19 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
-  // withRelease({
-  //   icon: mdiContentDuplicate,
-  //   title: 'Similar image detection',
-  //   description: 'Detect duplicate assets that aren’t exactly identical',
-  //   release: 'v1.106.0',
-  // }),
-  // withRelease({
-  //   icon: mdiVectorCombine,
-  //   title: 'Container consolidation',
-  //   description:
-  //     'The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.',
-  //   release: 'v1.106.0',
-  // }),
+  withRelease({
+    icon: mdiContentDuplicate,
+    title: 'Similar image detection',
+    description: 'Detect duplicate assets that aren’t exactly identical',
+    release: 'v1.106.0',
+  }),
+  withRelease({
+    icon: mdiVectorCombine,
+    title: 'Container consolidation',
+    description:
+      'The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.',
+    release: 'v1.106.0',
+  }),
   withRelease({
     icon: mdiPencil,
     iconColor: 'saddlebrown',
