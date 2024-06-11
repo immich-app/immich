@@ -27,7 +27,7 @@
     "disable_login": "Login deaktvieren",
     "disabled": "Deaktiviert",
     "duplicate_detection_job_description": "",
-    "image_format_description": "",
+    "image_format_description": "WebP erzeugt kleinere Dateien als JPEG, die Enkodierung ist jedoch langsamer",
     "image_prefer_embedded_preview": "Eingebettete Vorschau bevorzugen",
     "image_prefer_embedded_preview_setting_description": "",
     "image_prefer_wide_gamut": "Breites Spektrum bevorzugen",
