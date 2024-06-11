@@ -38,8 +38,6 @@ async function bootstrap() {
   useSwagger(app);
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  app.use(app.get(ApiService).ssr(excludePaths));
-
   if (existsSync(WEB_ROOT)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
@@ -48,6 +46,7 @@ async function bootstrap() {
         etag: true,
         gzip: true,
         brotli: true,
+        extensions: [],
         setHeaders: (res, pathname) => {
           if (pathname.startsWith(`/_app/immutable`) && res.statusCode === 200) {
             res.setHeader('cache-control', 'public,max-age=31536000,immutable');
@@ -56,6 +55,7 @@ async function bootstrap() {
       }),
     );
   }
+  app.use(app.get(ApiService).ssr(excludePaths));
 
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 30 * 60 * 1000;
