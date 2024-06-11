@@ -118,7 +118,7 @@
     "oauth_client_secret": "Client Secret",
     "oauth_enable_description": "使用OAuth登录",
     "oauth_issuer_url": "",
-    "oauth_mobile_redirect_uri": "",
+    "oauth_mobile_redirect_uri": "移动重定向URI",
     "oauth_mobile_redirect_uri_override": "移动端重定向 URI 覆盖",
     "oauth_mobile_redirect_uri_override_description": "当 'app.immich:/' 是无效的重定向 URI 时启用。",
     "oauth_scope": "",
