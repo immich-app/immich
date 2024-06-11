@@ -15,7 +15,7 @@
   "add_location": "",
   "add_more_users": "Aggiungi altri utenti",
   "add_partner": "Aggiungi un partner",
-  "add_path": "",
+  "add_path": "Aggiungi percorso",
   "add_photos": "Aggiungi foto",
   "add_to": "Aggiungi a ...",
   "add_to_album": "Aggiungi ad album",
@@ -23,7 +23,7 @@
   "admin": {
     "authentication_settings": "Impostazioni di Autenticazione",
     "authentication_settings_description": "Gestisci password, OAuth e altre impostazioni di autenticazione",
-    "crontab_guru": "",
+    "crontab_guru": "Crontab Guru",
     "disable_login": "Disabilita login",
     "disabled": "Disattivato",
     "duplicate_detection_job_description": "Esegui machine learning sulle risorse per rilevare immagini simili. Si basa su Ricerca Intelligente",
