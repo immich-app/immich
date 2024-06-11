@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
