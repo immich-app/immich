@@ -10,7 +10,7 @@ if (!lastVersion) {
 const filename = './docs/static/archived-versions.json';
 const oldVersions = JSON.parse(readFileSync(filename));
 const newVersions = [
-  { label: lastVersion, url: `https://${lastVersion}.archive.immich.app` },
+  { label: lastVersion, url: `https://v${lastVersion}.archive.immich.app` },
   ...oldVersions,
 ];
 
