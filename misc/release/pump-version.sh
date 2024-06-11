@@ -83,6 +83,6 @@ sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 
-./misc/release/archive-version.js "$CURRENT_SERVER"
+./misc/release/archive-version.js "$NEXT_SERVER"
 
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"
