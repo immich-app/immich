@@ -40,7 +40,7 @@
     "image_settings": "图片设置",
     "image_settings_description": "管理生成图像的质量和分辨率",
     "image_thumbnail_format": "缩略图格式",
-    "image_thumbnail_resolution": "封面分辨率",
+    "image_thumbnail_resolution": "缩略图分辨率",
     "image_thumbnail_resolution_description": "用于查看照片组（主时间轴、相册视图等）。更高的分辨率可以保留更多的细节，但编码时间更长，文件体积更大，并会降低应用程序的响应速度。",
     "job_settings": "任务设置",
     "job_settings_description": "管理任务并发",
