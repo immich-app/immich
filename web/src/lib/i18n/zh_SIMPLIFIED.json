@@ -36,7 +36,7 @@
     "image_preview_resolution": "预览分辨率",
     "image_preview_resolution_description": "在查看单张照片和进行机器学习时使用。更高的分辨率可以保留更多细节，但编码时间更长，文件体积更大，且可能降低应用程序的响应速度。",
     "image_quality": "质量",
-    "image_quality_description": "图像质量从1到100。数字越高，质量越好，但生成的文件也越大。",
+    "image_quality_description": "图像质量从1到100。数字越高，质量越好，但生成的文件也越大，此选项会同时影响预览和缩略图。",
     "image_settings": "图片设置",
     "image_settings_description": "管理生成图像的质量和分辨率",
     "image_thumbnail_format": "缩略图格式",
