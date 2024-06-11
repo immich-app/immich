@@ -22,7 +22,6 @@
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
 
   const dispatch = createEventDispatcher<{
@@ -37,14 +36,12 @@
   export let thumbnailHeight: number | undefined = undefined;
   export let selected = false;
   export let selectionCandidate = false;
-  export let isMultiSelectState = false;
-  export let isStackSlideshow = false;
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
   export let href: string | undefined = undefined;
-  export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
 
   let className = '';
   export { className as class };
@@ -65,14 +62,6 @@
     return [235, 235];
   })();
 
-  const thumbnailClickedHandler = (e: Event) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!disabled) {
-      onClick?.(asset);
-    }
-  };
-
   const onIconClickedHandler = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -81,12 +70,13 @@
     }
   };
 
-  const handleClick = (e: Event) => {
-    if (isMultiSelectState) {
-      onIconClickedHandler(e as MouseEvent);
-    } else if (isStackSlideshow) {
-      thumbnailClickedHandler(e);
+  const handleClick = (e: MouseEvent) => {
+    if (selected) {
+      onIconClickedHandler(e);
+      return;
     }
+
+    onClick?.(asset, e);
   };
 
   const onMouseEnter = () => {
@@ -111,7 +101,6 @@
     on:mouseleave={onMouseLeave}
     tabindex={0}
     on:click={handleClick}
-    use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: thumbnailClickedHandler }}
   >
     {#if intersecting}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
