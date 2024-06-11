@@ -68,7 +68,7 @@
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>Save</Button>
+          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

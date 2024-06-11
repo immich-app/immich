@@ -53,7 +53,7 @@
     }
 
     notificationController.show({
-      message: 'Reset settings to the recent saved settings',
+      message: $t('reset_settings_to_recent_saved'),
       type: NotificationType.Info,
     });
   };
