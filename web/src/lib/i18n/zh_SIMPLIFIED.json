@@ -163,7 +163,7 @@
     "transcoding_acceleration_vaapi": "VAAPI",
     "transcoding_accepted_audio_codecs": "支持的音频解码器",
     "transcoding_accepted_audio_codecs_description": "选择哪些音频编解码器不需要转码。仅用于特定的转码策略。",
-    "transcoding_accepted_video_codecs": "支持的视频解码器",
+    "transcoding_accepted_video_codecs": "支持的视频编解码器",
     "transcoding_accepted_video_codecs_description": "选择不需要转码的视频编解码器。仅用于特定的转码策略。",
     "transcoding_advanced_options_description": "大多数用户不需要更改的选项",
     "transcoding_audio_codec": "音频编解码器",
