@@ -1,5 +1,5 @@
 {
-  "account": "",
+  "account": "Cuenta",
   "acknowledge": "Reconocer",
   "action": "Acción",
   "actions": "Acciones",
@@ -16,10 +16,10 @@
   "add_more_users": "Añadir más usuarios",
   "add_partner": "Añadir colaborador",
   "add_path": "Añadir ruta",
-  "add_photos": "",
-  "add_to": "",
-  "add_to_album": "",
-  "add_to_shared_album": "",
+  "add_photos": "Añadir fotos",
+  "add_to": "Añadir a...",
+  "add_to_album": "Añadir a un álbum",
+  "add_to_shared_album": "Añadir a un álbum compartido",
   "admin": {
     "authentication_settings": "",
     "authentication_settings_description": "",

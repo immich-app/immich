@@ -26,7 +26,7 @@
     "crontab_guru": "Crontab Guru",
     "disable_login": "Désactiver la connexion",
     "disabled": "Désactivé",
-    "duplicate_detection_job_description": "",
+    "duplicate_detection_job_description": "Lancer la détection automatique d'images similaires. Basé sur Smart Search",
     "image_format_description": "WebP produit des fichiers plus petits que JPEG, mais son encodage est plus lent.",
     "image_prefer_embedded_preview": "Préférer l'aperçu intégré",
     "image_prefer_embedded_preview_setting_description": "",
