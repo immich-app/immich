@@ -59,6 +59,8 @@
     "image_thumbnail_format": "Thumbnail format",
     "image_thumbnail_resolution": "Thumbnail resolution",
     "image_thumbnail_resolution_description": "Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.",
+    "job_concurrency": "{job} Concurrency",
+    "job_not_concurrency_safe": "This job is not concurrency-safe.",
     "job_settings": "Job Settings",
     "job_settings_description": "Manage job concurrency",
     "job_status": "Job Status",
