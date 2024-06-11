@@ -1,10 +1,9 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import type { SearchExploreResponseDto } from '@immich/sdk';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { t } from 'svelte-i18n';
@@ -86,15 +85,14 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item (item.data.id)}
-          <div class="relative">
+          <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
-              <Thumbnail
-                thumbnailSize={156}
-                asset={item.data}
-                readonly
-                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
+              <img
+                src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                alt={item.value}
+                class="object-cover w-[156px] h-[156px]"
               />
             </div>
             <span
@@ -102,7 +100,7 @@
             >
               {item.value}
             </span>
-          </div>
+          </a>
         {/each}
       </div>
     </div>
