@@ -54,7 +54,7 @@ class LoginForm extends HookConsumerWidget {
       duration: const Duration(seconds: 60),
     )..repeat();
     final serverInfo = ref.watch(serverInfoProvider);
-    final warningMessage = useState<String>('');
+    final warningMessage = useState<String?>(null);
 
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
@@ -67,16 +67,12 @@ class LoginForm extends HookConsumerWidget {
         final serverMajorVersion = serverInfo.serverVersion.major;
         final serverMinorVersion = serverInfo.serverVersion.minor;
 
-        final message = getVersionCompatibilityMessage(
+        warningMessage.value = getVersionCompatibilityMessage(
           appMajorVersion,
           appMinorVersion,
           serverMajorVersion,
           serverMinorVersion,
         );
-
-        if (message != null) {
-          warningMessage.value = message;
-        }
       } catch (error) {
         warningMessage.value = 'Error checking version compatibility';
       }
@@ -345,7 +341,7 @@ class LoginForm extends HookConsumerWidget {
     buildVersionCompatWarning() {
       checkVersionMismatch();
 
-      if (warningMessage.value.isEmpty) {
+      if (warningMessage.value == null) {
         return const SizedBox.shrink();
       }
 
@@ -363,7 +359,7 @@ class LoginForm extends HookConsumerWidget {
             ),
           ),
           child: Text(
-            warningMessage.value,
+            warningMessage.value!,
             textAlign: TextAlign.center,
           ),
         ),
