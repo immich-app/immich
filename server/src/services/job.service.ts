@@ -150,7 +150,7 @@ export class JobService {
   }
 
   async init(jobHandlers: Record<JobName, JobHandler>) {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
 
