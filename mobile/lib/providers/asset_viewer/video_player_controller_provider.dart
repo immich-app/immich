@@ -31,6 +31,9 @@ Future<VideoPlayerController> videoPlayerController(
     controller = VideoPlayerController.networkUrl(
       url,
       httpHeaders: {"x-immich-user-token": accessToken},
+      videoPlayerOptions: asset.livePhotoVideoId != null
+          ? VideoPlayerOptions(mixWithOthers: true)
+          : VideoPlayerOptions(mixWithOthers: false),
     );
   }
 

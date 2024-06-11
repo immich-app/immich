@@ -16,6 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
@@ -23,9 +24,9 @@
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
-    { title: 'Editor', value: AlbumUserRole.Editor, icon: mdiPencil },
-    { title: 'Viewer', value: AlbumUserRole.Viewer, icon: mdiEye },
-    { title: 'Remove', value: 'none' },
+    { title: $t('editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
+    { title: $t('viewer'), value: AlbumUserRole.Viewer, icon: mdiEye },
+    { title: $t('remove'), value: 'none' },
   ];
 
   const dispatch = createEventDispatcher<{
@@ -70,10 +71,10 @@
   };
 </script>
 
-<FullScreenModal id="user-selection-modal" title="Invite to album" showLogo {onClose}>
+<FullScreenModal title={$t('invite_to_album')} showLogo {onClose}>
   {#if Object.keys(selectedUsers).length > 0}
     <div class="mb-2 py-2 sticky">
-      <p class="text-xs font-medium">SELECTED</p>
+      <p class="text-xs font-medium">{$t('selected').toUpperCase()}</p>
       <div class="my-2">
         {#each Object.values(selectedUsers) as { user }}
           {#key user.id}
@@ -95,7 +96,7 @@
               </div>
 
               <Dropdown
-                title="Role"
+                title={$t('role')}
                 options={roleOptions}
                 render={({ title, icon }) => ({ title, icon })}
                 on:select={({ detail: { value } }) => handleChangeRole(user, value)}
@@ -115,7 +116,7 @@
 
   <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
     {#if users.length > 0 && users.length !== Object.keys(selectedUsers).length}
-      <p class="text-xs font-medium">SUGGESTIONS</p>
+      <p class="text-xs font-medium">{$t('suggestions').toUpperCase()}</p>
 
       <div class="my-2">
         {#each users as user}
@@ -154,7 +155,7 @@
           dispatch(
             'select',
             Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
-          )}>Add</Button
+          )}>{$t('add')}</Button
       >
     </div>
   {/if}
@@ -168,7 +169,7 @@
       on:click={() => dispatch('share')}
     >
       <Icon path={mdiLink} size={24} />
-      <p class="text-sm">Create link</p>
+      <p class="text-sm">{$t('create_link')}</p>
     </button>
 
     {#if sharedLinks.length}
@@ -177,7 +178,7 @@
         class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
       >
         <Icon path={mdiShareCircle} size={24} />
-        <p class="text-sm">View links</p>
+        <p class="text-sm">{$t('view_links')}</p>
       </a>
     {/if}
   </div>

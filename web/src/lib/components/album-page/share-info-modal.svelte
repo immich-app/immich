@@ -18,6 +18,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
@@ -38,7 +39,7 @@
     try {
       currentUser = await getMyUser();
     } catch (error) {
-      handleError(error, 'Unable to refresh user');
+      handleError(error, $t('errors.unable_to_refresh_user'));
     }
   });
 
@@ -66,7 +67,7 @@
       const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      handleError(error, 'Unable to remove user');
+      handleError(error, $t('errors.unable_to_remove_album_users'));
     } finally {
       selectedRemoveUser = null;
     }
@@ -79,7 +80,7 @@
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
-      handleError(error, 'Unable to set user role');
+      handleError(error, $t('errors.unable_to_change_album_user_role'));
     } finally {
       selectedRemoveUser = null;
     }
@@ -87,7 +88,7 @@
 </script>
 
 {#if !selectedRemoveUser}
-  <FullScreenModal id="share-info-modal" title="Options" {onClose}>
+  <FullScreenModal title={$t('options')} {onClose}>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
@@ -96,7 +97,7 @@
         </div>
 
         <div id="icon-{album.owner.id}" class="flex place-items-center">
-          <p class="text-sm">Owner</p>
+          <p class="text-sm">{$t('owner')}</p>
         </div>
       </div>
       {#each album.albumUsers as { user, role }}
@@ -119,23 +120,26 @@
             {#if isOwned}
               <div>
                 <CircleIconButton
-                  title="Options"
+                  title={$t('options')}
                   on:click={(event) => showContextMenu(event, user)}
                   icon={mdiDotsVertical}
                   size="20"
                 />
 
                 {#if selectedMenuUser === user}
-                  <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+                  <ContextMenu {...position} onClose={() => (selectedMenuUser = null)}>
                     {#if role === AlbumUserRole.Viewer}
-                      <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text="Allow edits" />
+                      <MenuOption
+                        on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)}
+                        text={$t('allow_edits')}
+                      />
                     {:else}
                       <MenuOption
                         on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
-                        text="Disallow edits"
+                        text={$t('disallow_edits')}
                       />
                     {/if}
-                    <MenuOption on:click={handleMenuRemove} text="Remove" />
+                    <MenuOption on:click={handleMenuRemove} text={$t('remove')} />
                   </ContextMenu>
                 {/if}
               </div>
@@ -144,7 +148,7 @@
                 type="button"
                 on:click={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
-                >Leave</button
+                >{$t('leave')}</button
               >
             {/if}
           </div>
@@ -156,10 +160,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
-    id="leave-album-modal"
     title="Leave album?"
     prompt="Are you sure you want to leave {album.albumName}?"
-    confirmText="Leave"
+    confirmText={$t('leave')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
   />
@@ -167,10 +170,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
-    id="remove-user-modal"
     title="Remove user?"
     prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
-    confirmText="Remove"
+    confirmText={$t('remove')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
   />

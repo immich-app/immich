@@ -34,6 +34,7 @@
   import { clearQueryParam } from '$lib/utils/navigation';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -204,11 +205,11 @@
       }
       countTotalPeople--;
       notificationController.show({
-        message: 'Merge people successfully',
+        message: $t('merge_people_successfully'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      handleError(error, $t('errors.unable_to_save_name'));
     }
     if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
@@ -227,14 +228,14 @@
           }
         }
         notificationController.show({
-          message: 'Change name successfully',
+          message: $t('change_name_successfully'),
           type: NotificationType.Info,
         });
 
         // trigger reactivity
         people = people;
       } catch (error) {
-        handleError(error, 'Unable to save name');
+        handleError(error, $t('errors.unable_to_save_name'));
       }
     }
   };
@@ -274,11 +275,11 @@
       showChangeNameModal = false;
       countHiddenPeople++;
       notificationController.show({
-        message: 'Changed visibility successfully',
+        message: $t('changed_visibility_successfully'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to hide person');
+      handleError(error, $t('errors.unable_to_hide_person'));
     }
   };
 
@@ -349,7 +350,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -372,11 +373,11 @@
         return person;
       });
       notificationController.show({
-        message: 'Change name successfully',
+        message: $t('change_name_successfully'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save name');
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -399,7 +400,7 @@
 {/if}
 
 <UserPageLayout
-  title="People"
+  title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
@@ -409,7 +410,7 @@
           <div class="w-40 lg:w-80 h-10">
             <SearchPeople
               type="searchBar"
-              placeholder="Search people"
+              placeholder={$t('search_people')}
               onReset={onResetSearchBar}
               onSearch={handleSearch}
               bind:searchName
@@ -453,10 +454,10 @@
   {/if}
 
   {#if showChangeNameModal}
-    <FullScreenModal id="change-name-modal" title="Change name" onClose={() => (showChangeNameModal = false)}>
+    <FullScreenModal title={$t('change_name')} onClose={() => (showChangeNameModal = false)}>
       <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
-          <label class="immich-form-label" for="name">Name</label>
+          <label class="immich-form-label" for="name">{$t('name')}</label>
           <input
             class="immich-form-input"
             id="name"
@@ -473,9 +474,9 @@
           fullwidth
           on:click={() => {
             showChangeNameModal = false;
-          }}>Cancel</Button
+          }}>{$t('cancel')}</Button
         >
-        <Button type="submit" fullwidth form="change-name-form">Ok</Button>
+        <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
       </svelte:fragment>
     </FullScreenModal>
   {/if}

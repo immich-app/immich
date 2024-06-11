@@ -25,7 +25,7 @@
   setContext(() => (showContextMenu = false));
 </script>
 
-<div use:clickOutside on:outclick={() => (showContextMenu = false)}>
+<div use:clickOutside={{ onOutclick: () => (showContextMenu = false) }}>
   <CircleIconButton {title} {icon} on:click={handleShowMenu} />
   {#if showContextMenu}
     <ContextMenu {...contextMenuPosition}>

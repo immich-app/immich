@@ -7,9 +7,6 @@ export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
   lastId?: string;
 
-  @ValidateDate({ optional: true })
-  lastCreationDate?: Date;
-
   @ValidateDate()
   updatedUntil!: Date;
 

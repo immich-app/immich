@@ -5,6 +5,7 @@
   import type { PageData } from './$types';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
   export let isShowKeyboardShortcut = false;
@@ -14,7 +15,7 @@
   <svelte:fragment slot="buttons">
     <CircleIconButton
       icon={mdiKeyboard}
-      title="Show keyboard shortcuts"
+      title={$t('show_keyboard_shortcuts')}
       on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
     />
   </svelte:fragment>

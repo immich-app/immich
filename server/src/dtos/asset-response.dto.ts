@@ -2,7 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import {
+  AssetFaceWithoutPersonResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -41,6 +46,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
+  unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
@@ -116,14 +122,15 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
+    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack
       ? entity.stack?.assets
-          .filter((a) => a.id !== entity.stack?.primaryAssetId)
-          .map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
+          ?.filter((a) => a.id !== entity.stack?.primaryAssetId)
+          ?.map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
       : undefined,
-    stackCount: entity.stack?.assets?.length ?? null,
+    stackCount: entity.stack?.assetCount ?? entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,

@@ -763,36 +763,40 @@ export class AssetRepository implements IAssetRepository {
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const { ownerId, lastId, updatedUntil, limit } = options;
     const builder = this.getBuilder({
       userIds: [ownerId],
-      exifInfo: true, // also joins stack information
+      exifInfo: false, // need to do this manually because `exifInfo: true` also loads stacked assets messing with `limit`
       withStacked: false, // return all assets individually as expected by the app
-    });
+    })
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack')
+      .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount');
 
-    if (lastCreationDate !== undefined && lastId !== undefined) {
-      builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
-        lastCreationDate,
-        lastId,
-      });
+    if (lastId !== undefined) {
+      builder.andWhere('asset.id > :lastId', { lastId });
     }
-
-    return builder
+    builder
       .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
-      .orderBy('asset.fileCreatedAt', 'DESC')
-      .addOrderBy('asset.id', 'DESC')
-      .limit(limit)
-      .withDeleted()
-      .getMany();
+      .orderBy('asset.id', 'ASC')
+      .limit(limit) // cannot use `take` for performance reasons
+      .withDeleted();
+    return builder.getMany();
   }
 
   @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
-    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: false })
+    const builder = this.getBuilder({
+      userIds: options.userIds,
+      exifInfo: false, // need to do this manually because `exifInfo: true` also loads stacked assets messing with `limit`
+      withStacked: false, // return all assets individually as expected by the app
+    })
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack')
+      .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount')
       .andWhere({ updatedAt: MoreThan(options.updatedAfter) })
-      .limit(options.limit)
+      .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
-
     return builder.getMany();
   }
 }

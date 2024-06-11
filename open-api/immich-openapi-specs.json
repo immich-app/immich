@@ -3466,6 +3466,41 @@
         ]
       }
     },
+    "/notifications/test-email": {
+      "post": {
+        "operationId": "sendTestEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/oauth/authorize": {
       "post": {
         "operationId": "startOAuth",
@@ -6700,7 +6735,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.105.1",
+    "version": "1.106.2",
     "contact": {}
   },
   "tags": [],
@@ -7397,10 +7432,6 @@
       },
       "AssetFullSyncDto": {
         "properties": {
-          "lastCreationDate": {
-            "format": "date-time",
-            "type": "string"
-          },
           "lastId": {
             "format": "uuid",
             "type": "string"
@@ -7725,6 +7756,12 @@
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -7872,14 +7909,8 @@
           "enabled": {
             "type": "boolean"
           },
-          "mode": {
-            "$ref": "#/components/schemas/CLIPMode"
-          },
           "modelName": {
             "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
           }
         },
         "required": [
@@ -7887,13 +7918,6 @@
           "modelName"
         ],
         "type": "object"
-      },
-      "CLIPMode": {
-        "enum": [
-          "vision",
-          "text"
-        ],
-        "type": "string"
       },
       "CQMode": {
         "enum": [
@@ -8152,6 +8176,39 @@
         ],
         "type": "object"
       },
+      "EmailNotificationsResponse": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "EmailNotificationsUpdate": {
+        "properties": {
+          "albumInvite": {
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "EntityType": {
         "enum": [
           "ASSET",
@@ -8281,6 +8338,40 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "FacialRecognitionConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minFaces": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minScore": {
+            "format": "float",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance",
+          "minFaces",
+          "minScore",
+          "modelName"
         ],
         "type": "object"
       },
@@ -9000,13 +9091,6 @@
         },
         "type": "object"
       },
-      "ModelType": {
-        "enum": [
-          "facial-recognition",
-          "clip"
-        ],
-        "type": "string"
-      },
       "OAuthAuthorizeResponseDto": {
         "properties": {
           "url": {
@@ -9339,43 +9423,6 @@
           "like"
         ],
         "type": "string"
-      },
-      "RecognitionConfig": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "maxDistance": {
-            "format": "float",
-            "maximum": 2,
-            "minimum": 0,
-            "type": "number"
-          },
-          "minFaces": {
-            "minimum": 1,
-            "type": "integer"
-          },
-          "minScore": {
-            "format": "float",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "modelName": {
-            "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxDistance",
-          "minFaces",
-          "minScore",
-          "modelName"
-        ],
-        "type": "object"
       },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
@@ -10482,7 +10529,7 @@
             "type": "boolean"
           },
           "facialRecognition": {
-            "$ref": "#/components/schemas/RecognitionConfig"
+            "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
             "type": "string"
@@ -11205,12 +11252,16 @@
           "avatar": {
             "$ref": "#/components/schemas/AvatarResponse"
           },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsResponse"
+          },
           "memories": {
             "$ref": "#/components/schemas/MemoryResponse"
           }
         },
         "required": [
           "avatar",
+          "emailNotifications",
           "memories"
         ],
         "type": "object"
@@ -11219,6 +11270,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "emailNotifications": {
+            "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryUpdate"

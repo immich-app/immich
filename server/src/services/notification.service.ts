@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
+import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -19,6 +20,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class NotificationService {
@@ -52,6 +54,38 @@ export class NotificationService {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
       throw new Error(`Invalid SMTP configuration: ${error}`);
     }
+  }
+
+  async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {
+    const user = await this.userRepository.get(id, { withDeleted: false });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    try {
+      await this.notificationRepository.verifySmtp(dto.transport);
+    } catch (error) {
+      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
+    }
+
+    const { server } = await this.configCore.getConfig();
+    const { html, text } = this.notificationRepository.renderEmail({
+      template: EmailTemplate.TEST_EMAIL,
+      data: {
+        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+        displayName: user.name,
+      },
+    });
+
+    await this.notificationRepository.sendEmail({
+      to: user.email,
+      subject: 'Test email from Immich',
+      html,
+      text,
+      from: dto.from,
+      replyTo: dto.replyTo || dto.from,
+      smtp: dto.transport,
+    });
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
@@ -92,6 +126,12 @@ export class NotificationService {
 
     const recipient = await this.userRepository.get(recipientId, { withDeleted: false });
     if (!recipient) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { emailNotifications } = getPreferences(recipient);
+
+    if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
       return JobStatus.SKIPPED;
     }
 
@@ -142,6 +182,17 @@ export class NotificationService {
     const { server } = await this.configCore.getConfig();
 
     for (const recipient of recipients) {
+      const user = await this.userRepository.get(recipient.id, { withDeleted: false });
+      if (!user) {
+        continue;
+      }
+
+      const { emailNotifications } = getPreferences(user);
+
+      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+        continue;
+      }
+
       const { html, text } = this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {

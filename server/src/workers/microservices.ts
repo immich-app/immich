@@ -4,15 +4,17 @@ import { MicroservicesModule } from 'src/app.module';
 import { envName, serverVersion } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
-import { otelSDK } from 'src/utils/instrumentation';
+import { otelStart } from 'src/utils/instrumentation';
 
 export async function bootstrap() {
-  otelSDK.start();
+  const otelPort = Number.parseInt(process.env.IMMICH_MICROSERVICES_METRICS_PORT ?? '8082');
+
+  otelStart(otelPort);
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);
-  logger.setAppName('ImmichMicroservices');
-  logger.setContext('ImmichMicroservices');
+  logger.setAppName('Microservices');
+  logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 

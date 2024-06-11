@@ -383,7 +383,21 @@ describe(MetadataService.name, () => {
         'MotionPhotoVideo',
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
-      expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(assetMock.create).toHaveBeenCalledWith({
+        checksum: expect.any(Buffer),
+        deviceAssetId: 'NONE',
+        deviceId: 'NONE',
+        fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
+        id: fileStub.livePhotoMotion.uuid,
+        isVisible: false,
+        libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
+        localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        originalFileName: 'asset_1.mp4',
+        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
+        type: AssetType.VIDEO,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
@@ -412,7 +426,21 @@ describe(MetadataService.name, () => {
         'EmbeddedVideoFile',
       );
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
-      expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(assetMock.create).toHaveBeenCalledWith({
+        checksum: expect.any(Buffer),
+        deviceAssetId: 'NONE',
+        deviceId: 'NONE',
+        fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
+        id: fileStub.livePhotoMotion.uuid,
+        isVisible: false,
+        libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
+        localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        originalFileName: 'asset_1.mp4',
+        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
+        type: AssetType.VIDEO,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
@@ -442,7 +470,21 @@ describe(MetadataService.name, () => {
         assetStub.livePhotoWithOriginalFileName.originalPath,
         expect.any(Object),
       );
-      expect(assetMock.create).toHaveBeenCalled(); // This could have arguments added
+      expect(assetMock.create).toHaveBeenCalledWith({
+        checksum: expect.any(Buffer),
+        deviceAssetId: 'NONE',
+        deviceId: 'NONE',
+        fileCreatedAt: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        fileModifiedAt: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
+        id: fileStub.livePhotoMotion.uuid,
+        isVisible: false,
+        libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
+        localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
+        originalFileName: 'asset_1.mp4',
+        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
+        type: AssetType.VIDEO,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
@@ -468,7 +510,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(jobMock.queue).toHaveBeenNthCalledWith(1, {
         name: JobName.ASSET_DELETION,
-        data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId },
+        data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId, deleteOnDisk: true },
       });
       expect(jobMock.queue).toHaveBeenNthCalledWith(2, {
         name: JobName.METADATA_EXTRACTION,

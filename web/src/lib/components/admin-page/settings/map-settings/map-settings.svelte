@@ -10,6 +10,7 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -23,13 +24,12 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="flex flex-col gap-4">
-        <SettingAccordion key="map" title="Map Settings" subtitle="Manage map settings">
+        <SettingAccordion key="map" title={$t('admin.map_settings')} subtitle={$t('admin.map_settings_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-              id="enable-map-features"
-              title="ENABLED"
+              title={$t('enabled').toUpperCase()}
               {disabled}
-              subtitle="Enable map features"
+              subtitle={$t('admin.map_enable_description')}
               bind:checked={config.map.enabled}
             />
 
@@ -37,16 +37,16 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="Light Style"
-              desc="URL to a style.json map theme"
+              label={$t('admin.map_light_style')}
+              desc={$t('admin.map_style_description')}
               bind:value={config.map.lightStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label="Dark Style"
-              desc="URL to a style.json map theme"
+              label={$t('admin.map_dark_style')}
+              desc={$t('admin.map_style_description')}
               bind:value={config.map.darkStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
@@ -54,23 +54,22 @@
           </div></SettingAccordion
         >
 
-        <SettingAccordion key="reverse-geocoding" title="Reverse Geocoding Settings">
+        <SettingAccordion key="reverse-geocoding" title={$t('admin.map_reverse_geocoding_settings')}>
           <svelte:fragment slot="subtitle">
             <p class="text-sm dark:text-immich-dark-fg">
               Manage <a
                 href="https://immich.app/docs/features/reverse-geocoding"
                 class="underline"
                 target="_blank"
-                rel="noreferrer">Reverse Geocoding</a
+                rel="noreferrer">{$t('admin.map_reverse_geocoding')}</a
               > settings
             </p>
           </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-              id="enable-reverse-geocoding"
-              title="ENABLED"
+              title={$t('enabled').toUpperCase()}
               {disabled}
-              subtitle="Enable reverse geocoding"
+              subtitle={$t('admin.map_reverse_geocoding_enable_description')}
               bind:checked={config.reverseGeocoding.enabled}
             />
           </div></SettingAccordion

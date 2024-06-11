@@ -10,6 +10,59 @@ Viewing and modifying the system settings is restricted to the Administrator.
 You can always return to the default settings by clicking the `Reset to default` button.
 :::
 
+## Authentication Settings
+
+Manage password, OAuth, and other authentication settings
+
+### OAuth Authentication
+
+Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
+
+### Password Authentication
+
+The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
+
+:::tip
+You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
+:::
+
+## Image Settings (thumbnails and previews)
+
+- Thumbnails - Used in the main timeline.
+- Previews - Used in the asset viewer.
+
+By default Immich creates 3 thumbnails for each asset,
+Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
+
+**Thumbnail format**  
+Allows you to choose the type of format you want for the Thumbnail images, Webp produces smaller files than jpeg, but is slower to encode.
+
+:::tip
+You can read in detail about the advantages and disadvantages of using webp over jpeg on [Adobe's website](https://www.adobe.com/creativecloud/file-types/image/raster/webp-file.html)
+:::
+
+**Thumbnail resolution**  
+Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Preview format**  
+Allows you to choose the type of format you want for the Preview images, Webp produces smaller files than jpeg, but is slower to encode.
+
+**Preview resolution**  
+Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Quality**  
+Image quality from 1-100. Higher is better for quality but produces larger files, this option affects the Preview and Thumbnail images.
+
+**Prefer wide gamut**  
+Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts.
+
+**Prefer embedded preview**  
+Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview is camera-dependent and the image may have more compression artifacts.
+
+:::tip
+The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
+:::
+
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
@@ -18,6 +71,11 @@ With higher concurrency, the host will work on more assets in parallel,
 this advice improves throughput, not latency, for example, it will make Smart Search jobs process more quickly, but it won't make searching faster.
 
 It is important to remember that jobs like Smart Search, Face Detection, Facial Recognition, and Transcode Videos require a **lot** of processing power and therefore do not exaggerate the amount of jobs because you're probably thoroughly overloading the server.
+
+:::danger IMPORTANT
+If you increase the concurrency from the defaults we set, especially for thumbnail generation, make sure you do not increase them past the amount of CPU cores you have available.
+Doing so can impact API responsiveness with no gain in thumbnail generation speed.
+:::
 
 :::info Facial Recognition Concurrency
 The Facial Recognition Concurrency value cannot be changed because
@@ -87,17 +145,9 @@ The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for
 
 Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
-## OAuth Authentication
+## Notification Settings
 
-Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
-
-## Password Authentication
-
-The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
-
-:::tip
-You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
-:::
+SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/docs/administration/email-notification)
 
 ## Server Settings
 
@@ -124,27 +174,6 @@ p {
   color: green;
 }
 ```
-
-## Thumbnail Settings
-
-By default Immich creates 3 thumbnails for each asset,
-Blurred (thumbhash) , Small (webp) , and Large (jpeg), using these settings you can change the quality for the thumbnail files that are created.
-
-**Small thumbnail resolution**  
-Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
-
-**Large thumbnail resolution**  
-Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
-
-**Quality**  
-Thumbnail quality from 1-100. Higher is better for quality but produces larger files.
-
-**Prefer wide gamut**  
-Use display p3 for thumbnails. This better preserves the vibrance of images with wide color spaces, but images may appear differently on old devices with an old browser version. Srgb images are kept as srgb to avoid color shifts.
-
-:::tip
-The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
-:::
 
 ## Trash Settings
 

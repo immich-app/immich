@@ -18,18 +18,20 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { clickOutside } from '$lib/actions/click-outside';
   import { focusOutside } from '$lib/actions/focus-outside';
+  import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
-  /**
-   * Unique identifier for the combobox.
-   */
-  export let id: string;
   export let label: string;
   export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined;
   export let placeholder = '';
 
+  /**
+   * Unique identifier for the combobox.
+   */
+  let id: string = generateId();
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
    */
@@ -199,7 +201,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <CircleIconButton on:click={onClear} title="Clear value" icon={mdiClose} size="16" padding="2" />
+        <CircleIconButton on:click={onClear} title={$t('clear_value')} icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}

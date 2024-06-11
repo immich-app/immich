@@ -5,6 +5,7 @@ import React from 'react';
 
 export type Item = {
   icon: string;
+  iconColor: string;
   title: string;
   description?: string;
   link?: { url: string; text: string };
@@ -45,11 +46,17 @@ export function Timeline({ items }: Props): JSX.Element {
               {<Icon path={timelineIcon} size={1.25} />}
             </div>
             <section className=" dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-200 border border-solid rounded-2xl flex flex-row w-full gap-2 p-4 md:ml-4 my-2 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 transition-all">
-              <div className="flex-col flex-grow items-center justify-between gap-2">
-                <p className="m-0 mb-2 text-lg items-start flex gap-2">
-                  <Icon path={cardIcon} size={1} />
-                  <span>{item.title}</span>
-                </p>
+              <div className="flex flex-col flex-grow justify-between gap-2">
+                <div className="flex gap-2 items-center">
+                  {cardIcon === 'immich' ? (
+                    <img src="img/immich-logo.svg" height="30" />
+                  ) : (
+                    <Icon path={cardIcon} size={1} color={item.iconColor} />
+                  )}
+                  <p className="m-0 mt-1 text-lg items-start flex gap-2 place-items-center content-center">
+                    <span>{item.title}</span>
+                  </p>
+                </div>
                 <p className="m-0 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
               </div>
               <div className="flex flex-col justify-between place-items-end">

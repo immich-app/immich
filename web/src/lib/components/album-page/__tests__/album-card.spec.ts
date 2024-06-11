@@ -36,7 +36,7 @@ describe('AlbumCard component', () => {
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
     const albumDetailsElement = sut.getByTestId('album-details');
-    const detailsText = `${count} items` + (shared ? ' . Shared' : '');
+    const detailsText = `${count} items` + (shared ? ' . shared' : '');
 
     expect(albumImgElement).toHaveAttribute('src');
     expect(albumImgElement).toHaveAttribute('alt', album.albumName);

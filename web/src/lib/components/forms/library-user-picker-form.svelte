@@ -7,6 +7,7 @@
   import { searchUsersAdmin } from '@immich/sdk';
   import { user } from '$lib/stores/user.store';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { t } from 'svelte-i18n';
 
   let ownerId: string = $user.id;
 
@@ -27,19 +28,14 @@
   const handleSubmit = () => dispatch('submit', { ownerId });
 </script>
 
-<FullScreenModal
-  id="select-library-owner-modal"
-  title="Select library owner"
-  icon={mdiFolderSync}
-  onClose={handleCancel}
->
+<FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
     <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-    <Button type="submit" fullwidth form="select-library-owner-form">Create</Button>
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+    <Button type="submit" fullwidth form="select-library-owner-form">{$t('create')}</Button>
   </svelte:fragment>
 </FullScreenModal>

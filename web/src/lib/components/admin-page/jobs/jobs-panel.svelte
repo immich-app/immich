@@ -23,18 +23,19 @@
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let jobs: AllJobStatusResponseDto;
 
   interface JobDetails {
     title: string;
     subtitle?: string;
+    description?: ComponentType;
     allText?: string;
     missingText?: string;
     disabled?: boolean;
     icon: string;
     allowForceCommand?: boolean;
-    component?: ComponentType;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
@@ -60,38 +61,38 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
+      subtitle: $t('admin.thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
+      subtitle: $t('admin.metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: getJobName(JobName.Library),
-      subtitle: 'Perform library tasks',
-      allText: 'ALL',
-      missingText: 'REFRESH',
+      subtitle: $t('admin.library_tasks_description'),
+      allText: $t('all').toUpperCase(),
+      missingText: $t('refresh').toUpperCase(),
     },
     [JobName.Sidecar]: {
       title: getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
-      subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
-      allText: 'SYNC',
-      missingText: 'DISCOVER',
+      subtitle: $t('admin.sidecar_job_description'),
+      allText: $t('sync').toUpperCase(),
+      missingText: $t('discover').toUpperCase(),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: getJobName(JobName.SmartSearch),
-      subtitle: 'Run machine learning on assets to support smart search',
+      subtitle: $t('admin.smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: getJobName(JobName.DuplicateDetection),
-      subtitle: 'Run machine learning on assets to detect similar images. Relies on Smart Search',
+      subtitle: $t('admin.duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
@@ -113,18 +114,18 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
+      subtitle: $t('admin.video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.StorageTemplateMigration),
       allowForceCommand: false,
-      component: StorageMigrationDescription,
+      description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: getJobName(JobName.Migration),
-      subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
+      subtitle: $t('admin.migration_job_description'),
       allowForceCommand: false,
     },
   };
@@ -152,23 +153,20 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, missingText, allowForceCommand, icon, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
       {title}
       {disabled}
       {subtitle}
-      allText={allText || 'ALL'}
-      missingText={missingText || 'MISSING'}
+      {description}
+      allText={allText || $t('all').toUpperCase()}
+      missingText={missingText || $t('missing').toUpperCase()}
       {allowForceCommand}
       {jobCounts}
       {queueStatus}
       on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
-    >
-      {#if component}
-        <svelte:component this={component} slot="description" />
-      {/if}
-    </JobTile>
+    />
   {/each}
 </div>

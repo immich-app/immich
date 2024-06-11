@@ -4,6 +4,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onEditSuccess: ((album: AlbumResponseDto) => unknown) | undefined = undefined;
@@ -36,7 +37,7 @@
   };
 </script>
 
-<FullScreenModal id="edit-album-modal" title="Edit album" width="wide" {onClose}>
+<FullScreenModal title={$t('edit_album')} width="wide" {onClose}>
   <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">
@@ -45,19 +46,19 @@
 
       <div class="flex-grow">
         <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="name">Name</label>
+          <label class="immich-form-label" for="name">{$t('name')}</label>
           <input class="immich-form-input" id="name" type="text" bind:value={albumName} />
         </div>
 
         <div class="m-4 flex flex-col gap-2">
-          <label class="immich-form-label" for="description">Description</label>
+          <label class="immich-form-label" for="description">{$t('description')}</label>
           <textarea class="immich-form-input" id="description" bind:value={description} />
         </div>
       </div>
     </div>
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => onCancel?.()}>Cancel</Button>
-    <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">OK</Button>
+    <Button color="gray" fullwidth on:click={() => onCancel?.()}>{$t('cancel')}</Button>
+    <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">{$t('ok')}</Button>
   </svelte:fragment>
 </FullScreenModal>

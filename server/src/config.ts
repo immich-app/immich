@@ -6,6 +6,7 @@ import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
 import Joi from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
+import { ImmichHeader } from 'src/dtos/auth.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 
 export enum TranscodePolicy {
@@ -240,7 +241,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
-    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
+    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 3 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
     [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
@@ -373,7 +374,8 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
 
     IMMICH_PORT: Joi.number().optional(),
-    IMMICH_METRICS_PORT: Joi.number().optional(),
+    IMMICH_API_METRICS_PORT: Joi.number().optional(),
+    IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
     IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),
@@ -419,11 +421,11 @@ export const clsConfig: ClsModuleOptions = {
     mount: true,
     generateId: true,
     setup: (cls, req: Request, res: Response) => {
-      const headerValues = req.headers['x-immich-cid'];
+      const headerValues = req.headers[ImmichHeader.CID];
       const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
       const cid = headerValue || cls.get(CLS_ID);
       cls.set(CLS_ID, cid);
-      res.header('x-immich-cid', cid);
+      res.header(ImmichHeader.CID, cid);
     },
   },
 };

@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -62,6 +62,6 @@
     "lodash-es": "^4.17.21"
   },
   "volta": {
-    "node": "20.13.1"
+    "node": "20.14.0"
   }
 }

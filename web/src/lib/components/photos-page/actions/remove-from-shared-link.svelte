@@ -7,6 +7,7 @@
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let sharedLink: SharedLinkResponseDto;
 
@@ -55,4 +56,4 @@
   };
 </script>
 
-<CircleIconButton title="Remove from shared link" on:click={handleRemove} icon={mdiDeleteOutline} />
+<CircleIconButton title={$t('remove_from_shared_link')} on:click={handleRemove} icon={mdiDeleteOutline} />

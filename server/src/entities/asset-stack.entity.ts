@@ -16,4 +16,6 @@ export class AssetStackEntity {
 
   @Column({ nullable: false })
   primaryAssetId!: string;
+
+  assetCount?: number;
 }

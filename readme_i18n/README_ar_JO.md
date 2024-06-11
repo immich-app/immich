@@ -32,7 +32,6 @@
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
-  <a href="README_ar_JO.md">العربية</a>
 </p>
 
 ## تنصل
