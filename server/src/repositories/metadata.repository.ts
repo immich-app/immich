@@ -31,6 +31,8 @@ export class MetadataRepository implements IMetadataRepository {
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
 
+        // Enable exiftool LFS to parse metadata for files larger than 2GB.
+        optionalArgs: ['-api', 'largefilesupport=1'],
         defaultVideosToUTC: true,
         backfillTimezones: true,
         inferTimezoneFromDatestamps: true,
