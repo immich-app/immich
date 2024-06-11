@@ -270,7 +270,7 @@
                 },
                 {
                   value: TranscodeHWAccel.Disabled,
-                  text: $t('admin.disabled'),
+                  text: $t('disabled'),
                 },
               ]}
               isEdited={config.ffmpeg.accel !== savedConfig.ffmpeg.accel}

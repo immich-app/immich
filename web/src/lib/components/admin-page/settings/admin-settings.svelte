@@ -53,7 +53,7 @@
     }
 
     notificationController.show({
-      message: $t('reset_settings_to_recent_saved'),
+      message: $t('admin.reset_settings_to_recent_saved'),
       type: NotificationType.Info,
     });
   };
@@ -64,7 +64,7 @@
     }
 
     notificationController.show({
-      message: $t('reset_settings_to_default'),
+      message: $t('admin.reset_settings_to_default'),
       type: NotificationType.Info,
     });
   };

@@ -119,12 +119,12 @@
       const matched = await loadAndMatch([filename]);
       if (matched) {
         notificationController.show({
-          message: $t('admin.matched_items', { values: { count: 1 } }),
+          message: $t('admin.repair_matched_items', { values: { count: 1 } }),
           type: NotificationType.Info,
         });
       }
     } catch (error) {
-      handleError(error, $t('errors.unable_to_check_item'));
+      handleError(error, $t('errors.repair_unable_to_check_item'));
     }
   };
 
@@ -140,13 +140,13 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, $t('errors.unable_to_check_items'));
+      handleError(error, $t('errors.repair_unable_to_check_items'));
     } finally {
       checking = false;
     }
 
     notificationController.show({
-      message: $t('admin.matched_items', { values: { count } }),
+      message: $t('admin.repair_matched_items', { values: { count } }),
       type: NotificationType.Info,
     });
   };

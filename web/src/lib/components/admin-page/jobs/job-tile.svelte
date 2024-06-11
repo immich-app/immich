@@ -120,7 +120,7 @@
         on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
       >
         <Icon path={mdiAlertCircle} size="36" />
-        {$t('admin.disabled').toUpperCase()}
+        {$t('disabled').toUpperCase()}
       </JobTileButton>
     {:else if !isIdle}
       {#if waitingCount > 0}

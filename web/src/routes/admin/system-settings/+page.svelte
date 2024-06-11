@@ -203,7 +203,7 @@
       <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
-          {$t('import_as_json')}
+          {$t('import_from_json')}
         </div>
       </LinkButton>
     </div>
