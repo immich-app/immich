@@ -181,7 +181,7 @@
     "transcoding_hevc_codec": "HEVC 编解码器",
     "transcoding_max_b_frames": "最大B帧数",
     "transcoding_max_b_frames_description": "较高的值可以提高压缩效率，但会减慢编码速度。可能与旧设备上的硬件加速不兼容。0值将禁用B帧，而-1值将自动设置此参数。",
-    "transcoding_max_bitrate": "最大码率",
+    "transcoding_max_bitrate": "最高码率",
     "transcoding_max_bitrate_description": "设置最大比特率可以使文件大小更可控，而对质量的影响很小。在720p时，VP9或HEVC的典型值为2600k，而H.264的典型值则为4500k。如果此项设置为0，则不限制最大比特率。",
     "transcoding_max_keyframe_interval": "最大关键帧间隔",
     "transcoding_max_keyframe_interval_description": "设置关键帧之间的最大帧距离。较低的值会降低压缩效率，但可以提高搜索时间，并且可能在快速运动的场景中提高画质。值设为0将自动设置此参数。",
