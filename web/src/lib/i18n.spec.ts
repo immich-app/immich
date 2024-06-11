@@ -1,3 +1,4 @@
+import { langs } from '$lib/constants';
 import messages from '$lib/i18n/en.json';
 import { exec as execCallback } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -30,4 +31,16 @@ describe('i18n', () => {
     // Only translations directly using the store seem to get extracted
     expect({ ...extractedMessages, ...existingMessages }).toEqual(existingMessages);
   });
+
+  describe('language tags', () =>{
+    for (const lang of langs) {
+      if (lang.code === 'dev') {
+        continue;
+      }
+
+      test(`language tag ${lang.code} is valid`, () => {
+        expect(Intl.NumberFormat.supportedLocalesOf(lang.code)).toHaveLength(1);
+      })
+    }
+  })
 });
