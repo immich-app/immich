@@ -158,7 +158,7 @@
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
                 <Icon path={mdiCheck} />
-                {$t('partner_can_access_photos')}
+                {$t('partner_can_access_assets')}
               </li>
               <li class="flex gap-2 place-items-center py-1">
                 <Icon path={mdiCheck} />
