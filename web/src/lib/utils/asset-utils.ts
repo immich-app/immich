@@ -263,6 +263,11 @@ const supportedImageExtensions = new Set(['apng', 'avif', 'gif', 'jpg', 'jpeg', 
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
+  // originalPath is undefined when public shared link has metadata option turned off
+  if (asset.originalPath === undefined) {
+    return false;
+  }
+
   const imgExtension = getFilenameExtension(asset.originalPath);
 
   return supportedImageExtensions.has(imgExtension);
