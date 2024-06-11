@@ -32,7 +32,7 @@ describe('i18n', () => {
     expect({ ...extractedMessages, ...existingMessages }).toEqual(existingMessages);
   });
 
-  describe('language tags', () =>{
+  describe('language tags', () => {
     for (const lang of langs) {
       if (lang.code === 'dev') {
         continue;
@@ -40,7 +40,7 @@ describe('i18n', () => {
 
       test(`language tag ${lang.code} is valid`, () => {
         expect(Intl.NumberFormat.supportedLocalesOf(lang.code)).toHaveLength(1);
-      })
+      });
     }
-  })
+  });
 });
