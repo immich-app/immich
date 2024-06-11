@@ -43,7 +43,6 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
-  export let href: string | undefined = undefined;
   export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
 
   let className = '';
@@ -100,7 +99,7 @@
 
 <IntersectionObserver once={false} on:intersected let:intersecting>
   <a
-    href={href ?? currentUrlReplaceAssetId(asset.id)}
+    href={currentUrlReplaceAssetId(asset.id)}
     style:width="{width}px"
     style:height="{height}px"
     class="group focus-visible:outline-none flex overflow-hidden {disabled
