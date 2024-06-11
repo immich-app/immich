@@ -124,7 +124,7 @@
         });
       }
     } catch (error) {
-      handleError(error, $t('errors.repair_unable_to_check_item'));
+      handleError(error, $t('errors.repair_unable_to_check_items', { values: { count: 'one' } }));
     }
   };
 
@@ -140,7 +140,7 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, $t('errors.repair_unable_to_check_items'));
+      handleError(error, $t('errors.repair_unable_to_check_items', { values: { count: 'other' } }));
     } finally {
       checking = false;
     }

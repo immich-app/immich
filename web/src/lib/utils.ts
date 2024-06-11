@@ -232,7 +232,7 @@ export const copyToClipboard = async (secret: string) => {
     await navigator.clipboard.writeText(secret);
     notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
   } catch (error) {
-    handleError(error, $t('errors.cannot_copy_to_clipboard'));
+    handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
 };
 
