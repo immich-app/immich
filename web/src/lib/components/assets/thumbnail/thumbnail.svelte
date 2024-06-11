@@ -71,6 +71,10 @@
   };
 
   const handleClick = (e: MouseEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      return;
+    }
+
     if (selected) {
       onIconClickedHandler(e);
       return;
