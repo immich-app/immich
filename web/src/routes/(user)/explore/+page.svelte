@@ -86,18 +86,23 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item (item.data.id)}
-          <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
+          <div class="relative">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
-              <Thumbnail thumbnailSize={156} asset={item.data} readonly />
+              <Thumbnail
+                thumbnailSize={156}
+                asset={item.data}
+                readonly
+                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
+              />
             </div>
             <span
               class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
             >
               {item.value}
             </span>
-          </a>
+          </div>
         {/each}
       </div>
     </div>
