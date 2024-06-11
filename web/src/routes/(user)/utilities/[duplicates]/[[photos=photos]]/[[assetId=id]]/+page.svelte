@@ -12,18 +12,23 @@
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     try {
-      // TODO - Create showConfirmDialog controller to show native confirm.
-      if (
-        !$featureFlags.trash &&
-        trashIds.length > 0 &&
-        !confirm('Are you sure you want to permanently delete these duplicates?')
-      ) {
-        return;
+      if (!$featureFlags.trash && trashIds.length > 0) {
+        const isConfirmed = await dialogController.show({
+          title: 'Confirm',
+          prompt: 'Are you sure you want to permanently delete these duplicates?',
+          confirmText: 'Yes',
+          cancelText: 'No',
+        });
+
+        if (!isConfirmed) {
+          return;
+        }
       }
 
       await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
