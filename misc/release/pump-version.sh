@@ -66,10 +66,12 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   npm --prefix server run build
   make open-api
   npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
-  npm --prefix web version "$SERVER_PUMP"
-  npm --prefix e2e version "$SERVER_PUMP"
-  npm --prefix web i --package-lock-only
+  # TODO use $SERVER_PUMP once we pass 2.2.x
+  npm --prefix cli version patch
   npm --prefix cli i --package-lock-only
+  npm --prefix web version "$SERVER_PUMP"
+  npm --prefix web i --package-lock-only
+  npm --prefix e2e version "$SERVER_PUMP"
   npm --prefix e2e i --package-lock-only
   poetry --directory machine-learning version "$SERVER_PUMP"
 fi
