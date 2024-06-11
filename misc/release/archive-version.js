@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 const { readFileSync, writeFileSync } = require('node:fs');
 
-const lastVersion = process.argv[2];
-if (!lastVersion) {
+const nextVersion = process.argv[2];
+if (!nextVersion) {
   console.log('Usage: archive-version.js <version>');
   process.exit(1);
 }
@@ -10,7 +10,7 @@ if (!lastVersion) {
 const filename = './docs/static/archived-versions.json';
 const oldVersions = JSON.parse(readFileSync(filename));
 const newVersions = [
-  { label: lastVersion, url: `https://v${lastVersion}.archive.immich.app` },
+  { label: `v${nextVersion}`, url: `https://v${nextVersion}.archive.immich.app` },
   ...oldVersions,
 ];
 
