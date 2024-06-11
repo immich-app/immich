@@ -23,7 +23,7 @@
   "admin": {
     "authentication_settings": "Paramètres d'authentification",
     "authentication_settings_description": "Gestion du mot de passe, de la double authentification, etc.",
-    "crontab_guru": "",
+    "crontab_guru": "Crontab Guru",
     "disable_login": "Désactiver la connexion",
     "disabled": "Désactivé",
     "duplicate_detection_job_description": "",
