@@ -9,17 +9,17 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { s } from '$lib/utils';
-  import { deleteAssets, getConfig, updateAssets } from '@immich/sdk';
+  import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   export let data: PageData;
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     try {
-      const { trash } = await getConfig();
       // TODO - Create showConfirmDialog controller to show native confirm.
       if (
-        !trash.enabled &&
+        !$featureFlags.trash &&
         trashIds.length > 0 &&
         !confirm('Are you sure you want to permanently delete these duplicates?')
       ) {
@@ -27,7 +27,7 @@
       }
 
       await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-      await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !trash.enabled } });
+      await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
 
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
