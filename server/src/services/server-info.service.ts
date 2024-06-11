@@ -65,7 +65,7 @@ export class ServerInfoService {
 
   async getFeatures(): Promise<ServerFeaturesDto> {
     const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
-      await this.configCore.getConfig();
+      await this.configCore.getConfig(true);
 
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
