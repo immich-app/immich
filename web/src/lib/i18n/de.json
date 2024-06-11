@@ -44,7 +44,7 @@
     "image_thumbnail_resolution_description": "Dies wird bei der Anzeige von Bildergruppen („Zeitleiste“, „Albumansicht“ usw.) verwendet. Höhere Auflösungen können mehr Details beibehalten, benötigen aber mehr Zeit für die Verschlüsselung, haben größere Dateigrößen und können die Reaktionsfähigkeit der App beeinträchtigen.",
     "job_settings": "Job-Einstellungen",
     "job_settings_description": "Verwalten der Parallelität von Jobs",
-    "library_cron_expression": "",
+    "library_cron_expression": "Cron Ausdruck",
     "library_cron_expression_presets": "Cron-Ausdruck-Voreinstellungen",
     "library_scanning": "Periodisches scannen",
     "library_scanning_description": "Regelmäßiges Durchsuchen der Bibliothek einstellen",
