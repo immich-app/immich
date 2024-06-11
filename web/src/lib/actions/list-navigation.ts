@@ -27,6 +27,10 @@ interface Options {
    * A function that is called when the dropdown should be closed.
    */
   closeDropdown: () => void;
+  /**
+   * Override the default behavior for the escape key.
+   */
+  onEscape?: (event: KeyboardEvent) => void;
 }
 
 export const listNavigation: Action<HTMLElement, Options> = (node, options: Options) => {
@@ -80,6 +84,11 @@ export const listNavigation: Action<HTMLElement, Options> = (node, options: Opti
   };
 
   const onEscape = (event: KeyboardEvent) => {
+    const { onEscape } = options;
+    if (onEscape) {
+      onEscape(event);
+      return;
+    }
     event.stopPropagation();
     close();
   };

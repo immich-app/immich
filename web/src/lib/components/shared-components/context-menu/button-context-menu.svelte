@@ -1,18 +1,12 @@
-<script lang="ts" context="module">
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { createContext } from '$lib/utils/context';
-
-  const { get: getMenuContext, set: setContext } = createContext<() => void>('context-menu');
-  export { getMenuContext };
-</script>
-
 <script lang="ts">
   import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { setMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
@@ -43,10 +37,10 @@
   let menuContainer: HTMLUListElement;
   let buttonContainer: HTMLDivElement;
   let selectedId: string | undefined = undefined;
-  let id = generateId();
 
-  $: buttonId = `context-menu-button-${id}`;
-  $: menuId = `context-menu-${id}`;
+  const id = generateId();
+  const buttonId = `context-menu-button-${id}`;
+  const menuId = `context-menu-${id}`;
 
   const openDropdown = (event: KeyboardEvent) => {
     contextMenuPosition = getContextMenuPosition(event, align);
@@ -67,13 +61,21 @@
     }
   };
 
+  const onEscape = (event: KeyboardEvent) => {
+    if (showContextMenu) {
+      // if the dropdown is open, stop the event from propagating
+      event.stopPropagation();
+    }
+    closeDropdown();
+  };
+
   const closeDropdown = () => {
     selectedId = undefined;
     showContextMenu = false;
   };
 
-  setContext(() => {
-    showContextMenu = false;
+  setMenuContext(() => {
+    closeDropdown();
     const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
     button?.focus();
   });
@@ -95,6 +97,7 @@
       openDropdown,
       closeDropdown,
       selectionChanged: (node) => (selectedId = node?.id),
+      onEscape,
     }}
     bind:this={buttonContainer}
   >

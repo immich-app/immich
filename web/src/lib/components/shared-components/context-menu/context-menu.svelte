@@ -34,7 +34,6 @@
 </script>
 
 <div
-  aria-labelledby={ariaLabelledBy}
   bind:clientHeight={height}
   class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
   style:left="{left}px"
@@ -45,6 +44,7 @@
   <ul
     {id}
     aria-activedescendant={ariaActiveDescendant}
+    aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
     class:max-h-[100vh]={isVisible}
     class:max-h-0={!isVisible}

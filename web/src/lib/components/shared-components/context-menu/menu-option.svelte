@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMenuContext } from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { getMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { createEventDispatcher } from 'svelte';
 
   export let text = '';

@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { setContext, tick } from 'svelte';
+  import { tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import { generateId } from '$lib/utils/generate-id';
+  import { setMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
 
   export let title: string;
   export let direction: 'left' | 'right' = 'right';
@@ -16,6 +18,10 @@
   let selectedId: string | undefined = undefined;
   let triggerElement: HTMLElement | undefined = undefined;
   let buttonElement: HTMLButtonElement;
+
+  const id = generateId();
+  const buttonId = `context-menu-button-${id}`;
+  const menuId = `context-menu-${id}`;
 
   $: {
     if (isOpen && buttonElement) {
@@ -63,12 +69,16 @@
     }
   };
 
-  setContext('context-menu', closeContextMenu);
+  setMenuContext(closeContextMenu);
 </script>
 
 {#key uniqueKey}
   {#if isOpen}
     <button
+      aria-controls={menuId}
+      aria-haspopup={true}
+      aria-expanded={isOpen}
+      id={buttonId}
       bind:this={buttonElement}
       type="button"
       class="sr-only"
@@ -102,7 +112,17 @@
       on:contextmenu|preventDefault={reopenContextMenu}
       role="presentation"
     >
-      <ContextMenu {x} {y} {direction} onClose={closeContextMenu} bind:menuElement={contextMenuElement} isVisible>
+      <ContextMenu
+        {direction}
+        {x}
+        {y}
+        ariaActiveDescendant={selectedId}
+        ariaLabelledBy={buttonId}
+        bind:menuElement={contextMenuElement}
+        id={menuId}
+        isVisible
+        onClose={closeContextMenu}
+      >
         <slot />
       </ContextMenu>
     </section>
