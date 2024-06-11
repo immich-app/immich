@@ -265,7 +265,7 @@ export const langs = [
   { name: 'Lithuanian', code: 'lt', loader: () => import('$lib/i18n/lt.json') },
   { name: 'Latvian', code: 'lv', loader: () => import('$lib/i18n/lv.json') },
   { name: 'Mongolian', code: 'mn', loader: () => import('$lib/i18n/mn.json') },
-  { name: 'Norwegian Bokmål', code: 'nb_NO', loader: () => import('$lib/i18n/nb_NO.json') },
+  { name: 'Norwegian Bokmål', code: 'nb-NO', loader: () => import('$lib/i18n/nb-NO.json') },
   { name: 'Dutch', code: 'nl', loader: () => import('$lib/i18n/nl.json') },
   { name: 'Polish', code: 'pl', loader: () => import('$lib/i18n/pl.json') },
   { name: 'Portuguese', code: 'pt', loader: () => import('$lib/i18n/pt.json') },
@@ -278,6 +278,6 @@ export const langs = [
   { name: 'Thai', code: 'th', loader: () => import('$lib/i18n/th.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$lib/i18n/uk.json') },
   { name: 'Vietnamese', code: 'vi', loader: () => import('$lib/i18n/vi.json') },
-  { name: 'Chinese (Simplified)', code: 'zh_SIMPLIFIED', loader: () => import('$lib/i18n/zh_SIMPLIFIED.json') },
+  { name: 'Chinese (Simplified)', code: 'zh-Hans', loader: () => import('$lib/i18n/zh-Hans.json') },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
