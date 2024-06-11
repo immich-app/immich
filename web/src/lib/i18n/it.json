@@ -27,7 +27,7 @@
     "disable_login": "Disabilita login",
     "disabled": "Disattivato",
     "duplicate_detection_job_description": "Esegui machine learning sulle risorse per rilevare immagini simili. Si basa su Ricerca Intelligente",
-    "image_format_description": "WebP produce file più piccoli rispetto a JPEG, ma l'encoding è più lento",
+    "image_format_description": "WebP produce file più piccoli rispetto a JPEG, ma l'encoding è più lento.",
     "image_prefer_embedded_preview": "Preferisci l'anteprima integrata",
     "image_prefer_embedded_preview_setting_description": "",
     "image_prefer_wide_gamut": "Preferisci gamut più ampio",
