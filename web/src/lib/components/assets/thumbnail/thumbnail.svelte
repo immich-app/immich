@@ -42,7 +42,6 @@
   export let showStackedIcon = true;
   export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
 
-
   let className = '';
   export { className as class };
 
