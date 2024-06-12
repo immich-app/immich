@@ -11,7 +11,7 @@
   <LoadingSpinner />
 {:then data}
   <div>
-    <p>{$t('videos_count', { values: { count: data.videos.toLocaleString($locale) } })}</p>
-    <p>{$t('photos_count', { values: { count: data.images.toLocaleString($locale) } })}</p>
+    <p>{$t('videos_count', { values: { count: data.videos } })}</p>
+    <p>{$t('photos_count', { values: { count: data.images } })}</p>
   </div>
 {/await}
