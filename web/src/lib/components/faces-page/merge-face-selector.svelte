@@ -67,7 +67,7 @@
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
       id: 'merge-people',
-      prompt: 'Do you want to merge these individuals? This action is irreversible.',
+      prompt: 'Do you want to merge these people? This action is irreversible.',
     });
 
     if (!isConfirm) {
