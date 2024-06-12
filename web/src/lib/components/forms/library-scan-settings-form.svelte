@@ -54,7 +54,7 @@
         exclusionPatterns = library.exclusionPatterns;
       }
     } catch (error) {
-      handleError(error, 'Unable to add exclusion pattern');
+      handleError(error, $t('errors.unable_to_add_exclusion_pattern'));
     } finally {
       exclusionPatternToAdd = '';
       addExclusionPattern = false;
@@ -74,7 +74,7 @@
       library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to edit exclude pattern');
+      handleError(error, $t('errors.unable_to_edit_exclusion_pattern'));
     } finally {
       editExclusionPattern = null;
     }
@@ -94,7 +94,7 @@
       library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to delete exclude pattern');
+      handleError(error, $t('errors.unable_to_delete_exclusion_pattern'));
     } finally {
       editExclusionPattern = null;
     }
@@ -162,7 +162,7 @@
       >
         <td class="w-3/4 text-ellipsis px-4 text-sm">
           {#if exclusionPatterns.length === 0}
-            No pattern added
+            {$t('admin.no_pattern_added')}
           {/if}
         </td>
         <td class="w-1/4 text-ellipsis px-4 text-sm"

@@ -137,7 +137,7 @@ export class MetadataService {
       this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
     }
 
-    const { reverseGeocoding } = await this.configCore.getConfig();
+    const { reverseGeocoding } = await this.configCore.getConfig({ withCache: false });
     const { enabled } = reverseGeocoding;
 
     if (!enabled) {
@@ -333,7 +333,7 @@ export class MetadataService {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
-    const { reverseGeocoding } = await this.configCore.getConfig();
+    const { reverseGeocoding } = await this.configCore.getConfig({ withCache: true });
     if (!reverseGeocoding.enabled || !longitude || !latitude) {
       return;
     }

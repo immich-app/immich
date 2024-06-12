@@ -67,7 +67,7 @@ export class LibraryService {
   }
 
   async init() {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 

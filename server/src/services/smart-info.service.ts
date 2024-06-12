@@ -40,7 +40,7 @@ export class SmartInfoService {
 
     await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
 
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
 
     await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, () =>
       this.repository.init(machineLearning.clip.modelName),
@@ -50,7 +50,7 @@ export class SmartInfoService {
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -75,7 +75,7 @@ export class SmartInfoService {
   }
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }

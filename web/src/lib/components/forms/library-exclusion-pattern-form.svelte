@@ -32,11 +32,9 @@
 <FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
-      Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have
-      folders that contain files you don't want to import, such as RAW files.
+      {$t('admin.exclusion_pattern_description')}
       <br /><br />
-      Add exclusion patterns. Globbing using *, **, and ? is supported. To ignore all files in any directory named "Raw",
-      use "**/Raw/**". To ignore all files ending in ".tif", use "**/*.tif". To ignore an absolute path, use "/path/to/ignore/**".
+      {$t('admin.add_exclusion_pattern_description')}
     </p>
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="exclusionPattern">{$t('pattern')}</label>
@@ -50,7 +48,7 @@
     </div>
     <div class="mt-8 flex w-full gap-4">
       {#if isDuplicate}
-        <p class="text-red-500 text-sm">This exclusion pattern already exists.</p>
+        <p class="text-red-500 text-sm">{$t('errors.exclusion_pattern_already_exists')}</p>
       {/if}
     </div>
   </form>

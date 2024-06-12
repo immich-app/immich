@@ -84,7 +84,9 @@
 
     {#if $featureFlags.email}
       <div class="my-4 flex place-items-center justify-between gap-2">
-        <label class="text-sm dark:text-immich-dark-fg" for="send-welcome-email">{$t('send_welcome_email')}</label>
+        <label class="text-sm dark:text-immich-dark-fg" for="send-welcome-email">
+          {$t('admin.send_welcome_email')}
+        </label>
         <Slider id="send-welcome-email" bind:checked={notify} />
       </div>
     {/if}
@@ -101,7 +103,7 @@
 
     <div class="my-4 flex place-items-center justify-between gap-2">
       <label class="text-sm dark:text-immich-dark-fg" for="require-password-change">
-        {$t('require_user_to_change_password_on_first_login')}
+        {$t('admin.require_password_change_on_login')}
       </label>
       <Slider id="require-password-change" bind:checked={shouldChangePassword} />
     </div>
@@ -113,9 +115,9 @@
 
     <div class="my-4 flex flex-col gap-2">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
-        {$t('quota_size')}
+        {$t('admin.quota_size_gib')}
         {#if quotaSizeWarning}
-          <p class="text-red-400 text-sm">{$t('you_set_a_quota_higher_than_the_disk_size')}</p>
+          <p class="text-red-400 text-sm">{$t('admin.quota_higher_than_disk_size')}</p>
         {/if}
       </label>
       <input class="immich-form-input" id="quotaSize" type="number" min="0" bind:value={quotaSize} />
