@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store.js';
   import { getAssetStatistics } from '@immich/sdk';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
