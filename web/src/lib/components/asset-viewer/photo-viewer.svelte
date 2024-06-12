@@ -97,7 +97,7 @@
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {
-    if (window.getSelection()?.type === $t('range')) {
+    if (window.getSelection()?.type === 'Range') {
       return;
     }
     event.preventDefault();
