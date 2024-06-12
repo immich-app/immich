@@ -86,7 +86,7 @@
             <div
               class="absolute top-2 right-3 bg-immich-primary/90 px-4 py-1 rounded-xl text-xs font-semibold text-white"
             >
-              External
+              {$t('external')}
             </div>
           {/if}
         </button>
@@ -127,18 +127,18 @@
     {/each}
   </div>
 
-  <div class="flex mt-10 mb-4 pr-6 w-full place-content-end gap-6">
+  <div class="flex mt-10 mb-4 px-6 w-full place-content-end justify-between h-[45px]">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <button
         type="button"
-        class="px-4 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-green-500 dark:hover:bg-green-400 bg-immich-primary/25 hover:bg-immich-primary/50"
-        on:click={onSelectAll}><Icon path={mdiCheck} size="20" />Select keep all</button
+        class="px-4 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
+        on:click={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
       >
       <button
         type="button"
-        class="px-4 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-red-700 dark:hover:bg-red-500 bg-immich-primary hover:bg-immich-primary/80 text-white"
-        on:click={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />Select trash all</button
+        class="px-4 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
+        on:click={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
       >
     </div>
 
@@ -152,7 +152,7 @@
         <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
           ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
             ? $t('trash_all')
-            : `Trash ${trashCount}`}
+            : `${$t('trash')} ${trashCount}`}
         </Button>
       {/if}
     </div>
