@@ -129,16 +129,20 @@
 
   <div class="flex my-4 border-transparent items-end justify-between w-full h-[85px]">
     <!-- MARK ALL BUTTONS -->
-    <div class="flex flex-col gap-1 p-4 h-[100px]">
-      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={onSelectAll}
-        ><Icon path={mdiCheck} size="20" />Mark All for Keep</Button
+    <div class="flex p-4 h-[80px] text-xs text-immich-dark-gray">
+      <button
+        type="button"
+        class="px-4 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-green-500 dark:hover:bg-green-400 bg-green-400 hover:bg-green-300"
+        on:click={onSelectAll}><Icon path={mdiCheck} size="20" />Select keep all</button
       >
-      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={onSelectNone}
-        ><Icon path={mdiTrashCanOutline} size="20" />Mark All for Trash</Button
+      <button
+        type="button"
+        class="px-4 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-red-700 dark:hover:bg-red-500 bg-red-400 hover:bg-red-300 dark:text-white"
+        on:click={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />Select trash all</button
       >
     </div>
     <!-- CONFIRM BUTTONS -->
-    <div class="flex gap-4 p-4 h-[85px]">
+    <div class="flex gap-4 p-4 h-[80px]">
       {#if trashCount === 0}
         <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
           ><Icon path={mdiCheck} size="20" />Keep All
