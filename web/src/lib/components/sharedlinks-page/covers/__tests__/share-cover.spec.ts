@@ -1,8 +1,8 @@
 import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
 import type { SharedLinkResponseDto } from '@immich/sdk';
-import { render } from '@testing-library/svelte';
 import { albumFactory } from '@test-data';
+import { render } from '@testing-library/svelte';
 
 vi.mock('$lib/utils');
 
