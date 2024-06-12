@@ -1,13 +1,14 @@
 <script lang="ts">
   import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { setMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
+  import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
   export let icon: string;
   export let title: string;
@@ -81,7 +82,7 @@
     showContextMenu = false;
   };
 
-  setMenuContext(() => {
+  registerMenuContext(() => {
     closeDropdown();
     const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
     button?.focus();
@@ -100,7 +101,7 @@
     use:listNavigation={{
       container: menuContainer,
       selectedId,
-      selectedClass: '!bg-gray-200',
+      selectedClass: `!${selectedColor}`,
       openDropdown,
       closeDropdown,
       selectionChanged: (node) => (selectedId = node?.id),

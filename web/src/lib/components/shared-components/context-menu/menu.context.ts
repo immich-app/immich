@@ -1,5 +1,5 @@
 import { createContext } from '$lib/utils/context';
 
-const { get: getMenuContext, set: setMenuContext } = createContext<() => void>();
+const { get: triggerMenuContext, set: registerMenuContext } = createContext<() => void>();
 
-export { getMenuContext, setMenuContext };
+export { registerMenuContext, triggerMenuContext };

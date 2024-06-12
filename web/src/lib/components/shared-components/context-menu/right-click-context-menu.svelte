@@ -4,7 +4,8 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { generateId } from '$lib/utils/generate-id';
-  import { setMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
+  import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
+  import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
   export let title: string;
   export let direction: 'left' | 'right' = 'right';
@@ -69,7 +70,7 @@
     }
   };
 
-  setMenuContext(closeContextMenu);
+  registerMenuContext(closeContextMenu);
 </script>
 
 {#key uniqueKey}
@@ -100,7 +101,7 @@
       use:listNavigation={{
         container: contextMenuElement,
         selectedId: selectedId,
-        selectedClass: '!bg-gray-200',
+        selectedClass: `!${selectedColor}`,
         closeDropdown: closeContextMenu,
         selectionChanged: (node) => (selectedId = node?.id),
       }}

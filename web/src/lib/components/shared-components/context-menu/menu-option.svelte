@@ -1,7 +1,11 @@
+<script lang="ts" context="module">
+  export const selectedColor = 'bg-gray-200';
+</script>
+
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
+  import { triggerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { createEventDispatcher } from 'svelte';
 
   export let text = '';
@@ -10,7 +14,7 @@
   export let topBorder = false;
 
   let id: string = generateId();
-  const closeMenu = getMenuContext();
+  const closeMenu = triggerMenuContext();
 
   const dispatch = createEventDispatcher<{
     click: void;
@@ -28,7 +32,7 @@
 <li
   {id}
   on:click={handleClick}
-  class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
+  class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:{selectedColor} focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
   class:border-t-2={topBorder}
   role="menuitem"
 >
