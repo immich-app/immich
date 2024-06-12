@@ -9,7 +9,6 @@
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { s } from '$lib/utils';
   import { t } from 'svelte-i18n';
 
   export let library: LibraryResponseDto;
@@ -54,13 +53,13 @@
     if (failedPaths === 0) {
       if (notifyIfSuccessful) {
         notificationController.show({
-          message: `All paths validated successfully`,
+          message: $t('admin.paths_validated_successfully'),
           type: NotificationType.Info,
         });
       }
     } else {
       notificationController.show({
-        message: `${failedPaths} path${s(failedPaths)} failed validation`,
+        message: $t('errors.paths_validation_failed', { values: { paths: failedPaths } }),
         type: NotificationType.Warning,
       });
     }
@@ -95,7 +94,7 @@
         await revalidate(false);
       }
     } catch (error) {
-      handleError(error, 'Unable to add import path');
+      handleError(error, $t('errors.unable_to_add_import_path'));
     } finally {
       addImportPath = false;
       importPathToAdd = null;
@@ -121,7 +120,7 @@
       }
     } catch (error) {
       editImportPath = null;
-      handleError(error, 'Unable to edit import path');
+      handleError(error, $t('errors.unable_to_edit_import_path'));
     } finally {
       editImportPath = null;
     }
@@ -141,7 +140,7 @@
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
       await handleValidation();
     } catch (error) {
-      handleError(error, 'Unable to delete import path');
+      handleError(error, $t('errors.unable_to_delete_import_path'));
     } finally {
       editImportPath = null;
     }
@@ -230,7 +229,7 @@
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">
           {#if importPaths.length === 0}
-            No paths added
+            {$t('admin.no_paths_added')}
           {/if}</td
         >
         <td class="w-1/5 text-ellipsis px-4 text-sm"

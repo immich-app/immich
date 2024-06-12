@@ -27,7 +27,7 @@
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, 'Unable to link OAuth account');
+        handleError(error, $t('errors.unable_to_link_oauth_account'));
       } finally {
         await goto('?open=oauth');
       }
