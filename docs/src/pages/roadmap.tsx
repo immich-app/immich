@@ -63,12 +63,14 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
+  mdiContentDuplicate,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  'v1.106.0': new Date(2024, 5, 11),
   'v1.104.0': new Date(2024, 4, 13),
   'v1.103.0': new Date(2024, 3, 29),
   'v1.102.0': new Date(2024, 3, 15),
@@ -216,13 +218,19 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
-  // withRelease({
-  //   icon: mdiVectorCombine,
-  //   title: 'Container consolidation',
-  //   description:
-  //     'The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.',
-  //   release: 'v1.106.0',
-  // }),
+  withRelease({
+    icon: mdiContentDuplicate,
+    title: 'Similar image detection',
+    description: 'Detect duplicate assets that aren’t exactly identical',
+    release: 'v1.106.0',
+  }),
+  withRelease({
+    icon: mdiVectorCombine,
+    title: 'Container consolidation',
+    description:
+      'The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.',
+    release: 'v1.106.0',
+  }),
   withRelease({
     icon: mdiPencil,
     iconColor: 'saddlebrown',

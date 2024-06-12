@@ -32,9 +32,9 @@
   const handleDeleteLink = async (id: string) => {
     const isConfirmed = await dialogController.show({
       id: 'delete-shared-link',
-      title: 'Delete shared link',
-      prompt: 'Are you sure you want to delete this shared link?',
-      confirmText: 'Delete',
+      title: $t('delete_shared_link'),
+      prompt: $t('confirm_delete_shared_link'),
+      confirmText: $t('delete'),
     });
 
     if (!isConfirmed) {
@@ -46,7 +46,7 @@
       notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
       await refresh();
     } catch (error) {
-      handleError(error, 'Unable to delete shared link');
+      handleError(error, $t('errors.unable_to_delete_shared_link'));
     }
   };
 
@@ -72,7 +72,7 @@
     <div
       class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
     >
-      <p>You don't have any shared links</p>
+      <p>{$t('you_dont_have_any_shared_links')}</p>
     </div>
   {:else}
     <div class="m-auto flex w-[50%] flex-col">

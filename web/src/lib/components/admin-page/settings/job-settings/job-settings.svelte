@@ -9,6 +9,7 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -45,7 +46,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
-              label="{getJobName(jobName)} Concurrency"
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
               desc=""
               bind:value={config.job[jobName].concurrency}
               required={true}
@@ -54,11 +55,11 @@
           {:else}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="{getJobName(jobName)} Concurrency"
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
               desc=""
               value="1"
               disabled={true}
-              title="This job is not concurrency-safe."
+              title={$t('admin.job_not_concurrency_safe')}
             />
           {/if}
         </div>

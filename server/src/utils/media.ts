@@ -392,7 +392,19 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    return ['fps=12', 'thumbnail=12', `select=gt(scene\\,0.1)+gt(n\\,20)`, ...super.getFilterOptions(videoStream)];
+    const options = [
+      'fps=12:round=up',
+      'thumbnail=12',
+      String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
+      'trim=end_frame=2',
+      'reverse',
+    ];
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale=${this.getScaling(videoStream)}`);
+    }
+
+    options.push(...this.getToneMapping(videoStream), 'format=yuv420p');
+    return options;
   }
 
   getPresetOptions() {
@@ -830,7 +842,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
   }
 
   useCQP() {

@@ -108,7 +108,7 @@ export class UserRepository implements IUserRepository {
       .addSelect('users.name', 'userName')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
-      .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
+      .addSelect('COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL), 0)', 'usage')
       .addSelect('users.quotaSizeInBytes', 'quotaSizeInBytes')
       .leftJoin('users.assets', 'assets')
       .leftJoin('assets.exifInfo', 'exif')

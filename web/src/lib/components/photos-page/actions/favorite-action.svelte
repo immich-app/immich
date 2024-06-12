@@ -17,7 +17,7 @@
   export let menuItem = false;
   export let removeFavorite: boolean;
 
-  $: text = removeFavorite ? $t('remove_from_favorites') : $t('favorite');
+  $: text = removeFavorite ? $t('remove_from_favorites') : $t('to_favorite');
   $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
 
   let loading = false;

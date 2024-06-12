@@ -26,6 +26,8 @@ export type SmtpOptions = {
 };
 
 export enum EmailTemplate {
+  TEST_EMAIL = 'test',
+
   // AUTH
   WELCOME = 'welcome',
   RESET_PASSWORD = 'reset-password',
@@ -37,6 +39,10 @@ export enum EmailTemplate {
 
 interface BaseEmailProps {
   baseUrl: string;
+}
+
+export interface TestEmailProps extends BaseEmailProps {
+  displayName: string;
 }
 
 export interface WelcomeEmailProps extends BaseEmailProps {
@@ -61,6 +67,10 @@ export interface AlbumUpdateEmailProps extends BaseEmailProps {
 }
 
 export type EmailRenderRequest =
+  | {
+      template: EmailTemplate.TEST_EMAIL;
+      data: TestEmailProps;
+    }
   | {
       template: EmailTemplate.WELCOME;
       data: WelcomeEmailProps;

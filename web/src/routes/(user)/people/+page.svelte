@@ -209,7 +209,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
     if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
       /*
@@ -235,7 +235,7 @@
         // trigger reactivity
         people = people;
       } catch (error) {
-        handleError(error, $t('unable_to_save_name'));
+        handleError(error, $t('errors.unable_to_save_name'));
       }
     }
   };
@@ -279,7 +279,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_hide_person'));
+      handleError(error, $t('errors.unable_to_hide_person'));
     }
   };
 
@@ -350,7 +350,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -377,7 +377,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_save_name'));
+      handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
@@ -422,7 +422,7 @@
         <LinkButton on:click={() => (selectHidden = !selectHidden)}>
           <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
             <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">Show & hide people</p>
+            <p class="ml-2">{$t('show_and_hide_people')}</p>
           </div>
         </LinkButton>
       </div>

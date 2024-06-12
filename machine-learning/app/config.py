@@ -12,8 +12,6 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
-from .schemas import ModelType
-
 
 class PreloadModelData(BaseModel):
     clip: str | None
@@ -21,7 +19,7 @@ class PreloadModelData(BaseModel):
 
 
 class Settings(BaseSettings):
-    cache_folder: str = "/cache"
+    cache_folder: Path = Path("/cache")
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
     host: str = "0.0.0.0"
@@ -53,14 +51,6 @@ _clean_name = str.maketrans(":\\/", "___", ".")
 
 def clean_name(model_name: str) -> str:
     return model_name.split("/")[-1].translate(_clean_name)
-
-
-def get_cache_dir(model_name: str, model_type: ModelType) -> Path:
-    return Path(settings.cache_folder) / model_type.value / clean_name(model_name)
-
-
-def get_hf_model_name(model_name: str) -> str:
-    return f"immich-app/{clean_name(model_name)}"
 
 
 LOG_LEVELS: dict[str, int] = {

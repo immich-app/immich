@@ -93,7 +93,7 @@
                     ? 'item text-immich-primary underline dark:text-immich-dark-primary'
                     : ''}
                 >
-                  Administration
+                  {$t('administration')}
                 </span>
               </div>
               <div class="block sm:hidden" aria-hidden="true">

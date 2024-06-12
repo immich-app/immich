@@ -42,25 +42,25 @@ export class CliService {
   }
 
   async disablePasswordLogin(): Promise<void> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     config.passwordLogin.enabled = false;
     await this.configCore.updateConfig(config);
   }
 
   async enablePasswordLogin(): Promise<void> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     config.passwordLogin.enabled = true;
     await this.configCore.updateConfig(config);
   }
 
   async disableOAuthLogin(): Promise<void> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     config.oauth.enabled = false;
     await this.configCore.updateConfig(config);
   }
 
   async enableOAuthLogin(): Promise<void> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     config.oauth.enabled = true;
     await this.configCore.updateConfig(config);
   }

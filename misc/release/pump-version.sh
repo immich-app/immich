@@ -66,10 +66,12 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   npm --prefix server run build
   make open-api
   npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
-  npm --prefix web version "$SERVER_PUMP"
-  npm --prefix e2e version "$SERVER_PUMP"
-  npm --prefix web i --package-lock-only
+  # TODO use $SERVER_PUMP once we pass 2.2.x
+  npm --prefix cli version patch
   npm --prefix cli i --package-lock-only
+  npm --prefix web version "$SERVER_PUMP"
+  npm --prefix web i --package-lock-only
+  npm --prefix e2e version "$SERVER_PUMP"
   npm --prefix e2e i --package-lock-only
   poetry --directory machine-learning version "$SERVER_PUMP"
 fi
@@ -82,5 +84,7 @@ sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android
 sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/" mobile/ios/fastlane/Fastfile
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
+
+./misc/release/archive-version.js "$NEXT_SERVER"
 
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"

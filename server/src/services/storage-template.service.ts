@@ -110,7 +110,7 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return JobStatus.SKIPPED;
@@ -140,7 +140,7 @@ export class StorageTemplateService {
 
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
-    const { storageTemplate } = await this.configCore.getConfig();
+    const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');

@@ -31,7 +31,7 @@ function currentUrlWithoutAsset() {
     : $page.url.pathname.replace(/(\/photos.*)$/, '') + $page.url.search;
 }
 
-function currentUrlReplaceAssetId(assetId: string) {
+export function currentUrlReplaceAssetId(assetId: string) {
   const $page = get(page);
   // this contains special casing for the /photos/:assetId photos route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
