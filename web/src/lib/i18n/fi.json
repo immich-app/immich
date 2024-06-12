@@ -27,6 +27,8 @@
     "disable_login": "Poista kirjautuminen käytöstä",
     "disabled": "Ei käytössä",
     "duplicate_detection_job_description": "Suorittaa koneoppimisen, jolla havaitaan samankaltaisia kuvia. Tukeutuu Smart Search:iin",
+    "face_detection": "Kasvojentunnistus",
+    "face_detection_description": "Tunnista sisällön kasvoja käyttäen koneoppimista. Videojen osalta vain pikkukuva tunnistetaan. \"Kaikki\" (uudelleen)prosessoi koko sisällön. \"Puuttuvat\" prosessoi sisällön, jota ei vielä ole käyty läpi. Havaitut kasvot ryhmitellään jo tunnistettujen kanssa, tai lisätään uusina henkilöinä.",
     "image_format_description": "WebP tuottaa pienempiä tiedostoja kuin JPEG, mutta on hitaampi koodata",
     "image_prefer_embedded_preview": "Suosi upotettua esikatselua",
     "image_prefer_embedded_preview_setting_description": "Käytä RAW-kuvissa upotettuja esikatselukuvia aina kun mahdollista. Tämä voi joissain kuvissa tuottaa tarkemmat värit, mutta esikatselun laatu on riippuvainen kamerasta ja kuvassa voi olla enemmän pakkauksesta aiheutuvia häiriöitä.",
