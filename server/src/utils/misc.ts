@@ -136,7 +136,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
             continue;
           }
 
-          if (isSchema(value) && value.type === 'number' && value.format && value.format === 'float') {
+          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
             throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
           }
         }
