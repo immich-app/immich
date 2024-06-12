@@ -47,7 +47,7 @@ export class MapService {
   }
 
   async getMapStyle(theme: 'light' | 'dark') {
-    const { map } = await this.configCore.getConfig();
+    const { map } = await this.configCore.getConfig({ withCache: false });
     const styleUrl = theme === 'dark' ? map.darkStyle : map.lightStyle;
 
     if (styleUrl) {

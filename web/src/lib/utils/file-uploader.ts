@@ -31,8 +31,8 @@ type FileUploadParam = { multiple?: boolean } & (
   | { albumId?: string; assetId?: never }
   | { albumId?: never; assetId?: string }
 );
-export const openFileUploadDialog = async (options?: FileUploadParam) => {
-  const { albumId, multiple, assetId } = options || { multiple: true };
+export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
+  const { albumId, multiple = true, assetId } = options;
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
@@ -40,7 +40,7 @@ export const openFileUploadDialog = async (options?: FileUploadParam) => {
       const fileSelector = document.createElement('input');
 
       fileSelector.type = 'file';
-      fileSelector.multiple = !!multiple;
+      fileSelector.multiple = multiple;
       fileSelector.accept = extensions.join(',');
       fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;

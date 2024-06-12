@@ -17,6 +17,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { t, init } from 'svelte-i18n';
+  import { invalidateAll } from '$app/navigation';
 
   let time = new Date();
 
@@ -77,6 +78,7 @@
       }
 
       await init({ fallbackLocale: defaultLang.code, initialLocale: newLang });
+      await invalidateAll();
     }
   };
 
@@ -143,7 +145,7 @@
       </div>
       <div class="ml-4">
         <SettingSwitch
-          title="Play video thumbnail on hover"
+          title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
           on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}

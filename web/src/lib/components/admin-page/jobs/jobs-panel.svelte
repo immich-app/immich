@@ -43,7 +43,7 @@
     if (dto.force) {
       const isConfirmed = await dialogController.show({
         id: 'confirm-reprocess-all-faces',
-        prompt: 'Are you sure you want to reprocess all faces? This will also clear named people.',
+        prompt: $t('admin.confirm_reprocess_all_faces'),
       });
 
       if (isConfirmed) {
@@ -60,23 +60,23 @@
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
-      title: getJobName(JobName.ThumbnailGeneration),
+      title: $getJobName(JobName.ThumbnailGeneration),
       subtitle: $t('admin.thumbnail_generation_job_description'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
-      title: getJobName(JobName.MetadataExtraction),
+      title: $getJobName(JobName.MetadataExtraction),
       subtitle: $t('admin.metadata_extraction_job_description'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
-      title: getJobName(JobName.Library),
+      title: $getJobName(JobName.Library),
       subtitle: $t('admin.library_tasks_description'),
       allText: $t('all').toUpperCase(),
       missingText: $t('refresh').toUpperCase(),
     },
     [JobName.Sidecar]: {
-      title: getJobName(JobName.Sidecar),
+      title: $getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: $t('admin.sidecar_job_description'),
       allText: $t('sync').toUpperCase(),
@@ -85,46 +85,44 @@
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
-      title: getJobName(JobName.SmartSearch),
+      title: $getJobName(JobName.SmartSearch),
       subtitle: $t('admin.smart_search_job_description'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
-      title: getJobName(JobName.DuplicateDetection),
+      title: $getJobName(JobName.DuplicateDetection),
       subtitle: $t('admin.duplicate_detection_job_description'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
-      title: getJobName(JobName.FaceDetection),
-      subtitle:
-        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
+      title: $getJobName(JobName.FaceDetection),
+      subtitle: $t('admin.face_detection_description'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
       icon: mdiTagFaces,
-      title: getJobName(JobName.FacialRecognition),
-      subtitle:
-        'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
+      title: $getJobName(JobName.FacialRecognition),
+      subtitle: $t('admin.facial_recognition_job_description'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {
       icon: mdiVideo,
-      title: getJobName(JobName.VideoConversion),
+      title: $getJobName(JobName.VideoConversion),
       subtitle: $t('admin.video_conversion_job_description'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
-      title: getJobName(JobName.StorageTemplateMigration),
+      title: $getJobName(JobName.StorageTemplateMigration),
       allowForceCommand: false,
       description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
-      title: getJobName(JobName.Migration),
+      title: $getJobName(JobName.Migration),
       subtitle: $t('admin.migration_job_description'),
       allowForceCommand: false,
     },
@@ -140,14 +138,14 @@
       switch (jobCommand.command) {
         case JobCommand.Empty: {
           notificationController.show({
-            message: `Cleared jobs for: ${title}`,
+            message: $t('admin.cleared_jobs', { values: { job: title } }),
             type: NotificationType.Info,
           });
           break;
         }
       }
     } catch (error) {
-      handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
+      handleError(error, $t('admin.failed_job_command', { values: { command: jobCommand.command, job: title } }));
     }
   }
 </script>

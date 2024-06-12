@@ -58,7 +58,7 @@
             <Badge color="primary">
               <div class="flex flex-row gap-1">
                 <span class="text-sm">
-                  {jobCounts.failed.toLocaleString($locale)} failed
+                  {$t('admin.jobs_failed', { values: { jobCount: jobCounts.failed.toLocaleString($locale) } })}
                 </span>
                 <CircleIconButton
                   color="primary"
@@ -74,7 +74,7 @@
           {#if jobCounts.delayed > 0}
             <Badge color="secondary">
               <span class="text-sm">
-                {jobCounts.delayed.toLocaleString($locale)} delayed
+                {$t('admin.jobs_delayed', { values: { jobCount: jobCounts.delayed.toLocaleString($locale) } })}
               </span>
             </Badge>
           {/if}
@@ -119,12 +119,14 @@
         color="light-gray"
         on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
       >
-        <Icon path={mdiAlertCircle} size="36" /> DISABLED
+        <Icon path={mdiAlertCircle} size="36" />
+        {$t('disabled').toUpperCase()}
       </JobTileButton>
     {:else if !isIdle}
       {#if waitingCount > 0}
         <JobTileButton color="gray" on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}>
-          <Icon path={mdiClose} size="24" /> CLEAR
+          <Icon path={mdiClose} size="24" />
+          {$t('clear').toUpperCase()}
         </JobTileButton>
       {/if}
       {#if queueStatus.isPaused}
@@ -134,14 +136,16 @@
           on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
         >
           <!-- size property is not reactive, so have to use width and height -->
-          <Icon path={mdiFastForward} {size} /> RESUME
+          <Icon path={mdiFastForward} {size} />
+          {$t('resume').toUpperCase()}
         </JobTileButton>
       {:else}
         <JobTileButton
           color="light-gray"
           on:click={() => dispatch('command', { command: JobCommand.Pause, force: false })}
         >
-          <Icon path={mdiPause} size="24" /> PAUSE
+          <Icon path={mdiPause} size="24" />
+          {$t('pause').toUpperCase()}
         </JobTileButton>
       {/if}
     {:else if allowForceCommand}
@@ -161,7 +165,8 @@
         color="light-gray"
         on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
       >
-        <Icon path={mdiPlay} size="48" /> START
+        <Icon path={mdiPlay} size="48" />
+        {$t('start').toUpperCase()}
       </JobTileButton>
     {/if}
   </div>
