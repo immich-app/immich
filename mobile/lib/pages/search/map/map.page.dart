@@ -373,7 +373,7 @@ class _MapWithMarker extends StatelessWidget {
         child: Stack(
           children: [
             style.widgetWhen(
-              onData: (style) => MaplibreMap(
+              onData: (style) => MapLibreMap(
                 initialCameraPosition:
                     const CameraPosition(target: LatLng(0, 0)),
                 styleString: style,
@@ -387,7 +387,7 @@ class _MapWithMarker extends StatelessWidget {
                 tiltGesturesEnabled: false,
                 dragEnabled: false,
                 myLocationEnabled: false,
-                attributionButtonPosition: AttributionButtonPosition.TopRight,
+                attributionButtonPosition: AttributionButtonPosition.topRight,
                 rotateGesturesEnabled: false,
               ),
             ),
