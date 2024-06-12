@@ -45,7 +45,7 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
-    const pipeline = sharp(input, { failOn: 'none' })
+    const pipeline = sharp(input, { failOn: 'none', limitInputPixels: false })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .rotate();
 

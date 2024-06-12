@@ -46,6 +46,7 @@ async function bootstrap() {
         etag: true,
         gzip: true,
         brotli: true,
+        extensions: [],
         setHeaders: (res, pathname) => {
           if (pathname.startsWith(`/_app/immutable`) && res.statusCode === 200) {
             res.setHeader('cache-control', 'public,max-age=31536000,immutable');
