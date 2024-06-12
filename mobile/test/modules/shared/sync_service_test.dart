@@ -78,8 +78,9 @@ void main() {
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c1, isFalse);
       expect(db.assets.countSync(), 5);
@@ -99,8 +100,9 @@ void main() {
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c1, isTrue);
       expect(db.assets.countSync(), 7);
@@ -120,16 +122,18 @@ void main() {
       final bool c1 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c1, isTrue);
       expect(db.assets.countSync(), 8);
       final bool c2 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c2, isFalse);
       expect(db.assets.countSync(), 8);
@@ -137,8 +141,9 @@ void main() {
       final bool c3 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c3, isTrue);
       expect(db.assets.countSync(), 7);
@@ -147,8 +152,9 @@ void main() {
       final bool c4 = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: _failDiff,
-        loadAssets: (u, d) => remoteAssets,
+        loadAssets: (u, d, firstSync) => remoteAssets,
         refreshUsers: () => [owner],
+        firstSync: false,
       );
       expect(c4, isTrue);
       expect(db.assets.countSync(), 9);
@@ -166,8 +172,9 @@ void main() {
       final bool c = await s.syncRemoteAssetsToDb(
         users: [owner],
         getChangedAssets: (user, since) async => (toUpsert, toDelete),
-        loadAssets: (user, date) => throw Exception(),
+        loadAssets: (user, date, firstSync) => throw Exception(),
         refreshUsers: () => throw Exception(),
+        firstSync: false,
       );
       expect(c, isTrue);
       expect(db.assets.countSync(), 6);

@@ -46,14 +46,18 @@ class SyncService {
       List<User> users,
       DateTime since,
     ) getChangedAssets,
-    required FutureOr<List<Asset>?> Function(User user, DateTime until)
-        loadAssets,
+    required FutureOr<List<Asset>?> Function(
+      User user,
+      DateTime until,
+      bool firstSync,
+    ) loadAssets,
     required FutureOr<List<User>?> Function() refreshUsers,
+    required bool firstSync,
   }) =>
       _lock.run(
         () async =>
             await _syncRemoteAssetChanges(users, getChangedAssets) ??
-            await _syncRemoteAssetsFull(refreshUsers, loadAssets),
+            await _syncRemoteAssetsFull(refreshUsers, loadAssets, firstSync),
       );
 
   /// Syncs remote albums to the database
@@ -212,7 +216,9 @@ class SyncService {
   /// Syncs assets by loading and comparing all assets from the server.
   Future<bool> _syncRemoteAssetsFull(
     FutureOr<List<User>?> Function() refreshUsers,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    FutureOr<List<Asset>?> Function(User user, DateTime until, bool firstSync)
+        loadAssets,
+    bool firstSync,
   ) async {
     final serverUsers = await refreshUsers();
     if (serverUsers == null) {
@@ -228,17 +234,19 @@ class SyncService {
         .findAll();
     bool changes = false;
     for (User u in users) {
-      changes |= await _syncRemoteAssetsForUser(u, loadAssets);
+      changes |= await _syncRemoteAssetsForUser(u, loadAssets, firstSync);
     }
     return changes;
   }
 
   Future<bool> _syncRemoteAssetsForUser(
     User user,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    FutureOr<List<Asset>?> Function(User user, DateTime until, bool firstSync)
+        loadAssets,
+    bool firstSync,
   ) async {
     final DateTime now = DateTime.now().toUtc();
-    final List<Asset>? remote = await loadAssets(user, now);
+    final List<Asset>? remote = await loadAssets(user, now, firstSync);
     if (remote == null) {
       return false;
     }

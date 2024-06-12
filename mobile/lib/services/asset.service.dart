@@ -43,7 +43,7 @@ class AssetService {
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
-  Future<bool> refreshRemoteAssets() async {
+  Future<bool> refreshRemoteAssets({bool firstSync = false}) async {
     final syncedUserIds = await _db.eTags.where().idProperty().findAll();
     final List<User> syncedUsers = syncedUserIds.isEmpty
         ? []
@@ -57,6 +57,7 @@ class AssetService {
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
       refreshUsers: _userService.getUsersFromServer,
+      firstSync: firstSync,
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
@@ -97,8 +98,12 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
-    const int chunkSize = 10000;
+  Future<List<Asset>?> _getRemoteAssets(
+    User user,
+    DateTime until,
+    bool firstSync,
+  ) async {
+    int chunkSize = firstSync ? 1000 : 10000;
     try {
       final List<Asset> allAssets = [];
       String? lastId;
@@ -120,6 +125,11 @@ class AssetService {
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length != chunkSize) break;
         lastId = assets.last.id;
+
+        if (firstSync) {
+          // first sync only loads the first chunk
+          break;
+        }
       }
       return allAssets;
     } catch (error, stack) {
