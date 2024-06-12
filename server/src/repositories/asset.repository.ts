@@ -155,8 +155,8 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
+  async getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<string[]> {
+    const assets = await this.repository.find({
       select: { deviceAssetId: true },
       where: {
         deviceAssetId: In(deviceAssetIds),
@@ -165,6 +165,8 @@ export class AssetRepository implements IAssetRepository {
       },
       withDeleted: true,
     });
+
+    return assets.map((asset) => asset.deviceAssetId);
   }
 
   getByUserId(

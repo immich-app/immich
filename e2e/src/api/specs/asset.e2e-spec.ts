@@ -1148,4 +1148,29 @@ describe('/asset', () => {
       expect(video.checksum).toStrictEqual(checksum);
     });
   });
+
+  describe('POST /assets/exist', () => {
+    it('ignores invalid deviceAssetIds', async () => {
+      const response = await utils.checkExistingAssets(user1.accessToken, {
+        deviceId: 'test-assets-exist',
+        deviceAssetIds: ['invalid', 'INVALID'],
+      });
+
+      expect(response.existingIds).toHaveLength(0);
+    });
+
+    it('returns the IDs of existing assets', async () => {
+      await utils.createAsset(user1.accessToken, {
+        deviceId: 'test-assets-exist',
+        deviceAssetId: 'test-asset-0',
+      });
+
+      const response = await utils.checkExistingAssets(user1.accessToken, {
+        deviceId: 'test-assets-exist',
+        deviceAssetIds: ['test-asset-0'],
+      });
+
+      expect(response.existingIds).toEqual(['test-asset-0']);
+    });
+  });
 });
