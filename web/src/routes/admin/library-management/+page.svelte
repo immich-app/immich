@@ -101,7 +101,7 @@
     try {
       const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
       notificationController.show({
-        message: `Created library: ${createdLibrary.name}`,
+        message: $t('admin.library_created', { values: { library: createdLibrary.name } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -139,7 +139,7 @@
     try {
       await deleteLibrary({ id: deletedLibrary.id });
       notificationController.show({
-        message: `Library deleted`,
+        message: $t('admin.library_deleted'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -157,7 +157,7 @@
         await scanLibrary({ id: library.id, scanLibraryDto: {} });
       }
       notificationController.show({
-        message: `Refreshing all libraries`,
+        message: $t('admin.refreshing_all_libraries'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -169,7 +169,7 @@
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
-        message: `Scanning library for new files`,
+        message: $t('admin.scanning_library_for_new_files'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -181,7 +181,7 @@
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
-        message: `Scanning library for changed files`,
+        message: $t('admin.scanning_library_for_changed_files'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -193,7 +193,7 @@
     try {
       await scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
-        message: `Forcing refresh of all library files`,
+        message: $t('admin.forcing_refresh_library_files'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -205,11 +205,11 @@
     try {
       await removeOfflineFiles({ id: libraryId });
       notificationController.show({
-        message: `Removing Offline Files`,
+        message: $t('admin.removing_offline_files'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove offline files');
+      handleError(error, $t('errors.unable_to_remove_offline_files'));
     }
   };
 
@@ -269,7 +269,7 @@
 
     const isConfirmedLibrary = await dialogController.show({
       id: 'delete-library',
-      prompt: `Are you sure you want to delete ${library.name} library?`,
+      prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
     });
 
     if (!isConfirmedLibrary) {
@@ -282,7 +282,7 @@
 
       const isConfirmedLibraryAssetCount = await dialogController.show({
         id: 'delete-library-assets',
-        prompt: `Are you sure you want to delete this library? This will delete all ${deleteAssetCount} contained assets from Immich and cannot be undone. Files will remain on disk.`,
+        prompt: $t('admin.confirm_delete_library_assets', { values: { count: deleteAssetCount } }),
       });
 
       if (!isConfirmedLibraryAssetCount) {
@@ -346,7 +346,11 @@
                 }`}
               >
                 <td class=" px-10 text-sm">
-                  <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
+                  <Icon
+                    path={mdiDatabase}
+                    size="40"
+                    title={$t('admin.external_library_created_at', { values: { date: library.createdAt } })}
+                  />
                 </td>
 
                 <td class=" text-ellipsis px-4 text-sm">{library.name}</td>
@@ -376,7 +380,7 @@
                     title={$t('library_options')}
                     usePortal
                   >
-                    <MenuOption on:click={() => onRenameClicked(index)} text={`Rename`} />
+                    <MenuOption on:click={() => onRenameClicked(index)} text={$t('rename')} />
                     <MenuOption on:click={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
                     <MenuOption on:click={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
                     <MenuOption

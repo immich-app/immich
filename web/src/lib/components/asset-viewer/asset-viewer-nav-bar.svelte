@@ -165,7 +165,7 @@
         color="opaque"
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title={asset.isFavorite ? $t('unfavorite') : $t('favorite')}
+        title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
       />
     {/if}
 
@@ -220,7 +220,7 @@
           <MenuOption
             on:click={() => onMenuClick('toggleArchive')}
             icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
-            text={asset.isArchived ? $t('unarchive') : $t('archive')}
+            text={asset.isArchived ? $t('unarchive') : $t('to_archive')}
           />
           <MenuOption
             icon={mdiUpload}

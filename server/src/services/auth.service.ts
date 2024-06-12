@@ -77,7 +77,7 @@ export class AuthService {
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails) {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
@@ -174,7 +174,7 @@ export class AuthService {
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
@@ -190,7 +190,7 @@ export class AuthService {
   }
 
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     const profile = await this.getOAuthProfile(config, dto.url);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
@@ -242,7 +242,7 @@ export class AuthService {
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
@@ -264,7 +264,7 @@ export class AuthService {
       return LOGIN_URL;
     }
 
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       return LOGIN_URL;
     }

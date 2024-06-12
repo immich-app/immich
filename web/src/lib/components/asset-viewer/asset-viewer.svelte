@@ -732,7 +732,8 @@
                   ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
-                onClick={() => {
+                onClick={(stackedAsset, event) => {
+                  event.preventDefault();
                   asset = stackedAsset;
                   preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
                 }}
@@ -740,7 +741,6 @@
                 readonly
                 thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
                 showStackedIcon={false}
-                isStackSlideshow={true}
               />
 
               {#if stackedAsset.id == asset.id}

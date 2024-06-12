@@ -48,7 +48,7 @@
       allUsers = allUsers.filter((user) => user.id !== userId);
       notificationController.show({
         type: NotificationType.Info,
-        message: `User ${user.email} has been successfully removed.`,
+        message: $t('admin.user_successfully_removed', { values: { email: user.email } }),
       });
     }
   };
@@ -164,7 +164,7 @@
         >
           <svelte:fragment slot="prompt">
             <div class="flex flex-col gap-4">
-              <p>The user's password has been reset:</p>
+              <p>{$t('admin.user_password_has_been_reset')}</p>
 
               <div class="flex justify-center gap-2">
                 <code
@@ -179,10 +179,7 @@
                 </LinkButton>
               </div>
 
-              <p>
-                Please provide the temporary password to the user and inform them they will need to change the password
-                at their next login.
-              </p>
+              <p>{$t('admin.user_password_reset_description')}</p>
             </div>
           </svelte:fragment>
         </ConfirmDialog>

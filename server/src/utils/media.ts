@@ -842,7 +842,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9];
+    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
   }
 
   useCQP() {

@@ -181,7 +181,7 @@
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
       <Icon path={mdiAlert} class="text-yellow-400" size={18} />
       <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-        Config is currently set by a config file
+        {$t('admin.config_set_by_file')}
       </h2>
     </div>
   {/if}
@@ -191,19 +191,19 @@
       <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
-          Copy to Clipboard
+          {$t('copy_to_clipboard')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => downloadConfig()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
-          Export as JSON
+          {$t('export_as_json')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
-          Import from JSON
+          {$t('import_from_json')}
         </div>
       </LinkButton>
     </div>

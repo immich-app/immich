@@ -97,7 +97,7 @@
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {
-    if (window.getSelection()?.type === $t('range')) {
+    if (window.getSelection()?.type === 'Range') {
       return;
     }
     event.preventDefault();
@@ -112,7 +112,7 @@
   ]}
 />
 {#if imageError}
-  <div class="h-full flex items-center justify-center">Error loading image</div>
+  <div class="h-full flex items-center justify-center">{$t('error_loading_image')}</div>
 {/if}
 <div bind:this={element} class="relative h-full select-none">
   <img

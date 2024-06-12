@@ -107,7 +107,7 @@
       <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteForeverOutline} size="18" />
-          Empty trash
+          {$t('empty_trash')}
         </div>
       </LinkButton>
     </div>

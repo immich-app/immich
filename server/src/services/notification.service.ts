@@ -68,7 +68,7 @@ export class NotificationService {
       throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
     }
 
-    const { server } = await this.configCore.getConfig();
+    const { server } = await this.configCore.getConfig({ withCache: false });
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
@@ -94,7 +94,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const { server } = await this.configCore.getConfig();
+    const { server } = await this.configCore.getConfig({ withCache: true });
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
@@ -137,7 +137,7 @@ export class NotificationService {
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig();
+    const { server } = await this.configCore.getConfig({ withCache: false });
     const { html, text } = this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
@@ -179,10 +179,15 @@ export class NotificationService {
     const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig();
+    const { server } = await this.configCore.getConfig({ withCache: false });
 
     for (const recipient of recipients) {
-      const { emailNotifications } = getPreferences(recipient);
+      const user = await this.userRepository.get(recipient.id, { withDeleted: false });
+      if (!user) {
+        continue;
+      }
+
+      const { emailNotifications } = getPreferences(user);
 
       if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
         continue;
@@ -215,7 +220,7 @@ export class NotificationService {
   }
 
   async handleSendEmail(data: IEmailJob): Promise<JobStatus> {
-    const { notifications } = await this.configCore.getConfig();
+    const { notifications } = await this.configCore.getConfig({ withCache: false });
     if (!notifications.smtp.enabled) {
       return JobStatus.SKIPPED;
     }
