@@ -1,22 +1,18 @@
 import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
+import type { SharedLinkResponseDto } from '@immich/sdk';
 import { render } from '@testing-library/svelte';
-import { init } from 'svelte-i18n';
+import { albumFactory } from '@test-data';
 
 vi.mock('$lib/utils');
 
 describe('ShareCover component', () => {
-  beforeAll(async () => {
-    await init({ fallbackLocale: 'dev' });
-  });
-
   it('renders an image when the shared link is an album', () => {
     const component = render(ShareCover, {
       link: {
-        album: {
+        album: albumFactory.build({
           albumName: '123',
-        } as AlbumResponseDto,
+        }),
       } as SharedLinkResponseDto,
       preload: false,
       class: 'text',

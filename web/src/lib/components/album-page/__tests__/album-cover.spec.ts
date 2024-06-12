@@ -1,23 +1,18 @@
 import AlbumCover from '$lib/components/album-page/album-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import type { AlbumResponseDto } from '@immich/sdk';
+import { albumFactory } from '@test-data';
 import { render } from '@testing-library/svelte';
-import { init } from 'svelte-i18n';
 
 vi.mock('$lib/utils');
 
 describe('AlbumCover component', () => {
-  beforeAll(async () => {
-    await init({ fallbackLocale: 'dev' });
-  });
-
   it('renders an image when the album has a thumbnail', () => {
     vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
     const component = render(AlbumCover, {
-      album: {
+      album: albumFactory.build({
         albumName: 'someName',
         albumThumbnailAssetId: '123',
-      } as AlbumResponseDto,
+      }),
       preload: false,
       class: 'text',
     });
@@ -31,10 +26,10 @@ describe('AlbumCover component', () => {
 
   it('renders an image when the album has no thumbnail', () => {
     const component = render(AlbumCover, {
-      album: {
+      album: albumFactory.build({
         albumName: '',
         albumThumbnailAssetId: null,
-      } as AlbumResponseDto,
+      }),
       preload: true,
       class: 'asdf',
     });
