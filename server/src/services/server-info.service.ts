@@ -55,7 +55,8 @@ export class ServerInfoService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage) + 0.001; // Add a small value to avoid Dart's OpenAPI generator bug
+
     return serverInfo;
   }
 
