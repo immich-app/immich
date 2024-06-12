@@ -74,9 +74,9 @@ class FacialRecognitionConfig {
 
       return FacialRecognitionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        maxDistance: mapValueOfType<double>(json, r'maxDistance')!,
+        maxDistance: (mapValueOfType<num>(json, r'maxDistance')!).toDouble(),
         minFaces: mapValueOfType<int>(json, r'minFaces')!,
-        minScore: mapValueOfType<double>(json, r'minScore')!,
+        minScore: (mapValueOfType<num>(json, r'minScore')!).toDouble(),
         modelName: mapValueOfType<String>(json, r'modelName')!,
       );
     }
