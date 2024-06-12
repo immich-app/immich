@@ -79,8 +79,8 @@
   const handleRemovePartner = async (partner: PartnerResponseDto) => {
     const isConfirmed = await dialogController.show({
       id: 'remove-partner',
-      title: 'Stop sharing your photos?',
-      prompt: `${partner.name} will no longer be able to access your photos.`,
+      title: $t('stop_photo_sharing'),
+      prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
     });
 
     if (!isConfirmed) {
@@ -115,7 +115,7 @@
       partner.inTimeline = inTimeline;
       partners = partners;
     } catch (error) {
-      handleError(error, 'Unable to update timeline display status');
+      handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
   };
 </script>
@@ -142,7 +142,7 @@
               on:click={() => handleRemovePartner(partner.user)}
               icon={mdiClose}
               size={'16'}
-              title="Stop sharing your photos with this user"
+              title={$t('stop_sharing_photos_with_user')}
             />
           {/if}
         </div>
@@ -151,14 +151,18 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.name.toUpperCase()}</p>
-            <p class="text-md">{partner.user.name} can access</p>
+            <p class="text-xs font-medium my-4">
+              {$t('shared_with_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+            </p>
+            <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
+                <Icon path={mdiCheck} />
+                {$t('partner_can_access_assets')}
               </li>
               <li class="flex gap-2 place-items-center py-1">
-                <Icon path={mdiCheck} /> The location where your photos were taken
+                <Icon path={mdiCheck} />
+                {$t('partner_can_access_location')}
               </li>
             </ul>
           {/if}
@@ -166,7 +170,9 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
+            <p class="text-xs font-medium my-4">
+              {$t('shared_from_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+            </p>
             <SettingSwitch
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}

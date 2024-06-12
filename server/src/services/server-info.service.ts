@@ -65,7 +65,7 @@ export class ServerInfoService {
 
   async getFeatures(): Promise<ServerFeaturesDto> {
     const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
-      await this.configCore.getConfig();
+      await this.configCore.getConfig({ withCache: false });
 
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
@@ -85,12 +85,12 @@ export class ServerInfoService {
   }
 
   async getTheme() {
-    const { theme } = await this.configCore.getConfig();
+    const { theme } = await this.configCore.getConfig({ withCache: false });
     return theme;
   }
 
   async getConfig(): Promise<ServerConfigDto> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
 

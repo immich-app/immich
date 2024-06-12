@@ -76,13 +76,10 @@
       </div>
 
       {#if forceDelete}
-        <p class="text-immich-error">
-          WARNING: This will immediately remove the user and all assets. This cannot be undone and the files cannot be
-          recovered.
-        </p>
+        <p class="text-immich-error">{$t('admin.force_delete_user_warning')}</p>
 
         <p class="immich-form-label text-sm" id="confirm-user-desc">
-          To confirm, type "{user.email}" below
+          {$t('admin.confirm_email_below', { values: { email: user.email } })}
         </p>
 
         <input

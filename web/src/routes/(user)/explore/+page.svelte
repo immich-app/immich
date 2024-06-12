@@ -1,10 +1,9 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import type { SearchExploreResponseDto } from '@immich/sdk';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import type { PageData } from './$types';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { t } from 'svelte-i18n';
@@ -90,7 +89,11 @@
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
-              <Thumbnail thumbnailSize={156} asset={item.data} readonly />
+              <img
+                src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                alt={item.value}
+                class="object-cover w-[156px] h-[156px]"
+              />
             </div>
             <span
               class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"

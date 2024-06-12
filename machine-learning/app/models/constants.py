@@ -1,4 +1,5 @@
 from app.config import clean_name
+from app.schemas import ModelSource
 
 _OPENCLIP_MODELS = {
     "RN50__openai",
@@ -54,13 +55,16 @@ _INSIGHTFACE_MODELS = {
 SUPPORTED_PROVIDERS = ["CUDAExecutionProvider", "OpenVINOExecutionProvider", "CPUExecutionProvider"]
 
 
-def is_openclip(model_name: str) -> bool:
-    return clean_name(model_name) in _OPENCLIP_MODELS
+def get_model_source(model_name: str) -> ModelSource | None:
+    cleaned_name = clean_name(model_name)
 
+    if cleaned_name in _INSIGHTFACE_MODELS:
+        return ModelSource.INSIGHTFACE
 
-def is_mclip(model_name: str) -> bool:
-    return clean_name(model_name) in _MCLIP_MODELS
+    if cleaned_name in _MCLIP_MODELS:
+        return ModelSource.MCLIP
 
+    if cleaned_name in _OPENCLIP_MODELS:
+        return ModelSource.OPENCLIP
 
-def is_insightface(model_name: str) -> bool:
-    return clean_name(model_name) in _INSIGHTFACE_MODELS
+    return None

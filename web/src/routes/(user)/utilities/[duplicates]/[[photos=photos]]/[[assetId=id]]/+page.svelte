@@ -9,25 +9,30 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { s } from '$lib/utils';
-  import { deleteAssets, getConfig, updateAssets } from '@immich/sdk';
+  import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     try {
-      const { trash } = await getConfig();
-      // TODO - Create showConfirmDialog controller to show native confirm.
-      if (
-        !trash.enabled &&
-        trashIds.length > 0 &&
-        !confirm('Are you sure you want to permanently delete these duplicates?')
-      ) {
-        return;
+      if (!$featureFlags.trash && trashIds.length > 0) {
+        const isConfirmed = await dialogController.show({
+          title: 'Confirm',
+          prompt: 'Are you sure you want to permanently delete these duplicates?',
+          confirmText: 'Yes',
+          cancelText: 'No',
+        });
+
+        if (!isConfirmed) {
+          return;
+        }
       }
 
       await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-      await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !trash.enabled } });
+      await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
 
       data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
@@ -40,7 +45,7 @@
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, $t('unable_to_resolve_duplicate'));
+      handleError(error, $t('errors.unable_to_resolve_duplicate'));
     }
   };
 </script>
@@ -60,7 +65,7 @@
       {/key}
     {:else}
       <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
-        No duplicates were found.
+        {$t('no_duplicates_found')}
       </p>
     {/if}
   </div>

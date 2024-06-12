@@ -56,7 +56,7 @@ export class VersionService {
         return JobStatus.SKIPPED;
       }
 
-      const { newVersionCheck } = await this.configCore.getConfig();
+      const { newVersionCheck } = await this.configCore.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.SKIPPED;
       }

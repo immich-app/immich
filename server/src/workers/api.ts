@@ -9,14 +9,16 @@ import { envName, excludePaths, isDev, serverVersion, WEB_ROOT } from 'src/const
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
-import { otelSDK } from 'src/utils/instrumentation';
+import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
 const host = process.env.HOST;
 
 async function bootstrap() {
   process.title = 'immich-api';
-  otelSDK.start();
+  const otelPort = Number.parseInt(process.env.IMMICH_API_METRICS_PORT ?? '8081');
+
+  otelStart(otelPort);
 
   const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
@@ -44,6 +46,7 @@ async function bootstrap() {
         etag: true,
         gzip: true,
         brotli: true,
+        extensions: [],
         setHeaders: (res, pathname) => {
           if (pathname.startsWith(`/_app/immutable`) && res.statusCode === 200) {
             res.setHeader('cache-control', 'public,max-age=31536000,immutable');

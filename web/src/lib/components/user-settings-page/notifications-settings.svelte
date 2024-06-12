@@ -10,6 +10,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
   import Button from '../elements/buttons/button.svelte';
+  import { t } from 'svelte-i18n';
 
   let emailNotificationsEnabled = $preferences?.emailNotifications?.enabled ?? true;
   let albumInviteNotificationEnabled = $preferences?.emailNotifications?.albumInvite ?? true;
@@ -44,30 +45,30 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
-            title="Enable"
-            subtitle="Toggle email notifications"
+            title={$t('enable')}
+            subtitle={$t('notification_toggle_setting_description')}
             bind:checked={emailNotificationsEnabled}
           />
         </div>
         <div class="ml-4">
           <SettingSwitch
-            title="Album Added"
-            subtitle="Receive an email notification when you are added to a shared album"
+            title={$t('album_added')}
+            subtitle={$t('album_added_notification_setting_description')}
             bind:checked={albumInviteNotificationEnabled}
             disabled={!emailNotificationsEnabled}
           />
         </div>
         <div class="ml-4">
           <SettingSwitch
-            title="Album Updated"
-            subtitle="Receive an email notification when a shared album has new assets"
+            title={$t('album_updated')}
+            subtitle={$t('album_updated_setting_description')}
             bind:checked={albumUpdateNotificationEnabled}
             disabled={!emailNotificationsEnabled}
           />
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>Save</Button>
+          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

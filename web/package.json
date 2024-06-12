@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.105.1",
+  "version": "1.106.3",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -48,6 +48,7 @@
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-sort-json": "^4.0.0",
     "prettier-plugin-svelte": "^3.2.1",
     "rollup-plugin-visualizer": "^5.12.0",
     "svelte": "^4.2.12",
@@ -74,8 +75,8 @@
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
     "socket.io-client": "^4.7.4",
-    "svelte-local-storage-store": "^0.6.4",
     "svelte-i18n": "^4.0.0",
+    "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.9.0",
     "thumbhash": "^0.1.1"
   },

@@ -364,7 +364,7 @@
       await deleteAlbum({ id: album.id });
       await goto(backUrl);
     } catch (error) {
-      handleError(error, $t('unable_to_delete_album'));
+      handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
       viewMode = ViewMode.VIEW;
     }
@@ -510,7 +510,7 @@
                 disabled={album.assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
-                Share
+                {$t('share')}
               </Button>
             {/if}
           </svelte:fragment>

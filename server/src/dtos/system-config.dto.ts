@@ -30,7 +30,7 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 
@@ -270,10 +270,10 @@ class SystemConfigMachineLearningDto {
   @IsObject()
   duplicateDetection!: DuplicateDetectionConfig;
 
-  @Type(() => RecognitionConfig)
+  @Type(() => FacialRecognitionConfig)
   @ValidateNested()
   @IsObject()
-  facialRecognition!: RecognitionConfig;
+  facialRecognition!: FacialRecognitionConfig;
 }
 
 enum MapTheme {
@@ -394,7 +394,7 @@ class SystemConfigSmtpTransportDto {
   password!: string;
 }
 
-class SystemConfigSmtpDto {
+export class SystemConfigSmtpDto {
   @IsBoolean()
   enabled!: boolean;
 

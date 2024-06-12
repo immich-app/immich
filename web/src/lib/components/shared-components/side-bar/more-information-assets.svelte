@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store.js';
-  import { s } from '$lib/utils.js';
   import { getAssetStatistics } from '@immich/sdk';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { t } from 'svelte-i18n';
 
   export let assetStats: NonNullable<Parameters<typeof getAssetStatistics>[0]>;
 </script>
@@ -11,7 +10,7 @@
   <LoadingSpinner />
 {:then data}
   <div>
-    <p>{data.videos.toLocaleString($locale)} Video{s(data.videos)}</p>
-    <p>{data.images.toLocaleString($locale)} Photo{s(data.images)}</p>
+    <p>{$t('videos_count', { values: { count: data.videos } })}</p>
+    <p>{$t('photos_count', { values: { count: data.images } })}</p>
   </div>
 {/await}
