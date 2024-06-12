@@ -127,22 +127,23 @@
     {/each}
   </div>
 
-  <div class="flex my-4 border-transparent items-end justify-between w-full h-[85px]">
+  <div class="flex mt-10 mb-4 pr-6 w-full place-content-end gap-6">
     <!-- MARK ALL BUTTONS -->
-    <div class="flex p-4 h-[80px] text-xs text-immich-dark-gray">
+    <div class="flex text-xs text-black">
       <button
         type="button"
-        class="px-4 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-green-500 dark:hover:bg-green-400 bg-green-400 hover:bg-green-300"
+        class="px-4 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-green-500 dark:hover:bg-green-400 bg-immich-primary/25 hover:bg-immich-primary/50"
         on:click={onSelectAll}><Icon path={mdiCheck} size="20" />Select keep all</button
       >
       <button
         type="button"
-        class="px-4 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-red-700 dark:hover:bg-red-500 bg-red-400 hover:bg-red-300 dark:text-white"
+        class="px-4 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-red-700 dark:hover:bg-red-500 bg-immich-primary hover:bg-immich-primary/80 text-white"
         on:click={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />Select trash all</button
       >
     </div>
+
     <!-- CONFIRM BUTTONS -->
-    <div class="flex gap-4 p-4 h-[80px]">
+    <div class="flex gap-4">
       {#if trashCount === 0}
         <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
           ><Icon path={mdiCheck} size="20" />Keep All
