@@ -33,7 +33,7 @@
     const isConfirmed = await dialogController.show({
       id: 'delete-shared-link',
       title: $t('delete_shared_link'),
-      prompt: $t('are_you_sure_you_want_to_delete_this_shared_link'),
+      prompt: $t('confirm_delete_shared_link'),
       confirmText: $t('delete'),
     });
 
