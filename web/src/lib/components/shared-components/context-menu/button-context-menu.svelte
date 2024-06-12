@@ -6,7 +6,6 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
@@ -69,6 +68,14 @@
     closeDropdown();
   };
 
+  const onFocusOut = (event: FocusEvent) => {
+    const related = event.relatedTarget as HTMLElement | null;
+    if (related && menuContainer.contains(related)) {
+      return;
+    }
+    closeDropdown();
+  };
+
   const closeDropdown = () => {
     selectedId = undefined;
     showContextMenu = false;
@@ -81,7 +88,7 @@
   });
 </script>
 
-<div use:clickOutside={{ onOutclick: closeDropdown }} use:focusOutside={{ onFocusOut: closeDropdown }}>
+<div use:focusOutside={{ onFocusOut }}>
   <div
     use:shortcuts={[
       {
@@ -125,6 +132,7 @@
         bind:menuElement={menuContainer}
         id={menuId}
         isVisible={showContextMenu}
+        onClose={closeDropdown}
       >
         <slot />
       </ContextMenu>
@@ -138,6 +146,7 @@
       bind:menuElement={menuContainer}
       id={menuId}
       isVisible={showContextMenu}
+      onClose={closeDropdown}
     >
       <slot />
     </ContextMenu>

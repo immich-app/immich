@@ -1,5 +1,5 @@
 interface Options {
-  onFocusOut?: () => void;
+  onFocusOut?: (event: FocusEvent) => void;
 }
 
 export function focusOutside(node: HTMLElement, options: Options = {}) {
@@ -7,7 +7,7 @@ export function focusOutside(node: HTMLElement, options: Options = {}) {
 
   const handleFocusOut = (event: FocusEvent) => {
     if (onFocusOut && event.relatedTarget instanceof Node && !node.contains(event.relatedTarget as Node)) {
-      onFocusOut();
+      onFocusOut(event);
     }
   };
 

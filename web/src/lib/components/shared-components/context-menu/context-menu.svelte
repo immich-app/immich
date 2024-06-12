@@ -39,7 +39,7 @@
   style:left="{left}px"
   style:top="{top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
-  use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
+  use:clickOutside={{ onOutclick: onClose }}
 >
   <ul
     {id}
