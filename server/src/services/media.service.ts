@@ -149,7 +149,7 @@ export class MediaService {
   }
 
   async handleAssetMigration({ id }: IEntityJob): Promise<JobStatus> {
-    const { image } = await this.configCore.getConfig();
+    const { image } = await this.configCore.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -164,7 +164,7 @@ export class MediaService {
 
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
     const [{ image }, [asset]] = await Promise.all([
-      this.configCore.getConfig(),
+      this.configCore.getConfig({ withCache: true }),
       this.assetRepository.getByIds([id], { exifInfo: true }),
     ]);
     if (!asset) {
@@ -185,7 +185,7 @@ export class MediaService {
   }
 
   private async generateThumbnail(asset: AssetEntity, type: GeneratedImageType, format: ImageFormat) {
-    const { image, ffmpeg } = await this.configCore.getConfig();
+    const { image, ffmpeg } = await this.configCore.getConfig({ withCache: true });
     const size = type === AssetPathType.PREVIEW ? image.previewSize : image.thumbnailSize;
     const path = StorageCore.getImagePath(asset, type, format);
     this.storageCore.ensureFolders(path);
@@ -237,7 +237,7 @@ export class MediaService {
 
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
     const [{ image }, [asset]] = await Promise.all([
-      this.configCore.getConfig(),
+      this.configCore.getConfig({ withCache: true }),
       this.assetRepository.getByIds([id], { exifInfo: true }),
     ]);
     if (!asset) {
@@ -318,7 +318,7 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
-    const { ffmpeg } = await this.configCore.getConfig();
+    const { ffmpeg } = await this.configCore.getConfig({ withCache: true });
     const target = this.getTranscodeTarget(ffmpeg, mainVideoStream, mainAudioStream);
     if (target === TranscodeTarget.NONE) {
       if (asset.encodedVideoPath) {
