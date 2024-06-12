@@ -39,6 +39,16 @@
     selectedAssetIds = selectedAssetIds;
   };
 
+  const onSelectNone = () => {
+    selectedAssetIds.clear();
+    selectedAssetIds = selectedAssetIds;
+  };
+
+  const onSelectAll = () => {
+    selectedAssetIds = new Set(duplicate.assets.map((asset) => asset.id));
+    selectedAssetIds = selectedAssetIds;
+  };
+
   const handleResolve = () => {
     const trashIds = duplicate.assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = duplicate.assets.map((asset) => asset.id);
@@ -117,18 +127,29 @@
     {/each}
   </div>
 
-  <!-- CONFIRM BUTTONS -->
-  <div class="flex gap-4 my-4 border-transparent w-full justify-end p-4 h-[85px]">
-    {#if trashCount === 0}
-      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
-        ><Icon path={mdiCheck} size="20" />Keep All
-      </Button>
-    {:else}
-      <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
-        ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
-          ? $t('trash_all')
-          : `Trash ${trashCount}`}
-      </Button>
-    {/if}
+  <div class="flex my-4 border-transparent items-end justify-between w-full h-[85px]">
+    <!-- MARK ALL BUTTONS -->
+    <div class="flex flex-col gap-1 p-4 h-[100px]">
+      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={onSelectAll}
+        ><Icon path={mdiCheck} size="20" />Mark All for Keep</Button
+      >
+      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={onSelectNone}
+        ><Icon path={mdiTrashCanOutline} size="20" />Mark All for Trash</Button
+      >
+    </div>
+    <!-- CONFIRM BUTTONS -->
+    <div class="flex gap-4 p-4 h-[85px]">
+      {#if trashCount === 0}
+        <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
+          ><Icon path={mdiCheck} size="20" />Keep All
+        </Button>
+      {:else}
+        <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
+          ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
+            ? $t('trash_all')
+            : `Trash ${trashCount}`}
+        </Button>
+      {/if}
+    </div>
   </div>
 </div>
