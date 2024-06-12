@@ -8,6 +8,7 @@
   import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
   import { mdiCog } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -34,7 +35,7 @@
       <LinkButton>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCog} size="18" />
-          Manage Concurrency
+          {$t('admin.manage_concurrency')}
         </div>
       </LinkButton>
     </a>
