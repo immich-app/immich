@@ -41,10 +41,10 @@ class MapThumbnail extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final offsettedCentre = LatLng(centre.latitude + 0.002, centre.longitude);
-    final controller = useRef<MaplibreMapController?>(null);
+    final controller = useRef<MapLibreMapController?>(null);
     final position = useValueNotifier<Point<num>?>(null);
 
-    Future<void> onMapCreated(MaplibreMapController mapController) async {
+    Future<void> onMapCreated(MapLibreMapController mapController) async {
       controller.value = mapController;
       if (assetMarkerRemoteId != null) {
         // The iOS impl returns wrong toScreenLocation without the delay
@@ -73,7 +73,7 @@ class MapThumbnail extends HookConsumerWidget {
             alignment: Alignment.center,
             children: [
               style.widgetWhen(
-                onData: (style) => MaplibreMap(
+                onData: (style) => MapLibreMap(
                   initialCameraPosition:
                       CameraPosition(target: offsettedCentre, zoom: zoom),
                   styleString: style,

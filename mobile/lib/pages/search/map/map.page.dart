@@ -35,7 +35,7 @@ class MapPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapController = useRef<MaplibreMapController?>(null);
+    final mapController = useRef<MapLibreMapController?>(null);
     final markers = useRef<List<MapMarker>>([]);
     final markersInBounds = useRef<List<MapMarker>>([]);
     final bottomSheetStreamController = useStreamController<MapEvent>();
@@ -155,7 +155,7 @@ class MapPage extends HookConsumerWidget {
       }
     }
 
-    void onMapCreated(MaplibreMapController controller) async {
+    void onMapCreated(MapLibreMapController controller) async {
       mapController.value = controller;
       controller.addListener(() {
         if (controller.isCameraMoving && selectedMarker.value != null) {

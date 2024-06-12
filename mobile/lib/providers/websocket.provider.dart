@@ -203,6 +203,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         PendingChange(now.millisecondsSinceEpoch.toString(), action, value),
       ],
     );
+
     _debounce.run(handlePendingChanges);
   }
 
@@ -210,6 +211,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     final deleteChanges = state.pendingChanges
         .where((c) => c.action == PendingAction.assetDelete)
         .toList();
+
     if (deleteChanges.isNotEmpty) {
       List<String> remoteIds =
           deleteChanges.map((a) => a.value.toString()).toList();
