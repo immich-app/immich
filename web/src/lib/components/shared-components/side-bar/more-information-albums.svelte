@@ -19,6 +19,6 @@
   <LoadingSpinner />
 {:then data}
   <div>
-    <p>{$t('albums_count', { values: { count: data[albumCountType] }})}</p>
+    <p>{$t('albums_count', { values: { count: data[albumCountType] } })}</p>
   </div>
 {/await}
