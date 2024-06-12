@@ -885,7 +885,7 @@
   "video_hover_setting": "Play video thumbnail on hover",
   "video_hover_setting_description": "Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon.",
   "videos": "Videos",
-  "videos_count": "{count, plural, one {{count, number} Video} other {{count, number} Videos}}",
+  "videos_count": "{count, plural, one {# Video} other {# Videos}}",
   "view_all": "View All",
   "view_all_users": "View all users",
   "view_links": "View links",
