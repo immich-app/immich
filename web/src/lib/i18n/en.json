@@ -41,8 +41,6 @@
     "external_library_management": "External Library Management",
     "face_detection": "Face Detection",
     "face_detection_description": "Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. \"All\" (re-)processes all assets. \"Missing\" queues assets that haven't been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.",
-    "face_detection_job_description": "Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. \"All\" (re-)processes all assets. \"Missing\" queues assets that haven't been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.",
-    "facial_recognition_job_description": "Group detected faces into people. This step runs after Face Detection is complete. \"All\" (re-)clusters all faces. \"Missing\" queues faces that don't have a person assigned.",
     "facial_recognition_job_description": "Group detected faces into people. This step runs after Face Detection is complete. \"All\" (re-)clusters all faces. \"Missing\" queues faces that don't have a person assigned.",
     "force_delete_user_warning": "WARNING: This will immediately remove the user and all assets. This cannot be undone and the files cannot be recovered.",
     "forcing_refresh_library_files": "Forcing refresh of all library files",
