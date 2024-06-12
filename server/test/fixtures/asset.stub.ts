@@ -436,6 +436,8 @@ export const assetStub = {
     sidecarPath: null,
     exifInfo: {
       fileSizeInByte: 100_000,
+      exifImageHeight: 2160,
+      exifImageWidth: 3840,
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
