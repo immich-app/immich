@@ -86,7 +86,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
     );
   }
 
-  void togglePlay({bool fromBeginning = false}) {
+  void togglePlay() {
     state = VideoPlaybackControls(
       position: state.position,
       mute: state.mute,
