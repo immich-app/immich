@@ -33,7 +33,7 @@
       const data = await createApiKey({ apiKeyCreateDto: detail });
       secret = data.secret;
     } catch (error) {
-      handleError(error, 'Unable to create a new API Key');
+      handleError(error, $t('errors.unable_to_create_api_key'));
     } finally {
       await refreshKeys();
       newKey = null;
@@ -48,11 +48,11 @@
     try {
       await updateApiKey({ id: editKey.id, apiKeyUpdateDto: { name: detail.name } });
       notificationController.show({
-        message: `Saved API Key`,
+        message: $t('saved_api_key'),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save API Key');
+      handleError(error, $t('errors.unable_to_save_api_key'));
     } finally {
       await refreshKeys();
       editKey = null;
@@ -62,7 +62,7 @@
   const handleDelete = async (key: ApiKeyResponseDto) => {
     const isConfirmed = await dialogController.show({
       id: 'delete-api-key',
-      prompt: 'Are you sure you want to delete this API key?',
+      prompt: $t('delete_api_key_prompt'),
     });
 
     if (!isConfirmed) {
@@ -72,11 +72,11 @@
     try {
       await deleteApiKey({ id: key.id });
       notificationController.show({
-        message: `Removed API Key: ${key.name}`,
+        message: $t('removed_api_key', { values: { name: key.name } }),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove API Key');
+      handleError(error, $t('errors.unable_to_remove_api_key'));
     } finally {
       await refreshKeys();
     }

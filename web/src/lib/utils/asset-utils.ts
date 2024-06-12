@@ -14,6 +14,7 @@ import {
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
+  updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
@@ -23,6 +24,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { t as translate } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
@@ -261,6 +263,11 @@ const supportedImageExtensions = new Set(['apng', 'avif', 'gif', 'jpg', 'jpeg', 
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
+  // originalPath is undefined when public shared link has metadata option turned off
+  if (!asset.originalPath) {
+    return false;
+  }
+
   const imgExtension = getFilenameExtension(asset.originalPath);
 
   return supportedImageExtensions.has(imgExtension);
@@ -395,6 +402,53 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     handleError(error, 'Error selecting all assets');
     isSelectingAllAssets.set(false);
   }
+};
+
+export const toggleArchive = async (asset: AssetResponseDto) => {
+  try {
+    const data = await updateAsset({
+      id: asset.id,
+      updateAssetDto: {
+        isArchived: !asset.isArchived,
+      },
+    });
+
+    asset.isArchived = data.isArchived;
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: asset.isArchived ? `Added to archive` : `Removed from archive`,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${asset.isArchived ? `remove asset from` : `add asset to`} archive`);
+  }
+
+  return asset;
+};
+
+export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
+  const isArchived = archive;
+  const ids = assets.map(({ id }) => id);
+
+  try {
+    if (ids.length > 0) {
+      await updateAssets({ assetBulkUpdateDto: { ids, isArchived } });
+    }
+
+    for (const asset of assets) {
+      asset.isArchived = isArchived;
+    }
+
+    const t = get(translate);
+    notificationController.show({
+      message: `${isArchived ? t('archived') : t('unarchived')} ${ids.length}`,
+      type: NotificationType.Info,
+    });
+  } catch (error) {
+    handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+  }
+
+  return ids;
 };
 
 export const delay = async (ms: number) => {

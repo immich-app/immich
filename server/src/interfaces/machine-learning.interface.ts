@@ -1,14 +1,4 @@
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
-
 export const IMachineLearningRepository = 'IMachineLearningRepository';
-
-export interface VisionModelInput {
-  imagePath: string;
-}
-
-export interface TextModelInput {
-  text: string;
-}
 
 export interface BoundingBox {
   x1: number;
@@ -17,26 +7,51 @@ export interface BoundingBox {
   y2: number;
 }
 
-export interface DetectFaceResult {
-  imageWidth: number;
-  imageHeight: number;
-  boundingBox: BoundingBox;
-  score: number;
-  embedding: number[];
+export enum ModelTask {
+  FACIAL_RECOGNITION = 'facial-recognition',
+  SEARCH = 'clip',
 }
 
 export enum ModelType {
-  FACIAL_RECOGNITION = 'facial-recognition',
-  CLIP = 'clip',
+  DETECTION = 'detection',
+  PIPELINE = 'pipeline',
+  RECOGNITION = 'recognition',
+  TEXTUAL = 'textual',
+  VISUAL = 'visual',
 }
 
-export enum CLIPMode {
-  VISION = 'vision',
-  TEXT = 'text',
+export type ModelPayload = { imagePath: string } | { text: string };
+
+type ModelOptions = { modelName: string };
+
+export type FaceDetectionOptions = ModelOptions & { minScore: number };
+
+type VisualResponse = { imageHeight: number; imageWidth: number };
+export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
+export type ClipVisualResponse = { [ModelTask.SEARCH]: number[] } & VisualResponse;
+
+export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
+export type ClipTextualResponse = { [ModelTask.SEARCH]: number[] };
+
+export type FacialRecognitionRequest = {
+  [ModelTask.FACIAL_RECOGNITION]: {
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
+    [ModelType.RECOGNITION]: ModelOptions;
+  };
+};
+
+export interface Face {
+  boundingBox: BoundingBox;
+  embedding: number[];
+  score: number;
 }
+
+export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
+export type DetectedFaces = { faces: Face[] } & VisualResponse;
+export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]>;
-  encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]>;
-  detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]>;
+  encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<number[]>;
+  encodeText(url: string, text: string, config: ModelOptions): Promise<number[]>;
+  detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
 }

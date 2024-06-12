@@ -110,7 +110,7 @@
                 {#if user.quotaSizeInBytes}
                   ({((user.usage / user.quotaSizeInBytes) * 100).toFixed(0)}%)
                 {:else}
-                  (Unlimited)
+                  ({$t('unlimited')})
                 {/if}
               </span>
             </td>

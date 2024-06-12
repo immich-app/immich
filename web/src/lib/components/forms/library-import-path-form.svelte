@@ -33,9 +33,7 @@
 
 <FullScreenModal {title} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="library-import-path-form">
-    <p class="py-5 text-sm">
-      Specify a folder to import. This folder, including subfolders, will be scanned for images and videos.
-    </p>
+    <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="path">{$t('path')}</label>
@@ -44,7 +42,7 @@
 
     <div class="mt-8 flex w-full gap-4">
       {#if isDuplicate}
-        <p class="text-red-500 text-sm">This import path already exists.</p>
+        <p class="text-red-500 text-sm">{$t('admin.import_path_already_exists')}</p>
       {/if}
     </div>
   </form>

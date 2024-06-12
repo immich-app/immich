@@ -18,6 +18,8 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
+import { t } from 'svelte-i18n';
+import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -115,26 +117,28 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getJobName = (jobName: JobName) => {
-  const names: Record<JobName, string> = {
-    [JobName.ThumbnailGeneration]: 'Generate Thumbnails',
-    [JobName.MetadataExtraction]: 'Extract Metadata',
-    [JobName.Sidecar]: 'Sidecar Metadata',
-    [JobName.SmartSearch]: 'Smart Search',
-    [JobName.DuplicateDetection]: 'Duplicate Detection',
-    [JobName.FaceDetection]: 'Face Detection',
-    [JobName.FacialRecognition]: 'Facial Recognition',
-    [JobName.VideoConversion]: 'Transcode Videos',
-    [JobName.StorageTemplateMigration]: 'Storage Template Migration',
-    [JobName.Migration]: 'Migration',
-    [JobName.BackgroundTask]: 'Background Tasks',
-    [JobName.Search]: 'Search',
-    [JobName.Library]: 'Library',
-    [JobName.Notifications]: 'Notifications',
-  };
+export const getJobName = derived(t, ($t) => {
+  return (jobName: JobName) => {
+    const names: Record<JobName, string> = {
+      [JobName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
+      [JobName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
+      [JobName.Sidecar]: $t('admin.sidecar_job'),
+      [JobName.SmartSearch]: $t('admin.machine_learning_smart_search'),
+      [JobName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
+      [JobName.FaceDetection]: $t('admin.face_detection'),
+      [JobName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
+      [JobName.VideoConversion]: $t('admin.video_conversion_job'),
+      [JobName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
+      [JobName.Migration]: $t('admin.migration_job'),
+      [JobName.BackgroundTask]: $t('admin.background_task_job'),
+      [JobName.Search]: $t('search'),
+      [JobName.Library]: $t('library'),
+      [JobName.Notifications]: $t('notifications'),
+    };
 
-  return names[jobName];
-};
+    return names[jobName];
+  };
+});
 
 let _key: string | undefined;
 let _sharedLink: SharedLinkResponseDto | undefined;
@@ -222,11 +226,13 @@ export const getAssetJobIcon = (job: AssetJobName) => {
 };
 
 export const copyToClipboard = async (secret: string) => {
+  const $t = get(t);
+
   try {
     await navigator.clipboard.writeText(secret);
-    notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
+    notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
   } catch (error) {
-    handleError(error, 'Cannot copy to clipboard, make sure you are accessing the page through https');
+    handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
 };
 

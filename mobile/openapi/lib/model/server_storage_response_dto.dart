@@ -84,7 +84,7 @@ class ServerStorageResponseDto {
         diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
         diskSize: mapValueOfType<String>(json, r'diskSize')!,
         diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
-        diskUsagePercentage: mapValueOfType<double>(json, r'diskUsagePercentage')!,
+        diskUsagePercentage: (mapValueOfType<num>(json, r'diskUsagePercentage')!).toDouble(),
         diskUse: mapValueOfType<String>(json, r'diskUse')!,
         diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
       );

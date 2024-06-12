@@ -42,7 +42,7 @@ export class SystemConfigService {
   }
 
   async init() {
-    const config = await this.core.getConfig();
+    const config = await this.core.getConfig({ withCache: false });
     this.config$.next(config);
   }
 
@@ -51,7 +51,7 @@ export class SystemConfigService {
   }
 
   async getConfig(): Promise<SystemConfigDto> {
-    const config = await this.core.getConfig();
+    const config = await this.core.getConfig({ withCache: false });
     return mapConfig(config);
   }
 
@@ -71,7 +71,7 @@ export class SystemConfigService {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
-    const oldConfig = await this.core.getConfig();
+    const oldConfig = await this.core.getConfig({ withCache: false });
 
     try {
       await this.eventRepository.serverSendAsync(ServerAsyncEvent.CONFIG_VALIDATE, {
@@ -110,7 +110,7 @@ export class SystemConfigService {
   }
 
   async getCustomCss(): Promise<string> {
-    const { theme } = await this.core.getConfig();
+    const { theme } = await this.core.getConfig({ withCache: false });
     return theme.customCss;
   }
 

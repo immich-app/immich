@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store.js';
-  import { s } from '$lib/utils.js';
   import { type AlbumCountResponseDto, getAlbumCount } from '@immich/sdk';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { t } from 'svelte-i18n';
 
   export let albumCountType: keyof AlbumCountResponseDto;
 
@@ -19,6 +18,6 @@
   <LoadingSpinner />
 {:then data}
   <div>
-    <p>{data[albumCountType].toLocaleString($locale)} Album{s(data[albumCountType])}</p>
+    <p>{$t('albums_count', { values: { count: data[albumCountType] } })}</p>
   </div>
 {/await}

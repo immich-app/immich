@@ -43,7 +43,7 @@ if [ -n "${quota:-}" ] && [ -n "${period:-}" ]; then
         cpus=1
     fi
 else
-    cpus=$(grep -c processor /proc/cpuinfo)
+    cpus=$(grep -c ^processor /proc/cpuinfo)
 fi
 
 echo "$cpus"

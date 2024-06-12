@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import DeleteButton from './delete-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName } from '$lib/utils';
@@ -16,7 +17,6 @@
     mdiCogRefreshOutline,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
-    mdiDeleteOutline,
     mdiDotsVertical,
     mdiFolderDownloadOutline,
     mdiHeart,
@@ -51,21 +51,12 @@
   export let showShareButton: boolean;
   export let showSlideshow = false;
   export let hasStackChildren = false;
+  export let onZoomImage: () => void;
+  export let onCopyImage: () => void;
 
   $: isOwner = $user && asset.ownerId === $user?.id;
 
-  type MenuItemEvent =
-    | 'addToAlbum'
-    | 'restoreAsset'
-    | 'addToSharedAlbum'
-    | 'asProfileImage'
-    | 'setAsAlbumCover'
-    | 'download'
-    | 'playSlideShow'
-    | 'runJob'
-    | 'unstack';
-
-  const dispatch = createEventDispatcher<{
+  type EventTypes = {
     back: void;
     stopMotionPhoto: void;
     playMotionPhoto: void;
@@ -73,6 +64,7 @@
     showDetail: void;
     favorite: void;
     delete: void;
+    permanentlyDelete: void;
     toggleArchive: void;
     addToAlbum: void;
     restoreAsset: void;
@@ -83,7 +75,9 @@
     playSlideShow: void;
     unstack: void;
     showShareModal: void;
-  }>();
+  };
+
+  const dispatch = createEventDispatcher<EventTypes>();
 
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowAssetOptions = false;
@@ -98,7 +92,7 @@
     dispatch('runJob', name);
   };
 
-  const onMenuClick = (eventName: MenuItemEvent) => {
+  const onMenuClick = (eventName: keyof EventTypes) => {
     isShowAssetOptions = false;
     dispatch(eventName);
   };
@@ -153,22 +147,11 @@
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title={$t('zoom_image')}
-        on:click={() => {
-          const zoomImage = new CustomEvent('zoomImage');
-          window.dispatchEvent(zoomImage);
-        }}
+        on:click={onZoomImage}
       />
     {/if}
     {#if showCopyButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiContentCopy}
-        title={$t('copy_image')}
-        on:click={() => {
-          const copyEvent = new CustomEvent('copyImage');
-          window.dispatchEvent(copyEvent);
-        }}
-      />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -194,16 +177,15 @@
         color="opaque"
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title={asset.isFavorite ? $t('unfavorite') : $t('favorite')}
+        title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
       />
     {/if}
 
     {#if isOwner}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiDeleteOutline}
-        on:click={() => dispatch('delete')}
-        title={$t('delete')}
+      <DeleteButton
+        {asset}
+        on:delete={() => dispatch('delete')}
+        on:permanentlyDelete={() => dispatch('permanentlyDelete')}
       />
       <div
         use:clickOutside={{
@@ -258,9 +240,9 @@
                 />
               {/if}
               <MenuOption
-                on:click={() => dispatch('toggleArchive')}
+                on:click={() => onMenuClick('toggleArchive')}
                 icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
-                text={asset.isArchived ? $t('unarchive') : $t('archive')}
+                text={asset.isArchived ? $t('unarchive') : $t('to_archive')}
               />
               <MenuOption
                 icon={mdiUpload}

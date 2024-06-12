@@ -67,7 +67,7 @@ export class LibraryService {
   }
 
   async init() {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
@@ -355,7 +355,13 @@ export class LibraryService {
     const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
     await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId } })),
+      assetIds.map((assetId) => ({
+        name: JobName.ASSET_DELETION,
+        data: {
+          id: assetId,
+          deleteOnDisk: false,
+        },
+      })),
     );
 
     if (assetIds.length === 0) {
@@ -544,7 +550,13 @@ export class LibraryService {
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: false,
+          },
+        })),
       );
     }
 

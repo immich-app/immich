@@ -88,7 +88,7 @@ export class PersonService {
   }
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     const people = await this.repository.getAllForUser(auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
@@ -282,7 +282,7 @@ export class PersonService {
   }
 
   async handleQueueDetectFaces({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -313,7 +313,7 @@ export class PersonService {
   }
 
   async handleDetectFaces({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -333,26 +333,28 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const faces = await this.machineLearningRepository.detectFaces(
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.facialRecognition,
     );
 
     this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
-    this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
-
       const mappedFaces = faces.map((face) => ({
         assetId: asset.id,
         embedding: face.embedding,
-        imageHeight: face.imageHeight,
-        imageWidth: face.imageWidth,
+        imageHeight,
+        imageWidth,
         boundingBoxX1: face.boundingBox.x1,
-        boundingBoxX2: face.boundingBox.x2,
         boundingBoxY1: face.boundingBox.y1,
+        boundingBoxX2: face.boundingBox.x2,
         boundingBoxY2: face.boundingBox.y2,
       }));
 
@@ -369,7 +371,7 @@ export class PersonService {
   }
 
   async handleQueueRecognizeFaces({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -400,7 +402,7 @@ export class PersonService {
   }
 
   async handleRecognizeFaces({ id, deferred }: IDeferrableJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -484,7 +486,7 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, image } = await this.configCore.getConfig();
+    const { machineLearning, image } = await this.configCore.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }

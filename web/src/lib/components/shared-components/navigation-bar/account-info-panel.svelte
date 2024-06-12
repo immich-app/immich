@@ -78,7 +78,7 @@
         <Button color="dark-gray" size="sm" shadow={false} border>
           <div class="flex place-content-center place-items-center gap-2 px-2">
             <Icon path={mdiCog} size="18" />
-            Account Settings
+            {$t('account_settings')}
           </div>
         </Button>
       </a>
@@ -91,7 +91,7 @@
         on:click={() => dispatch('logout')}
       >
         <Icon path={mdiLogout} size={24} />
-        Sign Out</button
+        {$t('sign_out')}</button
       >
     </div>
   </div>

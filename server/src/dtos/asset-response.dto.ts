@@ -127,10 +127,10 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack
       ? entity.stack?.assets
-          .filter((a) => a.id !== entity.stack?.primaryAssetId)
-          .map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
+          ?.filter((a) => a.id !== entity.stack?.primaryAssetId)
+          ?.map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
       : undefined,
-    stackCount: entity.stack?.assets?.length ?? null,
+    stackCount: entity.stack?.assetCount ?? entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,

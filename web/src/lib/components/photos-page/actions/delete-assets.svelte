@@ -3,7 +3,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
+  import { mdiTimerSand, mdiDeleteOutline, mdiDeleteForeverOutline } from '@mdi/js';
   import { type OnDelete, deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
   import { t } from 'svelte-i18n';
@@ -43,7 +43,7 @@
 {:else if loading}
   <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
 {:else}
-  <CircleIconButton title={label} icon={mdiDeleteOutline} on:click={handleTrash} />
+  <CircleIconButton title={label} icon={mdiDeleteForeverOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}

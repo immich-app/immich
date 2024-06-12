@@ -30,7 +30,7 @@
 
 <FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
-    <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
+    <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
   </form>

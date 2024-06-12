@@ -32,7 +32,7 @@
     } catch (error) {
       console.error('Error [user-profile] [changePassword]', error);
       notificationController.show({
-        message: (error as HttpError)?.body?.message || 'Unable to change password',
+        message: (error as HttpError)?.body?.message || $t('errors.unable_to_change_password'),
         type: NotificationType.Error,
       });
     }

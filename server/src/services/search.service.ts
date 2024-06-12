@@ -95,19 +95,14 @@ export class SearchService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const embedding = await this.machineLearning.encodeText(
-      machineLearning.url,
-      { text: dto.query },
-      machineLearning.clip,
-    );
-
+    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
