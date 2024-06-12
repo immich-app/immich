@@ -65,7 +65,7 @@
       {/key}
     {:else}
       <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
-        No duplicates were found.
+        {$t('no_duplicates_found')}
       </p>
     {/if}
   </div>

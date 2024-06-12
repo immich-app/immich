@@ -98,16 +98,14 @@
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: getJobName(JobName.FaceDetection),
-      subtitle:
-        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
+      subtitle: $t('admin.face_detection_job_description'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
       icon: mdiTagFaces,
       title: getJobName(JobName.FacialRecognition),
-      subtitle:
-        'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
+      subtitle: $t('admin.facial_recognition_job_description'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },

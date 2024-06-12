@@ -510,7 +510,7 @@
                 disabled={album.assetCount === 0}
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}
               >
-                Share
+                {$t('share')}
               </Button>
             {/if}
           </svelte:fragment>

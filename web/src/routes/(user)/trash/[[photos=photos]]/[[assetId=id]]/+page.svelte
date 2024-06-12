@@ -101,20 +101,20 @@
       <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
-          Restore all
+          {$t('restore_all')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteForeverOutline} size="18" />
-          Empty trash
+          {$t('empty_trash')}
         </div>
       </LinkButton>
     </div>
 
     <AssetGrid {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
-        Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
+        {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
       <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} slot="empty" />
     </AssetGrid>

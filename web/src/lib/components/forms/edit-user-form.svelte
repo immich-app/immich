@@ -55,7 +55,7 @@
   const resetPassword = async () => {
     const isConfirmed = await dialogController.show({
       id: 'confirm-reset-password',
-      prompt: `Are you sure you want to reset ${user.name}'s password?`,
+      prompt: $t('are_you_sure_you_want_to_reset_password', { values: { username: user.name } }),
     });
 
     if (!isConfirmed) {
@@ -111,12 +111,13 @@
 
     <div class="my-4 flex flex-col gap-2">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
-        >Quota Size (GiB) {#if quotaSizeWarning}
-          <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
+        >{$t('quota_size')}
+        {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">{$t('you_set_a_quota_higher_than_the_disk_size')}</p>
         {/if}</label
       >
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
-      <p>Note: Enter 0 for unlimited quota</p>
+      <p>{$t('note_unlimited_quota')}</p>
     </div>
 
     <div class="my-4 flex flex-col gap-2">
@@ -130,9 +131,9 @@
       />
 
       <p>
-        Note: To apply the Storage Label to previously uploaded assets, run the
+        {$t('note_apply_storage_label_to_previously_uploaded assets')}
         <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
-          Storage Migration Job</a
+          {$t('admin.storage_template_migration_job')}</a
         >
       </p>
     </div>

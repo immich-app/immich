@@ -54,7 +54,7 @@
     <div class="flex items-center">
       <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
       <div class="flex gap-2 items-center">
-        <p class="ml-2">Show & hide people</p>
+        <p class="ml-2">{$t('show_and_hide_people')}</p>
         <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>
       </div>
     </div>

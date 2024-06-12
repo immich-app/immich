@@ -399,7 +399,7 @@
                   {#if showContextMenu}
                     <Portal target="body">
                       <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()}>
-                        <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+                        <MenuOption on:click={() => onRenameClicked()} text={$t('rename')} />
 
                         {#if selectedLibrary}
                           <MenuOption on:click={() => onEditImportPathClicked()} text={$t('edit_import_paths')} />

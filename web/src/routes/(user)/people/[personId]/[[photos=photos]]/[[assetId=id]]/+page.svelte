@@ -492,7 +492,9 @@
                       </p>
                     {:else}
                       <p class="font-medium">{$t('add_a_name')}</p>
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                        {$t('find_them_fast')}
+                      </p>
                     {/if}
                   </div>
                 </button>
