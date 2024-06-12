@@ -32,7 +32,7 @@
   const handleDeleteLink = async (id: string) => {
     const isConfirmed = await dialogController.show({
       id: 'delete-shared-link',
-      title: 'Delete shared link',
+      title: $t('delete_shared_link'),
       prompt: 'Are you sure you want to delete this shared link?',
       confirmText: 'Delete',
     });

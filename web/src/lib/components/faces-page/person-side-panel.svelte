@@ -225,8 +225,8 @@
                     curve
                     shadow
                     url={selectedPersonToCreate[face.id]}
-                    altText={'New person'}
-                    title={'New person'}
+                    altText={$t('new_person')}
+                    title={$t('new_person')}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                   />
@@ -309,7 +309,7 @@
                   <CircleIconButton
                     color="primary"
                     icon={mdiMinus}
-                    title="Select new face"
+                    title={$t('select_new_face')}
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
