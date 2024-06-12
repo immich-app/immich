@@ -38,7 +38,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300,
         diskSize: '500 B',
         diskSizeRaw: 500,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '300 B',
         diskUseRaw: 300,
       });
@@ -54,7 +54,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300_000,
         diskSize: '488.3 KiB',
         diskSizeRaw: 500_000,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '293.0 KiB',
         diskUseRaw: 300_000,
       });
@@ -70,7 +70,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300_000_000,
         diskSize: '476.8 MiB',
         diskSizeRaw: 500_000_000,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '286.1 MiB',
         diskUseRaw: 300_000_000,
       });
@@ -90,7 +90,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300_000_000_000,
         diskSize: '465.7 GiB',
         diskSizeRaw: 500_000_000_000,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '279.4 GiB',
         diskUseRaw: 300_000_000_000,
       });
@@ -110,7 +110,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300_000_000_000_000,
         diskSize: '454.7 TiB',
         diskSizeRaw: 500_000_000_000_000,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '272.8 TiB',
         diskUseRaw: 300_000_000_000_000,
       });
@@ -130,7 +130,7 @@ describe(ServerInfoService.name, () => {
         diskAvailableRaw: 300_000_000_000_000_000,
         diskSize: '444.1 PiB',
         diskSizeRaw: 500_000_000_000_000_000,
-        diskUsagePercentage: 60,
+        diskUsagePercentage: 60.001,
         diskUse: '266.5 PiB',
         diskUseRaw: 300_000_000_000_000_000,
       });
