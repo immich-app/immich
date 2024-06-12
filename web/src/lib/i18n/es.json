@@ -23,6 +23,13 @@
   "admin": {
     "authentication_settings": "Configuración de Autenticación",
     "authentication_settings_description": "Gestionar clave, Oauth y otros configuraciones de autenticación",
+    "background_task_job": "Tareas en segundo plano",
+    "config_set_by_file": "La configuración está fijada actualmente en base a un archivo",
+    "confirm_delete_library": "¿Estás seguro de que quieres eliminar la biblioteca {library}?",
+    "confirm_delete_library_assets": "¿Estás seguro de que quieras eliminar esta biblioteca? Esto eliminará los {count} elementos en Immich y no puede deshacerse. Los archivos permanecerán en tu almacenamiento.",
+    "confirm_email_below": "Para confirmar, escribe \"{email}\" debajo",
+    "confirm_reprocess_all_faces": "¿Estás seguro de que quieres volver a procesar todas las caras? Esto también eliminará las personas a las que le hayas asignado nombre.",
+    "confirm_user_password_reset": "¿Estás seguro de que quieres resetear la contraseña de {user}?",
     "crontab_guru": "Crontab Guru",
     "disable_login": "Deshabilitar inicio de sesión",
     "disabled": "Deshabilitado",

@@ -3,7 +3,7 @@
   "acknowledge": "Rozumiem",
   "action": "Działanie",
   "actions": "Działania",
-  "active": "",
+  "active": "W toku",
   "activity": "Aktywność",
   "add": "Dodaj",
   "add_a_description": "Dodaj opis",
@@ -39,6 +39,7 @@
     "external_library_created_at": "Biblioteka zewnętrzna (stworzona dnia {date})",
     "external_library_management": "Zarządzanie Bibliotekami Zewnętrznymi",
     "face_detection": "Wykrywanie Twarzy",
+    "face_detection_description": "Wykrywanie twarzy w zasobach używając uczenia maszynowego. Twarze w filmach wykryte zostaną tylko jeżeli są widoczne w miniaturze. \"Wszystkie\" ponownie przetwarza wszystkie zasoby. \"Brakujące\" dodaje do kolejki tylko zasoby, które nie zostały jeszcze przetworzone. Wykryte twarze zostaną dodane do kolejki Rozpoznawania Twarzy, aby związać je z istniejącą osobą albo stworzyć nową osobę.",
     "image_format_description": "",
     "image_prefer_embedded_preview": "",
     "image_prefer_embedded_preview_setting_description": "",
@@ -146,6 +147,8 @@
     "password_enable_description": "",
     "password_settings": "",
     "password_settings_description": "",
+    "repair_matched_items": "Powiązano {count, plural, one {# element} few {# elementy} other {# elementów}}",
+    "repaired_items": "Naprawiono {count, plural, one {# element} few {# elementy} other {# elementów}}",
     "server_external_domain_settings": "",
     "server_external_domain_settings_description": "",
     "server_settings": "",
@@ -357,11 +360,11 @@
   "downloading": "",
   "duration": "",
   "durations": {
-    "days": "",
-    "hours": "",
-    "minutes": "",
-    "months": "",
-    "years": ""
+    "days": "{days, plural, one {dzień} other {{days, number} dni}}",
+    "hours": "{hours, plural, one {godzina} few {{hours, number} godziny} other {{hours, number} godzin}}",
+    "minutes": "{minutes, plural, one {minuta} few {{minutes, number} minuty} other {{minutes, number} minut}}",
+    "months": "{months, plural, one {miesiąc} few {{months, number} miesiące} other {{months, number} miesięcy}}",
+    "years": "{years, plural, one {rok} few {{years, number} lata} other {{years, number} lat}}"
   },
   "edit_album": "",
   "edit_avatar": "",
@@ -390,6 +393,7 @@
   "error": "",
   "error_loading_image": "",
   "errors": {
+    "paths_validation_failed": "{paths, plural, one {# ścieżka} few {# ścieżki} other {# ścieżek}}",
     "unable_to_add_album_users": "",
     "unable_to_add_comment": "",
     "unable_to_add_partners": "",
@@ -493,7 +497,7 @@
   "info": "",
   "interval": {
     "day_at_onepm": "",
-    "hours": "",
+    "hours": "Co {hours, plural, one {godzinę} few {{hours, number} godziny} other {{hours, number} godzin}}",
     "night_at_midnight": "",
     "night_at_twoam": ""
   },
@@ -599,9 +603,9 @@
   "password_required": "",
   "password_reset_success": "",
   "past_durations": {
-    "days": "",
-    "hours": "",
-    "years": ""
+    "days": "{days, plural, one {Ostatni dzień} other {Ostatnie {days, number} dni}}",
+    "hours": "{hours, plural, one {Ostatnia godzina} few {Ostatnie {hours, number} godziny} other {Ostatnie {hours, number} godzin}}",
+    "years": "{years, plural, one {Ostatni rok} few {Ostatnie {years, number} lata} other {Ostatnie {years, number} lat}}"
   },
   "path": "",
   "pattern": "",
