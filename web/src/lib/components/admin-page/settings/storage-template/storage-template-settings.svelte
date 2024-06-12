@@ -55,7 +55,7 @@
     const substitutions: Record<string, string> = {
       filename: 'IMAGE_56437',
       ext: 'jpg',
-      filetype: $t('img').toUpperCase(),
+      filetype: 'IMG',
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       album: $t('album_name'),

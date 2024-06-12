@@ -12,7 +12,7 @@
   export let menuItem = false;
   export let unarchive = false;
 
-  $: text = unarchive ? $t('unarchive') : $t('archive');
+  $: text = unarchive ? $t('unarchive') : $t('to_archive');
   $: icon = unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline;
 
   let loading = false;
