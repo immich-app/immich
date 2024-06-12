@@ -46,7 +46,7 @@
       notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
       await refresh();
     } catch (error) {
-      handleError(error, $t('unable_to_delete_shared_link'));
+      handleError(error, $t('errors.unable_to_delete_shared_link'));
     }
   };
 

@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   import { createContext } from '$lib/utils/context';
+  import { t } from 'svelte-i18n';
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
