@@ -133,40 +133,6 @@ For example, say you have existing transcodes with the policy "Videos higher tha
 
 No. Our design principle is that the original assets should always be untouched.
 
-### How can I move all data (photos, persons, albums, libraries) from one user to another?
-
-This is not officially supported but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the `psql` command), or you can add, for example, an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file so that you can use a web interface.
-
-<details>
-<summary>Steps</summary>
-
-1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
-
-2. Find the ID of both the 'source' and the 'destination' user (it's the id column in the `users` table)
-
-3. Four tables need to be updated:
-
-```sql
-BEGIN;
--- reassign albums
-UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign people
-UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign assets
-UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
- AND CHECKSUM NOT IN (SELECT CHECKSUM FROM assets WHERE "ownerId" = '<destinationId>');
-
--- reassign external libraries
-UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-COMMIT;
-```
-
-4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
-
-</details>
-
 ---
 
 ## Albums
