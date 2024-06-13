@@ -59,6 +59,7 @@
 
   const activate = () => {
     isActive = true;
+    input?.select();
     openDropdown();
   };
 

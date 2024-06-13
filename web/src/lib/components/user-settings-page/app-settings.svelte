@@ -65,7 +65,9 @@
     $locale = $locale ? undefined : fallbackLocale.code;
   };
 
-  const langOptions = langs.map((lang) => ({ label: lang.name, value: lang.code }));
+  const langOptions = langs
+    .map((lang) => ({ label: lang.name, value: lang.code }))
+    .sort((a, b) => a.label.localeCompare(b.label));
   const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
 
   const handleLanguageChange = async (newLang: string | undefined) => {
