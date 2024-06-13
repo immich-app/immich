@@ -45,8 +45,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
-            title={$t('enable')}
-            subtitle={$t('notification_toggle_setting_description')}
+            title={$t('notification_toggle_setting_description')}
             bind:checked={emailNotificationsEnabled}
           />
         </div>
