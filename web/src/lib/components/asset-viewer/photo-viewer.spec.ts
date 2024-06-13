@@ -48,7 +48,16 @@ describe('PhotoViewer component', () => {
     expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
   });
 
-  it('not loads original image for sharedLink download permission is false', () => {
+  it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
+    render(PhotoViewer, { asset, sharedLink });
+
+    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
+  });
+
+  it('not loads original image when shared link download permission is false', () => {
     const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
     const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
@@ -60,9 +69,9 @@ describe('PhotoViewer component', () => {
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
-  })
+  });
 
-  it('not loads original image for sharedLink showMetadata permission is false', () => {
+  it('not loads original image when shared link showMetadata permission is false', () => {
     const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
     const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
@@ -72,7 +81,7 @@ describe('PhotoViewer component', () => {
       size: AssetMediaSize.Preview,
       checksum: asset.checksum,
     });
-    
+
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
-  })
+  });
 });

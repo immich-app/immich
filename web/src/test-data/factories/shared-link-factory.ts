@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import {  SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const sharedLinkFactory = Sync.makeFactory<SharedLinkResponseDto>({
