@@ -31,7 +31,7 @@ class AssetResponseDto {
     this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
-    required this.originalMimeType,
+    this.originalMimeType,
     required this.originalPath,
     this.owner,
     required this.ownerId,
@@ -92,7 +92,13 @@ class AssetResponseDto {
 
   String originalFileName;
 
-  String originalMimeType;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? originalMimeType;
 
   String originalPath;
 
@@ -191,7 +197,7 @@ class AssetResponseDto {
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime.hashCode) +
     (originalFileName.hashCode) +
-    (originalMimeType.hashCode) +
+    (originalMimeType == null ? 0 : originalMimeType!.hashCode) +
     (originalPath.hashCode) +
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
@@ -246,7 +252,11 @@ class AssetResponseDto {
     }
       json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
+    if (this.originalMimeType != null) {
       json[r'originalMimeType'] = this.originalMimeType;
+    } else {
+    //  json[r'originalMimeType'] = null;
+    }
       json[r'originalPath'] = this.originalPath;
     if (this.owner != null) {
       json[r'owner'] = this.owner;
@@ -310,7 +320,7 @@ class AssetResponseDto {
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        originalMimeType: mapValueOfType<String>(json, r'originalMimeType')!,
+        originalMimeType: mapValueOfType<String>(json, r'originalMimeType'),
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
@@ -386,7 +396,6 @@ class AssetResponseDto {
     'isTrashed',
     'localDateTime',
     'originalFileName',
-    'originalMimeType',
     'originalPath',
     'ownerId',
     'resized',

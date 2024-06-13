@@ -20,7 +20,7 @@ export class SanitizedAssetResponseDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   thumbhash!: string | null;
-  originalMimeType!: string;
+  originalMimeType?: string;
   resized!: boolean;
   localDateTime!: Date;
   duration!: string;
