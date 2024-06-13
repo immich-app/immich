@@ -78,6 +78,9 @@ export type UserAdminUpdateDto = {
 export type AvatarResponse = {
     color: UserAvatarColor;
 };
+export type DownloadResponse = {
+    archiveSize: number;
+};
 export type EmailNotificationsResponse = {
     albumInvite: boolean;
     albumUpdate: boolean;
@@ -88,11 +91,15 @@ export type MemoryResponse = {
 };
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
+    download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
+};
+export type DownloadUpdate = {
+    archiveSize?: number;
 };
 export type EmailNotificationsUpdate = {
     albumInvite?: boolean;
@@ -104,6 +111,7 @@ export type MemoryUpdate = {
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
+    download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
 };
