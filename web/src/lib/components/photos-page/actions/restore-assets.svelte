@@ -27,7 +27,7 @@
       onRestore?.(ids);
 
       notificationController.show({
-        message: `Restored ${ids.length}`,
+        message: $t('assets_restored', { values: { count: ids.length } }),
         type: NotificationType.Info,
       });
 

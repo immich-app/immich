@@ -8,7 +8,6 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { s } from '$lib/utils';
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -20,10 +19,10 @@
     try {
       if (!$featureFlags.trash && trashIds.length > 0) {
         const isConfirmed = await dialogController.show({
-          title: 'Confirm',
-          prompt: 'Are you sure you want to permanently delete these duplicates?',
-          confirmText: 'Yes',
-          cancelText: 'No',
+          title: $t('confirm'),
+          prompt: $t('delete_duplicates_confirmation'),
+          confirmText: $t('yes'),
+          cancelText: $t('no'),
         });
 
         if (!isConfirmed) {
@@ -41,7 +40,7 @@
       }
 
       notificationController.show({
-        message: `Moved ${trashIds.length} asset${s(trashIds.length)} to trash`,
+        message: $t('assets_moved_to_trash', { values: { count: trashIds.length } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -54,7 +53,7 @@
   <div class="mt-4">
     {#if data.duplicates && data.duplicates.length > 0}
       <div class="mb-4 text-sm dark:text-white">
-        <p>Resolve each group by indicating which, if any, are duplicates.</p>
+        <p>{$t('duplicates_description')}</p>
       </div>
       {#key data.duplicates[0].duplicateId}
         <DuplicatesCompareControl

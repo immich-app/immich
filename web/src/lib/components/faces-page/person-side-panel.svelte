@@ -194,7 +194,7 @@
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
       >
-        Done
+        {$t('done')}
       </button>
     {:else}
       <LoadingSpinner />

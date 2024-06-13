@@ -78,7 +78,7 @@
           <div
             class={`absolute bottom-2 right-3 ${isSelected ? 'bg-green-400/90' : 'bg-red-300/90'} px-4 py-1 rounded-xl text-xs font-semibold`}
           >
-            {isSelected ? $t('keep') : $t('trash')}
+            {isSelected ? $t('keep') : $t('to_trash')}
           </div>
 
           <!-- EXTERNAL LIBRARY CHIP-->
@@ -112,12 +112,12 @@
           >
             <td>
               {#await getAllAlbums({ assetId: asset.id })}
-                Scanning for album...
+                {$t('scanning_for_album')}
               {:then albums}
                 {#if albums.length === 0}
-                  Not in any album
+                  {$t('not_in_any_album')}
                 {:else}
-                  In {albums.length} album{s(albums.length)}
+                  {$t('in_albums', { values: { count: albums.length } })}
                 {/if}
               {/await}
             </td>
@@ -146,13 +146,13 @@
     <div class="flex gap-4">
       {#if trashCount === 0}
         <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}
-          ><Icon path={mdiCheck} size="20" />Keep All
+          ><Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
       {:else}
         <Button size="sm" color="red" class="flex place-items-center gap-2" on:click={handleResolve}
           ><Icon path={mdiTrashCanOutline} size="20" />{trashCount === duplicate.assets.length
             ? $t('trash_all')
-            : `${$t('trash')} ${trashCount}`}
+            : $t('trash_count', { values: { count: trashCount } })}
         </Button>
       {/if}
     </div>
