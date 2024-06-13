@@ -2,6 +2,7 @@ import PhotoViewer from '$lib/components/asset-viewer/photo-viewer.svelte';
 import * as utils from '$lib/utils';
 import { AssetMediaSize } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
+import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render } from '@testing-library/svelte';
 import type { MockInstance } from 'vitest';
 
@@ -46,4 +47,32 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).not.toBeCalled();
     expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
   });
+
+  it('not loads original image for sharedLink download permission is false', () => {
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
+    render(PhotoViewer, { asset, sharedLink });
+
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Preview,
+      checksum: asset.checksum,
+    });
+
+    expect(getAssetOriginalUrlSpy).not.toBeCalled();
+  })
+
+  it('not loads original image for sharedLink showMetadata permission is false', () => {
+    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+    const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
+    render(PhotoViewer, { asset, sharedLink });
+
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Preview,
+      checksum: asset.checksum,
+    });
+    
+    expect(getAssetOriginalUrlSpy).not.toBeCalled();
+  })
 });
