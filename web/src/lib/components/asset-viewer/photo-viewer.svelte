@@ -9,7 +9,7 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy } from 'svelte';
@@ -23,7 +23,7 @@
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
-  export let sharedLink;
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let copyImage: (() => Promise<void>) | null = null;
   export let zoomToggle: (() => void) | null = null;
 
