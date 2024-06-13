@@ -64,7 +64,7 @@
           <div class="flex place-content-center place-items-center justify-around">
             <!-- href="https://github.com/immich-app/immich/issues/new" -->
             <a
-              href="https://discord.com/invite/D8JsnBEuKb"
+              href="https://discord.immich.app"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
