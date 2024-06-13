@@ -248,6 +248,7 @@ export const defaultLang = { name: 'English', code: 'en', loader: () => import('
 
 export const langs = [
   { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
+  { name: 'Bislama', code: 'bi', loader: () => import('$lib/i18n/bi.json') },
   { name: 'Catalan', code: 'ca', loader: () => import('$lib/i18n/ca.json') },
   { name: 'Czech', code: 'cs', loader: () => import('$lib/i18n/cs.json') },
   { name: 'Danish', code: 'da', loader: () => import('$lib/i18n/da.json') },
@@ -258,6 +259,7 @@ export const langs = [
   { name: 'French', code: 'fr', loader: () => import('$lib/i18n/fr.json') },
   { name: 'Hebrew', code: 'he', loader: () => import('$lib/i18n/he.json') },
   { name: 'Hindi', code: 'hi', loader: () => import('$lib/i18n/hi.json') },
+  { name: 'Croatian', code: 'hr', loader: () => import('$lib/i18n/hr.json') },
   { name: 'Hungarian', code: 'hu', loader: () => import('$lib/i18n/hu.json') },
   { name: 'Italian', code: 'it', loader: () => import('$lib/i18n/it.json') },
   { name: 'Japanese', code: 'ja', loader: () => import('$lib/i18n/ja.json') },
@@ -278,6 +280,7 @@ export const langs = [
   { name: 'Thai', code: 'th', loader: () => import('$lib/i18n/th.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$lib/i18n/uk.json') },
   { name: 'Vietnamese', code: 'vi', loader: () => import('$lib/i18n/vi.json') },
+  { name: 'Chinese (Traditional)', code: 'zh-Hant', loader: () => import('$lib/i18n/zh_Hant.json') },
   { name: 'Chinese (Simplified)', code: 'zh-Hans', loader: () => import('$lib/i18n/zh_SIMPLIFIED.json') },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
