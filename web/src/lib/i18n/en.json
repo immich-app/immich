@@ -609,6 +609,8 @@
   "menu": "Menu",
   "merge": "Merge",
   "merge_people": "Merge people",
+  "merge_people_limit": "You can only merge up to 5 faces at a time",
+  "merge_people_prompt": "Do you want to merge these people? This action is irreversible.",
   "merge_people_successfully": "Merge people successfully",
   "minimize": "Minimize",
   "minute": "Minute",
