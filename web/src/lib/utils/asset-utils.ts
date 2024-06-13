@@ -14,6 +14,7 @@ import {
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
+  getMyPreferences,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -96,9 +97,13 @@ export const downloadBlob = (data: Blob, filename: string) => {
 
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
   let downloadInfo: DownloadResponseDto | null = null;
+  const { download } = await getMyPreferences();
 
   try {
-    downloadInfo = await getDownloadInfo({ downloadInfoDto: options, key: getKey() });
+    downloadInfo = await getDownloadInfo({
+      downloadInfoDto: { archiveSize: download.archiveSize, ...options },
+      key: getKey(),
+    });
   } catch (error) {
     handleError(error, 'Unable to download files');
     return;

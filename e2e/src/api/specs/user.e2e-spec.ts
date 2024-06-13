@@ -173,6 +173,22 @@ describe('/users', () => {
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ memories: { enabled: false } });
     });
+
+    it('should update download archive size', async () => {
+      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ download: { archiveSize: 2 ** 32 } });
+
+      const { status, body } = await request(app)
+        .put(`/users/me/preferences`)
+        .send({ download: { archiveSize: 6 * 2 ** 30 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ download: { archiveSize: 6 * 2 ** 30 } });
+
+      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ download: { archiveSize: 3 * 2 ** 31 } });
+    });
   });
 
   describe('GET /users/:id', () => {

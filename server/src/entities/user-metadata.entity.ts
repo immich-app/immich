@@ -1,4 +1,5 @@
 import { UserEntity } from 'src/entities/user.entity';
+import { HumanReadableSize } from 'src/utils/bytes';
 import { Column, DeepPartial, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('user_metadata')
@@ -41,6 +42,9 @@ export interface UserPreferences {
     albumInvite: boolean;
     albumUpdate: boolean;
   };
+  download: {
+    archiveSize: number;
+  };
 }
 
 export const getDefaultPreferences = (user: { email: string }): UserPreferences => {
@@ -60,6 +64,9 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
       enabled: true,
       albumInvite: true,
       albumUpdate: true,
+    },
+    download: {
+      archiveSize: HumanReadableSize.GiB * 4,
     },
   };
 };

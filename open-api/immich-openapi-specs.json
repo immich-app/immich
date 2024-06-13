@@ -8125,6 +8125,17 @@
         },
         "type": "object"
       },
+      "DownloadResponse": {
+        "properties": {
+          "archiveSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "archiveSize"
+        ],
+        "type": "object"
+      },
       "DownloadResponseDto": {
         "properties": {
           "archives": {
@@ -8141,6 +8152,14 @@
           "archives",
           "totalSize"
         ],
+        "type": "object"
+      },
+      "DownloadUpdate": {
+        "properties": {
+          "archiveSize": {
+            "type": "number"
+          }
+        },
         "type": "object"
       },
       "DuplicateDetectionConfig": {
@@ -11255,6 +11274,9 @@
           "avatar": {
             "$ref": "#/components/schemas/AvatarResponse"
           },
+          "download": {
+            "$ref": "#/components/schemas/DownloadResponse"
+          },
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
@@ -11264,6 +11286,7 @@
         },
         "required": [
           "avatar",
+          "download",
           "emailNotifications",
           "memories"
         ],
@@ -11273,6 +11296,9 @@
         "properties": {
           "avatar": {
             "$ref": "#/components/schemas/AvatarUpdate"
+          },
+          "download": {
+            "$ref": "#/components/schemas/DownloadUpdate"
           },
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
