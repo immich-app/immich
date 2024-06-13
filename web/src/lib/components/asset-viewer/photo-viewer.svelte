@@ -5,7 +5,7 @@
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -33,6 +33,7 @@
   let imageLoaded: boolean = false;
   let imageError: boolean = false;
   let forceUseOriginal: boolean = false;
+  let sharedLink = getSharedLink();
 
   $: isWebCompatible = isWebCompatibleImage(asset);
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
@@ -67,6 +68,10 @@
   };
 
   const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+    if (!sharedLink?.allowDownload || !sharedLink?.showMetadata) {
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+    }
+
     return useOriginal
       ? getAssetOriginalUrl({ id, checksum })
       : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });

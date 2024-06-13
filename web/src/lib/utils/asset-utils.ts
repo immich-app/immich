@@ -273,7 +273,7 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   if (!asset.originalMimeType) {
     return false;
   }
-  
+
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
 
