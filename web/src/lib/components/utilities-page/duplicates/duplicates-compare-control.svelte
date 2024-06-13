@@ -5,7 +5,6 @@
   import { type AssetResponseDto, type DuplicateResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { sortBy } from 'lodash-es';
   import { t } from 'svelte-i18n';
