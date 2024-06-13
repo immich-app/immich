@@ -182,7 +182,7 @@ export type AssetResponseDto = {
     livePhotoVideoId?: string | null;
     localDateTime: string;
     originalFileName: string;
-    originalMimeType: string;
+    originalMimeType?: string;
     originalPath: string;
     owner?: UserResponseDto;
     ownerId: string;

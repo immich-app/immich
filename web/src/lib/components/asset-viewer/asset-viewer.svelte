@@ -629,6 +629,7 @@
               {preloadAssets}
               on:close={closeViewer}
               haveFadeTransition={false}
+              {sharedLink}
             />
           {:else}
             <VideoViewer
@@ -667,7 +668,7 @@
                   .endsWith('.insp'))}
               <PanoramaViewer {asset} />
             {:else}
-              <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} />
+              <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
             {/if}
           {:else}
             <VideoViewer

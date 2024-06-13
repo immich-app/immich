@@ -7785,7 +7785,6 @@
           "isTrashed",
           "localDateTime",
           "originalFileName",
-          "originalMimeType",
           "originalPath",
           "ownerId",
           "resized",

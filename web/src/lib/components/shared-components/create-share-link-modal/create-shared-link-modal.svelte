@@ -51,7 +51,11 @@
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
-
+  $: {
+    if (!showMetadata) {
+      allowDownload = false;
+    }
+  }
   if (editingLink) {
     if (editingLink.description) {
       description = editingLink.description;
@@ -227,7 +231,11 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
+          <SettingSwitch
+            bind:checked={allowDownload}
+            title={'Allow public user to download'}
+            disabled={!showMetadata}
+          />
         </div>
 
         <div class="my-3">
