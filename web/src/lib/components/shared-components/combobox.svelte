@@ -60,6 +60,7 @@
   const activate = () => {
     isActive = true;
     input?.select();
+    searchQuery = '';
     openDropdown();
   };
 

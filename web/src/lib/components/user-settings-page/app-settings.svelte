@@ -67,7 +67,12 @@
 
   const langOptions = langs
     .map((lang) => ({ label: lang.name, value: lang.code }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => {
+      if (b.label.startsWith('Development')) {
+        return -1;
+      }
+      return a.label.localeCompare(b.label);
+    });
   const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
 
   const handleLanguageChange = async (newLang: string | undefined) => {
