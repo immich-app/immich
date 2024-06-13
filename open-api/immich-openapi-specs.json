@@ -7708,6 +7708,9 @@
           "originalFileName": {
             "type": "string"
           },
+          "originalMimeType": {
+            "type": "string"
+          },
           "originalPath": {
             "type": "string"
           },
@@ -7782,6 +7785,7 @@
           "isTrashed",
           "localDateTime",
           "originalFileName",
+          "originalMimeType",
           "originalPath",
           "ownerId",
           "resized",

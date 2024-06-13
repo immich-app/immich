@@ -31,6 +31,7 @@ class AssetResponseDto {
     this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
+    required this.originalMimeType,
     required this.originalPath,
     this.owner,
     required this.ownerId,
@@ -90,6 +91,8 @@ class AssetResponseDto {
   DateTime localDateTime;
 
   String originalFileName;
+
+  String originalMimeType;
 
   String originalPath;
 
@@ -151,6 +154,7 @@ class AssetResponseDto {
     other.livePhotoVideoId == livePhotoVideoId &&
     other.localDateTime == localDateTime &&
     other.originalFileName == originalFileName &&
+    other.originalMimeType == originalMimeType &&
     other.originalPath == originalPath &&
     other.owner == owner &&
     other.ownerId == ownerId &&
@@ -187,6 +191,7 @@ class AssetResponseDto {
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime.hashCode) +
     (originalFileName.hashCode) +
+    (originalMimeType.hashCode) +
     (originalPath.hashCode) +
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
@@ -203,7 +208,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -241,6 +246,7 @@ class AssetResponseDto {
     }
       json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
+      json[r'originalMimeType'] = this.originalMimeType;
       json[r'originalPath'] = this.originalPath;
     if (this.owner != null) {
       json[r'owner'] = this.owner;
@@ -304,6 +310,7 @@ class AssetResponseDto {
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
+        originalMimeType: mapValueOfType<String>(json, r'originalMimeType')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
@@ -379,6 +386,7 @@ class AssetResponseDto {
     'isTrashed',
     'localDateTime',
     'originalFileName',
+    'originalMimeType',
     'originalPath',
     'ownerId',
     'resized',
