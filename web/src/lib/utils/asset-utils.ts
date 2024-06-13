@@ -270,7 +270,7 @@ const supportedImageMimeTypes = new Set([
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
-  if (asset.originalMimeType === undefined) {
+  if (!asset.originalMimeType) {
     return false;
   }
   
