@@ -1,6 +1,7 @@
 {
   "account": "アカウント",
-  "acknowledge": "わかった",
+  "account_settings": "アカウント設定",
+  "acknowledge": "了解",
   "action": "アクション",
   "actions": "アクション",
   "active": "アクティブ",
@@ -21,6 +22,7 @@
   "add_to_album": "アルバムに追加",
   "add_to_shared_album": "共有アルバムに追加",
   "admin": {
+    "add_exclusion_pattern_description": "除外パターンを追加します。ワイルドカード「*」「**」「?」を使用できます。すべてのディレクトリで「Raw」と名前が付いたファイルを無視するには、「**/Raw/**」を使用します。また、「.tif」で終わるファイルをすべて無視するには、「**/*.tif」を使用します。さらに、絶対パスを無視するには「/path/to/ignore/**」を使用します。",
     "authentication_settings": "認証設定",
     "authentication_settings_description": "",
     "crontab_guru": "",
