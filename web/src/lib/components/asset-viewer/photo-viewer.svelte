@@ -9,7 +9,7 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize } from '@immich/sdk';
+  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy } from 'svelte';
@@ -23,7 +23,7 @@
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
-
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let copyImage: (() => Promise<void>) | null = null;
   export let zoomToggle: (() => void) | null = null;
 
@@ -38,7 +38,8 @@
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
   $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
   // when true, will force loading of the original image
-  $: forceUseOriginal = forceUseOriginal || ($photoZoomState.currentZoom > 1 && isWebCompatible);
+  $: forceUseOriginal =
+    forceUseOriginal || asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible);
 
   $: preload(useOriginalImage, preloadAssets);
   $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
@@ -66,6 +67,10 @@
   };
 
   const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+    if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+    }
+
     return useOriginal
       ? getAssetOriginalUrl({ id, checksum })
       : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });

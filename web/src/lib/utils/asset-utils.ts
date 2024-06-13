@@ -257,20 +257,24 @@ export function getAssetRatio(asset: AssetResponseDto) {
 }
 
 // list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
-const supportedImageExtensions = new Set(['apng', 'avif', 'gif', 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'webp']);
+const supportedImageMimeTypes = new Set([
+  'image/apng',
+  'image/avif',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
 export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
-  // originalPath is undefined when public shared link has metadata option turned off
-  if (!asset.originalPath) {
+  if (!asset.originalMimeType) {
     return false;
   }
 
-  const imgExtension = getFilenameExtension(asset.originalPath);
-
-  return supportedImageExtensions.has(imgExtension);
+  return supportedImageMimeTypes.has(asset.originalMimeType);
 }
 
 export const getAssetType = (type: AssetTypeEnum) => {

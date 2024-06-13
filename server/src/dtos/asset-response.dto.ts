@@ -13,12 +13,14 @@ import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
   id!: string;
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   thumbhash!: string | null;
+  originalMimeType?: string;
   resized!: boolean;
   localDateTime!: Date;
   duration!: string;
@@ -87,6 +89,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
       type: entity.type,
+      originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash?.toString('base64') ?? null,
       localDateTime: entity.localDateTime,
       resized: !!entity.previewPath,
@@ -107,6 +110,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
+    originalMimeType: mimeTypes.lookup(entity.originalFileName),
     resized: !!entity.previewPath,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
