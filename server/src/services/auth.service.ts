@@ -198,8 +198,12 @@ export class AuthService {
     // link existing user
     if (!user) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
-      if (emailUser && !emailUser.oauthId) {
-        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+      if (emailUser) {
+        if (emailUser.oauthId) {
+          throw new BadRequestException('User already exists, but is linked to another account.');
+        } else {
+          user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+        }
       }
     }
 

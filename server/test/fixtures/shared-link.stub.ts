@@ -52,6 +52,7 @@ const assetResponse: AssetResponseDto = {
   ownerId: 'user_id_1',
   deviceId: 'device_id_1',
   type: AssetType.VIDEO,
+  originalMimeType: 'image/jpeg',
   originalPath: 'fake_path/jpeg',
   originalFileName: 'asset_1.jpeg',
   resized: false,
@@ -82,6 +83,7 @@ const assetResponse: AssetResponseDto = {
 const assetResponseWithoutMetadata = {
   id: 'id_1',
   type: AssetType.VIDEO,
+  originalMimeType: 'image/jpeg',
   resized: false,
   thumbhash: null,
   localDateTime: today,
