@@ -16,7 +16,7 @@
 
 <div class="mb-4 w-full">
   <div class={`flex h-[26px] place-items-center gap-1`}>
-    <label class={`immich-form-label text-sm`} for={label}>{label}</label>
+    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}

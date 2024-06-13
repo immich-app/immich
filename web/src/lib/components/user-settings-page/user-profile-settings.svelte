@@ -44,27 +44,23 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('user_id').toUpperCase()}
+          label={$t('user_id')}
           bind:value={editedUser.id}
           disabled={true}
         />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.EMAIL}
-          label={$t('email').toUpperCase()}
-          bind:value={editedUser.email}
-        />
+        <SettingInputField inputType={SettingInputFieldType.EMAIL} label={$t('email')} bind:value={editedUser.email} />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('name').toUpperCase()}
+          label={$t('name')}
           bind:value={editedUser.name}
           required={true}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('storage_label').toUpperCase()}
+          label={$t('storage_label')}
           disabled={true}
           value={editedUser.storageLabel || ''}
           required={false}

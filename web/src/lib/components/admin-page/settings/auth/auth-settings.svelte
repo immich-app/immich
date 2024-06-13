@@ -88,8 +88,7 @@
 
             <SettingSwitch
               {disabled}
-              title={$t('enable').toUpperCase()}
-              subtitle={$t('admin.oauth_enable_description')}
+              title={$t('admin.oauth_enable_description')}
               bind:checked={config.oauth.enabled}
             />
 
@@ -223,9 +222,8 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <div class="ml-4 mt-4 flex flex-col">
               <SettingSwitch
-                title={$t('enabled')}
+                title={$t('admin.password_enable_description')}
                 {disabled}
-                subtitle={$t('admin.password_enable_description')}
                 bind:checked={config.passwordLogin.enabled}
               />
             </div>
