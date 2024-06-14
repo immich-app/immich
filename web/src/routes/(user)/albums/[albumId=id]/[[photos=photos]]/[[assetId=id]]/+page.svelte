@@ -176,7 +176,7 @@
         message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
       });
     } catch (error) {
-      handleError(error, $t('errors.cant_change_activity'));
+      handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
     }
   };
 

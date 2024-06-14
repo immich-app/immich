@@ -962,7 +962,7 @@
   "upload_concurrency": "Upload concurrency",
   "upload_errors": "Upload completed with {count, plural, one {# error} other {# errors}}, refresh the page to see new upload assets.",
   "upload_progress": "Remaining {remaining} - Processed {processed}/{total}",
-  "upload_skipped_duplicates": "Skipped {count, plural, one {duplicate} other {duplicates}}",
+  "upload_skipped_duplicates": "Skipped {count, plural, one {# duplicate asset} other {# duplicate assets}}",
   "upload_status_duplicates": "Duplicates",
   "upload_status_errors": "Errors",
   "upload_status_uploaded": "Uploaded",
