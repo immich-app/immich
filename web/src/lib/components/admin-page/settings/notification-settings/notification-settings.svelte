@@ -71,8 +71,7 @@
         <SettingAccordion key="email" title={$t('email')} subtitle={$t('admin.notification_email_setting_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
-              title={$t('enabled')}
-              subtitle={$t('admin.notification_enable_email_notifications')}
+              title={$t('admin.notification_enable_email_notifications')}
               {disabled}
               bind:checked={config.notifications.smtp.enabled}
             />

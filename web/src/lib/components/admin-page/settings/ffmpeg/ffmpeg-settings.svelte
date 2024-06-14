@@ -82,7 +82,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.transcoding_audio_codec').toUpperCase()}
+          label={$t('admin.transcoding_audio_codec')}
           {disabled}
           desc={$t('admin.transcoding_audio_codec_description')}
           bind:value={config.ffmpeg.targetAudioCodec}
@@ -100,7 +100,7 @@
         />
 
         <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_audio_codecs').toUpperCase()}
+          label={$t('admin.transcoding_accepted_audio_codecs')}
           {disabled}
           desc={$t('admin.transcoding_accepted_audio_codecs_description')}
           bind:value={config.ffmpeg.acceptedAudioCodecs}
@@ -114,7 +114,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.transcoding_video_codec').toUpperCase()}
+          label={$t('admin.transcoding_video_codec')}
           {disabled}
           desc={$t('admin.transcoding_video_codec_description')}
           bind:value={config.ffmpeg.targetVideoCodec}
@@ -130,7 +130,7 @@
         />
 
         <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_video_codecs').toUpperCase()}
+          label={$t('admin.transcoding_accepted_video_codecs')}
           {disabled}
           desc={$t('admin.transcoding_accepted_video_codecs_description')}
           bind:value={config.ffmpeg.acceptedVideoCodecs}
@@ -145,7 +145,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.transcoding_target_resolution').toUpperCase()}
+          label={$t('admin.transcoding_target_resolution')}
           {disabled}
           desc={$t('admin.transcoding_target_resolution_description')}
           bind:value={config.ffmpeg.targetResolution}
@@ -164,7 +164,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           {disabled}
-          label={$t('admin.transcoding_max_bitrate').toUpperCase()}
+          label={$t('admin.transcoding_max_bitrate')}
           desc={$t('admin.transcoding_max_bitrate_description')}
           bind:value={config.ffmpeg.maxBitrate}
           isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
@@ -173,14 +173,14 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
-          label={$t('admin.transcoding_threads').toUpperCase()}
+          label={$t('admin.transcoding_threads')}
           desc={$t('admin.transcoding_threads_description')}
           bind:value={config.ffmpeg.threads}
           isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
         />
 
         <SettingSelect
-          label={$t('admin.transcoding_transcode_policy').toUpperCase()}
+          label={$t('admin.transcoding_transcode_policy')}
           {disabled}
           desc={$t('admin.transcoding_transcode_policy_description')}
           bind:value={config.ffmpeg.transcode}
@@ -208,7 +208,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.transcoding_tone_mapping').toUpperCase()}
+          label={$t('admin.transcoding_tone_mapping')}
           {disabled}
           desc={$t('admin.transcoding_tone_mapping_description')}
           bind:value={config.ffmpeg.tonemap}
@@ -235,7 +235,7 @@
         />
 
         <SettingSwitch
-          title={$t('admin.transcoding_two_pass_encoding').toUpperCase()}
+          title={$t('admin.transcoding_two_pass_encoding')}
           {disabled}
           subtitle={$t('admin.transcoding_two_pass_encoding_setting_description')}
           bind:checked={config.ffmpeg.twoPass}
@@ -249,7 +249,7 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSelect
-              label={$t('admin.transcoding_acceleration_api').toUpperCase()}
+              label={$t('admin.transcoding_acceleration_api')}
               {disabled}
               desc={$t('admin.transcoding_acceleration_api_description')}
               bind:value={config.ffmpeg.accel}
@@ -277,7 +277,7 @@
             />
 
             <SettingSwitch
-              title={$t('admin.transcoding_hardware_decoding').toUpperCase()}
+              title={$t('admin.transcoding_hardware_decoding')}
               {disabled}
               subtitle={$t('admin.transcoding_hardware_decoding_setting_description')}
               bind:checked={config.ffmpeg.accelDecode}
@@ -285,7 +285,7 @@
             />
 
             <SettingSelect
-              label={$t('admin.transcoding_constant_quality_mode').toUpperCase()}
+              label={$t('admin.transcoding_constant_quality_mode')}
               desc={$t('admin.transcoding_constant_quality_mode_description')}
               bind:value={config.ffmpeg.cqMode}
               options={[
@@ -298,7 +298,7 @@
             />
 
             <SettingSwitch
-              title={$t('admin.transcoding_temporal_aq').toUpperCase()}
+              title={$t('admin.transcoding_temporal_aq')}
               {disabled}
               subtitle={$t('admin.transcoding_temporal_aq_description')}
               bind:checked={config.ffmpeg.temporalAQ}
@@ -307,7 +307,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
-              label={$t('admin.transcoding_preferred_hardware_device').toUpperCase()}
+              label={$t('admin.transcoding_preferred_hardware_device')}
               desc={$t('admin.transcoding_preferred_hardware_device_description')}
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
@@ -324,7 +324,7 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_tone_mapping_npl').toUpperCase()}
+              label={$t('admin.transcoding_tone_mapping_npl')}
               desc={$t('admin.transcoding_tone_mapping_npl_description')}
               bind:value={config.ffmpeg.npl}
               isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
@@ -333,7 +333,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_max_b_frames').toUpperCase()}
+              label={$t('admin.transcoding_max_b_frames')}
               desc={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
@@ -342,7 +342,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_reference_frames').toUpperCase()}
+              label={$t('admin.transcoding_reference_frames')}
               desc={$t('admin.transcoding_reference_frames_description')}
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
@@ -351,7 +351,7 @@
 
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_max_keyframe_interval').toUpperCase()}
+              label={$t('admin.transcoding_max_keyframe_interval')}
               desc={$t('admin.transcoding_max_keyframe_interval_description')}
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
