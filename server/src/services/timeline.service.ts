@@ -6,6 +6,7 @@ import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dt
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 
 export class TimelineService {
   private accessCore: AccessCore;
@@ -43,14 +44,9 @@ export class TimelineService {
 
     if (userId) {
       userIds = [userId];
-
       if (dto.withPartners) {
-        const partners = await this.partnerRepository.getAll(auth.user.id);
-        const partnersIds = partners
-          .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
-          .map((partner) => partner.sharedById);
-
-        userIds.push(...partnersIds);
+        const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+        userIds.push(...partnerIds);
       }
     }
 
