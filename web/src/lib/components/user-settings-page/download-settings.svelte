@@ -13,13 +13,13 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
 
-  let archiveSize = convertFromBytes($preferences?.download?.archiveSize || 4, 'GiB');
+  let archiveSize = convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB);
 
   const handleSave = async () => {
     try {
-      const dto = { download: { archiveSize: Math.floor(convertToBytes(archiveSize, 'GiB')) } };
+      const dto = { download: { archiveSize: Math.floor(convertToBytes(archiveSize, ByteUnit.GiB)) } };
       const newPreferences = await updateMyPreferences({ userPreferencesUpdateDto: dto });
       $preferences = newPreferences;
 

@@ -1,3 +1,13 @@
+export enum ByteUnit {
+  'B' = 0,
+  'KiB' = 1,
+  'MiB' = 2,
+  'GiB' = 3,
+  'TiB' = 4,
+  'PiB' = 5,
+  'EiB' = 6,
+}
+
 /**
  * Convert bytes to best human readable unit and number of that unit.
  *
@@ -8,23 +18,10 @@
  * @param maxPrecision maximum number of decimal places, default is `1`
  * @returns size (number) and unit (string)
  */
-export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, string] {
-  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
+export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, ByteUnit] {
+  const magnitude = Math.floor(Math.log(bytes === 0 ? 1 : bytes) / Math.log(1024));
 
-  let magnitude = 0;
-  let remainder = bytes;
-  while (remainder >= 1024) {
-    if (magnitude + 1 < units.length) {
-      magnitude++;
-      remainder /= 1024;
-    } else {
-      break;
-    }
-  }
-
-  remainder = Number.parseFloat(remainder.toFixed(maxPrecision));
-
-  return [remainder, units[magnitude]];
+  return [Number.parseFloat((bytes / 1024 ** magnitude).toFixed(maxPrecision)), magnitude];
 }
 
 /**
@@ -38,7 +35,33 @@ export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, stri
  * @param maxPrecision maximum number of decimal places, default is `1`
  * @returns localized bytes with unit as string
  */
-export function asByteUnitString(bytes: number, locale?: string, maxPrecision = 1): string {
+export function getByteUnitString(bytes: number, locale?: string, maxPrecision = 1): string {
   const [size, unit] = getBytesWithUnit(bytes, maxPrecision);
-  return `${size.toLocaleString(locale)} ${unit}`;
+  return `${size.toLocaleString(locale)} ${ByteUnit[unit]}`;
+}
+
+/**
+ * Convert to bytes from on a specified unit.
+ *
+ * * `1, 'GiB'`, returns `1073741824` bytes
+ *
+ * @param size value to be converted
+ * @param unit unit to convert from
+ * @returns bytes (number)
+ */
+export function convertToBytes(size: number, unit: ByteUnit): number {
+  return size * 1024 ** unit;
+}
+
+/**
+ * Convert from bytes to a specified unit.
+ *
+ * * `11073741824, 'GiB'`, returns `1` GiB
+ *
+ * @param bytes value to be converted
+ * @param unit unit to convert to
+ * @returns bytes (number)
+ */
+export function convertFromBytes(bytes: number, unit: ByteUnit): number {
+  return bytes / 1024 ** unit;
 }

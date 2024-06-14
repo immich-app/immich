@@ -32,7 +32,7 @@
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -372,7 +372,7 @@
               {@const { width, height } = getDimensions(asset.exifInfo)}
               <p>{width} x {height}</p>
             {/if}
-            <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>
           {#if showAssetPath}
             <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
