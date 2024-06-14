@@ -14,11 +14,14 @@ class UserPreferencesResponseDto {
   /// Returns a new [UserPreferencesResponseDto] instance.
   UserPreferencesResponseDto({
     required this.avatar,
+    required this.download,
     required this.emailNotifications,
     required this.memories,
   });
 
   AvatarResponse avatar;
+
+  DownloadResponse download;
 
   EmailNotificationsResponse emailNotifications;
 
@@ -27,6 +30,7 @@ class UserPreferencesResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
+    other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.memories == memories;
 
@@ -34,15 +38,17 @@ class UserPreferencesResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (avatar.hashCode) +
+    (download.hashCode) +
     (emailNotifications.hashCode) +
     (memories.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, emailNotifications=$emailNotifications, memories=$memories]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'avatar'] = this.avatar;
+      json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
     return json;
@@ -57,6 +63,7 @@ class UserPreferencesResponseDto {
 
       return UserPreferencesResponseDto(
         avatar: AvatarResponse.fromJson(json[r'avatar'])!,
+        download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
       );
@@ -107,6 +114,7 @@ class UserPreferencesResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'avatar',
+    'download',
     'emailNotifications',
     'memories',
   };

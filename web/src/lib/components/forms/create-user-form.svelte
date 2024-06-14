@@ -1,6 +1,5 @@
 <script lang="ts">
   import { serverInfo } from '$lib/stores/server-info.store';
-  import { convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
   import { createUserAdmin } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
@@ -10,6 +9,7 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
+  import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
 
   export let onClose: () => void;
 
@@ -27,7 +27,7 @@
   let quotaSize: number | undefined;
   let isCreatingUser = false;
 
-  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, 'GiB') : null;
+  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null;
   $: quotaSizeWarning = quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw;
 
   $: {

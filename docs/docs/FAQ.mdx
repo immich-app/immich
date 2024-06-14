@@ -408,4 +408,11 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
 
 </details>
 
+If corruption is detected, you should immediately make a backup before performing any other work in the database.
+To do so, you may need to set the `zero_damaged_pages=on` flag for the database server to allow `pg_dumpall` to succeed.
+After taking a backup, the recommended next step is to restore the database from a healthy backup before corruption was detected.
+The damaged database dump can be used to manually recover any changes made since the last backup, if needed.
+
+The causes of possible corruption are many, but can include unexpected poweroffs or unmounts, use of a network share for Postgres data, or a poor storage medium such an SD card or failing HDD/SSD.
+
 [huggingface]: https://huggingface.co/immich-app

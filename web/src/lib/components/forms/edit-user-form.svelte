@@ -2,7 +2,6 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
-  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiAccountEditOutline } from '@mdi/js';
@@ -10,6 +9,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
 
   export let user: UserAdminResponseDto;
   export let canResetPassword = true;
@@ -18,14 +18,14 @@
 
   let error: string;
   let success: string;
-  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null;
 
   const previousQutoa = user.quotaSizeInBytes;
 
   $: quotaSizeWarning =
-    previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
+    previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
     !!quotaSize &&
-    convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
+    convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw;
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -42,7 +42,7 @@
           email,
           name,
           storageLabel: storageLabel || '',
-          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
         },
       });
 

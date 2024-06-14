@@ -298,8 +298,12 @@ class ApiClient {
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
           return DownloadInfoDto.fromJson(value);
+        case 'DownloadResponse':
+          return DownloadResponse.fromJson(value);
         case 'DownloadResponseDto':
           return DownloadResponseDto.fromJson(value);
+        case 'DownloadUpdate':
+          return DownloadUpdate.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
