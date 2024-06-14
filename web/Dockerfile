@@ -7,6 +7,7 @@ COPY --chown=node:node package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
 ENV CHOKIDAR_USEPOLLING=true
+ENV PUBLIC_SERVER_URLS=
 EXPOSE 24678
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--", "/bin/sh"]

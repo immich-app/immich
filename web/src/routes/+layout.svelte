@@ -51,6 +51,8 @@
   };
 
   onMount(() => {
+    const element = document.querySelector('#stencil');
+    element?.remove();
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
@@ -106,25 +108,29 @@
   {/if}
 </svelte:head>
 
-<noscript
-  class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
->
-  <FullscreenContainer title={$t('welcome_to_immich')}>
-    To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
-  </FullscreenContainer>
-</noscript>
+{#if $page.data.hasError}
+  <FullscreenContainer title="Error connecting to Immich Server"></FullscreenContainer>
+{:else}
+  <noscript
+    class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+  >
+    <FullscreenContainer title={$t('welcome_to_immich')}>
+      To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
+    </FullscreenContainer>
+  </noscript>
 
-<slot />
+  <slot />
 
-{#if showNavigationLoadingBar}
-  <NavigationLoadingBar />
-{/if}
+  {#if showNavigationLoadingBar}
+    <NavigationLoadingBar />
+  {/if}
 
-<DownloadPanel />
-<UploadPanel />
-<NotificationList />
-<DialogWrapper />
+  <DownloadPanel />
+  <UploadPanel />
+  <NotificationList />
+  <DialogWrapper />
 
-{#if $user?.isAdmin}
-  <VersionAnnouncementBox />
+  {#if $user?.isAdmin}
+    <VersionAnnouncementBox />
+  {/if}
 {/if}
