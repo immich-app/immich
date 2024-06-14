@@ -108,16 +108,15 @@
   {#await getTemplateOptions() then}
     <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
-        title={$t('enabled').toUpperCase()}
+        title={$t('admin.storage_template_enable_description')}
         {disabled}
-        subtitle={$t('admin.storage_template_enable_description')}
         bind:checked={config.storageTemplate.enabled}
         isEdited={!(config.storageTemplate.enabled === savedConfig.storageTemplate.enabled)}
       />
 
       {#if !minified}
         <SettingSwitch
-          title={$t('admin.storage_template_hash_verification_enabled').toUpperCase()}
+          title={$t('admin.storage_template_hash_verification_enabled')}
           {disabled}
           subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
           bind:checked={config.storageTemplate.hashVerificationEnabled}
@@ -173,7 +172,9 @@
 
           <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
             <div class="flex flex-col my-2">
-              <label class="text-sm" for="preset-select">{$t('preset').toUpperCase()}</label>
+              <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="preset-select">
+                {$t('preset')}
+              </label>
               <select
                 class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
                 disabled={disabled || !config.storageTemplate.enabled}
@@ -189,7 +190,7 @@
             </div>
             <div class="flex gap-2 align-bottom">
               <SettingInputField
-                label={$t('template').toUpperCase()}
+                label={$t('template')}
                 disabled={disabled || !config.storageTemplate.enabled}
                 required
                 inputType={SettingInputFieldType.TEXT}

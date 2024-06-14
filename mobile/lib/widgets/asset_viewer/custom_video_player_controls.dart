@@ -64,6 +64,8 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       final state = ref.read(videoPlaybackValueProvider).state;
       if (state == VideoPlaybackState.playing) {
         ref.read(videoPlayerControlsProvider.notifier).pause();
+      } else if (state == VideoPlaybackState.completed) {
+        ref.read(videoPlayerControlsProvider.notifier).restart();
       } else {
         ref.read(videoPlayerControlsProvider.notifier).play();
       }

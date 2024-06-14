@@ -61,6 +61,7 @@
 
   const activate = () => {
     isActive = true;
+    searchQuery = '';
     openDropdown();
   };
 

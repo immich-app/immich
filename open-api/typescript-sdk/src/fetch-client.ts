@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.106.2
+ * 1.106.4
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -182,6 +182,7 @@ export type AssetResponseDto = {
     livePhotoVideoId?: string | null;
     localDateTime: string;
     originalFileName: string;
+    originalMimeType?: string;
     originalPath: string;
     owner?: UserResponseDto;
     ownerId: string;

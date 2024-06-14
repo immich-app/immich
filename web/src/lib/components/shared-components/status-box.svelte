@@ -59,8 +59,12 @@
           <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
         </div>
         <p class="text-xs">
-          {asByteUnitString(usedBytes, $locale)} of
-          {asByteUnitString(availableBytes, $locale)} used
+          {$t('storage_usage', {
+            values: {
+              used: asByteUnitString(usedBytes, $locale),
+              available: asByteUnitString(availableBytes, $locale),
+            },
+          })}
         </p>
       {:else}
         <div class="mt-2">

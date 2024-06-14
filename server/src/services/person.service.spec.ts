@@ -949,6 +949,32 @@ describe(PersonService.name, () => {
         },
       );
     });
+
+    it('should use preview path for videos', async () => {
+      personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.end);
+      assetMock.getById.mockResolvedValue(assetStub.video);
+      mediaMock.getImageDimensions.mockResolvedValue({ width: 2560, height: 1440 });
+
+      await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.video.previewPath,
+        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        {
+          format: 'jpeg',
+          size: 250,
+          quality: 80,
+          colorspace: Colorspace.P3,
+          crop: {
+            left: 1741,
+            top: 851,
+            width: 588,
+            height: 588,
+          },
+        },
+      );
+    });
   });
 
   describe('mergePerson', () => {

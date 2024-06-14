@@ -22,13 +22,12 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
-          title={$t('enabled').toUpperCase()}
+          title={$t('admin.logging_enable_description')}
           {disabled}
-          subtitle={$t('admin.logging_enable_description')}
           bind:checked={config.logging.enabled}
         />
         <SettingSelect
-          label={$t('level').toUpperCase()}
+          label={$t('level')}
           desc={$t('admin.logging_level_description')}
           bind:value={config.logging.level}
           options={[

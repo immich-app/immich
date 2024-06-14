@@ -26,7 +26,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSelect
-          label={$t('admin.image_thumbnail_format').toUpperCase()}
+          label={$t('admin.image_thumbnail_format')}
           desc={$t('admin.image_format_description')}
           bind:value={config.image.thumbnailFormat}
           options={[
@@ -39,7 +39,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.image_thumbnail_resolution').toUpperCase()}
+          label={$t('admin.image_thumbnail_resolution')}
           desc={$t('admin.image_thumbnail_resolution_description')}
           number
           bind:value={config.image.thumbnailSize}
@@ -56,7 +56,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.image_preview_format').toUpperCase()}
+          label={$t('admin.image_preview_format')}
           desc={$t('admin.image_format_description')}
           bind:value={config.image.previewFormat}
           options={[
@@ -69,7 +69,7 @@
         />
 
         <SettingSelect
-          label={$t('admin.image_preview_resolution').toUpperCase()}
+          label={$t('admin.image_preview_resolution')}
           desc={$t('admin.image_preview_resolution_description')}
           number
           bind:value={config.image.previewSize}
@@ -86,7 +86,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
-          label={$t('admin.image_quality').toUpperCase()}
+          label={$t('admin.image_quality')}
           desc={$t('admin.image_quality_description')}
           bind:value={config.image.quality}
           isEdited={config.image.quality !== savedConfig.image.quality}
@@ -94,7 +94,7 @@
         />
 
         <SettingSwitch
-          title={$t('admin.image_prefer_wide_gamut').toUpperCase()}
+          title={$t('admin.image_prefer_wide_gamut')}
           subtitle={$t('admin.image_prefer_wide_gamut_setting_description')}
           checked={config.image.colorspace === Colorspace.P3}
           on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
@@ -103,7 +103,7 @@
         />
 
         <SettingSwitch
-          title={$t('admin.image_prefer_embedded_preview').toUpperCase()}
+          title={$t('admin.image_prefer_embedded_preview')}
           subtitle={$t('admin.image_prefer_embedded_preview_setting_description')}
           checked={config.image.extractEmbedded}
           on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}

@@ -395,12 +395,12 @@ describe('AuthService', () => {
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
 
-      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+      await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toThrow(
+        BadRequestException,
       );
 
       expect(userMock.update).not.toHaveBeenCalled();
-      expect(userMock.create).toHaveBeenCalled();
+      expect(userMock.create).not.toHaveBeenCalled();
     });
 
     it('should allow auto registering by default', async () => {

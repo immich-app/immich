@@ -6,7 +6,7 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -111,6 +111,14 @@ function sortKeys<T>(target: T): T {
 export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
+const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
+  if (typeof schema === 'string' || '$ref' in schema) {
+    return false;
+  }
+
+  return true;
+};
+
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
 
@@ -119,13 +127,23 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
     document.components.schemas = sortKeys(schemas);
 
-    for (const schema of Object.values(schemas)) {
+    for (const [schemaName, schema] of Object.entries(schemas)) {
       if (schema.properties) {
         schema.properties = sortKeys(schema.properties);
-      }
 
-      if (schema.required) {
-        schema.required = schema.required.sort();
+        for (const [key, value] of Object.entries(schema.properties)) {
+          if (typeof value === 'string') {
+            continue;
+          }
+
+          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
+            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+          }
+        }
+
+        if (schema.required) {
+          schema.required = schema.required.sort();
+        }
       }
     }
   }

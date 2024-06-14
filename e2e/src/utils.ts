@@ -3,6 +3,7 @@ import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
+  CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
   MetadataSearchDto,
@@ -10,6 +11,7 @@ import {
   SharedLinkCreateDto,
   UserAdminCreateDto,
   ValidateLibraryDto,
+  checkExistingAssets,
   createAlbum,
   createApiKey,
   createLibrary,
@@ -373,6 +375,9 @@ export const utils = {
   },
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
+
+  checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
+    checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
   metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });

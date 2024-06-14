@@ -21,7 +21,7 @@ export class DuplicateDetectionConfig extends TaskConfig {
   @Min(0.001)
   @Max(0.1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'float' })
+  @ApiProperty({ type: 'number', format: 'double' })
   maxDistance!: number;
 }
 
@@ -30,14 +30,14 @@ export class FacialRecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'float' })
+  @ApiProperty({ type: 'number', format: 'double' })
   minScore!: number;
 
   @IsNumber()
   @Min(0)
   @Max(2)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'float' })
+  @ApiProperty({ type: 'number', format: 'double' })
   maxDistance!: number;
 
   @IsNumber()

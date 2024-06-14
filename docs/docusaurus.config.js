@@ -124,7 +124,7 @@ const config = {
             position: 'right',
           },
           {
-            href: 'https://discord.gg/D8JsnBEuKb',
+            href: 'https://discord.immich.app',
             label: 'Discord',
             position: 'right',
           },
@@ -151,7 +151,7 @@ const config = {
             items: [
               {
                 label: 'Discord',
-                href: 'https://discord.com/invite/D8JsnBEuKb',
+                href: 'https://discord.immich.app',
               },
               {
                 label: 'Reddit',

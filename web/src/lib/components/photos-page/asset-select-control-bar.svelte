@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   import { createContext } from '$lib/utils/context';
+  import { t } from 'svelte-i18n';
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
@@ -32,7 +33,8 @@
 
 <ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    Selected {assets.size.toLocaleString($locale)}
+    {$t('selected')}
+    {assets.size.toLocaleString($locale)}
   </p>
   <slot slot="trailing" />
 </ControlAppBar>

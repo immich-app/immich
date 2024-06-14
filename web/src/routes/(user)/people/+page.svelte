@@ -422,7 +422,7 @@
         <LinkButton on:click={() => (selectHidden = !selectHidden)}>
           <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
             <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">Show & hide people</p>
+            <p class="ml-2">{$t('show_and_hide_people')}</p>
           </div>
         </LinkButton>
       </div>

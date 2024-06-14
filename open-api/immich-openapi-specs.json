@@ -6735,7 +6735,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.106.2",
+    "version": "1.106.4",
     "contact": {}
   },
   "tags": [],
@@ -7708,6 +7708,9 @@
           "originalFileName": {
             "type": "string"
           },
+          "originalMimeType": {
+            "type": "string"
+          },
           "originalPath": {
             "type": "string"
           },
@@ -8146,7 +8149,7 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "format": "float",
+            "format": "double",
             "maximum": 0.1,
             "minimum": 0.001,
             "type": "number"
@@ -8347,7 +8350,7 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "format": "float",
+            "format": "double",
             "maximum": 2,
             "minimum": 0,
             "type": "number"
@@ -8357,7 +8360,7 @@
             "type": "integer"
           },
           "minScore": {
-            "format": "float",
+            "format": "double",
             "maximum": 1,
             "minimum": 0,
             "type": "number"
@@ -9797,7 +9800,7 @@
             "type": "integer"
           },
           "diskUsagePercentage": {
-            "format": "float",
+            "format": "double",
             "type": "number"
           },
           "diskUse": {
