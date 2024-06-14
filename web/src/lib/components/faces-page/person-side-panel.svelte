@@ -68,7 +68,7 @@
       allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
-      handleError(error, $t('cant_get_faces'));
+      handleError(error, $t('errors.cant_get_faces'));
     } finally {
       clearTimeout(timeout);
     }
@@ -142,11 +142,11 @@
         }
 
         notificationController.show({
-          message: `Edited ${numberOfChanges} ${numberOfChanges > 1 ? 'people' : 'person'}`,
+          message: $t('people_edits_count', { values: { count: numberOfChanges } }),
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, $t('cant_apply_changes'));
+        handleError(error, $t('errors.cant_apply_changes'));
       }
     }
 

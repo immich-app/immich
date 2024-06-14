@@ -73,13 +73,9 @@
               })}
             </p>
             <p class="immich-form-label text-xs">
-              {@html $t('upload_status', {
-                values: {
-                  successful: `<span class="text-immich-success">${$successCounter}</span>`,
-                  errors: `<span class="text-immich-error">${$errorCounter}</span>`,
-                  duplicates: `<span class="text-immich-warning">${$duplicateCounter}</span>`,
-                },
-              })}
+              {$t('upload_status_uploaded')} <span class="text-immich-success">{$successCounter}</span> -
+              {$t('upload_status_errors')} <span class="text-immich-error">{$errorCounter}</span> -
+              {$t('upload_status_duplicates')} <span class="text-immich-warning">{$duplicateCounter}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">

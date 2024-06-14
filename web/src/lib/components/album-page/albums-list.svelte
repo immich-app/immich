@@ -304,7 +304,7 @@
 
     const isConfirmed = await dialogController.show({
       id: 'delete-album',
-      prompt: `Are you sure you want to delete the album ${albumToDelete.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+      prompt: $t('album_delete_confirmation', { values: { album: albumToDelete.albumName } }),
     });
 
     if (!isConfirmed) {
@@ -340,7 +340,7 @@
       message: $t('album_info_updated'),
       type: NotificationType.Info,
       button: {
-        text: 'View Album',
+        text: $t('view_album'),
         onClick() {
           return goto(`${AppRoute.ALBUMS}/${album.id}`);
         },

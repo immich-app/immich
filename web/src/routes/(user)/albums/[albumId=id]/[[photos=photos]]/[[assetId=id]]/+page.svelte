@@ -173,10 +173,10 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
       });
     } catch (error) {
-      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      handleError(error, $t('errors.cant_change_activity'));
     }
   };
 
@@ -194,7 +194,7 @@
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
-      handleError(error, "Can't change favorite for asset");
+      handleError(error, $t('errors.cant_change_asset_favorite'));
     }
   };
 
@@ -221,7 +221,7 @@
       const { comments } = await getActivityStatistics({ albumId: album.id });
       setNumberOfComments(comments);
     } catch (error) {
-      handleError(error, "Can't get number of comments");
+      handleError(error, $t('errors.cant_get_number_of_comments'));
     }
   };
 
@@ -288,7 +288,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${s(count)}`,
+        message: $t('assets_added_count', { values: { count: count } }),
       });
 
       await refreshAlbum();
@@ -296,7 +296,7 @@
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding assets to album');
+      handleError(error, $t('errors.error_adding_assets_to_album'));
     }
   };
 
@@ -327,7 +327,7 @@
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      handleError(error, $t('errors.error_adding_users_to_album'));
     }
   };
 
@@ -341,7 +341,7 @@
       await refreshAlbum();
       viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, $t('errors.unable_to_load_album'));
+      handleError(error, $t('errors.error_deleting_shared_user'));
     }
   };
 
@@ -352,7 +352,7 @@
   const handleRemoveAlbum = async () => {
     const isConfirmed = await dialogController.show({
       id: 'remove-album',
-      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+      prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
     });
 
     if (!isConfirmed) {
@@ -403,7 +403,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update album cover');
+      handleError(error, $t('errors.unable_to_update_album_cover'));
     }
   };
 

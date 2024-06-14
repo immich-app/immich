@@ -488,7 +488,7 @@
                     {#if data.person.name}
                       <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
                       <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {`${numberOfAssets} asset${s(numberOfAssets)}`}
+                        {$t('assets_count', { values: { count: numberOfAssets } })}
                       </p>
                     {:else}
                       <p class="font-medium">{$t('add_a_name')}</p>

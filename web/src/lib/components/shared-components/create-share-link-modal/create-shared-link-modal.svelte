@@ -95,7 +95,7 @@
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       dispatch('created');
     } catch (error) {
-      handleError(error, 'Failed to create shared link');
+      handleError(error, $t('errors.failed_to_create_shared_link'));
     }
   };
 
@@ -162,7 +162,7 @@
 
       onClose();
     } catch (error) {
-      handleError(error, 'Failed to edit shared link');
+      handleError(error, $t('errors.failed_to_edit_shared_link'));
     }
   };
 
@@ -190,7 +190,7 @@
 
     {#if shareType === SharedLinkType.Individual}
       {#if !editingLink}
-        <div>Let anyone with the link see the selected photo(s)</div>
+        <div>{$t('create_link_to_share_description')}</div>
       {:else}
         <div class="text-sm">
           Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
@@ -233,13 +233,13 @@
         <div class="my-3">
           <SettingSwitch
             bind:checked={allowDownload}
-            title={'Allow public user to download'}
+            title={$t('allow_public_user_to_download')}
             disabled={!showMetadata}
           />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
         </div>
 
         <div class="text-sm">

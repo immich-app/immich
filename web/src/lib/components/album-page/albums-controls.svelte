@@ -118,8 +118,8 @@
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
   on:select={({ detail }) => handleChangeSortBy(detail)}
-  render={({ text }) => ({
-    title: text,
+  render={({ key }) => ({
+    title: $t(key),
     icon: sortIcon,
   })}
 />
@@ -130,8 +130,8 @@
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
   on:select={({ detail }) => handleChangeGroupBy(detail)}
-  render={({ text, isDisabled }) => ({
-    title: text,
+  render={({ key, isDisabled }) => ({
+    title: $t(key),
     icon: groupIcon,
     disabled: isDisabled(),
   })}

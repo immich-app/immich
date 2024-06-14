@@ -57,7 +57,7 @@
               settings.dateBefore = '';
             }}
           >
-            Remove custom date range
+            {$t('remove_custom_date_range')}
           </LinkButton>
         </div>
       </div>
@@ -70,7 +70,7 @@
           options={[
             {
               value: '',
-              text: 'All',
+              text: $t('all'),
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
@@ -101,7 +101,7 @@
               settings.relativeDate = '';
             }}
           >
-            Use custom date range instead
+            {$t('use_custom_date_range')}
           </LinkButton>
         </div>
       </div>
