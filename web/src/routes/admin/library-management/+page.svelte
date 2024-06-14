@@ -383,11 +383,8 @@
                     <MenuOption on:click={() => onRenameClicked(index)} text={$t('rename')} />
                     <MenuOption on:click={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
                     <MenuOption on:click={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
-                    <MenuOption
-                      on:click={() => onScanNewLibraryClicked(library)}
-                      text={$t('scan_new_library_files')}
-                      topBorder
-                    />
+                    <hr />
+                    <MenuOption on:click={() => onScanNewLibraryClicked(library)} text={$t('scan_new_library_files')} />
                     <MenuOption
                       on:click={() => onScanAllLibraryFilesClicked(library)}
                       text={$t('scan_all_library_files')}
@@ -398,10 +395,10 @@
                       text={$t('force_re-scan_library_files')}
                       subtitle={$t('refreshes_every_file')}
                     />
+                    <hr />
                     <MenuOption
                       on:click={() => onRemoveOfflineFilesClicked(library)}
                       text={$t('remove_offline_files')}
-                      topBorder
                     />
                     <MenuOption on:click={() => onDeleteLibraryClicked(library, index)}>
                       <p class="text-red-600">{$t('delete_library')}</p>

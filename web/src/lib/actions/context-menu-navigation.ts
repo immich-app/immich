@@ -68,7 +68,7 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
       await tick();
     }
 
-    const children = Array.from(container?.children) as HTMLElement[];
+    const children = Array.from(container?.children).filter((child) => child.tagName !== 'HR') as HTMLElement[];
     if (children.length === 0) {
       return;
     }
@@ -94,9 +94,9 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
   };
 
   const { destroy } = shortcuts(node, [
-    { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event), ignoreInputFields: false },
-    { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event), ignoreInputFields: false },
-    { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event), ignoreInputFields: false },
+    { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event) },
+    { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event) },
+    { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event) },
   ]);
 
   return {

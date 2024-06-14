@@ -227,11 +227,11 @@
             on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
           />
+          <hr />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
             on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
             text={getAssetJobName(AssetJobName.RefreshMetadata)}
-            topBorder
           />
           <MenuOption
             icon={mdiImageRefreshOutline}

@@ -11,7 +11,6 @@
   export let text = '';
   export let subtitle = '';
   export let icon = '';
-  export let topBorder = false;
 
   let id: string = generateId();
   const closeMenu = triggerMenuContext();
@@ -33,7 +32,6 @@
   {id}
   on:click={handleClick}
   class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:{selectedColor} focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
-  class:border-t-2={topBorder}
   role="menuitem"
 >
   {#if text}

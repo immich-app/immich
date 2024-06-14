@@ -76,6 +76,7 @@
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <hr />
       <AssetJobActions />
     </ButtonContextMenu>
   </AssetSelectControlBar>

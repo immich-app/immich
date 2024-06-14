@@ -32,13 +32,8 @@
   };
 </script>
 
-{#each jobs as job, index}
+{#each jobs as job}
   {#if isAllVideos || job !== AssetJobName.TranscodeVideo}
-    <MenuOption
-      text={getAssetJobName(job)}
-      icon={getAssetJobIcon(job)}
-      topBorder={index === 0}
-      on:click={() => handleRunJob(job)}
-    />
+    <MenuOption text={getAssetJobName(job)} icon={getAssetJobIcon(job)} on:click={() => handleRunJob(job)} />
   {/if}
 {/each}
