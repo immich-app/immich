@@ -48,7 +48,6 @@
   }
 
   let point: Point | null = null;
-  let activeSuggestion: string | undefined = undefined;
 
   const handleCancel = () => dispatch('cancel');
 
@@ -69,8 +68,6 @@
   };
 
   const handleSearchPlaces = () => {
-    hideSuggestion = false;
-
     if (searchWord === '') {
       return;
     }
@@ -80,10 +77,6 @@
     }
     showLoadingSpinner = true;
     const searchTimeout = window.setTimeout(() => {
-      if (searchWord === '') {
-        showLoadingSpinner = false;
-        return;
-      }
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
@@ -122,16 +115,7 @@
     <div
       class="relative w-64 sm:w-96"
       use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
-      use:listNavigation={{
-        container: suggestionContainer,
-        selectedId: activeSuggestion,
-        selectionChanged: (node) => {
-          activeSuggestion = node?.id;
-          node?.focus();
-        },
-        openDropdown: () => (hideSuggestion = false),
-        closeDropdown: () => (hideSuggestion = true),
-      }}
+      use:listNavigation={suggestionContainer}
     >
       <button type="button" class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
@@ -149,7 +133,6 @@
         {#if !hideSuggestion}
           {#each suggestedPlaces as place, index}
             <button
-              id={`suggested-place-${index}`}
               type="button"
               class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
               suggestedPlaces.length - 1

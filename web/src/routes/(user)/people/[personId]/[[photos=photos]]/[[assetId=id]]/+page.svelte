@@ -17,7 +17,6 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -57,12 +56,12 @@
   import type { PageData } from './$types';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
   export let data: PageData;
 
   let numberOfAssets = data.statistics.assets;
   let { isViewing: showAssetViewer } = assetViewingStore;
-  let activeSuggestion: string | undefined = undefined;
 
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
@@ -453,16 +452,9 @@
           class="relative w-fit p-4 sm:px-6"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
+            onEscape: handleCancelEditName,
           }}
-          use:listNavigation={{
-            container: suggestionContainer,
-            selectedId: activeSuggestion,
-            closeDropdown: handleCancelEditName,
-            selectionChanged: (node) => {
-              activeSuggestion = node?.id;
-              node?.focus();
-            },
-          }}
+          use:listNavigation={suggestionContainer}
         >
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
@@ -523,7 +515,6 @@
                 <div bind:this={suggestionContainer}>
                   {#each suggestedPeople as person, index (person.id)}
                     <button
-                      id="suggested-person-{person.id}"
                       type="button"
                       class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                       suggestedPeople.length - 1

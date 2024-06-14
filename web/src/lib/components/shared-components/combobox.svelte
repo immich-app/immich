@@ -13,14 +13,13 @@
   import { fly } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/actions/shortcut';
   import { clickOutside } from '$lib/actions/click-outside';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
 
   export let label: string;
@@ -47,7 +46,6 @@
   let input: HTMLInputElement;
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
-  let listboxRef: HTMLUListElement;
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -80,6 +78,18 @@
     selectedIndex = undefined;
   };
 
+  const incrementSelectedIndex = async (increment: number) => {
+    if (filteredOptions.length === 0) {
+      selectedIndex = 0;
+    } else if (selectedIndex === undefined) {
+      selectedIndex = increment === 1 ? 0 : filteredOptions.length - 1;
+    } else {
+      selectedIndex = (selectedIndex + increment + filteredOptions.length) % filteredOptions.length;
+    }
+    await tick();
+    optionRefs[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+  };
+
   const onInput: FormEventHandler<HTMLInputElement> = (event) => {
     openDropdown();
     searchQuery = event.currentTarget.value;
@@ -100,13 +110,6 @@
     selectedOption = undefined;
     searchQuery = '';
     dispatch('select', selectedOption);
-  };
-
-  const selectionChanged = (_: HTMLElement | undefined, index: number | undefined) => {
-    selectedIndex = index;
-    if (selectedIndex !== undefined) {
-      optionRefs[selectedIndex]?.scrollIntoView({ block: 'nearest' });
-    }
   };
 </script>
 
@@ -153,14 +156,21 @@
       role="combobox"
       type="text"
       value={searchQuery}
-      use:listNavigation={{
-        container: listboxRef,
-        selectedId: selectedIndex === undefined ? undefined : `${listboxId}-${selectedIndex}`,
-        openDropdown,
-        closeDropdown,
-        selectionChanged,
-      }}
       use:shortcuts={[
+        {
+          shortcut: { key: 'ArrowUp' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(-1);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowDown' },
+          onShortcut: () => {
+            openDropdown();
+            void incrementSelectedIndex(1);
+          },
+        },
         {
           shortcut: { key: 'ArrowDown', alt: true },
           onShortcut: () => {
@@ -173,6 +183,13 @@
             if (selectedIndex !== undefined && filteredOptions.length > 0) {
               onSelect(filteredOptions[selectedIndex]);
             }
+            closeDropdown();
+          },
+        },
+        {
+          shortcut: { key: 'Escape' },
+          onShortcut: (event) => {
+            event.stopPropagation();
             closeDropdown();
           },
         },
@@ -193,7 +210,6 @@
   </div>
 
   <ul
-    bind:this={listboxRef}
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}

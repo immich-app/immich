@@ -5,10 +5,10 @@
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { listNavigation } from '$lib/actions/list-navigation';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
 
   export let icon: string;
   export let title: string;
@@ -98,7 +98,7 @@
         preventDefault: false,
       },
     ]}
-    use:listNavigation={{
+    use:contextMenuNavigation={{
       container: menuContainer,
       selectedId,
       selectedClass: `!${selectedColor}`,

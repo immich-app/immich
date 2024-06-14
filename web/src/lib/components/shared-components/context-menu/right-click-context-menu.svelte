@@ -2,10 +2,10 @@
   import { tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { listNavigation } from '$lib/actions/list-navigation';
   import { generateId } from '$lib/utils/generate-id';
   import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
 
   export let title: string;
   export let direction: 'left' | 'right' = 'right';
@@ -98,7 +98,7 @@
           onShortcut: closeContextMenu,
         },
       ]}
-      use:listNavigation={{
+      use:contextMenuNavigation={{
         container: contextMenuElement,
         selectedId: selectedId,
         selectedClass: `!${selectedColor}`,
