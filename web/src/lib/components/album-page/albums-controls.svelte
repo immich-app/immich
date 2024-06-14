@@ -47,7 +47,7 @@
 
   const handleChangeAlbumFilter = (filter: string, defaultFilter: AlbumFilter) => {
     $albumViewSettings.filter =
-      Object.keys(albumFilterNames).find((key) => Object(albumFilterNames)[key] === filter) ?? defaultFilter;
+      Object.keys(albumFilterNames).find((key) => albumFilterNames[key as AlbumFilter] === filter) ?? defaultFilter;
   };
 
   const handleChangeGroupBy = ({ id, defaultOrder }: AlbumGroupOptionMetadata) => {
