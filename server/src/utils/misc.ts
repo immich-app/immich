@@ -71,12 +71,6 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggerReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
-export interface OpenGraphTags {
-  title: string;
-  description: string;
-  imageUrl?: string;
-}
-
 function cleanModelName(modelName: string): string {
   const token = modelName.split('/').at(-1);
   if (!token) {

@@ -59,7 +59,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
+  // import * as copyImageClipboardModule from 'copy-image-clipboard';
   import { t } from 'svelte-i18n';
 
   export let assetStore: AssetStore | null = null;
@@ -565,7 +565,7 @@
           {asset}
           {album}
           isMotionPhotoPlaying={shouldPlayMotionPhoto}
-          showCopyButton={canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
+          showCopyButton={false}
           showZoomButton={asset.type === AssetTypeEnum.Image}
           showMotionPlayButton={!!asset.livePhotoVideoId}
           showDownloadButton={shouldShowDownloadButton}

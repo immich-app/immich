@@ -11,9 +11,8 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
-  import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
+  // import * as copyImageModule from 'copy-image-clipboard';
   import { onDestroy } from 'svelte';
-
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -77,12 +76,13 @@
   };
 
   copyImage = async () => {
-    if (!canCopyImagesToClipboard()) {
-      return;
-    }
+    await Promise.resolve('yes');
+    // if (!copyImageModulecanCopyImagesToClipboard()) {
+    //   return;
+    // }
 
     try {
-      await copyImageToClipboard(assetFileUrl);
+      // await copyImageToClipboard(assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
         message: $t('copied_image_to_clipboard'),

@@ -85,7 +85,6 @@
     "sanitize-filename": "^1.6.3",
     "semver": "^7.6.2",
     "sharp": "^0.33.0",
-    "sirv": "^2.0.4",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
     "ua-parser-js": "^1.0.35"

@@ -20,6 +20,7 @@
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import { browser } from '$app/environment';
 
   let showNavigationLoadingBar = false;
 
@@ -32,6 +33,10 @@
   }
 
   const changeTheme = (theme: ThemeSetting) => {
+    if (!browser) {
+      return;
+    }
+
     if (theme.system) {
       theme.value =
         window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
@@ -56,7 +61,9 @@
   });
 
   onDestroy(() => {
-    document.removeEventListener('change', handleChangeTheme);
+    if (browser) {
+      document.removeEventListener('change', handleChangeTheme);
+    }
   });
 
   if (isSharedLinkRoute($page.route?.id)) {

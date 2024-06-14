@@ -16,7 +16,6 @@ import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entit
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService {
@@ -176,24 +175,6 @@ export class SharedLinkService {
     await this.repository.update(sharedLink);
 
     return results;
-  }
-
-  async getMetadataTags(auth: AuthDto): Promise<null | OpenGraphTags> {
-    if (!auth.sharedLink || auth.sharedLink.password) {
-      return null;
-    }
-
-    const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
-
-    return {
-      title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
-      description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: assetId
-        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
-        : '/feature-panel.png',
-    };
   }
 
   private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
