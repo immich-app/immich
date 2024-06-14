@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import {
+  AlbumFilter,
   AlbumGroupBy,
   AlbumSortBy,
   SortOrder,
@@ -86,6 +87,12 @@ export const findSortOptionMetadata = (sortBy: string) => {
   // Default is sort by most recent photo
   const defaultSortOption = sortOptionsMetadata[4];
   return sortOptionsMetadata.find(({ id }) => sortBy === id) ?? defaultSortOption;
+};
+
+export const findFilterOption = (filter: string) => {
+  // Default is All filter
+  const defaultFilterOption = AlbumFilter.All;
+  return Object.values(AlbumFilter).find((key) => filter === AlbumFilter[key]) ?? defaultFilterOption;
 };
 
 /**

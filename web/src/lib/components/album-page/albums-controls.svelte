@@ -26,6 +26,7 @@
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
     findGroupOptionMetadata,
+    findFilterOption,
     findSortOptionMetadata,
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
@@ -42,6 +43,11 @@
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
+  };
+
+  const handleChangeAlbumFilter = (filter: string, defaultFilter: AlbumFilter) => {
+    $albumViewSettings.filter =
+      Object.keys(albumFilterNames).find((key) => Object(albumFilterNames)[key] === filter) ?? defaultFilter;
   };
 
   const handleChangeGroupBy = ({ id, defaultOrder }: AlbumGroupOptionMetadata) => {
@@ -76,6 +82,8 @@
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   }
+
+  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
 
   $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
@@ -116,8 +124,8 @@
 <div class="hidden xl:block h-10">
   <GroupTab
     filters={Object.values(albumFilterNames)}
-    selected={$albumViewSettings.filter}
-    onSelect={(selected) => ($albumViewSettings.filter = selected)}
+    selected={selectedFilterOption}
+    onSelect={(selected) => handleChangeAlbumFilter(selected, AlbumFilter.All)}
   />
 </div>
 
