@@ -38,9 +38,8 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            title={$t('enable')}
+            title={$t('admin.library_watching_enable_description')}
             {disabled}
-            subtitle={$t('admin.library_watching_enable_description')}
             bind:checked={config.library.watch.enabled}
           />
         </div>
@@ -65,14 +64,18 @@
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            title={$t('enabled').toUpperCase()}
+            title={$t('admin.library_scanning_enable_description')}
             {disabled}
-            subtitle={$t('admin.library_scanning_enable_description')}
             bind:checked={config.library.scan.enabled}
           />
 
           <div class="flex flex-col my-2 dark:text-immich-dark-fg">
-            <label class="text-sm" for="expression-select">{$t('admin.library_cron_expression_presets')}</label>
+            <label
+              class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
+              for="expression-select"
+            >
+              {$t('admin.library_cron_expression_presets')}
+            </label>
             <select
               class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
               disabled={disabled || !config.library.scan.enabled}

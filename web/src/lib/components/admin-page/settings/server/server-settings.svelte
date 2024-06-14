@@ -24,7 +24,7 @@
       <div class="mt-4 ml-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('admin.server_external_domain_settings').toUpperCase()}
+          label={$t('admin.server_external_domain_settings')}
           desc={$t('admin.server_external_domain_settings_description')}
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
@@ -32,7 +32,7 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('admin.server_welcome_message').toUpperCase()}
+          label={$t('admin.server_welcome_message')}
           desc={$t('admin.server_welcome_message_description')}
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}

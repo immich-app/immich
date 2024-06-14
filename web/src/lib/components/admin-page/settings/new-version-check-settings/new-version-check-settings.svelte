@@ -21,8 +21,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4">
         <SettingSwitch
-          title={$t('enabled').toUpperCase()}
-          subtitle={$t('admin.version_check_enabled_description')}
+          title={$t('admin.version_check_enabled_description')}
           bind:checked={config.newVersionCheck.enabled}
           {disabled}
         />
