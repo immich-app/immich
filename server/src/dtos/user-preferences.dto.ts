@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, ValidateNested } from 'class-validator';
+import { IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
 import { Optional, ValidateBoolean } from 'src/validation';
 
@@ -29,7 +29,9 @@ class EmailNotificationsUpdate {
 
 class DownloadUpdate {
   @Optional()
-  @IsNumber()
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
   archiveSize?: number;
 }
 
@@ -71,6 +73,7 @@ class EmailNotificationsResponse {
 }
 
 class DownloadResponse {
+  @ApiProperty({ type: 'integer' })
   archiveSize!: number;
 }
 

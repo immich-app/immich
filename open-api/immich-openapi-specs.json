@@ -8128,7 +8128,7 @@
       "DownloadResponse": {
         "properties": {
           "archiveSize": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -8157,7 +8157,8 @@
       "DownloadUpdate": {
         "properties": {
           "archiveSize": {
-            "type": "number"
+            "minimum": 1,
+            "type": "integer"
           }
         },
         "type": "object"

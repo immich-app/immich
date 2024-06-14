@@ -16,7 +16,7 @@ class DownloadResponse {
     required this.archiveSize,
   });
 
-  num archiveSize;
+  int archiveSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadResponse &&
@@ -44,7 +44,7 @@ class DownloadResponse {
       final json = value.cast<String, dynamic>();
 
       return DownloadResponse(
-        archiveSize: num.parse('${json[r'archiveSize']}'),
+        archiveSize: mapValueOfType<int>(json, r'archiveSize')!,
       );
     }
     return null;

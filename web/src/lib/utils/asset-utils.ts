@@ -5,7 +5,8 @@ import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store'
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
-import { downloadRequest, getKey, s } from '$lib/utils';
+import { preferences } from '$lib/stores/user.store';
+import { downloadRequest, getKey, s, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { asByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
@@ -14,14 +15,12 @@ import {
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
-  getMyPreferences,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
-  type DownloadResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -95,22 +94,19 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
-  let downloadInfo: DownloadResponseDto | null = null;
-  const { download } = await getMyPreferences();
+export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
+  const $preferences = get(preferences);
+  const dto = { ...options, archiveSize: $preferences.download.archiveSize };
 
-  try {
-    downloadInfo = await getDownloadInfo({
-      downloadInfoDto: { archiveSize: download.archiveSize, ...options },
-      key: getKey(),
-    });
-  } catch (error) {
+  const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: getKey() }));
+  if (error) {
     handleError(error, 'Unable to download files');
     return;
   }
 
-  // TODO: prompt for big download
-  // const total = downloadInfo.totalSize;
+  if (!downloadInfo) {
+    return;
+  }
 
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];

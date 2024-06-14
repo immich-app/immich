@@ -16,13 +16,14 @@ class DownloadUpdate {
     this.archiveSize,
   });
 
+  /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? archiveSize;
+  int? archiveSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadUpdate &&
@@ -54,7 +55,7 @@ class DownloadUpdate {
       final json = value.cast<String, dynamic>();
 
       return DownloadUpdate(
-        archiveSize: num.parse('${json[r'archiveSize']}'),
+        archiveSize: mapValueOfType<int>(json, r'archiveSize'),
       );
     }
     return null;

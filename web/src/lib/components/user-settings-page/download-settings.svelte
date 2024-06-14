@@ -13,16 +13,15 @@
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
 
-  const GiB = 2 ** 30;
-  let archiveSize = $preferences?.download?.archiveSize / GiB;
+  let archiveSize = convertFromBytes($preferences?.download?.archiveSize || 4, 'GiB');
 
   const handleSave = async () => {
     try {
-      const data = await updateMyPreferences({
-        userPreferencesUpdateDto: { download: { archiveSize: archiveSize * GiB } },
-      });
-      $preferences.download.archiveSize = data.download.archiveSize / GiB;
+      const dto = { download: { archiveSize: Math.floor(convertToBytes(archiveSize, 'GiB')) } };
+      const newPreferences = await updateMyPreferences({ userPreferencesUpdateDto: dto });
+      $preferences = newPreferences;
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
@@ -38,7 +37,7 @@
         <div class="ml-4">
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            title={$t('archive_size')}
+            label={$t('archive_size')}
             desc={$t('archive_size_description')}
             bind:value={archiveSize}
           />

@@ -174,20 +174,43 @@ describe('/users', () => {
       expect(after).toMatchObject({ memories: { enabled: false } });
     });
 
-    it('should update download archive size', async () => {
-      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
-      expect(before).toMatchObject({ download: { archiveSize: 2 ** 32 } });
-
+    it('should update avatar color', async () => {
       const { status, body } = await request(app)
         .put(`/users/me/preferences`)
-        .send({ download: { archiveSize: 6 * 2 ** 30 } })
+        .send({ avatar: { color: 'blue' } })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toMatchObject({ download: { archiveSize: 6 * 2 ** 30 } });
+      expect(body).toMatchObject({ avatar: { color: 'blue' } });
 
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
-      expect(after).toMatchObject({ download: { archiveSize: 3 * 2 ** 31 } });
+      expect(after).toMatchObject({ avatar: { color: 'blue' } });
+    });
+
+    it('should require an integer for download archive size', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me/preferences`)
+        .send({ download: { archiveSize: 1_234_567.89 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['download.archiveSize must be an integer number']));
+    });
+
+    it('should update download archive size', async () => {
+      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ download: { archiveSize: 4 * 2 ** 30 } });
+
+      const { status, body } = await request(app)
+        .put(`/users/me/preferences`)
+        .send({ download: { archiveSize: 1_234_567 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ download: { archiveSize: 1_234_567 } });
+
+      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ download: { archiveSize: 1_234_567 } });
     });
   });
 
