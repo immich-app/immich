@@ -8,7 +8,7 @@ import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, s, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
-import { asByteUnitString } from '$lib/utils/byte-units';
+import { getByteUnitString } from '$lib/utils/byte-units';
 import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
@@ -232,7 +232,7 @@ export function isFlipped(orientation?: string | null) {
 
 export function getFileSize(asset: AssetResponseDto): string {
   const size = asset.exifInfo?.fileSizeInByte || 0;
-  return size > 0 ? asByteUnitString(size, undefined, 4) : 'Invalid Data';
+  return size > 0 ? getByteUnitString(size, undefined, 4) : 'Invalid Data';
 }
 
 export function getAssetResolution(asset: AssetResponseDto): string {

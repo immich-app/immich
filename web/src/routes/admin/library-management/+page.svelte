@@ -14,7 +14,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -49,7 +49,7 @@
   let videos: number[] = [];
   let totalCount: number[] = [];
   let diskUsage: number[] = [];
-  let diskUsageUnit: string[] = [];
+  let diskUsageUnit: ByteUnit[] = [];
 
   let confirmDeleteLibrary: LibraryResponseDto | null = null;
   let deletedLibrary: LibraryResponseDto | null = null;

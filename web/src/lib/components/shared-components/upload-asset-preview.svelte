@@ -2,7 +2,7 @@
   import type { UploadAsset } from '$lib/models/upload-asset';
   import { UploadState } from '$lib/models/upload-asset';
   import { locale } from '$lib/stores/preferences.store';
-  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
   import { getFilenameExtension } from '$lib/utils/asset-utils';
@@ -42,7 +42,7 @@
       <input
         disabled
         class="w-full rounded-md border bg-gray-100 p-1 px-2 text-[10px] dark:border-immich-dark-gray dark:bg-gray-900"
-        value={`[${asByteUnitString(uploadAsset.file.size, $locale)}] ${uploadAsset.file.name}`}
+        value={`[${getByteUnitString(uploadAsset.file.size, $locale)}] ${uploadAsset.file.name}`}
       />
 
       <div
@@ -55,7 +55,7 @@
             {#if uploadAsset.message}
               {uploadAsset.message}
             {:else}
-              {uploadAsset.progress}% - {asByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
+              {uploadAsset.progress}% - {getByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
             {/if}
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}

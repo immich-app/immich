@@ -1,10 +1,11 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import { ByteUnit } from '$lib/utils/byte-units';
 
   export let icon: string;
   export let title: string;
   export let value: number;
-  export let unit: string | undefined = undefined;
+  export let unit: ByteUnit | undefined = undefined;
 
   $: zeros = () => {
     const maxLength = 13;
@@ -26,7 +27,7 @@
       class="text-immich-primary dark:text-immich-dark-primary">{value}</span
     >
     {#if unit}
-      <span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
+      <span class="absolute -top-5 right-2 text-base font-light text-gray-400">{ByteUnit[unit]}</span>
     {/if}
   </div>
 </div>

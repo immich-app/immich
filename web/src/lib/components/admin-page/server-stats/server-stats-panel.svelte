@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { asByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
+  import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import StatsCard from './stats-card.svelte';
@@ -102,9 +102,9 @@
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.photos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">
-              {asByteUnitString(user.usage, $locale, 0)}
+              {getByteUnitString(user.usage, $locale, 0)}
               {#if user.quotaSizeInBytes}
-                / {asByteUnitString(user.quotaSizeInBytes, $locale, 0)}
+                / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
               {/if}
               <span class="text-immich-primary dark:text-immich-dark-primary">
                 {#if user.quotaSizeInBytes}

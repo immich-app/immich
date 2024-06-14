@@ -19,7 +19,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
-  import { asByteUnitString } from '$lib/utils/byte-units';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -215,7 +215,7 @@
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
-                      {asByteUnitString(immichUser.quotaSizeInBytes, $locale)}
+                      {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
                       <Icon path={mdiClose} size="16" />
                     {/if}
