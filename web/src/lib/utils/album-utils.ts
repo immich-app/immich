@@ -45,7 +45,6 @@ export const createAlbumAndRedirect = async (name?: string, assetIds?: string[])
  */
 export interface AlbumSortOptionMetadata {
   id: AlbumSortBy;
-  key: string;
   defaultOrder: SortOrder;
   columnStyle: string;
 }
@@ -53,37 +52,31 @@ export interface AlbumSortOptionMetadata {
 export const sortOptionsMetadata: AlbumSortOptionMetadata[] = [
   {
     id: AlbumSortBy.Title,
-    key: 'sort_title',
     defaultOrder: SortOrder.Asc,
     columnStyle: 'text-left w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
   },
   {
     id: AlbumSortBy.ItemCount,
-    key: 'sort_items',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center w-4/12 m:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.DateModified,
-    key: 'sort_modified',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.DateCreated,
-    key: 'sort_created',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.MostRecentPhoto,
-    key: 'sort_recent',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.OldestPhoto,
-    key: 'sort_oldest',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
   },
@@ -102,13 +95,11 @@ export const findSortOptionMetadata = (sortBy: string) => {
  */
 export interface AlbumGroup {
   id: string;
-  name: string;
   albums: AlbumResponseDto[];
 }
 
 export interface AlbumGroupOptionMetadata {
   id: AlbumGroupBy;
-  key: string;
   defaultOrder: SortOrder;
   isDisabled: () => boolean;
 }
@@ -116,13 +107,11 @@ export interface AlbumGroupOptionMetadata {
 export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
   {
     id: AlbumGroupBy.None,
-    key: 'group_no',
     defaultOrder: SortOrder.Asc,
     isDisabled: () => false,
   },
   {
     id: AlbumGroupBy.Year,
-    key: 'group_year',
     defaultOrder: SortOrder.Desc,
     isDisabled() {
       const disabledWithSortOptions: string[] = [AlbumSortBy.DateCreated, AlbumSortBy.DateModified];
@@ -131,7 +120,6 @@ export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
   },
   {
     id: AlbumGroupBy.Owner,
-    key: 'group_owner',
     defaultOrder: SortOrder.Asc,
     isDisabled: () => false,
   },

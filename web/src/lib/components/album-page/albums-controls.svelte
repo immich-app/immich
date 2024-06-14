@@ -4,6 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     AlbumFilter,
+    AlbumSortBy,
     AlbumGroupBy,
     AlbumViewMode,
     albumViewSettings,
@@ -88,12 +89,33 @@
   }
 
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
+
+  const albumFilterNames: { [key in AlbumFilter]: string } = {
+    [AlbumFilter.All]: $t('all'),
+    [AlbumFilter.Owned]: $t('owned'),
+    [AlbumFilter.Shared]: $t('shared'),
+  };
+
+  const albumSortByNames: { [key in AlbumSortBy]: string } = {
+    [AlbumSortBy.Title]: $t('sort_title'),
+    [AlbumSortBy.ItemCount]: $t('sort_items'),
+    [AlbumSortBy.DateModified]: $t('sort_modified'),
+    [AlbumSortBy.DateCreated]: $t('sort_created'),
+    [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+    [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+  };
+
+  const albumGroupByNames: { [key in AlbumGroupBy]: string } = {
+    [AlbumGroupBy.None]: $t('group_no'),
+    [AlbumGroupBy.Owner]: $t('group_owner'),
+    [AlbumGroupBy.Year]: $t('group_year'),
+  };
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
 <div class="hidden xl:block h-10">
   <GroupTab
-    filters={Object.keys(AlbumFilter)}
+    filters={Object.values(albumFilterNames)}
     selected={$albumViewSettings.filter}
     onSelect={(selected) => ($albumViewSettings.filter = selected)}
   />
@@ -118,8 +140,8 @@
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
   on:select={({ detail }) => handleChangeSortBy(detail)}
-  render={({ key }) => ({
-    title: $t(key),
+  render={({ id }) => ({
+    title: albumSortByNames[id],
     icon: sortIcon,
   })}
 />
@@ -130,8 +152,8 @@
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
   on:select={({ detail }) => handleChangeGroupBy(detail)}
-  render={({ key, isDisabled }) => ({
-    title: $t(key),
+  render={({ id, isDisabled }) => ({
+    title: albumGroupByNames[id],
     icon: groupIcon,
     disabled: isDisabled(),
   })}
