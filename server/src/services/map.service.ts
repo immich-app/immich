@@ -7,6 +7,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 
 export class MapService {
   private configCore: SystemConfigCore;
@@ -23,14 +24,10 @@ export class MapService {
   }
 
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    const userIds: string[] = [auth.user.id];
-    // TODO convert to SQL join
+    const userIds = [auth.user.id];
     if (options.withPartners) {
-      const partners = await this.partnerRepository.getAll(auth.user.id);
-      const partnersIds = partners
-        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
-        .map((partner) => partner.sharedById);
-      userIds.push(...partnersIds);
+      const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+      userIds.push(...partnerIds);
     }
 
     // TODO convert to SQL join
