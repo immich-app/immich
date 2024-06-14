@@ -95,6 +95,7 @@ export const findSortOptionMetadata = (sortBy: string) => {
  */
 export interface AlbumGroup {
   id: string;
+  name: string;
   albums: AlbumResponseDto[];
 }
 

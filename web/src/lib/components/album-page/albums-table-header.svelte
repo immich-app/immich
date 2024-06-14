@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { albumViewSettings, SortOrder } from '$lib/stores/preferences.store';
+  import { albumViewSettings, SortOrder, AlbumSortBy } from '$lib/stores/preferences.store';
   import type { AlbumSortOptionMetadata } from '$lib/utils/album-utils';
+  import { t } from 'svelte-i18n';
 
   export let option: AlbumSortOptionMetadata;
 
@@ -11,6 +12,15 @@
       $albumViewSettings.sortBy = option.id;
       $albumViewSettings.sortOrder = option.defaultOrder;
     }
+  };
+
+  const albumSortByNames: { [key in AlbumSortBy]: string } = {
+    [AlbumSortBy.Title]: $t('sort_title'),
+    [AlbumSortBy.ItemCount]: $t('sort_items'),
+    [AlbumSortBy.DateModified]: $t('sort_modified'),
+    [AlbumSortBy.DateCreated]: $t('sort_created'),
+    [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+    [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
   };
 </script>
 
@@ -27,6 +37,6 @@
         &#8593;
       {/if}
     {/if}
-    {option.text}
+    {albumSortByNames[option.id]}
   </button>
 </th>
