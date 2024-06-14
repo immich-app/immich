@@ -3,7 +3,6 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
-  import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -52,15 +51,6 @@
     showContextMenu = !showContextMenu;
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
-    if (selectedId) {
-      event.preventDefault();
-      const node: HTMLLIElement | null = menuContainer.querySelector(`#${selectedId}`);
-      node?.click();
-      closeDropdown();
-    }
-  };
-
   const onEscape = (event: KeyboardEvent) => {
     if (showContextMenu) {
       // if the dropdown is open, stop the event from propagating
@@ -91,13 +81,6 @@
 
 <div use:focusOutside={{ onFocusOut }}>
   <div
-    use:shortcuts={[
-      {
-        shortcut: { key: 'Enter' },
-        onShortcut: handleEnter,
-        preventDefault: false,
-      },
-    ]}
     use:contextMenuNavigation={{
       container: menuContainer,
       selectedId,

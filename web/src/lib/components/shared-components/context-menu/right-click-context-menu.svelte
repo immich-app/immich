@@ -62,14 +62,6 @@
     onClose?.();
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
-    if (selectedId) {
-      event.preventDefault();
-      const node: HTMLLIElement | null = contextMenuElement.querySelector(`#${selectedId}`);
-      node?.click();
-    }
-  };
-
   registerMenuContext(closeContextMenu);
 </script>
 
@@ -84,11 +76,6 @@
       type="button"
       class="sr-only"
       use:shortcuts={[
-        {
-          shortcut: { key: 'Enter' },
-          onShortcut: handleEnter,
-          preventDefault: false,
-        },
         {
           shortcut: { key: 'Tab' },
           onShortcut: closeContextMenu,
