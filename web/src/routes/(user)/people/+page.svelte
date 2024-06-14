@@ -442,7 +442,7 @@
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
-          {`No people${searchName ? ` named "${searchName}"` : ''}`}
+          {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
       </div>
     </div>
