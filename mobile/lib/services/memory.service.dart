@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
@@ -44,7 +45,7 @@ class MemoryService {
         if (dbAssets.isNotEmpty) {
           memories.add(
             Memory(
-              title: '$yearsAgo year${s(yearsAgo)} ago',
+              title: 'memories_year_ago'.plural(yearsAgo),
               assets: dbAssets,
             ),
           );
