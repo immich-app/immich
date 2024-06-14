@@ -1,6 +1,7 @@
 <script lang="ts">
   import { albumViewSettings, SortOrder } from '$lib/stores/preferences.store';
   import type { AlbumSortOptionMetadata } from '$lib/utils/album-utils';
+  import { t } from 'svelte-i18n';
 
   export let option: AlbumSortOptionMetadata;
 
@@ -27,6 +28,6 @@
         &#8593;
       {/if}
     {/if}
-    {option.text}
+    {$t(option.key)}
   </button>
 </th>

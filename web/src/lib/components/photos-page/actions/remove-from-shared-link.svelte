@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { getKey, s } from '$lib/utils';
+  import { getKey } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';

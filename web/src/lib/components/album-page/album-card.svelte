@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
