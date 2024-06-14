@@ -1,35 +1,23 @@
 <script lang="ts">
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { type AlbumResponseDto } from '@immich/sdk';
+  import NoCover from '$lib/components/sharedlinks-page/covers/no-cover.svelte';
+  import AssetCover from '$lib/components/sharedlinks-page/covers/asset-cover.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto | undefined;
+  export let album: AlbumResponseDto;
   export let preload = false;
-  export let css = '';
+  let className = '';
+  export { className as class };
 
-  $: thumbnailUrl =
-    album && album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null;
+  $: alt = album.albumName || $t('unnamed_album');
+  $: thumbnailUrl = album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null;
 </script>
 
 <div class="relative aspect-square">
   {#if thumbnailUrl}
-    <img
-      loading={preload ? 'eager' : 'lazy'}
-      src={thumbnailUrl}
-      alt={album?.albumName ?? $t('unknown_album')}
-      class="z-0 rounded-xl object-cover {css}"
-      data-testid="album-image"
-      draggable="false"
-    />
+    <AssetCover {alt} class={className} src={thumbnailUrl} {preload} />
   {:else}
-    <enhanced:img
-      loading={preload ? 'eager' : 'lazy'}
-      src="$lib/assets/no-thumbnail.png"
-      sizes="min(271px,186px)"
-      alt={album?.albumName ?? $t('empty_album')}
-      class="z-0 rounded-xl object-cover {css}"
-      data-testid="album-image"
-      draggable="false"
-    />
+    <NoCover {alt} class={className} {preload} />
   {/if}
 </div>
