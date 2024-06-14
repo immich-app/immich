@@ -7,7 +7,7 @@
  * @param unit unit to convert from
  * @returns bytes (number)
  */
-export function convertToBytes(size: number, unit: string): number {
+export function convertToBytes(size: number, unit: 'GiB'): number {
   let bytes = 0;
 
   if (unit === 'GiB') {
@@ -26,7 +26,7 @@ export function convertToBytes(size: number, unit: string): number {
  * @param unit unit to convert to
  * @returns bytes (number)
  */
-export function convertFromBytes(bytes: number, unit: string): number {
+export function convertFromBytes(bytes: number, unit: 'GiB'): number {
   let size = 0;
 
   if (unit === 'GiB') {

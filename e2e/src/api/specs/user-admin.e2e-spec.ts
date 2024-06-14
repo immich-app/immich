@@ -250,18 +250,23 @@ describe('/admin/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual({
-        avatar: { color: 'orange' },
-        memories: { enabled: false },
-        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true },
-      });
+      expect(body).toMatchObject({ avatar: { color: 'orange' } });
 
       const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(after).toEqual({
-        avatar: { color: 'orange' },
-        memories: { enabled: false },
-        emailNotifications: { enabled: true, albumInvite: true, albumUpdate: true },
-      });
+      expect(after).toMatchObject({ avatar: { color: 'orange' } });
+    });
+
+    it('should update download archive size', async () => {
+      const { status, body } = await request(app)
+        .put(`/admin/users/${admin.userId}/preferences`)
+        .send({ download: { archiveSize: 1_234_567 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ download: { archiveSize: 1_234_567 } });
+
+      const after = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ download: { archiveSize: 1_234_567 } });
     });
   });
 

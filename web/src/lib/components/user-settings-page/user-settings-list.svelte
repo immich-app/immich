@@ -17,6 +17,7 @@
   import UserProfileSettings from './user-profile-settings.svelte';
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import { t } from 'svelte-i18n';
+  import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -41,6 +42,14 @@
 
   <SettingAccordion key="authorized-devices" title={$t('authorized_devices')} subtitle={$t('manage_your_devices')}>
     <DeviceList bind:devices={sessions} />
+  </SettingAccordion>
+
+  <SettingAccordion
+    key="download-settings"
+    title={$t('download_settings')}
+    subtitle={$t('download_settings_description')}
+  >
+    <DownloadSettings />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
