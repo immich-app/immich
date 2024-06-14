@@ -13,4 +13,4 @@ Running into an issue or have a question? Try the following:
 
 [github-issues]: https://github.com/immich-app/immich/issues
 [github-releases]: https://github.com/immich-app/immich/releases
-[discord-link]: https://discord.com/invite/D8JsnBEuKb
+[discord-link]: https://discord.immich.app

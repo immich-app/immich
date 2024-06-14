@@ -36,7 +36,7 @@ function HomepageHeader() {
 
           <Link
             className="flex place-items-center place-content-center py-3 px-8 border bg-immich-dark-primary dark:bg-immich-primary  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
-            to="https://discord.gg/D8JsnBEuKb"
+            to="https://discord.immich.app"
           >
             Discord
           </Link>
