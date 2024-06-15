@@ -69,9 +69,9 @@
   <div class="absolute top-2 right-2">
     <ButtonContextMenu
       buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
-      buttonColor="opaque"
-      buttonPadding="2"
-      buttonSize="20"
+      color="opaque"
+      padding="2"
+      size="20"
       icon={mdiDotsVertical}
       title={$t('show_person_options')}
       usePortal

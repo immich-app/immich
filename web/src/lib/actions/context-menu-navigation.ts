@@ -39,22 +39,6 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
     return container?.querySelector(`#${activeId}`) as HTMLElement | undefined;
   };
 
-  const addActiveClass = (node: HTMLElement) => {
-    const { selectedClass: activeClass } = options;
-    if (!activeClass) {
-      return;
-    }
-    node?.classList.add(activeClass);
-  };
-
-  const removeActiveClass = (node: HTMLElement | undefined) => {
-    const { selectedClass: activeClass } = options;
-    if (!activeClass) {
-      return;
-    }
-    node?.classList.remove(activeClass);
-  };
-
   const close = () => {
     const { closeDropdown, selectionChanged } = options;
     selectionChanged(undefined, undefined);
@@ -74,11 +58,9 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
     }
 
     const currentEl = getCurrentElement();
-    removeActiveClass(currentEl);
     const currentIndex = currentEl ? children.indexOf(currentEl) : -1;
     const directionFactor = (direction === 'up' ? -1 : 1) + (direction === 'up' && currentIndex === -1 ? 1 : 0);
     const newIndex = (currentIndex + directionFactor + children.length) % children.length;
-    addActiveClass(children[newIndex]);
 
     selectionChanged(children[newIndex], newIndex);
   };
@@ -113,8 +95,6 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
 
   return {
     update(newOptions) {
-      const currentEl = getCurrentElement();
-      removeActiveClass(currentEl);
       options = newOptions;
     },
     destroy,

@@ -374,8 +374,8 @@
                 <td class=" text-ellipsis px-4 text-sm">
                   <ButtonContextMenu
                     align="middle"
-                    buttonColor="primary"
-                    buttonSize="16"
+                    color="primary"
+                    size="16"
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
                     usePortal

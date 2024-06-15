@@ -1,13 +1,13 @@
 <script lang="ts">
   import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
   export let icon: string;
   export let title: string;
@@ -19,9 +19,9 @@
    * The direction in which the context menu should open.
    */
   export let direction: 'left' | 'right' = 'right';
-  export let buttonColor: Color = 'transparent';
-  export let buttonSize: string | undefined = undefined;
-  export let buttonPadding: string | undefined = undefined;
+  export let color: Color = 'transparent';
+  export let size: string | undefined = undefined;
+  export let padding: string | undefined = undefined;
   /**
    * Additional classes to apply to the button.
    */
@@ -31,28 +31,33 @@
    */
   export let usePortal: boolean = false;
 
-  let showContextMenu = false;
+  let isOpen = false;
   let contextMenuPosition = { x: 0, y: 0 };
   let menuContainer: HTMLUListElement;
   let buttonContainer: HTMLDivElement;
-  let selectedId: string | undefined = undefined;
 
   const id = generateId();
   const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
 
-  const openDropdown = (event: KeyboardEvent) => {
+  $: {
+    if (isOpen) {
+      $optionClickCallbackStore = handleOptionClick;
+    }
+  }
+
+  const openDropdown = (event: KeyboardEvent | MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, align);
-    showContextMenu = true;
+    isOpen = true;
   };
 
   const handleClick = (event: MouseEvent) => {
     contextMenuPosition = getContextMenuPosition(event, align);
-    showContextMenu = !showContextMenu;
+    isOpen = !isOpen;
   };
 
   const onEscape = (event: KeyboardEvent) => {
-    if (showContextMenu) {
+    if (isOpen) {
       // if the dropdown is open, stop the event from propagating
       event.stopPropagation();
     }
@@ -68,42 +73,42 @@
   };
 
   const closeDropdown = () => {
-    selectedId = undefined;
-    showContextMenu = false;
+    $selectedIdStore = undefined;
+    isOpen = false;
   };
 
-  registerMenuContext(() => {
+  const handleOptionClick = () => {
     closeDropdown();
     const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
     button?.focus();
-  });
+  };
 </script>
 
 <div use:focusOutside={{ onFocusOut }}>
   <div
     use:contextMenuNavigation={{
       container: menuContainer,
-      selectedId,
+      selectedId: $selectedIdStore,
       selectedClass: `!${selectedColor}`,
       openDropdown,
       closeDropdown,
-      selectionChanged: (node) => (selectedId = node?.id),
+      selectionChanged: (node) => ($selectedIdStore = node?.id),
       onEscape,
     }}
     bind:this={buttonContainer}
   >
     <CircleIconButton
+      {color}
       {icon}
+      {padding}
+      {size}
       {title}
       ariaControls={menuId}
-      ariaExpanded={showContextMenu}
+      ariaExpanded={isOpen}
       ariaHasPopup={true}
       class={buttonClass}
-      color={buttonColor}
       id={buttonId}
       on:click={handleClick}
-      padding={buttonPadding}
-      size={buttonSize}
     />
   </div>
   {#if usePortal}
@@ -111,11 +116,11 @@
       <ContextMenu
         {...contextMenuPosition}
         {direction}
-        ariaActiveDescendant={selectedId}
+        ariaActiveDescendant={$selectedIdStore}
         ariaLabelledBy={buttonId}
         bind:menuElement={menuContainer}
         id={menuId}
-        isVisible={showContextMenu}
+        isVisible={isOpen}
         onClose={closeDropdown}
       >
         <slot />
@@ -125,11 +130,11 @@
     <ContextMenu
       {...contextMenuPosition}
       {direction}
-      ariaActiveDescendant={selectedId}
+      ariaActiveDescendant={$selectedIdStore}
       ariaLabelledBy={buttonId}
       bind:menuElement={menuContainer}
       id={menuId}
-      isVisible={showContextMenu}
+      isVisible={isOpen}
       onClose={closeDropdown}
     >
       <slot />

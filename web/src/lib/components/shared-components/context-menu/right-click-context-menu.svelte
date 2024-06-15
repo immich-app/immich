@@ -3,9 +3,9 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
-  import { registerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
   export let title: string;
   export let direction: 'left' | 'right' = 'right';
@@ -16,7 +16,6 @@
 
   let uniqueKey = {};
   let contextMenuElement: HTMLUListElement;
-  let selectedId: string | undefined = undefined;
   let triggerElement: HTMLElement | undefined = undefined;
   let buttonElement: HTMLButtonElement;
 
@@ -28,6 +27,7 @@
     if (isOpen && buttonElement) {
       triggerElement = document.activeElement as HTMLElement;
       buttonElement?.focus();
+      $optionClickCallbackStore = closeContextMenu;
     }
   }
 
@@ -61,8 +61,6 @@
     triggerElement?.focus();
     onClose?.();
   };
-
-  registerMenuContext(closeContextMenu);
 </script>
 
 {#key uniqueKey}
@@ -87,10 +85,10 @@
       ]}
       use:contextMenuNavigation={{
         container: contextMenuElement,
-        selectedId: selectedId,
+        selectedId: $selectedIdStore,
         selectedClass: `!${selectedColor}`,
         closeDropdown: closeContextMenu,
-        selectionChanged: (node) => (selectedId = node?.id),
+        selectionChanged: (node) => ($selectedIdStore = node?.id),
       }}
     >
       {title}
@@ -104,7 +102,7 @@
         {direction}
         {x}
         {y}
-        ariaActiveDescendant={selectedId}
+        ariaActiveDescendant={$selectedIdStore}
         ariaLabelledBy={buttonId}
         bind:menuElement={contextMenuElement}
         id={menuId}

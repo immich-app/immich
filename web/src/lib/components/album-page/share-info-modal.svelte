@@ -107,7 +107,7 @@
               {/if}
             </div>
             {#if isOwned}
-              <ButtonContextMenu icon={mdiDotsVertical} buttonSize="20" title={$t('options')}>
+              <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
                   <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
                 {:else}

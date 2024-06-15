@@ -5,24 +5,23 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
-  import { triggerMenuContext } from '$lib/components/shared-components/context-menu/menu.context';
   import { createEventDispatcher } from 'svelte';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
   export let text = '';
   export let subtitle = '';
   export let icon = '';
 
   let id: string = generateId();
-  const closeMenu = triggerMenuContext();
+
+  $: isActive = $selectedIdStore === id;
 
   const dispatch = createEventDispatcher<{
     click: void;
   }>();
 
   const handleClick = () => {
-    if (closeMenu) {
-      closeMenu();
-    }
+    $optionClickCallbackStore?.();
     dispatch('click');
   };
 </script>
@@ -31,7 +30,9 @@
 <li
   {id}
   on:click={handleClick}
-  class="w-full bg-slate-100 p-4 text-left text-sm font-medium text-immich-fg hover:{selectedColor} focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
+  class="w-full p-4 text-left text-sm font-medium text-immich-fg hover:{selectedColor} focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
+  class:bg-slate-200={isActive}
+  class:bg-slate-100={!isActive}
   role="menuitem"
 >
   {#if text}

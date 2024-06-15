@@ -175,13 +175,7 @@
         on:delete={() => dispatch('delete')}
         on:permanentlyDelete={() => dispatch('permanentlyDelete')}
       />
-      <ButtonContextMenu
-        direction="left"
-        align="top-right"
-        buttonColor="opaque"
-        title={$t('more')}
-        icon={mdiDotsVertical}
-      >
+      <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow}
           <MenuOption icon={mdiPresentationPlay} on:click={() => onMenuClick('playSlideShow')} text={$t('slideshow')} />
         {/if}
