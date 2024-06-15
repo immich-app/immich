@@ -9,8 +9,6 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-import '../utils/string_helper.dart';
-
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
     ref.watch(apiServiceProvider),
