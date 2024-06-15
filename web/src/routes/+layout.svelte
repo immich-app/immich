@@ -10,7 +10,6 @@
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
-  import { loadConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { setKey } from '$lib/utils';
@@ -31,10 +30,13 @@
     closeWebsocketConnection();
   }
 
+  $: if ($page.data.error) {
+    handleError($page.data.error, 'Unable to connect to server');
+  }
+
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
-      theme.value =
-        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+      theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
     if (theme.value === Theme.LIGHT) {
@@ -51,6 +53,8 @@
   };
 
   onMount(() => {
+    const element = document.querySelector('#stencil');
+    element?.remove();
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
@@ -72,14 +76,6 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
-  });
-
-  onMount(async () => {
-    try {
-      await loadConfig();
-    } catch (error) {
-      handleError(error, 'Unable to connect to server');
-    }
   });
 </script>
 

@@ -1,4 +1,5 @@
 import { AppRoute } from '$lib/constants';
+import { initSDK } from '$lib/utils/server';
 import { getServerConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { t } from 'svelte-i18n';
@@ -9,7 +10,8 @@ import type { PageLoad } from './$types';
 export const ssr = false;
 export const csr = true;
 
-export const load = (async () => {
+export const load = (async ({ fetch }) => {
+  initSDK(fetch);
   const authenticated = await loadUser();
   if (authenticated) {
     redirect(302, AppRoute.PHOTOS);
