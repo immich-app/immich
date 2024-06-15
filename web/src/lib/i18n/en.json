@@ -140,6 +140,7 @@
     "notification_email_port_description": "Port of the email server (e.g 25, 465, or 587)",
     "notification_email_sent_test_email_button": "Send test email and save",
     "notification_email_setting_description": "Settings for sending email notifications",
+    "notification_email_test_email": "Send test email",
     "notification_email_test_email_failed": "Failed to send test email, check your values",
     "notification_email_test_email_sent": "A test email has been sent to {email}. Please check your inbox.",
     "notification_email_username_description": "Username to use when authenticating with the email server",
