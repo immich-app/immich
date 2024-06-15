@@ -52,7 +52,7 @@
     <button
       type="button"
       on:click={() => onViewAsset(asset)}
-      class="absolute rounded-full bottom-1 left-2 text-gray-500 p-1.5 hover:text-white"
+      class="absolute rounded-full bottom-1 left-2 text-gray-200 p-1.5 hover:text-white bg-black/35"
       title={$t('view')}
     >
       <Icon ariaLabel={$t('view')} path={mdiMagnifyPlus} flipped />
