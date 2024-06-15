@@ -14,6 +14,9 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
             "faceId"  uuid PRIMARY KEY REFERENCES asset_faces(id) ON DELETE CASCADE,
             embedding  vector(512) NOT NULL )`);
 
+    await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
+    await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
+
     await queryRunner.query(`
             INSERT INTO face_search("faceId", embedding)
             SELECT id, embedding
@@ -34,6 +37,8 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     }
 
     await queryRunner.query(`ALTER TABLE asset_faces ADD COLUMN "embedding" vector(512)`);
+    await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE DEFAULT`);
+    await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE DEFAULT`);
     await queryRunner.query(`
           UPDATE asset_faces
           SET embedding = fs.embedding
