@@ -671,7 +671,7 @@ describe(PersonService.name, () => {
       const faceId = 'face-id';
       cryptoMock.randomUUID.mockReturnValue(faceId);
       const face = {
-        faceId,
+        id: faceId,
         assetId: 'asset-id',
         boundingBoxX1: 100,
         boundingBoxY1: 100,
