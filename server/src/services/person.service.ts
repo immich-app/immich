@@ -22,6 +22,7 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -347,18 +348,21 @@ export class PersonService {
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
-      const faceId = this.cryptoRepository.randomUUID();
-      const mappedFaces = faces.map((face) => ({
-        faceId,
-        assetId: asset.id,
-        imageHeight,
-        imageWidth,
-        boundingBoxX1: face.boundingBox.x1,
-        boundingBoxY1: face.boundingBox.y1,
-        boundingBoxX2: face.boundingBox.x2,
-        boundingBoxY2: face.boundingBox.y2,
-        faceSearch: { faceId, embedding: face.embedding },
-      }));
+      const mappedFaces: Partial<AssetFaceEntity>[] = [];
+      for (const face of faces) {
+        const faceId = this.cryptoRepository.randomUUID();
+        mappedFaces.push({
+          id: faceId,
+          assetId: asset.id,
+          imageHeight,
+          imageWidth,
+          boundingBoxX1: face.boundingBox.x1,
+          boundingBoxY1: face.boundingBox.y1,
+          boundingBoxX2: face.boundingBox.x2,
+          boundingBoxY2: face.boundingBox.y2,
+          faceSearch: { faceId, embedding: face.embedding },
+        });
+      }
 
       const faceIds = await this.repository.createFaces(mappedFaces);
       await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));

@@ -15,7 +15,7 @@ export class FaceSearchEntity {
   @Column({
     type: 'float4',
     array: true,
-    transformer: { from: (v) => JSON.parse(v), to: (v) => asVector(v, true) },
+    transformer: { from: (v) => JSON.parse(v), to: (v) => asVector(v) },
   })
   embedding!: number[];
 }

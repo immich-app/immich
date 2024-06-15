@@ -16,7 +16,7 @@ export class AssetFaceEntity {
   @Column({ nullable: true, type: 'uuid' })
   personId!: string | null;
 
-  @OneToOne(() => FaceSearchEntity, (faceSearchEntity) => faceSearchEntity.face)
+  @OneToOne(() => FaceSearchEntity, (faceSearchEntity) => faceSearchEntity.face, { cascade: ['insert'] })
   faceSearch?: FaceSearchEntity;
 
   @Column({ default: 0, type: 'int' })
