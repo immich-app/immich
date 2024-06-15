@@ -13,9 +13,10 @@ export const load = (async ({ fetch }) => {
     redirect(302, AppRoute.AUTH_REGISTER);
   }
 
+  const $t = get(t);
   return {
     meta: {
-      title: get(t)('login'),
+      title: $t('login'),
     },
   };
 }) satisfies PageLoad;

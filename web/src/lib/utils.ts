@@ -263,13 +263,14 @@ export const oauth = {
     return false;
   },
   authorize: async (location: Location) => {
+    const $t = get(t);
     try {
       const redirectUri = location.href.split('?')[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
       window.location.href = url;
       return true;
     } catch (error) {
-      handleError(error, get(t)('errors.unable_to_login_with_oauth'));
+      handleError(error, $t('errors.unable_to_login_with_oauth'));
       return false;
     }
   },
