@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import { s } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-  import { sortBy } from 'lodash-es';
+  import { orderBy } from 'lodash-es';
   import { t } from 'svelte-i18n';
 
   export let duplicate: DuplicateResponseDto;
@@ -18,7 +18,8 @@
   $: trashCount = duplicate.assets.length - selectedAssetIds.size;
 
   onMount(() => {
-    const suggestedAsset = sortBy(duplicate.assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
+    const suggestedAsset = orderBy(duplicate.assets, [(asset) => asset.exifInfo?.fileSizeInByte, 'localDateTime'], ['asc', 'desc']).pop();
+    const suggestedAssetOldest = orderBy(duplicate.assets, ['localDateTime', (asset) => asset.exifInfo?.fileSizeInByte], ['desc', 'asc']).pop();
 
     if (!suggestedAsset) {
       selectedAssetIds = new Set(duplicate.assets[0].id);
@@ -26,6 +27,9 @@
     }
 
     selectedAssetIds.add(suggestedAsset.id);
+    if (suggestedAssetOldest.id != suggestedAsset.id) {
+      selectedAssetIds.add(suggestedAssetOldest.id);
+    }
     selectedAssetIds = selectedAssetIds;
   });
 
