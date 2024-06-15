@@ -43,9 +43,12 @@ class MemoryService {
         final dbAssets =
             await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
         if (dbAssets.isNotEmpty) {
+          final String title = yearsAgo <= 1
+              ? 'memories_year_ago'.tr()
+              : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
           memories.add(
             Memory(
-              title: 'memories_year_ago'.plural(yearsAgo),
+              title: title,
               assets: dbAssets,
             ),
           );
