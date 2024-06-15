@@ -608,7 +608,7 @@
   "immich_web_interface": "Immich Web Interface",
   "import_from_json": "Import from JSON",
   "import_path": "Import path",
-  "in_albums": "In {count} {count, plural, one {album} other {albums}}",
+  "in_albums": "In {count, plural, one {# album} other {# albums}}",
   "in_archive": "In archive",
   "include_archived": "Include archived",
   "include_shared_albums": "Include shared albums",
