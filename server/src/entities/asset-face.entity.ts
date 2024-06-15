@@ -1,7 +1,7 @@
 import { AssetEntity } from 'src/entities/asset.entity';
+import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { FaceSearchEntity } from 'src/entities/face-search.entity';
 
 @Entity('asset_faces', { synchronize: false })
 @Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])
