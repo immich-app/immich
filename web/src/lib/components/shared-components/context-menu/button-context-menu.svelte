@@ -5,7 +5,6 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
@@ -89,7 +88,6 @@
     use:contextMenuNavigation={{
       container: menuContainer,
       selectedId: $selectedIdStore,
-      selectedClass: `!${selectedColor}`,
       openDropdown,
       closeDropdown,
       selectionChanged: (node) => ($selectedIdStore = node?.id),

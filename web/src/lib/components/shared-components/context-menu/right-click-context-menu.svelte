@@ -3,7 +3,6 @@
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
-  import { selectedColor } from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
@@ -86,7 +85,6 @@
       use:contextMenuNavigation={{
         container: contextMenuElement,
         selectedId: $selectedIdStore,
-        selectedClass: `!${selectedColor}`,
         closeDropdown: closeContextMenu,
         selectionChanged: (node) => ($selectedIdStore = node?.id),
       }}

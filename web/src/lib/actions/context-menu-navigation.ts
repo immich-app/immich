@@ -12,10 +12,6 @@ interface Options {
    */
   selectedId: string | undefined;
   /**
-   * A class name to add to the selected element, if any.
-   */
-  selectedClass?: string;
-  /**
    * A function that is called when the selection changes.
    */
   selectionChanged: (node: HTMLElement | undefined, index: number | undefined) => void;

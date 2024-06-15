@@ -1,7 +1,3 @@
-<script lang="ts" context="module">
-  export const selectedColor = 'bg-gray-200';
-</script>
-
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
@@ -27,11 +23,14 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <li
   {id}
   on:click={handleClick}
-  class="w-full p-4 text-left text-sm font-medium text-immich-fg hover:{selectedColor} focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
-  class:bg-slate-200={isActive}
+  on:mouseover={() => ($selectedIdStore = id)}
+  on:mouseleave={() => ($selectedIdStore = undefined)}
+  class="w-full p-4 text-left text-sm font-medium text-immich-fg focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg cursor-pointer border-gray-200"
+  class:bg-slate-300={isActive}
   class:bg-slate-100={!isActive}
   role="menuitem"
 >
