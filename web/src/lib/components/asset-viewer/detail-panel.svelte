@@ -28,6 +28,8 @@
     mdiInformationOutline,
     mdiPencil,
     mdiAccountOff,
+    mdiLabelMultiple,
+    mdiLabelOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
@@ -94,17 +96,21 @@
 
   $: people = asset.people || [];
 
-  $: allFaces = (() => {
-    return people
-      .filter((person) => showingHiddenPeople || !person.isHidden)
-      .flatMap((person) => person.faces.map((face) => createBoundingBoxType(face, person.id, false)));
-  })();
+  $: allFaces = markingAllFaces
+    ? people
+        .filter((person) => showingHiddenPeople || !person.isHidden)
+        .flatMap((person) =>
+          person.faces.map((face) => createBoundingBoxType(face, person.id, showingHiddenPeople && person.isHidden)),
+        )
+        .concat(showingHiddenPeople ? unassignedFaces.map((face) => createBoundingBoxType(face, face.id, true)) : [])
+    : [];
 
   $: {
     $boundingBoxesArray = allFaces || [];
   }
 
   $: showingHiddenPeople = false;
+  $: markingAllFaces = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
 
@@ -193,7 +199,7 @@
               size="24"
             />
           {/if}
-          {#if people.some((person) => person.isHidden)}
+          {#if markingAllFaces || people.some((person) => person.isHidden)}
             <CircleIconButton
               title={$t('show_hidden_people')}
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
@@ -202,6 +208,13 @@
               on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
+          <CircleIconButton
+            title={$t('mark_all_faces')}
+            icon={markingAllFaces ? mdiLabelOff : mdiLabelMultiple}
+            padding="1"
+            buttonSize="32"
+            on:click={() => (markingAllFaces = !markingAllFaces)}
+          />
           <CircleIconButton
             title={$t('edit_people')}
             icon={mdiPencil}
