@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">고성능, 셀프 호스팅 사진 및 동영상 관리 솔루션</h3>
+<h3 align="center">고성능 셀프 호스팅 사진 및 동영상 관리 솔루션</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Main Screenshot">
@@ -70,7 +70,7 @@ https://demo.immich.app 에서 웹 데모를 체험해볼 수 있습니다.
 ```
 
 ```
-제원: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
+사양: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
 ## 활동
@@ -88,7 +88,7 @@ https://demo.immich.app 에서 웹 데모를 체험해볼 수 있습니다.
 | 로컬 기기로 사진 및 동영상 다운로드   | 예     | 예     |
 | 여러 사용자 지원                      | 예     | 예     |
 | 앨범 및 공유 앨범                     | 예     | 예     |
-| 스크롤/드래그 가능한 스크롤바         | 예     | 예     |
+| 스크롤/드래그 가능한 스크롤 바        | 예     | 예     |
 | RAW 형식 지원                         | 예     | 예     |
 | 메타데이터 조회 (EXIF, 지도)          | 예     | 예     |
 | 메타데이터, 사물, 얼굴, 클립으로 검색 | 예     | 예     |
@@ -96,12 +96,12 @@ https://demo.immich.app 에서 웹 데모를 체험해볼 수 있습니다.
 | 백그라운드 백업                       | 예     | N/A    |
 | 가상 스크롤                           | 예     | 예     |
 | OAuth 지원                            | 예     | 예     |
-| API 키                                | N/A    | 예     |
+| API 지원                              | N/A    | 예     |
 | 라이브 포토/모션 포토 백업 및 재생    | 예     | 예     |
 | 360도 이미지 보기                     | 아니요 | 예     |
 | 사용자 정의 스토리지 구조             | 예     | 예     |
 | 공개 공유                             | 아니요 | 예     |
-| 아카이브 및 즐겨찾기                  | 예     | 예     |
+| 콘텐츠 보관 및 즐겨찾기               | 예     | 예     |
 | 글로벌 지도                           | 예     | 예     |
 | 파트너와 공유                         | 예     | 예     |
 | 얼굴 인식 및 클러스터링               | 예     | 예     |
