@@ -4,9 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_description.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/asset_description.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
@@ -28,8 +28,8 @@ class DescriptionInput extends HookConsumerWidget {
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
-    final descriptionProvider =
-        ref.watch(assetDescriptionProvider(asset).notifier);
+    final descriptionService = ref.watch(assetDescriptionServiceProvider);
+
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
 
@@ -45,7 +45,8 @@ class DescriptionInput extends HookConsumerWidget {
     submitDescription(String description) async {
       hasError.value = false;
       try {
-        await descriptionProvider.setDescription(
+        await descriptionService.setDescription(
+          asset,
           description,
         );
       } catch (error, stack) {
