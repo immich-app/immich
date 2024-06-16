@@ -1,7 +1,11 @@
 <script lang="ts">
   import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
+  import {
+    getContextMenuPositionFromBoundingRect,
+    getContextMenuPositionFromEvent,
+    type Align,
+  } from '$lib/utils/context-menu';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
@@ -42,7 +46,7 @@
   }
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, align);
+    contextMenuPosition = getContextMenuPositionFromEvent(event, align);
     isOpen = true;
   };
 
@@ -70,6 +74,13 @@
     closeDropdown();
   };
 
+  const onResize = () => {
+    if (!isOpen) {
+      return;
+    }
+    contextMenuPosition = getContextMenuPositionFromBoundingRect(buttonContainer.getBoundingClientRect(), align);
+  };
+
   const closeDropdown = () => {
     $selectedIdStore = undefined;
     isOpen = false;
@@ -82,7 +93,8 @@
   };
 </script>
 
-<div use:focusOutside={{ onFocusOut }} use:clickOutside={{ onOutclick: closeDropdown }}>
+<svelte:window on:resize={onResize} />
+<div use:focusOutside={{ onFocusOut }} use:clickOutside={{ onOutclick: closeDropdown }} on:resize={onResize}>
   <div
     use:contextMenuNavigation={{
       closeDropdown,

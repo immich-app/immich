@@ -2,7 +2,7 @@ export type Align = 'middle' | 'top-left' | 'top-right';
 
 export type ContextMenuPosition = { x: number; y: number };
 
-export const getContextMenuPosition = (
+export const getContextMenuPositionFromEvent = (
   event: MouseEvent | KeyboardEvent,
   align: Align = 'middle',
 ): ContextMenuPosition => {
@@ -11,18 +11,22 @@ export const getContextMenuPosition = (
   const y = 'y' in event ? event.y : 0;
   const box = ((currentTarget || target) as HTMLElement)?.getBoundingClientRect();
   if (box) {
-    switch (align) {
-      case 'middle': {
-        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-      }
-      case 'top-left': {
-        return { x: box.x, y: box.y };
-      }
-      case 'top-right': {
-        return { x: box.x + box.width, y: box.y };
-      }
-    }
+    return getContextMenuPositionFromBoundingRect(box, align);
   }
 
   return { x, y };
+};
+
+export const getContextMenuPositionFromBoundingRect = (rect: DOMRect, align: Align = 'middle'): ContextMenuPosition => {
+  switch (align) {
+    case 'middle': {
+      return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    }
+    case 'top-left': {
+      return { x: rect.x, y: rect.y };
+    }
+    case 'top-right': {
+      return { x: rect.x + rect.width, y: rect.y };
+    }
+  }
 };
