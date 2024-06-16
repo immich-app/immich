@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_description.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -13,9 +14,11 @@ class DescriptionInput extends HookConsumerWidget {
   DescriptionInput({
     super.key,
     required this.asset,
+    this.exifInfo,
   });
 
   final Asset asset;
+  final ExifInfo? exifInfo;
   final Logger _log = Logger('DescriptionInput');
 
   @override
@@ -27,28 +30,16 @@ class DescriptionInput extends HookConsumerWidget {
     final isTextEmpty = useState(controller.text.isEmpty);
     final descriptionProvider =
         ref.watch(assetDescriptionProvider(asset).notifier);
-    final description = ref.watch(assetDescriptionProvider(asset));
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
 
     useEffect(
       () {
-        // assetDescriptionProvider relies on exifInfo.id (localID)
-        // to fetch & save the description of the asset
-        // so we need to invalidate the provider when the exifInfo.id changes
-        ref.invalidate(assetDescriptionProvider(asset));
+        controller.text = exifInfo?.description ?? '';
+        isTextEmpty.value = controller.text.isEmpty;
         return null;
       },
-      [asset.exifInfo?.id],
-    );
-
-    useEffect(
-      () {
-        controller.text = description;
-        isTextEmpty.value = description.isEmpty;
-        return null;
-      },
-      [description],
+      [exifInfo?.description],
     );
 
     submitDescription(String description) async {
@@ -96,7 +87,7 @@ class DescriptionInput extends HookConsumerWidget {
         isFocus.value = false;
         focusNode.unfocus();
 
-        if (description != controller.text) {
+        if (exifInfo?.description != controller.text) {
           await submitDescription(controller.text);
         }
       },

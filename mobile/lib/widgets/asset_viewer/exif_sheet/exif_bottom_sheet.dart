@@ -73,7 +73,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                   child: Column(
                     children: [
                       dateWidget,
-                      if (asset.isRemote) DescriptionInput(asset: asset),
+                      if (asset.isRemote)
+                        DescriptionInput(asset: asset, exifInfo: exifInfo),
                     ],
                   ),
                 ),
@@ -132,7 +133,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                 child: Column(
                   children: [
                     dateWidget,
-                    if (asset.isRemote) DescriptionInput(asset: asset),
+                    if (asset.isRemote)
+                      DescriptionInput(asset: asset, exifInfo: exifInfo),
                     Padding(
                       padding: EdgeInsets.only(top: asset.isRemote ? 0 : 16.0),
                       child: ExifLocation(

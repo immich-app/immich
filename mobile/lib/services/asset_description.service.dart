@@ -33,25 +33,6 @@ class AssetDescriptionService {
       }
     }
   }
-
-  Future<String> readLatest(String assetRemoteId, int localExifId) async {
-    final latestAssetFromServer =
-        await _api.assetsApi.getAssetInfo(assetRemoteId);
-    final localExifInfo = await _db.exifInfos.get(localExifId);
-
-    if (latestAssetFromServer != null && localExifInfo != null) {
-      localExifInfo.description =
-          latestAssetFromServer.exifInfo?.description ?? '';
-
-      await _db.writeTxn(
-        () => _db.exifInfos.put(localExifInfo),
-      );
-
-      return localExifInfo.description!;
-    }
-
-    return "";
-  }
 }
 
 final assetDescriptionServiceProvider = Provider(
