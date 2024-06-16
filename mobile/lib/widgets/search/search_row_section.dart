@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/widgets/search/search_row_title.dart';
 
