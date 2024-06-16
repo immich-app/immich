@@ -1,18 +1,16 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-
-  import type { PageData } from './$types';
-  import { handleError } from '$lib/utils/handle-error';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { s } from '$lib/utils';
+  import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -20,10 +18,8 @@
     try {
       if (!$featureFlags.trash && trashIds.length > 0) {
         const isConfirmed = await dialogController.show({
-          title: 'Confirm',
-          prompt: 'Are you sure you want to permanently delete these duplicates?',
-          confirmText: 'Yes',
-          cancelText: 'No',
+          prompt: $t('delete_duplicates_confirmation'),
+          confirmText: $t('permanently_delete'),
         });
 
         if (!isConfirmed) {
@@ -41,7 +37,7 @@
       }
 
       notificationController.show({
-        message: `Moved ${trashIds.length} asset${s(trashIds.length)} to trash`,
+        message: $t('assets_moved_to_trash', { values: { count: trashIds.length } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -54,11 +50,11 @@
   <div class="mt-4">
     {#if data.duplicates && data.duplicates.length > 0}
       <div class="mb-4 text-sm dark:text-white">
-        <p>Resolve each group by indicating which, if any, are duplicates.</p>
+        <p>{$t('duplicates_description')}</p>
       </div>
       {#key data.duplicates[0].duplicateId}
         <DuplicatesCompareControl
-          duplicate={data.duplicates[0]}
+          assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
         />

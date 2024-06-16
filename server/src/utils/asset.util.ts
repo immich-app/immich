@@ -2,6 +2,7 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { setDifference, setUnion } from 'src/utils/set';
 
 export interface IBulkAsset {
@@ -90,4 +91,34 @@ export const removeAssets = async (
   }
 
   return results;
+};
+
+export type PartnerIdOptions = {
+  userId: string;
+  repository: IPartnerRepository;
+  /** only include partners with `inTimeline: true` */
+  timelineEnabled?: boolean;
+};
+export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: PartnerIdOptions) => {
+  const partnerIds = new Set<string>();
+  const partners = await repository.getAll(userId);
+  for (const partner of partners) {
+    // ignore deleted users
+    if (!partner.sharedBy || !partner.sharedWith) {
+      continue;
+    }
+
+    // wrong direction
+    if (partner.sharedWithId !== userId) {
+      continue;
+    }
+
+    if (timelineEnabled && !partner.inTimeline) {
+      continue;
+    }
+
+    partnerIds.add(partner.sharedById);
+  }
+
+  return [...partnerIds];
 };

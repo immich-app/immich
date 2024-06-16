@@ -55,7 +55,9 @@
         message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
       });
 
-      dispatch('save', { notifications: config.notifications });
+      if (!disabled) {
+        dispatch('save', { notifications: config.notifications });
+      }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));
     } finally {
@@ -138,8 +140,12 @@
             />
 
             <div class="flex gap-2 place-items-center">
-              <Button size="sm" disabled={disabled || !config.notifications.smtp.enabled} on:click={handleSendTestEmail}
-                >{$t('admin.notification_email_sent_test_email_button')}
+              <Button size="sm" disabled={!config.notifications.smtp.enabled} on:click={handleSendTestEmail}>
+                {#if disabled}
+                  {$t('admin.notification_email_test_email')}
+                {:else}
+                  {$t('admin.notification_email_sent_test_email_button')}
+                {/if}
               </Button>
               {#if isSending}
                 <LoadingSpinner />

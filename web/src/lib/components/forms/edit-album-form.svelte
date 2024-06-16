@@ -41,7 +41,7 @@
   <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">
-        <AlbumCover {album} css="h-[200px] w-[200px] m-4 shadow-lg" />
+        <AlbumCover {album} class="h-[200px] w-[200px] m-4 shadow-lg" />
       </div>
 
       <div class="flex-grow">

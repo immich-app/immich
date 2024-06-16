@@ -119,9 +119,7 @@ class PhotosPage extends HookConsumerWidget {
           child: Container(
             height: kToolbarHeight + MediaQuery.of(context).padding.top,
             color: context.themeData.appBarTheme.backgroundColor,
-            child: const SafeArea(
-              child: ImmichAppBar(),
-            ),
+            child: const ImmichAppBar(),
           ),
         ),
       ],

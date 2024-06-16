@@ -39,6 +39,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 export class AssetService {
@@ -62,18 +63,16 @@ export class AssetService {
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const currentYear = new Date().getFullYear();
-
-    // get partners id
-    const userIds: string[] = [auth.user.id];
-    const partners = await this.partnerRepository.getAll(auth.user.id);
-    const partnersIds = partners
-      .filter((partner) => partner.sharedBy && partner.inTimeline)
-      .map((partner) => partner.sharedById);
-    userIds.push(...partnersIds);
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    const userIds = [auth.user.id, ...partnerIds];
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
     const groups: Record<number, AssetEntity[]> = {};
+    const currentYear = new Date().getFullYear();
     for (const asset of assets) {
       const yearsAgo = currentYear - asset.localDateTime.getFullYear();
       if (!groups[yearsAgo]) {
