@@ -152,8 +152,8 @@
       />
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
         <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          class="absolute border-solid border-[3px] rounded-lg text-slate-100"
+          style="{boundingbox.extendedStyle}; top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         />
       {/each}
     </div>

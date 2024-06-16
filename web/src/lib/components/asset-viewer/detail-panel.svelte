@@ -3,7 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray, createBoundingBoxType, getBorderColor } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
@@ -30,7 +30,7 @@
     mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -93,6 +93,17 @@
   })();
 
   $: people = asset.people || [];
+
+  $: allFaces = (() => {
+    return people
+      .filter((person) => showingHiddenPeople || !person.isHidden)
+      .flatMap((person) => person.faces.map((face) => createBoundingBoxType(face, person.id, false)));
+  })();
+
+  $: {
+    $boundingBoxesArray = allFaces || [];
+  }
+
   $: showingHiddenPeople = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
@@ -103,6 +114,10 @@
         asset = assetUpdate;
       }
     });
+  });
+
+  onDestroy(() => {
+    $boundingBoxesArray = [];
   });
 
   const dispatch = createEventDispatcher<{
@@ -125,6 +140,7 @@
       unassignedFaces = data?.unassignedFaces || [];
     });
     showEditFaces = false;
+    $boundingBoxesArray = allFaces || [];
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -202,13 +218,16 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
+              style="background-color: {getBorderColor(person.id)};"
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:focus={() =>
+                ($boundingBoxesArray = people[index].faces.map((face) => createBoundingBoxType(face, person.id, true)))}
               on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              on:mouseover={() =>
+                ($boundingBoxesArray = people[index].faces.map((face) => createBoundingBoxType(face, person.id, true)))}
+              on:mouseleave={() => ($boundingBoxesArray = allFaces)}
             >
               <div class="relative">
                 <ImageThumbnail
