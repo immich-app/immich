@@ -36,7 +36,7 @@ class DescriptionInput extends HookConsumerWidget {
     useEffect(
       () {
         controller.text = exifInfo?.description ?? '';
-        isTextEmpty.value = controller.text.isEmpty;
+        isTextEmpty.value = exifInfo?.description?.isEmpty ?? true;
         return null;
       },
       [exifInfo?.description],
