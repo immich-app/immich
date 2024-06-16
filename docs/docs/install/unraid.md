@@ -47,13 +47,6 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 
 3.  Select the cog ⚙️ next to Immich then click "**Edit Stack**"
 4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default.
-
-    :::info
-
-    - Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up. 
-    Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
-    
-    :::
     
     <details >
         <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
@@ -78,6 +71,14 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
             />
         </ul>
     </details>
+
+:::info
+
+- Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up.
+- Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
+
+:::
+
 5.  Click "**Save Changes**", you will be promoted to edit stack UI labels, just leave this blank and click "**Ok**"
 6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
 7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
