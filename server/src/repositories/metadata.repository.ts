@@ -20,15 +20,7 @@ export class MetadataRepository implements IMetadataRepository {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataRepository.name);
-  }
-  private exiftool: ExifTool = this.initExiftool();
-
-  async teardown() {
-    await this.exiftool.end();
-  }
-
-  private initExiftool() {
-    return new ExifTool({
+    this.exiftool = new ExifTool({
       defaultVideosToUTC: true,
       backfillTimezones: true,
       inferTimezoneFromDatestamps: true,
@@ -40,6 +32,11 @@ export class MetadataRepository implements IMetadataRepository {
       readArgs: ['-api', 'largefilesupport=1'],
       writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     });
+  }
+  private exiftool: ExifTool;
+
+  async teardown() {
+    await this.exiftool.end();
   }
 
   readTags(path: string): Promise<ImmichTags | null> {
