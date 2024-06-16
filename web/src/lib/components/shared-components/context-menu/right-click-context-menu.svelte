@@ -83,9 +83,10 @@
         },
       ]}
       use:contextMenuNavigation={{
-        container: contextMenuElement,
-        selectedId: $selectedIdStore,
         closeDropdown: closeContextMenu,
+        container: contextMenuElement,
+        isOpen,
+        selectedId: $selectedIdStore,
         selectionChanged: (node) => ($selectedIdStore = node?.id),
       }}
     >

@@ -4,9 +4,9 @@
   import { getContextMenuPosition, type Align } from '$lib/utils/context-menu';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
+  import { clickOutside } from '$lib/actions/click-outside';
 
   export let icon: string;
   export let title: string;
@@ -25,10 +25,6 @@
    * Additional classes to apply to the button.
    */
   export let buttonClass: string | undefined = undefined;
-  /**
-   * Whether or not to use a portal to render the context menu into the body of the DOM.
-   */
-  export let usePortal: boolean = false;
 
   let isOpen = false;
   let contextMenuPosition = { x: 0, y: 0 };
@@ -51,8 +47,11 @@
   };
 
   const handleClick = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, align);
-    isOpen = !isOpen;
+    if (isOpen) {
+      closeDropdown();
+      return;
+    }
+    openDropdown(event);
   };
 
   const onEscape = (event: KeyboardEvent) => {
@@ -83,15 +82,16 @@
   };
 </script>
 
-<div use:focusOutside={{ onFocusOut }}>
+<div use:focusOutside={{ onFocusOut }} use:clickOutside={{ onOutclick: closeDropdown }}>
   <div
     use:contextMenuNavigation={{
-      container: menuContainer,
-      selectedId: $selectedIdStore,
-      openDropdown,
       closeDropdown,
-      selectionChanged: (node) => ($selectedIdStore = node?.id),
+      container: menuContainer,
+      isOpen,
       onEscape,
+      openDropdown,
+      selectedId: $selectedIdStore,
+      selectionChanged: (node) => ($selectedIdStore = node?.id),
     }}
     bind:this={buttonContainer}
   >
@@ -109,33 +109,15 @@
       on:click={handleClick}
     />
   </div>
-  {#if usePortal}
-    <Portal target="body">
-      <ContextMenu
-        {...contextMenuPosition}
-        {direction}
-        ariaActiveDescendant={$selectedIdStore}
-        ariaLabelledBy={buttonId}
-        bind:menuElement={menuContainer}
-        id={menuId}
-        isVisible={isOpen}
-        onClose={closeDropdown}
-      >
-        <slot />
-      </ContextMenu>
-    </Portal>
-  {:else}
-    <ContextMenu
-      {...contextMenuPosition}
-      {direction}
-      ariaActiveDescendant={$selectedIdStore}
-      ariaLabelledBy={buttonId}
-      bind:menuElement={menuContainer}
-      id={menuId}
-      isVisible={isOpen}
-      onClose={closeDropdown}
-    >
-      <slot />
-    </ContextMenu>
-  {/if}
+  <ContextMenu
+    {...contextMenuPosition}
+    {direction}
+    ariaActiveDescendant={$selectedIdStore}
+    ariaLabelledBy={buttonId}
+    bind:menuElement={menuContainer}
+    id={menuId}
+    isVisible={isOpen}
+  >
+    <slot />
+  </ContextMenu>
 </div>

@@ -373,12 +373,12 @@
 
                 <td class=" text-ellipsis px-4 text-sm">
                   <ButtonContextMenu
-                    align="middle"
+                    align="top-right"
+                    direction="left"
                     color="primary"
                     size="16"
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
-                    usePortal
                   >
                     <MenuOption on:click={() => onRenameClicked(index)} text={$t('rename')} />
                     <MenuOption on:click={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />

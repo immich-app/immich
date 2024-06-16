@@ -4,9 +4,25 @@ import type { Action } from 'svelte/action';
 
 interface Options {
   /**
+   * A function that is called when the dropdown should be closed.
+   */
+  closeDropdown: () => void;
+  /**
    * The container element that with direct children that should be navigated.
    */
   container: HTMLElement;
+  /**
+   * Indicates if the dropdown is open.
+   */
+  isOpen: boolean;
+  /**
+   * Override the default behavior for the escape key.
+   */
+  onEscape?: (event: KeyboardEvent) => void;
+  /**
+   * A function that is called when the dropdown should be opened.
+   */
+  openDropdown?: (event: KeyboardEvent) => void;
   /**
    * The id of the currently selected element.
    */
@@ -15,18 +31,6 @@ interface Options {
    * A function that is called when the selection changes.
    */
   selectionChanged: (node: HTMLElement | undefined, index: number | undefined) => void;
-  /**
-   * A function that is called when the dropdown should be opened.
-   */
-  openDropdown?: (event: KeyboardEvent) => void;
-  /**
-   * A function that is called when the dropdown should be closed.
-   */
-  closeDropdown: () => void;
-  /**
-   * Override the default behavior for the escape key.
-   */
-  onEscape?: (event: KeyboardEvent) => void;
 }
 
 export const contextMenuNavigation: Action<HTMLElement, Options> = (node, options: Options) => {
@@ -72,7 +76,12 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
   };
 
   const handleClick = (event: KeyboardEvent) => {
-    const { selectedId } = options;
+    const { selectedId, isOpen } = options;
+    if (isOpen && !selectedId) {
+      // let the default behavior handle the click when the menu is open, but nothing is selected
+      return;
+    }
+    event.preventDefault();
     if (!selectedId) {
       void moveSelection('down', event);
       return;
@@ -85,8 +94,8 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
     { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event) },
     { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event) },
     { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event) },
-    { shortcut: { key: ' ' }, onShortcut: (event) => handleClick(event) },
-    { shortcut: { key: 'Enter' }, onShortcut: (event) => handleClick(event) },
+    { shortcut: { key: ' ' }, onShortcut: (event) => handleClick(event), preventDefault: false },
+    { shortcut: { key: 'Enter' }, onShortcut: (event) => handleClick(event), preventDefault: false },
   ]);
 
   return {
