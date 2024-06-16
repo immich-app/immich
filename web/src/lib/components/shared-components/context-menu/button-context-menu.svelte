@@ -48,6 +48,7 @@
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
     contextMenuPosition = getContextMenuPositionFromEvent(event, align);
     isOpen = true;
+    menuContainer?.focus();
   };
 
   const handleClick = (event: MouseEvent) => {
@@ -84,29 +85,36 @@
   const closeDropdown = () => {
     $selectedIdStore = undefined;
     isOpen = false;
+    focusButton();
   };
 
   const handleOptionClick = () => {
     closeDropdown();
+    focusButton();
+  };
+
+  const focusButton = () => {
     const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
     button?.focus();
   };
 </script>
 
 <svelte:window on:resize={onResize} />
-<div use:focusOutside={{ onFocusOut }} use:clickOutside={{ onOutclick: closeDropdown }} on:resize={onResize}>
-  <div
-    use:contextMenuNavigation={{
-      closeDropdown,
-      container: menuContainer,
-      isOpen,
-      onEscape,
-      openDropdown,
-      selectedId: $selectedIdStore,
-      selectionChanged: (id) => ($selectedIdStore = id),
-    }}
-    bind:this={buttonContainer}
-  >
+<div
+  use:contextMenuNavigation={{
+    closeDropdown,
+    container: menuContainer,
+    isOpen,
+    onEscape,
+    openDropdown,
+    selectedId: $selectedIdStore,
+    selectionChanged: (id) => ($selectedIdStore = id),
+  }}
+  use:focusOutside={{ onFocusOut }}
+  use:clickOutside={{ onOutclick: closeDropdown }}
+  on:resize={onResize}
+>
+  <div bind:this={buttonContainer}>
     <CircleIconButton
       {color}
       {icon}
