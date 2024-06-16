@@ -91,7 +91,7 @@
       onEscape,
       openDropdown,
       selectedId: $selectedIdStore,
-      selectionChanged: (node) => ($selectedIdStore = node?.id),
+      selectionChanged: (id) => ($selectedIdStore = id),
     }}
     bind:this={buttonContainer}
   >

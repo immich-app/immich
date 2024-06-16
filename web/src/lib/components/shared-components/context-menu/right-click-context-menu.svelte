@@ -87,7 +87,7 @@
         container: contextMenuElement,
         isOpen,
         selectedId: $selectedIdStore,
-        selectionChanged: (node) => ($selectedIdStore = node?.id),
+        selectionChanged: (id) => ($selectedIdStore = id),
       }}
     >
       {title}

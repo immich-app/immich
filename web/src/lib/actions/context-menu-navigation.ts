@@ -28,20 +28,20 @@ interface Options {
    */
   selectedId: string | undefined;
   /**
-   * A function that is called when the selection changes.
+   * A function that is called when the selection changes, to notify consumers of the new selected id.
    */
-  selectionChanged: (node: HTMLElement | undefined, index: number | undefined) => void;
+  selectionChanged: (id: string | undefined) => void;
 }
 
 export const contextMenuNavigation: Action<HTMLElement, Options> = (node, options: Options) => {
   const getCurrentElement = () => {
     const { container, selectedId: activeId } = options;
-    return container?.querySelector(`#${activeId}`) as HTMLElement | undefined;
+    return container?.querySelector(`#${activeId}`) as HTMLElement | null;
   };
 
   const close = () => {
     const { closeDropdown, selectionChanged } = options;
-    selectionChanged(undefined, undefined);
+    selectionChanged(undefined);
     closeDropdown();
   };
 
@@ -61,8 +61,10 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
     const currentIndex = currentEl ? children.indexOf(currentEl) : -1;
     const directionFactor = (direction === 'up' ? -1 : 1) + (direction === 'up' && currentIndex === -1 ? 1 : 0);
     const newIndex = (currentIndex + directionFactor + children.length) % children.length;
+    const selectedNode = children[newIndex];
+    selectedNode?.scrollIntoView({ block: 'nearest' });
 
-    selectionChanged(children[newIndex], newIndex);
+    selectionChanged(selectedNode?.id);
   };
 
   const onEscape = (event: KeyboardEvent) => {
