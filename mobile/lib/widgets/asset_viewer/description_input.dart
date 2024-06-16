@@ -33,6 +33,17 @@ class DescriptionInput extends HookConsumerWidget {
 
     useEffect(
       () {
+        // assetDescriptionProvider relies on exifInfo.id (localID)
+        // to fetch & save the description of the asset
+        // so we need to invalidate the provider when the exifInfo.id changes
+        ref.invalidate(assetDescriptionProvider(asset));
+        return null;
+      },
+      [asset.exifInfo?.id],
+    );
+
+    useEffect(
+      () {
         controller.text = description;
         isTextEmpty.value = description.isEmpty;
         return null;
