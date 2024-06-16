@@ -107,7 +107,7 @@ describe(MediaService.name, () => {
       ]);
     });
 
-    it('should queue deleted assets when force is true', async () => {
+    it('should queue trashed assets when force is true', async () => {
       assetMock.getAll.mockResolvedValue({
         items: [assetStub.trashed],
         hasNextPage: false,
