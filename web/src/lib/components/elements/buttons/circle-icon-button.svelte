@@ -46,6 +46,7 @@
 
   $: colorClass = colorClasses[color];
   $: mobileClass = hideMobile ? 'hidden sm:flex' : '';
+  $: paddingClass = `p-${padding}`;
 </script>
 
 <button
@@ -54,7 +55,7 @@
   {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
   aria-haspopup={ariaHasPopup}
   aria-expanded={ariaExpanded}
   aria-controls={ariaControls}
