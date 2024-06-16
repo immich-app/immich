@@ -40,7 +40,7 @@
     const diff = dateTime.diffNow().shiftTo(...units);
     const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
 
-    const relativeFormatter = new Intl.RelativeTimeFormat('en', {
+    const relativeFormatter = new Intl.RelativeTimeFormat($locale, {
       numeric: 'auto',
     });
     return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
@@ -117,7 +117,7 @@
         dispatch('deleteComment');
       }
       notificationController.show({
-        message: `${reaction.type} deleted`,
+        message: $t('reaction_deleted', { values: { type: reaction.type } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -205,7 +205,7 @@
                     use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
-                    Remove
+                    {$t('remove')}
                   </button>
                 {/if}
               </div>
@@ -225,7 +225,12 @@
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
-                  {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
+                  {$t('user_liked', {
+                    values: {
+                      user: reaction.user.name,
+                      type: assetType ? getAssetType(assetType).toLowerCase() : null,
+                    },
+                  })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a
@@ -257,7 +262,7 @@
                       use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
                       on:click={() => handleDeleteReaction(reaction, index)}
                     >
-                      Remove
+                      {$t('remove')}
                     </button>
                   {/if}
                 </div>
