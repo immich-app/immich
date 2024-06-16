@@ -47,6 +47,10 @@ export interface ImageDimensions {
   height: number;
 }
 
+export interface InputDimensions extends ImageDimensions {
+  inputPath: string;
+}
+
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];

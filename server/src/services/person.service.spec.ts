@@ -917,9 +917,9 @@ describe(PersonService.name, () => {
           colorspace: Colorspace.P3,
           crop: {
             left: 0,
-            top: 428,
-            width: 1102,
-            height: 1102,
+            top: 85,
+            width: 510,
+            height: 510,
           },
         },
       );

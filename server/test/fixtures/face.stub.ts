@@ -72,8 +72,8 @@ export const faceStub = {
     boundingBoxY1: 5,
     boundingBoxX2: 505,
     boundingBoxY2: 505,
-    imageHeight: 1000,
-    imageWidth: 1000,
+    imageHeight: 2880,
+    imageWidth: 2160,
   }),
   middle: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId6',
