@@ -41,13 +41,12 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository, ImageDimensions } from 'src/interfaces/media.interface';
+import { CropOptions, IMediaRepository, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { Orientation } from 'src/services/metadata.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -520,7 +519,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    const { width, height, inputPath } = await this.getInputDimensions(asset);
+    const { width, height, inputPath } = await this.getInputDimensions(asset, { width: oldWidth, height: oldHeight });
 
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
@@ -601,7 +600,7 @@ export class PersonService {
     return person;
   }
 
-  private async getInputDimensions(asset: AssetEntity): Promise<ImageDimensions & { inputPath: string }> {
+  private async getInputDimensions(asset: AssetEntity, oldDims: ImageDimensions): Promise<InputDimensions> {
     if (!asset.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
@@ -611,29 +610,16 @@ export class PersonService {
     }
 
     if (asset.type === AssetType.IMAGE) {
-      const { width, height } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
-        width: asset.exifInfo.exifImageWidth,
-        height: asset.exifInfo.exifImageHeight,
-      });
+      let { exifImageWidth: width, exifImageHeight: height } = asset.exifInfo;
+      if (oldDims.height > oldDims.width !== height > width) {
+        [width, height] = [height, width];
+      }
+
       return { width, height, inputPath: asset.originalPath };
     }
 
     const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
     return { width, height, inputPath: asset.previewPath };
-  }
-
-  private withOrientation(orientation: Orientation, { width, height }: ImageDimensions): ImageDimensions {
-    switch (orientation) {
-      case Orientation.MirrorHorizontalRotate270CW:
-      case Orientation.Rotate90CW:
-      case Orientation.MirrorHorizontalRotate90CW:
-      case Orientation.Rotate270CW: {
-        return { width: height, height: width };
-      }
-      default: {
-        return { width, height };
-      }
-    }
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {
