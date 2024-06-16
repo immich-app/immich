@@ -163,78 +163,73 @@ class SearchPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: const ImmichAppBar(),
-      body: Stack(
+      body: ListView(
         children: [
-          ListView(
-            children: [
-              buildSearchButton(),
-              const SizedBox(height: 8.0),
-              buildPeople(),
-              const SizedBox(height: 8.0),
-              buildPlaces(),
-              const SizedBox(height: 24.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'search_page_your_activity',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ).tr(),
+          buildSearchButton(),
+          const SizedBox(height: 8.0),
+          buildPeople(),
+          const SizedBox(height: 8.0),
+          buildPlaces(),
+          const SizedBox(height: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'search_page_your_activity',
+              style: context.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.favorite_border_rounded,
-                  color: categoryIconColor,
-                ),
-                title: Text('search_page_favorites', style: categoryTitleStyle)
-                    .tr(),
-                onTap: () => context.pushRoute(const FavoritesRoute()),
+            ).tr(),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.favorite_border_rounded,
+              color: categoryIconColor,
+            ),
+            title:
+                Text('search_page_favorites', style: categoryTitleStyle).tr(),
+            onTap: () => context.pushRoute(const FavoritesRoute()),
+          ),
+          const CategoryDivider(),
+          ListTile(
+            leading: Icon(
+              Icons.schedule_outlined,
+              color: categoryIconColor,
+            ),
+            title: Text(
+              'search_page_recently_added',
+              style: categoryTitleStyle,
+            ).tr(),
+            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+          ),
+          const SizedBox(height: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'search_page_categories',
+              style: context.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              const CategoryDivider(),
-              ListTile(
-                leading: Icon(
-                  Icons.schedule_outlined,
-                  color: categoryIconColor,
-                ),
-                title: Text(
-                  'search_page_recently_added',
-                  style: categoryTitleStyle,
-                ).tr(),
-                onTap: () => context.pushRoute(const RecentlyAddedRoute()),
-              ),
-              const SizedBox(height: 24.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'search_page_categories',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ).tr(),
-              ),
-              ListTile(
-                title:
-                    Text('search_page_videos', style: categoryTitleStyle).tr(),
-                leading: Icon(
-                  Icons.play_circle_outline,
-                  color: categoryIconColor,
-                ),
-                onTap: () => context.pushRoute(const AllVideosRoute()),
-              ),
-              const CategoryDivider(),
-              ListTile(
-                title: Text(
-                  'search_page_motion_photos',
-                  style: categoryTitleStyle,
-                ).tr(),
-                leading: Icon(
-                  Icons.motion_photos_on_outlined,
-                  color: categoryIconColor,
-                ),
-                onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
-              ),
-            ],
+            ).tr(),
+          ),
+          ListTile(
+            title: Text('search_page_videos', style: categoryTitleStyle).tr(),
+            leading: Icon(
+              Icons.play_circle_outline,
+              color: categoryIconColor,
+            ),
+            onTap: () => context.pushRoute(const AllVideosRoute()),
+          ),
+          const CategoryDivider(),
+          ListTile(
+            title: Text(
+              'search_page_motion_photos',
+              style: categoryTitleStyle,
+            ).tr(),
+            leading: Icon(
+              Icons.motion_photos_on_outlined,
+              color: categoryIconColor,
+            ),
+            onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
           ),
         ],
       ),
