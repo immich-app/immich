@@ -295,6 +295,8 @@
   "memories_check_back_tomorrow": "Check back tomorrow for more memories",
   "memories_start_over": "Start Over",
   "memories_swipe_to_close": "Swipe up to close",
+  "memories_year_ago": "1年前",
+  "memories_years_ago": "{}年前",
   "monthly_title_text_date_format": "MMMM y",
   "motion_photos_page_title": "Motion Photos",
   "multiselect_grid_edit_date_time_err_read_only": "Cannot edit date of read only asset(s), skipping",
