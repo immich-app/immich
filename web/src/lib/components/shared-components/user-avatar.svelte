@@ -5,7 +5,6 @@
 <script lang="ts">
   import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
-  import { onMount, tick } from 'svelte';
 
   interface User {
     id: string;
@@ -16,7 +15,7 @@
   }
 
   export let user: User;
-  export let color: UserAvatarColor = user.avatarColor;
+  export let color: UserAvatarColor | undefined = undefined;
   export let size: Size = 'full';
   export let rounded = true;
   export let interactive = false;
@@ -27,15 +26,16 @@
   let img: HTMLImageElement;
   let showFallback = true;
 
-  onMount(async () => {
-    if (!user.profileImagePath) {
-      return;
-    }
+  $: img, user, void tryLoadImage();
 
-    await img.decode();
-    await tick();
-    showFallback = false;
-  });
+  const tryLoadImage = async () => {
+    try {
+      await img.decode();
+      showFallback = false;
+    } catch {
+      showFallback = true;
+    }
+  };
 
   const colorClasses: Record<UserAvatarColor, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
@@ -60,7 +60,7 @@
     xxxl: 'w-28 h-28',
   };
 
-  $: colorClass = colorClasses[color];
+  $: colorClass = colorClasses[color || user.avatarColor];
   $: sizeClass = sizeClasses[size];
   $: title = label ?? `${user.name} (${user.email})`;
   $: interactiveClass = interactive
