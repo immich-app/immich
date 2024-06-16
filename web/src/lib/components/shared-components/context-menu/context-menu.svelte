@@ -8,6 +8,7 @@
   export let x = 0;
   export let y = 0;
   export let id: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
   export let ariaLabelledBy: string | undefined = undefined;
   export let ariaActiveDescendant: string | undefined = undefined;
 
@@ -44,6 +45,7 @@
   <ul
     {id}
     aria-activedescendant={ariaActiveDescendant ?? ''}
+    aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
     class:max-h-[100vh]={isVisible}

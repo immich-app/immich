@@ -83,14 +83,16 @@
   };
 
   const closeDropdown = () => {
-    $selectedIdStore = undefined;
-    isOpen = false;
+    if (!isOpen) {
+      return;
+    }
     focusButton();
+    isOpen = false;
+    $selectedIdStore = undefined;
   };
 
   const handleOptionClick = () => {
     closeDropdown();
-    focusButton();
   };
 
   const focusButton = () => {

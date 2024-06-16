@@ -14,18 +14,16 @@
   export let onClose: (() => unknown) | undefined;
 
   let uniqueKey = {};
-  let contextMenuElement: HTMLUListElement;
+  let menuContainer: HTMLUListElement;
   let triggerElement: HTMLElement | undefined = undefined;
-  let buttonElement: HTMLButtonElement;
 
   const id = generateId();
-  const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
 
   $: {
-    if (isOpen && buttonElement) {
+    if (isOpen && menuContainer) {
       triggerElement = document.activeElement as HTMLElement;
-      buttonElement?.focus();
+      menuContainer.focus();
       $optionClickCallbackStore = closeContextMenu;
     }
   }
@@ -41,7 +39,7 @@
 
     const elements = document.elementsFromPoint(event.x, event.y);
 
-    if (elements.includes(contextMenuElement)) {
+    if (elements.includes(menuContainer)) {
       // User right-clicked on the context menu itself, we keep the context
       // menu as is
       return;
@@ -64,14 +62,14 @@
 
 {#key uniqueKey}
   {#if isOpen}
-    <button
-      aria-controls={menuId}
-      aria-haspopup={true}
-      aria-expanded={isOpen}
-      id={buttonId}
-      bind:this={buttonElement}
-      type="button"
-      class="sr-only"
+    <div
+      use:contextMenuNavigation={{
+        closeDropdown: closeContextMenu,
+        container: menuContainer,
+        isOpen,
+        selectedId: $selectedIdStore,
+        selectionChanged: (id) => ($selectedIdStore = id),
+      }}
       use:shortcuts={[
         {
           shortcut: { key: 'Tab' },
@@ -82,34 +80,26 @@
           onShortcut: closeContextMenu,
         },
       ]}
-      use:contextMenuNavigation={{
-        closeDropdown: closeContextMenu,
-        container: contextMenuElement,
-        isOpen,
-        selectedId: $selectedIdStore,
-        selectionChanged: (id) => ($selectedIdStore = id),
-      }}
     >
-      {title}
-    </button>
-    <section
-      class="fixed left-0 top-0 z-10 flex h-screen w-screen"
-      on:contextmenu|preventDefault={reopenContextMenu}
-      role="presentation"
-    >
-      <ContextMenu
-        {direction}
-        {x}
-        {y}
-        ariaActiveDescendant={$selectedIdStore}
-        ariaLabelledBy={buttonId}
-        bind:menuElement={contextMenuElement}
-        id={menuId}
-        isVisible
-        onClose={closeContextMenu}
+      <section
+        class="fixed left-0 top-0 z-10 flex h-screen w-screen"
+        on:contextmenu|preventDefault={reopenContextMenu}
+        role="presentation"
       >
-        <slot />
-      </ContextMenu>
-    </section>
+        <ContextMenu
+          {direction}
+          {x}
+          {y}
+          ariaActiveDescendant={$selectedIdStore}
+          ariaLabel={title}
+          bind:menuElement={menuContainer}
+          id={menuId}
+          isVisible
+          onClose={closeContextMenu}
+        >
+          <slot />
+        </ContextMenu>
+      </section>
+    </div>
   {/if}
 {/key}
