@@ -295,6 +295,8 @@
   "memories_check_back_tomorrow": "明日もう一度確認してください",
   "memories_start_over": "始める",
   "memories_swipe_to_close": "上にスワイプして閉じる",
+  "memories_year_ago": "過去1年間",
+  "memories_years_ago": "過去{}年間",
   "monthly_title_text_date_format": "yyyy年 MM月",
   "motion_photos_page_title": "モーションフォト",
   "multiselect_grid_edit_date_time_err_read_only": "読み取り専用の項目の日付を変更できません",
