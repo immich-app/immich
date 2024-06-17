@@ -79,6 +79,38 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  cli-unit-tests-win:
+    name: CLI (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Install deps
+        run: npm ci
+
+      # Skip linter & formatter in Windows test.
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
+
   web-unit-tests:
     name: Web
     runs-on: ubuntu-latest
