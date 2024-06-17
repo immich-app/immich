@@ -344,7 +344,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
@@ -371,7 +371,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
@@ -400,7 +400,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
