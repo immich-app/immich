@@ -4,6 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
   import { generateId } from '$lib/utils/generate-id';
+  import { t } from 'svelte-i18n';
 
   export let title: string;
   export let subtitle = '';
@@ -31,7 +32,7 @@
           transition:fly={{ x: 10, duration: 200, easing: quintOut }}
           class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
         >
-          Unsaved change
+          {$t('unsaved_change')}
         </div>
       {/if}
     </div>
