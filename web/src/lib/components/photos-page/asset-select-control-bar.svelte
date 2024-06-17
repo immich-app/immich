@@ -14,7 +14,6 @@
 </script>
 
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
