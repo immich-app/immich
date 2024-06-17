@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/search_filter.provider.dart';
+import 'package:immich_mobile/widgets/search/search_filter/common/dropdown.dart';
 import 'package:openapi/api.dart';
 
 class CameraPicker extends HookConsumerWidget {
@@ -12,6 +13,7 @@ class CameraPicker extends HookConsumerWidget {
 
   final Function(Map<String, String?>) onSelect;
   final SearchCameraFilter? filter;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final makeTextController = useTextEditingController(text: filter?.make);
@@ -32,90 +34,73 @@ class CameraPicker extends HookConsumerWidget {
       ),
     );
 
-    final inputDecorationTheme = InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      contentPadding: const EdgeInsets.only(left: 16),
+    final makeWidget = SearchDropdown(
+      dropdownMenuEntries: switch (make) {
+        AsyncError() => [],
+        AsyncData(:final value) => value
+            .map(
+              (e) => DropdownMenuEntry(
+                value: e,
+                label: e,
+              ),
+            )
+            .toList(),
+        _ => [],
+      },
+      label: const Text('search_filter_camera_make').tr(),
+      controller: makeTextController,
+      leadingIcon: const Icon(Icons.photo_camera_rounded),
+      onSelected: (value) {
+        selectedMake.value = value.toString();
+        onSelect({
+          'make': selectedMake.value,
+          'model': selectedModel.value,
+        });
+      },
     );
 
-    final menuStyle = MenuStyle(
-      shape: WidgetStatePropertyAll<OutlinedBorder>(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
+    final modelWidget = SearchDropdown(
+      dropdownMenuEntries: switch (models) {
+        AsyncError() => [],
+        AsyncData(:final value) => value
+            .map(
+              (e) => DropdownMenuEntry(
+                value: e,
+                label: e,
+              ),
+            )
+            .toList(),
+        _ => [],
+      },
+      label: const Text('search_filter_camera_model').tr(),
+      controller: modelTextController,
+      leadingIcon: const Icon(Icons.camera),
+      onSelected: (value) {
+        selectedModel.value = value.toString();
+        onSelect({
+          'make': selectedMake.value,
+          'model': selectedModel.value,
+        });
+      },
     );
 
-    return Container(
-      padding: const EdgeInsets.only(
-          // bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    if (context.isMobile) {
+      return Column(
         children: [
-          DropdownMenu(
-            dropdownMenuEntries: switch (make) {
-              AsyncError() => [],
-              AsyncData(:final value) => value
-                  .map(
-                    (e) => DropdownMenuEntry(
-                      value: e,
-                      label: e,
-                    ),
-                  )
-                  .toList(),
-              _ => [],
-            },
-            width: context.width * 0.45,
-            menuHeight: 400,
-            label: const Text('search_filter_camera_make').tr(),
-            inputDecorationTheme: inputDecorationTheme,
-            controller: makeTextController,
-            menuStyle: menuStyle,
-            leadingIcon: const Icon(Icons.photo_camera_rounded),
-            trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
-            selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
-            onSelected: (value) {
-              selectedMake.value = value.toString();
-              onSelect({
-                'make': selectedMake.value,
-                'model': selectedModel.value,
-              });
-            },
-          ),
-          DropdownMenu(
-            dropdownMenuEntries: switch (models) {
-              AsyncError() => [],
-              AsyncData(:final value) => value
-                  .map(
-                    (e) => DropdownMenuEntry(
-                      value: e,
-                      label: e,
-                    ),
-                  )
-                  .toList(),
-              _ => [],
-            },
-            width: context.width * 0.45,
-            menuHeight: 400,
-            label: const Text('search_filter_camera_model').tr(),
-            inputDecorationTheme: inputDecorationTheme,
-            controller: modelTextController,
-            menuStyle: menuStyle,
-            leadingIcon: const Icon(Icons.camera),
-            trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
-            selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
-            onSelected: (value) {
-              selectedModel.value = value.toString();
-              onSelect({
-                'make': selectedMake.value,
-                'model': selectedModel.value,
-              });
-            },
-          ),
+          makeWidget,
+          const SizedBox(height: 8),
+          modelWidget,
         ],
-      ),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(child: makeWidget),
+        const SizedBox(width: 16),
+        Expanded(child: modelWidget),
+      ],
     );
   }
 }

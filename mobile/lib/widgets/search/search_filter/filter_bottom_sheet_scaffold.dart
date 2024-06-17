@@ -38,7 +38,10 @@ class FilterBottomSheetScaffold extends StatelessWidget {
               style: context.textTheme.headlineSmall,
             ),
           ),
-          buildChildWidget(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: buildChildWidget(),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
