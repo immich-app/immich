@@ -881,6 +881,7 @@
   "select_photos": "Select photos",
   "select_trash_all": "Select trash all",
   "selected": "Selected",
+  "selected_count": "{count, plural, other {# selected}}",
   "send_message": "Send message",
   "send_welcome_email": "Send welcome email",
   "server": "Server",

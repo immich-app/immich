@@ -524,7 +524,7 @@
               {#if $timelineSelected.size === 0}
                 {$t('add_to_album')}
               {:else}
-                {$timelineSelected.size.toLocaleString($locale)} selected
+                {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
           </svelte:fragment>
