@@ -279,7 +279,9 @@
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
         <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
+        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+          {$t('photos_and_videos').toUpperCase()}
+        </div>
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
@@ -296,7 +298,7 @@
           <div class="flex flex-col content-center items-center text-center">
             <Icon path={mdiImageOffOutline} size="3.5em" />
             <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
-            <p class="text-base font-normal">Try a synonym or more general keyword</p>
+            <p class="text-base font-normal">{$t('no_results_description')}</p>
           </div>
         </div>
       {/if}
