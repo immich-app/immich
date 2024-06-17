@@ -53,7 +53,7 @@
     "image_preview_resolution": "미리 보기 해상도",
     "image_preview_resolution_description": "단일 사진을 보거나 기계 학습을 실행하는 경우 사용됩니다. 해상도가 높을수록 더 많은 세부 정보를 보존할 수 있지만, 인코딩 시간이 길어지고, 파일 크기가 커지며, 앱의 반응 속도가 느려질 수 있습니다.",
     "image_quality": "품질",
-    "image_quality_description": "1-100 사이의 이미지 품질. 품질이 높을수록 파일 크기가 커지지만 더 나은 품질의 이미지를 제공합니다. 이 옵션은 미리 보기 및 섬네일 이미지에 영향을 미칩니다.",
+    "image_quality_description": "이미지 품질을 1에서 100 사이로 설정합니다. 품질이 높을수록 파일 크기가 커지지만 더 나은 품질의 이미지를 제공합니다. 이 옵션은 미리 보기 및 섬네일 이미지에 영향을 미칩니다.",
     "image_settings": "이미지 설정",
     "image_settings_description": "생성된 이미지의 품질 및 해상도 관리",
     "image_thumbnail_format": "섬네일 형식",
