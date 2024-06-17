@@ -522,7 +522,7 @@
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
-                Add to album
+                {$t('add_to_album')}
               {:else}
                 {$timelineSelected.size.toLocaleString($locale)} selected
               {/if}
@@ -535,7 +535,7 @@
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
-              Select from computer
+              {$t('select_from_computer')}
             </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
               >{$t('done')}</Button
