@@ -1,22 +1,34 @@
 <script lang="ts" context="module">
-  export type ImmichDropDownOption = {
-    default: string;
-    options: string[];
+  // Necessary for eslint
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  type T = any;
+
+  export type RenderedOption = {
+    title: string;
+    disabled?: boolean;
   };
 </script>
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  export let options: ImmichDropDownOption;
-  export let selected: string;
+  const dispatch = createEventDispatcher<{
+    select: T;
+  }>();
+
+  export let options: T[];
+  export let selectedOption: T;
   export let disabled = false;
-
-  onMount(() => {
-    selected = options.default;
-  });
-
   export let isOpen = false;
+
+  export let render: (item: T) => string | RenderedOption = String;
+
+  const handleSelectOption = (option: T) => {
+    dispatch('select', option);
+    selectedOption = option;
+    isOpen = false;
+  };
+
   const toggle = () => (isOpen = !isOpen);
 </script>
 
@@ -29,7 +41,7 @@
     class="flex w-full place-items-center justify-between rounded-lg bg-gray-200 p-2 disabled:cursor-not-allowed disabled:bg-gray-600 dark:bg-gray-600 dark:disabled:bg-gray-300"
   >
     <div>
-      {selected}
+      {render(selectedOption)}
     </div>
 
     <div>
@@ -51,16 +63,15 @@
 
   {#if isOpen}
     <div class="absolute mt-2 flex w-full flex-col">
-      {#each options.options as option}
+      {#each options as option}
         <button
           type="button"
           on:click={() => {
-            selected = option;
-            isOpen = false;
+            handleSelectOption(option);
           }}
           class="flex w-full bg-gray-200 p-2 transition-all hover:bg-gray-300 dark:bg-gray-500 dark:hover:bg-gray-700"
         >
-          {option}
+          {render(option)}
         </button>
       {/each}
     </div>

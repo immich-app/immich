@@ -8,7 +8,6 @@
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import type { ImmichDropDownOption } from '../dropdown-button.svelte';
   import DropdownButton from '../dropdown-button.svelte';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
@@ -26,7 +25,7 @@
   let allowDownload = true;
   let allowUpload = false;
   let showMetadata = true;
-  let expirationTime = '';
+  let expirationTime = 0;
   let password = '';
   let shouldChangeExpirationTime = false;
   let enablePassword = false;
@@ -35,20 +34,22 @@
     created: void;
   }>();
 
-  const expiredDateOption: ImmichDropDownOption = {
-    default: $t('never'),
-    options: [
-      $t('never'),
-      $t('durations.minutes', { values: { minutes: 30 } }),
-      $t('durations.hours', { values: { hours: 1 } }),
-      $t('durations.hours', { values: { hours: 6 } }),
-      $t('durations.days', { values: { days: 1 } }),
-      $t('durations.days', { values: { days: 7 } }),
-      $t('durations.days', { values: { days: 30 } }),
-      $t('durations.months', { values: { months: 3 } }),
-      $t('durations.years', { values: { years: 1 } }),
-    ],
-  };
+  interface ExpirationOption {
+    title: string;
+    time: number;
+  }
+
+  const expiredDateOptions: ExpirationOption[] = [
+    { title: $t('never'), time: 0 },
+    { title: $t('durations.minutes', { values: { minutes: 30 } }), time: 30 * 60 * 1000 },
+    { title: $t('durations.hours', { values: { hours: 1 } }), time: 60 * 60 * 1000 },
+    { title: $t('durations.hours', { values: { hours: 6 } }), time: 6 * 60 * 60 * 1000 },
+    { title: $t('durations.days', { values: { days: 1 } }), time: 24 * 60 * 60 * 1000 },
+    { title: $t('durations.days', { values: { days: 7 } }), time: 7 * 24 * 60 * 60 * 1000 },
+    { title: $t('durations.days', { values: { days: 30 } }), time: 30 * 24 * 60 * 60 * 1000 },
+    { title: $t('durations.months', { values: { months: 3 } }), time: 30 * 24 * 60 * 60 * 3 * 1000 },
+    { title: $t('durations.years', { values: { years: 1 } }), time: 365 * 24 * 60 * 60 * 1000 },
+  ];
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
   $: {
@@ -100,35 +101,7 @@
   };
 
   const getExpirationTimeInMillisecond = () => {
-    switch (expirationTime) {
-      case '30 minutes': {
-        return 30 * 60 * 1000;
-      }
-      case '1 hour': {
-        return 60 * 60 * 1000;
-      }
-      case '6 hours': {
-        return 6 * 60 * 60 * 1000;
-      }
-      case '1 day': {
-        return 24 * 60 * 60 * 1000;
-      }
-      case '7 days': {
-        return 7 * 24 * 60 * 60 * 1000;
-      }
-      case '30 days': {
-        return 30 * 24 * 60 * 60 * 1000;
-      }
-      case '3 months': {
-        return 30 * 24 * 60 * 60 * 3 * 1000;
-      }
-      case '1 year': {
-        return 30 * 24 * 60 * 60 * 12 * 1000;
-      }
-      default: {
-        return 0;
-      }
-    }
+    return expirationTime;
   };
 
   const handleEditLink = async () => {
@@ -171,6 +144,10 @@
       return $t('edit_link');
     }
     return $t('create_link_to_share');
+  };
+
+  const handleSelectedExpiration = ({ time }: ExpirationOption) => {
+    expirationTime = time;
   };
 </script>
 
@@ -250,9 +227,11 @@
           {/if}
 
           <DropdownButton
-            options={expiredDateOption}
-            bind:selected={expirationTime}
+            options={expiredDateOptions}
+            selectedOption={expiredDateOptions[0]}
+            on:select={({ detail }) => handleSelectedExpiration(detail)}
             disabled={editingLink && !shouldChangeExpirationTime}
+            render={(option) => option.title}
           />
         </div>
       </div>
