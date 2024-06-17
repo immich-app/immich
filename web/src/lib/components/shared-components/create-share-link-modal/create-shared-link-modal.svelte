@@ -178,12 +178,11 @@
   <section>
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
-        <div>Let anyone with the link see photos and people in this album.</div>
+        <div>{$t('album_with_link_access')}</div>
       {:else}
         <div class="text-sm">
-          Public album | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.album?.albumName}</span
-          >
+          {$t('public_album')} |
+          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
         </div>
       {/if}
     {/if}
@@ -193,9 +192,8 @@
         <div>{$t('create_link_to_share_description')}</div>
       {:else}
         <div class="text-sm">
-          Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.description || ''}</span
-          >
+          {$t('individual_share')} |
+          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
         </div>
       {/if}
     {/if}

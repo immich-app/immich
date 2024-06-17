@@ -424,27 +424,27 @@
     <MenuOption on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}>
       <p class="flex gap-2">
         <Icon path={mdiRenameOutline} size="18" />
-        Edit
+        {$t('edit')}
       </p>
     </MenuOption>
     <MenuOption on:click={() => openShareModal()}>
       <p class="flex gap-2">
         <Icon path={mdiShareVariantOutline} size="18" />
-        Share
+        {$t('share')}
       </p>
     </MenuOption>
   {/if}
   <MenuOption on:click={() => handleDownloadAlbum()}>
     <p class="flex gap-2">
       <Icon path={mdiFolderDownloadOutline} size="18" />
-      Download
+      {$t('download')}
     </p>
   </MenuOption>
   {#if showFullContextMenu}
     <MenuOption on:click={() => setAlbumToDelete()}>
       <p class="flex gap-2">
         <Icon path={mdiDeleteOutline} size="18" />
-        Delete
+        {$t('delete')}
       </p>
     </MenuOption>
   {/if}
