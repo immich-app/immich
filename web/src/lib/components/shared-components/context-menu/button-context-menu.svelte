@@ -6,11 +6,11 @@
     getContextMenuPositionFromEvent,
     type Align,
   } from '$lib/utils/context-menu';
-  import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { clickOutside } from '$lib/actions/click-outside';
+  import { shortcuts } from '$lib/actions/shortcut';
 
   export let icon: string;
   export let title: string;
@@ -67,14 +67,6 @@
     closeDropdown();
   };
 
-  const onFocusOut = (event: FocusEvent) => {
-    const related = event.relatedTarget as HTMLElement | null;
-    if (related && menuContainer.contains(related)) {
-      return;
-    }
-    closeDropdown();
-  };
-
   const onResize = () => {
     if (!isOpen) {
       return;
@@ -112,7 +104,6 @@
     selectedId: $selectedIdStore,
     selectionChanged: (id) => ($selectedIdStore = id),
   }}
-  use:focusOutside={{ onFocusOut }}
   use:clickOutside={{ onOutclick: closeDropdown }}
   on:resize={onResize}
 >
@@ -131,15 +122,30 @@
       on:click={handleClick}
     />
   </div>
-  <ContextMenu
-    {...contextMenuPosition}
-    {direction}
-    ariaActiveDescendant={$selectedIdStore}
-    ariaLabelledBy={buttonId}
-    bind:menuElement={menuContainer}
-    id={menuId}
-    isVisible={isOpen}
+  <div
+    use:shortcuts={[
+      {
+        shortcut: { key: 'Tab' },
+        onShortcut: closeDropdown,
+        preventDefault: false,
+      },
+      {
+        shortcut: { key: 'Tab', shift: true },
+        onShortcut: closeDropdown,
+        preventDefault: false,
+      },
+    ]}
   >
-    <slot />
-  </ContextMenu>
+    <ContextMenu
+      {...contextMenuPosition}
+      {direction}
+      ariaActiveDescendant={$selectedIdStore}
+      ariaLabelledBy={buttonId}
+      bind:menuElement={menuContainer}
+      id={menuId}
+      isVisible={isOpen}
+    >
+      <slot />
+    </ContextMenu>
+  </div>
 </div>
