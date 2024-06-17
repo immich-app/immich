@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -12,45 +13,35 @@ class AssetDescriptionService {
   final Isar _db;
   final ApiService _api;
 
-  setDescription(
-    String description,
-    String remoteAssetId,
-    int localExifId,
+  Future<void> setDescription(
+    Asset asset,
+    String newDescription,
   ) async {
+    final remoteAssetId = asset.remoteId;
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (remoteAssetId == null || localExifId == null) {
+      return;
+    }
+
     final result = await _api.assetsApi.updateAsset(
       remoteAssetId,
-      UpdateAssetDto(description: description),
+      UpdateAssetDto(description: newDescription),
     );
 
-    if (result?.exifInfo?.description != null) {
+    final description = result?.exifInfo?.description;
+
+    if (description != null) {
       var exifInfo = await _db.exifInfos.get(localExifId);
 
       if (exifInfo != null) {
-        exifInfo.description = result!.exifInfo!.description;
+        exifInfo.description = description;
         await _db.writeTxn(
           () => _db.exifInfos.put(exifInfo),
         );
       }
     }
-  }
-
-  Future<String> readLatest(String assetRemoteId, int localExifId) async {
-    final latestAssetFromServer =
-        await _api.assetsApi.getAssetInfo(assetRemoteId);
-    final localExifInfo = await _db.exifInfos.get(localExifId);
-
-    if (latestAssetFromServer != null && localExifInfo != null) {
-      localExifInfo.description =
-          latestAssetFromServer.exifInfo?.description ?? '';
-
-      await _db.writeTxn(
-        () => _db.exifInfos.put(localExifInfo),
-      );
-
-      return localExifInfo.description!;
-    }
-
-    return "";
   }
 }
 

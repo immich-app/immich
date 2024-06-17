@@ -55,7 +55,7 @@
 
     if (selectedPeople.length >= 5) {
       notificationController.show({
-        message: 'You can only merge up to 5 faces at a time',
+        message: $t('merge_people_limit'),
         type: NotificationType.Info,
       });
       return;
@@ -67,7 +67,7 @@
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
       id: 'merge-people',
-      prompt: 'Do you want to merge these people?',
+      prompt: $t('merge_people_prompt'),
     });
 
     if (!isConfirm) {

@@ -16,10 +16,7 @@
   export let onCancel: () => void;
   export let onConfirm: () => void;
 
-  let isConfirmButtonDisabled = false;
-
   const handleConfirm = () => {
-    isConfirmButtonDisabled = true;
     onConfirm();
   };
 </script>
@@ -37,7 +34,7 @@
         {cancelText}
       </Button>
     {/if}
-    <Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={disabled || isConfirmButtonDisabled}>
+    <Button color={confirmColor} fullwidth on:click={handleConfirm} {disabled}>
       {confirmText}
     </Button>
   </svelte:fragment>
