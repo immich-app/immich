@@ -1015,6 +1015,7 @@
   "view_previous_asset": "View previous asset",
   "visibility_changed": "Visibility changed for {count, plural, one {# person} other {# people}}",
   "waiting": "Waiting",
+  "warning": "Warning",
   "week": "Week",
   "welcome": "Welcome",
   "welcome_to_immich": "Welcome to immich",
