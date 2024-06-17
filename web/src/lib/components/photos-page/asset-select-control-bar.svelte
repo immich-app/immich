@@ -33,8 +33,7 @@
 
 <ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    {$t('selected')}
-    {assets.size.toLocaleString($locale)}
+    {$t('selected_count', { values: { count: assets.size } })}
   </p>
   <slot slot="trailing" />
 </ControlAppBar>
