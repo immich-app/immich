@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
@@ -7,8 +8,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-
-import '../utils/string_helper.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
@@ -42,9 +41,12 @@ class MemoryService {
         final dbAssets =
             await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
         if (dbAssets.isNotEmpty) {
+          final String title = yearsAgo <= 1
+              ? 'memories_year_ago'.tr()
+              : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
           memories.add(
             Memory(
-              title: '$yearsAgo year${s(yearsAgo)} ago',
+              title: title,
               assets: dbAssets,
             ),
           );

@@ -295,6 +295,8 @@
   "memories_check_back_tomorrow": "Kom morgen terug voor meer herinneringen",
   "memories_start_over": "Opnieuw beginnen",
   "memories_swipe_to_close": "Swipe omhoog om te sluiten",
+  "memories_year_ago": "1 jaar geleden",
+  "memories_years_ago": "{} jaar geleden",
   "monthly_title_text_date_format": "MMMM y",
   "motion_photos_page_title": "Bewegende foto's",
   "multiselect_grid_edit_date_time_err_read_only": "Kan datum van alleen-lezen asset(s) niet wijzigen, overslaan",

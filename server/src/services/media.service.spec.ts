@@ -107,6 +107,56 @@ describe(MediaService.name, () => {
       ]);
     });
 
+    it('should queue trashed assets when force is true', async () => {
+      assetMock.getAll.mockResolvedValue({
+        items: [assetStub.trashed],
+        hasNextPage: false,
+      });
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: true });
+
+      expect(assetMock.getAll).toHaveBeenCalledWith(
+        { skip: 0, take: 1000 },
+        expect.objectContaining({ withDeleted: true }),
+      );
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PREVIEW,
+          data: { id: assetStub.trashed.id },
+        },
+      ]);
+    });
+
+    it('should queue archived assets when force is true', async () => {
+      assetMock.getAll.mockResolvedValue({
+        items: [assetStub.archived],
+        hasNextPage: false,
+      });
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: true });
+
+      expect(assetMock.getAll).toHaveBeenCalledWith(
+        { skip: 0, take: 1000 },
+        expect.objectContaining({ withArchived: true }),
+      );
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PREVIEW,
+          data: { id: assetStub.archived.id },
+        },
+      ]);
+    });
+
     it('should queue all people with missing thumbnail path', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
