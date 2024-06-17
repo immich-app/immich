@@ -1,34 +1,16 @@
 <script lang="ts" context="module">
-  // Necessary for eslint
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  type T = any;
-
-  export type RenderedOption = {
-    title: string;
-    disabled?: boolean;
+  export type DropDownOption<T = unknown> = {
+    label: string;
+    value: T;
   };
 </script>
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher<{
-    select: T;
-  }>();
-
-  export let options: T[];
-  export let selectedOption: T;
+  export let options: DropDownOption[];
+  export let selected = options.at(0);
   export let disabled = false;
+
   export let isOpen = false;
-
-  export let render: (item: T) => string | RenderedOption = String;
-
-  const handleSelectOption = (option: T) => {
-    dispatch('select', option);
-    selectedOption = option;
-    isOpen = false;
-  };
-
   const toggle = () => (isOpen = !isOpen);
 </script>
 
@@ -40,9 +22,11 @@
     aria-expanded={isOpen}
     class="flex w-full place-items-center justify-between rounded-lg bg-gray-200 p-2 disabled:cursor-not-allowed disabled:bg-gray-600 dark:bg-gray-600 dark:disabled:bg-gray-300"
   >
-    <div>
-      {render(selectedOption)}
-    </div>
+    {#if selected}
+      <div>
+        {selected.label}
+      </div>
+    {/if}
 
     <div>
       <svg
@@ -67,11 +51,12 @@
         <button
           type="button"
           on:click={() => {
-            handleSelectOption(option);
+            selected = option;
+            isOpen = false;
           }}
           class="flex w-full bg-gray-200 p-2 transition-all hover:bg-gray-300 dark:bg-gray-500 dark:hover:bg-gray-700"
         >
-          {render(option)}
+          {option.label}
         </button>
       {/each}
     </div>

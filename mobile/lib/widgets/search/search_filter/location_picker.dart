@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/search_filter.provider.dart';
+import 'package:immich_mobile/widgets/search/search_filter/common/dropdown.dart';
 import 'package:openapi/api.dart';
 
 class LocationPicker extends HookConsumerWidget {
@@ -48,24 +48,9 @@ class LocationPicker extends HookConsumerWidget {
       ),
     );
 
-    final inputDecorationTheme = InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      contentPadding: const EdgeInsets.only(left: 16),
-    );
-
-    final menuStyle = MenuStyle(
-      shape: WidgetStatePropertyAll<OutlinedBorder>(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-    );
-
     return Column(
       children: [
-        DropdownMenu(
+        SearchDropdown(
           dropdownMenuEntries: switch (countries) {
             AsyncError() => [],
             AsyncData(:final value) => value
@@ -78,14 +63,8 @@ class LocationPicker extends HookConsumerWidget {
                 .toList(),
             _ => [],
           },
-          menuHeight: 400,
-          width: context.width * 0.9,
           label: const Text('search_filter_location_country').tr(),
-          inputDecorationTheme: inputDecorationTheme,
-          menuStyle: menuStyle,
           controller: countryTextController,
-          trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
-          selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
             if (value.toString() == selectedCountry.value) {
               return;
@@ -103,7 +82,7 @@ class LocationPicker extends HookConsumerWidget {
         const SizedBox(
           height: 16,
         ),
-        DropdownMenu(
+        SearchDropdown(
           dropdownMenuEntries: switch (states) {
             AsyncError() => [],
             AsyncData(:final value) => value
@@ -116,14 +95,8 @@ class LocationPicker extends HookConsumerWidget {
                 .toList(),
             _ => [],
           },
-          menuHeight: 400,
-          width: context.width * 0.9,
           label: const Text('search_filter_location_state').tr(),
-          inputDecorationTheme: inputDecorationTheme,
-          menuStyle: menuStyle,
           controller: stateTextController,
-          trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
-          selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
             if (value.toString() == selectedState.value) {
               return;
@@ -140,7 +113,7 @@ class LocationPicker extends HookConsumerWidget {
         const SizedBox(
           height: 16,
         ),
-        DropdownMenu(
+        SearchDropdown(
           dropdownMenuEntries: switch (cities) {
             AsyncError() => [],
             AsyncData(:final value) => value
@@ -153,14 +126,8 @@ class LocationPicker extends HookConsumerWidget {
                 .toList(),
             _ => [],
           },
-          menuHeight: 400,
-          width: context.width * 0.9,
           label: const Text('search_filter_location_city').tr(),
-          inputDecorationTheme: inputDecorationTheme,
-          menuStyle: menuStyle,
           controller: cityTextController,
-          trailingIcon: const Icon(Icons.arrow_drop_down_rounded),
-          selectedTrailingIcon: const Icon(Icons.arrow_drop_up_rounded),
           onSelected: (value) {
             selectedCity.value = value.toString();
             onSelected({

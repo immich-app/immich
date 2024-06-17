@@ -451,13 +451,6 @@
   "duplicates": "Duplicates",
   "duplicates_description": "Resolve each group by indicating which, if any, are duplicates",
   "duration": "Duration",
-  "durations": {
-    "days": "{days, plural, one {# day} other {# days}}",
-    "hours": "{hours, plural, one {# hour} other {# hours}}",
-    "minutes": "{minutes, plural, one {# minute} other {# minutes}}",
-    "months": "{months, plural, one {# month} other {# months}}",
-    "years": "{years, plural, one {# year} other {# years}}"
-  },
   "edit": "Edit",
   "edit_album": "Edit album",
   "edit_avatar": "Edit avatar",
