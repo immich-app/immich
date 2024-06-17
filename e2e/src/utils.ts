@@ -398,14 +398,7 @@ export const utils = {
       return;
     }
 
-    const vector = Array.from({ length: 512 }, Math.random);
-    const embedding = `[${vector.join(',')}]`;
-
-    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
-      assetId,
-      personId,
-      embedding,
-    ]);
+    await client.query('INSERT INTO asset_faces ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
