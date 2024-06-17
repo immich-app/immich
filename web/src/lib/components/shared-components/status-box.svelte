@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { onMount } from 'svelte';
-  import { asByteUnitString } from '../../utils/byte-units';
+  import { getByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
   import { mdiChartPie, mdiDns } from '@mdi/js';
   import { serverInfo } from '$lib/stores/server-info.store';
@@ -47,7 +47,7 @@
 <div class="dark:text-immich-dark-fg">
   <div
     class="storage-status grid grid-cols-[64px_auto]"
-    title="Used {asByteUnitString(usedBytes, $locale, 3)} of {asByteUnitString(availableBytes, $locale, 3)}"
+    title="Used {getByteUnitString(usedBytes, $locale, 3)} of {getByteUnitString(availableBytes, $locale, 3)}"
   >
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Icon path={mdiChartPie} size="24" />
@@ -61,8 +61,8 @@
         <p class="text-xs">
           {$t('storage_usage', {
             values: {
-              used: asByteUnitString(usedBytes, $locale),
-              available: asByteUnitString(availableBytes, $locale),
+              used: getByteUnitString(usedBytes, $locale),
+              available: getByteUnitString(availableBytes, $locale),
             },
           })}
         </p>

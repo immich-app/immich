@@ -202,6 +202,15 @@ describe('AssetStore', () => {
       expect(updateAssetsSpy).toBeCalledWith([asset]);
       expect(assetStore.assets.length).toEqual(1);
     });
+
+    it('ignores trashed assets when isTrashed is true', () => {
+      const asset = assetFactory.build({ isTrashed: false });
+      const trashedAsset = assetFactory.build({ isTrashed: true });
+
+      const assetStore = new AssetStore({ isTrashed: true });
+      assetStore.addAssets([asset, trashedAsset]);
+      expect(assetStore.assets).toEqual([trashedAsset]);
+    });
   });
 
   describe('updateAssets', () => {

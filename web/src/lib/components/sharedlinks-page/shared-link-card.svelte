@@ -7,7 +7,7 @@
   import { createEventDispatcher } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { t } from 'svelte-i18n';
 
   export let link: SharedLinkResponseDto;
@@ -52,7 +52,7 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    <AlbumCover album={link?.album} css="h-[100px] w-[100px] transition-all duration-300 hover:shadow-lg" />
+    <ShareCover class="h-[100px] w-[100px] transition-all duration-300 hover:shadow-lg" {link} />
   </div>
 
   <div class="flex flex-col justify-between">

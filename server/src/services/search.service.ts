@@ -24,6 +24,7 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -140,13 +141,12 @@ export class SearchService {
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
-    const userIds: string[] = [auth.user.id];
-    const partners = await this.partnerRepository.getAll(auth.user.id);
-    const partnersIds = partners
-      .filter((partner) => partner.sharedBy && partner.inTimeline)
-      .map((partner) => partner.sharedById);
-    userIds.push(...partnersIds);
-    return userIds;
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    return [auth.user.id, ...partnerIds];
   }
 
   private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {

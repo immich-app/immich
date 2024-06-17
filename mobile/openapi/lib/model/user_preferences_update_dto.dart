@@ -14,6 +14,7 @@ class UserPreferencesUpdateDto {
   /// Returns a new [UserPreferencesUpdateDto] instance.
   UserPreferencesUpdateDto({
     this.avatar,
+    this.download,
     this.emailNotifications,
     this.memories,
   });
@@ -25,6 +26,14 @@ class UserPreferencesUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   AvatarUpdate? avatar;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DownloadUpdate? download;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -45,6 +54,7 @@ class UserPreferencesUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
     other.avatar == avatar &&
+    other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.memories == memories;
 
@@ -52,11 +62,12 @@ class UserPreferencesUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (avatar == null ? 0 : avatar!.hashCode) +
+    (download == null ? 0 : download!.hashCode) +
     (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
     (memories == null ? 0 : memories!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, emailNotifications=$emailNotifications, memories=$memories]';
+  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,6 +75,11 @@ class UserPreferencesUpdateDto {
       json[r'avatar'] = this.avatar;
     } else {
     //  json[r'avatar'] = null;
+    }
+    if (this.download != null) {
+      json[r'download'] = this.download;
+    } else {
+    //  json[r'download'] = null;
     }
     if (this.emailNotifications != null) {
       json[r'emailNotifications'] = this.emailNotifications;
@@ -87,6 +103,7 @@ class UserPreferencesUpdateDto {
 
       return UserPreferencesUpdateDto(
         avatar: AvatarUpdate.fromJson(json[r'avatar']),
+        download: DownloadUpdate.fromJson(json[r'download']),
         emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
         memories: MemoryUpdate.fromJson(json[r'memories']),
       );

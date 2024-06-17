@@ -326,7 +326,8 @@ export class AssetStore {
         this.options.personId ||
         this.options.albumId ||
         isMismatched(this.options.isArchived, asset.isArchived) ||
-        isMismatched(this.options.isFavorite, asset.isFavorite)
+        isMismatched(this.options.isFavorite, asset.isFavorite) ||
+        isMismatched(this.options.isTrashed, asset.isTrashed)
       ) {
         // If asset is already in the bucket we don't need to recalculate
         // asset store containers

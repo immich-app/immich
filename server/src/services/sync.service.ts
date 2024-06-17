@@ -10,6 +10,7 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { setIsEqual } from 'src/utils/set';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
@@ -46,11 +47,9 @@ export class SyncService {
       return FULL_SYNC;
     }
 
-    const authUserId = auth.user.id;
-
     // app does not have the correct partners synced
-    const partner = await this.partnerRepository.getAll(authUserId);
-    const userIds = [authUserId, ...partner.filter((p) => p.sharedWithId == auth.user.id).map((p) => p.sharedById)];
+    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+    const userIds = [auth.user.id, ...partnerIds];
     if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
       return FULL_SYNC;
     }
@@ -81,7 +80,7 @@ export class SyncService {
             auth,
             stripMetadata: false,
             // ignore stacks for non partner users
-            withStack: a.ownerId === authUserId,
+            withStack: a.ownerId === auth.user.id,
           }),
         ),
       deleted,

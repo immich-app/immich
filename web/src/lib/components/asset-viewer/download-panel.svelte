@@ -2,7 +2,7 @@
   import { type DownloadProgress, downloadAssets, downloadManager, isDownloading } from '$lib/stores/download';
   import { locale } from '$lib/stores/preferences.store';
   import { fly, slide } from 'svelte/transition';
-  import { asByteUnitString } from '../../utils/byte-units';
+  import { getByteUnitString } from '../../utils/byte-units';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -27,7 +27,7 @@
             <div class="flex place-items-center justify-between gap-2 text-xs font-medium">
               <p class="truncate">■ {downloadKey}</p>
               {#if download.total}
-                <p class="whitespace-nowrap">{asByteUnitString(download.total, $locale)}</p>
+                <p class="whitespace-nowrap">{getByteUnitString(download.total, $locale)}</p>
               {/if}
             </div>
             <div class="flex place-items-center gap-2">

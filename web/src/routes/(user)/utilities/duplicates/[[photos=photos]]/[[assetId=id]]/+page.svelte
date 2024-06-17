@@ -1,17 +1,16 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-
-  import type { PageData } from './$types';
-  import { handleError } from '$lib/utils/handle-error';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -19,10 +18,8 @@
     try {
       if (!$featureFlags.trash && trashIds.length > 0) {
         const isConfirmed = await dialogController.show({
-          title: $t('confirm'),
           prompt: $t('delete_duplicates_confirmation'),
-          confirmText: $t('yes'),
-          cancelText: $t('no'),
+          confirmText: $t('permanently_delete'),
         });
 
         if (!isConfirmed) {
@@ -57,7 +54,7 @@
       </div>
       {#key data.duplicates[0].duplicateId}
         <DuplicatesCompareControl
-          duplicate={data.duplicates[0]}
+          assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
         />
