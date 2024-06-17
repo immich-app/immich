@@ -4,7 +4,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
@@ -15,26 +15,38 @@
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
   let assetFileUrl: string;
+  let forceMuted = false;
 
-  $: {
-    const next = getAssetPlaybackUrl({ id: assetId, checksum });
-    if (assetFileUrl !== next) {
-      assetFileUrl = next;
-      element && element.load();
-    }
+  $: if (element) {
+    assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+    forceMuted = false;
+    element.load();
   }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
-  const handleCanPlay = async (event: Event) => {
+  const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
-      const video = event.currentTarget as HTMLVideoElement;
       await video.play();
       dispatch('onVideoStarted');
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
+        await tryForceMutedPlay(video);
+        return;
+      }
       handleError(error, $t('errors.unable_to_play_video'));
     } finally {
       isVideoLoading = false;
+    }
+  };
+
+  const tryForceMutedPlay = async (video: HTMLVideoElement) => {
+    try {
+      forceMuted = true;
+      await tick();
+      await handleCanPlay(video);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_play_video'));
     }
   };
 </script>
@@ -51,9 +63,14 @@
     playsinline
     controls
     class="h-full object-contain"
-    on:canplay={handleCanPlay}
+    on:canplay={(e) => handleCanPlay(e.currentTarget)}
     on:ended={() => dispatch('onVideoEnded')}
-    bind:muted={$videoViewerMuted}
+    on:volumechange={(e) => {
+      if (!forceMuted) {
+        $videoViewerMuted = e.currentTarget.muted;
+      }
+    }}
+    muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
   >

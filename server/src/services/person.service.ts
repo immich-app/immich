@@ -22,6 +22,7 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -41,13 +42,12 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository, ImageDimensions } from 'src/interfaces/media.interface';
+import { CropOptions, IMediaRepository, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { Orientation } from 'src/services/metadata.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -71,7 +71,7 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
@@ -348,16 +348,21 @@ export class PersonService {
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
-      const mappedFaces = faces.map((face) => ({
-        assetId: asset.id,
-        embedding: face.embedding,
-        imageHeight,
-        imageWidth,
-        boundingBoxX1: face.boundingBox.x1,
-        boundingBoxY1: face.boundingBox.y1,
-        boundingBoxX2: face.boundingBox.x2,
-        boundingBoxY2: face.boundingBox.y2,
-      }));
+      const mappedFaces: Partial<AssetFaceEntity>[] = [];
+      for (const face of faces) {
+        const faceId = this.cryptoRepository.randomUUID();
+        mappedFaces.push({
+          id: faceId,
+          assetId: asset.id,
+          imageHeight,
+          imageWidth,
+          boundingBoxX1: face.boundingBox.x1,
+          boundingBoxY1: face.boundingBox.y1,
+          boundingBoxX2: face.boundingBox.x2,
+          boundingBoxY2: face.boundingBox.y2,
+          faceSearch: { faceId, embedding: face.embedding },
+        });
+      }
 
       const faceIds = await this.repository.createFaces(mappedFaces);
       await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));
@@ -410,11 +415,16 @@ export class PersonService {
 
     const face = await this.repository.getFaceByIdWithAssets(
       id,
-      { person: true, asset: true },
-      { id: true, personId: true, embedding: true },
+      { person: true, asset: true, faceSearch: true },
+      { id: true, personId: true, faceSearch: { embedding: true } },
     );
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
+      return JobStatus.FAILED;
+    }
+
+    if (!face.faceSearch?.embedding) {
+      this.logger.warn(`Face ${id} does not have an embedding`);
       return JobStatus.FAILED;
     }
 
@@ -425,7 +435,7 @@ export class PersonService {
 
     const matches = await this.smartInfoRepository.searchFaces({
       userIds: [face.asset.ownerId],
-      embedding: face.embedding,
+      embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
     });
@@ -449,7 +459,7 @@ export class PersonService {
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],
-        embedding: face.embedding,
+        embedding: face.faceSearch.embedding,
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
@@ -520,7 +530,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    const { width, height, inputPath } = await this.getInputDimensions(asset);
+    const { width, height, inputPath } = await this.getInputDimensions(asset, { width: oldWidth, height: oldHeight });
 
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
@@ -601,7 +611,7 @@ export class PersonService {
     return person;
   }
 
-  private async getInputDimensions(asset: AssetEntity): Promise<ImageDimensions & { inputPath: string }> {
+  private async getInputDimensions(asset: AssetEntity, oldDims: ImageDimensions): Promise<InputDimensions> {
     if (!asset.exifInfo?.exifImageHeight || !asset.exifInfo.exifImageWidth) {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
@@ -611,29 +621,16 @@ export class PersonService {
     }
 
     if (asset.type === AssetType.IMAGE) {
-      const { width, height } = this.withOrientation(asset.exifInfo.orientation as Orientation, {
-        width: asset.exifInfo.exifImageWidth,
-        height: asset.exifInfo.exifImageHeight,
-      });
+      let { exifImageWidth: width, exifImageHeight: height } = asset.exifInfo;
+      if (oldDims.height > oldDims.width !== height > width) {
+        [width, height] = [height, width];
+      }
+
       return { width, height, inputPath: asset.originalPath };
     }
 
     const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
     return { width, height, inputPath: asset.previewPath };
-  }
-
-  private withOrientation(orientation: Orientation, { width, height }: ImageDimensions): ImageDimensions {
-    switch (orientation) {
-      case Orientation.MirrorHorizontalRotate270CW:
-      case Orientation.Rotate90CW:
-      case Orientation.MirrorHorizontalRotate90CW:
-      case Orientation.Rotate270CW: {
-        return { width: height, height: width };
-      }
-      default: {
-        return { width, height };
-      }
-    }
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {

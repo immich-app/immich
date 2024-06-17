@@ -8,13 +8,14 @@
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import type { ImmichDropDownOption } from '../dropdown-button.svelte';
-  import DropdownButton from '../dropdown-button.svelte';
+  import DropdownButton, { type DropDownOption } from '../dropdown-button.svelte';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
+  import { locale } from '$lib/stores/preferences.store';
+  import { DateTime, Duration } from 'luxon';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -26,7 +27,7 @@
   let allowDownload = true;
   let allowUpload = false;
   let showMetadata = true;
-  let expirationTime = '';
+  let expirationOption: DropDownOption<number> | undefined;
   let password = '';
   let shouldChangeExpirationTime = false;
   let enablePassword = false;
@@ -35,20 +36,27 @@
     created: void;
   }>();
 
-  const expiredDateOption: ImmichDropDownOption = {
-    default: $t('never'),
-    options: [
-      $t('never'),
-      $t('durations.minutes', { values: { minutes: 30 } }),
-      $t('durations.hours', { values: { hours: 1 } }),
-      $t('durations.hours', { values: { hours: 6 } }),
-      $t('durations.days', { values: { days: 1 } }),
-      $t('durations.days', { values: { days: 7 } }),
-      $t('durations.days', { values: { days: 30 } }),
-      $t('durations.months', { values: { months: 3 } }),
-      $t('durations.years', { values: { years: 1 } }),
-    ],
-  };
+  const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
+    [30, 'minutes'],
+    [1, 'hour'],
+    [6, 'hours'],
+    [1, 'day'],
+    [7, 'days'],
+    [30, 'days'],
+    [3, 'months'],
+    [1, 'year'],
+  ];
+
+  $: relativeTime = new Intl.RelativeTimeFormat($locale);
+  $: expiredDateOption = [
+    { label: $t('never'), value: 0 },
+    ...expirationOptions.map(
+      ([value, unit]): DropDownOption<number> => ({
+        label: relativeTime.format(value, unit),
+        value: Duration.fromObject({ [unit]: value }).toMillis(),
+      }),
+    ),
+  ];
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
   $: {
@@ -74,9 +82,8 @@
   }
 
   const handleCreateSharedLink = async () => {
-    const expirationTime = getExpirationTimeInMillisecond();
-    const currentTime = Date.now();
-    const expirationDate = expirationTime ? new Date(currentTime + expirationTime).toISOString() : undefined;
+    const expirationDate =
+      expirationOption && expirationOption.value > 0 ? DateTime.now().plus(expirationOption.value).toISO() : undefined;
 
     try {
       const data = await createSharedLink({
@@ -99,49 +106,14 @@
     }
   };
 
-  const getExpirationTimeInMillisecond = () => {
-    switch (expirationTime) {
-      case '30 minutes': {
-        return 30 * 60 * 1000;
-      }
-      case '1 hour': {
-        return 60 * 60 * 1000;
-      }
-      case '6 hours': {
-        return 6 * 60 * 60 * 1000;
-      }
-      case '1 day': {
-        return 24 * 60 * 60 * 1000;
-      }
-      case '7 days': {
-        return 7 * 24 * 60 * 60 * 1000;
-      }
-      case '30 days': {
-        return 30 * 24 * 60 * 60 * 1000;
-      }
-      case '3 months': {
-        return 30 * 24 * 60 * 60 * 3 * 1000;
-      }
-      case '1 year': {
-        return 30 * 24 * 60 * 60 * 12 * 1000;
-      }
-      default: {
-        return 0;
-      }
-    }
-  };
-
   const handleEditLink = async () => {
     if (!editingLink) {
       return;
     }
 
     try {
-      const expirationTime = getExpirationTimeInMillisecond();
-      const currentTime = Date.now();
-      const expirationDate: string | null = expirationTime
-        ? new Date(currentTime + expirationTime).toISOString()
-        : null;
+      const expirationDate =
+        expirationOption && expirationOption.value > 0 ? DateTime.now().plus(expirationOption.value).toISO() : null;
 
       await updateSharedLink({
         id: editingLink.id,
@@ -252,7 +224,7 @@
 
           <DropdownButton
             options={expiredDateOption}
-            bind:selected={expirationTime}
+            bind:selected={expirationOption}
             disabled={editingLink && !shouldChangeExpirationTime}
           />
         </div>

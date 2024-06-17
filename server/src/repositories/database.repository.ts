@@ -98,7 +98,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     } catch (error) {
       if (getVectorExtension() === DatabaseExtension.VECTORS) {
         this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
-        const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
+        const table = index === VectorIndex.CLIP ? 'smart_search' : 'face_search';
         const dimSize = await this.getDimSize(table);
         await this.dataSource.manager.transaction(async (manager) => {
           await this.setSearchPath(manager);

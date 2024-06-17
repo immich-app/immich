@@ -218,10 +218,11 @@ export class SearchRepository implements ISearchRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('faces.embedding <=> :embedding', 'distance')
+        .select('search.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
+        .innerJoin('faces.faceSearch', 'search')
         .where('asset.ownerId IN (:...userIds )')
-        .orderBy('faces.embedding <=> :embedding')
+        .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       cte.limit(numResults);

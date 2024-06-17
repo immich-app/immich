@@ -29,6 +29,7 @@
       }
 
       $preferences = await updateMyPreferences({ userPreferencesUpdateDto: { avatar: { color } } });
+      $user = { ...$user, profileImagePath: '', avatarColor: $preferences.avatar.color };
       isShowSelectAvatar = false;
 
       notificationController.show({
@@ -52,9 +53,7 @@
       class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
     >
       <div class="relative">
-        {#key $user}
-          <UserAvatar user={$user} size="xl" />
-        {/key}
+        <UserAvatar user={$user} size="xl" />
         <div class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6">
           <CircleIconButton
             color="primary"
@@ -96,6 +95,7 @@
     </div>
   </div>
 </FocusTrap>
+
 {#if isShowSelectAvatar}
   <AvatarSelector
     user={$user}

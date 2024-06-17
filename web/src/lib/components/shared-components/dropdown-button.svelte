@@ -1,20 +1,14 @@
 <script lang="ts" context="module">
-  export type ImmichDropDownOption = {
-    default: string;
-    options: string[];
+  export type DropDownOption<T = unknown> = {
+    label: string;
+    value: T;
   };
 </script>
 
 <script lang="ts">
-  import { onMount } from 'svelte';
-
-  export let options: ImmichDropDownOption;
-  export let selected: string;
+  export let options: DropDownOption[];
+  export let selected = options.at(0);
   export let disabled = false;
-
-  onMount(() => {
-    selected = options.default;
-  });
 
   export let isOpen = false;
   const toggle = () => (isOpen = !isOpen);
@@ -28,9 +22,11 @@
     aria-expanded={isOpen}
     class="flex w-full place-items-center justify-between rounded-lg bg-gray-200 p-2 disabled:cursor-not-allowed disabled:bg-gray-600 dark:bg-gray-600 dark:disabled:bg-gray-300"
   >
-    <div>
-      {selected}
-    </div>
+    {#if selected}
+      <div>
+        {selected.label}
+      </div>
+    {/if}
 
     <div>
       <svg
@@ -51,7 +47,7 @@
 
   {#if isOpen}
     <div class="absolute mt-2 flex w-full flex-col">
-      {#each options.options as option}
+      {#each options as option}
         <button
           type="button"
           on:click={() => {
@@ -60,7 +56,7 @@
           }}
           class="flex w-full bg-gray-200 p-2 transition-all hover:bg-gray-300 dark:bg-gray-500 dark:hover:bg-gray-700"
         >
-          {option}
+          {option.label}
         </button>
       {/each}
     </div>

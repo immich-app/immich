@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
-import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
+  static const double imageSize = 60.0;
+
   final List<SearchCuratedContent> content;
   final EdgeInsets? padding;
 
@@ -24,88 +25,68 @@ class CuratedPeopleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const imageSize = 60.0;
-
-    // Guard empty [content]
-    if (content.isEmpty) {
-      // Return empty thumbnail
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: SizedBox(
-            width: imageSize,
-            height: imageSize,
-            child: ThumbnailWithInfo(
-              textInfo: '',
-              onTap: () {},
-            ),
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: padding,
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        final person = content[index];
-        final headers = {
-          "x-immich-user-token": Store.get(StoreKey.accessToken),
-        };
-        return Padding(
-          padding: const EdgeInsets.only(right: 18.0),
-          child: SizedBox(
-            width: imageSize,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => onTap?.call(person, index),
-                  child: SizedBox(
-                    height: imageSize,
-                    child: Material(
-                      shape: const CircleBorder(side: BorderSide.none),
-                      elevation: 3,
-                      child: CircleAvatar(
-                        maxRadius: imageSize / 2,
-                        backgroundImage: NetworkImage(
-                          getFaceThumbnailUrl(person.id),
-                          headers: headers,
-                        ),
+    return SizedBox(
+      height: imageSize + 30,
+      child: ListView.separated(
+        padding: padding,
+        scrollDirection: Axis.horizontal,
+        separatorBuilder: (context, index) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final person = content[index];
+          final headers = {
+            "x-immich-user-token": Store.get(StoreKey.accessToken),
+          };
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => onTap?.call(person, index),
+                child: SizedBox(
+                  height: imageSize,
+                  child: Material(
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 3,
+                    child: CircleAvatar(
+                      maxRadius: imageSize / 2,
+                      backgroundImage: NetworkImage(
+                        getFaceThumbnailUrl(person.id),
+                        headers: headers,
                       ),
                     ),
                   ),
                 ),
-                if (person.label == "")
-                  GestureDetector(
-                    onTap: () => onNameTap?.call(person, index),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        "exif_bottom_sheet_person_add_person",
-                        style: context.textTheme.labelLarge?.copyWith(
-                          color: context.primaryColor,
-                        ),
-                      ).tr(),
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      person.label,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.labelLarge,
-                    ),
-                  ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              _buildPersonLabel(context, person, index),
+            ],
+          );
+        },
+        itemCount: content.length,
+      ),
+    );
+  }
+
+  Widget _buildPersonLabel(
+    BuildContext context,
+    SearchCuratedContent person,
+    int index,
+  ) {
+    if (person.label.isEmpty) {
+      return GestureDetector(
+        onTap: () => onNameTap?.call(person, index),
+        child: Text(
+          "exif_bottom_sheet_person_add_person",
+          style: context.textTheme.labelLarge?.copyWith(
+            color: context.primaryColor,
           ),
-        );
-      },
-      itemCount: content.length,
+        ).tr(),
+      );
+    }
+    return Text(
+      person.label,
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.ellipsis,
+      style: context.textTheme.labelLarge,
     );
   }
 }

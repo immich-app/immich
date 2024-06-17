@@ -70,7 +70,7 @@ export class MediaService {
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true })
+        ? this.assetRepository.getAll(pagination, { isVisible: true, withDeleted: true, withArchived: true })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
