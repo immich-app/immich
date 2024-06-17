@@ -295,6 +295,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<BackupCandidate> assetsFromSelectedAlbums = {};
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
 
+    /// Extracing assets from selected albums
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
 
@@ -308,12 +309,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
 
       final candidate = assets.map(
-        (e) => BackupCandidate(albumName: album.albumEntity.name, asset: e),
+        (e) => BackupCandidate(
+          id: e.id,
+          albumName: [album.albumEntity.name],
+          asset: e,
+        ),
       );
 
       assetsFromSelectedAlbums.addAll(candidate.toSet());
     }
 
+    /// Extracing assets from excluded albums
     for (final album in state.excludedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
 
@@ -327,16 +333,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
 
       final candidate = assets.map(
-        (e) => BackupCandidate(albumName: album.albumEntity.name, asset: e),
+        (e) => BackupCandidate(
+          id: e.id,
+          albumName: [album.albumEntity.name],
+          asset: e,
+        ),
       );
 
       assetsFromExcludedAlbums.addAll(candidate);
     }
 
-    final Set<BackupCandidate> allUniqueAssets =
+    Set<BackupCandidate> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
+    final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
     if (allAssetsInDatabase == null) {
       return;
     }
@@ -352,6 +362,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     allUniqueAssets.removeWhere(
       (e) => duplicatedAssetIds.contains(e.asset.id),
     );
+
+    /// Merge different album name of the same id
+    allUniqueAssets = allUniqueAssets.map((e) {
+      final List<String> albumNames = allUniqueAssets
+          .where((a) => a.id == e.id)
+          .map((a) => a.albumName)
+          .expand((e) => e)
+          .toList();
+      return e.copyWith(albumName: albumNames);
+    }).toSet();
 
     if (allUniqueAssets.isEmpty) {
       log.info("No assets are selected for back up");
@@ -372,7 +392,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     // Save to persistent storage
     await _updatePersistentAlbumsSelection();
 
-    debugPrint("backup asset $allUniqueAssets", wrapWidth: 80);
+    debugPrint("backup asset ${allUniqueAssets.length}", wrapWidth: 80);
   }
 
   /// Get all necessary information for calculating the available albums,
