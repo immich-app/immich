@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 @RoutePage()
-class BackupControllerPage extends HookConsumerWidget {
-  const BackupControllerPage({super.key});
+class BackupPage extends HookConsumerWidget {
+  const BackupPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

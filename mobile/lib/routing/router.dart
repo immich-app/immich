@@ -11,7 +11,7 @@ import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/pages/backup/album_preview.page.dart';
 import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
-import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
+import 'package:immich_mobile/pages/backup/backup.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
@@ -120,7 +120,7 @@ class AppRouter extends _$AppRouter {
       transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
     AutoRoute(
-      page: BackupControllerRoute.page,
+      page: BackupRoute.page,
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
     AutoRoute(

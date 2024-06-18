@@ -114,7 +114,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
 
       return InkWell(
-        onTap: () => context.pushRoute(const BackupControllerRoute()),
+        onTap: () => context.pushRoute(const BackupRoute()),
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(

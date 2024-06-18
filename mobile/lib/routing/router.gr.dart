@@ -136,16 +136,16 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const BackupAlbumSelectionPage(),
       );
     },
-    BackupControllerRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BackupControllerPage(),
-      );
-    },
     BackupOptionsRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const BackupOptionsPage(),
+      );
+    },
+    BackupRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const BackupPage(),
       );
     },
     ChangePasswordRoute.name: (routeData) {
@@ -747,20 +747,6 @@ class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [BackupControllerPage]
-class BackupControllerRoute extends PageRouteInfo<void> {
-  const BackupControllerRoute({List<PageRouteInfo>? children})
-      : super(
-          BackupControllerRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'BackupControllerRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
 /// [BackupOptionsPage]
 class BackupOptionsRoute extends PageRouteInfo<void> {
   const BackupOptionsRoute({List<PageRouteInfo>? children})
@@ -770,6 +756,20 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'BackupOptionsRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [BackupPage]
+class BackupRoute extends PageRouteInfo<void> {
+  const BackupRoute({List<PageRouteInfo>? children})
+      : super(
+          BackupRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BackupRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

@@ -18,7 +18,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     final PermissionStatus permission = ref.watch(galleryPermissionNotifier);
 
     // Navigate to the main Tab Controller when permission is granted
-    void goToBackup() => context.replaceRoute(const BackupControllerRoute());
+    void goToBackup() => context.replaceRoute(const BackupRoute());
 
     // When the permission is denied, we show a request permission page
     buildRequestPermission() {
