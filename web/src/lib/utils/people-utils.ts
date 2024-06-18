@@ -1,4 +1,4 @@
-import type { Faces } from '$lib/stores/people.store';
+import type { BoundingBoxType } from '$lib/stores/people.store';
 import { getAssetThumbnailUrl } from '$lib/utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
@@ -15,6 +15,7 @@ const getContainedSize = (img: HTMLImageElement): { width: number; height: numbe
 };
 
 export interface boundingBox {
+  extendedStyle: string;
   top: number;
   left: number;
   width: number;
@@ -22,7 +23,7 @@ export interface boundingBox {
 }
 
 export const getBoundingBox = (
-  faces: Faces[],
+  fromBoundingBoxesArray: BoundingBoxType[],
   zoom: ZoomImageWheelState,
   photoViewer: HTMLImageElement | null,
 ): boundingBox[] => {
@@ -36,7 +37,12 @@ export const getBoundingBox = (
 
   const { width, height } = getContainedSize(photoViewer);
 
-  for (const face of faces) {
+  for (const fromBoundingBox of fromBoundingBoxesArray) {
+    const extendedStyle = fromBoundingBox.boundingBoxStyle.isSelected
+      ? `border-color: #ffffff; background: ${fromBoundingBox.boundingBoxStyle.color}; opacity: 0.6`
+      : `border-color: ${fromBoundingBox.boundingBoxStyle.color}`;
+
+    const face = fromBoundingBox.faces;
     /*
      *
      * Create the coordinates of the box based on the displayed image.
@@ -63,6 +69,7 @@ export const getBoundingBox = (
     };
 
     boxes.push({
+      extendedStyle: extendedStyle,
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),
