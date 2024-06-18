@@ -90,11 +90,6 @@ class BackupService {
       }
 
       final originalFileName = await entity.titleAsync;
-
-      // final filePath = file.path;
-      // final split = filePath.split('/');
-      // final filename = split.last;
-      // final directory = split.take(split.length - 1).join('/');
       final (baseDirectory, directory, filename) = await Task.split(file: file);
 
       final fields = {
