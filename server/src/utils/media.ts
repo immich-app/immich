@@ -384,7 +384,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBaseInputOptions(): string[] {
-    return ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'];
+    return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
