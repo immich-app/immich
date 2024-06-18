@@ -34,7 +34,7 @@ dependencies:
   flutter_svg: ^2.0.9
   package_info_plus: ^5.0.1
   url_launcher: ^6.2.4
-  http: ^0.13.6
+  http: ^1.1.0
   cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
   share_plus: ^7.2.2
@@ -57,6 +57,7 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  background_downloader: ^8.5.2
 
   openapi:
     path: openapi

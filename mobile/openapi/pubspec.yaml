@@ -10,7 +10,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 dependencies:
   collection: '^1.17.0'
-  http: '>=0.13.0 <0.14.0'
+  http: '^1.1.0'
   intl: any
   meta: '^1.1.8'
 dev_dependencies:
