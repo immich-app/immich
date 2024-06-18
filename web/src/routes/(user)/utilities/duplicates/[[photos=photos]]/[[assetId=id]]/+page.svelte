@@ -101,6 +101,11 @@
         await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
 
         data.duplicates = [];
+
+        notificationController.show({
+          message: $t('resolved_all_duplicates'),
+          type: NotificationType.Info,
+        });
       },
       'bulk_keep_duplicates_confirmation',
       'confirm',
