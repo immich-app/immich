@@ -68,7 +68,9 @@
   const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
-      const message = $t('user_role_set', { values: { user: user.name, role: role } });
+      const message = $t('user_role_set', {
+        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
+      });
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {

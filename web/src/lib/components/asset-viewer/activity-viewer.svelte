@@ -9,6 +9,7 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
     ReactionType,
+    Type,
     createActivity,
     deleteActivity,
     getActivities,
@@ -116,8 +117,13 @@
       } else {
         dispatch('deleteComment');
       }
+
+      const deleteMessages: Record<Type, string> = {
+        [Type.Comment]: $t('comment_deleted'),
+        [Type.Like]: $t('like_deleted'),
+      };
       notificationController.show({
-        message: $t('reaction_deleted', { values: { type: reaction.type } }),
+        message: deleteMessages[reaction.type],
         type: NotificationType.Info,
       });
     } catch (error) {

@@ -76,16 +76,16 @@
   let selectedGroupOption: AlbumGroupOptionMetadata;
   let groupIcon: string;
 
+  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
+
+  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
+
   $: {
     selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
     if (selectedGroupOption.isDisabled()) {
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   }
-
-  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
-
-  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
   $: {
     if (selectedGroupOption.id === AlbumGroupBy.None) {
@@ -98,26 +98,32 @@
 
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
 
-  const albumFilterNames: { [key in AlbumFilter]: string } = {
-    [AlbumFilter.All]: $t('all'),
-    [AlbumFilter.Owned]: $t('owned'),
-    [AlbumFilter.Shared]: $t('shared'),
-  };
+  $: albumFilterNames = ((): Record<AlbumFilter, string> => {
+    return {
+      [AlbumFilter.All]: $t('all'),
+      [AlbumFilter.Owned]: $t('owned'),
+      [AlbumFilter.Shared]: $t('shared'),
+    };
+  })();
 
-  const albumSortByNames: { [key in AlbumSortBy]: string } = {
-    [AlbumSortBy.Title]: $t('sort_title'),
-    [AlbumSortBy.ItemCount]: $t('sort_items'),
-    [AlbumSortBy.DateModified]: $t('sort_modified'),
-    [AlbumSortBy.DateCreated]: $t('sort_created'),
-    [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
-    [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
-  };
+  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
+    return {
+      [AlbumSortBy.Title]: $t('sort_title'),
+      [AlbumSortBy.ItemCount]: $t('sort_items'),
+      [AlbumSortBy.DateModified]: $t('sort_modified'),
+      [AlbumSortBy.DateCreated]: $t('sort_created'),
+      [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+      [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+    };
+  })();
 
-  const albumGroupByNames: { [key in AlbumGroupBy]: string } = {
-    [AlbumGroupBy.None]: $t('group_no'),
-    [AlbumGroupBy.Owner]: $t('group_owner'),
-    [AlbumGroupBy.Year]: $t('group_year'),
-  };
+  $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
+    return {
+      [AlbumGroupBy.None]: $t('group_no'),
+      [AlbumGroupBy.Owner]: $t('group_owner'),
+      [AlbumGroupBy.Year]: $t('group_year'),
+    };
+  })();
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
