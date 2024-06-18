@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
-import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -24,7 +23,6 @@ final albumServiceProvider = Provider(
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
-    ref.watch(backupServiceProvider),
   ),
 );
 
@@ -33,7 +31,6 @@ class AlbumService {
   final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
-  final BackupService _backupService;
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
@@ -43,7 +40,6 @@ class AlbumService {
     this._userService,
     this._syncService,
     this._db,
-    this._backupService,
   );
 
   /// Checks all selected device albums for changes of albums and their assets
