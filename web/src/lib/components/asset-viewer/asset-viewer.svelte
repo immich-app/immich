@@ -395,7 +395,7 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: $t(asset.isFavorite ? 'added_to_favorites' : 'removed_from_favorites'),
+        message: asset.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
       });
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
