@@ -15,9 +15,11 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type AssetResponseDto,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
+import { sortBy } from 'lodash-es';
 import { t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
@@ -309,4 +311,8 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
   } catch (error) {
     return [error, undefined];
   }
+};
+
+export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
+  return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 };
