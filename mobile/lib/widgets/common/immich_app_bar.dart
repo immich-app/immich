@@ -1,9 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/immich_logo_provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
@@ -107,6 +109,15 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         if (action != null)
           Padding(padding: const EdgeInsets.only(right: 20), child: action!),
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: IconButton.outlined(
+            onPressed: () {
+              context.pushRoute(const BackupRoute());
+            },
+            icon: const Icon(Icons.backup_rounded),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: buildProfileIndicator(),

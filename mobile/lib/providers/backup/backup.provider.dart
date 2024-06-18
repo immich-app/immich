@@ -13,8 +13,13 @@ class BackupNotifier extends StateNotifier<bool> {
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
+
+  Future<void> backup() async {
+    _backupService.buildBackupCandidates();
+  }
 }
 
-final backupProvider = StateNotifierProvider<BackupNotifier, bool>((ref) {
+final backupNotifierProvider =
+    StateNotifierProvider<BackupNotifier, bool>((ref) {
   return BackupNotifier(ref.watch(backupServiceProvider));
 });
