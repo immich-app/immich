@@ -55,7 +55,7 @@
 
     if (selectedPeople.length >= 5) {
       notificationController.show({
-        message: $t('merge_people_limit', { values: { count: 5 } }),
+        message: $t('merge_people_limit'),
         type: NotificationType.Info,
       });
       return;
@@ -67,7 +67,7 @@
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
       id: 'merge-people',
-      prompt: $t('merge_people_confirmation'),
+      prompt: $t('merge_people_prompt'),
     });
 
     if (!isConfirm) {

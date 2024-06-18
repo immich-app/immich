@@ -24,7 +24,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLatLng = useValueNotifier<LatLng>(initialLatLng);
-    final controller = useRef<MaplibreMapController?>(null);
+    final controller = useRef<MapLibreMapController?>(null);
     final marker = useRef<Symbol?>(null);
 
     Future<void> onStyleLoaded() async {
@@ -74,7 +74,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
                   bottomRight: Radius.circular(40),
                 ),
               ),
-              child: MaplibreMap(
+              child: MapLibreMap(
                 initialCameraPosition:
                     CameraPosition(target: initialLatLng, zoom: 12),
                 styleString: style,

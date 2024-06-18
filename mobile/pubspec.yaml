@@ -28,11 +28,7 @@ dependencies:
   video_player: ^2.8.2
   chewie: ^1.7.4
   socket_io_client: ^2.0.3+1
-  # TODO: Update it to tag once next stable release
-  maplibre_gl:
-    git:
-      url: https://github.com/maplibre/flutter-maplibre-gl.git
-      ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
+  maplibre_gl: ^0.20.0
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.9
