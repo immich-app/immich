@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -15,7 +12,6 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
-import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -23,15 +19,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    BackUpState backupState = ref.watch(backupProvider);
     final theme = context.themeData;
     bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
-    final user = ref.watch(currentUserProvider);
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).updateDiskInfo();
         ref.read(currentUserProvider.notifier).refresh();
         return null;
       },
@@ -117,8 +110,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 onOk: () async {
                   await ref.read(authenticationProvider.notifier).logout();
 
-                  ref.read(manualUploadProvider.notifier).cancelBackup();
-                  ref.read(backupProvider.notifier).cancelBackup();
                   ref.read(assetProvider.notifier).clearAllAsset();
                   ref.read(websocketProvider.notifier).disconnect();
                   context.replaceRoute(const LoginRoute());
@@ -127,71 +118,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             },
           );
         },
-      );
-    }
-
-    Widget buildStorageInformation() {
-      var percentage = backupState.serverInfo.diskUsagePercentage / 100;
-      var usedDiskSpace = backupState.serverInfo.diskUse;
-      var totalDiskSpace = backupState.serverInfo.diskSize;
-
-      if (user != null && user.hasQuota) {
-        usedDiskSpace = formatBytes(user.quotaUsageInBytes);
-        totalDiskSpace = formatBytes(user.quotaSizeInBytes);
-        percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
-      }
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: context.isDarkTheme
-                ? context.scaffoldBackgroundColor
-                : const Color.fromARGB(255, 225, 229, 240),
-          ),
-          child: ListTile(
-            minLeadingWidth: 50,
-            leading: Icon(
-              Icons.storage_rounded,
-              color: theme.primaryColor,
-            ),
-            title: Text(
-              "backup_controller_page_server_storage",
-              style: context.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ).tr(),
-            isThreeLine: true,
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: LinearProgressIndicator(
-                      minHeight: 5.0,
-                      value: percentage,
-                      backgroundColor: Colors.grey,
-                      color: theme.primaryColor,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child:
-                        const Text('backup_controller_page_storage_format').tr(
-                      args: [
-                        usedDiskSpace,
-                        totalDiskSpace,
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       );
     }
 
@@ -262,7 +188,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 child: buildTopRow(),
               ),
               const AppBarProfileInfoBox(),
-              buildStorageInformation(),
               const AppBarServerInfo(),
               buildAppLogButton(),
               buildSettingButton(),

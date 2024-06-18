@@ -10,9 +10,7 @@ import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/pages/backup/album_preview.page.dart';
-import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup.page.dart';
-import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
@@ -161,10 +159,6 @@ class AppRouter extends _$AppRouter {
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     AutoRoute(
-      page: BackupAlbumSelectionRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
       page: AlbumPreviewRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
@@ -211,10 +205,6 @@ class AppRouter extends _$AppRouter {
     ),
     CustomRoute(
       page: MapLocationPickerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
-      page: BackupOptionsRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     CustomRoute(

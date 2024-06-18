@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -136,7 +135,6 @@ class LocalNotificationService {
       case cancelUploadActionID:
         {
           debugPrint("User cancelled manual upload operation");
-          ref.read(manualUploadProvider.notifier).cancelBackup();
         }
     }
   }

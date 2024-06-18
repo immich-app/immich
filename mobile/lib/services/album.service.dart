@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -39,7 +36,7 @@ class AlbumService {
   final Isar _db;
   final BackupService _backupService;
   final Logger _log = Logger('AlbumService');
-  Completer<bool> _localCompleter = Completer()..complete(false);
+  final Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
 
   AlbumService(
@@ -52,77 +49,77 @@ class AlbumService {
 
   /// Checks all selected device albums for changes of albums and their assets
   /// Updates the local database and returns `true` if there were any changes
-  Future<bool> refreshDeviceAlbums() async {
-    if (!_localCompleter.isCompleted) {
-      // guard against concurrent calls
-      _log.info("refreshDeviceAlbums is already in progress");
-      return _localCompleter.future;
-    }
-    _localCompleter = Completer();
-    final Stopwatch sw = Stopwatch()..start();
-    bool changes = false;
-    try {
-      final List<String> excludedIds =
-          await _backupService.excludedAlbumsQuery().idProperty().findAll();
-      final List<String> selectedIds =
-          await _backupService.selectedAlbumsQuery().idProperty().findAll();
-      if (selectedIds.isEmpty) {
-        final numLocal = await _db.albums.where().localIdIsNotNull().count();
-        if (numLocal > 0) {
-          _syncService.removeAllLocalAlbumsAndAssets();
-        }
-        return false;
-      }
-      final List<AssetPathEntity> onDevice =
-          await PhotoManager.getAssetPathList(
-        hasAll: true,
-        filterOption: FilterOptionGroup(containsPathModified: true),
-      );
-      _log.info("Found ${onDevice.length} device albums");
-      Set<String>? excludedAssets;
-      if (excludedIds.isNotEmpty) {
-        if (Platform.isIOS) {
-          // iOS and Android device album working principle differ significantly
-          // on iOS, an asset can be in multiple albums
-          // on Android, an asset can only be in exactly one album (folder!) at the same time
-          // thus, on Android, excluding an album can be done by ignoring that album
-          // however, on iOS, it it necessary to load the assets from all excluded
-          // albums and check every asset from any selected album against the set
-          // of excluded assets
-          excludedAssets = await _loadExcludedAssetIds(onDevice, excludedIds);
-          _log.info("Found ${excludedAssets.length} assets to exclude");
-        }
-        // remove all excluded albums
-        onDevice.removeWhere((e) => excludedIds.contains(e.id));
-        _log.info(
-          "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
-        );
-      }
-      final hasAll = selectedIds
-          .map((id) => onDevice.firstWhereOrNull((a) => a.id == id))
-          .whereNotNull()
-          .any((a) => a.isAll);
-      if (hasAll) {
-        if (Platform.isAndroid) {
-          // remove the virtual "Recent" album and keep and individual albums
-          // on Android, the virtual "Recent" `lastModified` value is always null
-          onDevice.removeWhere((e) => e.isAll);
-          _log.info("'Recents' is selected, keeping all individual albums");
-        }
-      } else {
-        // keep only the explicitly selected albums
-        onDevice.removeWhere((e) => !selectedIds.contains(e.id));
-        _log.info("'Recents' is not selected, keeping only selected albums");
-      }
-      changes =
-          await _syncService.syncLocalAlbumAssetsToDb(onDevice, excludedAssets);
-      _log.info("Syncing completed. Changes: $changes");
-    } finally {
-      _localCompleter.complete(changes);
-    }
-    debugPrint("refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
-    return changes;
-  }
+  // Future<bool> refreshDeviceAlbums() async {
+  //   if (!_localCompleter.isCompleted) {
+  //     // guard against concurrent calls
+  //     _log.info("refreshDeviceAlbums is already in progress");
+  //     return _localCompleter.future;
+  //   }
+  //   _localCompleter = Completer();
+  //   final Stopwatch sw = Stopwatch()..start();
+  //   bool changes = false;
+  //   try {
+  //     final List<String> excludedIds =
+  //         await _backupService.excludedAlbumsQuery().idProperty().findAll();
+  //     final List<String> selectedIds =
+  //         await _backupService.selectedAlbumsQuery().idProperty().findAll();
+  //     if (selectedIds.isEmpty) {
+  //       final numLocal = await _db.albums.where().localIdIsNotNull().count();
+  //       if (numLocal > 0) {
+  //         _syncService.removeAllLocalAlbumsAndAssets();
+  //       }
+  //       return false;
+  //     }
+  //     final List<AssetPathEntity> onDevice =
+  //         await PhotoManager.getAssetPathList(
+  //       hasAll: true,
+  //       filterOption: FilterOptionGroup(containsPathModified: true),
+  //     );
+  //     _log.info("Found ${onDevice.length} device albums");
+  //     Set<String>? excludedAssets;
+  //     if (excludedIds.isNotEmpty) {
+  //       if (Platform.isIOS) {
+  //         // iOS and Android device album working principle differ significantly
+  //         // on iOS, an asset can be in multiple albums
+  //         // on Android, an asset can only be in exactly one album (folder!) at the same time
+  //         // thus, on Android, excluding an album can be done by ignoring that album
+  //         // however, on iOS, it it necessary to load the assets from all excluded
+  //         // albums and check every asset from any selected album against the set
+  //         // of excluded assets
+  //         excludedAssets = await _loadExcludedAssetIds(onDevice, excludedIds);
+  //         _log.info("Found ${excludedAssets.length} assets to exclude");
+  //       }
+  //       // remove all excluded albums
+  //       onDevice.removeWhere((e) => excludedIds.contains(e.id));
+  //       _log.info(
+  //         "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
+  //       );
+  //     }
+  //     final hasAll = selectedIds
+  //         .map((id) => onDevice.firstWhereOrNull((a) => a.id == id))
+  //         .whereNotNull()
+  //         .any((a) => a.isAll);
+  //     if (hasAll) {
+  //       if (Platform.isAndroid) {
+  //         // remove the virtual "Recent" album and keep and individual albums
+  //         // on Android, the virtual "Recent" `lastModified` value is always null
+  //         onDevice.removeWhere((e) => e.isAll);
+  //         _log.info("'Recents' is selected, keeping all individual albums");
+  //       }
+  //     } else {
+  //       // keep only the explicitly selected albums
+  //       onDevice.removeWhere((e) => !selectedIds.contains(e.id));
+  //       _log.info("'Recents' is not selected, keeping only selected albums");
+  //     }
+  //     changes =
+  //         await _syncService.syncLocalAlbumAssetsToDb(onDevice, excludedAssets);
+  //     _log.info("Syncing completed. Changes: $changes");
+  //   } finally {
+  //     _localCompleter.complete(changes);
+  //   }
+  //   debugPrint("refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
+  //   return changes;
+  // }
 
   Future<Set<String>> _loadExcludedAssetIds(
     List<AssetPathEntity> albums,

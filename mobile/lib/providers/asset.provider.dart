@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -19,7 +18,6 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
-  final AlbumService _albumService;
   final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
@@ -30,7 +28,6 @@ class AssetNotifier extends StateNotifier<bool> {
 
   AssetNotifier(
     this._assetService,
-    this._albumService,
     this._userService,
     this._syncService,
     this._db,
@@ -52,9 +49,9 @@ class AssetNotifier extends StateNotifier<bool> {
       }
       final bool changedUsers = await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
-      final bool newLocal = await _albumService.refreshDeviceAlbums();
+      // final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint(
-        "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal",
+        "changedUsers: $changedUsers, newRemote: $newRemote",
       );
       if (newRemote) {
         _ref.invalidate(memoryFutureProvider);
@@ -303,7 +300,6 @@ class AssetNotifier extends StateNotifier<bool> {
 final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
-    ref.watch(albumServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),

@@ -2,10 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -49,7 +46,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (isAuthenticated) {
       final permission = _ref.watch(galleryPermissionNotifier);
       if (permission.isGranted || permission.isLimited) {
-        _ref.read(backupProvider.notifier).resumeBackup();
         _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
       _ref.read(serverInfoProvider.notifier).getServerVersion();
@@ -86,11 +82,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   void handleAppPause() {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
-    // Do not cancel backup if manual upload is in progress
-    if (_ref.read(backupProvider.notifier).backupProgress !=
-        BackUpProgressEnum.manualInProgress) {
-      _ref.read(backupProvider.notifier).cancelBackup();
-    }
+
     _ref.read(websocketProvider.notifier).disconnect();
     ImmichLogger().flush();
   }
@@ -98,7 +90,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   void handleAppDetached() {
     state = AppLifeCycleEnum.detached;
     // no guarantee this is called at all
-    _ref.read(manualUploadProvider.notifier).cancelBackup();
   }
 
   void handleAppHidden() {

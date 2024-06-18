@@ -27,11 +27,11 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   late final StreamSubscription<List<Album>> _streamSub;
 
   Future<void> getAllAlbums() => Future.wait([
-        _albumService.refreshDeviceAlbums(),
+        // _albumService.refreshDeviceAlbums(),
         _albumService.refreshRemoteAlbums(isShared: false),
       ]);
 
-  Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
+  // Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
 
   Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 

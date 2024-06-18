@@ -7,9 +7,7 @@ import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/top_control_app_bar.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -62,21 +60,6 @@ class GalleryAppBar extends ConsumerWidget {
       }
     }
 
-    handleUpload(Asset asset) {
-      showDialog(
-        context: context,
-        builder: (BuildContext _) {
-          return UploadDialog(
-            onUpload: () {
-              ref
-                  .read(manualUploadProvider.notifier)
-                  .uploadAssets(context, [asset]);
-            },
-          );
-        },
-      );
-    }
-
     addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
         elevation: 0,
@@ -107,7 +90,7 @@ class GalleryAppBar extends ConsumerWidget {
             onMoreInfoPressed: showInfo,
             onFavorite: toggleFavorite,
             onRestorePressed: () => handleRestore(asset),
-            onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
+            onUploadPressed: null,
             onDownloadPressed: asset.isLocal
                 ? null
                 : () =>

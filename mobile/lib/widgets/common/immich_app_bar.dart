@@ -1,5 +1,3 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,11 +6,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
-
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 
 class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -24,13 +18,9 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BackUpState backupState = ref.watch(backupProvider);
-    final bool isEnableAutoBackup =
-        backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final immichLogo = ref.watch(immichLogoProvider);
     final user = Store.tryGet(StoreKey.currentUser);
-    final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
 
     buildProfileIndicator() {
@@ -69,75 +59,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   size: 27,
                   user: user,
                 ),
-        ),
-      );
-    }
-
-    getBackupBadgeIcon() {
-      final iconColor = isDarkTheme ? Colors.white : Colors.black;
-
-      if (isEnableAutoBackup) {
-        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          return Container(
-            padding: const EdgeInsets.all(3.5),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              strokeCap: StrokeCap.round,
-              valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-              semanticsLabel: 'backup_controller_page_backup'.tr(),
-            ),
-          );
-        } else if (backupState.backupProgress !=
-                BackUpProgressEnum.inBackground &&
-            backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
-          return Icon(
-            Icons.check_outlined,
-            size: 9,
-            color: iconColor,
-            semanticLabel: 'backup_controller_page_backup'.tr(),
-          );
-        }
-      }
-
-      if (!isEnableAutoBackup) {
-        return Icon(
-          Icons.cloud_off_rounded,
-          size: 9,
-          color: iconColor,
-          semanticLabel: 'backup_controller_page_backup'.tr(),
-        );
-      }
-    }
-
-    buildBackupIndicator() {
-      final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
-
-      return InkWell(
-        onTap: () => context.pushRoute(const BackupRoute()),
-        borderRadius: BorderRadius.circular(12),
-        child: Badge(
-          label: Container(
-            width: widgetSize / 2,
-            height: widgetSize / 2,
-            decoration: BoxDecoration(
-              color: badgeBackground,
-              border: Border.all(
-                color: isDarkTheme ? Colors.black : Colors.grey,
-              ),
-              borderRadius: BorderRadius.circular(widgetSize / 2),
-            ),
-            child: indicatorIcon,
-          ),
-          backgroundColor: Colors.transparent,
-          alignment: Alignment.bottomRight,
-          isLabelVisible: indicatorIcon != null,
-          offset: const Offset(2, 2),
-          child: Icon(
-            Icons.backup_rounded,
-            size: widgetSize,
-            color: context.primaryColor,
-          ),
         ),
       );
     }
@@ -186,10 +107,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         if (action != null)
           Padding(padding: const EdgeInsets.only(right: 20), child: action!),
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: buildBackupIndicator(),
-        ),
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: buildProfileIndicator(),

@@ -130,18 +130,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const ArchivePage(),
       );
     },
-    BackupAlbumSelectionRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BackupAlbumSelectionPage(),
-      );
-    },
-    BackupOptionsRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BackupOptionsPage(),
-      );
-    },
     BackupRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -728,34 +716,6 @@ class ArchiveRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'ArchiveRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [BackupAlbumSelectionPage]
-class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
-  const BackupAlbumSelectionRoute({List<PageRouteInfo>? children})
-      : super(
-          BackupAlbumSelectionRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'BackupAlbumSelectionRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [BackupOptionsPage]
-class BackupOptionsRoute extends PageRouteInfo<void> {
-  const BackupOptionsRoute({List<PageRouteInfo>? children})
-      : super(
-          BackupOptionsRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'BackupOptionsRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

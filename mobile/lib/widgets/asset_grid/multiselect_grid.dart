@@ -12,7 +12,6 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset_stack.service.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -257,12 +256,7 @@ class MultiselectGrid extends HookConsumerWidget {
     void onUpload() {
       processing.value = true;
       selectionEnabledHook.value = false;
-      try {
-        ref.read(manualUploadProvider.notifier).uploadAssets(
-              context,
-              selection.value.where((a) => a.storage == AssetState.local),
-            );
-      } finally {
+      try {} finally {
         processing.value = false;
       }
     }

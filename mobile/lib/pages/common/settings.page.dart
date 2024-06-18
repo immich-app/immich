@@ -6,7 +6,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
-import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
@@ -19,7 +18,6 @@ enum SettingSection {
   ),
   languages('setting_languages_title', Icons.language),
   preferences('preferences_settings_title', Icons.interests_outlined),
-  backup('backup_controller_page_backup', Icons.cloud_upload_outlined),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined),
   viewer('asset_viewer_settings_title', Icons.image_outlined),
   advanced('advanced_settings_tile_title', Icons.build_outlined);
@@ -31,7 +29,6 @@ enum SettingSection {
         SettingSection.notifications => const NotificationSetting(),
         SettingSection.languages => const LanguageSettings(),
         SettingSection.preferences => const PreferenceSetting(),
-        SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
         SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),

@@ -5,8 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -81,10 +79,6 @@ class ChangePasswordForm extends HookConsumerWidget {
                                 .read(authenticationProvider.notifier)
                                 .logout();
 
-                            ref
-                                .read(manualUploadProvider.notifier)
-                                .cancelBackup();
-                            ref.read(backupProvider.notifier).cancelBackup();
                             await ref
                                 .read(assetProvider.notifier)
                                 .clearAllAsset();

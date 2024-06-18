@@ -2,9 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -73,13 +71,6 @@ class SplashScreenPage extends HookConsumerWidget {
       if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
         context.replaceRoute(const TabControllerRoute());
       } else if (isSuccess) {
-        // If device was able to login through the internet successfully
-        final hasPermission =
-            await ref.read(galleryPermissionNotifier.notifier).hasPermission;
-        if (hasPermission) {
-          // Resume backup (if enable) then navigate
-          ref.watch(backupProvider.notifier).resumeBackup();
-        }
         context.replaceRoute(const TabControllerRoute());
       } else {
         log.severe(

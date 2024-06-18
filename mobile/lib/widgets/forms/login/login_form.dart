@@ -7,13 +7,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -28,7 +26,6 @@ import 'package:immich_mobile/widgets/forms/login/password_input.dart';
 import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({super.key});
@@ -194,13 +191,6 @@ class LoginForm extends HookConsumerWidget {
               !ref.read(authenticationProvider).isAdmin) {
             context.pushRoute(const ChangePasswordRoute());
           } else {
-            final hasPermission = await ref
-                .read(galleryPermissionNotifier.notifier)
-                .hasPermission;
-            if (hasPermission) {
-              // Don't resume the backup until we have gallery permission
-              ref.read(backupProvider.notifier).resumeBackup();
-            }
             context.replaceRoute(const TabControllerRoute());
           }
         } else {
@@ -251,10 +241,6 @@ class LoginForm extends HookConsumerWidget {
 
           if (isSuccess) {
             isLoading.value = false;
-            final permission = ref.watch(galleryPermissionNotifier);
-            if (permission.isGranted || permission.isLimited) {
-              ref.watch(backupProvider.notifier).resumeBackup();
-            }
             context.replaceRoute(const TabControllerRoute());
           } else {
             ImmichToast.show(
