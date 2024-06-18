@@ -869,7 +869,6 @@
   "trash": "Trash",
   "trash_all": "Trash All",
   "trash_count": "Trash {count}",
-  "trash_duplicates": "Trash Duplicates",
   "trash_no_results_message": "Trashed photos and videos will show up here.",
   "trashed_items_will_be_permanently_deleted_after": "Trashed items will be permanently deleted after {days, plural, one {# day} other {# days}}.",
   "type": "Type",
