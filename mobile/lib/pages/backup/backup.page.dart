@@ -15,21 +15,31 @@ class BackupPage extends StatefulHookConsumerWidget {
 class _BackupPageState extends ConsumerState<BackupPage> {
   @override
   void initState() {
-    ref.read(backupNotifierProvider.notifier).backup();
+    ref.read(backupNotifierProvider.notifier).getBackupCandidates();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = ref.watch(backupNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Backup"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.play_circle_outline_rounded),
+            onPressed: () {
+              ref.read(backupNotifierProvider.notifier).startBackup();
+            },
+          ),
+        ],
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Test"),
+            Text("Test ${provider.uploadTasks.length}"),
           ],
         ),
       ),

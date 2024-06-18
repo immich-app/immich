@@ -30,9 +30,23 @@ class BackupService {
   final _fileDownloader = FileDownloader();
   final ApiService _apiService;
 
-  BackupService(this._apiService);
+  BackupService(this._apiService) {
+    debugPrint("BackupService created");
+    // final subscription = FileDownloader().updates.listen((update) {
+    //   switch (update) {
+    //     case TaskStatusUpdate():
+    //       print(
+    //         'Status update for ${update.task} with status ${update.status}',
+    //       );
+    //     case TaskProgressUpdate():
+    //       print(
+    //         'Progress update for ${update.task} with progress ${update.progress}',
+    //       );
+    //   }
+    // });
+  }
 
-  buildBackupCandidates() async {
+  Future<List<UploadTask>> getBackupCandidates() async {
     // Get assets on devices
     final albums = await PhotoManager.getAssetPathList(hasAll: true);
     List<AssetEntity> assetsOnDevice = await _getAssetsOnDevice(albums);
@@ -45,13 +59,15 @@ class BackupService {
     // Get assets not on server
     if (assetsOnServer != null && assetsOnServer.isNotEmpty) {
       assetsOnDevice.removeWhere(
-        (asset) => !assetsOnServer.contains(asset.id),
+        (asset) => assetsOnServer.contains(asset.id),
       );
     }
 
+    // Remvove duplicate
+    assetsOnDevice = assetsOnDevice.toSet().toList();
+
     // Build UploadTask
-    final uploadTasks = await _constructUploadTask(assetsOnDevice);
-    print(uploadTasks);
+    return await _constructUploadTask(assetsOnDevice);
   }
 
   Future<List<UploadTask>> _constructUploadTask(
@@ -61,7 +77,7 @@ class BackupService {
 
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     final String deviceId = Store.get(StoreKey.deviceId);
-    final url = '$savedEndpoint/asset/upload';
+    final url = '$savedEndpoint/assets';
     final headers = {
       'x-immich-user-token': Store.get(StoreKey.accessToken),
       'Transfer-Encoding': 'chunked',
@@ -69,8 +85,17 @@ class BackupService {
 
     for (final entity in assets) {
       final file = await entity.originFile;
-      final fileName = await entity.titleAsync;
-      final (baseDirectory, directory, _) = await Task.split(file: file);
+      if (file == null) {
+        continue;
+      }
+
+      final originalFileName = await entity.titleAsync;
+
+      // final filePath = file.path;
+      // final split = filePath.split('/');
+      // final filename = split.last;
+      // final directory = split.take(split.length - 1).join('/');
+      final (baseDirectory, directory, filename) = await Task.split(file: file);
 
       final fields = {
         'deviceAssetId': entity.id,
@@ -79,13 +104,14 @@ class BackupService {
         'fileModifiedAt': entity.modifiedDateTime.toUtc().toIso8601String(),
         'isFavorite': entity.isFavorite.toString(),
         'duration': entity.videoDuration.toString(),
+        'originalFileName': originalFileName,
       };
 
       final task = UploadTask(
         url: url,
         baseDirectory: baseDirectory,
         directory: directory,
-        filename: fileName,
+        filename: filename,
         group: 'backup',
         fileField: 'assetData',
         taskId: entity.id,
@@ -124,5 +150,28 @@ class BackupService {
     }
 
     return result;
+  }
+
+  Future<void> startBackup(List<UploadTask> tasks) async {
+    try {
+      debugPrint("Start backup ${tasks.length} tasks");
+
+      for (final task in tasks) {
+        final result = await _fileDownloader.upload(
+          task,
+          onProgress: (percent) => print('${percent * 100} done'),
+          onStatus: (status) => print('Status for ${task.taskId} is $status)'),
+          onElapsedTime: (t) => print('time is $t'),
+          elapsedTimeInterval: const Duration(seconds: 1),
+        );
+        print("--------------------");
+        print('Result Status Code ${result.responseStatusCode}');
+        print('$result is done with ${result.status}');
+        print('result ${result.responseBody}');
+        print('result ${result.responseHeaders}');
+      }
+    } catch (e) {
+      debugPrint("Error uploading tasks: $e");
+    }
   }
 }
