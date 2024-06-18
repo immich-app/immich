@@ -380,29 +380,32 @@
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
                   >
-                    <MenuOption on:click={() => onRenameClicked(index)} text={$t('rename')} />
-                    <MenuOption on:click={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
-                    <MenuOption on:click={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
+                    <MenuOption onClick={() => onRenameClicked(index)} text={$t('rename')} />
+                    <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
+                    <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
                     <hr />
-                    <MenuOption on:click={() => onScanNewLibraryClicked(library)} text={$t('scan_new_library_files')} />
+                    <MenuOption onClick={() => onScanNewLibraryClicked(library)} text={$t('scan_new_library_files')} />
                     <MenuOption
-                      on:click={() => onScanAllLibraryFilesClicked(library)}
+                      onClick={() => onScanAllLibraryFilesClicked(library)}
                       text={$t('scan_all_library_files')}
                       subtitle={$t('only_refreshes_modified_files')}
                     />
                     <MenuOption
-                      on:click={() => onForceScanAllLibraryFilesClicked(library)}
+                      onClick={() => onForceScanAllLibraryFilesClicked(library)}
                       text={$t('force_re-scan_library_files')}
                       subtitle={$t('refreshes_every_file')}
                     />
                     <hr />
                     <MenuOption
-                      on:click={() => onRemoveOfflineFilesClicked(library)}
+                      onClick={() => onRemoveOfflineFilesClicked(library)}
                       text={$t('remove_offline_files')}
                     />
-                    <MenuOption on:click={() => onDeleteLibraryClicked(library, index)}>
-                      <p class="text-red-600">{$t('delete_library')}</p>
-                    </MenuOption>
+                    <MenuOption
+                      text={$t('delete_library')}
+                      activeColor="bg-red-200"
+                      textColor="text-red-600"
+                      onClick={() => onDeleteLibraryClicked(library, index)}
+                    />
                   </ButtonContextMenu>
                 </td>
               </tr>

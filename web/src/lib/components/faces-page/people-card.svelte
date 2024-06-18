@@ -75,15 +75,15 @@
       icon={mdiDotsVertical}
       title={$t('show_person_options')}
     >
-      <MenuOption on:click={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-      <MenuOption on:click={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
+      <MenuOption onClick={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
+      <MenuOption onClick={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
       <MenuOption
-        on:click={() => onMenuClick('set-birth-date')}
+        onClick={() => onMenuClick('set-birth-date')}
         icon={mdiCalendarEditOutline}
         text={$t('set_date_of_birth')}
       />
       <MenuOption
-        on:click={() => onMenuClick('merge-people')}
+        onClick={() => onMenuClick('merge-people')}
         icon={mdiAccountMultipleCheckOutline}
         text={$t('merge_people')}
       />

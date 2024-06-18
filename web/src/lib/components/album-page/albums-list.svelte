@@ -424,13 +424,13 @@
     <MenuOption
       icon={mdiRenameOutline}
       text={$t('edit_album')}
-      on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
+      onClick={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
     />
-    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} on:click={() => openShareModal()} />
+    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => openShareModal()} />
   {/if}
-  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} on:click={() => handleDownloadAlbum()} />
+  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} onClick={() => handleDownloadAlbum()} />
   {#if showFullContextMenu}
-    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} on:click={() => setAlbumToDelete()} />
+    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => setAlbumToDelete()} />
   {/if}
 </RightClickContextMenu>
 

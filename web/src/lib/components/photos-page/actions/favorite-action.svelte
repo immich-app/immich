@@ -58,7 +58,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption {text} {icon} on:click={handleFavorite} />
+  <MenuOption {text} {icon} onClick={handleFavorite} />
 {/if}
 
 {#if !menuItem}
