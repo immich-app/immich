@@ -1,7 +1,6 @@
 <script lang="ts">
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { type PersonResponseDto } from '@immich/sdk';
   import {
     mdiAccountEditOutline,
@@ -12,11 +11,10 @@
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-  import Portal from '../shared-components/portal/portal.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
+  import { focusOutside } from '$lib/actions/focus-outside';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
   export let person: PersonResponseDto;
   export let preload = false;
@@ -30,17 +28,7 @@
   }>();
 
   let showVerticalDots = false;
-  let showContextMenu = false;
-  let contextMenuPosition = { x: 0, y: 0 };
-  const showMenu = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event);
-    showContextMenu = !showContextMenu;
-  };
-  const onMenuExit = () => {
-    showContextMenu = false;
-  };
   const onMenuClick = (event: MenuItemEvent) => {
-    onMenuExit();
     dispatch(event);
   };
 </script>
@@ -51,8 +39,13 @@
   on:mouseenter={() => (showVerticalDots = true)}
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
+  use:focusOutside={{ onFocusOut: () => (showVerticalDots = false) }}
 >
-  <a href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}" draggable="false">
+  <a
+    href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}"
+    draggable="false"
+    on:focus={() => (showVerticalDots = true)}
+  >
     <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
@@ -73,22 +66,15 @@
     {/if}
   </a>
 
-  <div class="absolute right-2 top-2" class:hidden={!showVerticalDots}>
-    <CircleIconButton
+  <div class="absolute top-2 right-2">
+    <ButtonContextMenu
+      buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
       color="opaque"
+      padding="2"
+      size="20"
       icon={mdiDotsVertical}
       title={$t('show_person_options')}
-      size="20"
-      padding="2"
-      class="icon-white-drop-shadow"
-      on:click={showMenu}
-    />
-  </div>
-</div>
-
-{#if showContextMenu}
-  <Portal target="body">
-    <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()}>
+    >
       <MenuOption on:click={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
       <MenuOption on:click={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
       <MenuOption
@@ -101,6 +87,6 @@
         icon={mdiAccountMultipleCheckOutline}
         text={$t('merge_people')}
       />
-    </ContextMenu>
-  </Portal>
-{/if}
+    </ButtonContextMenu>
+  </div>
+</div>

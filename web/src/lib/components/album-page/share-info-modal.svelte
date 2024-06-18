@@ -9,16 +9,14 @@
   } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { getContextMenuPosition } from '../../utils/context-menu';
   import { handleError } from '../../utils/handle-error';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
-  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
@@ -29,8 +27,6 @@
   }>();
 
   let currentUser: UserResponseDto;
-  let position = { x: 0, y: 0 };
-  let selectedMenuUser: UserResponseDto | null = null;
   let selectedRemoveUser: UserResponseDto | null = null;
 
   $: isOwned = currentUser?.id == album.ownerId;
@@ -43,15 +39,8 @@
     }
   });
 
-  const showContextMenu = (event: MouseEvent, user: UserResponseDto) => {
-    position = getContextMenuPosition(event);
-    selectedMenuUser = user;
-    selectedRemoveUser = null;
-  };
-
-  const handleMenuRemove = () => {
-    selectedRemoveUser = selectedMenuUser;
-    selectedMenuUser = null;
+  const handleMenuRemove = (user: UserResponseDto) => {
+    selectedRemoveUser = user;
   };
 
   const handleRemoveUser = async () => {
@@ -118,31 +107,17 @@
               {/if}
             </div>
             {#if isOwned}
-              <div>
-                <CircleIconButton
-                  title={$t('options')}
-                  on:click={(event) => showContextMenu(event, user)}
-                  icon={mdiDotsVertical}
-                  size="20"
-                />
-
-                {#if selectedMenuUser === user}
-                  <ContextMenu {...position} onClose={() => (selectedMenuUser = null)}>
-                    {#if role === AlbumUserRole.Viewer}
-                      <MenuOption
-                        on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)}
-                        text={$t('allow_edits')}
-                      />
-                    {:else}
-                      <MenuOption
-                        on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
-                        text={$t('disallow_edits')}
-                      />
-                    {/if}
-                    <MenuOption on:click={handleMenuRemove} text={$t('remove')} />
-                  </ContextMenu>
+              <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                {#if role === AlbumUserRole.Viewer}
+                  <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
+                {:else}
+                  <MenuOption
+                    on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                    text={$t('disallow_edits')}
+                  />
                 {/if}
-              </div>
+                <MenuOption on:click={() => handleMenuRemove(user)} text={$t('remove')} />
+              </ButtonContextMenu>
             {:else if user.id == currentUser?.id}
               <button
                 type="button"

@@ -3,7 +3,6 @@
   import { groupBy, orderBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
@@ -167,6 +166,7 @@
 
   let contextMenuPosition: ContextMenuPosition = { x: 0, y: 0 };
   let contextMenuTargetAlbum: AlbumResponseDto | null = null;
+  let isOpen = false;
 
   // Step 1: Filter between Owned and Shared albums, or both.
   $: {
@@ -224,7 +224,6 @@
     albumGroupIds = groupedAlbums.map(({ id }) => id);
   }
 
-  $: showContextMenu = !!contextMenuTargetAlbum;
   $: showFullContextMenu = allowEdit && contextMenuTargetAlbum && contextMenuTargetAlbum.ownerId === $user.id;
 
   onMount(async () => {
@@ -253,10 +252,11 @@
       x: contextMenuDetail.x,
       y: contextMenuDetail.y,
     };
+    isOpen = true;
   };
 
   const closeAlbumContextMenu = () => {
-    contextMenuTargetAlbum = null;
+    isOpen = false;
   };
 
   const handleDownloadAlbum = async () => {
@@ -419,34 +419,18 @@
 {/if}
 
 <!-- Context Menu -->
-<RightClickContextMenu {...contextMenuPosition} isOpen={showContextMenu} onClose={closeAlbumContextMenu}>
+<RightClickContextMenu title={$t('album_options')} {...contextMenuPosition} {isOpen} onClose={closeAlbumContextMenu}>
   {#if showFullContextMenu}
-    <MenuOption on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}>
-      <p class="flex gap-2">
-        <Icon path={mdiRenameOutline} size="18" />
-        Edit
-      </p>
-    </MenuOption>
-    <MenuOption on:click={() => openShareModal()}>
-      <p class="flex gap-2">
-        <Icon path={mdiShareVariantOutline} size="18" />
-        Share
-      </p>
-    </MenuOption>
+    <MenuOption
+      icon={mdiRenameOutline}
+      text={$t('edit_album')}
+      on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
+    />
+    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} on:click={() => openShareModal()} />
   {/if}
-  <MenuOption on:click={() => handleDownloadAlbum()}>
-    <p class="flex gap-2">
-      <Icon path={mdiFolderDownloadOutline} size="18" />
-      Download
-    </p>
-  </MenuOption>
+  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} on:click={() => handleDownloadAlbum()} />
   {#if showFullContextMenu}
-    <MenuOption on:click={() => setAlbumToDelete()}>
-      <p class="flex gap-2">
-        <Icon path={mdiDeleteOutline} size="18" />
-        Delete
-      </p>
-    </MenuOption>
+    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} on:click={() => setAlbumToDelete()} />
   {/if}
 </RightClickContextMenu>
 

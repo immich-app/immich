@@ -3,11 +3,16 @@
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
 
+  export let isVisible: boolean = false;
   export let direction: 'left' | 'right' = 'right';
   export let x = 0;
   export let y = 0;
+  export let id: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
+  export let ariaLabelledBy: string | undefined = undefined;
+  export let ariaActiveDescendant: string | undefined = undefined;
 
-  export let menuElement: HTMLDivElement | undefined = undefined;
+  export let menuElement: HTMLUListElement | undefined = undefined;
   export let onClose: (() => void) | undefined = undefined;
 
   let left: number;
@@ -30,16 +35,25 @@
 </script>
 
 <div
-  bind:this={menuElement}
   bind:clientHeight={height}
-  transition:slide={{ duration: 250, easing: quintOut }}
-  class="absolute z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
-  style:top="{top}px"
+  class="fixed z-10 min-w-[200px] w-max max-w-[300px] overflow-hidden rounded-lg shadow-lg"
   style:left="{left}px"
-  role="menu"
-  use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
+  style:top="{top}px"
+  transition:slide={{ duration: 250, easing: quintOut }}
+  use:clickOutside={{ onOutclick: onClose }}
 >
-  <div class="flex flex-col rounded-lg">
+  <ul
+    {id}
+    aria-activedescendant={ariaActiveDescendant ?? ''}
+    aria-label={ariaLabel}
+    aria-labelledby={ariaLabelledBy}
+    bind:this={menuElement}
+    class:max-h-[100vh]={isVisible}
+    class:max-h-0={!isVisible}
+    class="flex flex-col transition-all duration-[250ms] ease-in-out"
+    role="menu"
+    tabindex="-1"
+  >
     <slot />
-  </div>
+  </ul>
 </div>

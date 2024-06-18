@@ -4,8 +4,6 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName } from '$lib/utils';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import {
@@ -36,9 +34,9 @@
     mdiUpload,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
@@ -79,21 +77,11 @@
 
   const dispatch = createEventDispatcher<EventTypes>();
 
-  let contextMenuPosition = { x: 0, y: 0 };
-  let isShowAssetOptions = false;
-
-  const showOptionsMenu = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, 'top-right');
-    isShowAssetOptions = !isShowAssetOptions;
-  };
-
   const onJobClick = (name: AssetJobName) => {
-    isShowAssetOptions = false;
     dispatch('runJob', name);
   };
 
   const onMenuClick = (eventName: keyof EventTypes) => {
-    isShowAssetOptions = false;
     dispatch(eventName);
   };
 </script>
@@ -187,90 +175,72 @@
         on:delete={() => dispatch('delete')}
         on:permanentlyDelete={() => dispatch('permanentlyDelete')}
       />
-      <div
-        use:clickOutside={{
-          onOutclick: () => (isShowAssetOptions = false),
-          onEscape: () => (isShowAssetOptions = false),
-        }}
-      >
-        <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title={$t('more')} />
-        {#if isShowAssetOptions}
-          <ContextMenu {...contextMenuPosition} direction="left">
-            {#if showSlideshow}
-              <MenuOption
-                icon={mdiPresentationPlay}
-                on:click={() => onMenuClick('playSlideShow')}
-                text={$t('slideshow')}
-              />
-            {/if}
-            {#if showDownloadButton}
-              <MenuOption
-                icon={mdiFolderDownloadOutline}
-                on:click={() => onMenuClick('download')}
-                text={$t('download')}
-              />
-            {/if}
-            {#if asset.isTrashed}
-              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text={$t('restore')} />
-            {:else}
-              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text={$t('add_to_album')} />
-              <MenuOption
-                icon={mdiShareVariantOutline}
-                on:click={() => onMenuClick('addToSharedAlbum')}
-                text={$t('add_to_shared_album')}
-              />
-            {/if}
-
-            {#if isOwner}
-              {#if hasStackChildren}
-                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text={$t('unstack')} />
-              {/if}
-              {#if album}
-                <MenuOption
-                  text={$t('set_as_album_cover')}
-                  icon={mdiImageOutline}
-                  on:click={() => onMenuClick('setAsAlbumCover')}
-                />
-              {/if}
-              {#if asset.type === AssetTypeEnum.Image}
-                <MenuOption
-                  icon={mdiAccountCircleOutline}
-                  on:click={() => onMenuClick('asProfileImage')}
-                  text={$t('set_as_profile_picture')}
-                />
-              {/if}
-              <MenuOption
-                on:click={() => onMenuClick('toggleArchive')}
-                icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
-                text={asset.isArchived ? $t('unarchive') : $t('to_archive')}
-              />
-              <MenuOption
-                icon={mdiUpload}
-                on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
-                text={$t('replace_with_upload')}
-              />
-              <hr />
-              <MenuOption
-                icon={mdiDatabaseRefreshOutline}
-                on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
-                text={getAssetJobName(AssetJobName.RefreshMetadata)}
-              />
-              <MenuOption
-                icon={mdiImageRefreshOutline}
-                on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
-                text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
-              />
-              {#if asset.type === AssetTypeEnum.Video}
-                <MenuOption
-                  icon={mdiCogRefreshOutline}
-                  on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
-                  text={getAssetJobName(AssetJobName.TranscodeVideo)}
-                />
-              {/if}
-            {/if}
-          </ContextMenu>
+      <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
+        {#if showSlideshow}
+          <MenuOption icon={mdiPresentationPlay} on:click={() => onMenuClick('playSlideShow')} text={$t('slideshow')} />
         {/if}
-      </div>
+        {#if showDownloadButton}
+          <MenuOption icon={mdiFolderDownloadOutline} on:click={() => onMenuClick('download')} text={$t('download')} />
+        {/if}
+        {#if asset.isTrashed}
+          <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text={$t('restore')} />
+        {:else}
+          <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text={$t('add_to_album')} />
+          <MenuOption
+            icon={mdiShareVariantOutline}
+            on:click={() => onMenuClick('addToSharedAlbum')}
+            text={$t('add_to_shared_album')}
+          />
+        {/if}
+
+        {#if isOwner}
+          {#if hasStackChildren}
+            <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text={$t('unstack')} />
+          {/if}
+          {#if album}
+            <MenuOption
+              text={$t('set_as_album_cover')}
+              icon={mdiImageOutline}
+              on:click={() => onMenuClick('setAsAlbumCover')}
+            />
+          {/if}
+          {#if asset.type === AssetTypeEnum.Image}
+            <MenuOption
+              icon={mdiAccountCircleOutline}
+              on:click={() => onMenuClick('asProfileImage')}
+              text={$t('set_as_profile_picture')}
+            />
+          {/if}
+          <MenuOption
+            on:click={() => onMenuClick('toggleArchive')}
+            icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
+            text={asset.isArchived ? $t('unarchive') : $t('to_archive')}
+          />
+          <MenuOption
+            icon={mdiUpload}
+            on:click={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+            text={$t('replace_with_upload')}
+          />
+          <hr />
+          <MenuOption
+            icon={mdiDatabaseRefreshOutline}
+            on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
+            text={getAssetJobName(AssetJobName.RefreshMetadata)}
+          />
+          <MenuOption
+            icon={mdiImageRefreshOutline}
+            on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
+            text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
+          />
+          {#if asset.type === AssetTypeEnum.Video}
+            <MenuOption
+              icon={mdiCogRefreshOutline}
+              on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
+              text={getAssetJobName(AssetJobName.TranscodeVideo)}
+            />
+          {/if}
+        {/if}
+      </ButtonContextMenu>
     {/if}
   </div>
 </div>

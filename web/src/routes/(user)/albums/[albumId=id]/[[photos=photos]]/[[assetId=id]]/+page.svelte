@@ -22,9 +22,8 @@
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
@@ -43,8 +42,6 @@
   import { user } from '$lib/stores/user.store';
   import { handlePromiseError, s } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
@@ -103,7 +100,6 @@
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
     SELECT_ASSETS = 'select-assets',
-    ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
     OPTIONS = 'options',
@@ -112,7 +108,6 @@
   let backUrl: string = AppRoute.ALBUMS;
   let viewMode = ViewMode.VIEW;
   let isCreatingSharedAlbum = false;
-  let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
@@ -305,11 +300,6 @@
     timelineInteractionStore.clearMultiselect();
   };
 
-  const handleOpenAlbumOptions = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, 'top-left');
-    viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
-  };
-
   const handleSelectFromComputer = async () => {
     await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
@@ -420,14 +410,14 @@
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
         {#if isAllUserOwned}
           <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
         {/if}
-        <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isAllUserOwned}
             <ChangeDate menuItem />
@@ -447,10 +437,10 @@
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
           {/if}
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
       </AssetSelectControlBar>
     {:else}
-      {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
+      {#if viewMode === ViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             {#if isEditor}
@@ -474,32 +464,19 @@
               <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <div use:clickOutside={{ onOutclick: () => (viewMode = ViewMode.VIEW) }}>
-                  <CircleIconButton
-                    title={$t('album_options')}
-                    on:click={handleOpenAlbumOptions}
-                    icon={mdiDotsVertical}
+                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                  <MenuOption
+                    icon={mdiImageOutline}
+                    text={$t('select_album_cover')}
+                    on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                   />
-                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                    <ContextMenu {...contextMenuPosition}>
-                      <MenuOption
-                        icon={mdiImageOutline}
-                        text={$t('select_album_cover')}
-                        on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
-                      />
-                      <MenuOption
-                        icon={mdiCogOutline}
-                        text={$t('options')}
-                        on:click={() => (viewMode = ViewMode.OPTIONS)}
-                      />
-                      <MenuOption
-                        icon={mdiDeleteOutline}
-                        text={$t('delete_album')}
-                        on:click={() => handleRemoveAlbum()}
-                      />
-                    </ContextMenu>
-                  {/if}
-                </div>
+                  <MenuOption
+                    icon={mdiCogOutline}
+                    text={$t('options')}
+                    on:click={() => (viewMode = ViewMode.OPTIONS)}
+                  />
+                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} on:click={() => handleRemoveAlbum()} />
+                </ButtonContextMenu>
               {/if}
             {/if}
 
