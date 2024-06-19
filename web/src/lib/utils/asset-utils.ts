@@ -267,7 +267,7 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
   supportedImageMimeTypes.add('image/heic').add('image/heif');
 }
