@@ -65,8 +65,8 @@
 
   const handleDeduplicateAll = async () => {
     const idsToKeep = data.duplicates
-          .map((group) => suggestDuplicateByFileSize(group.assets))
-          .map((asset) => asset?.id);
+      .map((group) => suggestDuplicateByFileSize(group.assets))
+      .map((asset) => asset?.id);
     const idsToDelete = data.duplicates.flatMap((group, i) =>
       group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
     );
@@ -79,7 +79,7 @@
       prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
       confirmText = $t('permanently_delete');
     }
-    
+
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
