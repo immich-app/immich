@@ -4,9 +4,9 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { suggestDuplicateByFileSize } from '$lib/utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
-  import { sortBy } from 'lodash-es';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -20,7 +20,7 @@
   $: trashCount = assets.length - selectedAssetIds.size;
 
   onMount(() => {
-    const suggestedAsset = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
+    const suggestedAsset = suggestDuplicateByFileSize(assets);
 
     if (!suggestedAsset) {
       selectedAssetIds = new Set(assets[0].id);
