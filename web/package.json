@@ -61,6 +61,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^2.7.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.7.1",
@@ -71,6 +72,7 @@
     "copy-image-clipboard": "^2.1.2",
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.8",
+    "intl-messageformat": "^10.5.14",
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
