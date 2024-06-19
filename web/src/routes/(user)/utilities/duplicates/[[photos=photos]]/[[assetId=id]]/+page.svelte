@@ -22,11 +22,7 @@
 
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
-      const isConfirmed = await dialogController.show({
-        prompt: $t(prompt),
-        confirmText: $t(confirmText),
-      });
-
+      const isConfirmed = await dialogController.show({ prompt, confirmText });
       if (!isConfirmed) {
         return;
       }
@@ -45,9 +41,9 @@
     }
 
     notificationController.show({
-      message: $t($featureFlags.trash ? 'assets_moved_to_trash' : 'assets_deleted', {
-        values: { count: trashedCount },
-      }),
+      message: $featureFlags.trash
+        ? $t('assets_moved_to_trash', { values: { count: trashedCount } })
+        : $t('permanently_deleted_assets', { values: { count: trashedCount } }),
       type: NotificationType.Info,
     });
   };
@@ -62,21 +58,30 @@
 
         deletedNotification(trashIds.length);
       },
-      trashIds.length > 0 && !$featureFlags.trash ? 'delete_duplicates_confirmation' : undefined,
-      trashIds.length > 0 && !$featureFlags.trash ? 'permanently_delete' : undefined,
+      trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
+      trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
     );
   };
 
   const handleDeduplicateAll = async () => {
-    return withConfirmation(
-      async () => {
-        const idsToKeep = data.duplicates
+    const idsToKeep = data.duplicates
           .map((group) => suggestDuplicateByFileSize(group.assets))
           .map((asset) => asset?.id);
-        const idsToDelete = data.duplicates.flatMap((group, i) =>
-          group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-        );
+    const idsToDelete = data.duplicates.flatMap((group, i) =>
+      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+    );
 
+    let prompt, confirmText;
+    if ($featureFlags.trash) {
+      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      confirmText = $t('confirm');
+    } else {
+      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      confirmText = $t('permanently_delete');
+    }
+    
+    return withConfirmation(
+      async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
@@ -89,15 +94,15 @@
 
         deletedNotification(idsToDelete.length);
       },
-      $featureFlags.trash ? 'bulk_trash_duplicates_confirmation' : 'bulk_delete_duplicates_confirmation',
-      $featureFlags.trash ? 'confirm' : 'permanently_delete',
+      prompt,
+      confirmText,
     );
   };
 
   const handleKeepAll = async () => {
+    const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
     return withConfirmation(
       async () => {
-        const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
         await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
 
         data.duplicates = [];
@@ -107,8 +112,8 @@
           type: NotificationType.Info,
         });
       },
-      'bulk_keep_duplicates_confirmation',
-      'confirm',
+      $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
+      $t('confirm'),
     );
   };
 </script>
