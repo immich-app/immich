@@ -325,6 +325,7 @@
                 size="15"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
+                on:click={() => handleSendComment()}
               />
             </div>
           {/if}

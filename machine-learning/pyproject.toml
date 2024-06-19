@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10,<4.0"
 insightface = ">=0.7.3,<1.0"
 opencv-python-headless = ">=4.7.0.72,<5.0"
 pillow = ">=9.5.0,<11.0"

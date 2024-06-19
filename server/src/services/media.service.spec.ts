@@ -344,13 +344,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:round=up,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
@@ -371,13 +371,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:round=up,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
@@ -400,13 +400,13 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
         {
-          inputOptions: ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
             '-fps_mode vfr',
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:round=up,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         },
