@@ -267,6 +267,11 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+if (isSafari) {
+  supportedImageMimeTypes.add('image/heic').add('image/heif');
+}
+
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
