@@ -192,23 +192,18 @@ async def load(model: InferenceModel) -> InferenceModel:
         return model
 
     def _load(model: InferenceModel) -> InferenceModel:
+        if model.load_attempts > 1:
+            raise HTTPException(500, f"Failed to load model '{model.model_name}'")
         with lock:
             model.load()
         return model
 
     try:
-        await run(_load, model)
-        return model
+        return await run(_load, model)
     except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
-        log.warning(
-            (
-                f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'."
-                "Clearing cache and retrying."
-            )
-        )
+        log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
         model.clear_cache()
-        await run(_load, model)
-        return model
+        return await run(_load, model)
 
 
 async def idle_shutdown_task() -> None:
