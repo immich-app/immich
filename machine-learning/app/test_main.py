@@ -8,10 +8,10 @@ from typing import Any, Callable
 from unittest import mock
 
 import cv2
-from fastapi import HTTPException
 import numpy as np
 import onnxruntime as ort
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest import MonkeyPatch
