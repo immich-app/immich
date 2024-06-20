@@ -45,7 +45,7 @@ export interface SearchAssetIDOptions {
 
 export interface SearchUserIdOptions {
   deviceId?: string;
-  libraryId?: string;
+  libraryId?: string | null;
   userIds?: string[];
 }
 
