@@ -9,7 +9,8 @@
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
-  import { t } from 'svelte-i18n';
+  import { json, t } from 'svelte-i18n';
+  import FormatTags from '$lib/components/i18n/format-tags.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -29,9 +30,9 @@
   </p>
 
   <p>
-    When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the
-    feature has been turned off by default. For more information, please see the
-    <a class="underline" href="https://immich.app/docs/administration/storage-template">documentation</a>.
+    <FormatTags message={$json('admin.storage_template_onboarding_description')} let:message>
+      <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
+    </FormatTags>
   </p>
 
   {#if config && $user}
