@@ -31,6 +31,7 @@ class InferenceModel(ABC):
         **model_kwargs: Any,
     ) -> None:
         self.loaded = False
+        self.load_attempts = 0
         self.model_name = clean_name(model_name)
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self.cache_dir_default
         self.providers = providers if providers is not None else self.providers_default
@@ -48,9 +49,11 @@ class InferenceModel(ABC):
     def load(self) -> None:
         if self.loaded:
             return
+        self.load_attempts += 1
 
         self.download()
-        log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
+        attempt = f"Attempt #{self.load_attempts + 1} to load" if self.load_attempts else "Loading"
+        log.info(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
         self.session = self._load()
         self.loaded = True
 
