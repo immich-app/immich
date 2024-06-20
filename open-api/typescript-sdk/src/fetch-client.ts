@@ -697,7 +697,7 @@ export type MetadataSearchDto = {
     isOffline?: boolean;
     isVisible?: boolean;
     lensModel?: string;
-    libraryId?: string;
+    libraryId?: string | null;
     make?: string;
     model?: string;
     order?: AssetOrder;
@@ -768,7 +768,7 @@ export type SmartSearchDto = {
     isOffline?: boolean;
     isVisible?: boolean;
     lensModel?: string;
-    libraryId?: string;
+    libraryId?: string | null;
     make?: string;
     model?: string;
     page?: number;
