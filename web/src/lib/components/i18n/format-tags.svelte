@@ -50,7 +50,7 @@
 
 {#each parts as { tag, message }}
   {#if tag}
-    <slot {tag} {message} />
+    <slot {tag} {message}>{message}</slot>
   {:else}
     {message}
   {/if}

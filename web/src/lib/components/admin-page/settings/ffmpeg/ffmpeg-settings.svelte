@@ -40,15 +40,15 @@
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
           <FormatTags message={$json('admin.transcoding_codecs_learn_more')} let:tag let:message>
-            {#if tag === 'h264Link'}
+            {#if tag === 'h264-link'}
               <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
                 {message}
               </a>
-            {:else if tag === 'hevcLink'}
+            {:else if tag === 'hevc-link'}
               <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
                 {message}
               </a>
-            {:else if tag === 'vp9Link'}
+            {:else if tag === 'vp9-link'}
               <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
                 {message}
               </a>
