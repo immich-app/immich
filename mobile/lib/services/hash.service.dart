@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -46,10 +45,9 @@ class HashService {
         .toList();
     final List<DeviceAsset?> hashes = await _lookupHashes(ids);
     final List<DeviceAsset> toAdd = [];
-    final List<String> toHash = [];
+    final List<Map<String, AssetEntity>> toHash = [];
 
     int bytes = 0;
-    int batchCount = 0;
 
     for (int i = 0; i < assetEntities.length; i++) {
       if (hashes[i] != null) {
@@ -71,7 +69,7 @@ class HashService {
         continue;
       }
       bytes += await file.length();
-      toHash.add(file.path);
+      toHash.add({file.path: assetEntities[i]});
       final deviceAsset = Platform.isAndroid
           ? AndroidDeviceAsset(id: ids[i] as int, hash: const [])
           : IOSDeviceAsset(id: ids[i] as String, hash: const []);
@@ -79,18 +77,7 @@ class HashService {
       hashes[i] = deviceAsset;
       if (toHash.length == batchFileCount || bytes >= batchDataSize) {
         await for (final batch in _processBatch(toHash, toAdd)) {
-          debugPrint(
-            "batch length ${batch.length} - assetEntities length ${assetEntities.length}",
-          );
-          yield _mapAllHashedAssets(
-            assetEntities.slice(
-              batchCount,
-              batchCount + batch.length,
-            ),
-            batch,
-          );
-
-          batchCount += batch.length;
+          yield batch;
         }
         toAdd.clear();
         toHash.clear();
@@ -99,10 +86,7 @@ class HashService {
     }
     if (toHash.isNotEmpty) {
       await for (final batch in _processBatch(toHash, toAdd)) {
-        debugPrint(
-          "To hash is not empty with length ${toHash.length}, PROCESS TO ADD ${toAdd.length}, ASSET ENTITIEES LENGTH ${assetEntities.length} . batch length ${batch.length}",
-        );
-        yield _mapAllHashedAssets(assetEntities, batch);
+        yield batch;
       }
     }
   }
@@ -115,30 +99,34 @@ class HashService {
 
   /// Processes a batch of files and saves any successfully hashed
   /// values to the DB table.
-  Stream<List<DeviceAsset>> _processBatch(
-    final List<String> toHash,
+  Stream<List<Asset>> _processBatch(
+    final List<Map<String, AssetEntity>> toHash,
     final List<DeviceAsset> toAdd,
   ) async* {
-    final hashes = await _hashFiles(toHash);
+    final List<Asset> validLocalAssets = [];
+    final hashes = await _hashFiles(toHash.map((e) => e.keys.first).toList());
     bool anyNull = false;
     for (int j = 0; j < hashes.length; j++) {
       if (hashes[j]?.length == 20) {
         toAdd[j].hash = hashes[j]!;
+        validLocalAssets.add(Asset.local(toHash[j].values.first, hashes[j]!));
       } else {
         _log.warning("Failed to hash file ${toHash[j]}, skipping");
         anyNull = true;
       }
     }
+
     final validHashes = anyNull
         ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
         : toAdd;
+
     await _db.writeTxn(
       () => Platform.isAndroid
           ? _db.androidDeviceAssets.putAll(validHashes.cast())
           : _db.iOSDeviceAssets.putAll(validHashes.cast()),
     );
     _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
-    yield validHashes;
+    yield validLocalAssets;
   }
 
   /// Hashes the given files and returns a list of the same length
@@ -150,23 +138,6 @@ class HashService {
       throw Exception("Hashing ${paths.length} files failed");
     }
     return hashes;
-  }
-
-  /// Converts [AssetEntity]s that were successfully hashed to [Asset]s
-  List<Asset> _mapAllHashedAssets(
-    List<AssetEntity> assets,
-    List<DeviceAsset?> hashes,
-  ) {
-    debugPrint(
-      "[_mapAllHashedAssets] Mapping all hashed assets, assets length ${assets.length}, hashes length ${hashes.length}",
-    );
-    final List<Asset> result = [];
-    for (int i = 0; i < hashes.length; i++) {
-      if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
-        result.add(Asset.local(assets[i], hashes[i]!.hash));
-      }
-    }
-    return result;
   }
 }
 
