@@ -482,6 +482,7 @@
   "end_date": "End date",
   "error": "Error",
   "error_loading_image": "Error loading image",
+  "error_title": "Error - Something went wrong",
   "errors": {
     "cant_apply_changes": "Can't apply changes",
     "cant_change_activity": "Can't {enabled, select, true {disable} other {enable}} activity",
