@@ -57,6 +57,6 @@
     <p class="text-sm text-immich-primary">{success}</p>
   {/if}
   <div class="my-5 flex w-full">
-    <Button type="submit" size="lg" fullwidth>{$t('change_password')}</Button>
+    <Button type="submit" size="lg" fullwidth>{$t('to_change_password')}</Button>
   </div>
 </form>
