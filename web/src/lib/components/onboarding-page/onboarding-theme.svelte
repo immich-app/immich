@@ -19,7 +19,7 @@
   <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('color_theme').toUpperCase()}</p>
 
   <div>
-    <p class="pb-6 font-light">Choose a color theme for your instance. You can change this later in your settings.</p>
+    <p class="pb-6 font-light">{$t('onboarding_theme_description')}</p>
   </div>
 
   <div class="flex gap-4 mb-6">
