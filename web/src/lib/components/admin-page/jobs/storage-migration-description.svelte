@@ -1,10 +1,10 @@
 <script lang="ts">
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { AppRoute, OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
   import { json, t } from 'svelte-i18n';
 </script>
 
-<FormatTags
+<FormatMessage
   message={$json('admin.storage_template_migration_description')}
   values={{ template: $t('admin.storage_template_settings') }}
   let:message
@@ -15,4 +15,4 @@
   >
     {message}
   </a>
-</FormatTags>
+</FormatMessage>

@@ -11,7 +11,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { json, t } from 'svelte-i18n';
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -100,11 +100,11 @@
           >
             <svelte:fragment slot="desc">
               <p class="text-sm dark:text-immich-dark-fg">
-                <FormatTags message={$json('admin.library_cron_expression_description')} let:message>
+                <FormatMessage message={$json('admin.library_cron_expression_description')} let:message>
                   <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
                     {message}
                   </a>
-                </FormatTags>
+                </FormatMessage>
               </p>
             </svelte:fragment>
           </SettingInputField>

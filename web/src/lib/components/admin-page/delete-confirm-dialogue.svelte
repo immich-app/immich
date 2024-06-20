@@ -6,7 +6,7 @@
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { json, t } from 'svelte-i18n';
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let user: UserResponseDto;
 
@@ -55,19 +55,19 @@
     <div class="flex flex-col gap-4">
       {#if forceDelete}
         <p>
-          <FormatTags message={$json('admin.user_delete_immediately')} values={{ user: user.name }} let:message>
+          <FormatMessage message={$json('admin.user_delete_immediately')} values={{ user: user.name }} let:message>
             <b>{message}</b>
-          </FormatTags>
+          </FormatMessage>
         </p>
       {:else}
         <p>
-          <FormatTags
+          <FormatMessage
             message={$json('admin.user_delete_delay')}
             values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
             let:message
           >
             <b>{message}</b>
-          </FormatTags>
+          </FormatMessage>
         </p>
       {/if}
 

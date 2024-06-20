@@ -1,13 +1,13 @@
 <script lang="ts">
-  import FormatTags from '../format-tags.svelte';
+  import FormatMessage from '../format-message.svelte';
   import type { ComponentProps } from 'svelte';
 
   export let message: unknown;
-  export let values: ComponentProps<FormatTags>['values'];
+  export let values: ComponentProps<FormatMessage>['values'];
 </script>
 
-<FormatTags {message} {values} let:tag let:message>
+<FormatMessage {message} {values} let:tag let:message>
   {#if tag === 'b'}
     <strong>{message}</strong>
   {/if}
-</FormatTags>
+</FormatMessage>

@@ -1,12 +1,12 @@
 import FormatTagB from '$lib/components/i18n/__test__/format-tag-b.svelte';
-import FormatTags from '$lib/components/i18n/format-tags.svelte';
+import FormatMessage from '$lib/components/i18n/format-message.svelte';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { init, json, locale, register, waitLocale } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { describe } from 'vitest';
 
-describe('FormatTags component', () => {
+describe('FormatMessage component', () => {
   let $json: (id: string, locale?: string | undefined) => unknown;
 
   beforeAll(async () => {
@@ -25,7 +25,7 @@ describe('FormatTags component', () => {
   });
 
   it('formats a plain text message', () => {
-    render(FormatTags, {
+    render(FormatMessage, {
       message: $json('hello'),
       values: { name: 'test' },
     });
@@ -34,19 +34,19 @@ describe('FormatTags component', () => {
 
   it('throws an error when locale is empty', async () => {
     await locale.set(undefined);
-    expect(() => render(FormatTags, { message: undefined })).toThrowError();
+    expect(() => render(FormatMessage, { message: undefined })).toThrowError();
     await locale.set('en');
   });
 
   it('shows raw message when value is empty', () => {
-    render(FormatTags, {
+    render(FormatMessage, {
       message: $json('hello'),
     });
     expect(screen.getByText('Hello {name}')).toBeInTheDocument();
   });
 
   it('shows message when slot is empty', () => {
-    render(FormatTags, {
+    render(FormatMessage, {
       message: $json('html'),
       values: { name: 'test' },
     });
@@ -70,7 +70,7 @@ describe('FormatTags component', () => {
   });
 
   it('protects agains XSS injection', () => {
-    render(FormatTags, {
+    render(FormatMessage, {
       message: $json('xss'),
     });
     expect(screen.getByText('<image/src/onerror=prompt(8)>')).toBeInTheDocument();

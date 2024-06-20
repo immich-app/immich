@@ -4,7 +4,7 @@
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
   import { json, t } from 'svelte-i18n';
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   let showModal = false;
 
@@ -37,7 +37,7 @@
 {#if showModal}
   <FullScreenModal title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
     <div>
-      <FormatTags message={$json('version_announcement_message')} let:tag let:message>
+      <FormatMessage message={$json('version_announcement_message')} let:tag let:message>
         {#if tag === 'link'}
           <span class="font-medium underline">
             <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
@@ -47,7 +47,7 @@
         {:else if tag === 'code'}
           <code>{message}</code>
         {/if}
-      </FormatTags>
+      </FormatMessage>
     </div>
 
     <div class="mt-4 font-medium">Your friend, Alex</div>

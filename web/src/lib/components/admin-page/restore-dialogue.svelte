@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
@@ -38,9 +38,9 @@
 >
   <svelte:fragment slot="prompt">
     <p>
-      <FormatTags message={$json('admin.user_restore_description')} values={{ user: user.name }} let:message>
+      <FormatMessage message={$json('admin.user_restore_description')} values={{ user: user.name }} let:message>
         <b>{message}</b>
-      </FormatTags>
+      </FormatMessage>
     </p>
   </svelte:fragment>
 </ConfirmDialog>

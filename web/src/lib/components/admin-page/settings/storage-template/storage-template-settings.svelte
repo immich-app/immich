@@ -21,7 +21,7 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { json, t } from 'svelte-i18n';
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -89,7 +89,7 @@
 <section class="dark:text-immich-dark-fg mt-2">
   <div in:fade={{ duration: 500 }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
-      <FormatTags message={$json('admin.storage_template_more_details')} let:tag let:message>
+      <FormatMessage message={$json('admin.storage_template_more_details')} let:tag let:message>
         {#if tag === 'template-link'}
           <a
             href="https://immich.app/docs/administration/storage-template"
@@ -109,7 +109,7 @@
             {message}
           </a>
         {/if}
-      </FormatTags>
+      </FormatMessage>
     </p>
   </div>
   {#await getTemplateOptions() then}
@@ -160,23 +160,23 @@
           </div>
 
           <p class="text-sm">
-            <FormatTags
+            <FormatMessage
               message={$json('admin.storage_template_path_length')}
               values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
               let:message
             >
               <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
-            </FormatTags>
+            </FormatMessage>
           </p>
 
           <p class="text-sm">
-            <FormatTags
+            <FormatMessage
               message={$json('admin.storage_template_user_label')}
               values={{ label: $user.storageLabel || $user.id }}
               let:message
             >
               <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
-            </FormatTags>
+            </FormatMessage>
           </p>
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
@@ -228,7 +228,7 @@
                 <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('notes')}</h3>
                 <section class="flex flex-col gap-2">
                   <p>
-                    <FormatTags
+                    <FormatMessage
                       message={$json('admin.storage_template_migration_info')}
                       values={{ job: $t('admin.storage_template_migration_job') }}
                       let:message
@@ -236,7 +236,7 @@
                       <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
                         {message}
                       </a>
-                    </FormatTags>
+                    </FormatMessage>
                   </p>
                 </section>
               </div>

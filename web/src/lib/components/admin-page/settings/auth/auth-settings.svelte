@@ -12,7 +12,7 @@
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import { json, t } from 'svelte-i18n';
-  import FormatTags from '$lib/components/i18n/format-tags.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -53,7 +53,7 @@
       <div class="flex flex-col gap-4">
         <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
         <p>
-          <FormatTags message={$json('admin.authentication_settings_reenable')} let:message>
+          <FormatMessage message={$json('admin.authentication_settings_reenable')} let:message>
             <a
               href="https://immich.app/docs/administration/server-commands"
               rel="noreferrer"
@@ -62,7 +62,7 @@
             >
               {message}
             </a>
-          </FormatTags>
+          </FormatMessage>
         </p>
       </div>
     </svelte:fragment>
@@ -80,7 +80,7 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
-              <FormatTags message={$json('admin.oauth_settings_more_details')} let:message>
+              <FormatMessage message={$json('admin.oauth_settings_more_details')} let:message>
                 <a
                   href="https://immich.app/docs/administration/oauth"
                   class="underline"
@@ -89,7 +89,7 @@
                 >
                   {message}
                 </a>
-              </FormatTags>
+              </FormatMessage>
             </p>
 
             <SettingSwitch
