@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -20,20 +21,23 @@ class HashService {
   final _log = Logger('HashService');
 
   /// Returns all assets that were successfully hashed
-  Future<List<Asset>> getHashedAssets(
+  Stream<List<Asset>> getHashedAssets(
     AssetPathEntity album, {
     int start = 0,
     int end = 0x7fffffffffffffff,
-  }) async {
+  }) async* {
     final entities = await album.getAssetListRange(start: start, end: end);
-    return _hashAssets(entities);
+    // yield _hashAssets(entities);
+    await for (final assets in _hashAssets(entities)) {
+      yield assets;
+    }
   }
 
   /// Converts a list of [AssetEntity]s to [Asset]s including only those
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [AndroidDeviceAsset] / [IOSDeviceAsset] by local id. Only missing
   /// entries are newly hashed and added to the DB table.
-  Future<List<Asset>> _hashAssets(List<AssetEntity> assetEntities) async {
+  Stream<List<Asset>> _hashAssets(List<AssetEntity> assetEntities) async* {
     const int batchFileCount = 128;
     const int batchDataSize = 1024 * 1024 * 1024; // 1GB
 
@@ -45,6 +49,7 @@ class HashService {
     final List<String> toHash = [];
 
     int bytes = 0;
+    int batchCount = 0;
 
     for (int i = 0; i < assetEntities.length; i++) {
       if (hashes[i] != null) {
@@ -73,16 +78,33 @@ class HashService {
       toAdd.add(deviceAsset);
       hashes[i] = deviceAsset;
       if (toHash.length == batchFileCount || bytes >= batchDataSize) {
-        await _processBatch(toHash, toAdd);
+        await for (final batch in _processBatch(toHash, toAdd)) {
+          debugPrint(
+            "batch length ${batch.length} - assetEntities length ${assetEntities.length}",
+          );
+          yield _mapAllHashedAssets(
+            assetEntities.slice(
+              batchCount,
+              batchCount + batch.length,
+            ),
+            batch,
+          );
+
+          batchCount += batch.length;
+        }
         toAdd.clear();
         toHash.clear();
         bytes = 0;
       }
     }
     if (toHash.isNotEmpty) {
-      await _processBatch(toHash, toAdd);
+      await for (final batch in _processBatch(toHash, toAdd)) {
+        debugPrint(
+          "To hash is not empty with length ${toHash.length}, PROCESS TO ADD ${toAdd.length}, ASSET ENTITIEES LENGTH ${assetEntities.length} . batch length ${batch.length}",
+        );
+        yield _mapAllHashedAssets(assetEntities, batch);
+      }
     }
-    return _mapAllHashedAssets(assetEntities, hashes);
   }
 
   /// Lookup hashes of assets by their local ID
@@ -93,10 +115,10 @@ class HashService {
 
   /// Processes a batch of files and saves any successfully hashed
   /// values to the DB table.
-  Future<void> _processBatch(
+  Stream<List<DeviceAsset>> _processBatch(
     final List<String> toHash,
     final List<DeviceAsset> toAdd,
-  ) async {
+  ) async* {
     final hashes = await _hashFiles(toHash);
     bool anyNull = false;
     for (int j = 0; j < hashes.length; j++) {
@@ -116,6 +138,7 @@ class HashService {
           : _db.iOSDeviceAssets.putAll(validHashes.cast()),
     );
     _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
+    yield validHashes;
   }
 
   /// Hashes the given files and returns a list of the same length
@@ -134,8 +157,11 @@ class HashService {
     List<AssetEntity> assets,
     List<DeviceAsset?> hashes,
   ) {
+    debugPrint(
+      "[_mapAllHashedAssets] Mapping all hashed assets, assets length ${assets.length}, hashes length ${hashes.length}",
+    );
     final List<Asset> result = [];
-    for (int i = 0; i < assets.length; i++) {
+    for (int i = 0; i < hashes.length; i++) {
       if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
         result.add(Asset.local(assets[i], hashes[i]!.hash));
       }
