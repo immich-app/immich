@@ -31,7 +31,7 @@
   <MenuOption
     text={$t('change_location')}
     icon={mdiMapMarkerMultipleOutline}
-    on:click={() => (isShowChangeLocation = true)}
+    onClick={() => (isShowChangeLocation = true)}
   />
 {/if}
 {#if isShowChangeLocation}

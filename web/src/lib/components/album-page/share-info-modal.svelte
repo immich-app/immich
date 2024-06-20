@@ -109,14 +109,14 @@
             {#if isOwned}
               <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
-                  <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
+                  <MenuOption onClick={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
                 {:else}
                   <MenuOption
-                    on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                    onClick={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
                     text={$t('disallow_edits')}
                   />
                 {/if}
-                <MenuOption on:click={() => handleMenuRemove(user)} text={$t('remove')} />
+                <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
               </ButtonContextMenu>
             {:else if user.id == currentUser?.id}
               <button

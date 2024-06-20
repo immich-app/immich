@@ -33,7 +33,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption {text} {icon} on:click={handleArchive} />
+  <MenuOption {text} {icon} onClick={handleArchive} />
 {/if}
 
 {#if !menuItem}
