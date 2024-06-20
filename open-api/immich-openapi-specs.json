@@ -9026,6 +9026,7 @@
           },
           "libraryId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "make": {
@@ -10140,6 +10141,7 @@
           },
           "libraryId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "make": {
