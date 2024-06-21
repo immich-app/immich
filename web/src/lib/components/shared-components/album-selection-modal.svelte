@@ -99,17 +99,16 @@
 
           {#if !shared}
             <p class="px-5 py-3 text-xs">
-              {#if search.length === 0}ALL
-              {/if}ALBUMS
+              {(search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase()}
             </p>
           {/if}
           {#each filteredAlbums as album (album.id)}
             <AlbumListItem {album} searchQuery={search} on:album={() => handleSelect(album)} />
           {/each}
         {:else if albums.length > 0}
-          <p class="px-5 py-1 text-sm">It looks like you do not have any albums with this name yet.</p>
+          <p class="px-5 py-1 text-sm">{$t('no_albums_with_name_yet')}</p>
         {:else}
-          <p class="px-5 py-1 text-sm">It looks like you do not have any albums yet.</p>
+          <p class="px-5 py-1 text-sm">{$t('no_albums_yet')}</p>
         {/if}
       </div>
     {/if}

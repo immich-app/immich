@@ -299,7 +299,7 @@
                   <CircleIconButton
                     color="primary"
                     icon={mdiRestart}
-                    title="Reset"
+                    title={$t('reset')}
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
