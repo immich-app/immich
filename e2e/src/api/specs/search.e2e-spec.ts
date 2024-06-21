@@ -339,6 +339,13 @@ describe('/search', () => {
         should: 'should search by model',
         deferred: () => ({ dto: { model: 'Canon EOS 7D' }, assets: [assetDenali] }),
       },
+      {
+        should: 'should allow searching the upload library (libraryId: null)',
+        deferred: () => ({
+          dto: { libraryId: null, size: 1 },
+          assets: [assetLast],
+        }),
+      },
     ];
 
     for (const { should, deferred } of searchTests) {

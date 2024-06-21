@@ -320,17 +320,11 @@ FROM
     FROM
       "assets" "AssetEntity"
       LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
-      AND (
-        "AssetEntity__AssetEntity_library"."deletedAt" IS NULL
-      )
     WHERE
       (
-        (
-          ((("AssetEntity__AssetEntity_library"."id" = $1)))
-          AND ("AssetEntity"."originalPath" = $2)
-        )
+        ((("AssetEntity__AssetEntity_library"."id" = $1)))
+        AND ("AssetEntity"."originalPath" = $2)
       )
-      AND ("AssetEntity"."deletedAt" IS NULL)
   ) "distinctAlias"
 ORDER BY
   "AssetEntity_id" ASC

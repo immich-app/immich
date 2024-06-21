@@ -405,3 +405,5 @@ FROM
   "assets" "asset"
   INNER JOIN "exif" "exif" ON "exif"."assetId" = "asset"."id"
   INNER JOIN cte ON asset.id = cte."assetId"
+ORDER BY
+  exif.city

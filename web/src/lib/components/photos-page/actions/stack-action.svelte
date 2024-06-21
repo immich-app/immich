@@ -40,7 +40,7 @@
 </script>
 
 {#if unstack}
-  <MenuOption text={$t('unstack')} icon={mdiImageMinusOutline} on:click={handleUnstack} />
+  <MenuOption text={$t('unstack')} icon={mdiImageMinusOutline} onClick={handleUnstack} />
 {:else}
-  <MenuOption text={$t('stack')} icon={mdiImageMultipleOutline} on:click={handleStack} />
+  <MenuOption text={$t('stack')} icon={mdiImageMultipleOutline} onClick={handleStack} />
 {/if}

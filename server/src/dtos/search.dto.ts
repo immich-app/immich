@@ -9,8 +9,8 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
+  @ValidateUUID({ optional: true, nullable: true })
+  libraryId?: string | null;
 
   @IsString()
   @IsNotEmpty()

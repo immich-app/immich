@@ -52,6 +52,11 @@ export function searchAssetBuilder(
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
+
+  if (id.libraryId === null) {
+    id.libraryId = IsNull() as unknown as string;
+  }
+
   builder.andWhere(_.omitBy(id, _.isUndefined));
 
   if (options.userIds) {

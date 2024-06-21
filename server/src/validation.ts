@@ -80,13 +80,13 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
   return ValidateIf((object: any, v: any) => v !== undefined, validationOptions);
 }
 
-type UUIDOptions = { optional?: boolean; each?: boolean };
+type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
 export const ValidateUUID = (options?: UUIDOptions) => {
-  const { optional, each } = { optional: false, each: false, ...options };
+  const { optional, each, nullable } = { optional: false, each: false, nullable: false, ...options };
   return applyDecorators(
     IsUUID('4', { each }),
     ApiProperty({ format: 'uuid' }),
-    optional ? Optional() : IsNotEmpty(),
+    optional ? Optional({ nullable }) : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
 };

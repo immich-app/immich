@@ -52,7 +52,7 @@ export class SearchRepository implements ISearchRepository {
         .innerJoinAndSelect('asset.exifInfo', 'exif')
         .withDeleted()
         .getQuery() +
-      ' INNER JOIN cte ON asset.id = cte."assetId"';
+      ' INNER JOIN cte ON asset.id = cte."assetId" ORDER BY exif.city';
   }
 
   async init(modelName: string): Promise<void> {
@@ -315,6 +315,7 @@ export class SearchRepository implements ISearchRepository {
     await this.smartSearchRepository.manager.transaction(async (manager) => {
       await manager.clear(SmartSearchEntity);
       await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
+      await manager.query(`REINDEX INDEX clip_index`);
     });
 
     this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);

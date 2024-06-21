@@ -390,7 +390,7 @@
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
           text={$t('fix_incorrect_match')}
-          on:click={handleReassignAssets}
+          onClick={handleReassignAssets}
         />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
@@ -406,22 +406,22 @@
             <MenuOption
               text={$t('select_featured_photo')}
               icon={mdiAccountBoxOutline}
-              on:click={() => (viewMode = ViewMode.SELECT_PERSON)}
+              onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
             />
             <MenuOption
               text={data.person.isHidden ? $t('unhide_person') : $t('hide_person')}
               icon={data.person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
-              on:click={() => toggleHidePerson()}
+              onClick={() => toggleHidePerson()}
             />
             <MenuOption
               text={$t('set_date_of_birth')}
               icon={mdiCalendarEditOutline}
-              on:click={() => (viewMode = ViewMode.BIRTH_DATE)}
+              onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
             />
             <MenuOption
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
-              on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)}
+              onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
             />
           </ButtonContextMenu>
         </svelte:fragment>

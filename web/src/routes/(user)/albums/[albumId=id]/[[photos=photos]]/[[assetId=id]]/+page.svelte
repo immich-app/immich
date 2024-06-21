@@ -425,7 +425,7 @@
               <MenuOption
                 text={$t('set_as_album_cover')}
                 icon={mdiImageOutline}
-                on:click={() => updateThumbnailUsingCurrentSelection()}
+                onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
@@ -467,14 +467,10 @@
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
-                    on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption
-                    icon={mdiCogOutline}
-                    text={$t('options')}
-                    on:click={() => (viewMode = ViewMode.OPTIONS)}
-                  />
-                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} on:click={() => handleRemoveAlbum()} />
+                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
+                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
                 </ButtonContextMenu>
               {/if}
             {/if}

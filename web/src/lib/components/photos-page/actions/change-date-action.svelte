@@ -28,7 +28,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={$t('change_date')} icon={mdiCalendarEditOutline} on:click={() => (isShowChangeDate = true)} />
+  <MenuOption text={$t('change_date')} icon={mdiCalendarEditOutline} onClick={() => (isShowChangeDate = true)} />
 {/if}
 {#if isShowChangeDate}
   <ChangeDate
