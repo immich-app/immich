@@ -503,8 +503,6 @@
     "cant_search_people": "Can't search people",
     "cant_search_places": "Can't search places",
     "cleared_jobs": "Cleared jobs for: {job}",
-    "could_not_get_canvas_context": "Could not get canvas context.",
-    "could_not_get_image_data": "Could not get image data.",
     "error_adding_assets_to_album": "Error adding assets to album",
     "error_adding_users_to_album": "Error adding users to album",
     "error_deleting_shared_user": "Error deleting shared user",
