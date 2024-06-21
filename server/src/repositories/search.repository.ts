@@ -52,7 +52,7 @@ export class SearchRepository implements ISearchRepository {
         .innerJoinAndSelect('asset.exifInfo', 'exif')
         .withDeleted()
         .getQuery() +
-      ' INNER JOIN cte ON asset.id = cte."assetId"';
+      ' INNER JOIN cte ON asset.id = cte."assetId" ORDER BY exif.city';
   }
 
   async init(modelName: string): Promise<void> {
