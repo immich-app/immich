@@ -17,7 +17,7 @@
     const isConfirmed = await dialogController.show({
       id: 'remove-from-shared-link',
       title: $t('remove_assets_title'),
-      prompt: $t('remove_assets_confirmation', { values: { count: getAssets().size } }),
+      prompt: $t('remove_assets_shared_link_confirmation', { values: { count: getAssets().size } }),
       confirmText: $t('remove'),
     });
 

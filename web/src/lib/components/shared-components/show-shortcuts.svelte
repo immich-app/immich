@@ -19,7 +19,7 @@
   const shortcuts: Shortcuts = {
     general: [
       { key: ['←', '→'], action: $t('previous_or_next_photo') },
-      { key: ['Esc'], action: 'Back, close, or deselect' },
+      { key: ['Esc'], action: $t('back_close_deselect') },
       { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
       { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
     ],
@@ -30,7 +30,7 @@
       { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
       { key: ['⇧', 'd'], action: $t('download') },
       { key: ['Space'], action: $t('play_or_pause_video') },
-      { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
+      { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
     ],
   };
   const dispatch = createEventDispatcher<{

@@ -28,13 +28,13 @@
     canvas.height = img.height;
     const context = canvas.getContext('2d');
     if (!context) {
-      throw new Error('Could not get canvas context.');
+      throw new Error($t('errors.could_not_get_canvas_context'));
     }
     context.drawImage(img, 0, 0);
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData?.data;
     if (!data) {
-      throw new Error('Could not get image data.');
+      throw new Error($t('errors.could_not_get_image_data'));
     }
     for (let index = 0; index < data.length; index += 4) {
       if (data[index + 3] < 255) {
@@ -50,7 +50,7 @@
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,
-          message: 'Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.',
+          message: $t('errors.profile_picture_transparent_pixels'),
           timeout: 3000,
         });
         return;

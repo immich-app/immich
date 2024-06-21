@@ -63,7 +63,7 @@
       {/each}
     {:else}
       <p class="py-5 text-sm">
-        Looks like you shared your photos with all users or you don't have any user to share with.
+        {$t('photo_shared_all_users')}
       </p>
     {/if}
 
