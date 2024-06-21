@@ -22,7 +22,8 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import { t } from 'svelte-i18n';
+  import { json, t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -38,17 +39,21 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          To learn more about the terminology used here, refer to FFmpeg documentation for
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
-            >H.264 codec</a
-          >,
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer"
-            >{$t('admin.transcoding_hevc_codec')}</a
-          >
-          and
-          <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer"
-            >VP9 codec</a
-          >.
+          <FormatMessage message={$json('admin.transcoding_codecs_learn_more')} let:tag let:message>
+            {#if tag === 'h264-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'hevc-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'vp9-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {/if}
+          </FormatMessage>
         </p>
 
         <SettingInputField
