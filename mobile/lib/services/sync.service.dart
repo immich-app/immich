@@ -555,14 +555,20 @@ class SyncService {
     final inDb = await album.assets
         .filter()
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .sortByChecksum()
+        .sortByLocalId()
         .findAll();
-    assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
+    assert(inDb.isSorted(Asset.compareByLocalId), "inDb not sorted!");
     final int assetCountOnDevice = await ape.assetCountAsync;
+
     await for (final onDevice in _hashService.getHashedAssets(ape)) {
       _removeDuplicates(onDevice);
       // _removeDuplicates sorts `onDevice` by checksum
-      final (toAdd, toUpdate, toDelete) = _diffAssets(onDevice, inDb);
+      final (toAdd, toUpdate, toDelete) = _diffAssets(
+        onDevice,
+        inDb,
+        compare: Asset.compareByLocalId,
+      );
+
       if (toAdd.isEmpty &&
           toUpdate.isEmpty &&
           toDelete.isEmpty &&

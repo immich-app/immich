@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -26,7 +27,7 @@ class HashService {
     int end = 0x7fffffffffffffff,
   }) async* {
     final entities = await album.getAssetListRange(start: start, end: end);
-    // yield _hashAssets(entities);
+    entities.sortBy((e) => e.id);
     await for (final assets in _hashAssets(entities)) {
       yield assets;
     }
