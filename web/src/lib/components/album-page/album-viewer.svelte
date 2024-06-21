@@ -28,7 +28,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ albumId: album.id });
+  const assetStore = new AssetStore({ albumId: album.id, order: album.order });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
