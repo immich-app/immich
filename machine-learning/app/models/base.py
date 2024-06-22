@@ -30,7 +30,7 @@ class InferenceModel(ABC):
         self.loaded = session is not None
         self.load_attempts = 0
         self.model_name = clean_name(model_name)
-        self.cache_dir = Path(cache_dir) if cache_dir is not None else self.cache_dir_default
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
         self.model_format = preferred_format if preferred_format is not None else self._model_format_default
         self.session = session
 
@@ -134,7 +134,7 @@ class InferenceModel(ABC):
         self._cache_dir = cache_dir
 
     @property
-    def cache_dir_default(self) -> Path:
+    def _cache_dir_default(self) -> Path:
         return settings.cache_folder / self.model_task.value / self.model_name
 
     @property

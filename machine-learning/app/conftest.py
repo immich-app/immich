@@ -9,6 +9,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from .main import app
+from app.config import log
 
 
 @pytest.fixture
@@ -96,12 +97,69 @@ def clip_tokenizer_cfg() -> dict[str, Any]:
 
 
 @pytest.fixture(scope="function")
-def providers(request: pytest.FixtureRequest) -> Iterator[dict[str, Any]]:
+def providers(request: pytest.FixtureRequest) -> Iterator[mock.Mock]:
     marker = request.node.get_closest_marker("providers")
     if marker is None:
         raise ValueError("Missing marker 'providers'")
 
     providers = marker.args[0]
-    with mock.patch("app.models.base.ort.get_available_providers") as mocked:
+    with mock.patch("app.sessions.ort.ort.get_available_providers") as mocked:
         mocked.return_value = providers
         yield providers
+
+
+@pytest.fixture(scope="function")
+def ort_pybind() -> Iterator[mock.Mock]:
+    with mock.patch("app.sessions.ort.ort.capi._pybind_state") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def ov_device_ids(request: pytest.FixtureRequest, ort_pybind: mock.Mock) -> Iterator[mock.Mock]:
+    marker = request.node.get_closest_marker("ov_device_ids")
+    if marker is None:
+        raise ValueError("Missing marker 'ov_device_ids'")
+    ort_pybind.get_available_openvino_device_ids.return_value = marker.args[0]
+    return ort_pybind
+
+
+@pytest.fixture(scope="function")
+def ort_session() -> Iterator[mock.Mock]:
+    with mock.patch("app.sessions.ort.ort.InferenceSession") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def rmtree() -> Iterator[mock.Mock]:
+    with mock.patch("app.models.base.rmtree", autospec=True) as mocked:
+        mocked.avoids_symlink_attacks = True
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def cache_dir() -> Iterator[mock.Mock]:
+    mock_cache_dir = mock.MagicMock()
+    mock_cache_dir.exists.return_value = True
+    mock_cache_dir.is_dir.return_value = True
+    mock_cache_dir.is_file.return_value = True
+        
+    with mock.patch("app.models.base.Path", return_value=mock_cache_dir) as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def info() -> Iterator[mock.Mock]:
+    with mock.patch.object(log, "info") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def warning() -> Iterator[mock.Mock]:
+    with mock.patch.object(log, "warning") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
+def snapshot_download() -> Iterator[mock.Mock]:
+    with mock.patch("app.models.base.snapshot_download") as mocked:
+        yield mocked

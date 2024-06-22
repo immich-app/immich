@@ -27,16 +27,15 @@ class FaceRecognizer(InferenceModel):
         cache_dir: Path | str | None = None,
         **model_kwargs: Any,
     ) -> None:
-        self.min_score = model_kwargs.pop("minScore", min_score)
-        self.batch = False
         super().__init__(clean_name(model_name), cache_dir, **model_kwargs)
+        self.min_score = model_kwargs.pop("minScore", min_score)
+        self.batch = self.model_format == ModelFormat.ONNX
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
         if self.model_format == ModelFormat.ONNX and not has_batch_axis(session):
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
-            self.batch = True
         self.model = ArcFaceONNX(
             self.model_path.with_suffix(".onnx").as_posix(),
             session=session,

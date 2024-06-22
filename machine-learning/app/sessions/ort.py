@@ -16,17 +16,17 @@ from ..config import log, settings
 class OrtSession:
     def __init__(
         self,
-        model_path: Path,
+        model_path: Path | str,
         providers: list[str] | None = None,
         provider_options: list[dict[str, Any]] | None = None,
         sess_options: ort.SessionOptions | None = None,
     ):
-        self.model_path = model_path
+        self.model_path = Path(model_path)
         self.providers = providers if providers is not None else self._providers_default
         self.provider_options = provider_options if provider_options is not None else self._provider_options_default
         self.sess_options = sess_options if sess_options is not None else self._sess_options_default
         self.session = ort.InferenceSession(
-            model_path.as_posix(),
+            self.model_path.as_posix(),
             providers=self.providers,
             provider_options=self.provider_options,
             sess_options=self.sess_options,
