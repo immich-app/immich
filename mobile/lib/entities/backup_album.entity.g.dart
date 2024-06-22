@@ -107,7 +107,6 @@ P _backupAlbumDeserializeProp<P>(
 const _BackupAlbumselectionEnumValueMap = {
   'none': 0,
   'select': 1,
-  'exclude': 2,
 };
 const _BackupAlbumselectionValueEnumMap = {
   0: BackupSelection.none,

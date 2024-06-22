@@ -61,7 +61,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             ),
             availableAlbums: const [],
             selectedBackupAlbums: const {},
-            allUniqueAssets: const {},
+            backupCandidates: const {},
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
@@ -292,13 +292,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: {},
+        backupCandidates: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     } else {
       state = state.copyWith(
         allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: backupCandidates,
+        backupCandidates: backupCandidates,
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     }
@@ -371,13 +371,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (hasPermission) {
       await PhotoManager.clearFileCache();
 
-      if (state.allUniqueAssets.isEmpty) {
+      if (state.backupCandidates.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
+      Set<AssetEntity> assetsWillBeBackup = Set.from(state.backupCandidates);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
@@ -448,7 +448,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ) {
     if (isDuplicated) {
       state = state.copyWith(
-        allUniqueAssets: state.allUniqueAssets
+        allUniqueAssets: state.backupCandidates
             .where((asset) => asset.id != deviceAssetId)
             .toSet(),
       );
@@ -462,11 +462,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    if (state.allUniqueAssets.length -
+    if (state.backupCandidates.length -
             state.selectedAlbumsBackupAssetsIds.length ==
         0) {
       final latestAssetBackup =
-          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+          state.backupCandidates.map((e) => e.modifiedDateTime).reduce(
                 (v, e) => e.isAfter(v) ? e : v,
               );
       state = state.copyWith(

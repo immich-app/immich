@@ -29,7 +29,7 @@ class BackupControllerPage extends HookConsumerWidget {
     final didGetBackupInfo = useState(false);
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
-    bool shouldBackup = backupState.allUniqueAssets.length -
+    bool shouldBackup = backupState.backupCandidates.length -
                     backupState.selectedAlbumsBackupAssetsIds.length ==
                 0 ||
             !hasExclusiveAccess
@@ -268,7 +268,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     subtitle: "backup_controller_page_total_sub".tr(),
                     info: ref.watch(backupProvider).availableAlbums.isEmpty
                         ? "..."
-                        : "${backupState.allUniqueAssets.length}",
+                        : "${backupState.backupCandidates.length}",
                   ),
                   BackupInfoCard(
                     title: "backup_controller_page_backup".tr(),
@@ -282,7 +282,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     subtitle: "backup_controller_page_remainder_sub".tr(),
                     info: ref.watch(backupProvider).availableAlbums.isEmpty
                         ? "..."
-                        : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
+                        : "${max(0, backupState.backupCandidates.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
                   ),
                   const Divider(),
                   const CurrentUploadingAssetInfoBox(),
