@@ -115,7 +115,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.0.1
+        uses: docker/build-push-action@v6.1.0
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}

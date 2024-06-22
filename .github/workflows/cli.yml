@@ -88,7 +88,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.0.1
+        uses: docker/build-push-action@v6.1.0
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64
