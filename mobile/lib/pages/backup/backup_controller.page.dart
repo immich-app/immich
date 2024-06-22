@@ -100,29 +100,6 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    Widget buildExcludedAlbumName() {
-      var text = "backup_controller_page_excluded".tr();
-      var albums = ref.watch(backupProvider).excludedBackupAlbums;
-
-      if (albums.isNotEmpty) {
-        for (var album in albums) {
-          text += "${album.name}, ";
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: Colors.red[300],
-            ),
-          ),
-        );
-      } else {
-        return const SizedBox();
-      }
-    }
-
     buildFolderSelectionTile() {
       return Padding(
         padding: const EdgeInsets.only(top: 8.0),
@@ -154,7 +131,6 @@ class BackupControllerPage extends HookConsumerWidget {
                     style: context.textTheme.bodyMedium,
                   ).tr(),
                   buildSelectedAlbumName(),
-                  buildExcludedAlbumName(),
                 ],
               ),
             ),

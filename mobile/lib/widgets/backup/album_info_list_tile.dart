@@ -1,14 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
   final AvailableAlbum album;
@@ -19,8 +17,6 @@ class AlbumInfoListTile extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isSelected =
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
     var assetCount = useState(0);
 
     useEffect(
@@ -36,10 +32,6 @@ class AlbumInfoListTile extends HookConsumerWidget {
         return context.isDarkTheme
             ? context.primaryColor.withAlpha(100)
             : context.primaryColor.withAlpha(25);
-      } else if (isExcluded) {
-        return context.isDarkTheme
-            ? Colors.red[300]?.withAlpha(150)
-            : Colors.red[100]?.withAlpha(150);
       } else {
         return Colors.transparent;
       }
@@ -53,13 +45,6 @@ class AlbumInfoListTile extends HookConsumerWidget {
         );
       }
 
-      if (isExcluded) {
-        return const Icon(
-          Icons.remove_circle_rounded,
-          color: Colors.red,
-        );
-      }
-
       return Icon(
         Icons.circle,
         color: context.isDarkTheme ? Colors.grey[400] : Colors.black45,
@@ -67,28 +52,6 @@ class AlbumInfoListTile extends HookConsumerWidget {
     }
 
     return GestureDetector(
-      onDoubleTap: () {
-        ref.watch(hapticFeedbackProvider.notifier).selectionClick();
-
-        if (isExcluded) {
-          // Remove from exclude album list
-          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
-        } else {
-          // Add to exclude album list
-
-          if (album.id == 'isAll' || album.name == 'Recents') {
-            ImmichToast.show(
-              context: context,
-              msg: 'Cannot exclude album contains all assets',
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
-
-          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
-        }
-      },
       child: ListTile(
         tileColor: buildTileColor(),
         contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),

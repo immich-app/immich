@@ -38,7 +38,6 @@ class BackUpState {
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
   final Set<AvailableAlbum> selectedBackupAlbums;
-  final Set<AvailableAlbum> excludedBackupAlbums;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
   final Set<AssetEntity> allUniqueAssets;
@@ -68,7 +67,6 @@ class BackUpState {
     required this.backupTriggerDelay,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
-    required this.excludedBackupAlbums,
     required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
     required this.currentUploadAsset,
@@ -93,7 +91,6 @@ class BackUpState {
     int? backupTriggerDelay,
     List<AvailableAlbum>? availableAlbums,
     Set<AvailableAlbum>? selectedBackupAlbums,
-    Set<AvailableAlbum>? excludedBackupAlbums,
     Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
@@ -121,7 +118,6 @@ class BackUpState {
       backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
-      excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
@@ -131,7 +127,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -158,7 +154,6 @@ class BackUpState {
         other.backupTriggerDelay == backupTriggerDelay &&
         collectionEquals(other.availableAlbums, availableAlbums) &&
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
-        collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
         collectionEquals(
           other.selectedAlbumsBackupAssetsIds,
@@ -187,7 +182,6 @@ class BackUpState {
         backupTriggerDelay.hashCode ^
         availableAlbums.hashCode ^
         selectedBackupAlbums.hashCode ^
-        excludedBackupAlbums.hashCode ^
         allUniqueAssets.hashCode ^
         selectedAlbumsBackupAssetsIds.hashCode ^
         currentUploadAsset.hashCode;

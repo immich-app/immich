@@ -112,7 +112,6 @@ const _BackupAlbumselectionEnumValueMap = {
 const _BackupAlbumselectionValueEnumMap = {
   0: BackupSelection.none,
   1: BackupSelection.select,
-  2: BackupSelection.exclude,
 };
 
 Id _backupAlbumGetId(BackupAlbum object) {
