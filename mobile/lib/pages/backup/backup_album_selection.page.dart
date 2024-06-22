@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/widgets/backup/album_info_card.dart';
@@ -17,7 +16,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
-    final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = context.isDarkTheme;
     final albums = ref.watch(backupProvider).availableAlbums;
 
@@ -111,83 +109,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }).toSet();
     }
 
-    buildExcludedAlbumNameChip() {
-      return excludedBackupAlbums.map((album) {
-        void removeSelection() {
-          ref
-              .watch(backupProvider.notifier)
-              .removeExcludedAlbumForBackup(album);
-        }
-
-        return GestureDetector(
-          onTap: removeSelection,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Chip(
-              label: Text(
-                album.name,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkTheme ? Colors.black : immichBackgroundColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              backgroundColor: Colors.red[300],
-              deleteIconColor:
-                  isDarkTheme ? Colors.black : immichBackgroundColor,
-              deleteIcon: const Icon(
-                Icons.cancel_rounded,
-                size: 15,
-              ),
-              onDeleted: removeSelection,
-            ),
-          ),
-        );
-      }).toSet();
-    }
-
-    // buildSearchBar() {
-    //   return Padding(
-    //     padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
-    //     child: TextFormField(
-    //       onChanged: (searchValue) {
-    //         // if (searchValue.isEmpty) {
-    //         //   albums = availableAlbums;
-    //         // } else {
-    //         //   albums.value = availableAlbums
-    //         //       .where(
-    //         //         (album) => album.name
-    //         //             .toLowerCase()
-    //         //             .contains(searchValue.toLowerCase()),
-    //         //       )
-    //         //       .toList();
-    //         // }
-    //       },
-    //       decoration: InputDecoration(
-    //         contentPadding: const EdgeInsets.symmetric(
-    //           horizontal: 8.0,
-    //           vertical: 8.0,
-    //         ),
-    //         hintText: "Search",
-    //         hintStyle: TextStyle(
-    //           color: isDarkTheme ? Colors.white : Colors.grey,
-    //           fontSize: 14.0,
-    //         ),
-    //         prefixIcon: const Icon(
-    //           Icons.search,
-    //           color: Colors.grey,
-    //         ),
-    //         border: OutlineInputBorder(
-    //           borderRadius: BorderRadius.circular(10),
-    //           borderSide: BorderSide.none,
-    //         ),
-    //         filled: true,
-    //         fillColor: isDarkTheme ? Colors.white30 : Colors.grey[200],
-    //       ),
-    //     ),
-    //   );
-    // }
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -223,7 +144,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   child: Wrap(
                     children: [
                       ...buildSelectedAlbumNameChip(),
-                      ...buildExcludedAlbumNameChip(),
                     ],
                   ),
                 ),
