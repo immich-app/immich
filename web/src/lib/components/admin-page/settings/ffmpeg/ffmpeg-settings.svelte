@@ -22,7 +22,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
@@ -39,7 +39,7 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          <FormatMessage message={$json('admin.transcoding_codecs_learn_more')} let:tag let:message>
+          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
             {#if tag === 'h264-link'}
               <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
                 {message}

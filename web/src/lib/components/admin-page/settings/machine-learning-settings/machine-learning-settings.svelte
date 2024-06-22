@@ -12,7 +12,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
@@ -71,7 +71,7 @@
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
             <p slot="desc" class="immich-form-label pb-2 text-sm">
-              <FormatMessage message={$json('admin.machine_learning_clip_model_description')} let:message>
+              <FormatMessage key="admin.machine_learning_clip_model_description" let:message>
                 <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
               </FormatMessage>
             </p>
