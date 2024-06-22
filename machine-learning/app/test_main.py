@@ -162,7 +162,7 @@ class TestBase:
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
-        assert encoder.preferred_format == ModelFormat.ONNX
+        assert encoder.model_format == ModelFormat.ONNX
 
     def test_sets_default_preferred_format_to_armnn_if_available(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
@@ -170,7 +170,7 @@ class TestBase:
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
-        assert encoder.preferred_format == ModelFormat.ARMNN
+        assert encoder.model_format == ModelFormat.ARMNN
 
     def test_sets_preferred_format_kwarg(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", False)
@@ -178,7 +178,7 @@ class TestBase:
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", preferred_format=ModelFormat.ARMNN)
 
-        assert encoder.preferred_format == ModelFormat.ARMNN
+        assert encoder.model_format == ModelFormat.ARMNN
 
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"

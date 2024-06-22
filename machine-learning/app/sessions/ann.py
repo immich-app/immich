@@ -7,6 +7,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ann.ann import Ann
+from app.schemas import SessionNode
 
 from ..config import log, settings
 
@@ -45,11 +46,11 @@ class AnnSession:
         log.info("Unloaded ANN model %d", self.model)
         self.ann.destroy()
 
-    def get_inputs(self) -> list[AnnNode]:
+    def get_inputs(self) -> list[SessionNode]:
         shapes = self.ann.input_shapes[self.model]
         return [AnnNode(None, s) for s in shapes]
 
-    def get_outputs(self) -> list[AnnNode]:
+    def get_outputs(self) -> list[SessionNode]:
         shapes = self.ann.output_shapes[self.model]
         return [AnnNode(None, s) for s in shapes]
 

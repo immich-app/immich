@@ -54,6 +54,14 @@ class ModelSource(StrEnum):
 ModelIdentity = tuple[ModelType, ModelTask]
 
 
+class SessionNode(Protocol):
+    @property
+    def name(self) -> str | None: ...
+
+    @property
+    def shape(self) -> tuple[int, ...]: ...
+
+
 class ModelSession(Protocol):
     def run(
         self,
@@ -61,6 +69,10 @@ class ModelSession(Protocol):
         input_feed: dict[str, npt.NDArray[np.float32]] | dict[str, npt.NDArray[np.int32]],
         run_options: Any = None,
     ) -> list[npt.NDArray[np.float32]]: ...
+
+    def get_inputs(self) -> list[SessionNode]: ...
+
+    def get_outputs(self) -> list[SessionNode]: ...
 
 
 class HasProfiling(Protocol):
