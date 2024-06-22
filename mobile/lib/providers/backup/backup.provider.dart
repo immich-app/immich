@@ -448,7 +448,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ) {
     if (isDuplicated) {
       state = state.copyWith(
-        allUniqueAssets: state.backupCandidates
+        backupCandidates: state.backupCandidates
             .where((asset) => asset.id != deviceAssetId)
             .toSet(),
       );
