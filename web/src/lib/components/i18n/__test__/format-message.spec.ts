@@ -2,13 +2,10 @@ import FormatTagB from '$lib/components/i18n/__test__/format-tag-b.svelte';
 import FormatMessage from '$lib/components/i18n/format-message.svelte';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
-import { init, json, locale, register, waitLocale } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { describe } from 'vitest';
 
 describe('FormatMessage component', () => {
-  let $json: (id: string, locale?: string | undefined) => unknown;
-
   beforeAll(async () => {
     register('en', () =>
       Promise.resolve({
@@ -21,12 +18,11 @@ describe('FormatMessage component', () => {
 
     await init({ fallbackLocale: 'en' });
     await waitLocale('en');
-    $json = get(json);
   });
 
   it('formats a plain text message', () => {
     render(FormatMessage, {
-      message: $json('hello'),
+      key: 'hello',
       values: { name: 'test' },
     });
     expect(screen.getByText('Hello test')).toBeInTheDocument();
@@ -34,20 +30,20 @@ describe('FormatMessage component', () => {
 
   it('throws an error when locale is empty', async () => {
     await locale.set(undefined);
-    expect(() => render(FormatMessage, { message: undefined })).toThrowError();
+    expect(() => render(FormatMessage, { key: '' })).toThrowError();
     await locale.set('en');
   });
 
   it('shows raw message when value is empty', () => {
     render(FormatMessage, {
-      message: $json('hello'),
+      key: 'hello',
     });
     expect(screen.getByText('Hello {name}')).toBeInTheDocument();
   });
 
   it('shows message when slot is empty', () => {
     render(FormatMessage, {
-      message: $json('html'),
+      key: 'html',
       values: { name: 'test' },
     });
     expect(screen.getByText('Hello test')).toBeInTheDocument();
@@ -55,7 +51,7 @@ describe('FormatMessage component', () => {
 
   it('renders a message with html', () => {
     const { container } = render(FormatTagB, {
-      message: $json('html'),
+      key: 'html',
       values: { name: 'test' },
     });
     expect(container.innerHTML).toBe('Hello <strong>test</strong>');
@@ -63,7 +59,7 @@ describe('FormatMessage component', () => {
 
   it('renders a message with html and plural', () => {
     const { container } = render(FormatTagB, {
-      message: $json('plural'),
+      key: 'plural',
       values: { count: 1 },
     });
     expect(container.innerHTML).toBe('You have <strong>1 item</strong>');
@@ -71,8 +67,13 @@ describe('FormatMessage component', () => {
 
   it('protects agains XSS injection', () => {
     render(FormatMessage, {
-      message: $json('xss'),
+      key: 'xss',
     });
     expect(screen.getByText('<image/src/onerror=prompt(8)>')).toBeInTheDocument();
+  });
+
+  it('displays the message key when not found', () => {
+    render(FormatMessage, { key: 'invalid.key' });
+    expect(screen.getByText('invalid.key')).toBeInTheDocument();
   });
 });

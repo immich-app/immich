@@ -9,7 +9,7 @@
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   const dispatch = createEventDispatcher<{
@@ -30,7 +30,7 @@
   </p>
 
   <p>
-    <FormatMessage message={$json('admin.storage_template_onboarding_description')} let:message>
+    <FormatMessage key="admin.storage_template_onboarding_description" let:message>
       <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
     </FormatMessage>
   </p>

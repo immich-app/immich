@@ -2,11 +2,11 @@
   import FormatMessage from '../format-message.svelte';
   import type { ComponentProps } from 'svelte';
 
-  export let message: unknown;
+  export let key: string;
   export let values: ComponentProps<FormatMessage>['values'];
 </script>
 
-<FormatMessage {message} {values} let:tag let:message>
+<FormatMessage {key} {values} let:tag let:message>
   {#if tag === 'b'}
     <strong>{message}</strong>
   {/if}
