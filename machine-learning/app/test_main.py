@@ -9,7 +9,6 @@ from unittest import mock
 
 import cv2
 import numpy as np
-import onnx
 import onnxruntime as ort
 import pytest
 from fastapi import HTTPException
@@ -293,7 +292,7 @@ class TestAnnSession:
         ann_session.return_value.load.return_value = 123
         np_spy = mocker.spy(np, "ascontiguousarray")
         session = AnnSession(Path("ViT-B-32__openai"))
-        input1, input2 = np.random.rand(1, 3, 224, 224), np.random.rand(1, 3, 224, 224)
+        [input1, input2] = [np.random.rand(1, 3, 224, 224).astype(np.float32) for _ in range(2)]
         input_feed = {"input.1": input1, "input.2": input2}
 
         session.run(None, input_feed)
@@ -468,7 +467,7 @@ class TestFaceRecognition:
         assert isinstance(call_args[0][0], np.ndarray)
         assert call_args[0][0].shape == (112, 112, 3)
 
-    def test_recognition_adds_batch_axis_for_ort(self, ort_session, mocker: MockerFixture) -> None:
+    def test_recognition_adds_batch_axis_for_ort(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
         onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
             "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
@@ -499,8 +498,8 @@ class TestFaceRecognition:
         assert face_recognizer.batch is True
         update_dims.assert_called_once_with(proto, {"input.1": ["batch", 3, 224, 224]}, {"output.1": ["batch", 800]})
         onnx.save.assert_called_once_with(update_dims.return_value, face_recognizer.model_path)
-    
-    def test_recognition_does_not_add_batch_axis_if_exists(self, ort_session, mocker: MockerFixture) -> None:
+
+    def test_recognition_does_not_add_batch_axis_if_exists(self, ort_session: mock.Mock, mocker: MockerFixture) -> None:
         onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
             "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
@@ -508,8 +507,10 @@ class TestFaceRecognition:
         mocker.patch("app.models.base.InferenceModel.download")
         mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
 
-        ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=('batch', 3, 224, 224))]
-        ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=('batch', 800))]
+        inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
+        outputs = [SimpleNamespace(name="output.1", shape=("batch", 800))]
+        ort_session.return_value.get_inputs.return_value = inputs
+        ort_session.return_value.get_outputs.return_value = outputs
 
         face_recognizer = FaceRecognizer("buffalo_s")
         face_recognizer.load()

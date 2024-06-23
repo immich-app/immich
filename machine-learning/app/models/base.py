@@ -32,7 +32,8 @@ class InferenceModel(ABC):
         self.model_name = clean_name(model_name)
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
         self.model_format = preferred_format if preferred_format is not None else self._model_format_default
-        self.session = session
+        if session is not None:
+            self.session = session
 
     def download(self) -> None:
         if not self.cached:

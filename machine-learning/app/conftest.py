@@ -8,8 +8,9 @@ from fastapi.testclient import TestClient
 from numpy.typing import NDArray
 from PIL import Image
 
-from .main import app
 from app.config import log
+
+from .main import app
 
 
 @pytest.fixture
@@ -150,7 +151,7 @@ def path() -> Iterator[mock.Mock]:
     path.is_file.return_value = True
     path.with_suffix.return_value = path
     path.return_value = path
-        
+
     with mock.patch("app.models.base.Path", return_value=path) as mocked:
         yield mocked
 
