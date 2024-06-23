@@ -9,6 +9,7 @@ from unittest import mock
 
 import cv2
 import numpy as np
+import onnx
 import onnxruntime as ort
 import pytest
 from fastapi import HTTPException
@@ -22,6 +23,7 @@ from app.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from app.models.clip.visual import OpenClipVisualEncoder
 from app.models.facial_recognition.detection import FaceDetector
 from app.models.facial_recognition.recognition import FaceRecognizer
+from app.sessions.ann import AnnSession
 from app.sessions.ort import OrtSession
 
 from .config import Settings, settings
@@ -50,16 +52,12 @@ class TestBase:
 
         assert encoder.model_format == ModelFormat.ONNX
 
-    def test_sets_default_preferred_format_to_armnn_if_available(self, cache_dir, mocker: MockerFixture) -> None:
+    def test_sets_default_preferred_format_to_armnn_if_available(self, path: mock.Mock, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
         mocker.patch("ann.ann.is_available", True)
-        mock_model_path = mocker.MagicMock()
-        mock_model_path.is_file.return_value = True
-        mock_model_path.suffix = ".armnn"
-        mock_model_path.with_suffix.return_value = mock_model_path
-        cache_dir.return_value = mock_model_path
+        path.suffix = ".armnn"
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
 
         assert encoder.model_format == ModelFormat.ARMNN
 
@@ -77,42 +75,46 @@ class TestBase:
 
         assert encoder.cache_dir == Path(cache_dir)
 
-    def test_clear_cache(self, rmtree: mock.Mock, cache_dir: mock.Mock, info: mock.Mock) -> None:
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+    def test_clear_cache(self, rmtree: mock.Mock, path: mock.Mock, info: mock.Mock) -> None:
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
         encoder.clear_cache()
 
         rmtree.assert_called_once_with(encoder.cache_dir)
         info.assert_called_with(f"Cleared cache directory for model '{encoder.model_name}'.")
 
     def test_clear_cache_warns_if_path_does_not_exist(
-        self, rmtree: mock.Mock, cache_dir: mock.Mock, warning: mock.Mock
+        self, rmtree: mock.Mock, path: mock.Mock, warning: mock.Mock
     ) -> None:
-        cache_dir.return_value.exists.return_value = False
+        path.return_value.exists.return_value = False
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
         encoder.clear_cache()
 
         rmtree.assert_not_called()
         warning.assert_called_once()
 
-    def test_clear_cache_raises_exception_if_vulnerable_to_symlink_attack(self, rmtree, cache_dir) -> None:
+    def test_clear_cache_raises_exception_if_vulnerable_to_symlink_attack(
+        self, rmtree: mock.Mock, path: mock.Mock
+    ) -> None:
         rmtree.avoids_symlink_attacks = False
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
         with pytest.raises(RuntimeError):
             encoder.clear_cache()
 
         rmtree.assert_not_called()
 
-    def test_clear_cache_replaces_file_with_dir_if_path_is_file(self, rmtree, cache_dir, warning) -> None:
-        cache_dir.return_value.is_dir.return_value = False
+    def test_clear_cache_replaces_file_with_dir_if_path_is_file(
+        self, rmtree: mock.Mock, path: mock.Mock, warning: mock.Mock
+    ) -> None:
+        path.return_value.is_dir.return_value = False
 
-        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
         encoder.clear_cache()
 
         rmtree.assert_not_called()
-        cache_dir.return_value.unlink.assert_called_once()
-        cache_dir.return_value.mkdir.assert_called_once()
+        path.return_value.unlink.assert_called_once()
+        path.return_value.mkdir.assert_called_once()
         warning.assert_called_once()
 
     def test_download(self, snapshot_download: mock.Mock) -> None:
@@ -245,6 +247,60 @@ class TestOrtSession:
         )
 
         assert sess_options is session.sess_options
+
+
+class TestAnnSession:
+    def test_creates_ann_session(self, ann_session: mock.Mock, info: mock.Mock) -> None:
+        model_path = mock.MagicMock(spec=Path)
+        cache_dir = mock.MagicMock(spec=Path)
+
+        AnnSession(model_path, cache_dir)
+
+        ann_session.assert_called_once_with(tuning_level=3, tuning_file=(cache_dir / "gpu-tuning.ann").as_posix())
+        ann_session.return_value.load.assert_called_once_with(
+            model_path.as_posix(), cached_network_path=model_path.with_suffix(".anncache").as_posix()
+        )
+        info.assert_has_calls(
+            [
+                mock.call("Loading ANN model %s ...", model_path),
+                mock.call("Loaded ANN model with ID %d", ann_session.return_value.load.return_value),
+            ]
+        )
+
+    def test_get_inputs(self, ann_session: mock.Mock) -> None:
+        ann_session.return_value.load.return_value = 123
+        ann_session.return_value.input_shapes = {123: [(1, 3, 224, 224)]}
+        session = AnnSession(Path("ViT-B-32__openai"))
+
+        inputs = session.get_inputs()
+
+        assert len(inputs) == 1
+        assert inputs[0].name is None
+        assert inputs[0].shape == (1, 3, 224, 224)
+
+    def test_get_outputs(self, ann_session: mock.Mock) -> None:
+        ann_session.return_value.load.return_value = 123
+        ann_session.return_value.output_shapes = {123: [(1, 3, 224, 224)]}
+        session = AnnSession(Path("ViT-B-32__openai"))
+
+        outputs = session.get_outputs()
+
+        assert len(outputs) == 1
+        assert outputs[0].name is None
+        assert outputs[0].shape == (1, 3, 224, 224)
+
+    def test_run(self, ann_session: mock.Mock, mocker: MockerFixture) -> None:
+        ann_session.return_value.load.return_value = 123
+        np_spy = mocker.spy(np, "ascontiguousarray")
+        session = AnnSession(Path("ViT-B-32__openai"))
+        input1, input2 = np.random.rand(1, 3, 224, 224), np.random.rand(1, 3, 224, 224)
+        input_feed = {"input.1": input1, "input.2": input2}
+
+        session.run(None, input_feed)
+
+        ann_session.return_value.execute.assert_called_once_with(123, [input1, input2])
+        np_spy.call_count == 2
+        np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 
 
 class TestCLIP:
@@ -411,6 +467,57 @@ class TestFaceRecognition:
         assert isinstance(call_args[0], list)
         assert isinstance(call_args[0][0], np.ndarray)
         assert call_args[0][0].shape == (112, 112, 3)
+
+    def test_recognition_adds_batch_axis_for_ort(self, ort_session, mocker: MockerFixture) -> None:
+        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        update_dims = mocker.patch(
+            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        )
+        mocker.patch("app.models.base.InferenceModel.download")
+        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+
+        ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
+        ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=(1, 800))]
+
+        proto = mock.Mock()
+
+        input_dims = mock.Mock()
+        input_dims.name = "input.1"
+        input_dims.type.tensor_type.shape.dim = [SimpleNamespace(dim_value=size) for size in [1, 3, 224, 224]]
+        proto.graph.input = [input_dims]
+
+        output_dims = mock.Mock()
+        output_dims.name = "output.1"
+        output_dims.type.tensor_type.shape.dim = [SimpleNamespace(dim_value=size) for size in [1, 800]]
+        proto.graph.output = [output_dims]
+
+        onnx.load.return_value = proto
+
+        face_recognizer = FaceRecognizer("buffalo_s")
+        face_recognizer.load()
+
+        assert face_recognizer.batch is True
+        update_dims.assert_called_once_with(proto, {"input.1": ["batch", 3, 224, 224]}, {"output.1": ["batch", 800]})
+        onnx.save.assert_called_once_with(update_dims.return_value, face_recognizer.model_path)
+    
+    def test_recognition_does_not_add_batch_axis_if_exists(self, ort_session, mocker: MockerFixture) -> None:
+        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        update_dims = mocker.patch(
+            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        )
+        mocker.patch("app.models.base.InferenceModel.download")
+        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+
+        ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=('batch', 3, 224, 224))]
+        ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=('batch', 800))]
+
+        face_recognizer = FaceRecognizer("buffalo_s")
+        face_recognizer.load()
+
+        assert face_recognizer.batch is True
+        update_dims.assert_not_called()
+        onnx.load.assert_not_called()
+        onnx.save.assert_not_called()
 
 
 @pytest.mark.asyncio

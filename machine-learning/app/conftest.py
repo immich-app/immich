@@ -130,6 +130,12 @@ def ort_session() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="function")
+def ann_session() -> Iterator[mock.Mock]:
+    with mock.patch("app.sessions.ann.Ann") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
 def rmtree() -> Iterator[mock.Mock]:
     with mock.patch("app.models.base.rmtree", autospec=True) as mocked:
         mocked.avoids_symlink_attacks = True
@@ -137,13 +143,15 @@ def rmtree() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="function")
-def cache_dir() -> Iterator[mock.Mock]:
-    mock_cache_dir = mock.MagicMock()
-    mock_cache_dir.exists.return_value = True
-    mock_cache_dir.is_dir.return_value = True
-    mock_cache_dir.is_file.return_value = True
+def path() -> Iterator[mock.Mock]:
+    path = mock.MagicMock()
+    path.exists.return_value = True
+    path.is_dir.return_value = True
+    path.is_file.return_value = True
+    path.with_suffix.return_value = path
+    path.return_value = path
         
-    with mock.patch("app.models.base.Path", return_value=mock_cache_dir) as mocked:
+    with mock.patch("app.models.base.Path", return_value=path) as mocked:
         yield mocked
 
 

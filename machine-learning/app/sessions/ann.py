@@ -17,27 +17,15 @@ class AnnSession:
     Wrapper for ANN to be drop-in replacement for ONNX session.
     """
 
-    def __init__(self, model_path: Path):
-        tuning_file = Path(settings.cache_folder) / "gpu-tuning.ann"
-        with tuning_file.open(mode="a"):
-            # make sure tuning file exists (without clearing contents)
-            # once filled, the tuning file reduces the cost/time of the first
-            # inference after model load by 10s of seconds
-            pass
-        self.ann = Ann(tuning_level=3, tuning_file=tuning_file.as_posix())
-        log.info("Loading ANN model %s ...", model_path)
-        cache_file = model_path.with_suffix(".anncache")
-        save = False
-        if not cache_file.is_file():
-            save = True
-            with cache_file.open(mode="a"):
-                # create empty model cache file
-                pass
+    def __init__(self, model_path: Path, cache_dir: Path = settings.cache_folder) -> None:
+        self.model_path = model_path
+        self.cache_dir = cache_dir
+        self.ann = Ann(tuning_level=3, tuning_file=(cache_dir / "gpu-tuning.ann").as_posix())
 
+        log.info("Loading ANN model %s ...", model_path)
         self.model = self.ann.load(
             model_path.as_posix(),
-            save_cached_network=save,
-            cached_network_path=cache_file.as_posix(),
+            cached_network_path=model_path.with_suffix(".anncache").as_posix(),
         )
         log.info("Loaded ANN model with ID %d", self.model)
 
