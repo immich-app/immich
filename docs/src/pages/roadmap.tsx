@@ -36,6 +36,7 @@ import {
   mdiImageMultipleOutline,
   mdiImageSearch,
   mdiKeyboardSettingsOutline,
+  mdiLockOutline,
   mdiMagnify,
   mdiMagnifyScan,
   mdiMap,
@@ -160,6 +161,14 @@ const withRelease = ({
 };
 
 const roadmap: Item[] = [
+  {
+    done: false,
+    icon: mdiLockOutline,
+    iconColor: 'sandybrown',
+    title: 'Private/locked photos',
+    description: 'Private assets with extra protections',
+    getDateLabel: () => 'Planned for 2024',
+  },
   {
     done: false,
     icon: mdiRocketLaunch,
