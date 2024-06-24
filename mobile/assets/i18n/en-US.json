@@ -13,6 +13,8 @@
   "advanced_settings_self_signed_ssl_title": "Allow self-signed SSL certificates",
   "advanced_settings_tile_subtitle": "Advanced user's settings",
   "advanced_settings_tile_title": "Advanced",
+  "headers_settings_tile_title": "Custom Headers",
+  "headers_settings_tile_subtitle": "Add custom headers to requests",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
   "album_info_card_backup_album_excluded": "EXCLUDED",

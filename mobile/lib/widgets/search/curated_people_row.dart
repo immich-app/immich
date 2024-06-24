@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
@@ -33,9 +34,7 @@ class CuratedPeopleRow extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final person = content[index];
-          final headers = {
-            "x-immich-user-token": Store.get(StoreKey.accessToken),
-          };
+          final headers = ApiService.getRequestHeaders();
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

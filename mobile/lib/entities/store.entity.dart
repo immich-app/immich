@@ -193,6 +193,7 @@ enum StoreKey<T> {
   mapThemeMode<int>(124, type: int),
   mapwithPartners<bool>(125, type: bool),
   enableHapticFeedback<bool>(126, type: bool),
+  customHeaders<String>(127, type: String),
   ;
 
   const StoreKey(

@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -48,9 +49,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           album,
           type: AssetMediaSize.thumbnail,
         ),
-        httpHeaders: {
-          "x-immich-user-token": Store.get(StoreKey.accessToken),
-        },
+        httpHeaders: ApiService.getRequestHeaders(),
         cacheKey:
             getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
         errorWidget: (context, url, error) =>
