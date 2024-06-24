@@ -719,7 +719,7 @@
   "manage_your_devices": "Manage your logged-in devices",
   "manage_your_oauth_connection": "Manage your OAuth connection",
   "map": "Map",
-  "map_marker_for_image": "Map marker for images taken in {city}, {country}",
+  "map_marker_for_images": "Map marker for images taken in {city}, {country}",
   "map_marker_with_image": "Map marker with image",
   "map_settings": "Map settings",
   "matches": "Matches",
