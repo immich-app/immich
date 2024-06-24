@@ -537,6 +537,7 @@
     "error_selecting_all_assets": "Error selecting all assets",
     "exclusion_pattern_already_exists": "This exclusion pattern already exists.",
     "failed_job_command": "Command {command} failed for job: {job}",
+    "failed_to_create_album": "Failed to create album",
     "failed_to_create_shared_link": "Failed to create shared link",
     "failed_to_edit_shared_link": "Failed to edit shared link",
     "failed_to_get_people": "Failed to get people",
@@ -846,6 +847,7 @@
   "permanently_deleted_asset": "Permanently deleted asset",
   "permanently_deleted_assets": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
   "person": "Person",
+  "person_hidden": "{name}{hidden, select, true { (hidden)} other {}}",
   "photo_shared_all_users": "Looks like you shared your photos with all users or you don't have any user to share with.",
   "photos": "Photos",
   "photos_and_videos": "Photos & Videos",
@@ -1121,6 +1123,7 @@
   "welcome": "Welcome",
   "welcome_to_immich": "Welcome to immich",
   "year": "Year",
+  "years_ago": "{years, plural, one {# year} other {# years}} ago",
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "zoom_image": "Zoom Image"

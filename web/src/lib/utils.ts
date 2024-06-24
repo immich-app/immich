@@ -307,7 +307,10 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const s = (count: number) => (count === 1 ? '' : 's');
 
-export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;
+export const memoryLaneTitle = (yearsAgo: number) => {
+  const $t = get(t);
+  return $t('years_ago', { values: { years: yearsAgo } });
+};
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
   try {

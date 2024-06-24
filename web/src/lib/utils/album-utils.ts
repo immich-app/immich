@@ -11,6 +11,7 @@ import {
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
+import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 /**
@@ -28,7 +29,8 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
     });
     return newAlbum;
   } catch (error) {
-    handleError(error, 'Failed to create album');
+    const $t = get(t);
+    handleError(error, $t('errors.failed_to_create_album'));
   }
 };
 
