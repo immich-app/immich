@@ -344,6 +344,7 @@
   "allow_public_user_to_download": "Allow public user to download",
   "allow_public_user_to_upload": "Allow public user to upload",
   "api_key": "API Key",
+  "api_key_description": "This value will only be shown once. Please be sure to copy it before closing the window.",
   "api_key_empty": "Your API Key name shouldn't be empty",
   "api_keys": "API Keys",
   "app_settings": "App Settings",
