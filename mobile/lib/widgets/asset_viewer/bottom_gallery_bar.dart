@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -26,6 +27,7 @@ class BottomGalleryBar extends ConsumerWidget {
   final int totalAssets;
   final bool showVideoPlayerControls;
   final PageController controller;
+  final RenderList renderList;
 
   const BottomGalleryBar({
     super.key,
@@ -35,6 +37,7 @@ class BottomGalleryBar extends ConsumerWidget {
     required this.controller,
     required this.totalAssets,
     required this.showVideoPlayerControls,
+    required this.renderList,
   });
 
   @override
@@ -108,6 +111,9 @@ class BottomGalleryBar extends ConsumerWidget {
           force: force,
         );
         if (isDeleted && isParent) {
+          // Workaround for asset remaining in the gallery
+          renderList.deleteAsset(asset);
+
           if (totalAssets == 1) {
             // Handle only one asset
             context.maybePop();
