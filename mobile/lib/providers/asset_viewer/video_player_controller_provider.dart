@@ -27,8 +27,6 @@ Future<VideoPlayerController> videoPlayerController(
         : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
 
     final url = Uri.parse(videoUrl);
-    final accessToken = Store.get(StoreKey.accessToken);
-
     controller = VideoPlayerController.networkUrl(
       url,
       httpHeaders: ApiService.getRequestHeaders(),
