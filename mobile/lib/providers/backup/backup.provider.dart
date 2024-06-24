@@ -61,8 +61,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             ),
             availableAlbums: const [],
             selectedBackupAlbums: const {},
-            excludedBackupAlbums: const {},
-            allUniqueAssets: const {},
+            backupCandidates: const {},
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
@@ -94,20 +93,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// The total unique assets will be used for backing mechanism
   ///
   void addAlbumForBackup(AvailableAlbum album) {
-    if (state.excludedBackupAlbums.contains(album)) {
-      removeExcludedAlbumForBackup(album);
-    }
-
     state = state
         .copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
-  }
-
-  void addExcludedAlbumForBackup(AvailableAlbum album) {
-    if (state.selectedBackupAlbums.contains(album)) {
-      removeAlbumForBackup(album);
-    }
-    state = state
-        .copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
   }
 
   void removeAlbumForBackup(AvailableAlbum album) {
@@ -116,14 +103,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentSelectedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(selectedBackupAlbums: currentSelectedAlbums);
-  }
-
-  void removeExcludedAlbumForBackup(AvailableAlbum album) {
-    Set<AvailableAlbum> currentExcludedAlbums = state.excludedBackupAlbums;
-
-    currentExcludedAlbums.removeWhere((a) => a == album);
-
-    state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
   }
 
   Future<void> backupAlbumSelectionDone() {
@@ -240,8 +219,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
     state = state.copyWith(availableAlbums: availableAlbums);
 
-    final List<BackupAlbum> excludedBackupAlbums =
-        await _backupService.excludedAlbumsQuery().findAll();
     final List<BackupAlbum> selectedBackupAlbums =
         await _backupService.selectedAlbumsQuery().findAll();
 
@@ -259,22 +236,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
     }
 
-    final Set<AvailableAlbum> excludedAlbums = {};
-    for (final BackupAlbum ba in excludedBackupAlbums) {
-      final albumAsset = albumMap[ba.id];
-
-      if (albumAsset != null) {
-        excludedAlbums.add(
-          AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
-        );
-      } else {
-        log.severe('Excluded album not found');
-      }
-    }
-
     state = state.copyWith(
       selectedBackupAlbums: selectedAlbums,
-      excludedBackupAlbums: excludedAlbums,
     );
 
     log.info(
@@ -290,8 +253,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ///
   Future<void> _updateBackupAssetCount() async {
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
-    final Set<AssetEntity> assetsFromSelectedAlbums = {};
-    final Set<AssetEntity> assetsFromExcludedAlbums = {};
+    final Set<AssetEntity> backupCandidates = {};
 
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
@@ -304,25 +266,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         start: 0,
         end: assetCount,
       );
-      assetsFromSelectedAlbums.addAll(assets);
+      backupCandidates.addAll(assets);
     }
 
-    for (final album in state.excludedBackupAlbums) {
-      final assetCount = await album.albumEntity.assetCountAsync;
-
-      if (assetCount == 0) {
-        continue;
-      }
-
-      final assets = await album.albumEntity.getAssetListRange(
-        start: 0,
-        end: assetCount,
-      );
-      assetsFromExcludedAlbums.addAll(assets);
-    }
-
-    final Set<AssetEntity> allUniqueAssets =
-        assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
     final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
     if (allAssetsInDatabase == null) {
@@ -331,28 +277,28 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Find asset that were backup from selected albums
     final Set<String> selectedAlbumsBackupAssets =
-        Set.from(allUniqueAssets.map((e) => e.id));
+        Set.from(backupCandidates.map((e) => e.id));
 
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     // Remove duplicated asset from all unique assets
-    allUniqueAssets.removeWhere(
+    backupCandidates.removeWhere(
       (asset) => duplicatedAssetIds.contains(asset.id),
     );
 
-    if (allUniqueAssets.isEmpty) {
+    if (backupCandidates.isEmpty) {
       log.info("No assets are selected for back up");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: {},
+        backupCandidates: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     } else {
       state = state.copyWith(
         allAssetsInDatabase: allAssetsInDatabase,
-        allUniqueAssets: allUniqueAssets,
+        backupCandidates: backupCandidates,
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     }
@@ -387,10 +333,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final selected = state.selectedBackupAlbums.map(
       (e) => BackupAlbum(e.id, e.lastBackup ?? epoch, BackupSelection.select),
     );
-    final excluded = state.excludedBackupAlbums.map(
-      (e) => BackupAlbum(e.id, e.lastBackup ?? epoch, BackupSelection.exclude),
-    );
-    final backupAlbums = selected.followedBy(excluded).toList();
+
+    final backupAlbums = selected.toList();
     backupAlbums.sortBy((e) => e.id);
     return _db.writeTxn(() async {
       final dbAlbums = await _db.backupAlbums.where().sortById().findAll();
@@ -427,13 +371,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (hasPermission) {
       await PhotoManager.clearFileCache();
 
-      if (state.allUniqueAssets.isEmpty) {
+      if (state.backupCandidates.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
+      Set<AssetEntity> assetsWillBeBackup = Set.from(state.backupCandidates);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
@@ -504,7 +448,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ) {
     if (isDuplicated) {
       state = state.copyWith(
-        allUniqueAssets: state.allUniqueAssets
+        backupCandidates: state.backupCandidates
             .where((asset) => asset.id != deviceAssetId)
             .toSet(),
       );
@@ -518,18 +462,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    if (state.allUniqueAssets.length -
+    if (state.backupCandidates.length -
             state.selectedAlbumsBackupAssetsIds.length ==
         0) {
       final latestAssetBackup =
-          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
+          state.backupCandidates.map((e) => e.modifiedDateTime).reduce(
                 (v, e) => e.isAfter(v) ? e : v,
               );
       state = state.copyWith(
         selectedBackupAlbums: state.selectedBackupAlbums
-            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-            .toSet(),
-        excludedBackupAlbums: state.excludedBackupAlbums
             .map((e) => e.copyWith(lastBackup: latestAssetBackup))
             .toSet(),
         backupProgress: BackUpProgressEnum.done,
@@ -630,12 +571,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         .filter()
         .selectionEqualTo(BackupSelection.select)
         .findAll();
-    final List<BackupAlbum> excludedBackupAlbums = await _db.backupAlbums
-        .filter()
-        .selectionEqualTo(BackupSelection.exclude)
-        .findAll();
+
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
-    Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
     if (selectedAlbums.isNotEmpty) {
       selectedAlbums = _updateAlbumsBackupTime(
         selectedAlbums,
@@ -643,17 +580,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    if (excludedAlbums.isNotEmpty) {
-      excludedAlbums = _updateAlbumsBackupTime(
-        excludedAlbums,
-        excludedBackupAlbums,
-      );
-    }
     final BackUpProgressEnum previous = state.backupProgress;
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.inBackground,
       selectedBackupAlbums: selectedAlbums,
-      excludedBackupAlbums: excludedAlbums,
     );
     // assumes the background service is currently running
     // if true, waits until it has stopped to start the backup

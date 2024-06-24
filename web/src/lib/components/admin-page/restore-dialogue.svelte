@@ -4,7 +4,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
 
   export let user: UserResponseDto;
 
@@ -38,7 +38,7 @@
 >
   <svelte:fragment slot="prompt">
     <p>
-      <FormatMessage message={$json('admin.user_restore_description')} values={{ user: user.name }} let:message>
+      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }} let:message>
         <b>{message}</b>
       </FormatMessage>
     </p>

@@ -3,7 +3,7 @@
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   let showModal = false;
@@ -37,7 +37,7 @@
 {#if showModal}
   <FullScreenModal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
     <div>
-      <FormatMessage message={$json('version_announcement_message')} let:tag let:message>
+      <FormatMessage key="version_announcement_message" let:tag let:message>
         {#if tag === 'link'}
           <span class="font-medium underline">
             <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">

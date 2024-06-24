@@ -1,11 +1,11 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { AppRoute, OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
-  import { json, t } from 'svelte-i18n';
+  import { t } from 'svelte-i18n';
 </script>
 
 <FormatMessage
-  message={$json('admin.storage_template_migration_description')}
+  key="admin.storage_template_migration_description"
   values={{ template: $t('admin.storage_template_settings') }}
   let:message
 >

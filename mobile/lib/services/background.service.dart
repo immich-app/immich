@@ -349,7 +349,6 @@ class BackgroundService {
     AppSettingsService settingsService = AppSettingsService();
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
-    final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
     if (selectedAlbums.isEmpty) {
       return true;
     }
@@ -361,11 +360,10 @@ class BackgroundService {
         backupService,
         settingsService,
         selectedAlbums,
-        excludedAlbums,
       );
       if (backupOk) {
         await Store.delete(StoreKey.backupFailedSince);
-        final backupAlbums = [...selectedAlbums, ...excludedAlbums];
+        final backupAlbums = [...selectedAlbums];
         backupAlbums.sortBy((e) => e.id);
         db.writeTxnSync(() {
           final dbAlbums = db.backupAlbums.where().sortById().findAllSync();
@@ -404,7 +402,6 @@ class BackgroundService {
     BackupService backupService,
     AppSettingsService settingsService,
     List<BackupAlbum> selectedAlbums,
-    List<BackupAlbum> excludedAlbums,
   ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
@@ -418,7 +415,6 @@ class BackgroundService {
 
     List<AssetEntity> toUpload = await backupService.buildUploadCandidates(
       selectedAlbums,
-      excludedAlbums,
     );
 
     try {
