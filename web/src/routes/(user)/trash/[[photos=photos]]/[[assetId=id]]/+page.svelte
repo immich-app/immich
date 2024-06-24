@@ -52,7 +52,7 @@
       assetStore.removeAssets(deletedAssetIds);
 
       notificationController.show({
-        message: $t('assets_permanently_deleted', { values: { count: numberOfAssets } }),
+        message: $t('assets_permanently_deleted_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -77,7 +77,7 @@
       assetStore.removeAssets(restoredAssetIds);
 
       notificationController.show({
-        message: $t('assets_restored', { values: { count: numberOfAssets } }),
+        message: $t('assets_restored_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {

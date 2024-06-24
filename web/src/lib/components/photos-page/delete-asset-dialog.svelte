@@ -23,7 +23,7 @@
 </script>
 
 <ConfirmDialog
-  title={$t('permanently_delete_assets', { values: { count: size } })}
+  title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
   onConfirm={handleConfirm}
   onCancel={() => dispatch('cancel')}
