@@ -24,7 +24,7 @@ class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
   final bool showStack;
   final int stackIndex;
-  final int totalAssets;
+  final ValueNotifier<int> totalAssets;
   final bool showVideoPlayerControls;
   final PageController controller;
   final RenderList renderList;
@@ -113,17 +113,12 @@ class BottomGalleryBar extends ConsumerWidget {
         if (isDeleted && isParent) {
           // Workaround for asset remaining in the gallery
           renderList.deleteAsset(asset);
-
-          if (totalAssets == 1) {
+          if (totalAssets.value == 1) {
             // Handle only one asset
             context.maybePop();
-          } else {
-            // Go to next page otherwise
-            controller.nextPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.fastLinearToSlowEaseIn,
-            );
           }
+
+          totalAssets.value -= 1;
         }
         return isDeleted;
       }

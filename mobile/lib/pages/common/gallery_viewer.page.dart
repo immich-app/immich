@@ -114,13 +114,19 @@ class GalleryViewerPage extends HookConsumerWidget {
         debugPrint('Error precaching next image: $exception, $stackTrace');
       }
 
-      if (index < totalAssets.value && index >= 0) {
-        final asset = loadAsset(index);
-        await precacheImage(
-          ImmichImage.imageProvider(asset: asset),
-          context,
-          onError: onError,
-        );
+      try {
+        if (index < totalAssets.value && index >= 0) {
+          final asset = loadAsset(index);
+          await precacheImage(
+            ImmichImage.imageProvider(asset: asset),
+            context,
+            onError: onError,
+          );
+        }
+      } catch (e) {
+        // swallow error silently
+        debugPrint('Error precaching next image: $e');
+        context.maybePop();
       }
     }
 
@@ -409,7 +415,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   ),
                   BottomGalleryBar(
                     renderList: renderList,
-                    totalAssets: totalAssets.value,
+                    totalAssets: totalAssets,
                     controller: controller,
                     showStack: showStack,
                     stackIndex: stackIndex.value,
