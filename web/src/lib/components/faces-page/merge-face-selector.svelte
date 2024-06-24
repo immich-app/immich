@@ -82,7 +82,7 @@
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
-        message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
+        message: $t('merged_people_count', { values: { count: count } }),
         type: NotificationType.Info,
       });
       dispatch('merge', mergedPerson);
@@ -101,7 +101,7 @@
   <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
-        {$t('selected')} {selectedPeople.length}
+        {$t('selected_count', { values: { count: selectedPeople.length } })}
       {:else}
         {$t('merge_people')}
       {/if}

@@ -37,8 +37,7 @@
   const handleEmptyTrash = async () => {
     const isConfirmed = await dialogController.show({
       id: 'empty-trash',
-      prompt:
-        'Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.\nYou cannot undo this action!',
+      prompt: $t('empty_trash_confirmation'),
     });
 
     if (!isConfirmed) {
@@ -53,7 +52,7 @@
       assetStore.removeAssets(deletedAssetIds);
 
       notificationController.show({
-        message: `Permanently deleted ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_permanently_deleted_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -64,7 +63,7 @@
   const handleRestoreTrash = async () => {
     const isConfirmed = await dialogController.show({
       id: 'restore-trash',
-      prompt: 'Are you sure you want to restore all your trashed assets? You cannot undo this action!',
+      prompt: $t('assets_restore_confirmation'),
     });
 
     if (!isConfirmed) {
@@ -78,7 +77,7 @@
       assetStore.removeAssets(restoredAssetIds);
 
       notificationController.show({
-        message: `Restored ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_restored_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {

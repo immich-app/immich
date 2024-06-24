@@ -29,7 +29,7 @@
       const res = await getAllPeople({ withHidden: false });
       return orderBySelectedPeopleFirst(res.people);
     } catch (error) {
-      handleError(error, $t('failed_to_get_people'));
+      handleError(error, $t('errors.failed_to_get_people'));
     }
   }
 
@@ -93,10 +93,10 @@
           >
             {#if showAllPeople}
               <span><Icon path={mdiClose} ariaHidden /></span>
-              Collapse
+              {$t('collapse')}
             {:else}
               <span><Icon path={mdiArrowRight} ariaHidden /></span>
-              See all people
+              {$t('see_all_people')}
             {/if}
           </Button>
         </div>

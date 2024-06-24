@@ -77,7 +77,9 @@
     <div class="flex place-items-center gap-2">
       <Icon path={icon} color={primaryColor[notification.type]} size="20" />
       <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
-        {notification.type.toString()}
+        {#if notification.type == NotificationType.Error}{$t('error')}
+        {:else if notification.type == NotificationType.Warning}{$t('warning')}
+        {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
     <CircleIconButton

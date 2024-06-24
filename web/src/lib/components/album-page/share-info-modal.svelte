@@ -53,7 +53,10 @@
     try {
       await removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
-      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
+      const message =
+        userId === 'me'
+          ? $t('album_user_left', { values: { album: album.albumName } })
+          : $t('album_user_removed', { values: { user: selectedRemoveUser.name } });
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
@@ -65,7 +68,9 @@
   const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
-      const message = `Set ${user.name} as ${role}`;
+      const message = $t('user_role_set', {
+        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
+      });
       dispatch('refreshAlbum');
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
@@ -101,9 +106,9 @@
           <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
             <div>
               {#if role === AlbumUserRole.Viewer}
-                Viewer
+                {$t('role_viewer')}
               {:else}
-                Editor
+                {$t('role_editor')}
               {/if}
             </div>
             {#if isOwned}
@@ -135,8 +140,8 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
-    title="Leave album?"
-    prompt="Are you sure you want to leave {album.albumName}?"
+    title={$t('album_leave')}
+    prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
@@ -145,9 +150,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
-    title="Remove user?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
-    confirmText={$t('remove')}
+    title={$t('album_remove_user')}
+    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
+    confirmText={$t('remove_user')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
   />

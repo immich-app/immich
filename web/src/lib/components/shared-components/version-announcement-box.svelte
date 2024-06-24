@@ -35,7 +35,7 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
+  <FullScreenModal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
     <div>
       <FormatMessage key="version_announcement_message" let:tag let:message>
         {#if tag === 'link'}
@@ -53,9 +53,9 @@
     <div class="mt-4 font-medium">Your friend, Alex</div>
 
     <div class="font-sm mt-8">
-      <code>Server Version: {serverVersion}</code>
+      <code>{$t('server_version')}: {serverVersion}</code>
       <br />
-      <code>Latest Version: {releaseVersion}</code>
+      <code>{$t('latest_version')}: {releaseVersion}</code>
     </div>
 
     <svelte:fragment slot="sticky-bottom">

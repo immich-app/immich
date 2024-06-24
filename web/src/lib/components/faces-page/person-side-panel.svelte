@@ -68,7 +68,7 @@
       allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
-      handleError(error, $t('cant_get_faces'));
+      handleError(error, $t('errors.cant_get_faces'));
     } finally {
       clearTimeout(timeout);
     }
@@ -142,11 +142,11 @@
         }
 
         notificationController.show({
-          message: `Edited ${numberOfChanges} ${numberOfChanges > 1 ? 'people' : 'person'}`,
+          message: $t('people_edits_count', { values: { count: numberOfChanges } }),
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, $t('cant_apply_changes'));
+        handleError(error, $t('errors.cant_apply_changes'));
       }
     }
 
@@ -194,7 +194,7 @@
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
       >
-        Done
+        {$t('done')}
       </button>
     {:else}
       <LoadingSpinner />
@@ -299,7 +299,7 @@
                   <CircleIconButton
                     color="primary"
                     icon={mdiRestart}
-                    title="Reset"
+                    title={$t('reset')}
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"

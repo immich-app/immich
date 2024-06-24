@@ -89,7 +89,7 @@
           // skip error when a newer search is happening
           if (latestSearchTimeout === searchTimeout) {
             places = [];
-            handleError(error, $t('cant_search_places'));
+            handleError(error, $t('errors.cant_search_places'));
             showLoadingSpinner = false;
           }
         });

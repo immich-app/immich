@@ -2,6 +2,7 @@
   import { dateFormats } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
 
@@ -28,5 +29,5 @@
 <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
   <span>{getDateRange(startDate, endDate)}</span>
   <span>•</span>
-  <span>{album.assetCount} items</span>
+  <span>{$t('items_count', { values: { count: album.assetCount } })}</span>
 </span>

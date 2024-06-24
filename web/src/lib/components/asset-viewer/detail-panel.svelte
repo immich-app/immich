@@ -153,8 +153,7 @@
         <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
         <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
-            then rescan the library.
+            {$t('asset_offline_description')}
           </p>
         </div>
       </div>
@@ -170,8 +169,8 @@
         <div class="flex gap-2 items-center">
           {#if unassignedFaces.length > 0}
             <Icon
-              ariaLabel="Asset has unassigned faces"
-              title="Asset has unassigned faces"
+              ariaLabel={$t('asset_has_unassigned_faces')}
+              title={$t('asset_has_unassigned_faces')}
               color="currentColor"
               path={mdiAccountOff}
               size="24"
@@ -243,11 +242,11 @@
                     )}
                   >
                     {#if ageInMonths <= 11}
-                      Age {ageInMonths} months
+                      {$t('age_months', { values: { months: ageInMonths } })}
                     {:else if ageInMonths > 12 && ageInMonths <= 23}
-                      Age 1 year, {ageInMonths - 12} months
+                      {$t('age_year_months', { values: { months: ageInMonths - 12 } })}
                     {:else}
-                      Age {age}
+                      {$t('age_years', { values: { years: age } })}
                     {/if}
                   </p>
                 {/if}
@@ -452,7 +451,7 @@
               target="_blank"
               class="font-medium text-immich-primary"
             >
-              Open in OpenStreetMap
+              {$t('open_in_openstreetmap')}
             </a>
           </div>
         </svelte:fragment>

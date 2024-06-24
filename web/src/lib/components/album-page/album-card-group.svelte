@@ -9,6 +9,7 @@
   import { mdiChevronRight } from '@mdi/js';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { t } from 'svelte-i18n';
 
   export let albums: AlbumResponseDto[];
   export let group: AlbumGroup | undefined = undefined;
@@ -41,7 +42,7 @@
         class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
       />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
-      <span class="ml-1.5">({albums.length} {albums.length > 1 ? 'albums' : 'album'})</span>
+      <span class="ml-1.5">({$t('albums_count', { values: { count: albums.length } })})</span>
     </button>
     <hr class="dark:border-immich-dark-gray" />
   </div>

@@ -50,7 +50,7 @@
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,
-          message: 'Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.',
+          message: $t('errors.profile_picture_transparent_pixels'),
           timeout: 3000,
         });
         return;

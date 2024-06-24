@@ -228,7 +228,7 @@
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
-          No results
+          {$t('no_results')}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.label)}

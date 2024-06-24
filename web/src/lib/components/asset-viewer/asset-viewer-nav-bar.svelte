@@ -225,18 +225,18 @@
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
             onClick={() => onJobClick(AssetJobName.RefreshMetadata)}
-            text={getAssetJobName(AssetJobName.RefreshMetadata)}
+            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
           />
           <MenuOption
             icon={mdiImageRefreshOutline}
             onClick={() => onJobClick(AssetJobName.RegenerateThumbnail)}
-            text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
+            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
           />
           {#if asset.type === AssetTypeEnum.Video}
             <MenuOption
               icon={mdiCogRefreshOutline}
               onClick={() => onJobClick(AssetJobName.TranscodeVideo)}
-              text={getAssetJobName(AssetJobName.TranscodeVideo)}
+              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
             />
           {/if}
         {/if}

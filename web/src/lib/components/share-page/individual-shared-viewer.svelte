@@ -57,11 +57,11 @@
       const added = data.filter((item) => item.success).length;
 
       notificationController.show({
-        message: `Added ${added} assets`,
+        message: $t('assets_added_count', { values: { count: added } }),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to add assets to shared link');
+      handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }
   };
 

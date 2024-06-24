@@ -161,21 +161,16 @@
         if (results.length - count > 0) {
           notificationController.show({
             type: NotificationType.Error,
-            message: `Unable to change the visibility for ${results.length - count} ${
-              results.length - count <= 1 ? 'person' : 'people'
-            }`,
+            message: $t('errors.unable_to_change_visibility', { values: { count: results.length - count } }),
           });
         }
         notificationController.show({
           type: NotificationType.Info,
-          message: `Visibility changed for ${count} ${count <= 1 ? 'person' : 'people'}`,
+          message: $t('visibility_changed', { values: { count: count } }),
         });
       }
     } catch (error) {
-      handleError(
-        error,
-        `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
-      );
+      handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
     }
     // Reset variables used on the "Show & hide people" modal
     showLoadingSpinner = false;
@@ -346,7 +341,7 @@
         return person;
       });
       notificationController.show({
-        message: 'Date of birth saved successfully',
+        message: $t('birthdate_saved'),
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -447,7 +442,7 @@
       <div class="flex flex-col content-center items-center text-center">
         <Icon path={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
-          {`No people${searchName ? ` named "${searchName}"` : ''}`}
+          {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
       </div>
     </div>

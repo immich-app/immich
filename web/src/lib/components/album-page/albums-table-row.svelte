@@ -34,7 +34,9 @@
         path={mdiShareVariantOutline}
         size="16"
         class="inline ml-1 opacity-70"
-        title={album.ownerId === $user.id ? $t('shared_by_you') : `Shared by ${album.owner.name}`}
+        title={album.ownerId === $user.id
+          ? $t('shared_by_you')
+          : $t('shared_by_user', { values: { user: album.owner.name } })}
       />
     {/if}
   </td>

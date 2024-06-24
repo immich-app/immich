@@ -33,7 +33,7 @@
         await signUpAdmin({ signUpDto: { email, password, name } });
         await goto(AppRoute.AUTH_LOGIN);
       } catch (error) {
-        handleError(error, 'errors.unable_to_create_admin_account');
+        handleError(error, $t('errors.unable_to_create_admin_account'));
         errorMessage = $t('errors.unable_to_create_admin_account');
       }
     }

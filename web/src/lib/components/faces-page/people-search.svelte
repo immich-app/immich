@@ -62,7 +62,7 @@
       searchedPeople = data;
       searchWord = searchName;
     } catch (error) {
-      handleError(error, $t('cant_search_people'));
+      handleError(error, $t('errors.cant_search_people'));
     } finally {
       clearTimeout(timeout);
       timeout = null;

@@ -30,7 +30,7 @@
       album.description = description;
       onEditSuccess?.(album);
     } catch (error) {
-      handleError(error, 'Unable to update album info');
+      handleError(error, $t('errors.unable_to_update_album_info'));
     } finally {
       isSubmitting = false;
     }

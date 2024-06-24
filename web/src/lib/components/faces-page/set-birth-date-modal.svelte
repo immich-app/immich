@@ -24,7 +24,7 @@
 <FullScreenModal title={$t('set_date_of_birth')} icon={mdiCake} onClose={handleCancel}>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <p class="text-sm dark:text-immich-dark-fg">
-      Date of birth is used to calculate the age of this person at the time of a photo.
+      {$t('birthdate_set_description')}
     </p>
   </div>
 

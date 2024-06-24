@@ -30,13 +30,13 @@
     expirationCountdown = expiresAtDate.diff(now, ['days', 'hours', 'minutes', 'seconds']).toObject();
 
     if (expirationCountdown.days && expirationCountdown.days > 0) {
-      return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'days' });
+      return expiresAtDate.toRelativeCalendar({ base: now, locale: $locale, unit: 'days' });
     } else if (expirationCountdown.hours && expirationCountdown.hours > 0) {
-      return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'hours' });
+      return expiresAtDate.toRelativeCalendar({ base: now, locale: $locale, unit: 'hours' });
     } else if (expirationCountdown.minutes && expirationCountdown.minutes > 0) {
-      return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'minutes' });
+      return expiresAtDate.toRelativeCalendar({ base: now, locale: $locale, unit: 'minutes' });
     } else if (expirationCountdown.seconds && expirationCountdown.seconds > 0) {
-      return expiresAtDate.toRelativeCalendar({ base: now, locale: 'en-US', unit: 'seconds' });
+      return expiresAtDate.toRelativeCalendar({ base: now, locale: $locale, unit: 'seconds' });
     }
   };
 
@@ -63,11 +63,11 @@
             <p class="font-bold text-red-600 dark:text-red-400">{$t('expired')}</p>
           {:else}
             <p>
-              Expires {getCountDownExpirationDate()}
+              {$t('expires_date', { values: { date: getCountDownExpirationDate() } })}
             </p>
           {/if}
         {:else}
-          <p>Expires ∞</p>
+          <p>{$t('expires_date', { values: { date: '∞' } })}</p>
         {/if}
       </div>
 
@@ -97,7 +97,7 @@
         <div
           class="flex w-[80px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          Upload
+          {$t('upload')}
         </div>
       {/if}
 
@@ -105,7 +105,7 @@
         <div
           class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          Download
+          {$t('download')}
         </div>
       {/if}
 
@@ -113,7 +113,7 @@
         <div
           class="flex w-[60px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          EXIF
+          {$t('exif').toUpperCase()}
         </div>
       {/if}
 
@@ -121,7 +121,7 @@
         <div
           class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          Password
+          {$t('password')}
         </div>
       {/if}
     </div>

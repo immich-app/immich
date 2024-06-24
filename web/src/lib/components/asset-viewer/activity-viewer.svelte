@@ -8,6 +8,7 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
     ReactionType,
+    Type,
     createActivity,
     deleteActivity,
     getActivities,
@@ -41,7 +42,7 @@
     const diff = dateTime.diffNow().shiftTo(...units);
     const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
 
-    const relativeFormatter = new Intl.RelativeTimeFormat('en', {
+    const relativeFormatter = new Intl.RelativeTimeFormat($locale, {
       numeric: 'auto',
     });
     return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
@@ -115,8 +116,13 @@
       } else {
         dispatch('deleteComment');
       }
+
+      const deleteMessages: Record<Type, string> = {
+        [Type.Comment]: $t('comment_deleted'),
+        [Type.Like]: $t('like_deleted'),
+      };
       notificationController.show({
-        message: `${reaction.type} deleted`,
+        message: deleteMessages[reaction.type],
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -216,7 +222,12 @@
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
-                  {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
+                  {$t('user_liked', {
+                    values: {
+                      user: reaction.user.name,
+                      type: assetType ? getAssetType(assetType).toLowerCase() : null,
+                    },
+                  })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a

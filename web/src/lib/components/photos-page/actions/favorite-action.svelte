@@ -44,13 +44,15 @@
       onFavorite(ids, isFavorite);
 
       notificationController.show({
-        message: isFavorite ? `Added ${ids.length} to favorites` : `Removed ${ids.length} from favorites`,
+        message: isFavorite
+          ? $t('added_to_favorites_count', { values: { count: ids.length } })
+          : $t('removed_from_favorites_count', { values: { count: ids.length } }),
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to ${isFavorite ? 'add to' : 'remove from'} favorites`);
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: isFavorite } }));
     } finally {
       loading = false;
     }

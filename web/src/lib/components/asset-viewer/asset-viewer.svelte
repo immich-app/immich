@@ -162,7 +162,7 @@
           reactions = [...reactions, isLiked];
         }
       } catch (error) {
-        handleError(error, "Can't change favorite for asset");
+        handleError(error, $t('errors.unable_to_change_favorite'));
       }
     }
   };
@@ -189,7 +189,7 @@
         const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = comments;
       } catch (error) {
-        handleError(error, "Can't get number of comments");
+        handleError(error, $t('errors.unable_to_get_comments_number'));
       }
     }
   };
@@ -395,10 +395,10 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+        message: asset.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
       });
     } catch (error) {
-      handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
     }
   };
 
@@ -429,7 +429,7 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Restored asset`,
+        message: $t('restored_asset'),
       });
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_assets'));
@@ -446,9 +446,9 @@
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      notificationController.show({ type: NotificationType.Info, message: getAssetJobMessage(name) });
+      notificationController.show({ type: NotificationType.Info, message: $getAssetJobMessage(name) });
     } catch (error) {
-      handleError(error, `Unable to submit job`);
+      handleError(error, $t('errors.unable_to_submit_job'));
     }
   };
 
@@ -528,7 +528,7 @@
         timeout: 1500,
       });
     } catch (error) {
-      handleError(error, 'Unable to update album cover');
+      handleError(error, $t('errors.unable_to_update_album_cover'));
     }
   };
 

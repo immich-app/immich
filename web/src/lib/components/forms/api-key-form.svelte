@@ -22,7 +22,7 @@
       dispatch('submit', apiKey);
     } else {
       notificationController.show({
-        message: "Your API Key name shouldn't be empty",
+        message: $t('api_key_empty'),
         type: NotificationType.Warning,
       });
     }

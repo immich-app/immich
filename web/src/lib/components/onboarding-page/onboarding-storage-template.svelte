@@ -61,7 +61,7 @@
               }}
             >
               <span class="flex place-content-center place-items-center gap-2">
-                Done
+                {$t('done')}
                 <Icon path={mdiCheck} size="18" />
               </span>
             </Button>

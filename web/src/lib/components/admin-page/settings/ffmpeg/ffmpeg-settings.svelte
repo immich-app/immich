@@ -160,7 +160,7 @@
             { value: '1080', text: '1080p' },
             { value: '720', text: '720p' },
             { value: '480', text: '480p' },
-            { value: 'original', text: 'original' },
+            { value: 'original', text: $t('original') },
           ]}
           name="resolution"
           isEdited={config.ffmpeg.targetResolution !== savedConfig.ffmpeg.targetResolution}
@@ -191,7 +191,7 @@
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
-            { value: TranscodePolicy.All, text: 'All videos' },
+            { value: TranscodePolicy.All, text: $t('all_videos') },
             {
               value: TranscodePolicy.Optimal,
               text: $t('admin.transcoding_optimal_description'),
@@ -233,7 +233,7 @@
             },
             {
               value: ToneMapping.Disabled,
-              text: 'Disabled',
+              text: $t('disabled'),
             },
           ]}
           isEdited={config.ffmpeg.tonemap !== savedConfig.ffmpeg.tonemap}
