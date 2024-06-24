@@ -205,7 +205,7 @@
     "slideshow_duration_description": "Broj sekundi za prikaz svake slike",
     "smart_search_job_description": "Pokrenite mašinsko učenje na datotekama da biste podržali pametnu pretragu",
     "storage_template_enable_description": "Omogući mehanizam za šablone za skladištenje",
-    "storage_template_hash_verification_enabled": "Heš verifikacija nije uspela",
+    "storage_template_hash_verification_enabled": "Heš verifikacija omogućena",
     "storage_template_hash_verification_enabled_description": "Omogućava heš verifikaciju, ne onemogućavajte ovo osim ako niste sigurni u posledice",
     "storage_template_migration": "Migracija šablona za skladištenje",
     "storage_template_migration_description": "Primenite trenutni <link>{template}</link> na prethodno otpremljene elemente",
@@ -360,7 +360,7 @@
   "change_location": "Promeni mesto",
   "change_name": "Promeni ime",
   "change_name_successfully": "Promeni ime uspešno",
-  "change_password": "Promeni šifru",
+  "change_password": "Promeni Lozinku",
   "change_your_password": "Promeni svoju šifru",
   "changed_visibility_successfully": "Vidljivost je uspešno promenjena",
   "check_all": "Štiklirati sve",
@@ -732,9 +732,9 @@
   "password_required": "Lozinka potrebna",
   "password_reset_success": "Resetovanje lozinke je uspešno",
   "past_durations": {
-    "days": "{days, plural, one {Prošli dan} few {Prošlih {days, number} dana} other {Prošlih {days, number} dana}}",
-    "hours": "{hours, plural, one {Prošli sat} few {Prošlih {hours, number} sata} other {Prošlih {hours, number} sati}}",
-    "years": "{years, plural, one {Prošle godine} few {Prošle {years, number} godine} other {Prošlih {years, number} godina}}"
+    "days": "{days, plural, one {Prošli dan} few {Prošlih # dana} other {Prošlih # dana}}",
+    "hours": "{hours, plural, one {Prošli sat} few {Prošla # sata} other {Prošlih # sati}}",
+    "years": "{years, plural, one {Prošle godine} few {Prošle # godine} other {Prošlih # godina}}"
   },
   "path": "Putanja",
   "pattern": "Šablon",
