@@ -1,23 +1,35 @@
 cli:
-- changed-files:
-  - any-glob-to-any-file: cli/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - cli/src/**
 
 documentation:
-- changed-files:
-  - any-glob-to-any-file: docs/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/blob/**
+          - docs/docs/**
+          - docs/src/**
+          - docs/static/**
 
 🖥️web:
-- changed-files:
-  - any-glob-to-any-file: web/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/src/**
+          - web/static/**
 
 📱mobile:
-- changed-files:
-  - any-glob-to-any-file: mobile/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - mobile/lib/**
+          - mobile/test/**
 
 🗄️server:
-- changed-files:
-  - any-glob-to-any-file: server/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - server/src/**
+          - server/test/**
 
 🧠machine-learning:
-- changed-files:
-  - any-glob-to-any-file: machine-learning/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - machine-learning/app/**
