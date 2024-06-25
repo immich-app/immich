@@ -5,15 +5,15 @@ RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci && \
-    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-    # they're marked as optional dependencies, so we need to copy them manually after pruning
-    rm -rf node_modules/@img/sharp-libvips* && \
-    rm -rf node_modules/@img/sharp-linuxmusl-x64
+  # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
+  # they're marked as optional dependencies, so we need to copy them manually after pruning
+  rm -rf node_modules/@img/sharp-libvips* && \
+  rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
-    IMMICH_ENV=development \
-    NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
+  IMMICH_ENV=development \
+  NVIDIA_DRIVER_CAPABILITIES=all \
+  NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -25,7 +25,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:iron-alpine3.18@sha256:53108f67824964a573ea435fed258f6cee4d88343e9859a99d356883e71b490c as web
+FROM node:20.13.1-alpine3.18
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -45,8 +45,8 @@ FROM ghcr.io/immich-app/base-server-prod:20240618@sha256:7b527902e75c47c23bc9822
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-    NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
+  NVIDIA_DRIVER_CAPABILITIES=all \
+  NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
