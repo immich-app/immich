@@ -37,10 +37,9 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { handlePromiseError, s } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -168,10 +167,10 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
       });
     } catch (error) {
-      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
     }
   };
 
@@ -189,7 +188,7 @@
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
-      handleError(error, "Can't change favorite for asset");
+      handleError(error, $t('errors.cant_change_asset_favorite'));
     }
   };
 
@@ -216,7 +215,7 @@
       const { comments } = await getActivityStatistics({ albumId: album.id });
       setNumberOfComments(comments);
     } catch (error) {
-      handleError(error, "Can't get number of comments");
+      handleError(error, $t('errors.cant_get_number_of_comments'));
     }
   };
 
@@ -283,7 +282,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${s(count)}`,
+        message: $t('assets_added_count', { values: { count: count } }),
       });
 
       await refreshAlbum();
@@ -291,7 +290,7 @@
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding assets to album');
+      handleError(error, $t('errors.error_adding_assets_to_album'));
     }
   };
 
@@ -317,7 +316,7 @@
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      handleError(error, $t('errors.error_adding_users_to_album'));
     }
   };
 
@@ -331,7 +330,7 @@
       await refreshAlbum();
       viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, $t('errors.unable_to_load_album'));
+      handleError(error, $t('errors.error_deleting_shared_user'));
     }
   };
 
@@ -342,7 +341,7 @@
   const handleRemoveAlbum = async () => {
     const isConfirmed = await dialogController.show({
       id: 'remove-album',
-      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+      prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
     });
 
     if (!isConfirmed) {
@@ -393,7 +392,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update album cover');
+      handleError(error, $t('errors.unable_to_update_album_cover'));
     }
   };
 
@@ -495,9 +494,9 @@
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
-                Add to album
+                {$t('add_to_album')}
               {:else}
-                {$timelineSelected.size.toLocaleString($locale)} selected
+                {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
           </svelte:fragment>
@@ -508,7 +507,7 @@
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
-              Select from computer
+              {$t('select_from_computer')}
             </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
               >{$t('done')}</Button

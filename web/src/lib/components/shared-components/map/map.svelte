@@ -187,7 +187,9 @@
             src={getAssetThumbnailUrl(feature.properties?.id)}
             class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
             alt={feature.properties?.city && feature.properties.country
-              ? `Map marker for images taken in ${feature.properties.city}, ${feature.properties.country}`
+              ? $t('map_marker_for_images', {
+                  values: { city: feature.properties.city, country: feature.properties.country },
+                })
               : $t('map_marker_with_image')}
           />
         {/if}

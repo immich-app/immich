@@ -65,7 +65,7 @@
           />
         {/if}
         <SettingSwitch
-          title="Comments & likes"
+          title={$t('comments_and_likes')}
           subtitle={$t('let_others_respond')}
           checked={album.isActivityEnabled}
           on:toggle={() => dispatch('toggleEnableActivity')}

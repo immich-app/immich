@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
@@ -7,7 +6,6 @@
   import { getShortDateRange } from '$lib/utils/date-time';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { s } from '$lib/utils';
   import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
@@ -66,8 +64,7 @@
     <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
       {#if showItemCount}
         <p>
-          {album.assetCount.toLocaleString($locale)}
-          item{s(album.assetCount)}
+          {$t('items_count', { values: { count: album.assetCount } })}
         </p>
       {/if}
 
@@ -79,7 +76,7 @@
         {#if $user.id === album.ownerId}
           <p>{$t('owned')}</p>
         {:else if album.owner}
-          <p>Shared by {album.owner.name}</p>
+          <p>{$t('shared_by_user', { values: { user: album.owner.name } })}</p>
         {:else}
           <p>{$t('shared')}</p>
         {/if}

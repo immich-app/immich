@@ -34,7 +34,7 @@ describe('NotificationCard component', () => {
       },
     });
 
-    expect(sut.getByTestId('title')).toHaveTextContent('Info');
+    expect(sut.getByTestId('title')).toHaveTextContent('info');
     expect(sut.getByTestId('message')).toHaveTextContent('Notification message');
   });
 });

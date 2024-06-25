@@ -42,8 +42,8 @@
 
     notificationController.show({
       message: $featureFlags.trash
-        ? $t('assets_moved_to_trash', { values: { count: trashedCount } })
-        : $t('permanently_deleted_assets', { values: { count: trashedCount } }),
+        ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
+        : $t('permanently_deleted_assets_count', { values: { count: trashedCount } }),
       type: NotificationType.Info,
     });
   };

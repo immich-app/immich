@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { getKey, s } from '$lib/utils';
+  import { getKey } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDeleteOutline } from '@mdi/js';
@@ -16,9 +16,9 @@
   const handleRemove = async () => {
     const isConfirmed = await dialogController.show({
       id: 'remove-from-shared-link',
-      title: 'Remove assets?',
-      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from this shared link?`,
-      confirmText: 'Remove',
+      title: $t('remove_assets_title'),
+      prompt: $t('remove_assets_shared_link_confirmation', { values: { count: getAssets().size } }),
+      confirmText: $t('remove'),
     });
 
     if (!isConfirmed) {
@@ -46,12 +46,12 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Removed ${count} assets`,
+        message: $t('assets_removed_count', { values: { count: count } }),
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, 'Unable to remove assets from shared link');
+      handleError(error, $t('errors.unable_to_remove_assets_from_shared_link'));
     }
   };
 </script>

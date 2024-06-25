@@ -24,9 +24,9 @@
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
-    { title: $t('editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
-    { title: $t('viewer'), value: AlbumUserRole.Viewer, icon: mdiEye },
-    { title: $t('remove'), value: 'none' },
+    { title: $t('role_editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
+    { title: $t('role_viewer'), value: AlbumUserRole.Viewer, icon: mdiEye },
+    { title: $t('remove_user'), value: 'none' },
   ];
 
   const dispatch = createEventDispatcher<{
@@ -110,7 +110,7 @@
 
   {#if users.length + Object.keys(selectedUsers).length === 0}
     <p class="p-5 text-sm">
-      Looks like you have shared this album with all users or you don't have any user to share with.
+      {$t('album_share_no_users')}
     </p>
   {/if}
 

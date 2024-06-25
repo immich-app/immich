@@ -42,7 +42,7 @@
 
     <div class="mt-8 flex w-full gap-4">
       {#if isDuplicate}
-        <p class="text-red-500 text-sm">{$t('admin.import_path_already_exists')}</p>
+        <p class="text-red-500 text-sm">{$t('errors.import_path_already_exists')}</p>
       {/if}
     </div>
   </form>

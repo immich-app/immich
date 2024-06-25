@@ -12,6 +12,7 @@
   import { fade } from 'svelte/transition';
   import type { SettingsEventType } from '../admin-settings';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -52,15 +53,16 @@
       <div class="flex flex-col gap-4">
         <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
         <p>
-          To re-enable, use a
-          <a
-            href="https://immich.app/docs/administration/server-commands"
-            rel="noreferrer"
-            target="_blank"
-            class="underline"
-          >
-            Server Command</a
-          >.
+          <FormatMessage key="admin.authentication_settings_reenable" let:message>
+            <a
+              href="https://immich.app/docs/administration/server-commands"
+              rel="noreferrer"
+              target="_blank"
+              class="underline"
+            >
+              {message}
+            </a>
+          </FormatMessage>
         </p>
       </div>
     </svelte:fragment>
@@ -78,12 +80,16 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
-              For more details about this feature, refer to the <a
-                href="https://immich.app/docs/administration/oauth"
-                class="underline"
-                target="_blank"
-                rel="noreferrer">docs</a
-              >.
+              <FormatMessage key="admin.oauth_settings_more_details" let:message>
+                <a
+                  href="https://immich.app/docs/administration/oauth"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {message}
+                </a>
+              </FormatMessage>
             </p>
 
             <SettingSwitch

@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import {
+  AlbumFilter,
   AlbumGroupBy,
   AlbumSortBy,
   SortOrder,
@@ -10,6 +11,7 @@ import {
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
+import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 /**
@@ -27,7 +29,8 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
     });
     return newAlbum;
   } catch (error) {
-    handleError(error, 'Failed to create album');
+    const $t = get(t);
+    handleError(error, $t('errors.failed_to_create_album'));
   }
 };
 
@@ -45,7 +48,6 @@ export const createAlbumAndRedirect = async (name?: string, assetIds?: string[])
  */
 export interface AlbumSortOptionMetadata {
   id: AlbumSortBy;
-  text: string;
   defaultOrder: SortOrder;
   columnStyle: string;
 }
@@ -53,37 +55,31 @@ export interface AlbumSortOptionMetadata {
 export const sortOptionsMetadata: AlbumSortOptionMetadata[] = [
   {
     id: AlbumSortBy.Title,
-    text: 'Title',
     defaultOrder: SortOrder.Asc,
     columnStyle: 'text-left w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
   },
   {
     id: AlbumSortBy.ItemCount,
-    text: 'Number of items',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center w-4/12 m:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.DateModified,
-    text: 'Date modified',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.DateCreated,
-    text: 'Date created',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.MostRecentPhoto,
-    text: 'Most recent photo',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.OldestPhoto,
-    text: 'Oldest photo',
     defaultOrder: SortOrder.Desc,
     columnStyle: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
   },
@@ -93,6 +89,12 @@ export const findSortOptionMetadata = (sortBy: string) => {
   // Default is sort by most recent photo
   const defaultSortOption = sortOptionsMetadata[4];
   return sortOptionsMetadata.find(({ id }) => sortBy === id) ?? defaultSortOption;
+};
+
+export const findFilterOption = (filter: string) => {
+  // Default is All filter
+  const defaultFilterOption = AlbumFilter.All;
+  return Object.values(AlbumFilter).find((key) => filter === AlbumFilter[key]) ?? defaultFilterOption;
 };
 
 /**
@@ -108,7 +110,6 @@ export interface AlbumGroup {
 
 export interface AlbumGroupOptionMetadata {
   id: AlbumGroupBy;
-  text: string;
   defaultOrder: SortOrder;
   isDisabled: () => boolean;
 }
@@ -116,13 +117,11 @@ export interface AlbumGroupOptionMetadata {
 export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
   {
     id: AlbumGroupBy.None,
-    text: 'No grouping',
     defaultOrder: SortOrder.Asc,
     isDisabled: () => false,
   },
   {
     id: AlbumGroupBy.Year,
-    text: 'Group by year',
     defaultOrder: SortOrder.Desc,
     isDisabled() {
       const disabledWithSortOptions: string[] = [AlbumSortBy.DateCreated, AlbumSortBy.DateModified];
@@ -131,7 +130,6 @@ export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
   },
   {
     id: AlbumGroupBy.Owner,
-    text: 'Group by owner',
     defaultOrder: SortOrder.Asc,
     isDisabled: () => false,
   },

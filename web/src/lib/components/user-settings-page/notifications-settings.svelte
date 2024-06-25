@@ -32,9 +32,9 @@
       $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
       $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
 
-      notificationController.show({ message: 'Saved settings', type: NotificationType.Info });
+      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to update settings');
+      handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
 </script>

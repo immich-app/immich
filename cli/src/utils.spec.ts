@@ -1,4 +1,5 @@
 import mockfs from 'mock-fs';
+import { readFileSync } from 'node:fs';
 import { CrawlOptions, crawl } from 'src/utils';
 
 interface Test {
@@ -8,6 +9,10 @@ interface Test {
 }
 
 const cwd = process.cwd();
+
+const readContent = (path: string) => {
+  return readFileSync(path).toString();
+};
 
 const extensions = [
   '.jpg',
@@ -256,7 +261,8 @@ const tests: Test[] = [
   {
     test: 'should support ignoring absolute paths',
     options: {
-      pathsToCrawl: ['/'],
+      // Currently, fast-glob has some caveat when dealing with `/`.
+      pathsToCrawl: ['/*s'],
       recursive: true,
       exclusionPattern: '/images/**',
     },
@@ -276,14 +282,16 @@ describe('crawl', () => {
   describe('crawl', () => {
     for (const { test, options, files } of tests) {
       it(test, async () => {
-        mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, ''])));
+        // The file contents is the same as the path.
+        mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, file])));
 
         const actual = await crawl({ ...options, extensions });
         const expected = Object.entries(files)
           .filter((entry) => entry[1])
           .map(([file]) => file);
 
-        expect(actual.sort()).toEqual(expected.sort());
+        // Compare file's content instead of path since a file can be represent in multiple ways.
+        expect(actual.map((path) => readContent(path)).sort()).toEqual(expected.sort());
       });
     }
   });

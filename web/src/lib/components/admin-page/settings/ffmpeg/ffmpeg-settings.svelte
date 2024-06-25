@@ -23,6 +23,7 @@
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -38,17 +39,21 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          To learn more about the terminology used here, refer to FFmpeg documentation for
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
-            >H.264 codec</a
-          >,
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer"
-            >{$t('admin.transcoding_hevc_codec')}</a
-          >
-          and
-          <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer"
-            >VP9 codec</a
-          >.
+          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
+            {#if tag === 'h264-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'hevc-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'vp9-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {/if}
+          </FormatMessage>
         </p>
 
         <SettingInputField
@@ -155,7 +160,7 @@
             { value: '1080', text: '1080p' },
             { value: '720', text: '720p' },
             { value: '480', text: '480p' },
-            { value: 'original', text: 'original' },
+            { value: 'original', text: $t('original') },
           ]}
           name="resolution"
           isEdited={config.ffmpeg.targetResolution !== savedConfig.ffmpeg.targetResolution}
@@ -186,7 +191,7 @@
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
-            { value: TranscodePolicy.All, text: 'All videos' },
+            { value: TranscodePolicy.All, text: $t('all_videos') },
             {
               value: TranscodePolicy.Optimal,
               text: $t('admin.transcoding_optimal_description'),
@@ -228,7 +233,7 @@
             },
             {
               value: ToneMapping.Disabled,
-              text: 'Disabled',
+              text: $t('disabled'),
             },
           ]}
           isEdited={config.ffmpeg.tonemap !== savedConfig.ffmpeg.tonemap}

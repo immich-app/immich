@@ -13,6 +13,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -70,8 +71,9 @@
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
             <p slot="desc" class="immich-form-label pb-2 text-sm">
-              The name of a CLIP model listed <a href="https://huggingface.co/immich-app"><u>here</u></a>. Note that you
-              must re-run the 'Smart Search' job for all images upon changing a model.
+              <FormatMessage key="admin.machine_learning_clip_model_description" let:message>
+                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+              </FormatMessage>
             </p>
           </SettingInputField>
         </div>

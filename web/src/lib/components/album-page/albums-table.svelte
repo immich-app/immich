@@ -13,6 +13,7 @@
     sortOptionsMetadata,
     type AlbumGroup,
   } from '$lib/utils/album-utils';
+  import { t } from 'svelte-i18n';
 
   export let groupedAlbums: AlbumGroup[];
   export let albumGroupOption: string = AlbumGroupBy.None;
@@ -58,8 +59,7 @@
               />
               <span class="font-bold text-2xl">{albumGroup.name}</span>
               <span class="ml-1.5">
-                ({albumGroup.albums.length}
-                {albumGroup.albums.length > 1 ? 'albums' : 'album'})
+                ({$t('albums_count', { values: { count: albumGroup.albums.length } })})
               </span>
             </td>
           </tr>

@@ -16,9 +16,9 @@
 <OnboardingCard>
   <ImmichLogo noText width="75" />
   <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
-    Welcome, {$user.name}
+    {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
-  <p class="text-3xl pb-6 font-light">Let's get your instance set up with some common settings.</p>
+  <p class="text-3xl pb-6 font-light">{$t('onboarding_welcome_description')}</p>
 
   <div class="w-full flex place-content-end">
     <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>

@@ -11,6 +11,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -99,12 +100,11 @@
           >
             <svelte:fragment slot="desc">
               <p class="text-sm dark:text-immich-dark-fg">
-                Set the scanning interval using the cron format. For more information please refer to e.g. <a
-                  href="https://crontab.guru"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer">{$t('admin.crontab_guru')}</a
-                >
+                <FormatMessage key="admin.library_cron_expression_description" let:message>
+                  <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
+                    {message}
+                  </a>
+                </FormatMessage>
               </p>
             </svelte:fragment>
           </SettingInputField>

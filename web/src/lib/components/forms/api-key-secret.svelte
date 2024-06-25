@@ -17,7 +17,7 @@
 <FullScreenModal title={$t('api_key')} icon={mdiKeyVariant} onClose={() => handleDone()}>
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <p class="text-sm dark:text-immich-dark-fg">
-      This value will only be shown once. Please be sure to copy it before closing the window.
+      {$t('api_key_description')}
     </p>
   </div>
 

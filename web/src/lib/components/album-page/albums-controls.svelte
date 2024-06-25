@@ -4,6 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     AlbumFilter,
+    AlbumSortBy,
     AlbumGroupBy,
     AlbumViewMode,
     albumViewSettings,
@@ -25,6 +26,7 @@
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
     findGroupOptionMetadata,
+    findFilterOption,
     findSortOptionMetadata,
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
@@ -41,6 +43,11 @@
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
+  };
+
+  const handleChangeAlbumFilter = (filter: string, defaultFilter: AlbumFilter) => {
+    $albumViewSettings.filter =
+      Object.keys(albumFilterNames).find((key) => albumFilterNames[key as AlbumFilter] === filter) ?? defaultFilter;
   };
 
   const handleChangeGroupBy = ({ id, defaultOrder }: AlbumGroupOptionMetadata) => {
@@ -69,14 +76,16 @@
   let selectedGroupOption: AlbumGroupOptionMetadata;
   let groupIcon: string;
 
+  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
+
+  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
+
   $: {
     selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
     if (selectedGroupOption.isDisabled()) {
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   }
-
-  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
   $: {
     if (selectedGroupOption.id === AlbumGroupBy.None) {
@@ -88,14 +97,41 @@
   }
 
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
+
+  $: albumFilterNames = ((): Record<AlbumFilter, string> => {
+    return {
+      [AlbumFilter.All]: $t('all'),
+      [AlbumFilter.Owned]: $t('owned'),
+      [AlbumFilter.Shared]: $t('shared'),
+    };
+  })();
+
+  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
+    return {
+      [AlbumSortBy.Title]: $t('sort_title'),
+      [AlbumSortBy.ItemCount]: $t('sort_items'),
+      [AlbumSortBy.DateModified]: $t('sort_modified'),
+      [AlbumSortBy.DateCreated]: $t('sort_created'),
+      [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+      [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+    };
+  })();
+
+  $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
+    return {
+      [AlbumGroupBy.None]: $t('group_no'),
+      [AlbumGroupBy.Owner]: $t('group_owner'),
+      [AlbumGroupBy.Year]: $t('group_year'),
+    };
+  })();
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
 <div class="hidden xl:block h-10">
   <GroupTab
-    filters={Object.keys(AlbumFilter)}
-    selected={$albumViewSettings.filter}
-    onSelect={(selected) => ($albumViewSettings.filter = selected)}
+    filters={Object.values(albumFilterNames)}
+    selected={selectedFilterOption}
+    onSelect={(selected) => handleChangeAlbumFilter(selected, AlbumFilter.All)}
   />
 </div>
 
@@ -118,8 +154,8 @@
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
   on:select={({ detail }) => handleChangeSortBy(detail)}
-  render={({ text }) => ({
-    title: text,
+  render={({ id }) => ({
+    title: albumSortByNames[id],
     icon: sortIcon,
   })}
 />
@@ -130,8 +166,8 @@
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
   on:select={({ detail }) => handleChangeGroupBy(detail)}
-  render={({ text, isDisabled }) => ({
-    title: text,
+  render={({ id, isDisabled }) => ({
+    title: albumGroupByNames[id],
     icon: groupIcon,
     disabled: isDisabled(),
   })}

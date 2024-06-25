@@ -27,7 +27,7 @@ class CuratedPeopleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: imageSize + 30,
+      height: imageSize + 50,
       child: ListView.separated(
         padding: padding,
         scrollDirection: Axis.horizontal,
@@ -56,7 +56,10 @@ class CuratedPeopleRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildPersonLabel(context, person, index),
+              SizedBox(
+                width: imageSize,
+                child: _buildPersonLabel(context, person, index),
+              ),
             ],
           );
         },
@@ -78,6 +81,9 @@ class CuratedPeopleRow extends StatelessWidget {
           style: context.textTheme.labelLarge?.copyWith(
             color: context.primaryColor,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ).tr(),
       );
     }
@@ -86,6 +92,7 @@ class CuratedPeopleRow extends StatelessWidget {
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
       style: context.textTheme.labelLarge,
+      maxLines: 2,
     );
   }
 }
