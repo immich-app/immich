@@ -7,12 +7,14 @@
   "add_to_album_bottom_sheet_added": "添加到 {album}",
   "add_to_album_bottom_sheet_already_exists": "已在 {album} 中",
   "advanced_settings_log_level_title": "日志等级：{}",
-  "advanced_settings_prefer_remote_subtitle": "在某些设备上，从本地的项目加载缩略图的速度非常慢。\n启用此选项以加载远程项目。",
+  "advanced_settings_prefer_remote_subtitle": "在某些设备上，从本地加载缩略图的速度非常慢。\n启用此选项以加载远程缩略图。",
   "advanced_settings_prefer_remote_title": "优先远程项目",
   "advanced_settings_self_signed_ssl_subtitle": "跳过服务器终结点的 SSL 证书验证（该选项适用于使用自签名证书的服务器）。",
   "advanced_settings_self_signed_ssl_title": "允许自签名 SSL 证书",
   "advanced_settings_tile_subtitle": "高级用户设置",
   "advanced_settings_tile_title": "高级",
+  "headers_settings_tile_title": "自定义请求头",
+  "headers_settings_tile_subtitle": "定义此应用随每个网络请求应发送的额外请求头",
   "advanced_settings_troubleshooting_subtitle": "启用用于故障排除的额外功能",
   "advanced_settings_troubleshooting_title": "故障排除",
   "album_info_card_backup_album_excluded": "已排除",
@@ -522,5 +524,10 @@
   "version_announcement_overlay_title": "服务端有新版本啦 \uD83C\uDF89",
   "viewer_remove_from_stack": "从堆叠中移除",
   "viewer_stack_use_as_main_asset": "作为主项目使用",
-  "viewer_unstack": "取消堆叠"
+  "viewer_unstack": "取消堆叠",
+  "header_settings_header_name_input": "请求头名",
+  "header_settings_header_value_input": "请求头值",
+  "header_settings_page_title": "自定义请求头",
+  "header_settings_add_header_tip": "添加请求头",
+  "header_settings_field_validator_msg": "值不能为空"
 }

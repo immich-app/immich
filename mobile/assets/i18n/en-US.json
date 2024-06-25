@@ -15,9 +15,10 @@
   "advanced_settings_tile_title": "Advanced",
   "headers_settings_tile_title": "Custom proxy headers",
   "headers_settings_tile_subtitle": "Define proxy headers the app should send with each network request",
-
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_proxy_headers_title": "Proxy Headers",
+  "advanced_settings_proxy_headers_subtitle": "Define proxy headers Immich should send with each network request",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
   "album_thumbnail_card_item": "1 item",
@@ -528,5 +529,7 @@
   "viewer_unstack": "Un-Stack",
   "header_settings_header_name_input": "Header name",
   "header_settings_header_value_input": "Header value",
-  "header_settings_page_title": "Proxy Headers"
+  "header_settings_page_title": "Proxy Headers",
+  "header_settings_add_header_tip": "Add Header",
+  "header_settings_field_validator_msg": "Value cannot be empty"
 }
