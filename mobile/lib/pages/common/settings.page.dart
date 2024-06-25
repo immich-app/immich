@@ -7,7 +7,6 @@ import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
-import 'package:immich_mobile/widgets/settings/headers.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
@@ -23,8 +22,7 @@ enum SettingSection {
   backup('backup_controller_page_backup', Icons.cloud_upload_outlined),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined),
   viewer('asset_viewer_settings_title', Icons.image_outlined),
-  advanced('advanced_settings_tile_title', Icons.build_outlined),
-  headers('headers_settings_tile_title', Icons.build_outlined);
+  advanced('advanced_settings_tile_title', Icons.build_outlined);
 
   final String title;
   final IconData icon;
@@ -37,7 +35,6 @@ enum SettingSection {
         SettingSection.timeline => const AssetListSettings(),
         SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
-        SettingSection.headers => HeaderSettings(),
       };
 
   const SettingSection(this.title, this.icon);
