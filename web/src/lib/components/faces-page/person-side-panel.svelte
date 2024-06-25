@@ -234,7 +234,7 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id].id)}
+                    url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
                     title={getPersonNameWithHiddenValue(
                       selectedPersonToReassign[face.id].name,
@@ -248,7 +248,7 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={getPeopleThumbnailUrl(face.person.id)}
+                    url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
                     title={getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
                     widthStyle={thumbnailWidth}

@@ -38,7 +38,7 @@
         <ImageThumbnail
           circle
           shadow
-          url={getPeopleThumbnailUrl(personMerge1.id)}
+          url={getPeopleThumbnailUrl(personMerge1)}
           altText={personMerge1.name}
           widthStyle="100%"
         />
@@ -65,7 +65,7 @@
           border={potentialMergePeople.length > 0}
           circle
           shadow
-          url={getPeopleThumbnailUrl(personMerge2.id)}
+          url={getPeopleThumbnailUrl(personMerge2)}
           altText={personMerge2.name}
           widthStyle="100%"
         />
@@ -84,7 +84,7 @@
                     border={true}
                     circle
                     shadow
-                    url={getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person)}
                     altText={person.name}
                     widthStyle="100%"
                     on:click={() => changePersonToMerge(person)}

@@ -65,7 +65,6 @@
   let countVisiblePeople: number;
   let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
-  let now: number;
 
   for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
@@ -86,8 +85,6 @@
       searchName = getSearchedPeople;
       await handleSearchPeople(true, searchName);
     }
-
-    now = Date.now();
   });
 
   const handleSearch = async () => {
@@ -432,7 +429,6 @@
       {#each showPeople as person, index (person.id)}
         <PeopleCard
           {person}
-          {now}
           preload={index < 20}
           on:change-name={() => handleChangeName(person)}
           on:set-birth-date={() => handleSetBirthDate(person)}
@@ -512,7 +508,7 @@
             preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
-            url={getPeopleThumbnailUrl(person.id)}
+            url={getPeopleThumbnailUrl(person)}
             altText={person.name}
             widthStyle="100%"
             bind:eyeColor={eyeColorMap[person.id]}

@@ -108,7 +108,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={getPeopleThumbnailUrl(person.id)}
+                  url={getPeopleThumbnailUrl(person)}
                   altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                   title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                   widthStyle="90px"

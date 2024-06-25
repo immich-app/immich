@@ -36,7 +36,7 @@
     class:dark:border-immich-dark-primary={border}
     class:border-immich-primary={border}
   >
-    <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person.id)} altText={person.name} widthStyle="100%" shadow />
+    <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" shadow />
   </div>
 
   <div
