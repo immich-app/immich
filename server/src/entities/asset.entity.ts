@@ -84,13 +84,13 @@ export class AssetEntity {
   encodedVideoPath!: string | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: string;
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
-  deletedAt!: Date | null;
+  deletedAt!: string | null;
 
   @Index('idx_asset_file_created_at')
   @Column({ type: 'timestamptz' })

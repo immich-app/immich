@@ -179,7 +179,7 @@ export class UserService {
       return false;
     }
 
-    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
+    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromISO(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

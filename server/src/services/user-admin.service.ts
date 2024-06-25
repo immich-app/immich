@@ -85,7 +85,7 @@ export class UserAdminService {
       dto.storageLabel = null;
     }
 
-    const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
+    const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date().toISOString() });
 
     return mapUserAdmin(updatedUser);
   }
@@ -100,7 +100,7 @@ export class UserAdminService {
     await this.albumRepository.softDeleteAll(id);
 
     const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
-    const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
+    const user = await this.userRepository.update(id, { status, deletedAt: new Date().toISOString() });
 
     if (force) {
       await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });

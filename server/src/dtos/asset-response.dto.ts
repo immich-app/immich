@@ -39,7 +39,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   originalFileName!: string;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
-  updatedAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;

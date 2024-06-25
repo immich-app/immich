@@ -55,9 +55,12 @@ export class MemoryCreateDto extends MemoryBaseDto {
 
 export class MemoryResponseDto {
   id!: string;
-  createdAt!: Date;
-  updatedAt!: Date;
-  deletedAt?: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  deletedAt?: string;
   memoryAt!: Date;
   seenAt?: Date;
   ownerId!: string;

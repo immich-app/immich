@@ -191,7 +191,7 @@ export class AssetService {
       // All the unique parent's -> parent is set to null
       await this.assetRepository.updateAll(
         assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!),
-        { updatedAt: new Date() },
+        { updatedAt: new Date().toISOString() },
       );
     } else if (options.stackParentId) {
       //Creating new stack if parent doesn't have one already. If it does, then we add to the existing stack
@@ -225,7 +225,7 @@ export class AssetService {
 
       // Merge stacks
       options.stackParentId = undefined;
-      (options as Partial<AssetEntity>).updatedAt = new Date();
+      (options as Partial<AssetEntity>).updatedAt = new Date().toISOString();
     }
 
     for (const id of ids) {
@@ -372,7 +372,9 @@ export class AssetService {
       newParentId,
       oldParentId,
     ]);
-    await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], { updatedAt: new Date() });
+    await this.assetRepository.updateAll([oldParentId, newParentId, ...childIds], {
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {

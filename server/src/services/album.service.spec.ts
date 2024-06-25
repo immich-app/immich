@@ -569,7 +569,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
@@ -595,7 +595,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
         albumThumbnailAssetId: 'asset-id',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalled();
@@ -617,7 +617,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
@@ -658,7 +658,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
@@ -681,7 +681,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
         albumThumbnailAssetId: 'asset-1',
       });
       expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
@@ -746,7 +746,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
+      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(String) });
       expect(albumMock.removeAssetIds).toHaveBeenCalledWith('album-123', ['asset-id']);
     });
 
@@ -790,7 +790,7 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-123',
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
       expect(albumMock.updateThumbnails).toHaveBeenCalled();
     });

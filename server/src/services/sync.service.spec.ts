@@ -14,7 +14,7 @@ import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock'
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { Mocked } from 'vitest';
 
-const untilDate = new Date(2024);
+const untilDate = new Date(2024).toISOString();
 const mapAssetOpts = { auth: authStub.user1, stripMetadata: false, withStack: true };
 
 describe(SyncService.name, () => {
@@ -55,7 +55,7 @@ describe(SyncService.name, () => {
     it('should return a response requiring a full sync when partners are out of sync', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1]);
       await expect(
-        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date().toISOString(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
       expect(assetMock.getChangedDeltaSync).toHaveBeenCalledTimes(0);
       expect(auditMock.getAfter).toHaveBeenCalledTimes(0);
@@ -64,7 +64,10 @@ describe(SyncService.name, () => {
     it('should return a response requiring a full sync when last sync was too long ago', async () => {
       partnerMock.getAll.mockResolvedValue([]);
       await expect(
-        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(2000), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, {
+          updatedAfter: new Date(2000).toISOString(),
+          userIds: [authStub.user1.user.id],
+        }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
       expect(assetMock.getChangedDeltaSync).toHaveBeenCalledTimes(0);
       expect(auditMock.getAfter).toHaveBeenCalledTimes(0);

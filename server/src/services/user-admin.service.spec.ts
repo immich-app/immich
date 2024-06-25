@@ -97,7 +97,7 @@ describe(UserAdminService.name, () => {
       await sut.update(authStub.admin, userStub.user1.id, { storageLabel: '' });
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         storageLabel: null,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
     });
 
@@ -157,7 +157,7 @@ describe(UserAdminService.name, () => {
       await expect(sut.delete(authStub.admin, userStub.user1.id, {})).resolves.toEqual(mapUserAdmin(userStub.user1));
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         status: UserStatus.DELETED,
-        deletedAt: expect.any(Date),
+        deletedAt: expect.any(String),
       });
     });
 
@@ -171,7 +171,7 @@ describe(UserAdminService.name, () => {
 
       expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, {
         status: UserStatus.REMOVING,
-        deletedAt: expect.any(Date),
+        deletedAt: expect.any(String),
       });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.USER_DELETION,

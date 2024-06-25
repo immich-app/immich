@@ -10,7 +10,7 @@ import { In, LessThan, MoreThan, Repository } from 'typeorm';
 export class AuditRepository implements IAuditRepository {
   constructor(@InjectRepository(AuditEntity) private repository: Repository<AuditEntity>) {}
 
-  async getAfter(since: Date, options: AuditSearch): Promise<string[]> {
+  async getAfter(since: string, options: AuditSearch): Promise<string[]> {
     const records = await this.repository
       .createQueryBuilder('audit')
       .where({
@@ -28,6 +28,6 @@ export class AuditRepository implements IAuditRepository {
   }
 
   async removeBefore(before: Date): Promise<void> {
-    await this.repository.delete({ createdAt: LessThan(before) });
+    await this.repository.delete({ createdAt: LessThan(before.toISOString()) });
   }
 }

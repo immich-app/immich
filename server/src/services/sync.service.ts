@@ -42,7 +42,7 @@ export class SyncService {
 
   async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
     // app has not synced in the last 100 days
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
+    const duration = DateTime.now().diff(DateTime.fromISO(dto.updatedAfter));
     if (duration > AUDIT_LOG_MAX_DURATION) {
       return FULL_SYNC;
     }

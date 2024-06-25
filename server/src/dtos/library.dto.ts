@@ -105,8 +105,10 @@ export class LibraryResponseDto {
 
   exclusionPatterns!: string[];
 
-  createdAt!: Date;
-  updatedAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
   refreshedAt!: Date | null;
 }
 

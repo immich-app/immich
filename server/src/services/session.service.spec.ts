@@ -38,8 +38,8 @@ describe('SessionService', () => {
     it('should delete sessions', async () => {
       sessionMock.search.mockResolvedValue([
         {
-          createdAt: new Date('1970-01-01T00:00:00.00Z'),
-          updatedAt: new Date('1970-01-02T00:00:00.00Z'),
+          createdAt: new Date('1970-01-01T00:00:00.00Z').toISOString(),
+          updatedAt: new Date('1970-01-02T00:00:00.00Z').toISOString(),
           deviceOS: '',
           deviceType: '',
           id: '123',

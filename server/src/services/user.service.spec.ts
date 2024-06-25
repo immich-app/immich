@@ -24,7 +24,7 @@ import { Mocked } from 'vitest';
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
   deletedAt.setDate(deletedAt.getDate() - daysAgo);
-  return deletedAt;
+  return deletedAt.toISOString();
 };
 
 describe(UserService.name, () => {

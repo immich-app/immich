@@ -3,13 +3,13 @@ import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { EntityType } from 'src/entities/audit.entity';
 import { AssetPathType, PathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateUUID } from 'src/validation';
 
 const PathEnum = Object.values({ ...AssetPathType, ...PersonPathType, ...UserPathType });
 
 export class AuditDeletesDto {
-  @ValidateDate()
-  after!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  after!: string;
 
   @ApiProperty({ enum: EntityType, enumName: 'EntityType' })
   @IsEnum(EntityType)

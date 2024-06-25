@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsPositive } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { ValidateDate, ValidateUUID } from 'src/validation';
+import { ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
   lastId?: string;
 
-  @ValidateDate()
-  updatedUntil!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedUntil!: string;
 
   @IsInt()
   @IsPositive()
@@ -20,8 +20,8 @@ export class AssetFullSyncDto {
 }
 
 export class AssetDeltaSyncDto {
-  @ValidateDate()
-  updatedAfter!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAfter!: string;
 
   @ValidateUUID({ each: true })
   userIds!: string[];
