@@ -15,7 +15,6 @@ import { Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
-import os from 'node:os';
 import path, { basename } from 'node:path';
 import { BaseOptions, authenticate, crawl, sha1 } from 'src/utils';
 
@@ -25,7 +24,7 @@ const s = (count: number) => (count === 1 ? '' : 's');
 type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
 type Asset = { id: string; filepath: string };
 
-interface UploadOptionsDto {
+export interface UploadOptionsDto {
   recursive?: boolean;
   ignore?: string;
   dryRun?: boolean;
@@ -346,7 +345,9 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   }
 };
 
-const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
-  const folderName = os.platform() === 'win32' ? filepath.split('\\').at(-2) : filepath.split('/').at(-2);
-  return options.albumName ?? folderName;
+// `filepath` valid format:
+// - Windows: `D:\\test\\Filename.txt` or `D:/test/Filename.txt`
+// - Unix: `/test/Filename.txt`
+export const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
+  return options.albumName ?? path.basename(path.dirname(filepath));
 };
