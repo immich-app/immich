@@ -1,5 +1,6 @@
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
-import { locales } from '$lib/constants';
+import { defaultLang, langs, locales } from '$lib/constants';
+import { lang } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -20,7 +21,7 @@ import {
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { sortBy } from 'lodash-es';
-import { t } from 'svelte-i18n';
+import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -30,6 +31,15 @@ interface DownloadRequestOptions<T = unknown> {
   signal?: AbortSignal;
   onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
+
+export const initApp = async () => {
+  const preferenceLang = get(lang);
+  for (const { code, loader } of langs) {
+    register(code, loader);
+  }
+
+  await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
+};
 
 interface UploadRequestOptions {
   url: string;
