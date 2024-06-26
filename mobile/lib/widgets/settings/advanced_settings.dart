@@ -2,8 +2,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/settings/headers.dart';
+import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
@@ -64,33 +63,9 @@ class AdvancedSettings extends HookConsumerWidget {
         subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
         onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
       ),
-      ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        dense: true,
-        title: Text(
-          "Proxy Headers",
-          style: context.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: const Text(
-          "Define proxy headers Immich should send with each network request",
-        ).tr(),
-        onTap: () => openProxyHeaders(context),
-      )
+      const CustomeProxyHeaderSettings(),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
-  }
-
-  openProxyHeaders(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Dialog.fullscreen(
-          child: HeaderSettings(),
-        );
-      },
-    );
   }
 }

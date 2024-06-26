@@ -1,11 +1,10 @@
 import 'dart:convert';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/entities/store.entity.dart' as storeKeys;
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SettingsHeader {
@@ -13,8 +12,9 @@ class SettingsHeader {
   String value = "";
 }
 
-class HeaderSettings extends HookConsumerWidget {
-  const HeaderSettings({super.key});
+@RoutePage()
+class HeaderSettingsPage extends HookConsumerWidget {
+  const HeaderSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,7 +64,7 @@ class HeaderSettings extends HookConsumerWidget {
           preferredSize: Size.fromHeight(1),
           child: Divider(height: 1),
         ),
-        title: const Text('Proxy Headers').tr(),
+        title: const Text('header_settings_page_title').tr(),
         actions: [
           IconButton(
             onPressed: () {
@@ -126,8 +126,6 @@ class HeaderKeyValueSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const buttonRadius = 25.0;
-
     return Column(
       children: [
         Padding(
@@ -138,9 +136,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
                 child: TextFormField(
                   controller: keyController,
                   decoration: InputDecoration(
-                    labelText: 'Header Name'.tr(),
+                    labelText: 'header_settings_header_name_input'.tr(),
                     border: const OutlineInputBorder(),
-                    hintText: 'Value of the header name'.tr(),
                   ),
                   autocorrect: false,
                   onChanged: (v) {
@@ -156,7 +153,7 @@ class HeaderKeyValueSettings extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  color: Colors.red,
+                  color: Colors.red[400],
                   onPressed: onRemove,
                   icon: const Icon(Icons.delete_outline),
                 ),
@@ -169,9 +166,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
           child: TextFormField(
             controller: valueController,
             decoration: InputDecoration(
-              labelText: 'Header Value'.tr(),
+              labelText: 'header_settings_header_name_input'.tr(),
               border: const OutlineInputBorder(),
-              hintText: 'Value of the header'.tr(),
             ),
             autocorrect: false,
             onChanged: (v) {
