@@ -22,6 +22,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
+  final int assetIndex;
   final bool showStack;
   final int stackIndex;
   final ValueNotifier<int> totalAssets;
@@ -34,6 +35,7 @@ class BottomGalleryBar extends ConsumerWidget {
     required this.showStack,
     required this.stackIndex,
     required this.asset,
+    required this.assetIndex,
     required this.controller,
     required this.totalAssets,
     required this.showVideoPlayerControls,
@@ -113,7 +115,10 @@ class BottomGalleryBar extends ConsumerWidget {
         if (isDeleted && isParent) {
           // Workaround for asset remaining in the gallery
           renderList.deleteAsset(asset);
-          if (totalAssets.value == 1) {
+
+          // `assetIndex == totalAssets.value - 1` handle the case of removing the last asset
+          // to not throw the error when the next preCache index is called
+          if (totalAssets.value == 1 || assetIndex == totalAssets.value - 1) {
             // Handle only one asset
             context.maybePop();
           }
