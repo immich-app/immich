@@ -36,14 +36,17 @@ sql:
 attach-server:
 	docker exec -it docker_immich-server_1 sh
 
+renovate:
+  LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
+
 MODULES = e2e server web cli sdk
 
 audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
 install-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) i
-build-cli: build-sdk 
-build-web: build-sdk 
+build-cli: build-sdk
+build-web: build-sdk
 build-%: install-%
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run | grep 'build' >/dev/null \
 		&& npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run build || true
@@ -73,7 +76,7 @@ audit-all:  $(foreach M,$(MODULES),audit-$M) ;
 hygiene-all: lint-all format-all check-all sql audit-all;
 test-all: $(foreach M,$(MODULES),test-$M) ;
 
-clean: 
+clean:
 	find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 	find . -name "dist" -type d -prune -exec rm -rf '{}' +
 	find . -name "build" -type d -prune -exec rm -rf '{}' +

@@ -171,6 +171,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
+*ServerInfoApi* | [**getAboutInfo**](doc//ServerInfoApi.md#getaboutinfo) | **GET** /server-info/about | 
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
@@ -360,6 +361,7 @@ Class | Method | HTTP request | Description
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
+ - [ServerAboutResponseDto](doc//ServerAboutResponseDto.md)
  - [ServerConfigDto](doc//ServerConfigDto.md)
  - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)

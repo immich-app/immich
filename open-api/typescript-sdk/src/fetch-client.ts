@@ -787,6 +787,24 @@ export type SmartSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
 };
+export type ServerAboutResponseDto = {
+    build?: string;
+    buildImage?: string;
+    buildImageUrl?: string;
+    buildUrl?: string;
+    exiftool?: string;
+    ffmpeg?: string;
+    imagemagick?: string;
+    libvips?: string;
+    nodejs?: string;
+    repository?: string;
+    repositoryUrl?: string;
+    sourceCommit?: string;
+    sourceRef?: string;
+    sourceUrl?: string;
+    version: string;
+    versionUrl: string;
+};
 export type ServerConfigDto = {
     externalDomain: string;
     isInitialized: boolean;
@@ -2360,6 +2378,14 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         state,
         "type": $type
     }))}`, {
+        ...opts
+    }));
+}
+export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerAboutResponseDto;
+    }>("/server-info/about", {
         ...opts
     }));
 }

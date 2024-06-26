@@ -10,7 +10,7 @@ import { VersionService } from 'src/services/version.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/system-info.repository.mock';
+import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { Mocked } from 'vitest';
 

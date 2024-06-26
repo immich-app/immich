@@ -124,7 +124,11 @@ jobs:
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
-          build-args: |
-            DEVICE=${{ matrix.device }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            DEVICE=${{ matrix.device }}
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}

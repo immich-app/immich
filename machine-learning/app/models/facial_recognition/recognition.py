@@ -3,7 +3,6 @@ from typing import Any
 
 import numpy as np
 import onnx
-import onnxruntime as ort
 from insightface.model_zoo import ArcFaceONNX
 from insightface.utils.face_align import norm_crop
 from numpy.typing import NDArray
@@ -13,7 +12,8 @@ from PIL import Image
 from app.config import clean_name, log
 from app.models.base import InferenceModel
 from app.models.transforms import decode_cv2
-from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelSession, ModelTask, ModelType
+from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelFormat, ModelSession, ModelTask, ModelType
+from app.sessions import has_batch_axis
 
 
 class FaceRecognizer(InferenceModel):
@@ -27,13 +27,14 @@ class FaceRecognizer(InferenceModel):
         cache_dir: Path | str | None = None,
         **model_kwargs: Any,
     ) -> None:
-        self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(clean_name(model_name), cache_dir, **model_kwargs)
+        self.min_score = model_kwargs.pop("minScore", min_score)
+        self.batch = self.model_format == ModelFormat.ONNX
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        if not self._has_batch_dim(session):
-            self._add_batch_dim(self.model_path)
+        if self.model_format == ModelFormat.ONNX and not has_batch_axis(session):
+            self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
             self.model_path.with_suffix(".onnx").as_posix(),
@@ -47,8 +48,19 @@ class FaceRecognizer(InferenceModel):
         if faces["boxes"].shape[0] == 0:
             return []
         inputs = decode_cv2(inputs)
-        embeddings: NDArray[np.float32] = self.model.get_feat(self._crop(inputs, faces))
+        cropped_faces = self._crop(inputs, faces)
+        embeddings = self._predict_batch(cropped_faces) if self.batch else self._predict_single(cropped_faces)
         return self.postprocess(faces, embeddings)
+
+    def _predict_batch(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
+        embeddings: NDArray[np.float32] = self.model.get_feat(cropped_faces)
+        return embeddings
+
+    def _predict_single(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
+        embeddings: list[NDArray[np.float32]] = []
+        for face in cropped_faces:
+            embeddings.append(self.model.get_feat(face))
+        return np.concatenate(embeddings, axis=0)
 
     def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
         return [
@@ -63,11 +75,8 @@ class FaceRecognizer(InferenceModel):
     def _crop(self, image: NDArray[np.uint8], faces: FaceDetectionOutput) -> list[NDArray[np.uint8]]:
         return [norm_crop(image, landmark) for landmark in faces["landmarks"]]
 
-    def _has_batch_dim(self, session: ort.InferenceSession) -> bool:
-        return not isinstance(session, ort.InferenceSession) or session.get_inputs()[0].shape[0] == "batch"
-
-    def _add_batch_dim(self, model_path: Path) -> None:
-        log.debug(f"Adding batch dimension to model {model_path}")
+    def _add_batch_axis(self, model_path: Path) -> None:
+        log.debug(f"Adding batch axis to model {model_path}")
         proto = onnx.load(model_path)
         static_input_dims = [shape.dim_value for shape in proto.graph.input[0].type.tensor_type.shape.dim[1:]]
         static_output_dims = [shape.dim_value for shape in proto.graph.output[0].type.tensor_type.shape.dim[1:]]

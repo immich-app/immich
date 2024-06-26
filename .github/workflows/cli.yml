@@ -33,7 +33,7 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version-file: './cli/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
       - name: Prepare SDK
         run: npm ci --prefix ../open-api/typescript-sdk/

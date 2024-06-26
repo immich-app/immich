@@ -1,4 +1,4 @@
-FROM node:iron-alpine3.18@sha256:53108f67824964a573ea435fed258f6cee4d88343e9859a99d356883e71b490c
+FROM node:20.15.0-alpine3.20@sha256:0ccc08fadfe696f2959f59404ce0d90461c834a7465c4a563c62c0fef4089885
 
 RUN apk add --no-cache tini
 USER node
