@@ -5,6 +5,7 @@ import {
   getUserAdmin,
   getUserPreferencesAdmin,
   login,
+  updateAssets,
 } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
@@ -20,18 +21,16 @@ describe('/admin/users', () => {
   let nonAdmin: LoginResponseDto;
   let deletedUser: LoginResponseDto;
   let userToDelete: LoginResponseDto;
-  let userToHardDelete: LoginResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
-    [websocket, nonAdmin, deletedUser, userToDelete, userToHardDelete] = await Promise.all([
+    [websocket, nonAdmin, deletedUser, userToDelete] = await Promise.all([
       utils.connectWebsocket(admin.accessToken),
       utils.userSetup(admin.accessToken, createUserDto.user1),
       utils.userSetup(admin.accessToken, createUserDto.user2),
       utils.userSetup(admin.accessToken, createUserDto.user3),
-      utils.userSetup(admin.accessToken, createUserDto.user4),
     ]);
 
     await deleteUserAdmin(
@@ -64,13 +63,12 @@ describe('/admin/users', () => {
         .get(`/admin/users`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(4);
+      expect(body).toHaveLength(3);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ email: admin.userEmail }),
           expect.objectContaining({ email: nonAdmin.userEmail }),
           expect.objectContaining({ email: userToDelete.userEmail }),
-          expect.objectContaining({ email: userToHardDelete.userEmail }),
         ]),
       );
     });
@@ -81,13 +79,12 @@ describe('/admin/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(5);
+      expect(body).toHaveLength(4);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ email: admin.userEmail }),
           expect.objectContaining({ email: nonAdmin.userEmail }),
           expect.objectContaining({ email: userToDelete.userEmail }),
-          expect.objectContaining({ email: userToHardDelete.userEmail }),
           expect.objectContaining({ email: deletedUser.userEmail }),
         ]),
       );
@@ -299,19 +296,49 @@ describe('/admin/users', () => {
     });
 
     it('should hard delete a user', async () => {
+      const user = await utils.userSetup(admin.accessToken, createUserDto.create('hard-delete-1'));
+
       const { status, body } = await request(app)
-        .delete(`/admin/users/${userToHardDelete.userId}`)
+        .delete(`/admin/users/${user.userId}`)
         .send({ force: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toMatchObject({
-        id: userToHardDelete.userId,
+        id: user.userId,
         updatedAt: expect.any(String),
         deletedAt: expect.any(String),
       });
 
-      await utils.waitForWebsocketEvent({ event: 'userDelete', id: userToHardDelete.userId, timeout: 5000 });
+      await utils.waitForWebsocketEvent({ event: 'userDelete', id: user.userId, timeout: 5000 });
+    });
+
+    it('should hard delete a user with stacked assets', async () => {
+      const user = await utils.userSetup(admin.accessToken, createUserDto.create('hard-delete-1'));
+
+      const [asset1, asset2] = await Promise.all([
+        utils.createAsset(user.accessToken),
+        utils.createAsset(user.accessToken),
+      ]);
+
+      await updateAssets(
+        { assetBulkUpdateDto: { stackParentId: asset1.id, ids: [asset2.id] } },
+        { headers: asBearerAuth(user.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .delete(`/admin/users/${user.userId}`)
+        .send({ force: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        id: user.userId,
+        updatedAt: expect.any(String),
+        deletedAt: expect.any(String),
+      });
+
+      await utils.waitForWebsocketEvent({ event: 'userDelete', id: user.userId, timeout: 5000 });
     });
   });
 

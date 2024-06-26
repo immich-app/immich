@@ -10,6 +10,7 @@ import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUse
 import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -27,6 +28,7 @@ export class UserService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IAssetStackRepository) private stackRepository: IAssetStackRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -168,6 +170,7 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
+    await this.stackRepository.deleteAll(user.id);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
