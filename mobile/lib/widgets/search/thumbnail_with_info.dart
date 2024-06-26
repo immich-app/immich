@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/widgets/search/thumbnail_with_info_container.dart';
+import 'package:immich_mobile/services/api.service.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
   const ThumbnailWithInfo({
@@ -36,9 +36,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 height: double.infinity,
                 fit: BoxFit.cover,
                 imageUrl: imageUrl!,
-                httpHeaders: {
-                  "x-immich-user-token": Store.get(StoreKey.accessToken),
-                },
+                httpHeaders: ApiService.getRequestHeaders(),
                 errorWidget: (context, url, error) =>
                     const Icon(Icons.image_not_supported_outlined),
               ),

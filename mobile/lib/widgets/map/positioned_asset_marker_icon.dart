@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PositionedAssetMarkerIcon extends StatelessWidget {
@@ -88,9 +88,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                   backgroundImage: CachedNetworkImageProvider(
                     imageUrl,
                     cacheKey: cacheKey,
-                    headers: {
-                      "x-immich-user-token": Store.get(StoreKey.accessToken),
-                    },
+                    headers: ApiService.getRequestHeaders(),
                     errorListener: (_) =>
                         const Icon(Icons.image_not_supported_outlined),
                   ),
