@@ -1,9 +1,11 @@
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerInfoService } from 'src/services/server-info.service';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -13,16 +15,18 @@ describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
+  let serverInfoMock: Mocked<IServerInfoRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    serverInfoMock = newServerInfoRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new ServerInfoService(userMock, storageMock, systemMock, loggerMock);
+    sut = new ServerInfoService(userMock, storageMock, systemMock, serverInfoMock, loggerMock);
   });
 
   it('should work', () => {

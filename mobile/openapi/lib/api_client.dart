@@ -436,6 +436,8 @@ class ApiClient {
           return SearchResponseDto.fromJson(value);
         case 'SearchSuggestionType':
           return SearchSuggestionTypeTypeTransformer().decode(value);
+        case 'ServerAboutResponseDto':
+          return ServerAboutResponseDto.fromJson(value);
         case 'ServerConfigDto':
           return ServerConfigDto.fromJson(value);
         case 'ServerFeaturesDto':

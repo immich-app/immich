@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { getBuildMetadata } from 'src/config';
+import { serverVersion } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
+  ServerAboutResponseDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
@@ -12,6 +15,7 @@ import {
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
@@ -27,6 +31,7 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(ServerInfoService.name);
@@ -40,6 +45,19 @@ export class ServerInfoService {
         isOnboarded: true,
       });
     }
+  }
+
+  async getAboutInfo(): Promise<ServerAboutResponseDto> {
+    const version = serverVersion.toString();
+    const buildMetadata = getBuildMetadata();
+    const buildVersions = await this.serverInfoRepository.getBuildVersions();
+
+    return {
+      version,
+      versionUrl: `https://github.com/immich-app/immich/releases/tag/${version}`,
+      ...buildMetadata,
+      ...buildVersions,
+    };
   }
 
   async getStorage(): Promise<ServerStorageResponseDto> {
