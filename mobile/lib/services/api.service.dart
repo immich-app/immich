@@ -168,25 +168,28 @@ class ApiService implements Authentication {
   static Map<String, String> getRequestHeaders() {
     var accessToken = Store.get(StoreKey.accessToken, "");
     var customHeadersStr = Store.get(StoreKey.customHeaders, "");
-    var h = Map<String, String>();
+    var header = <String, String>{};
     if (accessToken.isNotEmpty) {
-      h['x-immich-user-token'] = accessToken;
+      header['x-immich-user-token'] = accessToken;
     }
 
     if (customHeadersStr.isEmpty) {
-      return h;
+      return header;
     }
 
     var customHeaders = jsonDecode(customHeadersStr) as Map;
-    customHeaders.forEach((k, v) {
-      h[k] = v;
+    customHeaders.forEach((key, value) {
+      header[key] = value;
     });
 
-    return h;
+    return header;
   }
 
   @override
-  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
+  Future<void> applyToParams(
+    List<QueryParam> queryParams,
+    Map<String, String> headerParams,
+  ) {
     return Future<void>(() {
       var headers = ApiService.getRequestHeaders();
       headerParams.addAll(headers);

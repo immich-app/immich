@@ -106,7 +106,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     final authenticationState = _ref.read(authenticationProvider);
 
     if (authenticationState.isAuthenticated) {
-      final accessToken = Store.get(StoreKey.accessToken);
       try {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         final headers = ApiService.getRequestHeaders();

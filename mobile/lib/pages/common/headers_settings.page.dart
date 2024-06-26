@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as storeKeys;
+import 'package:immich_mobile/entities/store.entity.dart' as store_keys;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SettingsHeader {
@@ -22,35 +22,36 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    var headersStr = storeKeys.Store.get(storeKeys.StoreKey.customHeaders, "");
+    var headersStr =
+        store_keys.Store.get(store_keys.StoreKey.customHeaders, "");
     if (!setInitialHeaders.value) {
       if (headersStr.isNotEmpty) {
         var customHeaders = jsonDecode(headersStr) as Map;
         customHeaders.forEach((k, v) {
-          var h = SettingsHeader();
-          h.key = k;
-          h.value = v;
-          headers.value.add(h);
+          final header = SettingsHeader();
+          header.key = k;
+          header.value = v;
+          headers.value.add(header);
         });
       }
 
       // add first one to help the user
       if (headers.value.isEmpty) {
-        var h = SettingsHeader();
-        h.key = '';
-        h.value = '';
+        final header = SettingsHeader();
+        header.key = '';
+        header.value = '';
 
-        headers.value.add(h);
+        headers.value.add(header);
       }
     }
     setInitialHeaders.value = true;
 
     var list = [
-      ...headers.value.map((h) {
+      ...headers.value.map((headerValue) {
         return HeaderKeyValueSettings(
-          header: h,
+          header: headerValue,
           onRemove: () {
-            headers.value.remove(h);
+            headers.value.remove(headerValue);
             headers.value = headers.value.toList();
           },
         );
@@ -59,12 +60,8 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1),
-        ),
         title: const Text('header_settings_page_title').tr(),
+        centerTitle: false,
         actions: [
           IconButton(
             onPressed: () {
@@ -77,29 +74,32 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ],
       ),
       body: PopScope(
-        onPopInvoked: (_) => save(headers.value),
+        onPopInvoked: (_) => saveHeaders(headers.value),
         child: ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,
           itemBuilder: (ctx, index) => list[index],
-          separatorBuilder: (context, index) => const SizedBox(height: 10),
+          separatorBuilder: (context, index) => const Padding(
+            padding: EdgeInsets.only(bottom: 16.0, left: 8, right: 8),
+            child: Divider(),
+          ),
         ),
       ),
     );
   }
 
-  save(List<SettingsHeader> headers) {
-    var headersMap = {};
-    for (var h in headers) {
-      var k = h.key.trim();
-      var v = h.value.trim();
+  saveHeaders(List<SettingsHeader> headers) {
+    final headersMap = {};
+    for (var header in headers) {
+      final key = header.key.trim();
+      final value = header.value.trim();
 
-      if (k.isEmpty || v.isEmpty) continue;
-      headersMap[k] = v;
+      if (key.isEmpty || value.isEmpty) continue;
+      headersMap[key] = value;
     }
 
     var encoded = jsonEncode(headersMap);
-    storeKeys.Store.put(storeKeys.StoreKey.customHeaders, encoded);
+    store_keys.Store.put(store_keys.StoreKey.customHeaders, encoded);
   }
 }
 
@@ -140,8 +140,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
                     border: const OutlineInputBorder(),
                   ),
                   autocorrect: false,
-                  onChanged: (v) {
-                    header.key = v;
+                  onChanged: (headerKey) {
+                    header.key = headerKey;
                   },
                   validator: emptyFieldValidator,
                   textInputAction: TextInputAction.next,
@@ -170,8 +170,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
               border: const OutlineInputBorder(),
             ),
             autocorrect: false,
-            onChanged: (v) {
-              header.value = v;
+            onChanged: (headerValue) {
+              header.value = headerValue;
             },
             validator: emptyFieldValidator,
             textInputAction: TextInputAction.done,
