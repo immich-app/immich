@@ -124,7 +124,7 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
 
-  @OneToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  @ManyToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   @JoinColumn()
   livePhotoVideo!: AssetEntity | null;
 
