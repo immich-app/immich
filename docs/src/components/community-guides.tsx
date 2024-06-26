@@ -38,6 +38,11 @@ const guides: CommunityGuidesProps[] = [
     description: 'Import your Google Photos files into Immich and add your albums',
     url: 'https://github.com/immich-app/immich/discussions/1340',
   },
+  {
+    title: 'Access Immich with custom domain',
+    description: 'Access your local Immich installation over the internet using your own domain',
+    url: 'https://github.com/ppr88/immich-guides/blob/main/open-immich-custom-domain.md',
+  },
 ];
 
 function CommunityGuide({ title, description, url }: CommunityGuidesProps): JSX.Element {

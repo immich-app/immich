@@ -303,8 +303,7 @@ class BackupService {
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          baseRequest.headers["x-immich-user-token"] =
-              Store.get(StoreKey.accessToken);
+          baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.headers["Transfer-Encoding"] = "chunked";
 
           baseRequest.fields['deviceAssetId'] = entity.id;

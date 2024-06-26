@@ -21,6 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
       - name: Run npm install
         run: npm ci
 
@@ -54,7 +59,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: './cli/.nvmrc'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -93,7 +98,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: './cli/.nvmrc'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -121,6 +126,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './web/.nvmrc'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -165,7 +175,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: './e2e/.nvmrc'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -273,6 +283,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
       - name: Install server dependencies
         run: npm --prefix=server ci
 
@@ -322,6 +337,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
 
       - name: Install server dependencies
         run: npm ci

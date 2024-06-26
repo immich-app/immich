@@ -15,6 +15,7 @@
       "groupName": "typescript-projects",
       "matchUpdateTypes": ["minor", "patch"],
       "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
+      "excludePackageNames": ["node", "@types/node"],
       "schedule": "on tuesday"
     },
     {
@@ -57,6 +58,15 @@
       "minimumReleaseAge": "0"
     },
     {
+      "matchDatasources": ["npm"],
+      "rangeStrategy": "bump",
+      "groupName": "node",
+      "versioning": "node",
+      "matchPackageNames": ["node", "@types/node"],
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "node",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",

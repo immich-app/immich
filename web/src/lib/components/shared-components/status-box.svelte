@@ -1,25 +1,30 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { websocketStore } from '$lib/stores/websocket';
-  import { onMount } from 'svelte';
-  import { getByteUnitString } from '../../utils/byte-units';
-  import LoadingSpinner from './loading-spinner.svelte';
-  import { mdiChartPie, mdiDns } from '@mdi/js';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
+  import { websocketStore } from '$lib/stores/websocket';
   import { requestServerInfo } from '$lib/utils/auth';
+  import { mdiChartPie, mdiDns } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { getByteUnitString } from '../../utils/byte-units';
+  import LoadingSpinner from './loading-spinner.svelte';
+  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
 
   const { serverVersion, connected } = websocketStore;
 
   let usageClasses = '';
+  let isOpen = false;
 
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
   $: hasQuota = $user?.quotaSizeInBytes !== null;
   $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
   $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
   $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
+
+  let aboutInfo: ServerAboutResponseDto;
 
   const onUpdate = () => {
     usageClasses = getUsageClass();
@@ -41,8 +46,13 @@
 
   onMount(async () => {
     await requestServerInfo();
+    aboutInfo = await getAboutInfo();
   });
 </script>
+
+{#if isOpen}
+  <ServerAboutModal onClose={() => (isOpen = false)} info={aboutInfo} />
+{/if}
 
 <div class="dark:text-immich-dark-fg">
   <div
@@ -96,13 +106,11 @@
       <div class="mt-2 flex justify-between justify-items-center">
         <p>{$t('version')}</p>
         {#if $connected && version}
-          <a
-            href="https://github.com/immich-app/immich/releases"
-            class="font-medium text-immich-primary dark:text-immich-dark-primary"
-            target="_blank"
+          <button
+            type="button"
+            on:click={() => (isOpen = true)}
+            class="font-medium text-immich-primary dark:text-immich-dark-primary">{version}</button
           >
-            {version}
-          </a>
         {:else}
           <p class="font-medium text-red-500">{$t('unknown')}</p>
         {/if}

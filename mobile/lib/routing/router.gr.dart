@@ -190,6 +190,12 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    HeaderSettingsRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const HeaderSettingsPage(),
+      );
+    },
     LibraryRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -909,6 +915,20 @@ class GalleryViewerRouteArgs {
   String toString() {
     return 'GalleryViewerRouteArgs{key: $key, renderList: $renderList, initialIndex: $initialIndex, heroOffset: $heroOffset, showStack: $showStack}';
   }
+}
+
+/// generated route for
+/// [HeaderSettingsPage]
+class HeaderSettingsRoute extends PageRouteInfo<void> {
+  const HeaderSettingsRoute({List<PageRouteInfo>? children})
+      : super(
+          HeaderSettingsRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'HeaderSettingsRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for

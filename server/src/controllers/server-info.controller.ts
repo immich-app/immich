@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  ServerAboutResponseDto,
   ServerConfigDto,
   ServerFeaturesDto,
   ServerMediaTypesResponseDto,
@@ -21,6 +22,12 @@ export class ServerInfoController {
     private service: ServerInfoService,
     private versionService: VersionService,
   ) {}
+
+  @Get('about')
+  @Authenticated()
+  getAboutInfo(): Promise<ServerAboutResponseDto> {
+    return this.service.getAboutInfo();
+  }
 
   @Get('storage')
   @Authenticated()

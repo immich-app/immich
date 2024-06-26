@@ -23,7 +23,7 @@
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.14.7",
     "@types/pg": "^8.11.0",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
@@ -47,6 +47,6 @@
     "vitest": "^1.3.0"
   },
   "volta": {
-    "node": "20.14.0"
+    "node": "20.15.0"
   }
 }

@@ -26,6 +26,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './docs/.nvmrc'
+
       - name: Run npm install
         run: npm ci
 

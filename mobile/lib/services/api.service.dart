@@ -9,7 +9,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
-class ApiService {
+class ApiService implements Authentication {
   late ApiClient _apiClient;
 
   late UsersApi usersApi;
@@ -40,7 +40,7 @@ class ApiService {
   final _log = Logger("ApiService");
 
   setEndpoint(String endpoint) {
-    _apiClient = ApiClient(basePath: endpoint);
+    _apiClient = ApiClient(basePath: endpoint, authentication: this);
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
     }
@@ -103,7 +103,10 @@ class ApiService {
 
     try {
       final response = await client
-          .get(Uri.parse("$serverUrl/server-info/ping"))
+          .get(
+            Uri.parse("$serverUrl/server-info/ping"),
+            headers: getRequestHeaders(),
+          )
           .timeout(const Duration(seconds: 5));
 
       _log.info("Pinging server with response code ${response.statusCode}");
@@ -132,9 +135,12 @@ class ApiService {
     final Client client = Client();
 
     try {
+      var headers = {"Accept": "application/json"};
+      headers.addAll(getRequestHeaders());
+
       final res = await client.get(
         Uri.parse("$baseUrl/.well-known/immich"),
-        headers: {"Accept": "application/json"},
+        headers: headers,
       );
 
       if (res.statusCode == 200) {
@@ -156,7 +162,38 @@ class ApiService {
 
   setAccessToken(String accessToken) {
     _accessToken = accessToken;
-    _apiClient.addDefaultHeader('x-immich-user-token', accessToken);
+    Store.put(StoreKey.accessToken, accessToken);
+  }
+
+  static Map<String, String> getRequestHeaders() {
+    var accessToken = Store.get(StoreKey.accessToken, "");
+    var customHeadersStr = Store.get(StoreKey.customHeaders, "");
+    var header = <String, String>{};
+    if (accessToken.isNotEmpty) {
+      header['x-immich-user-token'] = accessToken;
+    }
+
+    if (customHeadersStr.isEmpty) {
+      return header;
+    }
+
+    var customHeaders = jsonDecode(customHeadersStr) as Map;
+    customHeaders.forEach((key, value) {
+      header[key] = value;
+    });
+
+    return header;
+  }
+
+  @override
+  Future<void> applyToParams(
+    List<QueryParam> queryParams,
+    Map<String, String> headerParams,
+  ) {
+    return Future<void>(() {
+      var headers = ApiService.getRequestHeaders();
+      headerParams.addAll(headers);
+    });
   }
 
   ApiClient get apiClient => _apiClient;

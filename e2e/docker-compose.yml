@@ -10,6 +10,11 @@ services:
     build:
       context: ../
       dockerfile: server/Dockerfile
+      args:
+        - BUILD_ID=1234567890
+        - BUILD_IMAGE=e2e
+        - BUILD_SOURCE_REF=e2e
+        - BUILD_SOURCE_COMMIT=e2eeeeeeeeeeeeeeeeee
     environment:
       - DB_HOSTNAME=database
       - DB_USERNAME=postgres

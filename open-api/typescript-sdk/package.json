@@ -19,12 +19,15 @@
     "@oazapfts/runtime": "^1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.14.7",
     "typescript": "^5.3.3"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
     "directory": "open-api/typescript-sdk"
+  },
+  "volta": {
+    "node": "20.15.0"
   }
 }

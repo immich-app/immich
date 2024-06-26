@@ -4718,6 +4718,38 @@
         ]
       }
     },
+    "/server-info/about": {
+      "get": {
+        "operationId": "getAboutInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerAboutResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -9629,6 +9661,63 @@
           "camera-model"
         ],
         "type": "string"
+      },
+      "ServerAboutResponseDto": {
+        "properties": {
+          "build": {
+            "type": "string"
+          },
+          "buildImage": {
+            "type": "string"
+          },
+          "buildImageUrl": {
+            "type": "string"
+          },
+          "buildUrl": {
+            "type": "string"
+          },
+          "exiftool": {
+            "type": "string"
+          },
+          "ffmpeg": {
+            "type": "string"
+          },
+          "imagemagick": {
+            "type": "string"
+          },
+          "libvips": {
+            "type": "string"
+          },
+          "nodejs": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "repositoryUrl": {
+            "type": "string"
+          },
+          "sourceCommit": {
+            "type": "string"
+          },
+          "sourceRef": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "versionUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "versionUrl"
+        ],
+        "type": "object"
       },
       "ServerConfigDto": {
         "properties": {

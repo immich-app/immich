@@ -13,6 +13,9 @@
   "advanced_settings_self_signed_ssl_title": "Allow self-signed SSL certificates",
   "advanced_settings_tile_subtitle": "Advanced user's settings",
   "advanced_settings_tile_title": "Advanced",
+  "headers_settings_tile_title": "Custom proxy headers",
+  "headers_settings_tile_subtitle": "Define proxy headers the app should send with each network request",
+
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
   "album_info_card_backup_album_excluded": "EXCLUDED",
@@ -522,5 +525,8 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack"
+  "viewer_unstack": "Un-Stack",
+  "header_settings_header_name_input": "Header name",
+  "header_settings_header_value_input": "Header value",
+  "header_settings_page_title": "Proxy Headers"
 }

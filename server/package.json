@@ -106,7 +106,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.5.7",
+    "@types/node": "^20.14.7",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^2.3.3",
     "@types/semver": "^7.5.8",
@@ -132,6 +132,6 @@
     "vitest": "^1.5.0"
   },
   "volta": {
-    "node": "20.14.0"
+    "node": "20.15.0"
   }
 }
