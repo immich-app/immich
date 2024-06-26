@@ -7,4 +7,5 @@ export interface IAssetStackRepository {
   update(asset: Pick<AssetStackEntity, 'id'> & Partial<AssetStackEntity>): Promise<AssetStackEntity>;
   delete(id: string): Promise<void>;
   getById(id: string): Promise<AssetStackEntity | null>;
+  deleteAll(userId: string): Promise<void>;
 }
