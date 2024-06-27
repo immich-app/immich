@@ -37,6 +37,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -56,6 +57,7 @@ export class AssetService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
   ) {
     this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
@@ -306,10 +308,20 @@ export class AssetService {
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.livePhotoVideoId, deleteOnDisk },
-      });
+      // There are cases where multiple still part of a LivePhotos are linked with the same motion part
+      // This happens due to LivePhotos are editted and saved as a separate file
+      // If there are other are linked with the motion part, then we are not deleting the motion part.
+      const { items } = await this.searchRepository.searchMetadata(
+        { page: 1, size: 100 },
+        { livePhotoVideoId: asset.livePhotoVideoId },
+      );
+
+      if (!items.length) {
+        await this.jobRepository.queue({
+          name: JobName.ASSET_DELETION,
+          data: { id: asset.livePhotoVideoId, deleteOnDisk },
+        });
+      }
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];

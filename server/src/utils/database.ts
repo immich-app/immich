@@ -72,6 +72,12 @@ export function searchAssetBuilder(
     });
   }
 
+  if (options.livePhotoVideoId) {
+    builder.andWhere(`${builder.alias}.livePhotoVideoId = :livePhotoVideoId`, {
+      livePhotoVideoId: options.livePhotoVideoId,
+    });
+  }
+
   const status = _.pick(options, ['isFavorite', 'isOffline', 'isVisible', 'type']);
   const {
     isArchived,

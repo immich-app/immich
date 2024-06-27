@@ -112,6 +112,10 @@ export interface SearchPeopleOptions {
   personIds?: string[];
 }
 
+export interface SearchLivePhotosOptions {
+  livePhotoVideoId?: string;
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'ASC' | 'DESC';
 }
@@ -128,7 +132,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPathOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchLivePhotosOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
