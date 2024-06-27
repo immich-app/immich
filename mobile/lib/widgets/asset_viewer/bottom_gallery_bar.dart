@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -21,20 +22,24 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
+  final int assetIndex;
   final bool showStack;
   final int stackIndex;
-  final int totalAssets;
+  final ValueNotifier<int> totalAssets;
   final bool showVideoPlayerControls;
   final PageController controller;
+  final RenderList renderList;
 
   const BottomGalleryBar({
     super.key,
     required this.showStack,
     required this.stackIndex,
     required this.asset,
+    required this.assetIndex,
     required this.controller,
     required this.totalAssets,
     required this.showVideoPlayerControls,
+    required this.renderList,
   });
 
   @override
@@ -108,16 +113,17 @@ class BottomGalleryBar extends ConsumerWidget {
           force: force,
         );
         if (isDeleted && isParent) {
-          if (totalAssets == 1) {
+          // Workaround for asset remaining in the gallery
+          renderList.deleteAsset(asset);
+
+          // `assetIndex == totalAssets.value - 1` handle the case of removing the last asset
+          // to not throw the error when the next preCache index is called
+          if (totalAssets.value == 1 || assetIndex == totalAssets.value - 1) {
             // Handle only one asset
             context.maybePop();
-          } else {
-            // Go to next page otherwise
-            controller.nextPage(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.fastLinearToSlowEaseIn,
-            );
           }
+
+          totalAssets.value -= 1;
         }
         return isDeleted;
       }
