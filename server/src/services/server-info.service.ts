@@ -48,7 +48,7 @@ export class ServerInfoService {
   }
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
-    const version = serverVersion.toString();
+    const version = `v${serverVersion.toString()}`;
     const buildMetadata = getBuildMetadata();
     const buildVersions = await this.serverInfoRepository.getBuildVersions();
 
