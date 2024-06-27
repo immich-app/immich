@@ -445,7 +445,7 @@ describe(AssetService.name, () => {
 
     it('should delete a live photo', async () => {
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
-      assetMock.getLivePhotoCount.mockResolvedValue(1);
+      assetMock.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
