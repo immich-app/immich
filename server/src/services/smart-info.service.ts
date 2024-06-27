@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -19,7 +20,7 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService {
+export class SmartInfoService implements OnEvents {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -47,6 +48,12 @@ export class SmartInfoService {
     );
 
     await this.jobRepository.resume(QueueName.SMART_SEARCH);
+  }
+
+  async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdate) {
+    if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+      await this.repository.init(newConfig.machineLearning.clip.modelName);
+    }
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {

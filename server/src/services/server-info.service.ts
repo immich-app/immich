@@ -14,6 +14,7 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server-info.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -24,7 +25,7 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class ServerInfoService {
+export class ServerInfoService implements OnEvents {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -38,13 +39,14 @@ export class ServerInfoService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async init(): Promise<void> {
+  async onBootstrapEvent(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {
       await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, {
         isOnboarded: true,
       });
     }
+    this.logger.log(`Feature Flags: ${JSON.stringify(await this.getFeatures(), null, 2)}`);
   }
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {

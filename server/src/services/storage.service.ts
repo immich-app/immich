@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { OnEvents } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 
 @Injectable()
-export class StorageService {
+export class StorageService implements OnEvents {
   constructor(
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -13,7 +14,7 @@ export class StorageService {
     this.logger.setContext(StorageService.name);
   }
 
-  init() {
+  onBootstrapEvent() {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     this.storageRepository.mkdirSync(libraryBase);
   }

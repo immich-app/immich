@@ -6,7 +6,6 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -23,7 +22,7 @@ import { LibraryEntity } from 'src/entities/library.entity';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -46,7 +45,7 @@ import { validateCronExpression } from 'src/validation';
 const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
-export class LibraryService {
+export class LibraryService implements OnEvents {
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
@@ -66,7 +65,7 @@ export class LibraryService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async init() {
+  async onBootstrapEvent() {
     const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
@@ -103,8 +102,7 @@ export class LibraryService {
     });
   }
 
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  onConfigValidateEvent({ newConfig }: SystemConfigUpdate) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -189,7 +187,7 @@ export class LibraryService {
     }
   }
 
-  async teardown() {
+  async onShutdownEvent() {
     await this.unwatchAll();
   }
 

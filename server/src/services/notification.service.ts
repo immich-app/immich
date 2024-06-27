@@ -1,12 +1,11 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
   IJobRepository,
@@ -23,7 +22,7 @@ import { IUserRepository } from 'src/interfaces/user.interface';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class NotificationService {
+export class NotificationService implements OnEvents {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -39,13 +38,7 @@ export class NotificationService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  init() {
-    // TODO
-    return Promise.resolve();
-  }
-
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  async onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  async onConfigValidateEvent({ newConfig }: SystemConfigUpdate) {
     try {
       if (newConfig.notifications.smtp.enabled) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
