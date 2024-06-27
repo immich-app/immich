@@ -69,7 +69,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
               headers.value = headers.value.toList();
             },
             icon: const Icon(Icons.add_outlined),
-            tooltip: 'Add Header',
+            tooltip: 'header_settings_add_header_tip'.tr(),
           ),
         ],
       ),
@@ -118,7 +118,7 @@ class HeaderKeyValueSettings extends StatelessWidget {
 
   String? emptyFieldValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Value cannot be empty';
+      return 'header_settings_field_validator_msg'.tr();
     }
 
     return null;
