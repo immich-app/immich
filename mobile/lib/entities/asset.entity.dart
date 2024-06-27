@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
+import 'package:immich_mobile/utils/thumbnail_util.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -38,7 +39,9 @@ class Asset {
         stackParentId =
             remote.stackParentId == remote.id ? null : remote.stackParentId,
         stackCount = remote.stackCount,
-        thumbhash = remote.thumbhash;
+        thumbhash = remote.thumbhash {
+    altText = getAltText(exifInfo, fileCreatedAt);
+  }
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -63,6 +66,7 @@ class Asset {
     if (local.latitude != null) {
       exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
     }
+    altText = getAltText(exifInfo, fileCreatedAt);
     _local = local;
     assert(hash.length == 20, "invalid SHA1 hash");
   }
@@ -90,6 +94,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.altText,
   });
 
   @ignore
@@ -159,6 +164,8 @@ class Asset {
   bool isTrashed;
 
   bool isOffline;
+
+  String? altText;
 
   @ignore
   ExifInfo? exifInfo;
@@ -297,6 +304,7 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          altText: a.altText ?? altText,
         );
       } else if (isRemote) {
         return _copyWith(
@@ -304,6 +312,7 @@ class Asset {
           width: width ?? a.width,
           height: height ?? a.height,
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
+          altText: altText ?? a.altText,
         );
       } else {
         // TODO: Revisit this and remove all bool field assignments
@@ -377,6 +386,7 @@ class Asset {
     String? stackParentId,
     int? stackCount,
     String? thumbhash,
+    String? altText,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -401,6 +411,7 @@ class Asset {
         stackParentId: stackParentId ?? this.stackParentId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
+        altText: altText ?? this.altText,
       );
 
   Future<void> put(Isar db) async {

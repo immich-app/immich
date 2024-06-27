@@ -72,17 +72,20 @@ class ImmichThumbnail extends HookWidget {
       );
     }
 
-    return OctoImage.fromSet(
-      placeholderFadeInDuration: Duration.zero,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: blurHashOrPlaceholder(blurhash),
-      image: ImmichThumbnail.imageProvider(
-        asset: asset,
+    return Semantics(
+      label: asset?.altText,
+      child: OctoImage.fromSet(
+        placeholderFadeInDuration: Duration.zero,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: const Duration(milliseconds: 100),
+        octoSet: blurHashOrPlaceholder(blurhash),
+        image: ImmichThumbnail.imageProvider(
+          asset: asset,
+        ),
+        width: width,
+        height: height,
+        fit: fit,
       ),
-      width: width,
-      height: height,
-      fit: fit,
     );
   }
 }
