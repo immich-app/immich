@@ -39,7 +39,7 @@ export class SystemConfigService implements OnEvents {
     this.core.config$.subscribe((config) => this.setLogLevel(config));
   }
 
-  @EventHandlerOptions({ priority: 2 })
+  @EventHandlerOptions({ priority: -100 })
   async onBootstrapEvent() {
     const config = await this.core.getConfig({ withCache: false });
     this.config$.next(config);

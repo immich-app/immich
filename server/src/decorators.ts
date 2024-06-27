@@ -133,7 +133,10 @@ export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GEN
 export const OnServerEvent = (event: ServerEvent, options?: OnEventOptions) =>
   OnEvent(event, { suppressErrors: false, ...options });
 
-export type HandlerOptions = { priority: number };
+export type HandlerOptions = {
+  /** lower value has higher priority, defaults to 0 */
+  priority: number;
+};
 export const EventHandlerOptions = (options: HandlerOptions) => SetMetadata(Metadata.EVENT_HANDLER_OPTIONS, options);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;

@@ -20,7 +20,7 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
       }
 
       const options = reflector.get<HandlerOptions>(Metadata.EVENT_HANDLER_OPTIONS, handler);
-      const priority = options?.priority ?? 100;
+      const priority = options?.priority || 0;
 
       handlers.push({ event, handler: handler.bind(instance), priority });
     }

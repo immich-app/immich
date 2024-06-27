@@ -73,7 +73,7 @@ export class DatabaseService implements OnEvents {
     this.logger.setContext(DatabaseService.name);
   }
 
-  @EventHandlerOptions({ priority: 1 })
+  @EventHandlerOptions({ priority: -200 })
   async onBootstrapEvent() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
