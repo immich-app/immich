@@ -6,12 +6,8 @@ import { join } from 'node:path';
 import { ONE_HOUR, WEB_ROOT } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
-import { DatabaseService } from 'src/services/database.service';
 import { JobService } from 'src/services/job.service';
-import { ServerInfoService } from 'src/services/server-info.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
-import { StorageService } from 'src/services/storage.service';
-import { SystemConfigService } from 'src/services/system-config.service';
 import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
 
@@ -39,12 +35,8 @@ const render = (index: string, meta: OpenGraphTags) => {
 export class ApiService {
   constructor(
     private authService: AuthService,
-    private configService: SystemConfigService,
     private jobService: JobService,
-    private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
-    private storageService: StorageService,
-    private databaseService: DatabaseService,
     private versionService: VersionService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
@@ -59,15 +51,6 @@ export class ApiService {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async onNightlyJob() {
     await this.jobService.handleNightlyJobs();
-  }
-
-  async init() {
-    await this.databaseService.init();
-    await this.configService.init();
-    this.storageService.init();
-    await this.serverService.init();
-    await this.versionService.init();
-    this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
 
   ssr(excludePaths: string[]) {

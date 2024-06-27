@@ -4,7 +4,8 @@ import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { ServerAsyncEvent, ServerEvent } from 'src/interfaces/event.interface';
+import { ServerEvent } from 'src/interfaces/event.interface';
+import { Metadata } from 'src/middleware/auth.guard';
 import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
@@ -129,8 +130,14 @@ export interface GenerateSqlQueries {
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
 
-export const OnServerEvent = (event: ServerEvent | ServerAsyncEvent, options?: OnEventOptions) =>
+export const OnServerEvent = (event: ServerEvent, options?: OnEventOptions) =>
   OnEvent(event, { suppressErrors: false, ...options });
+
+export type HandlerOptions = {
+  /** lower value has higher priority, defaults to 0 */
+  priority: number;
+};
+export const EventHandlerOptions = (options: HandlerOptions) => SetMetadata(Metadata.EVENT_HANDLER_OPTIONS, options);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

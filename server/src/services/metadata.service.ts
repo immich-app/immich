@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
-import { Subscription } from 'rxjs';
+import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -14,7 +14,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ClientEvent, IEventRepository, OnEvents } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -34,7 +34,6 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 /** look for a date from these tags (in order) */
@@ -97,10 +96,9 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 };
 
 @Injectable()
-export class MetadataService {
+export class MetadataService implements OnEvents {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -132,12 +130,19 @@ export class MetadataService {
     );
   }
 
-  async init() {
-    if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
+  async onBootstrapEvent(app: 'api' | 'microservices') {
+    if (app !== 'microservices') {
+      return;
     }
+    const config = await this.configCore.getConfig({ withCache: false });
+    await this.init(config);
+  }
 
-    const { reverseGeocoding } = await this.configCore.getConfig({ withCache: false });
+  async onConfigUpdateEvent({ newConfig }: { newConfig: SystemConfig }) {
+    await this.init(newConfig);
+  }
+
+  private async init({ reverseGeocoding }: SystemConfig) {
     const { enabled } = reverseGeocoding;
 
     if (!enabled) {
@@ -155,8 +160,7 @@ export class MetadataService {
     }
   }
 
-  async teardown() {
-    this.subscription?.unsubscribe();
+  async onShutdownEvent() {
     await this.repository.teardown();
   }
 

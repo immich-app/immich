@@ -16,7 +16,6 @@ import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -180,14 +179,13 @@ describe(SystemConfigService.name, () => {
   let systemMock: Mocked<ISystemMetadataRepository>;
   let eventMock: Mocked<IEventRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let smartInfoMock: Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SystemConfigService(systemMock, eventMock, loggerMock, smartInfoMock);
+    sut = new SystemConfigService(systemMock, eventMock, loggerMock);
   });
 
   it('should work', () => {

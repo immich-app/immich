@@ -95,16 +95,16 @@ describe(MetadataService.name, () => {
   });
 
   afterEach(async () => {
-    await sut.teardown();
+    await sut.onShutdownEvent();
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('init', () => {
+  describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
-      await sut.init();
+      await sut.onBootstrapEvent('microservices');
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(mapMock.init).toHaveBeenCalledTimes(1);
@@ -114,7 +114,7 @@ describe(MetadataService.name, () => {
     it('should return if reverse geocoding is disabled', async () => {
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
 
-      await sut.init();
+      await sut.onBootstrapEvent('microservices');
 
       expect(jobMock.pause).not.toHaveBeenCalled();
       expect(mapMock.init).not.toHaveBeenCalled();

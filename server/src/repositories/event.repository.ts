@@ -10,8 +10,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import {
   ClientEventMap,
+  EmitEvent,
+  EmitEventHandler,
   IEventRepository,
-  ServerAsyncEventMap,
   ServerEvent,
   ServerEventMap,
 } from 'src/interfaces/event.interface';
@@ -27,6 +28,8 @@ import { Instrumentation } from 'src/utils/instrumentation';
 })
 @Injectable()
 export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
+  private emitHandlers: Partial<Record<EmitEvent, EmitEventHandler<EmitEvent>[]>> = {};
+
   @WebSocketServer()
   private server?: Server;
 
@@ -71,6 +74,18 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
+  on<T extends EmitEvent>(event: T, handler: EmitEventHandler<T>): void {
+    const handlers: EmitEventHandler<EmitEvent>[] = this.emitHandlers[event] || [];
+    this.emitHandlers[event] = [...handlers, handler];
+  }
+
+  async emit<T extends EmitEvent>(event: T, ...args: Parameters<EmitEventHandler<T>>): Promise<void> {
+    const handlers = this.emitHandlers[event] || [];
+    for (const handler of handlers) {
+      await handler(...args);
+    }
+  }
+
   clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]) {
     this.server?.to(userId).emit(event, data);
   }
@@ -83,9 +98,5 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     this.logger.debug(`Server event: ${event} (send)`);
     this.server?.serverSideEmit(event, data);
     return this.eventEmitter.emit(event, data);
-  }
-
-  serverSendAsync<E extends keyof ServerAsyncEventMap, R = any[]>(event: E, data: ServerAsyncEventMap[E]): Promise<R> {
-    return this.eventEmitter.emitAsync(event, data) as Promise<R>;
   }
 }

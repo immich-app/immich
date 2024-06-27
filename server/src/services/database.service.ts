@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTORS_VERSION_RANGE, VECTOR_VERSION_RANGE } from 'src/constants';
 import { getVectorExtension } from 'src/database.config';
+import { EventHandlerOptions } from 'src/decorators';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -9,6 +10,7 @@ import {
   IDatabaseRepository,
   VectorIndex,
 } from 'src/interfaces/database.interface';
+import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
@@ -63,7 +65,7 @@ const messages = {
 };
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService implements OnEvents {
   constructor(
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -71,7 +73,8 @@ export class DatabaseService {
     this.logger.setContext(DatabaseService.name);
   }
 
-  async init() {
+  @EventHandlerOptions({ priority: -200 })
+  async onBootstrapEvent() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
     if (!current || !semver.satisfies(current, POSTGRES_VERSION_RANGE)) {
