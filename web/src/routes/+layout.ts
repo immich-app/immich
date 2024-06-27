@@ -1,8 +1,5 @@
-import { defaultLang, langs } from '$lib/constants';
-import { lang } from '$lib/stores/preferences.store';
+import { initApp } from '$lib/utils';
 import { defaults } from '@immich/sdk';
-import { init, register } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { LayoutLoad } from './$types';
 
 export const ssr = false;
@@ -14,13 +11,7 @@ export const load = (async ({ fetch }) => {
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   defaults.fetch = fetch;
 
-  for (const { code, loader } of langs) {
-    register(code, loader);
-  }
-
-  const preferenceLang = get(lang);
-
-  await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
+  await initApp();
 
   return {
     meta: {
