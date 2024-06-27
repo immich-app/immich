@@ -17,6 +17,7 @@ class PartnerResponseDto {
     required this.email,
     required this.id,
     this.inTimeline,
+    required this.license,
     required this.name,
     required this.profileImagePath,
   });
@@ -35,6 +36,8 @@ class PartnerResponseDto {
   ///
   bool? inTimeline;
 
+  UserLicense? license;
+
   String name;
 
   String profileImagePath;
@@ -45,6 +48,7 @@ class PartnerResponseDto {
     other.email == email &&
     other.id == id &&
     other.inTimeline == inTimeline &&
+    other.license == license &&
     other.name == name &&
     other.profileImagePath == profileImagePath;
 
@@ -55,11 +59,12 @@ class PartnerResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (inTimeline == null ? 0 : inTimeline!.hashCode) +
+    (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileImagePath=$profileImagePath]';
+  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, license=$license, name=$name, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -70,6 +75,11 @@ class PartnerResponseDto {
       json[r'inTimeline'] = this.inTimeline;
     } else {
     //  json[r'inTimeline'] = null;
+    }
+    if (this.license != null) {
+      json[r'license'] = this.license;
+    } else {
+    //  json[r'license'] = null;
     }
       json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
@@ -88,6 +98,7 @@ class PartnerResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
+        license: UserLicense.fromJson(json[r'license']),
         name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
@@ -140,6 +151,7 @@ class PartnerResponseDto {
     'avatarColor',
     'email',
     'id',
+    'license',
     'name',
     'profileImagePath',
   };

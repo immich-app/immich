@@ -6594,6 +6594,71 @@
         ]
       }
     },
+    "/users/me/license": {
+      "delete": {
+        "operationId": "deleteLicense",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "setLicense",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LicenseKeyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LicenseResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/preferences": {
       "get": {
         "operationId": "getMyPreferences",
@@ -8765,6 +8830,33 @@
         ],
         "type": "object"
       },
+      "LicenseKeyDto": {
+        "properties": {
+          "activationKey": {
+            "type": "string"
+          },
+          "licenseKey": {
+            "pattern": "/IM(SV|CL)(-[\\dA-Za-z]{4}){8}/",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activationKey",
+          "licenseKey"
+        ],
+        "type": "object"
+      },
+      "LicenseResponseDto": {
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "valid"
+        ],
+        "type": "object"
+      },
       "LogLevel": {
         "enum": [
           "verbose",
@@ -9260,6 +9352,14 @@
           "inTimeline": {
             "type": "boolean"
           },
+          "license": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserLicense"
+              }
+            ],
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -9271,6 +9371,7 @@
           "avatarColor",
           "email",
           "id",
+          "license",
           "name",
           "profileImagePath"
         ],
@@ -11330,6 +11431,14 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "license": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserLicense"
+              }
+            ],
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -11371,6 +11480,7 @@
           "email",
           "id",
           "isAdmin",
+          "license",
           "name",
           "oauthId",
           "profileImagePath",
@@ -11425,6 +11535,26 @@
         ],
         "type": "string"
       },
+      "UserLicense": {
+        "properties": {
+          "activatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "activationKey": {
+            "type": "string"
+          },
+          "licenseKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "activatedAt",
+          "activationKey",
+          "licenseKey"
+        ],
+        "type": "object"
+      },
       "UserPreferencesResponseDto": {
         "properties": {
           "avatar": {
@@ -11476,6 +11606,14 @@
           "id": {
             "type": "string"
           },
+          "license": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserLicense"
+              }
+            ],
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -11487,6 +11625,7 @@
           "avatarColor",
           "email",
           "id",
+          "license",
           "name",
           "profileImagePath"
         ],

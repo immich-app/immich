@@ -14,10 +14,16 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
+export type UserLicense = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
+};
 export type UserResponseDto = {
     avatarColor: UserAvatarColor;
     email: string;
     id: string;
+    license: (UserLicense) | null;
     name: string;
     profileImagePath: string;
 };
@@ -45,6 +51,7 @@ export type UserAdminResponseDto = {
     email: string;
     id: string;
     isAdmin: boolean;
+    license: (UserLicense) | null;
     name: string;
     oauthId: string;
     profileImagePath: string;
@@ -594,6 +601,7 @@ export type PartnerResponseDto = {
     email: string;
     id: string;
     inTimeline?: boolean;
+    license: (UserLicense) | null;
     name: string;
     profileImagePath: string;
 };
@@ -1128,6 +1136,13 @@ export type UserUpdateMeDto = {
     email?: string;
     name?: string;
     password?: string;
+};
+export type LicenseKeyDto = {
+    activationKey: string;
+    licenseKey: string;
+};
+export type LicenseResponseDto = {
+    valid: boolean;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -2890,6 +2905,24 @@ export function updateMyUser({ userUpdateMeDto }: {
         ...opts,
         method: "PUT",
         body: userUpdateMeDto
+    })));
+}
+export function deleteLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function setLicense({ licenseKeyDto }: {
+    licenseKeyDto: LicenseKeyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/users/me/license", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: licenseKeyDto
     })));
 }
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {

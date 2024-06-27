@@ -236,4 +236,40 @@ describe('/users', () => {
       });
     });
   });
+
+  describe('PUT /users/me/license', () => {
+    it('should require authentication', async () => {
+      const { status } = await request(app).put(`/users/me/license`);
+      expect(status).toEqual(401);
+    });
+
+    it('should set the user license', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me/license`)
+        .send({
+          licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',
+          activationKey:
+            'KuX8KsktrBSiXpQMAH0zLgA5SpijXVr_PDkzLdWUlAogCTMBZ0I3KCHXK0eE9EEd7harxup8_EHMeqAWeHo5VQzol6LGECpFv585U9asXD4Zc-UXt3mhJr2uhazqipBIBwJA2YhmUCDy8hiyiGsukDQNu9Rg9C77UeoKuZBWVjWUBWG0mc1iRqfvF0faVM20w53czAzlhaMxzVGc3Oimbd7xi_CAMSujF_2y8QpA3X2fOVkQkzdcH9lV0COejl7IyH27zQQ9HrlrXv3Lai5Hw67kNkaSjmunVBxC5PS0TpKoc9SfBJMaAGWnaDbjhjYUrm-8nIDQnoeEAidDXVAdPw',
+        })
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        valid: true,
+      });
+    });
+  });
+
+  describe('DELETE /users/me/license', () => {
+    it('should require authentication', async () => {
+      const { status } = await request(app).put(`/users/me/license`);
+      expect(status).toEqual(401);
+    });
+
+    it('should delete the user license', async () => {
+      const { status } = await request(app)
+        .delete(`/users/me/license`)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
+    });
+  });
 });

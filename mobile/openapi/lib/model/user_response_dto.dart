@@ -16,6 +16,7 @@ class UserResponseDto {
     required this.avatarColor,
     required this.email,
     required this.id,
+    required this.license,
     required this.name,
     required this.profileImagePath,
   });
@@ -26,6 +27,8 @@ class UserResponseDto {
 
   String id;
 
+  UserLicense? license;
+
   String name;
 
   String profileImagePath;
@@ -35,6 +38,7 @@ class UserResponseDto {
     other.avatarColor == avatarColor &&
     other.email == email &&
     other.id == id &&
+    other.license == license &&
     other.name == name &&
     other.profileImagePath == profileImagePath;
 
@@ -44,17 +48,23 @@ class UserResponseDto {
     (avatarColor.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
+    (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileImagePath=$profileImagePath]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, license=$license, name=$name, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
       json[r'id'] = this.id;
+    if (this.license != null) {
+      json[r'license'] = this.license;
+    } else {
+    //  json[r'license'] = null;
+    }
       json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
@@ -71,6 +81,7 @@ class UserResponseDto {
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
+        license: UserLicense.fromJson(json[r'license']),
         name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
@@ -123,6 +134,7 @@ class UserResponseDto {
     'avatarColor',
     'email',
     'id',
+    'license',
     'name',
     'profileImagePath',
   };

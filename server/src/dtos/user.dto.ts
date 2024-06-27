@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { UserAvatarColor } from 'src/entities/user-metadata.entity';
+import { UserAvatarColor, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { getPreferences } from 'src/utils/preferences';
-import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
+import { Optional, toEmail, toSanitized, ValidateBoolean } from 'src/validation';
 
 export class UserUpdateMeDto {
   @Optional()
@@ -31,6 +31,12 @@ export class UserResponseDto {
   profileImagePath!: string;
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor!: UserAvatarColor;
+}
+
+export class UserLicense {
+  licenseKey!: string;
+  activationKey!: string;
+  activatedAt!: Date;
 }
 
 export const mapUser = (entity: UserEntity): UserResponseDto => {
@@ -130,9 +136,13 @@ export class UserAdminResponseDto extends UserResponseDto {
   quotaUsageInBytes!: number | null;
   @ApiProperty({ enumName: 'UserStatus', enum: UserStatus })
   status!: string;
+  license!: UserLicense | null;
 }
 
 export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
+  const license = entity.metadata.find(
+    (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
+  )?.value;
   return {
     ...mapUser(entity),
     storageLabel: entity.storageLabel,
@@ -145,5 +155,6 @@ export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
+    license: license ?? null,
   };
 }

@@ -8,6 +8,11 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   name: Sync.each(() => faker.person.fullName()),
   profileImagePath: '',
   avatarColor: UserAvatarColor.Primary,
+  license: {
+    licenseKey: 'IMCL-license-key',
+    activationKey: 'activation-key',
+    activatedAt: new Date().toISOString(),
+  },
 });
 
 export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
@@ -26,4 +31,9 @@ export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
   shouldChangePassword: false,
   status: UserStatus.Active,
   storageLabel: null,
+  license: {
+    licenseKey: 'IMCL-license-key',
+    activationKey: 'activation-key',
+    activatedAt: new Date().toISOString(),
+  },
 });

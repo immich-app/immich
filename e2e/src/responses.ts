@@ -81,6 +81,7 @@ export const signupResponseDto = {
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,
     status: 'active',
+    license: null,
   },
 };
 

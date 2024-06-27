@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { UserMetadata, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
+import { UserMetadata, UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
   IUserRepository,
@@ -89,11 +89,12 @@ export class UserRepository implements IUserRepository {
     return this.save({ ...user, id });
   }
 
-  async upsertMetadata<T extends UserMetadataKey.PREFERENCES>(
-    id: string,
-    { key, value }: { key: T; value: UserMetadata[T] },
-  ) {
+  async upsertMetadata<T extends keyof UserMetadata>(id: string, { key, value }: { key: T; value: UserMetadata[T] }) {
     await this.metadataRepository.upsert({ userId: id, key, value }, { conflictPaths: { userId: true, key: true } });
+  }
+
+  async deleteMetadata<T extends keyof UserMetadata>(id: string, key: T) {
+    await this.metadataRepository.delete({ userId: id, key });
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {

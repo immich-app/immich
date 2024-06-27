@@ -361,7 +361,7 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    IMMICH_ENV: Joi.string().optional().valid('development', 'production').default('production'),
+    IMMICH_ENV: Joi.string().optional().valid('development', 'testing', 'production').default('production'),
     IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
@@ -441,3 +441,15 @@ export const getBuildMetadata = () => ({
   sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
   sourceUrl: process.env.IMMICH_SOURCE_URL,
 });
+
+const clientLicensePublicKeyProd = '';
+
+const clientLicensePublicKeyStaging =
+  'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFuSUNyTm5jbGpPSC9JdTNtWVVaRQp0dGJLV1c3OGRuajl5M0U2ekk3dU1NUndEckdYWFhkTGhkUDFxSWtlZHh0clVVeUpCMWR4R04yQW91S082MlNGCldrbU9PTmNGQlRBWFZTdjhUNVY0S0VwWnFQYWEwaXpNaGxMaE5sRXEvY1ZKdllrWlh1Z2x6b1o3cG1nbzFSdHgKam1iRm5NNzhrYTFRUUJqOVdLaEw2eWpWRUl2MDdVS0lKWHBNTnNuS2g1V083MjZhYmMzSE9udTlETjY5VnFFRQo3dGZrUnRWNmx2U1NzMkFVMngzT255cHA4ek53b0lPTWRibGsyb09aWWROZzY0Y3l2SzJoU0FlU3NVMFRyOVc5Ckgra0Y5QlNCNlk0QXl0QlVkSmkrK2pMSW5HM2Q5cU9ieFVzTlYrN05mRkF5NjJkL0xNR0xSOC9OUFc0U0s3c0MKRlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=';
+
+export const getClientLicensePublicKey = (): string => {
+  if (process.env.IMMICH_ENV === 'production') {
+    return clientLicensePublicKeyProd;
+  }
+  return clientLicensePublicKeyStaging;
+};

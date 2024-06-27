@@ -19,6 +19,7 @@ class UserAdminResponseDto {
     required this.email,
     required this.id,
     required this.isAdmin,
+    required this.license,
     required this.name,
     required this.oauthId,
     required this.profileImagePath,
@@ -41,6 +42,8 @@ class UserAdminResponseDto {
   String id;
 
   bool isAdmin;
+
+  UserLicense? license;
 
   String name;
 
@@ -68,6 +71,7 @@ class UserAdminResponseDto {
     other.email == email &&
     other.id == id &&
     other.isAdmin == isAdmin &&
+    other.license == license &&
     other.name == name &&
     other.oauthId == oauthId &&
     other.profileImagePath == profileImagePath &&
@@ -87,6 +91,7 @@ class UserAdminResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
+    (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
@@ -98,7 +103,7 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -112,6 +117,11 @@ class UserAdminResponseDto {
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
+    if (this.license != null) {
+      json[r'license'] = this.license;
+    } else {
+    //  json[r'license'] = null;
+    }
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
@@ -150,6 +160,7 @@ class UserAdminResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        license: UserLicense.fromJson(json[r'license']),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
@@ -212,6 +223,7 @@ class UserAdminResponseDto {
     'email',
     'id',
     'isAdmin',
+    'license',
     'name',
     'oauthId',
     'profileImagePath',
