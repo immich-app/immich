@@ -316,7 +316,7 @@ export class AssetService {
         { livePhotoVideoId: asset.livePhotoVideoId },
       );
 
-      if (!items.length) {
+      if (items.length === 0) {
         await this.jobRepository.queue({
           name: JobName.ASSET_DELETION,
           data: { id: asset.livePhotoVideoId, deleteOnDisk },
