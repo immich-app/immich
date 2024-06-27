@@ -47,7 +47,7 @@ import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
@@ -92,6 +92,7 @@ const executeCommand = (command: string, args: string[]) => {
 let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
+  assetHidden: new Set<string>(),
   assetUpload: new Set<string>(),
   assetUpdate: new Set<string>(),
   assetDelete: new Set<string>(),
@@ -203,6 +204,7 @@ export const utils = {
         .on('connect', () => resolve(websocket))
         .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
         .on('on_asset_update', (data: AssetResponseDto) => onEvent({ event: 'assetUpdate', id: data.id }))
+        .on('on_asset_hidden', (assetId: string) => onEvent({ event: 'assetHidden', id: assetId }))
         .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
         .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
         .connect();

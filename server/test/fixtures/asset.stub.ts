@@ -568,6 +568,21 @@ export const assetStub = {
     },
   } as AssetEntity),
 
+  livePhotoStillAssetWithTheSameLivePhotoMotionAsset: Object.freeze({
+    id: 'live-photo-still-asset-1',
+    originalPath: fileStub.livePhotoStill.originalPath,
+    ownerId: authStub.user1.user.id,
+    type: AssetType.IMAGE,
+    livePhotoVideoId: 'live-photo-motion-asset',
+    isVisible: true,
+    fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
+    fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    exifInfo: {
+      fileSizeInByte: 25_000,
+      timeZone: `America/New_York`,
+    },
+  } as AssetEntity),
+
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
     originalPath: fileStub.livePhotoStill.originalPath,

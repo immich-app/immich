@@ -304,12 +304,15 @@ export class AssetService {
     }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
-    // TODO refactor this to use cascades
+    // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({
-        name: JobName.ASSET_DELETION,
-        data: { id: asset.livePhotoVideoId, deleteOnDisk },
-      });
+      const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
+      if (count === 0) {
+        await this.jobRepository.queue({
+          name: JobName.ASSET_DELETION,
+          data: { id: asset.livePhotoVideoId, deleteOnDisk },
+        });
+      }
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];

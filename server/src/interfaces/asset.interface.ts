@@ -173,6 +173,7 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
+  getLivePhotoCount(motionId: string): Promise<number>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;

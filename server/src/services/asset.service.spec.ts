@@ -445,6 +445,7 @@ describe(AssetService.name, () => {
 
     it('should delete a live photo', async () => {
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      assetMock.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -461,6 +462,27 @@ describe(AssetService.name, () => {
             },
           },
         ],
+        [
+          {
+            name: JobName.DELETE_FILES,
+            data: {
+              files: [undefined, undefined, undefined, undefined, 'fake_path/asset_1.jpeg'],
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('should not delete a live motion part if it is being used by another asset', async () => {
+      assetMock.getLivePhotoCount.mockResolvedValue(2);
+      assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+
+      await sut.handleAssetDeletion({
+        id: assetStub.livePhotoStillAsset.id,
+        deleteOnDisk: true,
+      });
+
+      expect(jobMock.queue.mock.calls).toEqual([
         [
           {
             name: JobName.DELETE_FILES,

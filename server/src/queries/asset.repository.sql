@@ -377,6 +377,14 @@ WHERE
     AND ("AssetEntity"."isVisible" = $3)
   )
 
+-- AssetRepository.getLivePhotoCount
+SELECT
+  COUNT(1) AS "cnt"
+FROM
+  "assets" "AssetEntity"
+WHERE
+  (("AssetEntity"."livePhotoVideoId" = $1))
+
 -- AssetRepository.getById
 SELECT
   "AssetEntity"."id" AS "AssetEntity_id",
