@@ -171,6 +171,7 @@ export class AssetMediaService {
         }
         if (motionAsset.isVisible) {
           await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+          this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, auth.user.id, motionAsset.id);
         }
       }
 

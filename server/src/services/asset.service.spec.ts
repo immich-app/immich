@@ -8,7 +8,6 @@ import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
@@ -24,7 +23,6 @@ import { newEventRepositoryMock } from 'test/repositories/event.repository.mock'
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
-import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked, vitest } from 'vitest';
@@ -53,7 +51,6 @@ describe(AssetService.name, () => {
   let partnerMock: Mocked<IPartnerRepository>;
   let assetStackMock: Mocked<IAssetStackRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let searchMock: Mocked<ISearchRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -75,7 +72,6 @@ describe(AssetService.name, () => {
     partnerMock = newPartnerRepositoryMock();
     assetStackMock = newAssetStackRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    searchMock = newSearchRepositoryMock();
 
     sut = new AssetService(
       accessMock,
@@ -87,7 +83,6 @@ describe(AssetService.name, () => {
       partnerMock,
       assetStackMock,
       loggerMock,
-      searchMock,
     );
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
@@ -450,10 +445,7 @@ describe(AssetService.name, () => {
 
     it('should delete a live photo', async () => {
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
-      searchMock.searchMetadata.mockResolvedValue({
-        hasNextPage: false,
-        items: [],
-      });
+      assetMock.getLivePhotoCount.mockResolvedValue(1);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -481,12 +473,9 @@ describe(AssetService.name, () => {
       ]);
     });
 
-    it('should not delete a live motion part if there is still reference to the motion part', async () => {
+    it('should not delete a live motion part if it is being used by another asset', async () => {
+      assetMock.getLivePhotoCount.mockResolvedValue(2);
       assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
-      searchMock.searchMetadata.mockResolvedValue({
-        hasNextPage: false,
-        items: [assetStub.livePhotoStillAssetWithTheSameLivePhotoMotionAsset],
-      });
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,

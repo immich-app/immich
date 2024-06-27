@@ -250,6 +250,16 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getLivePhotoCount(motionId: string): Promise<number> {
+    return this.repository.count({
+      where: {
+        livePhotoVideoId: motionId,
+      },
+      withDeleted: true,
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
     relations: FindOptionsRelations<AssetEntity>,
