@@ -76,6 +76,7 @@ services:
   backup:
     container_name: immich_db_dumper
     image: prodrigestivill/postgres-backup-local:14
+    restart: always
     env_file:
       - .env
     environment:
