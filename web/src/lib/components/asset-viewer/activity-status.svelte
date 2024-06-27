@@ -17,7 +17,7 @@
 </script>
 
 <div
-  class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+  class="w-full h-10 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
 >
   <button type="button" class={disabled ? 'cursor-not-allowed' : ''} on:click={() => dispatch('favorite')} {disabled}>
     <div class="items-center justify-center">
@@ -29,8 +29,9 @@
       <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
       {#if numberOfComments}
         <div class="text-xl">{numberOfComments}</div>
-      {:else if !isShowActivity}
-        <div class="text-lg">{$t('say_something')}</div>
+      <!-- the say_something text is removed for being obtrusive but could be put back in -->
+      <!-- if it disappears on narrowing the viewport or once user control auto fadeout is implemented -->
+      <!-- {:else if !isShowActivity} <div class="text-lg">{$t('say_something')}</div> -->
       {/if}
     </div>
   </button>
