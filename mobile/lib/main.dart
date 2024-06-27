@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -80,6 +81,8 @@ Future<void> initApp() async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    print(error);
+    print(stack);
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
@@ -166,6 +169,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
     await ref.read(localNotificationService).setup();
+
+    dbIso.create();
   }
 
   @override

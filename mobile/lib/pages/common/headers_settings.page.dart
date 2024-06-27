@@ -10,6 +10,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class SettingsHeader {
   String key = "";
   String value = "";
+
+  SettingsHeader({this.key = '', this.value = ''});
 }
 
 @RoutePage()
@@ -28,20 +30,13 @@ class HeaderSettingsPage extends HookConsumerWidget {
       if (headersStr.isNotEmpty) {
         var customHeaders = jsonDecode(headersStr) as Map;
         customHeaders.forEach((k, v) {
-          final header = SettingsHeader();
-          header.key = k;
-          header.value = v;
-          headers.value.add(header);
+          headers.value.add(SettingsHeader(key: k, value: v));
         });
       }
 
       // add first one to help the user
       if (headers.value.isEmpty) {
-        final header = SettingsHeader();
-        header.key = '';
-        header.value = '';
-
-        headers.value.add(header);
+        headers.value.add(SettingsHeader());
       }
     }
     setInitialHeaders.value = true;
