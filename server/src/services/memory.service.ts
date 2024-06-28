@@ -70,7 +70,7 @@ export class MemoryService {
     await this.access.requirePermission(auth, Permission.MEMORY_READ, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
-    const results = await addAssets(auth, repos, { id, assetIds: dto.ids });
+    const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
@@ -84,8 +84,11 @@ export class MemoryService {
     await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
-    const permissions = [Permission.ASSET_SHARE];
-    const results = await removeAssets(auth, repos, { id, assetIds: dto.ids, permissions });
+    const results = await removeAssets(auth, repos, {
+      parentId: id,
+      assetIds: dto.ids,
+      canAlwaysRemove: Permission.MEMORY_DELETE,
+    });
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {

@@ -307,6 +307,10 @@ export class AccessCore {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
+      case Permission.MEMORY_DELETE: {
+        return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
+      }
+
       case Permission.PERSON_READ: {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
