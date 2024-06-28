@@ -20,6 +20,7 @@ import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
 import { SearchController } from 'src/controllers/search.controller';
 import { ServerInfoController } from 'src/controllers/server-info.controller';
+import { ServerController } from 'src/controllers/server.controller';
 import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { SyncController } from 'src/controllers/sync.controller';
@@ -53,6 +54,7 @@ export const controllers = [
   PersonController,
   ReportController,
   SearchController,
+  ServerController,
   ServerInfoController,
   SessionController,
   SharedLinkController,

@@ -16,7 +16,9 @@ class ServerInfoApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /server-info/about' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAboutInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/about';
@@ -42,6 +44,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerAboutResponseDto?> getAboutInfo() async {
     final response = await getAboutInfoWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -57,7 +60,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/config' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/config';
@@ -83,6 +88,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerConfigDto?> getServerConfig() async {
     final response = await getServerConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -98,7 +104,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/features' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerFeaturesWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/features';
@@ -124,6 +132,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerFeaturesDto?> getServerFeatures() async {
     final response = await getServerFeaturesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -139,7 +148,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/statistics' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/statistics';
@@ -165,6 +176,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerStatsResponseDto?> getServerStatistics() async {
     final response = await getServerStatisticsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -180,7 +192,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/version' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerVersionWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/version';
@@ -206,6 +220,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerVersionResponseDto?> getServerVersion() async {
     final response = await getServerVersionWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -221,7 +236,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/storage' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getStorageWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/storage';
@@ -247,6 +264,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerStorageResponseDto?> getStorage() async {
     final response = await getStorageWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -262,7 +280,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/media-types' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getSupportedMediaTypesWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/media-types';
@@ -288,6 +308,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerMediaTypesResponseDto?> getSupportedMediaTypes() async {
     final response = await getSupportedMediaTypesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -303,7 +324,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/theme' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getThemeWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/theme';
@@ -329,6 +352,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerThemeDto?> getTheme() async {
     final response = await getThemeWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -344,7 +368,9 @@ class ServerInfoApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server-info/ping' operation and returns the [Response].
+  /// This property was deprecated in v1.107.0
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> pingServerWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/server-info/ping';
@@ -370,6 +396,7 @@ class ServerInfoApi {
     );
   }
 
+  /// This property was deprecated in v1.107.0
   Future<ServerPingResponse?> pingServer() async {
     final response = await pingServerWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

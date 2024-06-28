@@ -12,7 +12,7 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   UsageByUserDto,
-} from 'src/dtos/server-info.dto';
+} from 'src/dtos/server.dto';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -25,7 +25,7 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class ServerInfoService implements OnEvents {
+export class ServerService implements OnEvents {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -35,7 +35,7 @@ export class ServerInfoService implements OnEvents {
     @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.logger.setContext(ServerInfoService.name);
+    this.logger.setContext(ServerService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
