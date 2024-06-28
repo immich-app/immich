@@ -4,7 +4,7 @@
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiMagnifyPlus } from '@mdi/js';
+  import { mdiHeart, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
@@ -38,6 +38,13 @@
         draggable="false"
       />
 
+      <!-- FAVORITE ICON -->
+      {#if asset.isFavorite}
+        <div class="absolute bottom-2 left-2">
+          <Icon path={mdiHeart} size="24" class="text-white" />
+        </div>
+      {/if}
+
       <!-- OVERLAY CHIP -->
       <div
         class="absolute bottom-1 right-3 px-4 py-1 rounded-xl text-xs transition-colors {isSelected
@@ -58,7 +65,7 @@
     <button
       type="button"
       on:click={() => onViewAsset(asset)}
-      class="absolute rounded-full bottom-1 left-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
+      class="absolute rounded-full top-1 left-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
       title={$t('view')}
     >
       <Icon ariaLabel={$t('view')} path={mdiMagnifyPlus} flipped size="18" />
