@@ -71,13 +71,7 @@
               : 'border-transparent'}"
             on:click={() => togglePersonSelection(person.id)}
           >
-            <ImageThumbnail
-              circle
-              shadow
-              url={getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-            />
+            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
             <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
           </button>
         {/each}

@@ -17,6 +17,7 @@ import {
   startOAuth,
   unlinkOAuthAccount,
   type AssetResponseDto,
+  type PersonResponseDto,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
@@ -205,7 +206,8 @@ export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: s
 
 export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
 
-export const getPeopleThumbnailUrl = (personId: string) => createUrl(getPeopleThumbnailPath(personId));
+export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
+  createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
 export const getAssetJobName = derived(t, ($t) => {
   return (job: AssetJobName) => {

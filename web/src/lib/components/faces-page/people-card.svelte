@@ -50,7 +50,7 @@
       <ImageThumbnail
         shadow
         {preload}
-        url={getPeopleThumbnailUrl(person.id)}
+        url={getPeopleThumbnailUrl(person)}
         altText={person.name}
         title={person.name}
         widthStyle="100%"

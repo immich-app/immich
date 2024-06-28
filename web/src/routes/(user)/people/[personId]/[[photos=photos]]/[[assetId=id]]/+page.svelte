@@ -91,7 +91,7 @@
   let refreshAssetGrid = false;
 
   let personName = '';
-  $: thumbnailData = getPeopleThumbnailUrl(data.person.id);
+  $: thumbnailData = getPeopleThumbnailUrl(data.person);
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
@@ -121,7 +121,7 @@
 
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
       if (data.person.id === personId) {
-        thumbnailData = getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`;
+        thumbnailData = getPeopleThumbnailUrl(data.person, Date.now().toString());
       }
     });
   });
@@ -206,10 +206,13 @@
     if (viewMode !== ViewMode.SELECT_PERSON) {
       return;
     }
+    try {
+      await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+      notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_set_feature_photo'));
+    }
 
-    await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
-
-    notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
 
     viewMode = ViewMode.VIEW_ASSETS;
@@ -525,7 +528,7 @@
                       <ImageThumbnail
                         circle
                         shadow
-                        url={getPeopleThumbnailUrl(person.id)}
+                        url={getPeopleThumbnailUrl(person)}
                         altText={person.name}
                         widthStyle="2rem"
                         heightStyle="2rem"

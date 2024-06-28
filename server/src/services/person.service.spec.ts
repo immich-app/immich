@@ -42,6 +42,7 @@ const responseDto: PersonResponseDto = {
   birthDate: null,
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
+  updatedAt: expect.any(Date),
 };
 
 const statistics = { assets: 3 };
@@ -126,6 +127,7 @@ describe(PersonService.name, () => {
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
+            updatedAt: expect.any(Date),
           },
         ],
       });
@@ -255,6 +257,7 @@ describe(PersonService.name, () => {
         birthDate: new Date('1976-06-30'),
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
+        updatedAt: expect.any(Date),
       });
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -407,6 +410,7 @@ describe(PersonService.name, () => {
         id: personStub.noName.id,
         name: personStub.noName.name,
         thumbnailPath: personStub.noName.thumbnailPath,
+        updatedAt: expect.any(Date),
       });
 
       expect(jobMock.queue).not.toHaveBeenCalledWith();

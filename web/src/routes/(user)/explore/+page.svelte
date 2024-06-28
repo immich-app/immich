@@ -61,7 +61,7 @@
               <ImageThumbnail
                 circle
                 shadow
-                url={getPeopleThumbnailUrl(person.id)}
+                url={getPeopleThumbnailUrl(person)}
                 altText={person.name}
                 widthStyle="100%"
               />

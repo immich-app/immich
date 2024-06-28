@@ -158,6 +158,8 @@ export type PersonWithFacesResponseDto = {
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
+    /** This property was added in v1.107.0 */
+    updatedAt?: string;
 };
 export type SmartInfoResponseDto = {
     objects?: string[] | null;
@@ -432,6 +434,8 @@ export type PersonResponseDto = {
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
+    /** This property was added in v1.107.0 */
+    updatedAt?: string;
 };
 export type AssetFaceResponseDto = {
     boundingBoxX1: number;

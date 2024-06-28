@@ -213,7 +213,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={getPeopleThumbnailUrl(person.id)}
+                  url={getPeopleThumbnailUrl(person)}
                   altText={person.name}
                   title={person.name}
                   widthStyle="90px"

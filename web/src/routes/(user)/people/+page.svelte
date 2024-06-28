@@ -508,7 +508,7 @@
             preload={searchName !== '' || index < 20}
             bind:hidden={person.isHidden}
             shadow
-            url={getPeopleThumbnailUrl(person.id)}
+            url={getPeopleThumbnailUrl(person)}
             altText={person.name}
             widthStyle="100%"
             bind:eyeColor={eyeColorMap[person.id]}

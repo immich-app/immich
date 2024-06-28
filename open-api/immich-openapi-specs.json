@@ -9345,6 +9345,11 @@
           },
           "thumbnailPath": {
             "type": "string"
+          },
+          "updatedAt": {
+            "description": "This property was added in v1.107.0",
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -9413,6 +9418,11 @@
             "type": "string"
           },
           "thumbnailPath": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "This property was added in v1.107.0",
+            "format": "date-time",
             "type": "string"
           }
         },
