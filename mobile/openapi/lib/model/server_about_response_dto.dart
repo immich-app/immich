@@ -21,6 +21,7 @@ class ServerAboutResponseDto {
     this.ffmpeg,
     this.imagemagick,
     this.libvips,
+    required this.licensed,
     this.nodejs,
     this.repository,
     this.repositoryUrl,
@@ -95,6 +96,8 @@ class ServerAboutResponseDto {
   ///
   String? libvips;
 
+  bool licensed;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -157,6 +160,7 @@ class ServerAboutResponseDto {
     other.ffmpeg == ffmpeg &&
     other.imagemagick == imagemagick &&
     other.libvips == libvips &&
+    other.licensed == licensed &&
     other.nodejs == nodejs &&
     other.repository == repository &&
     other.repositoryUrl == repositoryUrl &&
@@ -177,6 +181,7 @@ class ServerAboutResponseDto {
     (ffmpeg == null ? 0 : ffmpeg!.hashCode) +
     (imagemagick == null ? 0 : imagemagick!.hashCode) +
     (libvips == null ? 0 : libvips!.hashCode) +
+    (licensed.hashCode) +
     (nodejs == null ? 0 : nodejs!.hashCode) +
     (repository == null ? 0 : repository!.hashCode) +
     (repositoryUrl == null ? 0 : repositoryUrl!.hashCode) +
@@ -187,7 +192,7 @@ class ServerAboutResponseDto {
     (versionUrl.hashCode);
 
   @override
-  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, version=$version, versionUrl=$versionUrl]';
+  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, version=$version, versionUrl=$versionUrl]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -231,6 +236,7 @@ class ServerAboutResponseDto {
     } else {
     //  json[r'libvips'] = null;
     }
+      json[r'licensed'] = this.licensed;
     if (this.nodejs != null) {
       json[r'nodejs'] = this.nodejs;
     } else {
@@ -282,6 +288,7 @@ class ServerAboutResponseDto {
         ffmpeg: mapValueOfType<String>(json, r'ffmpeg'),
         imagemagick: mapValueOfType<String>(json, r'imagemagick'),
         libvips: mapValueOfType<String>(json, r'libvips'),
+        licensed: mapValueOfType<bool>(json, r'licensed')!,
         nodejs: mapValueOfType<String>(json, r'nodejs'),
         repository: mapValueOfType<String>(json, r'repository'),
         repositoryUrl: mapValueOfType<String>(json, r'repositoryUrl'),
@@ -337,6 +344,7 @@ class ServerAboutResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'licensed',
     'version',
     'versionUrl',
   };

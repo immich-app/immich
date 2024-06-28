@@ -73,39 +73,6 @@ class UsersApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /users/me/license' operation and returns the [Response].
-  Future<Response> deleteLicenseWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/users/me/license';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<void> deleteLicense() async {
-    final response = await deleteLicenseWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'DELETE /users/profile-image' operation and returns the [Response].
   Future<Response> deleteProfileImageWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -134,6 +101,39 @@ class UsersApi {
 
   Future<void> deleteProfileImage() async {
     final response = await deleteProfileImageWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /users/me/license' operation and returns the [Response].
+  Future<Response> deleteUserLicenseWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me/license';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> deleteUserLicense() async {
+    final response = await deleteUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -365,7 +365,7 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<Response> setLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
+  Future<Response> setUserLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/users/me/license';
 
@@ -393,8 +393,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<LicenseResponseDto?> setLicense(LicenseKeyDto licenseKeyDto,) async {
-    final response = await setLicenseWithHttpInfo(licenseKeyDto,);
+  Future<LicenseResponseDto?> setUserLicense(LicenseKeyDto licenseKeyDto,) async {
+    final response = await setUserLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

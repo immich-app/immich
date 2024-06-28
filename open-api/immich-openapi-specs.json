@@ -4994,6 +4994,101 @@
         }
       }
     },
+    "/server/license": {
+      "delete": {
+        "operationId": "deleteServerLicense",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      },
+      "get": {
+        "operationId": "getServerLicense",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      },
+      "put": {
+        "operationId": "setServerLicense",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LicenseKeyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LicenseResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/sessions": {
       "delete": {
         "operationId": "deleteAllSessions",
@@ -6596,7 +6691,7 @@
     },
     "/users/me/license": {
       "delete": {
-        "operationId": "deleteLicense",
+        "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
           "200": {
@@ -6619,7 +6714,7 @@
         ]
       },
       "put": {
-        "operationId": "setLicense",
+        "operationId": "setUserLicense",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -9853,6 +9948,9 @@
           "libvips": {
             "type": "string"
           },
+          "licensed": {
+            "type": "boolean"
+          },
           "nodejs": {
             "type": "string"
           },
@@ -9879,6 +9977,7 @@
           }
         },
         "required": [
+          "licensed",
           "version",
           "versionUrl"
         ],

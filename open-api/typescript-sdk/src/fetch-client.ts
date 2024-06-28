@@ -808,6 +808,7 @@ export type ServerAboutResponseDto = {
     ffmpeg?: string;
     imagemagick?: string;
     libvips?: string;
+    licensed: boolean;
     nodejs?: string;
     repository?: string;
     repositoryUrl?: string;
@@ -880,6 +881,13 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type LicenseKeyDto = {
+    activationKey: string;
+    licenseKey: string;
+};
+export type LicenseResponseDto = {
+    valid: boolean;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -1136,13 +1144,6 @@ export type UserUpdateMeDto = {
     email?: string;
     name?: string;
     password?: string;
-};
-export type LicenseKeyDto = {
-    activationKey: string;
-    licenseKey: string;
-};
-export type LicenseResponseDto = {
-    valid: boolean;
 };
 export type CreateProfileImageDto = {
     file: Blob;
@@ -2499,6 +2500,32 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/server/license", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getServerLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: object;
+    }>("/server/license", {
+        ...opts
+    }));
+}
+export function setServerLicense({ licenseKeyDto }: {
+    licenseKeyDto: LicenseKeyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/server/license", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: licenseKeyDto
+    })));
+}
 export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/sessions", {
         ...opts,
@@ -2907,13 +2934,13 @@ export function updateMyUser({ userUpdateMeDto }: {
         body: userUpdateMeDto
     })));
 }
-export function deleteLicense(opts?: Oazapfts.RequestOpts) {
+export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
         ...opts,
         method: "DELETE"
     }));
 }
-export function setLicense({ licenseKeyDto }: {
+export function setUserLicense({ licenseKeyDto }: {
     licenseKeyDto: LicenseKeyDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
