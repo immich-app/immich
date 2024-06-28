@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
@@ -39,7 +39,7 @@
       />
 
       <!-- FAVORITE ICON -->
-      {#if !isSharedLink() && asset.isFavorite}
+      {#if asset.isFavorite}
         <div class="absolute top-2 left-2">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
