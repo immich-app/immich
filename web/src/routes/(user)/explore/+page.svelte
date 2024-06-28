@@ -8,6 +8,8 @@
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { t } from 'svelte-i18n';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import { onMount } from 'svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let data: PageData;
 
@@ -36,6 +38,18 @@
       MAX_PLACE_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 150) : Math.floor(innerWidth / 172);
     }
   }
+
+  onMount(() => {
+    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
+      people.map((person) => {
+        if (person.id === personId) {
+          person.updatedAt = Date.now().toString();
+        }
+      });
+      // trigger reactivity
+      people = people;
+    });
+  });
 </script>
 
 <svelte:window bind:innerWidth={screenSize} />

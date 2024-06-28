@@ -15,7 +15,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcut } from '$lib/actions/shortcut';
   import {
@@ -35,6 +35,7 @@
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { t } from 'svelte-i18n';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let data: PageData;
 
@@ -79,12 +80,21 @@
     }
   }
 
-  onMount(async () => {
+  onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      await handleSearchPeople(true, searchName);
+      handlePromiseError(handleSearchPeople(true, searchName));
     }
+    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
+      people.map((person) => {
+        if (person.id === personId) {
+          person.updatedAt = Date.now().toString();
+        }
+      });
+      // trigger reactivity
+      people = people;
+    });
   });
 
   const handleSearch = async () => {
