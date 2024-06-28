@@ -30,7 +30,7 @@
     "@sveltejs/kit": "^2.5.2",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/svelte": "^5.0.0",
+    "@testing-library/svelte": "^5.2.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/dom-to-image": "^2.6.7",
     "@types/justified-layout": "^4.1.4",
