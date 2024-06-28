@@ -1,10 +1,10 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiMagnifyPlus } from '@mdi/js';
+  import { mdiHeart, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
@@ -37,6 +37,13 @@
         class="h-60 object-cover rounded-t-xl"
         draggable="false"
       />
+
+      <!-- FAVORITE ICON -->
+      {#if !isSharedLink() && asset.isFavorite}
+        <div class="absolute top-2 left-2">
+          <Icon path={mdiHeart} size="24" class="text-white" />
+        </div>
+      {/if}
 
       <!-- OVERLAY CHIP -->
       <div
