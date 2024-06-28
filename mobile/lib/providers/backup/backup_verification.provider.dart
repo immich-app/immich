@@ -23,7 +23,7 @@ class BackupVerification extends _$BackupVerification {
       state = true;
       final backupState = ref.read(backupProvider);
 
-      if (backupState.backupCandidates.length >
+      if (backupState.allUniqueAssets.length >
           backupState.selectedAlbumsBackupAssetsIds.length) {
         if (context.mounted) {
           ImmichToast.show(

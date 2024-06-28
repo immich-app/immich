@@ -18,4 +18,5 @@ class BackupAlbum {
 enum BackupSelection {
   none,
   select,
+  exclude;
 }

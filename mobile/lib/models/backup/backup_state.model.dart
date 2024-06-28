@@ -38,9 +38,10 @@ class BackUpState {
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
   final Set<AvailableAlbum> selectedBackupAlbums;
+  final Set<AvailableAlbum> excludedBackupAlbums;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
-  final Set<AssetEntity> backupCandidates;
+  final Set<AssetEntity> allUniqueAssets;
 
   /// All assets from the selected albums that have been backup
   final Set<String> selectedAlbumsBackupAssetsIds;
@@ -67,7 +68,8 @@ class BackUpState {
     required this.backupTriggerDelay,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
-    required this.backupCandidates,
+    required this.excludedBackupAlbums,
+    required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
     required this.currentUploadAsset,
   });
@@ -91,7 +93,8 @@ class BackUpState {
     int? backupTriggerDelay,
     List<AvailableAlbum>? availableAlbums,
     Set<AvailableAlbum>? selectedBackupAlbums,
-    Set<AssetEntity>? backupCandidates,
+    Set<AvailableAlbum>? excludedBackupAlbums,
+    Set<AssetEntity>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
   }) {
@@ -118,7 +121,8 @@ class BackUpState {
       backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
-      backupCandidates: backupCandidates ?? this.backupCandidates,
+      excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
+      allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds:
           selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
@@ -127,7 +131,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, backupCandidates: $backupCandidates, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -154,7 +158,8 @@ class BackUpState {
         other.backupTriggerDelay == backupTriggerDelay &&
         collectionEquals(other.availableAlbums, availableAlbums) &&
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
-        collectionEquals(other.backupCandidates, backupCandidates) &&
+        collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
+        collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
         collectionEquals(
           other.selectedAlbumsBackupAssetsIds,
           selectedAlbumsBackupAssetsIds,
@@ -182,7 +187,8 @@ class BackUpState {
         backupTriggerDelay.hashCode ^
         availableAlbums.hashCode ^
         selectedBackupAlbums.hashCode ^
-        backupCandidates.hashCode ^
+        excludedBackupAlbums.hashCode ^
+        allUniqueAssets.hashCode ^
         selectedAlbumsBackupAssetsIds.hashCode ^
         currentUploadAsset.hashCode;
   }

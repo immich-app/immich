@@ -65,10 +65,14 @@ class BackupService {
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
       selectedAlbumsQuery() =>
           _db.backupAlbums.filter().selectionEqualTo(BackupSelection.select);
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      excludedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
+    List<BackupAlbum> excludedBackupAlbums,
   ) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
@@ -85,13 +89,19 @@ class BackupService {
     }
     final int allIdx = selectedAlbums.indexWhere((e) => e != null && e.isAll);
     if (allIdx != -1) {
+      final List<AssetPathEntity?> excludedAlbums =
+          await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
       final List<AssetEntity> toAdd = await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums.slice(allIdx, allIdx + 1),
         selectedBackupAlbums.slice(allIdx, allIdx + 1),
         now,
       );
-
-      return toAdd.toSet().toList();
+      final List<AssetEntity> toRemove = await _fetchAssetsAndUpdateLastBackup(
+        excludedAlbums,
+        excludedBackupAlbums,
+        now,
+      );
+      return toAdd.toSet().difference(toRemove.toSet()).toList();
     } else {
       return await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums,
