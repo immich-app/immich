@@ -21,7 +21,7 @@ import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { SearchService } from 'src/services/search.service';
-import { ServerInfoService } from 'src/services/server-info.service';
+import { ServerService } from 'src/services/server.service';
 import { SessionService } from 'src/services/session.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
@@ -61,7 +61,7 @@ export const services = [
   PartnerService,
   PersonService,
   SearchService,
-  ServerInfoService,
+  ServerService,
   SessionService,
   SharedLinkService,
   SmartInfoService,

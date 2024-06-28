@@ -4,7 +4,7 @@ import semver, { SemVer } from 'semver';
 import { isDev, serverVersion } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnServerEvent } from 'src/decorators';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
+import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { SystemMetadataKey, VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { ClientEvent, IEventRepository, OnEvents, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';

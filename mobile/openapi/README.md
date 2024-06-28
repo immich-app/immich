@@ -116,6 +116,15 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DeprecatedApi* | [**getAboutInfo**](doc//DeprecatedApi.md#getaboutinfo) | **GET** /server-info/about | 
+*DeprecatedApi* | [**getServerConfig**](doc//DeprecatedApi.md#getserverconfig) | **GET** /server-info/config | 
+*DeprecatedApi* | [**getServerFeatures**](doc//DeprecatedApi.md#getserverfeatures) | **GET** /server-info/features | 
+*DeprecatedApi* | [**getServerStatistics**](doc//DeprecatedApi.md#getserverstatistics) | **GET** /server-info/statistics | 
+*DeprecatedApi* | [**getServerVersion**](doc//DeprecatedApi.md#getserverversion) | **GET** /server-info/version | 
+*DeprecatedApi* | [**getStorage**](doc//DeprecatedApi.md#getstorage) | **GET** /server-info/storage | 
+*DeprecatedApi* | [**getSupportedMediaTypes**](doc//DeprecatedApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
+*DeprecatedApi* | [**getTheme**](doc//DeprecatedApi.md#gettheme) | **GET** /server-info/theme | 
+*DeprecatedApi* | [**pingServer**](doc//DeprecatedApi.md#pingserver) | **GET** /server-info/ping | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 

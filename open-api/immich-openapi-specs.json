@@ -4720,6 +4720,8 @@
     },
     "/server-info/about": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getAboutInfo",
         "parameters": [],
         "responses": {
@@ -4746,12 +4748,18 @@
           }
         ],
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/config": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerConfig",
         "parameters": [],
         "responses": {
@@ -4767,12 +4775,18 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/features": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerFeatures",
         "parameters": [],
         "responses": {
@@ -4788,12 +4802,18 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/media-types": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getSupportedMediaTypes",
         "parameters": [],
         "responses": {
@@ -4809,12 +4829,18 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/ping": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "pingServer",
         "parameters": [],
         "responses": {
@@ -4830,12 +4856,18 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/statistics": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerStatistics",
         "parameters": [],
         "responses": {
@@ -4862,12 +4894,18 @@
           }
         ],
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/storage": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getStorage",
         "parameters": [],
         "responses": {
@@ -4894,12 +4932,18 @@
           }
         ],
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/theme": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getTheme",
         "parameters": [],
         "responses": {
@@ -4915,12 +4959,18 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/server-info/version": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerVersion",
         "parameters": [],
         "responses": {
@@ -4936,8 +4986,12 @@
           }
         },
         "tags": [
-          "Server Info"
-        ]
+          "Server Info",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.107.0"
+        }
       }
     },
     "/sessions": {
