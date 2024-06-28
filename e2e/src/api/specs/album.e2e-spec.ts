@@ -519,7 +519,7 @@ describe('/albums', () => {
       expect(body).toEqual(errorDto.noPermission);
     });
 
-    it('should be able to remove foreign asset from own album', async () => {
+    it('should be able to remove foreign asset from owned album', async () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
