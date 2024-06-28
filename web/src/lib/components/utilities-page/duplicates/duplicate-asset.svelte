@@ -40,7 +40,7 @@
 
       <!-- FAVORITE ICON -->
       {#if asset.isFavorite}
-        <div class="absolute top-2 left-2">
+        <div class="absolute bottom-2 left-2">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
@@ -65,7 +65,7 @@
     <button
       type="button"
       on:click={() => onViewAsset(asset)}
-      class="absolute rounded-full bottom-1 left-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
+      class="absolute rounded-full top-1 left-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
       title={$t('view')}
     >
       <Icon ariaLabel={$t('view')} path={mdiMagnifyPlus} flipped size="18" />
