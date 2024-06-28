@@ -34,7 +34,7 @@ jobs:
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             device: cuda
             suffix: -cuda
 
