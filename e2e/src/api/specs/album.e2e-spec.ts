@@ -88,7 +88,7 @@ describe('/albums', () => {
     });
 
     await addAssetsToAlbum(
-      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id] } },
+      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id, user1Asset2.id] } },
       { headers: asBearerAuth(user1.accessToken) },
     );
 
@@ -261,7 +261,7 @@ describe('/albums', () => {
         .get(`/albums?assetId=${user1Asset2.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
+      expect(body).toHaveLength(2);
     });
 
     it('should return the album collection filtered by assetId and ignores shared=true', async () => {
@@ -509,7 +509,17 @@ describe('/albums', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not be able to remove foreign asset from own album', async () => {
+    it('should require authorization', async () => {
+      const { status, body } = await request(app)
+        .delete(`/albums/${user1Albums[1].id}/assets`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ ids: [user1Asset1.id] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should be able to remove foreign asset from owned album', async () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
@@ -519,8 +529,7 @@ describe('/albums', () => {
       expect(body).toEqual([
         expect.objectContaining({
           id: user1Asset1.id,
-          success: false,
-          error: 'no_permission',
+          success: true,
         }),
       ]);
     });
@@ -555,10 +564,10 @@ describe('/albums', () => {
       const { status, body } = await request(app)
         .delete(`/albums/${user2Albums[0].id}/assets`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ ids: [user1Asset1.id] });
+        .send({ ids: [user1Asset2.id] });
 
       expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user1Asset1.id, success: true })]);
+      expect(body).toEqual([expect.objectContaining({ id: user1Asset2.id, success: true })]);
     });
 
     it('should not be able to remove assets from album as a viewer', async () => {

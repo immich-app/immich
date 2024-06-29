@@ -762,20 +762,16 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
-    it('should skip assets when user has remove permission on album but not on asset', async () => {
-      accessMock.album.checkSharedAlbumAccess.mockResolvedValue(new Set(['album-123']));
+    it('should allow owner to remove all assets from the album', async () => {
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValue(new Set(['asset-id']));
 
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
-        {
-          success: false,
-          id: 'asset-id',
-          error: BulkIdErrorReason.NO_PERMISSION,
-        },
+        { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).not.toHaveBeenCalled();
+      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
     });
 
     it('should reset the thumbnail if it is removed', async () => {

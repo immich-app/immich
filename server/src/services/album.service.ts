@@ -178,7 +178,7 @@ export class AlbumService {
     const results = await addAssets(
       auth,
       { accessRepository: this.accessRepository, repository: this.albumRepository },
-      { id, assetIds: dto.ids },
+      { parentId: id, assetIds: dto.ids },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
@@ -199,14 +199,13 @@ export class AlbumService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id, { withAssets: false });
-
     await this.access.requirePermission(auth, Permission.ALBUM_REMOVE_ASSET, id);
 
+    const album = await this.findOrFail(id, { withAssets: false });
     const results = await removeAssets(
       auth,
       { accessRepository: this.accessRepository, repository: this.albumRepository },
-      { id, assetIds: dto.ids, permissions: [Permission.ASSET_SHARE, Permission.ALBUM_REMOVE_ASSET] },
+      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.ALBUM_DELETE },
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
