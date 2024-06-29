@@ -1,8 +1,8 @@
 import { AppRoute } from '$lib/constants';
 import { user } from '$lib/stores/user.store';
 import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { redirect } from '@sveltejs/kit';
-import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
@@ -12,7 +12,7 @@ export const load = (async () => {
     redirect(302, AppRoute.PHOTOS);
   }
 
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     meta: {
