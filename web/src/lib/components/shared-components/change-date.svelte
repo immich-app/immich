@@ -24,10 +24,20 @@
     value: string;
   };
 
-  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
-    value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
-  }));
+  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
+    .map((zone: string) => ({
+      label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
+      value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
+    }))
+    .sort((zoneA, zoneB) => {
+      let numericallyCorrect =
+        Number(zoneA.value.slice(3).replace(':', '.')) - Number(zoneB.value.slice(3).replace(':', '.'));
+      if (numericallyCorrect != 0) {
+        return numericallyCorrect;
+      }
+      const alphabeticallyCorrect = zoneA.label.localeCompare(zoneB.label, undefined, { sensitivity: 'base' });
+      return alphabeticallyCorrect;
+    });
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
