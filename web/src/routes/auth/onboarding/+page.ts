@@ -1,14 +1,13 @@
 import { loadConfig } from '$lib/stores/server-config.store';
 import { authenticate } from '$lib/utils/auth';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
   await loadConfig();
 
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     meta: {

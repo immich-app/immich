@@ -1,8 +1,7 @@
 import { AppRoute } from '$lib/constants';
+import { getFormatter } from '$lib/utils/i18n';
 import { getServerConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
@@ -12,7 +11,7 @@ export const load = (async () => {
     redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     meta: {
