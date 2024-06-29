@@ -81,7 +81,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     duplicateDetection: {
       enabled: true,
-      maxDistance: 0.0155,
+      maxDistance: 0.01,
     },
     facialRecognition: {
       enabled: true,

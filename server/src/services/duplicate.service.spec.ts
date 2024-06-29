@@ -214,7 +214,7 @@ describe(SearchService.name, () => {
       expect(searchMock.searchDuplicates).toHaveBeenCalledWith({
         assetId: assetStub.hasEmbedding.id,
         embedding: assetStub.hasEmbedding.smartSearch!.embedding,
-        maxDistance: 0.0155,
+        maxDistance: 0.01,
         type: assetStub.hasEmbedding.type,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
@@ -240,7 +240,7 @@ describe(SearchService.name, () => {
       expect(searchMock.searchDuplicates).toHaveBeenCalledWith({
         assetId: assetStub.hasEmbedding.id,
         embedding: assetStub.hasEmbedding.smartSearch!.embedding,
-        maxDistance: 0.0155,
+        maxDistance: 0.01,
         type: assetStub.hasEmbedding.type,
         userIds: [assetStub.hasEmbedding.ownerId],
       });
