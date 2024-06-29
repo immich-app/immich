@@ -60,8 +60,8 @@
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {message}</a
-                >
+                  {message}
+                </a>
               </FormatMessage>
             </p>
           </svelte:fragment>
