@@ -18,7 +18,7 @@
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
 
-  const cronExpressionOptions = [
+  $: cronExpressionOptions = [
     { title: $t('interval.night_at_midnight'), expression: '0 0 * * *' },
     { title: $t('interval.night_at_twoam'), expression: '0 2 * * *' },
     { title: $t('interval.day_at_onepm'), expression: '0 13 * * *' },

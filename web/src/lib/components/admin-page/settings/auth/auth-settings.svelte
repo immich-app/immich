@@ -51,7 +51,7 @@
   >
     <svelte:fragment slot="prompt">
       <div class="flex flex-col gap-4">
-        <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
+        <p>{$t('admin.authentication_settings_disable_all')}</p>
         <p>
           <FormatMessage key="admin.authentication_settings_reenable" let:message>
             <a

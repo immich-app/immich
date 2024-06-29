@@ -331,9 +331,9 @@
         return person;
       });
 
-      notificationController.show({ message: 'Date of birth saved successfully', type: NotificationType.Info });
+      notificationController.show({ message: $t('date_of_birth_saved'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to save date of birth');
+      handleError(error, $t('errors.unable_to_save_date_of_birth'));
     }
   };
 

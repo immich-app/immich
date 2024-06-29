@@ -57,7 +57,12 @@
 <div class="dark:text-immich-dark-fg">
   <div
     class="storage-status grid grid-cols-[64px_auto]"
-    title="Used {getByteUnitString(usedBytes, $locale, 3)} of {getByteUnitString(availableBytes, $locale, 3)}"
+    title={$t('storage_usage', {
+      values: {
+        used: getByteUnitString(usedBytes, $locale, 3),
+        available: getByteUnitString(availableBytes, $locale, 3),
+      },
+    })}
   >
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Icon path={mdiChartPie} size="24" />

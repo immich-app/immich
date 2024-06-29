@@ -51,7 +51,7 @@
     <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if device.deviceType || device.deviceOS}
-          <span>{device.deviceOS || 'Unknown'} • {device.deviceType || 'Unknown'}</span>
+          <span>{device.deviceOS || $t('unknown')} • {device.deviceType || $t('unknown')}</span>
         {:else}
           <span>{$t('unknown')}</span>
         {/if}
