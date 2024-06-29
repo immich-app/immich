@@ -847,6 +847,7 @@
   "permanent_deletion_warning_setting_description": "Show a warning when permanently deleting assets",
   "permanently_delete": "Permanently delete",
   "permanently_delete_assets_count": "Permanently delete {count, plural, one {asset} other {assets}}",
+  "permanently_delete_assets_prompt": "Are you sure you want to permanently delete {count, plural, one {this asset?} other {these <b>#</b> assets?}} This will also remove {count, plural, one {it from its} other {them from their}} album(s).",
   "permanently_deleted_asset": "Permanently deleted asset",
   "permanently_deleted_assets_count": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
   "person": "Person",
