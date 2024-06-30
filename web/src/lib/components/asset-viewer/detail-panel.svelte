@@ -231,7 +231,6 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
-              style="background-color: {getBorderColor(person.id)};"
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
@@ -242,7 +241,9 @@
                 ($boundingBoxesArray = people[index].faces.map((face) => createBoundingBoxType(face, person.id, true)))}
               on:mouseleave={() => ($boundingBoxesArray = allFaces)}
             >
-              <div class="relative">
+              <div
+                class="relative {markingAllFaces ? ' border-solid border-[3px] rounded-lg' : ''}"
+                style:border-color={markingAllFaces ? `${getBorderColor(person.id)}` : ''}>
                 <ImageThumbnail
                   curve
                   shadow
