@@ -25,18 +25,21 @@
   };
 
   const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
+    .map((zone) => DateTime.local({ zone }))
     .sort((zoneA, zoneB) => {
-      let numericallyCorrect = DateTime.local({ zone: zoneA }).offset - DateTime.local({ zone: zoneB }).offset;
+      let numericallyCorrect = zoneA.offset - zoneB.offset;
       if (numericallyCorrect != 0) {
         return numericallyCorrect;
       }
-      const alphabeticallyCorrect = zoneA.localeCompare(zoneB, undefined, { sensitivity: 'base' });
-      return alphabeticallyCorrect;
+      return zoneA.zoneName.localeCompare(zoneB.zoneName, undefined, { sensitivity: 'base' });
     })
-    .map((zone: string) => ({
-      label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
-      value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
-    }));
+    .map((zone) => {
+      const offset = zone.toFormat('ZZ');
+      return {
+        label: `${zone.zoneName} (${offset})`,
+        value: 'UTC' + offset,
+      };
+    });
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
