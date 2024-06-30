@@ -5,6 +5,7 @@
 <script lang="ts">
   import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   interface User {
     id: string;
@@ -77,7 +78,7 @@
     <img
       bind:this={img}
       src={getProfileImageUrl(user.id)}
-      alt="Profile image of {title}"
+      alt={$t('profile_image_of_user', { values: { user: title } })}
       class="h-full w-full object-cover"
       class:hidden={showFallback}
       draggable="false"

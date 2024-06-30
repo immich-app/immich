@@ -209,7 +209,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {@const personName = face.person ? face.person?.name : 'Unassigned'}
+          {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div
               role="button"
@@ -261,8 +261,8 @@
                       curve
                       shadow
                       url="/src/lib/assets/no-thumbnail.png"
-                      altText="Unassigned"
-                      title="Unassigned"
+                      altText={$t('face_unassigned')}
+                      title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
                       thumbhash={null}
@@ -273,8 +273,8 @@
                       curve
                       shadow
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
-                      altText="Unassigned"
-                      title="Unassigned"
+                      altText={$t('face_unassigned')}
+                      title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
                       thumbhash={null}
@@ -289,7 +289,7 @@
                   {#if selectedPersonToReassign[face.id]?.id}
                     {selectedPersonToReassign[face.id]?.name}
                   {:else}
-                    <span class={personName == 'Unassigned' ? 'dark:text-gray-500' : ''}>{personName}</span>
+                    <span class={personName === $t('face_unassigned') ? 'dark:text-gray-500' : ''}>{personName}</span>
                   {/if}
                 </p>
               {/if}
@@ -322,7 +322,7 @@
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaLabel="Just a face" size="18" />
+                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="18" />
                   </div>
                 {/if}
               </div>

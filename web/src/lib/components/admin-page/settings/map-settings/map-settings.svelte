@@ -11,6 +11,7 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -52,12 +53,16 @@
         <SettingAccordion key="reverse-geocoding" title={$t('admin.map_reverse_geocoding_settings')}>
           <svelte:fragment slot="subtitle">
             <p class="text-sm dark:text-immich-dark-fg">
-              Manage <a
-                href="https://immich.app/docs/features/reverse-geocoding"
-                class="underline"
-                target="_blank"
-                rel="noreferrer">{$t('admin.map_reverse_geocoding')}</a
-              > settings
+              <FormatMessage key="admin.map_manage_reverse_geocoding_settings" let:message>
+                <a
+                  href="https://immich.app/docs/features/reverse-geocoding"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {message}
+                </a>
+              </FormatMessage>
             </p>
           </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">

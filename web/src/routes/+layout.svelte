@@ -78,7 +78,7 @@
     try {
       await loadConfig();
     } catch (error) {
-      handleError(error, 'Unable to connect to server');
+      handleError(error, $t('errors.unable_to_connect_to_server'));
     }
   });
 </script>

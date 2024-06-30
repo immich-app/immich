@@ -3,7 +3,8 @@ import { fromLocalDateTime } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
-import { writable, type Unsubscriber } from 'svelte/store';
+import { t } from 'svelte-i18n';
+import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
 
@@ -286,7 +287,8 @@ export class AssetStore {
 
       this.emit(true);
     } catch (error) {
-      handleError(error, 'Failed to load assets');
+      const $t = get(t);
+      handleError(error, $t('errors.failed_to_load_assets'));
     } finally {
       bucket.cancelToken = null;
     }

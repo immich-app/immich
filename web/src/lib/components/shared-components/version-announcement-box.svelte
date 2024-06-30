@@ -50,7 +50,7 @@
       </FormatMessage>
     </div>
 
-    <div class="mt-4 font-medium">Your friend, Alex</div>
+    <div class="mt-4 font-medium">{$t('version_announcement_closing')}</div>
 
     <div class="font-sm mt-8">
       <code>{$t('server_version')}: {serverVersion}</code>
