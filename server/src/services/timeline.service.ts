@@ -45,8 +45,12 @@ export class TimelineService {
     if (userId) {
       userIds = [userId];
       if (dto.withPartners) {
-        const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
-        userIds.push(...partnerIds);
+        const partners = await this.partnerRepository.getAll(auth.user.id);
+        const partnersIds = partners
+          .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
+          .map((partner) => partner.sharedById);
+
+        userIds.push(...partnersIds);
       }
     }
 

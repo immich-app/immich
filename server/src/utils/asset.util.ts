@@ -100,7 +100,7 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
   const partners = await repository.getAll(userId);
   for (const partner of partners) {
     // ignore deleted users
-    if (!partner.sharedBy || !partner.sharedWith) {
+    if (!partner.sharedBy && !partner.sharedWith) {
       continue;
     }
 
