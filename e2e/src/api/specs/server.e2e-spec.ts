@@ -5,6 +5,12 @@ import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
+const serverLicense = {
+  licenseKey: 'IMSV-6ECZ-91TE-WZRM-Q7AQ-MBN4-UW48-2CPT-71X9',
+  activationKey:
+    '4kJUNUWMq13J14zqPFm1NodRcI6MV6DeOGvQNIgrM8Sc9nv669wyEVvFw1Nz4Kb1W7zLWblOtXEQzpRRqC4r4fKjewJxfbpeo9sEsqAVIfl4Ero-Vp1Dg21-sVdDGZEAy2oeTCXAyCT5d1JqrqR6N1qTAm4xOx9ujXQRFYhjRG8uwudw7_Q49pF18Tj5OEv9qCqElxztoNck4i6O_azsmsoOQrLIENIWPh3EynBN3ESpYERdCgXO8MlWeuG14_V1HbNjnJPZDuvYg__YfMzoOEtfm1sCqEaJ2Ww-BaX7yGfuCL4XsuZlCQQNHjfscy_WywVfIZPKCiW8QR74i0cSzQ',
+};
+
 describe('/server', () => {
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
@@ -215,18 +221,13 @@ describe('/server', () => {
     });
 
     it('should return the server license', async () => {
-      const license = {
-        licenseKey: 'IMSV-6ECZ-91TE-WZRM-Q7AQ-MBN4-UW48-2CPT-71X9',
-        activationKey:
-          '4kJUNUWMq13J14zqPFm1NodRcI6MV6DeOGvQNIgrM8Sc9nv669wyEVvFw1Nz4Kb1W7zLWblOtXEQzpRRqC4r4fKjewJxfbpeo9sEsqAVIfl4Ero-Vp1Dg21-sVdDGZEAy2oeTCXAyCT5d1JqrqR6N1qTAm4xOx9ujXQRFYhjRG8uwudw7_Q49pF18Tj5OEv9qCqElxztoNck4i6O_azsmsoOQrLIENIWPh3EynBN3ESpYERdCgXO8MlWeuG14_V1HbNjnJPZDuvYg__YfMzoOEtfm1sCqEaJ2Ww-BaX7yGfuCL4XsuZlCQQNHjfscy_WywVfIZPKCiW8QR74i0cSzQ ',
-      };
-      await request(app).put('/server/license').set('Authorization', `Bearer ${admin.accessToken}`).send(license);
+      await request(app).put('/server/license').set('Authorization', `Bearer ${admin.accessToken}`).send(serverLicense);
       const { status, body } = await request(app)
         .get('/server/license')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
-        ...license,
+        ...serverLicense,
         activatedAt: expect.any(String),
       });
     });
@@ -247,13 +248,11 @@ describe('/server', () => {
       expect(body).toEqual(errorDto.forbidden);
     });
 
-    it('should return the server license', async () => {
-      const license = {
-        licenseKey: 'IMSV-6ECZ-91TE-WZRM-Q7AQ-MBN4-UW48-2CPT-71X9',
-        activationKey:
-          '4kJUNUWMq13J14zqPFm1NodRcI6MV6DeOGvQNIgrM8Sc9nv669wyEVvFw1Nz4Kb1W7zLWblOtXEQzpRRqC4r4fKjewJxfbpeo9sEsqAVIfl4Ero-Vp1Dg21-sVdDGZEAy2oeTCXAyCT5d1JqrqR6N1qTAm4xOx9ujXQRFYhjRG8uwudw7_Q49pF18Tj5OEv9qCqElxztoNck4i6O_azsmsoOQrLIENIWPh3EynBN3ESpYERdCgXO8MlWeuG14_V1HbNjnJPZDuvYg__YfMzoOEtfm1sCqEaJ2Ww-BaX7yGfuCL4XsuZlCQQNHjfscy_WywVfIZPKCiW8QR74i0cSzQ ',
-      };
-      await request(app).delete('/server/license').set('Authorization', `Bearer ${admin.accessToken}`).send(license);
+    it('should delete the server license', async () => {
+      await request(app)
+        .delete('/server/license')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send(serverLicense);
       const { status } = await request(app).get('/server/license').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
     });
@@ -278,13 +277,31 @@ describe('/server', () => {
       const { status, body } = await request(app)
         .put('/server/license')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({
-          licenseKey: 'IMSV-6ECZ-91TE-WZRM-Q7AQ-MBN4-UW48-2CPT-71X9',
-          activationKey:
-            '4kJUNUWMq13J14zqPFm1NodRcI6MV6DeOGvQNIgrM8Sc9nv669wyEVvFw1Nz4Kb1W7zLWblOtXEQzpRRqC4r4fKjewJxfbpeo9sEsqAVIfl4Ero-Vp1Dg21-sVdDGZEAy2oeTCXAyCT5d1JqrqR6N1qTAm4xOx9ujXQRFYhjRG8uwudw7_Q49pF18Tj5OEv9qCqElxztoNck4i6O_azsmsoOQrLIENIWPh3EynBN3ESpYERdCgXO8MlWeuG14_V1HbNjnJPZDuvYg__YfMzoOEtfm1sCqEaJ2Ww-BaX7yGfuCL4XsuZlCQQNHjfscy_WywVfIZPKCiW8QR74i0cSzQ ',
-        });
+        .send(serverLicense);
       expect(status).toBe(200);
-      expect(body).toEqual({ valid: true });
+      expect(body).toEqual({ ...serverLicense, activatedAt: expect.any(String) });
+      const { body: licenseBody } = await request(app)
+        .get('/server/license')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(licenseBody).toEqual({ ...serverLicense, activatedAt: expect.any(String) });
+    });
+
+    it('should reject license not starting with IMSV-', async () => {
+      const { status, body } = await request(app)
+        .put('/server/license')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ licenseKey: 'IMCL-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD', activationKey: 'activationKey' });
+      expect(status).toBe(400);
+      expect(body.message).toBe('Invalid license key');
+    });
+
+    it('should reject license with invalid activation key', async () => {
+      const { status, body } = await request(app)
+        .put('/server/license')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ licenseKey: serverLicense.licenseKey, activationKey: `invalid${serverLicense.activationKey}` });
+      expect(status).toBe(400);
+      expect(body.message).toBe('Invalid license key');
     });
   });
 });
