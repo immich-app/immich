@@ -3,7 +3,7 @@ import 'package:immich_mobile/entities/exif_info.entity.dart';
 
 String getAltText(ExifInfo? exifInfo, DateTime fileCreatedAt) {
   if (exifInfo?.description != null && exifInfo!.description!.isNotEmpty) {
-    return exifInfo!.description!;
+    return exifInfo.description!;
   }
 
   bool hasLocation = exifInfo?.city != null && exifInfo?.country != null;
