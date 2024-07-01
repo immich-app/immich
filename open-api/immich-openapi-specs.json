@@ -8943,12 +8943,22 @@
       },
       "LicenseResponseDto": {
         "properties": {
-          "valid": {
-            "type": "boolean"
+          "activatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "activationKey": {
+            "type": "string"
+          },
+          "licenseKey": {
+            "pattern": "/IM(SV|CL)(-[\\dA-Za-z]{4}){8}/",
+            "type": "string"
           }
         },
         "required": [
-          "valid"
+          "activatedAt",
+          "activationKey",
+          "licenseKey"
         ],
         "type": "object"
       },

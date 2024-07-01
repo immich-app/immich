@@ -143,25 +143,27 @@ export class UserService {
     if (!license.licenseKey.startsWith('IMCL-')) {
       throw new BadRequestException('Invalid license key');
     }
-    const trimmedLicenseKey = license.licenseKey;
     const licenseValid = this.cryptoRepository.verifySha256(
-      trimmedLicenseKey,
+      license.licenseKey,
       license.activationKey,
       getClientLicensePublicKey(),
     );
 
-    if (licenseValid) {
-      await this.userRepository.upsertMetadata(auth.user.id, {
-        key: UserMetadataKey.LICENSE,
-        value: {
-          licenseKey: license.licenseKey,
-          activationKey: license.activationKey,
-          activatedAt: new Date(),
-        },
-      });
+    if (!licenseValid) {
+      throw new BadRequestException('Invalid license key');
     }
 
-    return { valid: licenseValid };
+    const licenseData = {
+      ...license,
+      activatedAt: new Date(),
+    };
+
+    await this.userRepository.upsertMetadata(auth.user.id, {
+      key: UserMetadataKey.LICENSE,
+      value: licenseData,
+    });
+
+    return licenseData;
   }
 
   async handleUserSyncUsage(): Promise<JobStatus> {

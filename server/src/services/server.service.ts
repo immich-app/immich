@@ -172,21 +172,23 @@ export class ServerService implements OnEvents {
     if (!license.licenseKey.startsWith('IMSV-')) {
       throw new BadRequestException('Invalid license key');
     }
-    const trimmedLicenseKey = license.licenseKey;
     const licenseValid = this.cryptoRepository.verifySha256(
-      trimmedLicenseKey,
+      license.licenseKey,
       license.activationKey,
       getServerLicensePublicKey(),
     );
 
-    if (licenseValid) {
-      await this.systemMetadataRepository.set(SystemMetadataKey.LICENSE, {
-        licenseKey: license.licenseKey,
-        activationKey: license.activationKey,
-        activatedAt: new Date(),
-      });
+    if (!licenseValid) {
+      throw new BadRequestException('Invalid license key');
     }
 
-    return { valid: licenseValid };
+    const licenseData = {
+      ...license,
+      activatedAt: new Date(),
+    };
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.LICENSE, licenseData);
+
+    return licenseData;
   }
 }

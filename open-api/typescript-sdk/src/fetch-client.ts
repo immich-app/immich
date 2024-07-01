@@ -887,7 +887,9 @@ export type LicenseKeyDto = {
     licenseKey: string;
 };
 export type LicenseResponseDto = {
-    valid: boolean;
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
 };
 export type SessionResponseDto = {
     createdAt: string;

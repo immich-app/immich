@@ -13,26 +13,38 @@ part of openapi.api;
 class LicenseResponseDto {
   /// Returns a new [LicenseResponseDto] instance.
   LicenseResponseDto({
-    required this.valid,
+    required this.activatedAt,
+    required this.activationKey,
+    required this.licenseKey,
   });
 
-  bool valid;
+  DateTime activatedAt;
+
+  String activationKey;
+
+  String licenseKey;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LicenseResponseDto &&
-    other.valid == valid;
+    other.activatedAt == activatedAt &&
+    other.activationKey == activationKey &&
+    other.licenseKey == licenseKey;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (valid.hashCode);
+    (activatedAt.hashCode) +
+    (activationKey.hashCode) +
+    (licenseKey.hashCode);
 
   @override
-  String toString() => 'LicenseResponseDto[valid=$valid]';
+  String toString() => 'LicenseResponseDto[activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'valid'] = this.valid;
+      json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
+      json[r'activationKey'] = this.activationKey;
+      json[r'licenseKey'] = this.licenseKey;
     return json;
   }
 
@@ -44,7 +56,9 @@ class LicenseResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LicenseResponseDto(
-        valid: mapValueOfType<bool>(json, r'valid')!,
+        activatedAt: mapDateTime(json, r'activatedAt', r'')!,
+        activationKey: mapValueOfType<String>(json, r'activationKey')!,
+        licenseKey: mapValueOfType<String>(json, r'licenseKey')!,
       );
     }
     return null;
@@ -92,7 +106,9 @@ class LicenseResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'valid',
+    'activatedAt',
+    'activationKey',
+    'licenseKey',
   };
 }
 

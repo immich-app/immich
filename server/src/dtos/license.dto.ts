@@ -11,6 +11,6 @@ export class LicenseKeyDto {
   activationKey!: string;
 }
 
-export class LicenseResponseDto {
-  valid!: boolean;
+export class LicenseResponseDto extends LicenseKeyDto {
+  activatedAt!: Date;
 }
