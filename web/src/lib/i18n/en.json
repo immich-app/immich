@@ -257,7 +257,7 @@
     "transcoding_hardware_acceleration": "Hardware Acceleration",
     "transcoding_hardware_acceleration_description": "Experimental; much faster, but will have lower quality at the same bitrate",
     "transcoding_hardware_decoding": "Hardware decoding",
-    "transcoding_hardware_decoding_setting_description": "Applies only to NVENC and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos.",
+    "transcoding_hardware_decoding_setting_description": "Applies only to NVENC, QSV and RKMPP. Enables end-to-end acceleration instead of only accelerating encoding. May not work on all videos.",
     "transcoding_hevc_codec": "HEVC codec",
     "transcoding_max_b_frames": "Maximum B-frames",
     "transcoding_max_b_frames_description": "Higher values improve compression efficiency, but slow down encoding. May not be compatible with hardware acceleration on older devices. 0 disables B-frames, while -1 sets this value automatically.",
