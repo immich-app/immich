@@ -4,6 +4,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let size: number;
 
@@ -30,12 +31,9 @@
 >
   <svelte:fragment slot="prompt">
     <p>
-      Are you sure you want to permanently delete
-      {#if size > 1}
-        these <b>{size}</b> assets? This will also remove them from their album(s).
-      {:else}
-        this asset? This will also remove it from its album(s).
-      {/if}
+      <FormatMessage key="permanently_delete_assets_prompt" values={{ count: size }} let:message>
+        <b>{message}</b>
+      </FormatMessage>
     </p>
     <p><b>{$t('cannot_undo_this_action')}</b></p>
 

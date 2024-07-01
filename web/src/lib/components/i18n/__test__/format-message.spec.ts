@@ -13,6 +13,9 @@ describe('FormatMessage component', () => {
         html: 'Hello <b>{name}</b>',
         plural: 'You have <b>{count, plural, one {# item} other {# items}}</b>',
         xss: '<image/src/onerror=prompt(8)>',
+        plural_with_html: 'You have {count, plural, other {<b>#</b> items}}',
+        select_with_html: 'Item is {status, select, other {<b>disabled</b>}}',
+        ordinal_with_html: '{count, selectordinal, other {<b>#th</b>}} item',
       }),
     );
 
@@ -75,5 +78,29 @@ describe('FormatMessage component', () => {
   it('displays the message key when not found', () => {
     render(FormatMessage, { key: 'invalid.key' });
     expect(screen.getByText('invalid.key')).toBeInTheDocument();
+  });
+
+  it('supports html tags inside plurals', () => {
+    const { container } = render(FormatTagB, {
+      key: 'plural_with_html',
+      values: { count: 10 },
+    });
+    expect(container.innerHTML).toBe('You have <strong>10</strong> items');
+  });
+
+  it('supports html tags inside select', () => {
+    const { container } = render(FormatTagB, {
+      key: 'select_with_html',
+      values: { status: true },
+    });
+    expect(container.innerHTML).toBe('Item is <strong>disabled</strong>');
+  });
+
+  it('supports html tags inside selectordinal', () => {
+    const { container } = render(FormatTagB, {
+      key: 'ordinal_with_html',
+      values: { count: 4 },
+    });
+    expect(container.innerHTML).toBe('<strong>4th</strong> item');
   });
 });
