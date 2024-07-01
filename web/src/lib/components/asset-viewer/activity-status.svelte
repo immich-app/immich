@@ -14,7 +14,7 @@
   }>();
 </script>
 
-<div class="w-full flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60">
+<div class="w-full flex p-4 text-white items-center justify-center rounded-full gap-5 bg-immich-dark-bg bg-opacity-60">
   <button type="button" class={disabled ? 'cursor-not-allowed' : ''} on:click={() => dispatch('favorite')} {disabled}>
     <div class="items-center justify-center">
       <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
