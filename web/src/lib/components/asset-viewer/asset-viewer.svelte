@@ -682,7 +682,7 @@
             />
           {/if}
           {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
-            <div class="z-[9999] absolute bottom-0 right-0 mb-12 mr-3">
+            <div class="z-[9999] absolute bottom-0 right-0 mb-20 mr-8">
               <ActivityStatus
                 disabled={!album?.isActivityEnabled}
                 {isLiked}
