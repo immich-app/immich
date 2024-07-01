@@ -6713,6 +6713,36 @@
           "Users"
         ]
       },
+      "get": {
+        "operationId": "getUserLicense",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LicenseResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      },
       "put": {
         "operationId": "setUserLicense",
         "parameters": [],
@@ -9457,14 +9487,6 @@
           "inTimeline": {
             "type": "boolean"
           },
-          "license": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserLicense"
-              }
-            ],
-            "nullable": true
-          },
           "name": {
             "type": "string"
           },
@@ -9476,7 +9498,6 @@
           "avatarColor",
           "email",
           "id",
-          "license",
           "name",
           "profileImagePath"
         ],
@@ -11715,14 +11736,6 @@
           "id": {
             "type": "string"
           },
-          "license": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserLicense"
-              }
-            ],
-            "nullable": true
-          },
           "name": {
             "type": "string"
           },
@@ -11734,7 +11747,6 @@
           "avatarColor",
           "email",
           "id",
-          "license",
           "name",
           "profileImagePath"
         ],

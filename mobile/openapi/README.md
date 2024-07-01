@@ -232,6 +232,7 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | 
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | 
 *UsersApi* | [**getUser**](doc//UsersApi.md#getuser) | **GET** /users/{id} | 
+*UsersApi* | [**getUserLicense**](doc//UsersApi.md#getuserlicense) | **GET** /users/me/license | 
 *UsersApi* | [**searchUsers**](doc//UsersApi.md#searchusers) | **GET** /users | 
 *UsersApi* | [**setUserLicense**](doc//UsersApi.md#setuserlicense) | **PUT** /users/me/license | 
 *UsersApi* | [**updateMyPreferences**](doc//UsersApi.md#updatemypreferences) | **PUT** /users/me/preferences | 

@@ -14,16 +14,10 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
-export type UserLicense = {
-    activatedAt: string;
-    activationKey: string;
-    licenseKey: string;
-};
 export type UserResponseDto = {
     avatarColor: UserAvatarColor;
     email: string;
     id: string;
-    license: (UserLicense) | null;
     name: string;
     profileImagePath: string;
 };
@@ -43,6 +37,11 @@ export type ActivityCreateDto = {
 };
 export type ActivityStatisticsResponseDto = {
     comments: number;
+};
+export type UserLicense = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
 };
 export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
@@ -601,7 +600,6 @@ export type PartnerResponseDto = {
     email: string;
     id: string;
     inTimeline?: boolean;
-    license: (UserLicense) | null;
     name: string;
     profileImagePath: string;
 };
@@ -2940,6 +2938,14 @@ export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function getUserLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/users/me/license", {
+        ...opts
     }));
 }
 export function setUserLicense({ licenseKeyDto }: {
