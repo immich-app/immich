@@ -903,6 +903,7 @@
   "permanent_deletion_warning_setting_description": "Toon een waarschuwing bij het permanent verwijderen van assets",
   "permanently_delete": "Permanent verwijderen",
   "permanently_delete_assets_count": "{count, plural, one {Asset} other {Assets}} permanent verwijderen",
+  "permanently_delete_assets_prompt": "Weet je zeker dat je deze {count, plural, one {asset} other {<b>#</b> assets}} permanent wilt verwijderen? Hiermee {count, plural, one {wordt} other {worden}} deze ook uit de bijbehorende album(s) verwijderd.",
   "permanently_deleted_asset": "Asset permanent verwijderd",
   "permanently_deleted_assets": "{count, plural, one {# asset} other {# assets}} permanent verwijderd",
   "permanently_deleted_assets_count": "{count, plural, one {# asset} other {# assets}} permanent verwijderd",
