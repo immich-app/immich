@@ -12,7 +12,7 @@
   export { className as class };
 </script>
 
-<div class="relative aspect-square">
+<div class="relative aspect-square shrink-0">
   {#if link?.album}
     <AlbumCover album={link.album} class={className} {preload} />
   {:else if link.assets[0]}

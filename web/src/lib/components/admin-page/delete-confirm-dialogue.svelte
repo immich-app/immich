@@ -74,7 +74,7 @@
       <div class="flex justify-center m-4 gap-2">
         <Checkbox
           id="queue-user-deletion-checkbox"
-          label="Queue user and assets for immediate deletion"
+          label={$t('admin.user_delete_immediately_checkbox')}
           labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
           on:change={() => {
