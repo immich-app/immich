@@ -98,6 +98,33 @@
   $: parts = getParts(message, locale);
 </script>
 
+<!--
+@component
+Formats an [ICU message](https://formatjs.io/docs/core-concepts/icu-syntax) that contains HTML tags
+
+### Props
+- `key` - Key of a defined message
+- `values` - Object with a value for each placeholder in the message (optional)
+
+### Default Slot
+Used for every occurrence of an HTML tag in a message
+- `tag` - Name of the tag
+- `message` - Formatted text inside the tag
+
+@example
+```svelte
+{"message": "Visit <link>docs</link> <b>{time}</b>"}
+<FormattedMessage key="message" values={{ time: 'now' }} let:tag let:message>
+  {#if tag === 'link'}
+    <a href="">{message}</a>
+  {:else if tag === 'b'}
+    <strong>{message}</strong>
+  {/if}
+</FormattedMessage>
+
+Result: Visit <a href="">docs</a> <strong>now</strong>
+```
+-->
 {#each parts as { tag, message }}
   {#if tag}
     <slot {tag} {message}>{message}</slot>
