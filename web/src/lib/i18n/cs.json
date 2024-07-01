@@ -903,6 +903,7 @@
   "permanent_deletion_warning_setting_description": "Zobrazit varování při trvalém odstranění položek",
   "permanently_delete": "Trvale odstranit",
   "permanently_delete_assets_count": "Trvale vymazat {count, plural, one {položku} other {položky}}",
+  "permanently_delete_assets_prompt": "Opravdu chcete trvale smazat {count, plural, one {tuto položku} few {tyto <b>#</b> položky} other {těchto <b>#</b> položek}}? Tím {count, plural, one {ji také odstraníte z jejích} other {je také odstraníte z jejich}} alb.",
   "permanently_deleted_asset": "Položka trvale odstraněna",
   "permanently_deleted_assets": "Trvale {count, plural, one {odstraněna # položka} few {odstraněny # položky} other {odstraněno # položek}}",
   "permanently_deleted_assets_count": "{count, plural, one {Položka trvale vymazána} other {Položky trvale vymazány}}",
