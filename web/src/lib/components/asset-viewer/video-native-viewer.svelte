@@ -51,10 +51,7 @@
   };
 </script>
 
-<div
-  transition:fade={{ duration: 150 }}
-  class="flex h-full select-none place-content-center place-items-center"
->
+<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
     bind:this={element}
     loop={$loopVideoPreference && loopVideo}

@@ -635,7 +635,6 @@
               disabled={!album.isActivityEnabled}
               {isLiked}
               numberOfComments={$numberOfComments}
-              {isShowActivity}
               on:favorite={handleFavorite}
               on:openActivityTab={handleOpenAndCloseActivityTab}
             />
