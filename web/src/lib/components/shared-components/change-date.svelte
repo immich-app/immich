@@ -12,7 +12,7 @@
     /**
      * Timezone name
      *
-     * e.g. Europe/Berlin
+     * e.g. Asia/Jerusalem (+03:00)
      */
     label: string;
 
@@ -24,10 +24,22 @@
     value: string;
   };
 
-  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
-    value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
-  }));
+  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
+    .map((zone) => DateTime.local({ zone }))
+    .sort((zoneA, zoneB) => {
+      let numericallyCorrect = zoneA.offset - zoneB.offset;
+      if (numericallyCorrect != 0) {
+        return numericallyCorrect;
+      }
+      return zoneA.zoneName.localeCompare(zoneB.zoneName, undefined, { sensitivity: 'base' });
+    })
+    .map((zone) => {
+      const offset = zone.toFormat('ZZ');
+      return {
+        label: `${zone.zoneName} (${offset})`,
+        value: 'UTC' + offset,
+      };
+    });
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
