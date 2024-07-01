@@ -15,6 +15,7 @@ export enum SystemMetadataKey {
   ADMIN_ONBOARDING = 'admin-onboarding',
   SYSTEM_CONFIG = 'system-config',
   VERSION_CHECK_STATE = 'version-check-state',
+  LICENSE = 'license',
 }
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
@@ -24,4 +25,5 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
   [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
+  [SystemMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: Date };
 }

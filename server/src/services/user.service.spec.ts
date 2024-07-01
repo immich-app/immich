@@ -1,4 +1,5 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
@@ -282,6 +283,38 @@ describe(UserService.name, () => {
       const options = { force: true, recursive: true };
 
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
+    });
+  });
+
+  describe('setLicense', () => {
+    it('should save license if valid', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      const license = { licenseKey: 'IMCL-license-key', activationKey: 'activation-key' };
+      await sut.setLicense(authStub.user1, license);
+
+      expect(userMock.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
+        key: UserMetadataKey.LICENSE,
+        value: expect.any(Object),
+      });
+    });
+
+    it('should not save license if invalid', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      const license = { licenseKey: 'license-key', activationKey: 'activation-key' };
+      const call = sut.setLicense(authStub.admin, license);
+      await expect(call).rejects.toThrowError('Invalid license key');
+      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteLicense', () => {
+    it('should delete license', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      await sut.deleteLicense(authStub.admin);
+      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
     });
   });
 

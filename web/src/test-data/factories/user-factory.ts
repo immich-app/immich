@@ -26,4 +26,9 @@ export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
   shouldChangePassword: false,
   status: UserStatus.Active,
   storageLabel: null,
+  license: {
+    licenseKey: 'IMCL-license-key',
+    activationKey: 'activation-key',
+    activatedAt: new Date().toISOString(),
+  },
 });

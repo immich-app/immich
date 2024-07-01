@@ -28,6 +28,8 @@ export class ServerAboutResponseDto {
   imagemagick?: string;
   libvips?: string;
   exiftool?: string;
+
+  licensed!: boolean;
 }
 
 export class ServerStorageResponseDto {

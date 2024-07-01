@@ -22,6 +22,7 @@ services:
       - DB_DATABASE_NAME=immich
       - IMMICH_MACHINE_LEARNING_ENABLED=false
       - IMMICH_METRICS=true
+      - IMMICH_ENV=testing
     volumes:
       - upload:/usr/src/app/upload
       - ./test-assets:/test-assets

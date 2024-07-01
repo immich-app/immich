@@ -38,6 +38,11 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
 };
+export type UserLicense = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
+};
 export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
     createdAt: string;
@@ -45,6 +50,7 @@ export type UserAdminResponseDto = {
     email: string;
     id: string;
     isAdmin: boolean;
+    license: (UserLicense) | null;
     name: string;
     oauthId: string;
     profileImagePath: string;
@@ -800,6 +806,7 @@ export type ServerAboutResponseDto = {
     ffmpeg?: string;
     imagemagick?: string;
     libvips?: string;
+    licensed: boolean;
     nodejs?: string;
     repository?: string;
     repositoryUrl?: string;
@@ -872,6 +879,15 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type LicenseKeyDto = {
+    activationKey: string;
+    licenseKey: string;
+};
+export type LicenseResponseDto = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -2484,6 +2500,32 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/server/license", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getServerLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: object;
+    }>("/server/license", {
+        ...opts
+    }));
+}
+export function setServerLicense({ licenseKeyDto }: {
+    licenseKeyDto: LicenseKeyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/server/license", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: licenseKeyDto
+    })));
+}
 export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/sessions", {
         ...opts,
@@ -2890,6 +2932,32 @@ export function updateMyUser({ userUpdateMeDto }: {
         ...opts,
         method: "PUT",
         body: userUpdateMeDto
+    })));
+}
+export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getUserLicense(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/users/me/license", {
+        ...opts
+    }));
+}
+export function setUserLicense({ licenseKeyDto }: {
+    licenseKeyDto: LicenseKeyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LicenseResponseDto;
+    }>("/users/me/license", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: licenseKeyDto
     })));
 }
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {

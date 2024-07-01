@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Put } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
   ServerConfigDto,
@@ -78,5 +79,23 @@ export class ServerController {
   @ApiExcludeEndpoint()
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
+  }
+
+  @Put('license')
+  @Authenticated({ admin: true })
+  setServerLicense(@Body() license: LicenseKeyDto): Promise<LicenseResponseDto> {
+    return this.service.setLicense(license);
+  }
+
+  @Delete('license')
+  @Authenticated({ admin: true })
+  deleteServerLicense(): Promise<void> {
+    return this.service.deleteLicense();
+  }
+
+  @Get('license')
+  @Authenticated({ admin: true })
+  getServerLicense(): Promise<LicenseKeyDto | null> {
+    return this.service.getLicense();
   }
 }

@@ -44,6 +44,7 @@ describe('/server-info', () => {
         imagemagick: expect.any(String),
         libvips: expect.any(String),
         exiftool: expect.any(String),
+        licensed: false,
       });
     });
   });

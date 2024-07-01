@@ -1,9 +1,12 @@
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerService } from 'src/services/server.service';
+import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
@@ -18,6 +21,7 @@ describe(ServerService.name, () => {
   let serverInfoMock: Mocked<IServerInfoRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
 
   beforeEach(() => {
     storageMock = newStorageRepositoryMock();
@@ -25,8 +29,9 @@ describe(ServerService.name, () => {
     serverInfoMock = newServerInfoRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
-    sut = new ServerService(userMock, storageMock, systemMock, serverInfoMock, loggerMock);
+    sut = new ServerService(userMock, storageMock, systemMock, serverInfoMock, loggerMock, cryptoMock);
   });
 
   it('should work', () => {
@@ -247,6 +252,35 @@ describe(ServerService.name, () => {
       });
 
       expect(userMock.getUserStats).toHaveBeenCalled();
+    });
+  });
+
+  describe('setLicense', () => {
+    it('should save license if valid', async () => {
+      systemMock.set.mockResolvedValue();
+
+      const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
+      await sut.setLicense(license);
+
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.LICENSE, expect.any(Object));
+    });
+
+    it('should not save license if invalid', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      const license = { licenseKey: 'license-key', activationKey: 'activation-key' };
+      const call = sut.setLicense(license);
+      await expect(call).rejects.toThrowError('Invalid license key');
+      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteLicense', () => {
+    it('should delete license', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      await sut.deleteLicense();
+      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
     });
   });
 });

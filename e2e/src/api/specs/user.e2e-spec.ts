@@ -5,6 +5,12 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
+const userLicense = {
+  licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',
+  activationKey:
+    'KuX8KsktrBSiXpQMAH0zLgA5SpijXVr_PDkzLdWUlAogCTMBZ0I3KCHXK0eE9EEd7harxup8_EHMeqAWeHo5VQzol6LGECpFv585U9asXD4Zc-UXt3mhJr2uhazqipBIBwJA2YhmUCDy8hiyiGsukDQNu9Rg9C77UeoKuZBWVjWUBWG0mc1iRqfvF0faVM20w53czAzlhaMxzVGc3Oimbd7xi_CAMSujF_2y8QpA3X2fOVkQkzdcH9lV0COejl7IyH27zQQ9HrlrXv3Lai5Hw67kNkaSjmunVBxC5PS0TpKoc9SfBJMaAGWnaDbjhjYUrm-8nIDQnoeEAidDXVAdPw',
+};
+
 describe('/users', () => {
   let admin: LoginResponseDto;
   let deletedUser: LoginResponseDto;
@@ -70,6 +76,24 @@ describe('/users', () => {
         id: admin.userId,
         email: 'admin@immich.cloud',
         quotaUsageInBytes: 0,
+      });
+    });
+
+    it('should get my user with license info', async () => {
+      const { status: licenseStatus } = await request(app)
+        .put(`/users/me/license`)
+        .send(userLicense)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(licenseStatus).toBe(200);
+      const { status, body } = await request(app)
+        .get(`/users/me`)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        id: nonAdmin.userId,
+        email: nonAdmin.userEmail,
+        quotaUsageInBytes: 0,
+        license: userLicense,
       });
     });
   });
@@ -234,6 +258,83 @@ describe('/users', () => {
         shouldChangePassword: expect.anything(),
         storageLabel: expect.anything(),
       });
+    });
+  });
+
+  describe('GET /server/license', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/users/me/license');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should return the user license', async () => {
+      await request(app)
+        .put('/users/me/license')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
+        .send(userLicense);
+      const { status, body } = await request(app)
+        .get('/users/me/license')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        ...userLicense,
+        activatedAt: expect.any(String),
+      });
+    });
+  });
+
+  describe('PUT /users/me/license', () => {
+    it('should require authentication', async () => {
+      const { status } = await request(app).put(`/users/me/license`);
+      expect(status).toEqual(401);
+    });
+
+    it('should set the user license', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me/license`)
+        .send(userLicense)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ ...userLicense, activatedAt: expect.any(String) });
+      expect(status).toBe(200);
+      expect(body).toEqual({ ...userLicense, activatedAt: expect.any(String) });
+      const { body: licenseBody } = await request(app)
+        .get('/users/me/license')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(licenseBody).toEqual({ ...userLicense, activatedAt: expect.any(String) });
+    });
+
+    it('should reject license not starting with IMCL-', async () => {
+      const { status, body } = await request(app)
+        .put('/users/me/license')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
+        .send({ licenseKey: 'IMSV-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD', activationKey: 'activationKey' });
+      expect(status).toBe(400);
+      expect(body.message).toBe('Invalid license key');
+    });
+
+    it('should reject license with invalid activation key', async () => {
+      const { status, body } = await request(app)
+        .put('/users/me/license')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
+        .send({ licenseKey: userLicense.licenseKey, activationKey: `invalid${userLicense.activationKey}` });
+      expect(status).toBe(400);
+      expect(body.message).toBe('Invalid license key');
+    });
+  });
+
+  describe('DELETE /users/me/license', () => {
+    it('should require authentication', async () => {
+      const { status } = await request(app).put(`/users/me/license`);
+      expect(status).toEqual(401);
+    });
+
+    it('should delete the user license', async () => {
+      const { status } = await request(app)
+        .delete(`/users/me/license`)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(200);
     });
   });
 });
