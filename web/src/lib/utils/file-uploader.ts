@@ -156,7 +156,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
 
     if (albumId) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-      await addAssetsToAlbum(albumId, [responseData.id]);
+      await addAssetsToAlbum(albumId, [responseData.id], false);
       uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
     }
 
