@@ -43,7 +43,7 @@ export default function LinkPage(): JSX.Element {
             <div className="w-screen h-screen bg-immich-dark-bg overflow-auto p-4">
               <div className="mx-auto max-w-screen-sm m-6 p-12 border rounded-[50px] bg-immich-dark-gray text-immich-dark-fg">
                 <section className="text-center">
-                  <img src="img/immich-logo-stacked-dark.svg" className="h-64" alt="Immich logo" />
+                  <img src="/img/immich-logo-stacked-dark.svg" className="h-64" alt="Immich logo" />
                 </section>
                 <section>
                   <h1 className="md:text-3xl mb-2 text-immich-dark-primary">My Immich</h1>
