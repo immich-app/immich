@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - 高性能的自托管照片和视频备份方案</h3>
+<h3 align="center">高性能的照片和视频自托管解决方案</h3>
 <p align="center">  
 请注意: 此 README 不是由 Immich 团队维护, 而是依靠贡献者来更新的，这意味着它可能并不会被及时更新。感谢理解。
 </p>
@@ -20,8 +20,8 @@
 <img src="../design/immich-screenshots.png" title="界面截图">
 </a>
 <br/>
-
 <p align="center">
+
   <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
@@ -36,6 +36,7 @@
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
+  
 </p>
 
 ## 免责声明
@@ -45,44 +46,36 @@
 - ⚠️ **不要把本软件作为您存储照片或视频的唯一方式。**
 - ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
 
+> [!NOTE]
+> 完整的项目文档以及安装教程请参见：https://immich.app/。
+
 ## 目录
 
 - [官方文档](https://immich.app/docs)
-- [路线图](https://github.com/orgs/immich-app/projects/1)
-- [示例](#示例)
+- [项目总览](https://immich.app/docs/overview/introduction)
+- [安装教程](https://immich.app/docs/install/requirements)
+- [路线图](https://immich.app/roadmap)
+- [在线演示](#示例)
 - [功能特性](#功能特性)
-- [介绍](https://immich.app/docs/overview/introduction)
-- [安装](https://immich.app/docs/install/requirements)
-- [贡献指南](https://immich.app/docs/overview/support-the-project)
-
-## 官方文档
-
-您可以在 https://immich.app/ 找到官方文档（包含安装手册）。
+- [多语言](https://immich.app/docs/developer/tranlations)
+- [贡献者](https://immich.app/docs/overview/support-the-project)
 
 ## 示例
 
-您可以在 https://demo.immich.app  访问示例。
+您可以在[此处](https://demo.immich.app)访问在线演示网站。该示例网站运行的机器配置为：甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU，24GB RAM。
 
-在移动端, 您可以使用 `https://demo.immich.app/api` 获取 `服务终端链接`
+在移动端，您可以使用 `https://demo.immich.app/api` 作为 `服务终端链接`
 
-```bash title="示例认证信息"
-认证信息
-邮箱: demo@immich.app
-密码: demo
-```
+### 登录认证信息
 
-```
-规格: 甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU, 24GB RAM。
-```
+| 邮箱            | 密码     |
+| --------------- | -------- |
+| demo@immich.app | demo     |
 
-## 活跃度
-![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
-
-# 功能特性
-
+## 功能特性
 
 | 功能特性                                    | 移动端 | 网页端 |
-|---------------------------------------------|--------|--------|
+| :------------------------------------------ | ------ | ------ |
 | 上传并查看照片和视频                        | 是     | 是     |
 | 软件运行时自动备份                          | 是     | N/A    |
 | 忽略重复的项目                              | 是     | 是     |
@@ -112,10 +105,17 @@
 | 只读相册                                    | 是     | 是     |
 | 照片堆叠                                    | 是     | 是     |
 
-## 贡献者
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+## 多语言
+
+关于翻译的更多信息请参见[此处](https://immich.app/docs/developer/translations)。
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="翻译进度" />
 </a>
+
+## 活跃度
+
+![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Star增长曲线
 
@@ -125,4 +125,10 @@
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## 贡献者
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>
