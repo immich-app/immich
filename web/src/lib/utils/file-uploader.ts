@@ -159,7 +159,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
 
     if (albumId) {
       uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_adding_to_album') });
-      await addAssetsToAlbum(albumId, [responseData.id]);
+      await addAssetsToAlbum(albumId, [responseData.id], false);
       uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 

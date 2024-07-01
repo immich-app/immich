@@ -28,7 +28,7 @@ import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
-export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
+export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
   const result = await addAssets({
     id: albumId,
     bulkIdsDto: {
@@ -38,20 +38,23 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
   });
   const count = result.filter(({ success }) => success).length;
   const $t = get(t);
-  notificationController.show({
-    type: NotificationType.Info,
-    timeout: 5000,
-    message:
-      count > 0
-        ? $t('assets_added_to_album_count', { values: { count: count } })
-        : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
-    button: {
-      text: $t('view_album'),
-      onClick() {
-        return goto(`${AppRoute.ALBUMS}/${albumId}`);
+
+  if (showNotification) {
+    notificationController.show({
+      type: NotificationType.Info,
+      timeout: 5000,
+      message:
+        count > 0
+          ? $t('assets_added_to_album_count', { values: { count: count } })
+          : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
+      button: {
+        text: $t('view_album'),
+        onClick() {
+          return goto(`${AppRoute.ALBUMS}/${albumId}`);
+        },
       },
-    },
-  });
+    });
+  }
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
