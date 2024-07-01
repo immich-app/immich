@@ -168,13 +168,13 @@ export class ServerService implements OnEvents {
     return this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
   }
 
-  async setLicense(license: LicenseKeyDto): Promise<LicenseResponseDto> {
-    if (!license.licenseKey.startsWith('IMSV-')) {
+  async setLicense(dto: LicenseKeyDto): Promise<LicenseResponseDto> {
+    if (!dto.licenseKey.startsWith('IMSV-')) {
       throw new BadRequestException('Invalid license key');
     }
     const licenseValid = this.cryptoRepository.verifySha256(
-      license.licenseKey,
-      license.activationKey,
+      dto.licenseKey,
+      dto.activationKey,
       getServerLicensePublicKey(),
     );
 
@@ -183,7 +183,7 @@ export class ServerService implements OnEvents {
     }
 
     const licenseData = {
-      ...license,
+      ...dto,
       activatedAt: new Date(),
     };
 
