@@ -46,7 +46,7 @@
 - ⚠️ **不要把本软件作为您存储照片或视频的唯一方式。**
 - ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
 
-> [!注意]
+> [!NOTE]
 > 完整的项目文档以及安装教程请参见：https://immich.app/。
 
 ## 目录
@@ -62,9 +62,9 @@
 
 ## 示例
 
-您可以在[此处](https://demo.immich.app) 访问在线演示网站。该示例网站运行的机器配置为：甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU, 24GB RAM。
+您可以在[此处](https://demo.immich.app)访问在线演示网站。该示例网站运行的机器配置为：甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU，24GB RAM。
 
-在移动端, 您可以使用 `https://demo.immich.app/api` 获取 `服务终端链接`
+在移动端，您可以使用 `https://demo.immich.app/api` 作为 `服务终端链接`
 
 ### 登录认证信息
 
