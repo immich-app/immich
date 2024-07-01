@@ -7,10 +7,11 @@ export default function LinkPage(): JSX.Element {
 
   const [instanceUrl, setInstanceUrl] = useState(localStorage.getItem('immich-instance-url') || '');
   const [inputValue, setInputValue] = useState(instanceUrl);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (redirect && instanceUrl) {
-      window.location.href = `${instanceUrl}/${redirect}`;
+      window.location.href = new URL(redirect, instanceUrl).toString();
     }
   }, [redirect, instanceUrl]);
 
@@ -18,9 +19,15 @@ export default function LinkPage(): JSX.Element {
     localStorage.setItem('immich-instance-url', instanceUrl);
   }, [instanceUrl]);
 
+  const handleChange = (value: string) => {
+    setInputValue(value);
+    setSaved(false);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setInstanceUrl(inputValue);
+    setSaved(true);
   };
 
   return (
@@ -28,35 +35,46 @@ export default function LinkPage(): JSX.Element {
       <Head>
         <title>My Immich</title>
       </Head>
-      <div>
-        <section className="my-8">
-          <h1 className="md:text-6xl text-center mb-10 text-immich-primary dark:text-immich-dark-primary px-2">
-            My Immich
-          </h1>
-          <p className="text-center text-xl px-2">
-            My Immich allows public links to link you to specific areas of your personal Immich instance.
-          </p>
-          <div className="flex justify-around mt-8 w-full max-w-full">
-            <form className="w-full max-w-sm" onSubmit={handleSubmit}>
-              <div className="flex items-center border-b border-primary py-2">
+      <div className="w-screen h-screen bg-immich-dark-bg overflow-auto p-4">
+        <div className="mx-auto max-w-screen-sm m-6 p-12 border rounded-[50px] bg-immich-dark-gray text-immich-dark-fg">
+          <section className="text-center">
+            <img src="img/immich-logo-stacked-dark.svg" className="h-64" alt="Immich logo" />
+          </section>
+          <section>
+            <h1 className="md:text-3xl mb-2 text-immich-dark-primary">My Immich</h1>
+            <p>My Immich allows public links to link you to specific areas of your personal Immich instance.</p>
+            <form onSubmit={handleSubmit}>
+              <label id="instance-url-label" htmlFor="instance-url-input" className="font-medium immich-dark-fg">
+                Instance URL
+              </label>
+              <div className="flex gap-2">
                 <input
-                  className="appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none"
+                  id="instance-url-input"
+                  aria-labelledby="instance-url-label"
+                  className="flex-grow rounded-xl px-3 py-3 text-sm bg-gray-600 text-immich-dark-fg border-none outline-none"
                   type="text"
-                  placeholder="https://demo.immich.app"
+                  placeholder="https://demo.immich.com/"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => handleChange(e.target.value)}
                   aria-label="Instance URL"
                 />
-                <button
-                  className="flex-shrink-0 bg-primary hover:bg-primary-dark border-primary hover:border-primary-dark text-sm border-4 text-white py-1 px-2 rounded"
-                  type="submit"
-                >
-                  {redirect ? 'Save & Redirect' : 'Save'}
-                </button>
+              </div>
+              <p className="mt-2 text-sm">Note: This URL is only stored in your browser.</p>
+              <div className="flex justify-end">
+                {saved ? (
+                  <p className="text-center sm:text-right m-0 px-5 py-3 text-sm text-immich-dark-primary">Saved!</p>
+                ) : (
+                  <button
+                    className="cursor-pointer w-full sm:w-auto border-0 text-white rounded-xl px-5 py-3 items-center justify-center bg-immich-primary hover:bg-immich-primary/80"
+                    type="submit"
+                  >
+                    {redirect ? 'Save & Redirect' : 'Save'}
+                  </button>
+                )}
               </div>
             </form>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </>
   );
