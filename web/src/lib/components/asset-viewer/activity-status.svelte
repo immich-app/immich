@@ -3,7 +3,6 @@
   import { mdiCommentOutline, mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Icon from '../elements/icon.svelte';
-  import { t } from 'svelte-i18n';
 
   export let isLiked: ActivityResponseDto | null;
   export let numberOfComments: number | undefined;
