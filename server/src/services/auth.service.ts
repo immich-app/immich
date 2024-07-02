@@ -9,7 +9,7 @@ import { isNumber, isString } from 'class-validator';
 import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -299,23 +299,21 @@ export class AuthService {
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm, profileSigningAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
     }
 
-    const metadata: ClientMetadata = {
-      client_id: clientId,
-      client_secret: clientSecret,
-      response_types: ['code'],
-    };
-
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      metadata.id_token_signed_response_alg = signingAlgorithm;
-
-      return new issuer.Client(metadata);
+      return new issuer.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+        response_types: ['code'],
+        userinfo_signed_response_alg: profileSigningAlgorithm,
+        id_token_signed_response_alg: signingAlgorithm,
+      });
     } catch (error: any | AggregateError) {
       this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });

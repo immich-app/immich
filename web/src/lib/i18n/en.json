@@ -170,6 +170,8 @@
     "oauth_mobile_redirect_uri": "Mobile redirect URI",
     "oauth_mobile_redirect_uri_override": "Mobile redirect URI override",
     "oauth_mobile_redirect_uri_override_description": "Enable when 'app.immich:/' is an invalid redirect URI.",
+    "oauth_profile_signing_algorithm": "Profile signing algorithm",
+    "oauth_profile_signing_algorithm_description": "Algorithm used to sign the user profile.",
     "oauth_scope": "Scope",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Manage OAuth login settings",

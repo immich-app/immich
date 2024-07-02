@@ -1063,6 +1063,7 @@ export type SystemConfigOAuthDto = {
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    profileSigningAlgorithm: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
