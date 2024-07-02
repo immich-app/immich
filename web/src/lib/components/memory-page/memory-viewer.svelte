@@ -355,7 +355,7 @@
     <!-- GALLERY VIEWER -->
     <section class="bg-immich-dark-gray p-4">
       <div
-        class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
+        class="sticky mb-10 flex place-content-center place-items-center transition-all"
         class:opacity-0={galleryInView}
         class:opacity-100={!galleryInView}
       >
