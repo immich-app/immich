@@ -186,6 +186,7 @@ enum StoreKey<T> {
   // map related settings
   mapShowFavoriteOnly<bool>(118, type: bool),
   mapRelativeDate<int>(119, type: int),
+
   selfSignedCert<bool>(120, type: bool),
   mapIncludeArchived<bool>(121, type: bool),
   ignoreIcloudAssets<bool>(122, type: bool),
@@ -194,6 +195,7 @@ enum StoreKey<T> {
   mapwithPartners<bool>(125, type: bool),
   enableHapticFeedback<bool>(126, type: bool),
   customHeaders<String>(127, type: String),
+  albumOnTimelineIds<List<String>>(128, type: List<String>),
   ;
 
   const StoreKey(
