@@ -128,6 +128,7 @@
     "map_dark_style": "Dunkler Stil",
     "map_enable_description": "Kartenfunktionen aktivieren",
     "map_light_style": "Heller Stil",
+    "map_manage_reverse_geocoding_settings": "<link>Umgekehrte Geokodierung</link> Einstellungen verwalten",
     "map_reverse_geocoding": "Umgekehrte Geokodierung",
     "map_reverse_geocoding_enable_description": "Umgekehrte Geokodierung aktivieren",
     "map_reverse_geocoding_settings": "Umgekehrte Geokodierung Einstellungen",

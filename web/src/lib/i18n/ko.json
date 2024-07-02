@@ -903,6 +903,7 @@
   "permanent_deletion_warning_setting_description": "콘텐츠 영구 삭제 시 경고 메시지 표시",
   "permanently_delete": "영구 삭제",
   "permanently_delete_assets_count": "{count, plural, one {개} other {개}} 항목을 영구적으로 삭제",
+  "permanently_delete_assets_prompt": "정말 {count, plural, one {이 항목} other {항목 <b>#</b>개}}를 영구적으로 삭제하시겠습니까? 앨범에 포함된 {count, plural, one {항목도} other {항목들도}} 삭제됩니다.",
   "permanently_deleted_asset": "콘텐츠가 영구적으로 삭제됨",
   "permanently_deleted_assets": "항목 {count, plural, one {#개} other {#개}}가 영구적으로 삭제됨",
   "permanently_deleted_assets_count": "{count, plural, one {개} other {개}} 항목이 영구적으로 삭제됨",

@@ -901,6 +901,7 @@
   "permanent_deletion_warning_setting_description": "Показувати попередження при остаточному видаленні ресурсів",
   "permanently_delete": "Видалити назавжди",
   "permanently_delete_assets_count": "Остаточно видалити {count, plural, one {ресурс} other {ресурси}}",
+  "permanently_delete_assets_prompt": "Ви впевнені, що хочете назавжди видалити {count, plural, one {цей ресурс?} other {ці <b>#</b> ресурси?}} Це також видалить {count, plural, one {його з його} other {їх з їхніх}} альбому(ів).",
   "permanently_deleted_asset": "Видалити об'єкт назавжди",
   "permanently_deleted_assets_count": "Видалено остаточно {count, plural, one {# ресурс} few {# ресурси} many {# ресурсів} other {# ресурсів}}",
   "person": "Людина",
