@@ -41,7 +41,7 @@ final getAllPlacesProvider =
   final curatedContent = assetPlaces
       .map(
         (data) => SearchCuratedContent(
-          label: data.exifInfo?.city ?? '',
+          label: data.exifInfo!.city!,
           id: data.id,
         ),
       )
