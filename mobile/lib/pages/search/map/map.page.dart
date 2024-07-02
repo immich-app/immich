@@ -36,7 +36,7 @@ class MapPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapController = useRef<MapLibreMapController?>(null);
+    final mapController = useRef<MaplibreMapController?>(null);
     final markers = useRef<List<MapMarker>>([]);
     final markersInBounds = useRef<List<MapMarker>>([]);
     final bottomSheetStreamController = useStreamController<MapEvent>();
@@ -156,7 +156,7 @@ class MapPage extends HookConsumerWidget {
       }
     }
 
-    void onMapCreated(MapLibreMapController controller) async {
+    void onMapCreated(MaplibreMapController controller) async {
       mapController.value = controller;
       controller.addListener(() {
         if (controller.isCameraMoving && selectedMarker.value != null) {
@@ -379,7 +379,7 @@ class _MapWithMarker extends StatelessWidget {
         child: Stack(
           children: [
             style.widgetWhen(
-              onData: (style) => MapLibreMap(
+              onData: (style) => MaplibreMap(
                 initialCameraPosition:
                     const CameraPosition(target: LatLng(0, 0)),
                 styleString: style,
@@ -393,7 +393,7 @@ class _MapWithMarker extends StatelessWidget {
                 tiltGesturesEnabled: false,
                 dragEnabled: false,
                 myLocationEnabled: false,
-                attributionButtonPosition: AttributionButtonPosition.topRight,
+                attributionButtonPosition: AttributionButtonPosition.TopRight,
                 rotateGesturesEnabled: false,
               ),
             ),
