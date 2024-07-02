@@ -5,7 +5,7 @@ import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AlbumService } from 'src/services/album.service';
 import { albumStub } from 'test/fixtures/album.stub';
@@ -15,7 +15,7 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
@@ -24,19 +24,19 @@ describe(AlbumService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let eventMock: Mocked<IEventRepository>;
   let userMock: Mocked<IUserRepository>;
   let albumUserMock: Mocked<IAlbumUserRepository>;
-  let jobMock: Mocked<IJobRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    eventMock = newEventRepositoryMock();
     userMock = newUserRepositoryMock();
     albumUserMock = newAlbumUserRepositoryMock();
-    jobMock = newJobRepositoryMock();
 
-    sut = new AlbumService(accessMock, albumMock, assetMock, userMock, albumUserMock, jobMock);
+    sut = new AlbumService(accessMock, albumMock, assetMock, eventMock, userMock, albumUserMock);
   });
 
   it('should work', () => {
@@ -381,14 +381,10 @@ describe(AlbumService.name, () => {
         userId: authStub.user2.user.id,
         albumId: albumStub.sharedWithAdmin.id,
       });
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.NOTIFY_ALBUM_INVITE,
-            data: { id: albumStub.sharedWithAdmin.id, recipientId: authStub.user2.user.id },
-          },
-        ],
-      ]);
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInviteEvent', {
+        id: albumStub.sharedWithAdmin.id,
+        userId: userStub.user2.id,
+      });
     });
   });
 
@@ -573,14 +569,10 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.NOTIFY_ALBUM_UPDATE,
-            data: { id: 'album-123', senderId: authStub.admin.user.id },
-          },
-        ],
-      ]);
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+        id: 'album-123',
+        updatedBy: authStub.admin.user.id,
+      });
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -621,14 +613,10 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.NOTIFY_ALBUM_UPDATE,
-            data: { id: 'album-123', senderId: authStub.user1.user.id },
-          },
-        ],
-      ]);
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+        id: 'album-123',
+        updatedBy: authStub.user1.user.id,
+      });
     });
 
     it('should not allow a shared user with viewer access to add assets', async () => {

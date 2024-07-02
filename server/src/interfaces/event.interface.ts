@@ -4,17 +4,36 @@ import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.d
 
 export const IEventRepository = 'IEventRepository';
 
+export type SystemConfigUpdateEvent = { newConfig: SystemConfig; oldConfig: SystemConfig };
+export type AlbumUpdateEvent = {
+  id: string;
+  /** user id */
+  updatedBy: string;
+};
+export type AlbumInviteEvent = { id: string; userId: string };
+export type UserSignupEvent = { notify: boolean; id: string; tempPassword?: string };
+
 type MaybePromise<T> = Promise<T> | T;
+type Handler<T = undefined> = (data: T) => MaybePromise<void>;
 
 const noop = () => {};
 const dummyHandlers = {
-  onBootstrapEvent: noop as (app: 'api' | 'microservices') => MaybePromise<void>,
+  // app events
+  onBootstrapEvent: noop as Handler<'api' | 'microservices'>,
   onShutdownEvent: noop as () => MaybePromise<void>,
-  onConfigUpdateEvent: noop as (update: SystemConfigUpdate) => MaybePromise<void>,
-  onConfigValidateEvent: noop as (update: SystemConfigUpdate) => MaybePromise<void>,
+
+  // config events
+  onConfigUpdateEvent: noop as Handler<SystemConfigUpdateEvent>,
+  onConfigValidateEvent: noop as Handler<SystemConfigUpdateEvent>,
+
+  // album events
+  onAlbumUpdateEvent: noop as Handler<AlbumUpdateEvent>,
+  onAlbumInviteEvent: noop as Handler<AlbumInviteEvent>,
+
+  // user events
+  onUserSignupEvent: noop as Handler<UserSignupEvent>,
 };
 
-export type SystemConfigUpdate = { newConfig: SystemConfig; oldConfig: SystemConfig };
 export type EventHandlers = typeof dummyHandlers;
 export type EmitEvent = keyof EventHandlers;
 export type EmitEventHandler<T extends EmitEvent> = (...args: Parameters<EventHandlers[T]>) => MaybePromise<void>;

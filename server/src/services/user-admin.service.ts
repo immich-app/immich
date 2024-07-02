@@ -15,6 +15,7 @@ import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserStatus } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
@@ -27,6 +28,7 @@ export class UserAdminService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -44,10 +46,12 @@ export class UserAdminService {
     const { notify, ...rest } = dto;
     const user = await this.userCore.createUser(rest);
 
-    const tempPassword = user.shouldChangePassword ? rest.password : undefined;
-    if (notify) {
-      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
-    }
+    await this.eventRepository.emit('onUserSignupEvent', {
+      notify: !!notify,
+      id: user.id,
+      tempPassword: user.shouldChangePassword ? rest.password : undefined,
+    });
+
     return mapUserAdmin(user);
   }
 

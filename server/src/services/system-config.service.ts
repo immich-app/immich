@@ -20,7 +20,7 @@ import {
   IEventRepository,
   OnEvents,
   ServerEvent,
-  SystemConfigUpdate,
+  SystemConfigUpdateEvent,
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -42,11 +42,7 @@ export class SystemConfigService implements OnEvents {
   @EventHandlerOptions({ priority: -100 })
   async onBootstrapEvent() {
     const config = await this.core.getConfig({ withCache: false });
-    this.config$.next(config);
-  }
-
-  get config$() {
-    return this.core.config$;
+    this.core.config$.next(config);
   }
 
   async getConfig(): Promise<SystemConfigDto> {
@@ -58,7 +54,7 @@ export class SystemConfigService implements OnEvents {
     return mapConfig(defaults);
   }
 
-  onConfigValidateEvent({ newConfig, oldConfig }: SystemConfigUpdate) {
+  onConfigValidateEvent({ newConfig, oldConfig }: SystemConfigUpdateEvent) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
