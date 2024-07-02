@@ -210,7 +210,7 @@
 
     {#if galleryInView}
       <div
-        class="sticky top-20 z-30 flex place-content-center place-items-center transition-opacity"
+        class="fixed top-20 z-30 left-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -353,9 +353,9 @@
     </section>
 
     <!-- GALLERY VIEWER -->
-    <section class="bg-immich-dark-gray m-4">
+    <section class="bg-immich-dark-gray p-4">
       <div
-        class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
+        class="sticky mb-10 flex place-content-center place-items-center transition-all"
         class:opacity-0={galleryInView}
         class:opacity-100={!galleryInView}
       >
