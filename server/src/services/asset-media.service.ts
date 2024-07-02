@@ -371,7 +371,7 @@ export class AssetMediaService {
       localDateTime: dto.fileCreatedAt,
       duration: dto.duration || null,
 
-      livePhotoVideo: null,
+      livePhotoVideoId: null,
       sidecarPath: sidecarPath || null,
     });
 

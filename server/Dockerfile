@@ -10,12 +10,16 @@ RUN npm ci && \
   rm -rf node_modules/@img/sharp-libvips* && \
   rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+
+WORKDIR /usr/src/app/server
+RUN npm run prisma:generate
+
+WORKDIR /usr/src/app
 ENV PATH="${PATH}:/usr/src/app/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
-
 
 FROM dev AS prod
 

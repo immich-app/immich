@@ -32,7 +32,8 @@
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
-    "email:dev": "email dev -p 3050 --dir src/emails"
+    "email:dev": "email dev -p 3050 --dir src/emails",
+    "prisma:generate": "prisma generate --schema=./src/prisma/schema.prisma"
   },
   "dependencies": {
     "@nestjs/bullmq": "^10.0.1",
@@ -51,6 +52,7 @@
     "@opentelemetry/exporter-prometheus": "^0.52.0",
     "@opentelemetry/sdk-node": "^0.52.0",
     "@react-email/components": "^0.0.19",
+    "@prisma/client": "^5.11.0",
     "@socket.io/postgres-adapter": "^0.3.1",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
@@ -69,6 +71,7 @@
     "ioredis": "^5.3.2",
     "joi": "^17.10.0",
     "js-yaml": "^4.1.0",
+    "kysely": "^0.27.3",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.39.8",
@@ -79,6 +82,7 @@
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
     "picomatch": "^4.0.0",
+    "prisma-extension-kysely": "^2.1.0",
     "react-email": "^2.1.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -122,6 +126,8 @@
     "mock-fs": "^5.2.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^3.2.3",
+    "prisma": "^5.11.0",
+    "prisma-kysely": "^1.8.0",
     "rimraf": "^5.0.1",
     "source-map-support": "^0.5.21",
     "sql-formatter": "^15.0.0",
