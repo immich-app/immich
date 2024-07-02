@@ -5,6 +5,7 @@
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { suggestDuplicateByFileSize } from '$lib/utils';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -60,6 +61,14 @@
     onResolve(duplicateAssetIds, trashIds);
   };
 </script>
+
+<svelte:window
+  use:shortcuts={[
+    { shortcut: { key: 'k', shift: true }, onShortcut: onSelectAll },
+    { shortcut: { key: 't', shift: true }, onShortcut: onSelectNone },
+    { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
+  ]}
+/>
 
 <div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-[54rem] mx-auto mb-16">
   <div class="flex flex-wrap gap-1 place-items-center place-content-center px-4 pt-4">
