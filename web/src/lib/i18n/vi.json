@@ -30,6 +30,7 @@
     "add_exclusion_pattern_description": "Thêm quy tắc loại trừ. Hỗ trợ sử dụng ký tự *, **, và ?. Để bỏ qua tất cả các tệp bất kỳ trong thư mục tên \"Raw\", hãy dùng \"**/Raw/**\". Để bỏ qua các tệp có đuôi \".tif\", hãy dùng \"**/*.tif\". Để bỏ qua một đường dẫn đầy đủ, hãy dùng \"/path/to/ignore/**\".",
     "authentication_settings": "Cài đặt đăng nhập",
     "authentication_settings_description": "Quản lý mật khẩu, OAuth và các cài đặt đăng nhập khác",
+    "authentication_settings_disable_all": "Bạn có chắc chắn muốn vô hiệu hoá tất cả các phương thức đăng nhập? Đăng nhập sẽ bị vô hiệu hóa hoàn toàn.",
     "authentication_settings_reenable": "Để bật lại, dùng <link>Lệnh máy chủ</link>.",
     "background_task_job": "Các tác vụ nền",
     "check_all": "Chọn tất cả",
