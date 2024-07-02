@@ -126,9 +126,12 @@ export class UserAdminResponseDto extends UserResponseDto {
   storageLabel!: string | null;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
-  createdAt!: Date;
-  deletedAt!: Date | null;
-  updatedAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  deletedAt!: string | null;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
   oauthId!: string;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;

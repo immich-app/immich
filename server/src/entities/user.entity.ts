@@ -47,16 +47,16 @@ export class UserEntity {
   shouldChangePassword!: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @DeleteDateColumn({ type: 'timestamptz' })
-  deletedAt!: Date | null;
+  deletedAt!: string | null;
 
   @Column({ type: 'varchar', default: UserStatus.ACTIVE })
   status!: UserStatus;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: string;
 
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];

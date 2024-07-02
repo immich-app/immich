@@ -123,8 +123,10 @@ export class AlbumResponseDto {
   ownerId!: string;
   albumName!: string;
   description!: string;
-  createdAt!: Date;
-  updatedAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
   albumUsers!: AlbumUserResponseDto[];

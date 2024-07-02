@@ -18,7 +18,8 @@ export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
 export class ActivityResponseDto {
   id!: string;
-  createdAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
   type!: ReactionType;
   user!: UserResponseDto;
   assetId!: string | null;

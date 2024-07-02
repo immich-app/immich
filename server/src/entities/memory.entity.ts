@@ -29,13 +29,13 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
   id!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: string;
 
   @DeleteDateColumn({ type: 'timestamptz' })
-  deletedAt?: Date;
+  deletedAt?: string;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;

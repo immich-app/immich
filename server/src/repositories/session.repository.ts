@@ -13,7 +13,7 @@ export class SessionRepository implements ISessionRepository {
 
   @GenerateSql({ params: [DummyValue.DATE] })
   search(options: SessionSearchOptions): Promise<SessionEntity[]> {
-    return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
+    return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore.toISOString()) } });
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
