@@ -46,6 +46,7 @@ _MCLIP_MODELS = {
 
 _INSIGHTFACE_MODELS = {
     "antelopev2",
+    "buffalo_l_batch",
     "buffalo_l",
     "buffalo_m",
     "buffalo_s",
