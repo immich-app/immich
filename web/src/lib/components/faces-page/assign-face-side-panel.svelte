@@ -113,7 +113,6 @@
                   title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>

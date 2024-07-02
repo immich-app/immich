@@ -23,6 +23,7 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
+  import { AssetStore } from '$lib/stores/assets.store';
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };
@@ -40,12 +41,25 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
-  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
+  export let root: HTMLElement | undefined = undefined;
+  export let bottom: string | undefined = undefined;
+  export let top: string | undefined = undefined;
 
+  export let assetStore: AssetStore | undefined = undefined;
+  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
+  export let onScrollTarget: ((scrollTargetElement: HTMLElement) => void) | undefined = undefined;
+
+  export let thumbnailElement: HTMLElement | undefined = undefined;
   let className = '';
   export { className as class };
 
   let mouseOver = false;
+
+  $: {
+    if ($assetStore?.pendingScrollAssetId === asset.id && thumbnailElement) {
+      onScrollTarget?.(thumbnailElement);
+    }
+  }
 
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
@@ -91,8 +105,9 @@
   };
 </script>
 
-<IntersectionObserver once={false} on:intersected let:intersecting>
+<IntersectionObserver {root} {bottom} {top} once={false} on:intersected let:intersecting>
   <a
+    bind:this={thumbnailElement}
     href={currentUrlReplaceAssetId(asset.id)}
     style:width="{width}px"
     style:height="{height}px"

@@ -13,6 +13,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { goto } from '$app/navigation';
+  import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
@@ -154,6 +155,10 @@
       on:action={({ detail: action }) => handleAction(action.type, action.asset)}
       on:previous={handlePrevious}
       on:next={handleNext}
+      on:close={() => {
+        assetViewingStore.showAssetViewer(false);
+        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      }}
     />
   </Portal>
 {/if}

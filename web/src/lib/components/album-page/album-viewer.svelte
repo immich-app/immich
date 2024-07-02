@@ -94,7 +94,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid {album} {assetStore} {assetInteractionStore}>
+  <AssetGrid partOfRoute={true} {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
       <h1

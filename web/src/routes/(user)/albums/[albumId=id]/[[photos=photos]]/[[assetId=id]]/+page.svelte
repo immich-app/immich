@@ -43,7 +43,13 @@
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
+  import {
+    isAlbumsRoute,
+    isPeopleRoute,
+    isSearchRoute,
+    navigate,
+    type AssetGridRouteSearchParams,
+  } from '$lib/utils/navigation';
   import {
     AlbumUserRole,
     AssetOrder,
@@ -81,8 +87,10 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
+
+  let oldAt: AssetGridRouteSearchParams | null | undefined;
 
   $: album = data.album;
   $: albumId = album.id;
@@ -244,7 +252,7 @@
     }
 
     if (viewMode === ViewMode.SELECT_ASSETS) {
-      handleCloseSelectAssets();
+      await handleCloseSelectAssets();
       return;
     }
     if (viewMode === ViewMode.LINK_SHARING) {
@@ -294,9 +302,15 @@
     }
   };
 
-  const handleCloseSelectAssets = () => {
+  const handleCloseSelectAssets = async () => {
     viewMode = ViewMode.VIEW;
     timelineInteractionStore.clearMultiselect();
+
+    await navigate(
+      { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
+      { replaceState: true },
+    );
+    oldAt = null;
   };
 
   const handleSelectFromComputer = async () => {
@@ -445,7 +459,14 @@
             {#if isEditor}
               <CircleIconButton
                 title={$t('add_photos')}
-                on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                on:click={async () => {
+                  viewMode = ViewMode.SELECT_ASSETS;
+                  oldAt = { at: $gridScrollTarget?.at };
+                  await navigate(
+                    { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
+                    { replaceState: true },
+                  );
+                }}
                 icon={mdiImagePlusOutline}
               />
             {/if}
@@ -491,28 +512,22 @@
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <ControlAppBar on:close={handleCloseSelectAssets}>
-          <svelte:fragment slot="leading">
-            <p class="text-lg dark:text-immich-dark-fg">
+          <div class="flex">
+            <p class="inline-flex self-center grow pb-5 h-6 text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
                 {$t('add_to_album')}
               {:else}
                 {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
-          </svelte:fragment>
 
-          <svelte:fragment slot="trailing">
-            <button
-              type="button"
-              on:click={handleSelectFromComputer}
-              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+            <Button shadow={false} size="sm" rounded="lg" color="text-primary" on:click={handleSelectFromComputer}
+              >{$t('select_from_computer')}</Button
             >
-              {$t('select_from_computer')}
-            </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
               >{$t('done')}</Button
             >
-          </svelte:fragment>
+          </div>
         </ControlAppBar>
       {/if}
 
@@ -531,12 +546,14 @@
       {#key albumKey}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
+            partOfRoute={false}
             assetStore={timelineStore}
             assetInteractionStore={timelineInteractionStore}
             isSelectionMode={true}
           />
         {:else}
           <AssetGrid
+            partOfRoute={true}
             {album}
             {assetStore}
             {assetInteractionStore}

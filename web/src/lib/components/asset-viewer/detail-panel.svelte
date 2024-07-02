@@ -218,7 +218,6 @@
                   title={person.name}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>

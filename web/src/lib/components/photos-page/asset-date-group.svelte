@@ -1,8 +1,9 @@
 <script lang="ts">
+  import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore, Viewport } from '$lib/stores/assets.store';
+
+  import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import {
@@ -10,14 +11,20 @@
     formatGroupTitle,
     fromLocalDateTime,
     splitBucketIntoDateGroups,
+    type LayoutBox,
   } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import justifiedLayout from 'justified-layout';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { handlePromiseError } from '$lib/utils';
 
+  import { navigate } from '$lib/utils/navigation';
+  import { resizeObserver } from '$lib/actions/resize-observer';
+
+  export let element: HTMLElement | undefined = undefined;
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
   export let bucketHeight: number;
@@ -26,10 +33,23 @@
   export let singleSelect = false;
   export let withStacked = false;
   export let showArchiveIcon = false;
-
+  export let assetGridElement: HTMLElement | undefined = undefined;
+  export let renderThumbsAtBottomMargin: string | undefined = undefined;
+  export let renderThumbsAtTopMargin: string | undefined = undefined;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
-
+  export let onScrollTarget: (({ target, offset }: { target: AssetBucket; offset: number }) => void) | undefined =
+    undefined;
+  export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  /* TODO figure out a way to calculate this*/
+  const TITLE_HEIGHT = 51;
+  const ASSET_GRID_PADDING = 60;
+  const LAYOUT_OPTIONS = {
+    boxSpacing: 2,
+    containerPadding: 0,
+    targetRowHeightTolerance: 0.15,
+    targetRowHeight: 235,
+  };
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
@@ -41,35 +61,57 @@
   let isMouseOverGroup = false;
   let actualBucketHeight: number;
   let hoveredDateGroup = '';
+  let assetsGroupByDate: AssetResponseDto[][] = [];
 
-  $: assetsGroupByDate = splitBucketIntoDateGroups(assets, $locale);
+  type GeometryType = ReturnType<typeof justifiedLayout> & {
+    boxes: LayoutBox[];
+    containerWidth: number;
+    assets: AssetResponseDto[];
+  };
 
-  $: geometry = (() => {
-    const geometry = [];
-    for (let group of assetsGroupByDate) {
-      const justifiedLayoutResult = justifiedLayout(
-        group.map((assetGroup) => getAssetRatio(assetGroup)),
+  let geometry: GeometryType[] = [];
+
+  const scrollToThumbnail = (thumbnailElement: HTMLElement) => {
+    const thumbBox = thumbnailElement?.offsetParent as HTMLElement;
+    const imageGrid = thumbBox.offsetParent as HTMLElement;
+    const section = imageGrid.offsetParent as HTMLElement;
+
+    const offsetFromImageGrid = thumbBox.offsetTop;
+    const previousSections = imageGrid.offsetTop;
+
+    const sectionOffset = section.offsetTop;
+    const offset = offsetFromImageGrid + previousSections + sectionOffset - TITLE_HEIGHT;
+
+    const bucket = $assetStore.buckets.find((bucket) => bucket.bucketDate === section.dataset.bucketDate);
+
+    onScrollTarget?.({ target: bucket!, offset });
+  };
+
+  $: {
+    assetsGroupByDate = splitBucketIntoDateGroups(assets, $locale);
+    geometry = [];
+    for (const group of assetsGroupByDate) {
+      const layoutResult = justifiedLayout(
+        group.map((g) => getAssetRatio(g)),
         {
-          boxSpacing: 2,
+          ...LAYOUT_OPTIONS,
           containerWidth: Math.floor(viewport.width),
-          containerPadding: 0,
-          targetRowHeightTolerance: 0.15,
-          targetRowHeight: 235,
         },
       );
-      geometry.push({
-        ...justifiedLayoutResult,
-        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-      });
+      const geo = {
+        ...layoutResult,
+        containerWidth: calculateWidth(layoutResult.boxes),
+        assets: group,
+      };
+      geometry.push(geo);
     }
-    return geometry;
-  })();
+  }
 
   $: {
     if (actualBucketHeight && actualBucketHeight !== 0 && actualBucketHeight != bucketHeight) {
       const heightDelta = assetStore.updateBucket(bucketDate, actualBucketHeight);
       if (heightDelta !== 0) {
-        scrollTimeline(heightDelta);
+        handlePromiseError(tick().then(() => scrollTimeline(heightDelta)));
       }
     }
   }
@@ -106,7 +148,13 @@
   };
 </script>
 
-<section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
+<section
+  id="asset-group-by-date"
+  class="flex flex-wrap gap-x-12"
+  data-bucket-date={bucketDate}
+  use:resizeObserver={(element) => (actualBucketHeight = element.clientHeight)}
+  bind:this={element}
+>
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
     {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
@@ -160,28 +208,41 @@
             class="absolute"
             style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
           >
-            <Thumbnail
-              showStackedIcon={withStacked}
-              {showArchiveIcon}
-              {asset}
-              {groupIndex}
-              onClick={(asset, event) => {
-                if (isSelectionMode || $isMultiSelectState) {
+            <IntersectionObserver
+              root={assetGridElement}
+              top={`-${TITLE_HEIGHT}px`}
+              bottom={`-${viewport.height - TITLE_HEIGHT - ASSET_GRID_PADDING - 1}px`}
+              right={`-${viewport.width - 1}px`}
+              once={false}
+              on:intersected={() => onAssetInGrid?.(asset)}
+            >
+              <Thumbnail
+                root={assetGridElement}
+                bottom={renderThumbsAtBottomMargin}
+                top={renderThumbsAtTopMargin}
+                {assetStore}
+                showStackedIcon={withStacked}
+                {showArchiveIcon}
+                {asset}
+                {groupIndex}
+                onScrollTarget={scrollToThumbnail}
+                onClick={(asset, event) => {
                   event.preventDefault();
-                  assetSelectHandler(asset, groupAssets, groupTitle);
-                  return;
-                }
-
-                assetViewingStore.setAsset(asset);
-              }}
-              on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
-              on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
-              selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
-              selectionCandidate={$assetSelectionCandidates.has(asset)}
-              disabled={$assetStore.albumAssets.has(asset.id)}
-              thumbnailWidth={box.width}
-              thumbnailHeight={box.height}
-            />
+                  if (isSelectionMode || $isMultiSelectState) {
+                    assetSelectHandler(asset, groupAssets, groupTitle);
+                    return;
+                  }
+                  void navigate({ targetRoute: 'current', assetId: asset.id });
+                }}
+                on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
+                on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
+                selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+                selectionCandidate={$assetSelectionCandidates.has(asset)}
+                disabled={$assetStore.albumAssets.has(asset.id)}
+                thumbnailWidth={box.width}
+                thumbnailHeight={box.height}
+              />
+            </IntersectionObserver>
           </div>
         {/each}
       </div>

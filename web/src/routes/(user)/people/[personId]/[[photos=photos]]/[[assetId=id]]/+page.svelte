@@ -442,6 +442,7 @@
 <main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
+      partOfRoute={true}
       {assetStore}
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}

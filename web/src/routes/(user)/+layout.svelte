@@ -2,9 +2,8 @@
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import { page } from '$app/stores';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
 
-  // This block takes care of opening the viewer.
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
   $: {
@@ -13,6 +12,8 @@
     } else {
       $showAssetViewer = false;
     }
+    const asset = $page.url.searchParams.get('at');
+    $gridScrollTarget = { at: asset };
   }
 </script>
 

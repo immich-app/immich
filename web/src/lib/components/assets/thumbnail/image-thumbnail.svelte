@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   // eslint-disable-next-line unicorn/prefer-node-protocol
@@ -21,13 +21,23 @@
   export let preload = true;
   export let eyeColor: 'black' | 'white' = 'white';
 
+  let duration: number = 300;
+
   let complete = false;
   let img: HTMLImageElement;
 
   onMount(async () => {
-    await img.decode();
-    await tick();
-    complete = true;
+    try {
+      const t1 = Date.now();
+      await img.decode();
+      const t2 = Date.now();
+      if (t2 - t1 < 50) {
+        duration = 0;
+      }
+      complete = true;
+    } catch {
+      // ignore decoding errors
+    }
   });
 </script>
 
@@ -70,6 +80,6 @@
     class:shadow-lg={shadow}
     class:rounded-full={circle}
     draggable="false"
-    out:fade={{ duration: 300 }}
+    out:fade={{ duration }}
   />
 {/if}

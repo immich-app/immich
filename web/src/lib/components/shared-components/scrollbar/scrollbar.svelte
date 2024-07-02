@@ -9,6 +9,7 @@
   export let timelineY = 0;
   export let height = 0;
   export let assetStore: AssetStore;
+  export let invisible = false;
 
   let isHover = false;
   let isDragging = false;
@@ -123,6 +124,7 @@
   <div
     id="immich-scrubbable-scrollbar"
     class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
+    class:invisible
     style:width={isDragging ? '100vw' : '60px'}
     style:height={height + 'px'}
     style:background-color={isDragging ? 'transparent' : 'transparent'}

@@ -45,5 +45,5 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <AssetGrid {assetStore} {assetInteractionStore} />
+  <AssetGrid partOfRoute={true} {assetStore} {assetInteractionStore} />
 </main>

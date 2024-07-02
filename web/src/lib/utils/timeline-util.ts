@@ -55,9 +55,12 @@ export function splitBucketIntoDateGroups(
 }
 
 export type LayoutBox = {
+  aspectRatio: number;
   top: number;
-  left: number;
   width: number;
+  height: number;
+  left: number;
+  forcedAspectRatio?: boolean;
 };
 
 export function calculateWidth(boxes: LayoutBox[]): number {

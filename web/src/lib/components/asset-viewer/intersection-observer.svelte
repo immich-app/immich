@@ -3,10 +3,10 @@
   import { createEventDispatcher, onMount } from 'svelte';
 
   export let once = false;
-  export let top = 0;
-  export let bottom = 0;
-  export let left = 0;
-  export let right = 0;
+  export let top = '0px';
+  export let bottom = '0px';
+  export let left = '0px';
+  export let right = '0px';
   export let root: HTMLElement | null = null;
 
   export let intersecting = false;
@@ -21,23 +21,25 @@
 
   onMount(() => {
     if (typeof IntersectionObserver !== 'undefined') {
-      const rootMargin = `${top}px ${right}px ${bottom}px ${left}px`;
+      const rootMargin = `${top} ${right} ${bottom} ${left}`;
+
       const observer = new IntersectionObserver(
         (entries) => {
-          intersecting = entries.some((entry) => entry.isIntersecting);
-          if (!intersecting) {
+          const intersectingEntry = entries.find((entry) => entry.isIntersecting);
+          intersecting = !!intersectingEntry;
+          if (!intersectingEntry) {
             dispatch('hidden', container);
           }
 
-          if (intersecting && once) {
+          if (intersectingEntry && once) {
             observer.unobserve(container);
           }
 
-          if (intersecting) {
+          if (intersectingEntry) {
             let position: BucketPosition = BucketPosition.Visible;
-            if (entries[0].boundingClientRect.top + 50 > entries[0].intersectionRect.bottom) {
+            if (intersectingEntry.boundingClientRect.top + 50 > intersectingEntry.intersectionRect.bottom) {
               position = BucketPosition.Below;
-            } else if (entries[0].boundingClientRect.bottom < 0) {
+            } else if (intersectingEntry.boundingClientRect.bottom < 0) {
               position = BucketPosition.Above;
             }
 
@@ -56,24 +58,6 @@
       observer.observe(container);
       return () => observer.unobserve(container);
     }
-
-    // The following is a fallback for older browsers
-    function handler() {
-      const bcr = container.getBoundingClientRect();
-
-      intersecting =
-        bcr.bottom + bottom > 0 &&
-        bcr.right + right > 0 &&
-        bcr.top - top < window.innerHeight &&
-        bcr.left - left < window.innerWidth;
-
-      if (intersecting && once) {
-        window.removeEventListener('scroll', handler);
-      }
-    }
-
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
   });
 </script>
 

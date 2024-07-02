@@ -84,6 +84,7 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
   <AssetGrid
+    partOfRoute={true}
     {assetStore}
     {assetInteractionStore}
     removeAction={AssetAction.ARCHIVE}

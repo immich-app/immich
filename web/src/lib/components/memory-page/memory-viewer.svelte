@@ -371,7 +371,7 @@
         once={false}
         on:intersected={() => (galleryInView = true)}
         on:hidden={() => (galleryInView = false)}
-        bottom={-200}
+        bottom={'-200px'}
       >
         <div
           id="gallery-memory"
