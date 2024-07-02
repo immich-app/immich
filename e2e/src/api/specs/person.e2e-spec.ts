@@ -230,4 +230,21 @@ describe('/people', () => {
       expect(body).toMatchObject({ birthDate: null });
     });
   });
+
+  describe('POST /people/:id/merge', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post(`/people/${uuidDto.notFound}/merge`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not supporting merging a person into themselves', async () => {
+      const { status, body } = await request(app)
+        .post(`/people/${visiblePerson.id}/merge`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ ids: [visiblePerson.id] });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Cannot merge a person into themselves'));
+    });
+  });
 });
