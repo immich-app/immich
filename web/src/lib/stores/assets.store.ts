@@ -87,7 +87,7 @@ export class AssetStore {
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
-    this.options = { ...options, size: TimeBucketSize.Month };
+    this.options = { ...options, size: TimeBucketSize.Day };
     this.store$.set(this);
   }
 
@@ -350,7 +350,7 @@ export class AssetStore {
     const updatedBuckets = new Set<AssetBucket>();
 
     for (const asset of assets) {
-      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('day').toString();
       let bucket = this.getBucketByDate(timeBucket);
 
       if (!bucket) {
