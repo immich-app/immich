@@ -1,7 +1,7 @@
 {
   "about": "关于",
   "account": "账户",
-  "account_settings": "帐号设定",
+  "account_settings": "账户设置",
   "acknowledge": "确认",
   "action": "操作",
   "actions": "操作",
@@ -902,6 +902,7 @@
   "permanent_deletion_warning_setting_description": "当永久删除项目时显示警告",
   "permanently_delete": "永久删除",
   "permanently_delete_assets_count": "{count, plural, one {个项目} other {个项目}}已删除",
+  "permanently_delete_assets_prompt": "确定要永久删除{count, plural, one {此项目} other {这<b>#</b>个项目}}？该操作会同时将{count, plural, one {它} other {它们}}从其所在相册中移除。",
   "permanently_deleted_asset": "永久删除的项目",
   "permanently_deleted_assets": "永久删除{count, plural, one {# 个项目} other {# 个项目}}",
   "permanently_deleted_assets_count": "{count, plural, one {#个项目} other {#个项目}}已删除",
