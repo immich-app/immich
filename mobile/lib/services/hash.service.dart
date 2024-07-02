@@ -24,9 +24,13 @@ class HashService {
     AssetPathEntity album, {
     int start = 0,
     int end = 0x7fffffffffffffff,
+    Set<String>? excludedAssets,
   }) async {
     final entities = await album.getAssetListRange(start: start, end: end);
-    return _hashAssets(entities);
+    final filtered = excludedAssets == null
+        ? entities
+        : entities.where((e) => !excludedAssets.contains(e.id)).toList();
+    return _hashAssets(filtered);
   }
 
   /// Converts a list of [AssetEntity]s to [Asset]s including only those
