@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -69,6 +70,9 @@ class ApiService implements Authentication {
 
     // Save in hivebox for next startup
     Store.put(StoreKey.serverEndpoint, endpoint);
+
+    await dbIso.dispatch("connectServices", ConnectServicesPayload(endpoint, _accessToken ?? ''));
+
     return endpoint;
   }
 

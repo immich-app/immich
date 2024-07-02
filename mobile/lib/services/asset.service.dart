@@ -1,16 +1,26 @@
 // ignore_for_file: null_argument_to_non_null_type
 
 import 'dart:async';
+import 'dart:isolate';
+import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/hash.service.dart';
+import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/partner.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:isar/isar.dart';
@@ -27,6 +37,186 @@ final assetServiceProvider = Provider(
   ),
 );
 
+final MainDbIsolate dbIso = MainDbIsolate();
+
+class ConnectServicesPayload {
+  String accessToken;
+  String endpoint;
+
+  ConnectServicesPayload(this.endpoint, this.accessToken);
+}
+
+class MainDbWorker {
+  final ReceivePort rcv;
+
+  var isInit = false;
+  Isar? db;
+  AssetService? assetSvc;
+  AlbumService? albumSvc;
+  final log = Logger('MainDbWorker');
+
+  String? lastEndpoint;
+  String? lastAccessToken;
+
+  MainDbWorker(this.rcv);
+
+  Future<void> init(RootIsolateToken token) async {
+    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    db = await loadDb();
+    ImmichLogger();
+  }
+
+  Future<void> connectServices(ConnectServicesPayload pl) async {
+    var bgSvc = BackgroundService();
+    var apiSvc = ApiService();
+    apiSvc.setEndpoint(pl.endpoint);
+    apiSvc.setAccessToken(pl.accessToken);
+
+    var hashSvc = HashService(db!, bgSvc);
+    var syncSvc = SyncService(db!, hashSvc);
+    var partnerSvc = PartnerService(apiSvc, db!);
+    var userSvc = UserService(apiSvc, db!, syncSvc, partnerSvc);
+
+    albumSvc = AlbumService(apiSvc, userSvc, syncSvc, db!);
+    assetSvc = AssetService(apiSvc, syncSvc, userSvc, db!);
+
+    isInit = true;
+  }
+
+  Future<dynamic> refreshRemoteAssets(IsolatePayload msg) async {
+    if (!isInit) {
+      log.warning('attempted refreshRemoteAssets but not initised');
+      return false;
+    }
+
+    try {
+      return await assetSvc!.refreshRemoteAssetsBackground();
+    } catch (e) {
+      log.severe('refreshRemoteAssetsBackground caught error', e);
+      return false;
+    }
+  }
+
+  Future<dynamic> refreshRemoteAlbums(IsolatePayload msg) async {
+    if (!isInit) {
+      log.warning('attempted refreshRemoteAlbums but not initised');
+      return false;
+    }
+
+    try {
+      return await albumSvc!
+          .refreshRemoteAlbumsBackground(isShared: msg.payload);
+    } catch (e) {
+      log.severe('refreshRemoteAlbumsBackground caught error', e);
+      return false;
+    }
+  }
+
+  loop() async {
+    await for (IsolatePayload msg in rcv) {
+      processMsg(msg);
+    }
+  }
+
+  processMsg(IsolatePayload msg) async {
+    print(msg.id);
+    print(msg.payload);
+
+    dynamic resp = "ok";
+    switch (msg.id) {
+      case "init":
+        await init(msg.payload);
+        break;
+      case "connectServices":
+        await connectServices(msg.payload);
+        break;
+      case "refreshRemoteAssets":
+        resp = await refreshRemoteAssets(msg);
+        break;
+      case "refreshRemoteAlbums":
+        resp = await refreshRemoteAlbums(msg);
+        break;
+      default:
+        break;
+    }
+
+    msg.port.send(resp);
+  }
+}
+
+void mainDbWorker(SendPort fromMain) async {
+  ReceivePort rcv = ReceivePort();
+  fromMain.send(rcv.sendPort);
+
+  var wrk = MainDbWorker(rcv);
+  wrk.loop();
+}
+
+class IsolatePayload<T> {
+  SendPort port;
+  String id;
+  T payload;
+
+  IsolatePayload(this.port, this.id, this.payload);
+}
+
+class MainDbIsolate {
+  ReceivePort rcv = ReceivePort();
+  SendPort? wrk;
+  final log = Logger('MainDbIsolate');
+  Isolate? isolate;
+
+  ReceivePort onExit = ReceivePort();
+  ReceivePort onError = ReceivePort();
+
+  create() async {
+    log.fine('Starting background isolate thread');
+    isolate = await Isolate.spawn<SendPort>(
+      mainDbWorker,
+      rcv.sendPort,
+      debugName: "db-worker",
+      onExit: onExit.sendPort,
+      onError: onError.sendPort,
+    );
+    wrk = await rcv.first;
+
+    onExit.listen((data) {
+      log.severe('background worker exit: $data');
+    });
+    onError.listen((err) {
+      log.severe('background worker error: $err', err);
+    });
+
+    await dispatch("init", RootIsolateToken.instance!);
+    log.severe('background worker init OK');
+  }
+
+  stop() {
+    isolate!.kill();
+
+    // close messaging ports
+    rcv.close();
+    onExit.close();
+    onError.close();
+  }
+
+  Future<dynamic> dispatch<T>(String message, T payload) async {
+    log.info('Dispatching $message to isolate worker');
+
+    ReceivePort msgPort = ReceivePort();
+    wrk!.send(IsolatePayload(msgPort.sendPort, message, payload));
+
+    var resp = await msgPort.first;
+    print(message);
+    print(resp);
+    log.info('isolate returned from job $message');
+
+    msgPort.close();
+
+    return resp;
+  }
+}
+
 class AssetService {
   final ApiService _apiService;
   final SyncService _syncService;
@@ -41,10 +231,31 @@ class AssetService {
     this._db,
   );
 
+  // refreshRemoteAlbums took 289167ms / 28s
+  // refreshRemoteAssets full took 79941ms / 79s
+
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
+    var resp = await dbIso.dispatch("refreshRemoteAssets", "");
+    // final ReceivePort receivePort = ReceivePort();
+    // try {
+    //   await Isolate.spawn(_refreshRemoteAssets, [receivePort.sendPort]);
+    // } on Object {
+    //   debugPrint('Isolate Failed');
+    //   receivePort.close();
+    // }
+    // final response = await receivePort.first;
+
+    print('Result: $resp');
+    return resp;
+  }
+
+  Future<bool> refreshRemoteAssetsBackground() async {
+    log.info('refreshRemoteAssetsBackground starting');
+    
     final syncedUserIds = await _db.eTags.where().idProperty().findAll();
+    log.info('refreshRemoteAssetsBackground findingUsers');
     final List<User> syncedUsers = syncedUserIds.isEmpty
         ? []
         : await _db.users
@@ -98,6 +309,7 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
+    log.info('_getRemoteAssets starting');
     const int chunkSize = 10000;
     try {
       final List<Asset> allAssets = [];
@@ -118,6 +330,7 @@ class AssetService {
           "Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}",
         );
         allAssets.addAll(assets.map(Asset.remote));
+        log.info('_getRemoteAssets added assets to all (${allAssets.length})');
         if (assets.length != chunkSize) break;
         lastId = assets.last.id;
       }
