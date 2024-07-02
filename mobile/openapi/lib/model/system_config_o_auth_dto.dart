@@ -23,6 +23,7 @@ class SystemConfigOAuthDto {
     required this.issuerUrl,
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
+    required this.profileSigningAlgorithm,
     required this.scope,
     required this.signingAlgorithm,
     required this.storageLabelClaim,
@@ -50,6 +51,8 @@ class SystemConfigOAuthDto {
 
   String mobileRedirectUri;
 
+  String profileSigningAlgorithm;
+
   String scope;
 
   String signingAlgorithm;
@@ -70,6 +73,7 @@ class SystemConfigOAuthDto {
     other.issuerUrl == issuerUrl &&
     other.mobileOverrideEnabled == mobileOverrideEnabled &&
     other.mobileRedirectUri == mobileRedirectUri &&
+    other.profileSigningAlgorithm == profileSigningAlgorithm &&
     other.scope == scope &&
     other.signingAlgorithm == signingAlgorithm &&
     other.storageLabelClaim == storageLabelClaim &&
@@ -88,13 +92,14 @@ class SystemConfigOAuthDto {
     (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode) +
+    (profileSigningAlgorithm.hashCode) +
     (scope.hashCode) +
     (signingAlgorithm.hashCode) +
     (storageLabelClaim.hashCode) +
     (storageQuotaClaim.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,6 +113,7 @@ class SystemConfigOAuthDto {
       json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
       json[r'mobileRedirectUri'] = this.mobileRedirectUri;
+      json[r'profileSigningAlgorithm'] = this.profileSigningAlgorithm;
       json[r'scope'] = this.scope;
       json[r'signingAlgorithm'] = this.signingAlgorithm;
       json[r'storageLabelClaim'] = this.storageLabelClaim;
@@ -133,6 +139,7 @@ class SystemConfigOAuthDto {
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
+        profileSigningAlgorithm: mapValueOfType<String>(json, r'profileSigningAlgorithm')!,
         scope: mapValueOfType<String>(json, r'scope')!,
         signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
         storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
@@ -194,6 +201,7 @@ class SystemConfigOAuthDto {
     'issuerUrl',
     'mobileOverrideEnabled',
     'mobileRedirectUri',
+    'profileSigningAlgorithm',
     'scope',
     'signingAlgorithm',
     'storageLabelClaim',
