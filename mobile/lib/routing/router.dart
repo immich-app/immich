@@ -25,6 +25,7 @@ import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
+import 'package:immich_mobile/pages/common/local_album_picker.page.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
@@ -226,6 +227,10 @@ class AppRouter extends _$AppRouter {
     ),
     AutoRoute(
       page: HeaderSettingsRoute.page,
+      guards: [_duplicateGuard],
+    ),
+    AutoRoute(
+      page: LocalAlbumPickerRoute.page,
       guards: [_duplicateGuard],
     ),
   ];

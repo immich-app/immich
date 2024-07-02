@@ -202,6 +202,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const LibraryPage(),
       );
     },
+    LocalAlbumPickerRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const LocalAlbumPickerPage(),
+      );
+    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -941,6 +947,20 @@ class LibraryRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'LibraryRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [LocalAlbumPickerPage]
+class LocalAlbumPickerRoute extends PageRouteInfo<void> {
+  const LocalAlbumPickerRoute({List<PageRouteInfo>? children})
+      : super(
+          LocalAlbumPickerRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalAlbumPickerRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }
