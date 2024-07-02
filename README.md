@@ -54,7 +54,7 @@
 - [Roadmap](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Features](#features)
-- [Translations](https://immich.app/docs/developer/tranlations)
+- [Translations](https://immich.app/docs/developer/translations)
 - [Contributing](https://immich.app/docs/overview/support-the-project)
 
 ## Demo
