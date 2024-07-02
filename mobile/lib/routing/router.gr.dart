@@ -259,9 +259,13 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     PermissionOnboardingRoute.name: (routeData) {
+      final args = routeData.argsAs<PermissionOnboardingRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const PermissionOnboardingPage(),
+        child: PermissionOnboardingPage(
+          key: args.key,
+          nextRoute: args.nextRoute,
+        ),
       );
     },
     PersonResultRoute.name: (routeData) {
@@ -1127,16 +1131,41 @@ class PartnerRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [PermissionOnboardingPage]
-class PermissionOnboardingRoute extends PageRouteInfo<void> {
-  const PermissionOnboardingRoute({List<PageRouteInfo>? children})
-      : super(
+class PermissionOnboardingRoute
+    extends PageRouteInfo<PermissionOnboardingRouteArgs> {
+  PermissionOnboardingRoute({
+    Key? key,
+    required PageRouteInfo<dynamic> nextRoute,
+    List<PageRouteInfo>? children,
+  }) : super(
           PermissionOnboardingRoute.name,
+          args: PermissionOnboardingRouteArgs(
+            key: key,
+            nextRoute: nextRoute,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'PermissionOnboardingRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<PermissionOnboardingRouteArgs> page =
+      PageInfo<PermissionOnboardingRouteArgs>(name);
+}
+
+class PermissionOnboardingRouteArgs {
+  const PermissionOnboardingRouteArgs({
+    this.key,
+    required this.nextRoute,
+  });
+
+  final Key? key;
+
+  final PageRouteInfo<dynamic> nextRoute;
+
+  @override
+  String toString() {
+    return 'PermissionOnboardingRouteArgs{key: $key, nextRoute: $nextRoute}';
+  }
 }
 
 /// generated route for
