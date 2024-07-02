@@ -16,6 +16,7 @@ class ImmichThumbnail extends HookWidget {
     this.width = 250,
     this.height = 250,
     this.fit = BoxFit.cover,
+    this.useAltText = false,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class ImmichThumbnail extends HookWidget {
   final double width;
   final double height;
   final BoxFit fit;
+  final bool useAltText;
 
   /// Helper function to return the image provider for the asset thumbnail
   /// either by using the asset ID or the asset itself
@@ -72,17 +74,20 @@ class ImmichThumbnail extends HookWidget {
       );
     }
 
-    return OctoImage.fromSet(
-      placeholderFadeInDuration: Duration.zero,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: const Duration(milliseconds: 100),
-      octoSet: blurHashOrPlaceholder(blurhash),
-      image: ImmichThumbnail.imageProvider(
-        asset: asset,
+    return Semantics(
+      label: useAltText ? asset?.altText : null,
+      child: OctoImage.fromSet(
+        placeholderFadeInDuration: Duration.zero,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: const Duration(milliseconds: 100),
+        octoSet: blurHashOrPlaceholder(blurhash),
+        image: ImmichThumbnail.imageProvider(
+          asset: asset,
+        ),
+        width: width,
+        height: height,
+        fit: fit,
       ),
-      width: width,
-      height: height,
-      fit: fit,
     );
   }
 }

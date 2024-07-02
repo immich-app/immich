@@ -506,6 +506,8 @@
   "theme_setting_theme_title": "Theme",
   "theme_setting_three_stage_loading_subtitle": "Three-stage loading might increase the loading performance but causes significantly higher network load",
   "theme_setting_three_stage_loading_title": "Enable three-stage loading",
+  "thumbnail_alt_text_date": "Image taken on {}",
+  "thumbnail_alt_text_date_and_location": "Image taken in {} on {}",
   "translated_text_options": "Options",
   "trash_page_delete": "Delete",
   "trash_page_delete_all": "Delete All",
