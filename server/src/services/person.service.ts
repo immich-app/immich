@@ -551,6 +551,10 @@ export class PersonService {
 
   async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
+    if (mergeIds.includes(id)) {
+      throw new BadRequestException('Cannot merge a person into themselves');
+    }
+
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
