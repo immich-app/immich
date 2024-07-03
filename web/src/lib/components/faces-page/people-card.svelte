@@ -66,27 +66,29 @@
     {/if}
   </a>
 
-  <div class="absolute top-2 right-2">
-    <ButtonContextMenu
-      buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
-      color="opaque"
-      padding="2"
-      size="20"
-      icon={mdiDotsVertical}
-      title={$t('show_person_options')}
-    >
-      <MenuOption onClick={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-      <MenuOption onClick={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
-      <MenuOption
-        onClick={() => onMenuClick('set-birth-date')}
-        icon={mdiCalendarEditOutline}
-        text={$t('set_date_of_birth')}
-      />
-      <MenuOption
-        onClick={() => onMenuClick('merge-people')}
-        icon={mdiAccountMultipleCheckOutline}
-        text={$t('merge_people')}
-      />
-    </ButtonContextMenu>
-  </div>
+  {#if showVerticalDots}
+    <div class="absolute top-2 right-2">
+      <ButtonContextMenu
+        buttonClass="icon-white-drop-shadow focus:opacity-100 {showVerticalDots ? 'opacity-100' : 'opacity-0'}"
+        color="opaque"
+        padding="2"
+        size="20"
+        icon={mdiDotsVertical}
+        title={$t('show_person_options')}
+      >
+        <MenuOption onClick={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
+        <MenuOption onClick={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
+        <MenuOption
+          onClick={() => onMenuClick('set-birth-date')}
+          icon={mdiCalendarEditOutline}
+          text={$t('set_date_of_birth')}
+        />
+        <MenuOption
+          onClick={() => onMenuClick('merge-people')}
+          icon={mdiAccountMultipleCheckOutline}
+          text={$t('merge_people')}
+        />
+      </ButtonContextMenu>
+    </div>
+  {/if}
 </div>
