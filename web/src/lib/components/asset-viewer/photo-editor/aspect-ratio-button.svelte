@@ -5,6 +5,7 @@
 
 <div class="flex items-center text-white">
   <button
+    type="button"
     on:click
     class:active-edit={isActive}
     class="rounded-full p-3 mr-3 text-3xl bg-immich-gray/10 hover:bg-immich-gray/20"

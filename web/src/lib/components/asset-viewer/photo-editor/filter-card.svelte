@@ -49,6 +49,7 @@
 </script>
 
 <button
+  type="button"
   class=" text-immich-gray/70 w-fit text-center text-sm {title.toLowerCase() === name ? 'isActive' : ''}"
   on:click={() => {
     if (title === 'Custom') {

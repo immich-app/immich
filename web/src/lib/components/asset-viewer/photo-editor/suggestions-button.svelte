@@ -4,6 +4,7 @@
 </script>
 
 <button
+  type="button"
   class:active-edit={isActive}
   on:click
   class="rounded-lg bg-immich-gray/10 hover:bg-immich-gray/20 text-white w-full flex items-center h-16"

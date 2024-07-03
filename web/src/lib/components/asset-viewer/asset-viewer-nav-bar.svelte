@@ -98,9 +98,10 @@
   <div
     class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
     data-testid="asset-viewer-navbar-actions"
-  >{#if showEditButton}
-  <CircleIconButton isOpacity={true} icon={mdiTune} title="Edit" on:click={() => dispatch('edit')} />
-{/if}
+  >
+    {#if showEditButton}
+      <CircleIconButton color="opaque" icon={mdiTune} title="Edit" on:click={() => dispatch('edit')} />
+    {/if}
     {#if showShareButton}
       <CircleIconButton
         color="opaque"

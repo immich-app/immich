@@ -58,9 +58,10 @@
 
 <div class="flex w-full text-white">
   <button
-    class="{value !== baseValue
-      ? 'active-edit'
-      : ''} bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl"
+    type="button"
+    class="{value === baseValue
+      ? ''
+      : 'active-edit'} bg-immich-gray/10 hover:bg-immich-gray/20 mr-3 rounded-full p-4 text-2xl"
     on:click={() => {
       value = baseValue;
       handleInput();

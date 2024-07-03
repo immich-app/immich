@@ -19,8 +19,8 @@ export const createHistory = () => {
     let resolvedState = {};
 
     for (let i = 0; i <= currentIndex; i++) {
-      resolvedState = {...resolvedState, [stack[i].type]: stack[i].properties};
-    };
+      resolvedState = { ...resolvedState, [stack[i].type]: stack[i].properties };
+    }
 
     return resolvedState;
   };

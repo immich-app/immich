@@ -4,7 +4,7 @@ import { ratios, type mode } from './types';
 import { presets } from './presets';
 import { Render } from './render';
 
-import { serveFile, updateAssets, uploadFile, type AssetResponseDto } from '@immich/sdk';
+import { downloadAsset, updateAssets, uploadAsset, viewAsset, type AssetResponseDto } from '@immich/sdk';
 
 type presetName = keyof typeof presets;
 type partialFilter = Partial<filter>;
@@ -366,7 +366,7 @@ export class Editor {
     console.log('loadThumb');
 
     try {
-      const data = await serveFile({ id: this.asset.id, isThumb: true, isWeb: true });
+      const data = await viewAsset({ id: this.asset.id });
 
       if (!(data instanceof Blob)) {
         throw new TypeError('Failed to load thumb data');
@@ -385,7 +385,7 @@ export class Editor {
   private async loadAsset() {
     console.log('loadAsset');
     try {
-      const data = await serveFile({ id: this.asset.id });
+      const data = await downloadAsset({ id: this.asset.id });
 
       if (!(data instanceof Blob)) {
         throw new TypeError('Failed to load asset data');
@@ -452,13 +452,13 @@ export class Editor {
       lastModified: Date.now(),
     });
 
-    const data = await uploadFile({
-      createAssetDto: {
+    const data = await uploadAsset({
+      assetMediaCreateDto: {
         assetData: assetData,
         deviceAssetId: this.asset.deviceAssetId,
         deviceId: this.asset.deviceId,
         fileCreatedAt: this.asset.fileCreatedAt,
-        fileModifiedAt: new Date().toUTCString(),
+        fileModifiedAt: new Date().toISOString(),
       },
     });
 

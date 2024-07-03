@@ -8,10 +8,10 @@
   import { mdiSelectInverse } from '@mdi/js'; // Selective
   import { mdiPillar } from '@mdi/js'; // Pillarbox
 
-  import { mdiAutoFix } from '@mdi/js'; // Auto
-  import { mdiImageFilterHdr } from '@mdi/js'; // HDR
-  import { mdiWeatherSunny } from '@mdi/js'; // Exposure
-  import { mdiWeatherCloudy } from '@mdi/js'; // Contrast
+  // import { mdiAutoFix } from '@mdi/js'; // Auto
+  // import { mdiImageFilterHdr } from '@mdi/js'; // HDR
+  // import { mdiWeatherSunny } from '@mdi/js'; // Exposure
+  // import { mdiWeatherCloudy } from '@mdi/js'; // Contrast
   import { mdiCropRotate } from '@mdi/js'; // Rotate
   import { mdiTune } from '@mdi/js'; // Adjust
   import { mdiImageAutoAdjust } from '@mdi/js'; // Auto Adjust
@@ -33,7 +33,7 @@
 
   import { pinch, pan } from 'svelte-hammer';
 
-  import SuggestionsButton from './suggestions-button.svelte';
+  //  import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
   import AdjustElement from './adjust-element.svelte';
   import FilterCard from './filter-card.svelte';
@@ -42,8 +42,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { getContextMenuPositionFromEvent } from '$lib/utils/context-menu';
+  import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { Editor } from './editor';
   import { presets } from './presets';
@@ -89,7 +89,7 @@
   let contextMenuPosition = { x: 0, y: 0 };
   let isShowEditOptions = false;
   const showOptionsMenu = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, 'top-right');
+    contextMenuPosition = getContextMenuPositionFromEvent(event, 'top-right');
     isShowEditOptions = !isShowEditOptions;
   };
 
@@ -127,9 +127,13 @@
     editor.rotate(angle);
   };
 
-  const navigateEdit = (edit: activeEdit) => {
-    activeEdit = edit;
+  const handleClickOutside = () => {
+    isShowEditOptions = false;
   };
+
+  // const navigateEdit = (edit: activeEdit) => {
+  //   activeEdit = edit;
+  // };
 
   $: b = -1 * angle * (125 / 49);
   $: angleSliderHandle ? (angleSliderHandle.style.left = b + 'px') : null;
@@ -169,6 +173,7 @@
   <div class="z-[1000] col-span-3 col-start-1 row-span-1 row-start-1 flex items-center transition-transform">
     <button
       on:click={() => dispatch('close')}
+      type="button"
       class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white"
     >
       <Icon path={mdiClose} />
@@ -178,6 +183,7 @@
       <!-- goBackInHistory Button -->
       <button
         on:click={() => editor.undo()}
+        type="button"
         disabled={!canUndo}
         class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white ml-auto disabled:text-gray-500 disabled:bg-transparent disabled:cursor-not-allowed"
       >
@@ -186,6 +192,7 @@
 
       <!-- goForwardInHistory -->
       <button
+        type="button"
         on:click={() => editor.redo()}
         disabled={!canRedo}
         class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white disabled:text-gray-500 disabled:bg-transparent disabled:cursor-not-allowed"
@@ -194,6 +201,7 @@
       </button>
 
       <button
+        type="button"
         on:click={async () => {
           isRendering = true;
           const blob = await editor.render();
@@ -227,14 +235,14 @@
         </svg>
         {isRendering && !isUploading ? 'Rendering' : isUploading ? 'Uploading' : 'Save'}
       </button>
-      <div use:clickOutside on:outclick={() => (isShowEditOptions = false)}>
+      <div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
         <CircleIconButton icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
         {#if isShowEditOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
-            <MenuOption on:click={() => editor.clear()} text="Clear History" />
-            <MenuOption on:click={() => editor.reset()} text="Reset" />
+            <MenuOption onClick={() => editor.clear()} text="Clear History" />
+            <MenuOption onClick={() => editor.reset()} text="Reset" />
             <MenuOption
-              on:click={async () => {
+              onClick={async () => {
                 isRendering = true;
                 const blob = await editor.render();
                 editor.download(blob, asset.originalFileName);
@@ -299,6 +307,7 @@
         <!-- Crop Options -->
         <div class="z-10 flex h-full w-full flex-col justify-center bg-black">
           <button
+            type="button"
             on:click={() => editor.flip(false, true)}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
@@ -306,6 +315,7 @@
           </button>
 
           <button
+            type="button"
             on:click={() => editor.flip(true, false)}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
@@ -314,6 +324,7 @@
         </div>
         <div class="z-10 flex h-full w-full items-center justify-center bg-black">
           <button
+            type="button"
             on:click={() => editor.rotate90()}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
@@ -398,6 +409,7 @@
 
         <div class="z-10 flex h-full w-full items-center justify-center bg-black">
           <button
+            type="button"
             class=" text-md text-immich-dark-primary hover:bg-immich-dark-primary/10 focus:bg-immich-dark-primary/20 rounded border border-white px-3 py-1.5 focus:outline-none"
             on:click={() => editor.reset()}
           >
@@ -412,6 +424,7 @@
     class="bg-immich-dark-gray z-[1000] col-span-1 col-start-4 row-span-1 row-start-1 flex justify-evenly pb-[16px] transition-transform"
   >
     <button
+      type="button"
       title="Crop & Rotate"
       on:click={() => editor.setMode('crop')}
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
@@ -424,6 +437,7 @@
       />
     </button>
     <button
+      type="button"
       title="Adjust"
       on:click={() => editor.setMode('adjust')}
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
@@ -435,6 +449,7 @@
         class:active={mode == 'adjust'}
       />
     </button><button
+      type="button"
       title="Filter"
       on:click={() => editor.setMode('filter')}
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
