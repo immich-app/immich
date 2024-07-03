@@ -10,20 +10,27 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     }
 
     await queryRunner.query(`
-            CREATE TABLE face_search (
-            "faceId"  uuid PRIMARY KEY REFERENCES asset_faces(id) ON DELETE CASCADE,
-            embedding  vector(512) NOT NULL )`);
+      CREATE TABLE face_search (
+      "faceId"  uuid PRIMARY KEY REFERENCES asset_faces(id) ON DELETE CASCADE,
+      embedding  vector(512) NOT NULL )`);
 
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
     await queryRunner.query(`ALTER TABLE smart_search ADD COLUMN IF NOT EXISTS embedding vector(512)`);
     await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
 
-    await queryRunner.query(`
-            INSERT INTO face_search("faceId", embedding)
-            SELECT id, embedding
-            FROM asset_faces faces`);
+    const assetFacesColumns = await queryRunner.query(
+      `SELECT column_name as name
+      FROM information_schema.columns
+      WHERE table_name = 'asset_faces'`);
+    const hasFaceEmbeddings = assetFacesColumns.some((column: { name: string }) => column.name === 'embedding');
+    if (hasFaceEmbeddings) {
+      await queryRunner.query(`
+        INSERT INTO face_search("faceId", embedding)
+        SELECT id, embedding
+        FROM asset_faces faces`);
+    }
 
-    await queryRunner.query(`ALTER TABLE asset_faces DROP COLUMN "embedding"`);
+    await queryRunner.query(`ALTER TABLE asset_faces DROP COLUMN IF EXISTS embedding`);
 
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE real[]`);
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
@@ -34,9 +41,9 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
       WITH (ef_construction = 300, m = 16)`);
 
     await queryRunner.query(`
-            CREATE INDEX face_index ON face_search
-            USING hnsw (embedding vector_cosine_ops)
-            WITH (ef_construction = 300, m = 16)`);
+      CREATE INDEX face_index ON face_search
+      USING hnsw (embedding vector_cosine_ops)
+      WITH (ef_construction = 300, m = 16)`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -49,15 +56,15 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE DEFAULT`);
     await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE DEFAULT`);
     await queryRunner.query(`
-          UPDATE asset_faces
-          SET embedding = fs.embedding
-          FROM face_search fs
-          WHERE id = fs."faceId"`);
+      UPDATE asset_faces
+      SET embedding = fs.embedding
+      FROM face_search fs
+      WHERE id = fs."faceId"`);
     await queryRunner.query(`DROP TABLE face_search`);
 
     await queryRunner.query(`
-          CREATE INDEX face_index ON asset_faces
-          USING hnsw (embedding vector_cosine_ops)
-          WITH (ef_construction = 300, m = 16)`);
+      CREATE INDEX face_index ON asset_faces
+      USING hnsw (embedding vector_cosine_ops)
+      WITH (ef_construction = 300, m = 16)`);
   }
 }
