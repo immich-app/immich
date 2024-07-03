@@ -27,6 +27,7 @@
   import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
+  import LicenseInfo from '$lib/components/shared-components/side-bar/license-info.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -137,7 +138,12 @@
   </nav>
 
   <!-- Status Box -->
-  <div class="mb-6 mt-auto">
+  <div class="mt-auto">
     <StatusBox />
+  </div>
+
+  <!-- License Info -->
+  <div class="mb-6">
+    <LicenseInfo />
   </div>
 </SideBarSection>
