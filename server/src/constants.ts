@@ -23,17 +23,22 @@ export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 export const envName = (process.env.IMMICH_ENV || 'production').toUpperCase();
 export const isDev = () => process.env.IMMICH_ENV === 'development';
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
-const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
+const BUILD_FILES_ROOT_PATH = process.env.IMMICH_BUILD_FILES || '/build';
+
+const GEODATA_ROOT_PATH = join(BUILD_FILES_ROOT_PATH, 'geodata');
 
 export const citiesFile = 'cities500.txt';
 export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
 export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
 export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
 export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
+
+export const BUILD_LOCK_PATH = join(BUILD_FILES_ROOT_PATH, 'build-lock.json');
+
+export const WEB_ROOT = join(BUILD_FILES_ROOT_PATH, 'www');
 
 export const MOBILE_REDIRECT = 'app.immich:/';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
