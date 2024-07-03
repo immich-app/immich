@@ -303,7 +303,6 @@
     }
 
     const isConfirmed = await dialogController.show({
-      id: 'delete-album',
       prompt: $t('album_delete_confirmation', { values: { album: albumToDelete.albumName } }),
     });
 

@@ -268,7 +268,6 @@
     }
 
     const isConfirmedLibrary = await dialogController.show({
-      id: 'delete-library',
       prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
     });
 
@@ -281,7 +280,6 @@
       deleteAssetCount = totalCount[index];
 
       const isConfirmedLibraryAssetCount = await dialogController.show({
-        id: 'delete-library-assets',
         prompt: $t('admin.confirm_delete_library_assets', { values: { count: deleteAssetCount } }),
       });
 

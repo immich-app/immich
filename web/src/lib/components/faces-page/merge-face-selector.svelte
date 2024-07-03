@@ -66,7 +66,6 @@
 
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
-      id: 'merge-people',
       prompt: $t('merge_people_prompt'),
     });
 
