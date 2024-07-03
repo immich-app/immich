@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
-import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
+import { Between, Brackets, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -38,7 +38,6 @@ export function searchAssetBuilder(
 
   const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
   const hasExifQuery = Object.keys(exifInfo).length > 0;
-
   if (options.withExif && !hasExifQuery) {
     builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
   }
@@ -48,7 +47,16 @@ export function searchAssetBuilder(
       ? builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo')
       : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
 
-    builder.andWhere({ exifInfo });
+    // AI generated, not sure I trust it
+    builder.andWhere(new Brackets(qb => {
+      Object.entries(exifInfo).forEach(([key, value]) => {
+        if (value === null) {
+          qb.orWhere(`exifInfo.${key} IS NULL`);
+        } else {
+          qb.orWhere(`exifInfo.${key} = :${key}`, { [key]: value });
+        }
+      });
+    }));
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
