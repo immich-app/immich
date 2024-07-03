@@ -166,7 +166,7 @@ class HeaderKeyValueSettings extends StatelessWidget {
           child: TextFormField(
             controller: valueController,
             decoration: InputDecoration(
-              labelText: 'header_settings_header_name_input'.tr(),
+              labelText: 'header_settings_header_value_input'.tr(),
               border: const OutlineInputBorder(),
             ),
             autocorrect: false,
