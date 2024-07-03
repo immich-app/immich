@@ -16,7 +16,6 @@
 
   const handleDelete = async (device: SessionResponseDto) => {
     const isConfirmed = await dialogController.show({
-      id: 'log-out-device',
       prompt: $t('logout_this_device_confirmation'),
     });
 
@@ -35,11 +34,7 @@
   };
 
   const handleDeleteAll = async () => {
-    const isConfirmed = await dialogController.show({
-      id: 'log-out-all-devices',
-      prompt: $t('logout_all_device_confirmation'),
-    });
-
+    const isConfirmed = await dialogController.show({ prompt: $t('logout_all_device_confirmation') });
     if (!isConfirmed) {
       return;
     }

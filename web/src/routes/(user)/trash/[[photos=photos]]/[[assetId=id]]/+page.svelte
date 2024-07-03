@@ -36,7 +36,6 @@
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'empty-trash',
       prompt: $t('empty_trash_confirmation'),
     });
 
@@ -62,7 +61,6 @@
 
   const handleRestoreTrash = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'restore-trash',
       prompt: $t('assets_restore_confirmation'),
     });
 

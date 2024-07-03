@@ -42,7 +42,6 @@
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
       const isConfirmed = await dialogController.show({
-        id: 'confirm-reprocess-all-faces',
         prompt: $t('admin.confirm_reprocess_all_faces'),
       });
 
