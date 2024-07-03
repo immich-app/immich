@@ -4,11 +4,45 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:logging/logging.dart';
 
 class HttpSSLCertOverride extends HttpOverrides {
+  final Logger _log;
+  final SSLClientCertStoreVal? _clientCert;
+  late final SecurityContext? _ctxWithCert;
+
+  HttpSSLCertOverride()
+  : _log = Logger("HttpSSLCertOverride")
+  , _clientCert = SSLClientCertStoreVal.load() {
+    if (_clientCert != null) {
+      _ctxWithCert = SecurityContext(withTrustedRoots: true);
+      if (_ctxWithCert != null) {
+        setClientCert(_ctxWithCert);
+      } else {
+        _log.severe("Failed to create security context with client cert!");
+      }
+    } else {
+      _ctxWithCert = null;
+    }
+  }
+
+  void setClientCert(SecurityContext ctx) {
+    if (_clientCert != null) {
+      _log.info("Setting client certificate");
+      ctx.usePrivateKeyBytes(_clientCert.data, password: _clientCert.password);
+      if (!Platform.isIOS) {
+        ctx.useCertificateChainBytes(_clientCert.data, password: _clientCert.password);
+      }
+    }
+  }
+
   @override
   HttpClient createHttpClient(SecurityContext? context) {
+    if (context != null) {
+      setClientCert(context);
+    } else {
+      context = _ctxWithCert;
+    }
+
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
-        var log = Logger("HttpSSLCertOverride");
 
         AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
 
@@ -28,7 +62,7 @@ class HttpSSLCertOverride extends HttpOverrides {
         }
 
         if (!selfSignedCertsAllowed) {
-          log.severe("Invalid SSL certificate for $host:$port");
+          _log.severe("Invalid SSL certificate for $host:$port");
         }
 
         return selfSignedCertsAllowed;
