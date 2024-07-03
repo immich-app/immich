@@ -15,6 +15,7 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
             embedding  vector(512) NOT NULL )`);
 
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
+    await queryRunner.query(`ALTER TABLE smart_search ADD COLUMN IF NOT EXISTS embedding vector(512)`);
     await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
 
     await queryRunner.query(`
@@ -26,6 +27,11 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
 
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE real[]`);
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
+
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS clip_index ON smart_search
+      USING hnsw (embedding vector_cosine_ops)
+      WITH (ef_construction = 300, m = 16)`);
 
     await queryRunner.query(`
             CREATE INDEX face_index ON face_search
