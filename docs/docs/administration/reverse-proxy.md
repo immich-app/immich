@@ -37,9 +37,6 @@ server {
     keepalive_timeout   150s;
 
     # improve video streaming for mobile client
-    gzip_static on;
-    gzip_min_length 1000;
-    gzip_comp_level 2;
     proxy_buffering off;
     proxy_buffer_size 16k;
     proxy_busy_buffers_size 24k;
