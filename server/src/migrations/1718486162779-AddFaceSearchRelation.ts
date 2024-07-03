@@ -24,6 +24,9 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
 
     await queryRunner.query(`ALTER TABLE asset_faces DROP COLUMN "embedding"`);
 
+    await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE real[]`);
+    await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
+
     await queryRunner.query(`
             CREATE INDEX face_index ON face_search
             USING hnsw (embedding vector_cosine_ops)
