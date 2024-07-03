@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -14,11 +15,12 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService {
+export class SmartInfoService implements OnEvents {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -27,11 +29,11 @@ export class SmartInfoService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private repository: ISearchRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(SmartInfoService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async init() {
@@ -39,7 +41,7 @@ export class SmartInfoService {
 
     await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
 
-    const { machineLearning } = await this.configCore.getConfig();
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
 
     await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, () =>
       this.repository.init(machineLearning.clip.modelName),
@@ -48,9 +50,15 @@ export class SmartInfoService {
     await this.jobRepository.resume(QueueName.SMART_SEARCH);
   }
 
+  async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdate) {
+    if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+      await this.repository.init(newConfig.machineLearning.clip.modelName);
+    }
+  }
+
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -74,8 +82,8 @@ export class SmartInfoService {
   }
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.clip.enabled) {
+    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
@@ -92,9 +100,9 @@ export class SmartInfoService {
       return JobStatus.FAILED;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage(
+    const embedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      { imagePath: asset.previewPath },
+      asset.previewPath,
       machineLearning.clip,
     );
 
@@ -103,7 +111,7 @@ export class SmartInfoService {
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
     }
 
-    await this.repository.upsert(asset.id, clipEmbedding);
+    await this.repository.upsert(asset.id, embedding);
 
     return JobStatus.SUCCESS;
   }

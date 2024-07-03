@@ -12,7 +12,7 @@ import {
   SignUpDto,
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
@@ -40,7 +40,7 @@ export class AuthController {
   }
 
   @Post('admin-sign-up')
-  signUpAdmin(@Body() dto: SignUpDto): Promise<UserResponseDto> {
+  signUpAdmin(@Body() dto: SignUpDto): Promise<UserAdminResponseDto> {
     return this.service.adminSignUp(dto);
   }
 
@@ -54,8 +54,8 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
-  changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
-    return this.service.changePassword(auth, dto).then(mapUser);
+  changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
+    return this.service.changePassword(auth, dto);
   }
 
   @Post('logout')

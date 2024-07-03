@@ -1,50 +1,76 @@
 <script lang="ts">
-  import { videoViewerVolume, videoViewerMuted } from '$lib/stores/preferences.store';
-  import { getAssetFileUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { ThumbnailFormat } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
+  import { AssetMediaSize } from '@immich/sdk';
+  import { createEventDispatcher, tick } from 'svelte';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { t } from 'svelte-i18n';
 
   export let assetId: string;
+  export let loopVideo: boolean;
+  export let checksum: string;
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
+  let assetFileUrl: string;
+  let forceMuted = false;
+
+  $: if (element) {
+    assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+    forceMuted = false;
+    element.load();
+  }
 
   const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
 
-  const handleCanPlay = async (event: Event) => {
+  const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
-      const video = event.currentTarget as HTMLVideoElement;
       await video.play();
       dispatch('onVideoStarted');
     } catch (error) {
-      handleError(error, 'Unable to play video');
+      if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
+        await tryForceMutedPlay(video);
+        return;
+      }
+      handleError(error, $t('errors.unable_to_play_video'));
     } finally {
       isVideoLoading = false;
     }
   };
+
+  const tryForceMutedPlay = async (video: HTMLVideoElement) => {
+    try {
+      forceMuted = true;
+      await tick();
+      await handleCanPlay(video);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_play_video'));
+    }
+  };
 </script>
 
-<div
-  transition:fade={{ duration: 150 }}
-  class="flex select-none place-content-center place-items-center"
-  style="height: calc(100% - 64px)"
->
+<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
     bind:this={element}
+    loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
     controls
     class="h-full object-contain"
-    on:canplay={handleCanPlay}
+    on:canplay={(e) => handleCanPlay(e.currentTarget)}
     on:ended={() => dispatch('onVideoEnded')}
-    bind:muted={$videoViewerMuted}
+    on:volumechange={(e) => {
+      if (!forceMuted) {
+        $videoViewerMuted = e.currentTarget.muted;
+      }
+    }}
+    muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl(assetId, ThumbnailFormat.Jpeg)}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
   >
-    <source src={getAssetFileUrl(assetId, false, true)} type="video/mp4" />
+    <source src={assetFileUrl} type="video/mp4" />
     <track kind="captions" />
   </video>
 

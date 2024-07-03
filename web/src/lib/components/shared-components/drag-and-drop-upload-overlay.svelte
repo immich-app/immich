@@ -5,6 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import { t } from 'svelte-i18n';
 
   $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
   $: isShare = isSharedLinkRoute($page.route?.id);
@@ -64,6 +65,6 @@
     }}
   >
     <ImmichLogo noText class="m-16 w-48 animate-bounce" />
-    <div class="text-2xl">Drop files anywhere to upload</div>
+    <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

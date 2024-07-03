@@ -1,5 +1,6 @@
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_player/video_player.dart';
 
@@ -22,15 +23,16 @@ Future<VideoPlayerController> videoPlayerController(
     // Use a network URL for the video player controller
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final String videoUrl = asset.livePhotoVideoId != null
-        ? '$serverEndpoint/asset/file/${asset.livePhotoVideoId}'
-        : '$serverEndpoint/asset/file/${asset.remoteId}';
+        ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
+        : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
 
     final url = Uri.parse(videoUrl);
-    final accessToken = Store.get(StoreKey.accessToken);
-
     controller = VideoPlayerController.networkUrl(
       url,
-      httpHeaders: {"x-immich-user-token": accessToken},
+      httpHeaders: ApiService.getRequestHeaders(),
+      videoPlayerOptions: asset.livePhotoVideoId != null
+          ? VideoPlayerOptions(mixWithOthers: true)
+          : VideoPlayerOptions(mixWithOthers: false),
     );
   }
 

@@ -10,17 +10,19 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
 
-  const cronExpressionOptions = [
-    { title: 'Every night at midnight', expression: '0 0 * * *' },
-    { title: 'Every night at 2am', expression: '0 2 * * *' },
-    { title: 'Every day at 1pm', expression: '0 13 * * *' },
-    { title: 'Every 6 hours', expression: '0 */6 * * *' },
+  $: cronExpressionOptions = [
+    { title: $t('interval.night_at_midnight'), expression: '0 0 * * *' },
+    { title: $t('interval.night_at_twoam'), expression: '0 2 * * *' },
+    { title: $t('interval.day_at_onepm'), expression: '0 13 * * *' },
+    { title: $t('interval.hours', { values: { hours: 6 } }), expression: '0 */6 * * *' },
   ];
 
   const dispatch = createEventDispatcher<SettingsEventType>();
@@ -30,17 +32,15 @@
   <div in:fade={{ duration: 500 }}>
     <SettingAccordion
       key="library-watching"
-      title="Library watching (EXPERIMENTAL)"
-      subtitle="Automatically watch for changed files"
+      title={$t('admin.library_watching_settings')}
+      subtitle={$t('admin.library_watching_settings_description')}
       isOpen
     >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            id="watch-filesystem"
-            title="Watch filesystem"
+            title={$t('admin.library_watching_enable_description')}
             {disabled}
-            subtitle="Watch external libraries for file changes"
             bind:checked={config.library.watch.enabled}
           />
         </div>
@@ -58,22 +58,25 @@
 
     <SettingAccordion
       key="library-scanning"
-      title="Periodic Scanning"
-      subtitle="Configure periodic library scanning"
+      title={$t('admin.library_scanning')}
+      subtitle={$t('admin.library_scanning_description')}
       isOpen
     >
       <form autocomplete="off" on:submit|preventDefault>
         <div class="ml-4 mt-4 flex flex-col gap-4">
           <SettingSwitch
-            id="periodic-library-scan"
-            title="ENABLED"
+            title={$t('admin.library_scanning_enable_description')}
             {disabled}
-            subtitle="Enable periodic library scanning"
             bind:checked={config.library.scan.enabled}
           />
 
           <div class="flex flex-col my-2 dark:text-immich-dark-fg">
-            <label class="text-sm" for="expression-select">Cron Expression Presets</label>
+            <label
+              class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
+              for="expression-select"
+            >
+              {$t('admin.library_cron_expression_presets')}
+            </label>
             <select
               class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
               disabled={disabled || !config.library.scan.enabled}
@@ -91,18 +94,17 @@
             inputType={SettingInputFieldType.TEXT}
             required={true}
             disabled={disabled || !config.library.scan.enabled}
-            label="Cron Expression"
+            label={$t('admin.library_cron_expression')}
             bind:value={config.library.scan.cronExpression}
             isEdited={config.library.scan.cronExpression !== savedConfig.library.scan.cronExpression}
           >
             <svelte:fragment slot="desc">
               <p class="text-sm dark:text-immich-dark-fg">
-                Set the scanning interval using the cron format. For more information please refer to e.g. <a
-                  href="https://crontab.guru"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer">Crontab Guru</a
-                >
+                <FormatMessage key="admin.library_cron_expression_description" let:message>
+                  <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
+                    {message}
+                  </a>
+                </FormatMessage>
               </p>
             </svelte:fragment>
           </SettingInputField>

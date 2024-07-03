@@ -4,6 +4,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     AlbumFilter,
+    AlbumSortBy,
     AlbumGroupBy,
     AlbumViewMode,
     albumViewSettings,
@@ -25,6 +26,7 @@
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
     findGroupOptionMetadata,
+    findFilterOption,
     findSortOptionMetadata,
     getSelectedAlbumGroupOption,
     groupOptionsMetadata,
@@ -34,12 +36,18 @@
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   export let albumGroups: string[];
   export let searchQuery: string;
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
+  };
+
+  const handleChangeAlbumFilter = (filter: string, defaultFilter: AlbumFilter) => {
+    $albumViewSettings.filter =
+      Object.keys(albumFilterNames).find((key) => albumFilterNames[key as AlbumFilter] === filter) ?? defaultFilter;
   };
 
   const handleChangeGroupBy = ({ id, defaultOrder }: AlbumGroupOptionMetadata) => {
@@ -68,14 +76,16 @@
   let selectedGroupOption: AlbumGroupOptionMetadata;
   let groupIcon: string;
 
+  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
+
+  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
+
   $: {
     selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
     if (selectedGroupOption.isDisabled()) {
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   }
-
-  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
   $: {
     if (selectedGroupOption.id === AlbumGroupBy.None) {
@@ -87,50 +97,77 @@
   }
 
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
+
+  $: albumFilterNames = ((): Record<AlbumFilter, string> => {
+    return {
+      [AlbumFilter.All]: $t('all'),
+      [AlbumFilter.Owned]: $t('owned'),
+      [AlbumFilter.Shared]: $t('shared'),
+    };
+  })();
+
+  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
+    return {
+      [AlbumSortBy.Title]: $t('sort_title'),
+      [AlbumSortBy.ItemCount]: $t('sort_items'),
+      [AlbumSortBy.DateModified]: $t('sort_modified'),
+      [AlbumSortBy.DateCreated]: $t('sort_created'),
+      [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+      [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+    };
+  })();
+
+  $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
+    return {
+      [AlbumGroupBy.None]: $t('group_no'),
+      [AlbumGroupBy.Owner]: $t('group_owner'),
+      [AlbumGroupBy.Year]: $t('group_year'),
+    };
+  })();
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
 <div class="hidden xl:block h-10">
   <GroupTab
-    filters={Object.keys(AlbumFilter)}
-    selected={$albumViewSettings.filter}
-    onSelect={(selected) => ($albumViewSettings.filter = selected)}
+    filters={Object.values(albumFilterNames)}
+    selected={selectedFilterOption}
+    onSelect={(selected) => handleChangeAlbumFilter(selected, AlbumFilter.All)}
   />
 </div>
 
 <!-- Search Albums -->
 <div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
-  <SearchBar placeholder="Search albums" bind:name={searchQuery} showLoadingSpinner={false} />
+  <SearchBar placeholder={$t('search_albums')} bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
 <!-- Create Album -->
 <LinkButton on:click={() => createAlbumAndRedirect()}>
   <div class="flex place-items-center gap-2 text-sm">
     <Icon path={mdiPlusBoxOutline} size="18" />
-    <p class="hidden md:block">Create album</p>
+    <p class="hidden md:block">{$t('create_album')}</p>
   </div>
 </LinkButton>
 
 <!-- Sort Albums -->
 <Dropdown
-  title="Sort albums by..."
+  title={$t('sort_albums_by')}
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
   on:select={({ detail }) => handleChangeSortBy(detail)}
-  render={({ text }) => ({
-    title: text,
+  render={({ id }) => ({
+    title: albumSortByNames[id],
     icon: sortIcon,
   })}
 />
 
 <!-- Group Albums -->
 <Dropdown
-  title="Group albums by..."
+  title={$t('group_albums_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
   on:select={({ detail }) => handleChangeGroupBy(detail)}
-  render={({ text, isDisabled }) => ({
-    title: text,
+  render={({ id, isDisabled }) => ({
+    title: albumGroupByNames[id],
     icon: groupIcon,
     disabled: isDisabled(),
   })}
@@ -141,7 +178,7 @@
     <!-- Expand Album Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title="Expand all" on:click={() => expandAllAlbumGroups()}>
+        <LinkButton title={$t('expand_all')} on:click={() => expandAllAlbumGroups()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldMoreHorizontal} size="18" />
           </div>
@@ -150,7 +187,7 @@
 
       <!-- Collapse Album Groups -->
       <div class="block">
-        <LinkButton title="Collapse all" on:click={() => collapseAllAlbumGroups(albumGroups)}>
+        <LinkButton title={$t('collapse_all')} on:click={() => collapseAllAlbumGroups(albumGroups)}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldLessHorizontal} size="18" />
           </div>
@@ -165,10 +202,10 @@
   <div class="flex place-items-center gap-2 text-sm">
     {#if $albumViewSettings.view === AlbumViewMode.List}
       <Icon path={mdiViewGridOutline} size="18" />
-      <p class="hidden md:block">Covers</p>
+      <p class="hidden md:block">{$t('covers')}</p>
     {:else}
       <Icon path={mdiFormatListBulletedSquare} size="18" />
-      <p class="hidden md:block">List</p>
+      <p class="hidden md:block">{$t('list')}</p>
     {/if}
   </div>
 </LinkButton>

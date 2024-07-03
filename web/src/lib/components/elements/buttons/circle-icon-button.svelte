@@ -1,12 +1,21 @@
+<script lang="ts" context="module">
+  export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque';
+</script>
+
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque';
 
   export let type: 'button' | 'submit' | 'reset' = 'button';
   export let icon: string;
   export let color: Color = 'transparent';
   export let title: string;
+  /**
+   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
+   */
   export let padding = '3';
+  /**
+   * Size of the button, used for a CSS value.
+   */
   export let size = '24';
   export let hideMobile = false;
   export let buttonSize: string | undefined = undefined;
@@ -14,6 +23,10 @@
    * viewBox attribute for the SVG icon.
    */
   export let viewBox: string | undefined = undefined;
+  export let id: string | undefined = undefined;
+  export let ariaHasPopup: boolean | undefined = undefined;
+  export let ariaExpanded: boolean | undefined = undefined;
+  export let ariaControls: string | undefined = undefined;
 
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
@@ -33,14 +46,19 @@
 
   $: colorClass = colorClasses[color];
   $: mobileClass = hideMobile ? 'hidden sm:flex' : '';
+  $: paddingClass = `p-${padding}`;
 </script>
 
 <button
+  {id}
   {title}
   {type}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} p-{padding} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  aria-haspopup={ariaHasPopup}
+  aria-expanded={ariaExpanded}
+  aria-controls={ariaControls}
   on:click
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />

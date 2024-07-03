@@ -5,12 +5,16 @@ import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import {
   Action,
+  AssetMediaStatus,
   checkBulkUpload,
-  defaults,
+  getAssetOriginalPath,
+  getBaseUrl,
   getSupportedMediaTypes,
-  type AssetFileUploadResponseDto,
+  type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { tick } from 'svelte';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -25,7 +29,12 @@ const getExtensions = async () => {
   return _extensions;
 };
 
-export const openFileUploadDialog = async (albumId?: string | undefined) => {
+type FileUploadParam = { multiple?: boolean } & (
+  | { albumId?: string; assetId?: never }
+  | { albumId?: never; assetId?: string }
+);
+export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
+  const { albumId, multiple = true, assetId } = options;
   const extensions = await getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
@@ -33,7 +42,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
       const fileSelector = document.createElement('input');
 
       fileSelector.type = 'file';
-      fileSelector.multiple = true;
+      fileSelector.multiple = multiple;
       fileSelector.accept = extensions.join(',');
       fileSelector.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
@@ -42,7 +51,7 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
         }
         const files = Array.from(target.files);
 
-        resolve(fileUploadHandler(files, albumId));
+        resolve(fileUploadHandler(files, albumId, assetId));
       });
 
       fileSelector.click();
@@ -53,14 +62,14 @@ export const openFileUploadDialog = async (albumId?: string | undefined) => {
   });
 };
 
-export const fileUploadHandler = async (files: File[], albumId: string | undefined = undefined): Promise<string[]> => {
+export const fileUploadHandler = async (files: File[], albumId?: string, assetId?: string): Promise<string[]> => {
   const extensions = await getExtensions();
   const promises = [];
   for (const file of files) {
     const name = file.name.toLowerCase();
     if (extensions.some((extension) => name.endsWith(extension))) {
-      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId });
-      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId)));
+      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId, assetId });
+      promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId, assetId)));
     }
   }
 
@@ -73,9 +82,10 @@ function getDeviceAssetId(asset: File) {
 }
 
 // TODO: should probably use the @api SDK
-async function fileUploader(asset: File, albumId: string | undefined = undefined): Promise<string | undefined> {
-  const fileCreatedAt = new Date(asset.lastModified).toISOString();
-  const deviceAssetId = getDeviceAssetId(asset);
+async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: string): Promise<string | undefined> {
+  const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
+  const deviceAssetId = getDeviceAssetId(assetFile);
+  const $t = get(t);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -85,21 +95,21 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
       deviceAssetId,
       deviceId: 'WEB',
       fileCreatedAt,
-      fileModifiedAt: new Date(asset.lastModified).toISOString(),
+      fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
       duration: '0:00:00.000000',
-      assetData: new File([asset], asset.name),
+      assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
     }
 
-    let responseData: AssetFileUploadResponseDto | undefined;
+    let responseData: AssetMediaResponseDto | undefined;
     const key = getKey();
     if (crypto?.subtle?.digest && !key) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
-        const bytes = await asset.arrayBuffer();
+        const bytes = await assetFile.arrayBuffer();
         const hash = await crypto.subtle.digest('SHA-1', bytes);
         const checksum = Array.from(new Uint8Array(hash))
           .map((b) => b.toString(16).padStart(2, '0'))
@@ -107,50 +117,63 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
 
         const {
           results: [checkUploadResult],
-        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: asset.name, checksum }] } });
+        } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } });
         if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
-          responseData = { duplicate: true, id: checkUploadResult.assetId };
+          responseData = { status: AssetMediaStatus.Duplicate, id: checkUploadResult.assetId };
         }
       } catch (error) {
-        console.error(`Error calculating sha1 file=${asset.name})`, error);
+        console.error(`Error calculating sha1 file=${assetFile.name})`, error);
       }
     }
 
     if (!responseData) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
-      const response = await uploadRequest<AssetFileUploadResponseDto>({
-        url: defaults.baseUrl + '/asset/upload' + (key ? `?key=${key}` : ''),
-        data: formData,
-        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-      });
-      if (![200, 201].includes(response.status)) {
-        throw new Error('Failed to upload file');
-      }
-      responseData = response.data;
-    }
-    const { duplicate, id: assetId } = responseData;
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_uploading') });
+      if (replaceAssetId) {
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (key ? `?key=${key}` : ''),
+          method: 'PUT',
+          data: formData,
+          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+        });
+        responseData = response.data;
+      } else {
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/assets' + (key ? `?key=${key}` : ''),
+          data: formData,
+          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+        });
 
-    if (duplicate) {
+        if (![200, 201].includes(response.status)) {
+          throw new Error($t('errors.unable_to_upload_file'));
+        }
+
+        responseData = response.data;
+      }
+    }
+
+    if (responseData.status === AssetMediaStatus.Duplicate) {
       uploadAssetsStore.duplicateCounter.update((count) => count + 1);
     } else {
       uploadAssetsStore.successCounter.update((c) => c + 1);
     }
 
-    if (albumId && assetId) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-      await addAssetsToAlbum(albumId, [assetId]);
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+    if (albumId) {
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_adding_to_album') });
+      await addAssetsToAlbum(albumId, [responseData.id], false);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 
-    uploadAssetsStore.updateAsset(deviceAssetId, { state: duplicate ? UploadState.DUPLICATED : UploadState.DONE });
+    uploadAssetsStore.updateAsset(deviceAssetId, {
+      state: responseData.status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
+    });
 
     setTimeout(() => {
       uploadAssetsStore.removeUploadAsset(deviceAssetId);
     }, 1000);
 
-    return assetId;
+    return responseData.id;
   } catch (error) {
-    handleError(error, 'Unable to upload file');
+    handleError(error, $t('errors.unable_to_upload_file'));
     const reason = getServerErrorMessage(error) || error;
     uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
     return;

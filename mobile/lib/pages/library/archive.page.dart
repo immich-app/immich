@@ -17,7 +17,7 @@ class ArchivePage extends HookConsumerWidget {
       final count = archivedAssets.value?.totalAssets.toString() ?? "?";
       return AppBar(
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         centerTitle: true,

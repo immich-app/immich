@@ -1,4 +1,4 @@
-import { LoginResponseDto, getAllAssets } from '@immich/sdk';
+import { LoginResponseDto, getAssetInfo, getAssetStatistics } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -31,17 +31,16 @@ describe('/trash', () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
-      const before = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
-
-      expect(before.length).toBeGreaterThanOrEqual(1);
+      const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
 
       const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
       await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
 
-      const after = await getAllAssets({}, { headers: asBearerAuth(admin.accessToken) });
-      expect(after.length).toBe(0);
+      const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after.total).toBe(0);
     });
   });
 
@@ -57,14 +56,14 @@ describe('/trash', () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
-      const before = await utils.getAssetInfo(admin.accessToken, assetId);
-      expect(before.isTrashed).toBe(true);
+      const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
 
       const { status } = await request(app).post('/trash/restore').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(204);
 
-      const after = await utils.getAssetInfo(admin.accessToken, assetId);
-      expect(after.isTrashed).toBe(false);
+      const after = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: false }));
     });
   });
 

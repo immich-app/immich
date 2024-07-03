@@ -3,6 +3,8 @@
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from './full-screen-modal.svelte';
+  import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   let showModal = false;
 
@@ -33,28 +35,31 @@
 </script>
 
 {#if showModal}
-  <FullScreenModal id="new-version-modal" title="🎉 NEW VERSION AVAILABLE" onClose={() => (showModal = false)}>
+  <FullScreenModal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
     <div>
-      Hi friend, there is a new version of the application please take your time to visit the
-      <span class="font-medium underline"
-        ><a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer"
-          >release notes</a
-        ></span
-      >
-      and ensure your <code>docker-compose</code>, and <code>.env</code> setup is up-to-date to prevent any misconfigurations,
-      especially if you use WatchTower or any mechanism that handles updating your application automatically.
+      <FormatMessage key="version_announcement_message" let:tag let:message>
+        {#if tag === 'link'}
+          <span class="font-medium underline">
+            <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
+              {message}
+            </a>
+          </span>
+        {:else if tag === 'code'}
+          <code>{message}</code>
+        {/if}
+      </FormatMessage>
     </div>
 
-    <div class="mt-4 font-medium">Your friend, Alex</div>
+    <div class="mt-4 font-medium">{$t('version_announcement_closing')}</div>
 
     <div class="font-sm mt-8">
-      <code>Server Version: {serverVersion}</code>
+      <code>{$t('server_version')}: {serverVersion}</code>
       <br />
-      <code>Latest Version: {releaseVersion}</code>
+      <code>{$t('latest_version')}: {releaseVersion}</code>
     </div>
 
     <svelte:fragment slot="sticky-bottom">
-      <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
+      <Button fullwidth on:click={onAcknowledge}>{$t('acknowledge')}</Button>
     </svelte:fragment>
   </FullScreenModal>
 {/if}

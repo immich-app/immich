@@ -25,13 +25,13 @@ const parseError = (error: unknown, status: number, message: string) => {
   }
 
   return {
-    message: message || DEFAULT_MESSAGE,
+    message: (error as Error)?.message || message || DEFAULT_MESSAGE,
     code: status,
   };
 };
 
 export const handleError: HandleClientError = ({ error, status, message }) => {
   const result = parseError(error, status, message);
-  console.error(`[hooks.client.ts]:handleError ${result.message}`);
+  console.error(`[hooks.client.ts]:handleError ${result.message}`, error);
   return result;
 };

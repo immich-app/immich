@@ -1,0 +1,77 @@
+---
+title: Immich Update - July 2024
+authors: [alextran]
+tags: [update, v1.106.0]
+---
+
+Hello everybody! Alex from Immich here and I am back with another development progress update for the project.
+
+Summer has returned once again, and the night sky is filled with stars, thank you for **38_000 shining stars** you have sent to our [GitHub repo](https://github.com/immich-app/immich)! Since the last announcement several core contributors have started full time. Everything is going great with development, PRs get merged with _brrrrrrr_ rate, conversation exchange between team members is on a new high, we met and are working with the great engineers at FUTO. The spirit is high and we have a lot of things brewing that we think you will like.
+
+Let's go over some of the updates we had since the last post.
+
+### Container consolidation
+
+Reduced the number of total containers from 5 to 4 by making the microservices thread get spawned directly in the server container. Woohoo, remember when Immich had 7 containers?
+
+### Email notifications
+
+![smtp](https://github.com/immich-app/immich/assets/27055614/949cba85-d3f1-4cd3-b246-a6f5fb5d3ae8)
+
+We added email notifications to the app with SMTP settings that you can configure for the following events
+
+- A new account is created for you.
+- You are added to a shared album.
+- New media is added to an album.
+
+### Versioned docs
+
+You can now jump back into the past or take a peek at the unreleased version of the documentation by selecting the version on the website.
+
+![version-doc](https://github.com/immich-app/immich/assets/27055614/6d22898a-5093-41ad-b416-4573d7ce6e03)
+
+### Similarity deduplication
+
+With more machine learning and CLIP magic, we now have similarity deduplication built into the application where it will search for closely similar images and let you decide what to do with them; i.e keep or trash.
+
+![similarity-deduplication](https://github.com/immich-app/immich/assets/27055614/3cac8478-fbf7-47ea-acb6-0146901dc67e)
+
+### Permanent URL for asset on the web
+
+The detail view for an asset now has a permanent URL so you can easily share them with your loved ones.
+
+### Web app translations
+
+We now have a public Weblate project which the community can use to translate the webapp to their native languages. We are planning to port the mobile app translation to this platform as well. If you would like to contribute, you can take a look [here](https://hosted.weblate.org/projects/immich/immich/). We're already close to 50% translations -- we really appreciate everyone contributing to that!
+
+![web-translation](https://github.com/immich-app/immich/assets/27055614/363df2ed-656c-4584-bd82-0708a693c5bc)
+
+### Read-only/Editor mode on shared album
+
+As the owner of the album, you can choose if the shared user can edit the album or to only view the content of the album without any modification.
+
+![read-only-album](https://github.com/immich-app/immich/assets/27055614/c6f66375-b869-495a-9a86-3e87b316d109)
+
+### Better video thumbnails
+
+Immich now tries to find a descriptive video thumbnail instead of simply using the first frame. No more black images for thumbnails!
+
+### Public Roadmap
+
+We now have a [public roadmap](https://immich.app/roadmap), giving you a high-level overview of things the team is working on. The first goal of this roadmap is to bring Immich to a stable release, which is expected sometime later this year. Some of the highlights include
+
+- Auto stacking - Auto stacking of burst photos
+- Basic editor - Basic photo editing capabilities
+- Workflows - Automate tasks with workflows
+- Fine grained access controls - Granular access controls for users and api keys
+- Better background backups - Rework background backups to be more reliable
+- Private/locked photos - Private assets with extra protections
+
+Beyond the items in the roadmap, we have _many many_ more ideas for Immich. The team and I hope that you are enjoying the application, find it helpful in your life and we have nothing but the intention of building out great software for you all!
+
+Have an amazing Summer or Winter for those in the southern hemisphere! :D
+
+Until next time,
+
+Cheers!
+Alex

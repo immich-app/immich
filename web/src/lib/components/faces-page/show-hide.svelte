@@ -14,6 +14,7 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { locale } from '$lib/stores/preferences.store';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let showLoadingSpinner: boolean;
   export let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
@@ -51,23 +52,23 @@
     class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
-      <CircleIconButton title="Close" icon={mdiClose} on:click={onClose} />
+      <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
       <div class="flex gap-2 items-center">
-        <p class="ml-2">Show & hide people</p>
+        <p class="ml-2">{$t('show_and_hide_people')}</p>
         <p class="text-sm text-gray-400 dark:text-gray-600">({countTotalPeople.toLocaleString($locale)})</p>
       </div>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
-        <CircleIconButton title="Reset people visibility" icon={mdiRestart} on:click={onReset} />
+        <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} on:click={onReset} />
         <CircleIconButton
-          title="Toggle visibility"
+          title={$t('toggle_visibility')}
           icon={toggleIcon}
           on:click={() => onChange(getNextVisibility(toggleVisibility))}
         />
       </div>
       {#if !showLoadingSpinner}
-        <Button on:click={onDone} size="sm" rounded="lg">Done</Button>
+        <Button on:click={onDone} size="sm" rounded="lg">{$t('done')}</Button>
       {:else}
         <LoadingSpinner />
       {/if}

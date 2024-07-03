@@ -37,7 +37,6 @@ def on_test_start(environment: Environment, **kwargs: Any) -> None:
     global byte_image
     assert environment.parsed_options is not None
     image = Image.new("RGB", (environment.parsed_options.image_size, environment.parsed_options.image_size))
-    byte_image = BytesIO()
     image.save(byte_image, format="jpeg")
 
 
@@ -45,34 +44,25 @@ class InferenceLoadTest(HttpUser):
     abstract: bool = True
     host = "http://127.0.0.1:3003"
     data: bytes
-    headers: dict[str, str] = {"Content-Type": "image/jpg"}
 
     # re-use the image across all instances in a process
     def on_start(self) -> None:
-        global byte_image
         self.data = byte_image.getvalue()
 
 
 class CLIPTextFormDataLoadTest(InferenceLoadTest):
     @task
     def encode_text(self) -> None:
-        data = [
-            ("modelName", self.environment.parsed_options.clip_model),
-            ("modelType", "clip"),
-            ("options", json.dumps({"mode": "text"})),
-            ("text", "test search query"),
-        ]
+        request = {"clip": {"textual": {"modelName": self.environment.parsed_options.clip_model}}}
+        data = [("entries", json.dumps(request)), ("text", "test search query")]
         self.client.post("/predict", data=data)
 
 
 class CLIPVisionFormDataLoadTest(InferenceLoadTest):
     @task
     def encode_image(self) -> None:
-        data = [
-            ("modelName", self.environment.parsed_options.clip_model),
-            ("modelType", "clip"),
-            ("options", json.dumps({"mode": "vision"})),
-        ]
+        request = {"clip": {"visual": {"modelName": self.environment.parsed_options.clip_model, "options": {}}}}
+        data = [("entries", json.dumps(request))]
         files = {"image": self.data}
         self.client.post("/predict", data=data, files=files)
 
@@ -80,11 +70,18 @@ class CLIPVisionFormDataLoadTest(InferenceLoadTest):
 class RecognitionFormDataLoadTest(InferenceLoadTest):
     @task
     def recognize(self) -> None:
-        data = [
-            ("modelName", self.environment.parsed_options.face_model),
-            ("modelType", "facial-recognition"),
-            ("options", json.dumps({"minScore": self.environment.parsed_options.face_min_score})),
-        ]
+        request = {
+            "facial-recognition": {
+                "recognition": {
+                    "modelName": self.environment.parsed_options.face_model,
+                    "options": {"minScore": self.environment.parsed_options.face_min_score},
+                },
+                "detection": {
+                    "modelName": self.environment.parsed_options.face_model,
+                },
+            }
+        }
+        data = [("entries", json.dumps(request))]
         files = {"image": self.data}
 
         self.client.post("/predict", data=data, files=files)

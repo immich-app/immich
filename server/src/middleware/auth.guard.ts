@@ -20,6 +20,7 @@ export enum Metadata {
   ADMIN_ROUTE = 'admin_route',
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
+  EVENT_HANDLER_OPTIONS = 'event_handler_options',
 }
 
 type AdminRoute = { admin?: true };

@@ -37,6 +37,9 @@ class LocalStorageSettings extends HookConsumerWidget {
       ).tr(args: ["${cacheItemCount.value}"]),
       subtitle: const Text(
         "cache_settings_duplicated_assets_subtitle",
+        style: TextStyle(
+          fontSize: 14,
+        ),
       ).tr(),
       trailing: TextButton(
         onPressed: cacheItemCount.value > 0 ? clearCache : null,

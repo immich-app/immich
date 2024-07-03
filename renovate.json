@@ -15,6 +15,7 @@
       "groupName": "typescript-projects",
       "matchUpdateTypes": ["minor", "patch"],
       "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
+      "excludePackageNames": ["node", "@types/node"],
       "schedule": "on tuesday"
     },
     {
@@ -29,6 +30,11 @@
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": "on tuesday",
       "addLabels": ["📱mobile"]
+    },
+    {
+      "groupName": "flutter",
+      "matchPackagePatterns": ["flutter"],
+      "schedule": "on tuesday"
     },
     {
       "groupName": "exiftool",
@@ -52,6 +58,15 @@
       "minimumReleaseAge": "0"
     },
     {
+      "matchDatasources": ["npm"],
+      "rangeStrategy": "bump",
+      "groupName": "node",
+      "versioning": "node",
+      "matchPackageNames": ["node", "@types/node"],
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "node",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
@@ -64,7 +79,7 @@
       "schedule": "on tuesday"
     }
   ],
-  "ignorePaths": ["mobile/openapi/pubspec.yaml"],
+  "ignorePaths": ["mobile/openapi/pubspec.yaml", "mobile/ios", "mobile/android"],
   "ignoreDeps": ["http", "intl"],
   "labels": ["dependencies", "renovate"]
 }

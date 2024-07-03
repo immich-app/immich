@@ -7,5 +7,6 @@ export const newAssetStackRepositoryMock = (): Mocked<IAssetStackRepository> => 
     update: vitest.fn(),
     delete: vitest.fn(),
     getById: vitest.fn(),
+    deleteAll: vitest.fn(),
   };
 };

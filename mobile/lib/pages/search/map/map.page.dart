@@ -16,6 +16,7 @@ import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/providers/map/map_marker.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/map/map_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_asset_grid.dart';
 import 'package:immich_mobile/widgets/map/map_bottom_sheet.dart';
@@ -178,12 +179,17 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
+      // Since we only have a single asset, we can just show GroupAssetBy.none
+      final renderList = await RenderList.fromAssets(
+        [asset],
+        GroupAssetsBy.none,
+      );
+
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
           heroOffset: 0,
+          renderList: renderList,
         ),
       );
     }
@@ -298,7 +304,7 @@ class MapPage extends HookConsumerWidget {
                         ),
                         Positioned(
                           right: 0,
-                          bottom: 30,
+                          bottom: MediaQuery.of(context).padding.bottom + 16,
                           child: ElevatedButton(
                             onPressed: onZoomToLocation,
                             style: ElevatedButton.styleFrom(

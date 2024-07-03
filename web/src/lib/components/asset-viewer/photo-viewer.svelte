@@ -1,102 +1,91 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { downloadRequest, getAssetFileUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { shortcuts } from '$lib/utils/shortcut';
-  import { type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
-  import { useZoomImageWheel } from '@zoom-image/svelte';
-  import { onDestroy, onMount } from 'svelte';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
+  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
+  import { onDestroy } from 'svelte';
+
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { t } from 'svelte-i18n';
+
+  export let asset: AssetResponseDto;
+  export let preloadAssets: AssetResponseDto[] | undefined = undefined;
+  export let element: HTMLDivElement | undefined = undefined;
+  export let haveFadeTransition = true;
+  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  export let copyImage: (() => Promise<void>) | null = null;
+  export let zoomToggle: (() => void) | null = null;
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
-  export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] | null = null;
-  export let element: HTMLDivElement | undefined = undefined;
-  export let haveFadeTransition = true;
-
-  let imgElement: HTMLDivElement;
-  let assetData: string;
-  let abortController: AbortController;
-  let hasZoomed = false;
-  let copyImageToClipboard: (source: string) => Promise<Blob>;
-  let canCopyImagesToClipboard: () => boolean;
+  let assetFileUrl: string = '';
   let imageLoaded: boolean = false;
+  let imageError: boolean = false;
+  let forceUseOriginal: boolean = false;
 
-  const loadOriginalByDefault = $alwaysLoadOriginalFile && isWebCompatibleImage(asset);
+  $: isWebCompatible = isWebCompatibleImage(asset);
+  $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
+  $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
+  // when true, will force loading of the original image
+  $: forceUseOriginal =
+    forceUseOriginal || asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible);
 
-  $: if (imgElement) {
-    createZoomImageWheel(imgElement, {
-      maxZoom: 10,
-      wheelZoomRatio: 0.2,
-    });
-  }
+  $: preload(useOriginalImage, preloadAssets);
+  $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
 
-  onMount(async () => {
-    // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-    // TODO: Move to regular import once the package correctly supports ESM.
-    const module = await import('copy-image-clipboard');
-    copyImageToClipboard = module.copyImageToClipboard;
-    canCopyImagesToClipboard = module.canCopyImagesToClipboard;
-
-    imageLoaded = false;
-    await loadAssetData({ loadOriginal: loadOriginalByDefault });
+  photoZoomState.set({
+    currentRotation: 0,
+    currentZoom: 1,
+    enable: true,
+    currentPositionX: 0,
+    currentPositionY: 0,
   });
+  $zoomed = false;
 
   onDestroy(() => {
     $boundingBoxesArray = [];
-    abortController?.abort();
   });
 
-  const loadAssetData = async ({ loadOriginal }: { loadOriginal: boolean }) => {
-    try {
-      abortController?.abort();
-      abortController = new AbortController();
-
-      // TODO: Use sdk once it supports signals
-      const { data } = await downloadRequest({
-        url: getAssetFileUrl(asset.id, !loadOriginal, false),
-        signal: abortController.signal,
-      });
-
-      assetData = URL.createObjectURL(data);
-      imageLoaded = true;
-
-      if (!preloadAssets) {
-        return;
+  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
+    for (const preloadAsset of preloadAssets || []) {
+      if (preloadAsset.type === AssetTypeEnum.Image) {
+        let img = new Image();
+        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
       }
-
-      for (const preloadAsset of preloadAssets) {
-        if (preloadAsset.type === AssetTypeEnum.Image) {
-          await downloadRequest({
-            url: getAssetFileUrl(preloadAsset.id, !loadOriginal, false),
-            signal: abortController.signal,
-          });
-        }
-      }
-    } catch {
-      imageLoaded = false;
     }
   };
 
-  const doCopy = async () => {
+  const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+    if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+    }
+
+    return useOriginal
+      ? getAssetOriginalUrl({ id, checksum })
+      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+  };
+
+  copyImage = async () => {
     if (!canCopyImagesToClipboard()) {
       return;
     }
 
     try {
-      await copyImageToClipboard(assetData);
+      await copyImageToClipboard(assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Copied image to clipboard.',
+        message: $t('copied_image_to_clipboard'),
         timeout: 3000,
       });
     } catch (error) {
@@ -108,59 +97,45 @@
     }
   };
 
-  const doZoomImage = () => {
-    setZoomImageWheelState({
-      currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1,
-    });
+  zoomToggle = () => {
+    $zoomed = $zoomed ? false : true;
   };
 
-  const {
-    createZoomImage: createZoomImageWheel,
-    zoomImageState: zoomImageWheelState,
-    setZoomImageState: setZoomImageWheelState,
-  } = useZoomImageWheel();
-
-  zoomImageWheelState.subscribe((state) => {
-    photoZoomState.set(state);
-
-    if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed && !$alwaysLoadOriginalFile) {
-      hasZoomed = true;
-
-      handlePromiseError(loadAssetData({ loadOriginal: true }));
-    }
-  });
-
-  const onCopyShortcut = () => {
+  const onCopyShortcut = (event: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
       return;
     }
-    handlePromiseError(doCopy());
+    event.preventDefault();
+    handlePromiseError(copyImage());
   };
 </script>
 
 <svelte:window
-  on:copyImage={doCopy}
-  on:zoomImage={doZoomImage}
   use:shortcuts={[
-    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut },
-    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut },
+    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
+    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
-
-<div
-  bind:this={element}
-  transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="relative h-full select-none"
->
+{#if imageError}
+  <div class="h-full flex items-center justify-center">{$t('error_loading_image')}</div>
+{/if}
+<div bind:this={element} class="relative h-full select-none">
+  <img
+    style="display:none"
+    src={imageLoaderUrl}
+    alt={getAltText(asset)}
+    on:load={() => ((imageLoaded = true), (assetFileUrl = imageLoaderUrl))}
+    on:error={() => (imageError = imageLoaded = true)}
+  />
   {#if !imageLoaded}
     <div class="flex h-full items-center justify-center">
       <LoadingSpinner />
     </div>
-  {:else}
-    <div bind:this={imgElement} class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+  {:else if !imageError}
+    <div use:zoomImageAction class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
-          src={assetData}
+          src={assetFileUrl}
           alt={getAltText(asset)}
           class="absolute top-0 left-0 -z-10 object-cover h-full w-full blur-lg"
           draggable="false"
@@ -168,7 +143,7 @@
       {/if}
       <img
         bind:this={$photoViewer}
-        src={assetData}
+        src={assetFileUrl}
         alt={getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'

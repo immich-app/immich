@@ -6,13 +6,11 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
   ScanLibraryDto,
-  SearchLibraryDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryImportPathResponseDto,
@@ -20,11 +18,11 @@ import {
   mapLibrary,
 } from 'src/dtos/library.dto';
 import { AssetType } from 'src/entities/asset.entity';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -38,7 +36,7 @@ import {
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -47,7 +45,7 @@ import { validateCronExpression } from 'src/validation';
 const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
-export class LibraryService {
+export class LibraryService implements OnEvents {
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
@@ -55,7 +53,7 @@ export class LibraryService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
@@ -64,11 +62,11 @@ export class LibraryService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(LibraryService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async init() {
-    const config = await this.configCore.getConfig();
+  async onBootstrapEvent() {
+    const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
@@ -104,8 +102,7 @@ export class LibraryService {
     });
   }
 
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  onConfigValidateEvent({ newConfig }: SystemConfigUpdate) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -118,10 +115,7 @@ export class LibraryService {
     }
 
     const library = await this.findOrFail(id);
-
-    if (library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only watch external libraries');
-    } else if (library.importPaths.length === 0) {
+    if (library.importPaths.length === 0) {
       return false;
     }
 
@@ -193,7 +187,7 @@ export class LibraryService {
     }
   }
 
-  async teardown() {
+  async onShutdownEvent() {
     await this.unwatchAll();
   }
 
@@ -212,16 +206,18 @@ export class LibraryService {
       return false;
     }
 
-    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
+    const libraries = await this.repository.getAll(false);
     for (const library of libraries) {
       await this.watch(library.id);
     }
   }
 
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    await this.findOrFail(id);
-    return this.repository.getStatistics(id);
+    const statistics = await this.repository.getStatistics(id);
+    if (!statistics) {
+      throw new BadRequestException('Library not found');
+    }
+    return statistics;
   }
 
   async get(id: string): Promise<LibraryResponseDto> {
@@ -229,8 +225,8 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
-  async getAll(dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAll(false, dto.type);
+  async getAll(): Promise<LibraryResponseDto[]> {
+    const libraries = await this.repository.getAll(false);
     return libraries.map((library) => mapLibrary(library));
   }
 
@@ -244,38 +240,12 @@ export class LibraryService {
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    switch (dto.type) {
-      case LibraryType.EXTERNAL: {
-        if (!dto.name) {
-          dto.name = 'New External Library';
-        }
-        break;
-      }
-      case LibraryType.UPLOAD: {
-        if (!dto.name) {
-          dto.name = 'New Upload Library';
-        }
-        if (dto.importPaths && dto.importPaths.length > 0) {
-          throw new BadRequestException('Upload libraries cannot have import paths');
-        }
-        if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
-          throw new BadRequestException('Upload libraries cannot have exclusion patterns');
-        }
-        break;
-      }
-    }
-
     const library = await this.repository.create({
       ownerId: dto.ownerId,
-      name: dto.name,
-      type: dto.type,
+      name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
-      isVisible: dto.isVisible ?? true,
     });
-
-    this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);
-
     return mapLibrary(library);
   }
 
@@ -363,11 +333,7 @@ export class LibraryService {
   }
 
   async delete(id: string) {
-    const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(library.ownerId);
-    if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
-      throw new BadRequestException('Cannot delete the last upload library');
-    }
+    await this.findOrFail(id);
 
     if (this.watchLibraries) {
       await this.unwatch(id);
@@ -387,7 +353,13 @@ export class LibraryService {
     const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
     await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId } })),
+      assetIds.map((assetId) => ({
+        name: JobName.ASSET_DELETION,
+        data: {
+          id: assetId,
+          deleteOnDisk: false,
+        },
+      })),
     );
 
     if (assetIds.length === 0) {
@@ -530,10 +502,7 @@ export class LibraryService {
   }
 
   async queueScan(id: string, dto: ScanLibraryDto) {
-    const library = await this.findOrFail(id);
-    if (library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only refresh external libraries');
-    }
+    await this.findOrFail(id);
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_SCAN,
@@ -557,7 +526,7 @@ export class LibraryService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
     // Queue all library refresh
-    const libraries = await this.repository.getAll(true, LibraryType.EXTERNAL);
+    const libraries = await this.repository.getAll(true);
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
         name: JobName.LIBRARY_SCAN,
@@ -579,7 +548,13 @@ export class LibraryService {
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: false,
+          },
+        })),
       );
     }
 
@@ -588,8 +563,8 @@ export class LibraryService {
 
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id);
-    if (!library || library.type !== LibraryType.EXTERNAL) {
-      this.logger.warn('Can only refresh external libraries');
+    if (!library) {
+      this.logger.warn('Library not found');
       return JobStatus.FAILED;
     }
 

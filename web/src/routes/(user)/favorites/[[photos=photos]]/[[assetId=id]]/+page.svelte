@@ -10,7 +10,7 @@
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
@@ -18,6 +18,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -34,22 +35,22 @@
     <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
-    </AssetSelectContextMenu>
-    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+    </ButtonContextMenu>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    </AssetSelectContextMenu>
+    </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder text="Add favorites to quickly find your best pictures and videos" slot="empty" />
+    <EmptyPlaceholder text={$t('no_favorites_message')} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

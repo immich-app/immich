@@ -138,11 +138,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> changePassword(String newPassword) async {
     try {
-      await _apiService.userApi.updateUser(
-        UpdateUserDto(
-          id: state.userId,
+      await _apiService.usersApi.updateMyUser(
+        UserUpdateMeDto(
           password: newPassword,
-          shouldChangePassword: false,
         ),
       );
 
@@ -178,9 +176,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       user = offlineUser;
       retResult = false;
     } else {
-      UserResponseDto? userResponseDto;
+      UserAdminResponseDto? userResponseDto;
+      UserPreferencesResponseDto? userPreferences;
       try {
-        userResponseDto = await _apiService.userApi.getMyUserInfo();
+        userResponseDto = await _apiService.usersApi.getMyUser();
+        userPreferences = await _apiService.usersApi.getMyPreferences();
       } on ApiException catch (error, stackTrace) {
         _log.severe(
           "Error getting user information from the server [API EXCEPTION]",
@@ -203,13 +203,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
         Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(userResponseDto),
+          User.fromUserDto(userResponseDto, userPreferences),
         );
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
         shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromUserDto(userResponseDto);
+        user = User.fromUserDto(userResponseDto, userPreferences);
 
         retResult = true;
       } else {

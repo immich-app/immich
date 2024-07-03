@@ -57,6 +57,9 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
   @ValidateBoolean({ optional: true })
   removeParent?: boolean;
+
+  @Optional()
+  duplicateId?: string | null;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {
@@ -124,9 +127,3 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
     total: Object.values(stats).reduce((total, value) => total + value, 0),
   };
 };
-export enum UploadFieldName {
-  ASSET_DATA = 'assetData',
-  LIVE_PHOTO_DATA = 'livePhotoData',
-  SIDECAR_DATA = 'sidecarData',
-  PROFILE_DATA = 'file',
-}

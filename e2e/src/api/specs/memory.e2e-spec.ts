@@ -1,5 +1,5 @@
 import {
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   LoginResponseDto,
   MemoryResponseDto,
   MemoryType,
@@ -15,9 +15,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe('/memories', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
-  let adminAsset: AssetFileUploadResponseDto;
-  let userAsset1: AssetFileUploadResponseDto;
-  let userAsset2: AssetFileUploadResponseDto;
+  let adminAsset: AssetMediaResponseDto;
+  let userAsset1: AssetMediaResponseDto;
+  let userAsset2: AssetMediaResponseDto;
   let userMemory: MemoryResponseDto;
 
   beforeAll(async () => {

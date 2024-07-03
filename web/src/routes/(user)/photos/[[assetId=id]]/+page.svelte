@@ -12,7 +12,7 @@
   import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -22,10 +22,10 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
+  import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  let handleEscapeKey = false;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
@@ -43,10 +43,6 @@
     if ($showAssetViewer) {
       return;
     }
-    if (handleEscapeKey) {
-      handleEscapeKey = false;
-      return;
-    }
     if ($isMultiSelectState) {
       assetInteractionStore.clearMultiselect();
       return;
@@ -62,12 +58,12 @@
   >
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
-    </AssetSelectContextMenu>
+    </ButtonContextMenu>
     <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if $selectedAssets.size > 1 || isAssetStackSelected}
         <StackAction
@@ -79,14 +75,10 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
-      <DeleteAssets
-        menuItem
-        on:escape={() => (handleEscapeKey = true)}
-        onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)}
-      />
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
       <hr />
       <AssetJobActions />
-    </AssetSelectContextMenu>
+    </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
 
@@ -98,9 +90,9 @@
     on:escape={handleEscape}
     withStacked
   >
-    {#if $user.memoriesEnabled}
+    {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text="CLICK TO UPLOAD YOUR FIRST PHOTO" onClick={() => openFileUploadDialog()} slot="empty" />
+    <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />
   </AssetGrid>
 </UserPageLayout>

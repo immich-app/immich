@@ -1,8 +1,9 @@
-import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
-import { glob } from 'fast-glob';
+import { getMyUser, init, isHttpError } from '@immich/sdk';
+import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
+import { platform } from 'node:os';
 import { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
@@ -46,10 +47,9 @@ export const connect = async (url: string, key: string) => {
     // noop
   }
 
-  defaults.baseUrl = url;
-  defaults.headers = { 'x-api-key': key };
+  init({ baseUrl: url, apiKey: key });
 
-  const [error] = await withError(getMyUserInfo());
+  const [error] = await withError(getMyUser());
   if (isHttpError(error)) {
     logError(error, 'Failed to connect to server');
     process.exit(1);
@@ -107,6 +107,11 @@ export interface CrawlOptions {
   exclusionPattern?: string;
   extensions: string[];
 }
+
+const convertPathToPatternOnWin = (path: string) => {
+  return platform() === 'win32' ? convertPathToPattern(path) : path;
+};
+
 export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPattern, includeHidden } = options;
   const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
@@ -125,11 +130,11 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
       if (stats.isFile() || stats.isSymbolicLink()) {
         crawledFiles.push(absolutePath);
       } else {
-        patterns.push(absolutePath);
+        patterns.push(convertPathToPatternOnWin(absolutePath));
       }
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        patterns.push(currentPath);
+        patterns.push(convertPathToPatternOnWin(currentPath));
       } else {
         throw error;
       }

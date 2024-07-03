@@ -6,8 +6,8 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { PersonService } from 'src/services/person.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Face')
-@Controller('face')
+@ApiTags('Faces')
+@Controller('faces')
 export class FaceController {
   constructor(private service: PersonService) {}
 

@@ -28,6 +28,7 @@
   import type { SystemConfigDto } from '@immich/sdk';
   import { mdiAlert, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -82,92 +83,92 @@
   }> = [
     {
       item: AuthSettings,
-      title: 'Authentication Settings',
-      subtitle: 'Manage password, OAuth, and other authentication settings',
+      title: $t('admin.authentication_settings'),
+      subtitle: $t('admin.authentication_settings_description'),
       key: 'image',
     },
     {
       item: ImageSettings,
-      title: 'Image Settings',
-      subtitle: 'Manage the quality and resolution of generated images',
+      title: $t('admin.image_settings'),
+      subtitle: $t('admin.image_settings_description'),
       key: 'image',
     },
     {
       item: JobSettings,
-      title: 'Job Settings',
-      subtitle: 'Manage job concurrency',
+      title: $t('admin.job_settings'),
+      subtitle: $t('admin.job_settings_description'),
       key: 'job',
     },
     {
       item: LibrarySettings,
-      title: 'External Library',
-      subtitle: 'Manage external library settings',
+      title: $t('admin.library_settings'),
+      subtitle: $t('admin.library_settings_description'),
       key: 'external-library',
     },
     {
       item: LoggingSettings,
-      title: 'Logging',
-      subtitle: 'Manage log settings',
+      title: $t('admin.logging_settings'),
+      subtitle: $t('admin.manage_log_settings'),
       key: 'logging',
     },
     {
       item: MachineLearningSettings,
-      title: 'Machine Learning Settings',
-      subtitle: 'Manage machine learning features and settings',
+      title: $t('admin.machine_learning_settings'),
+      subtitle: $t('admin.machine_learning_settings_description'),
       key: 'machine-learning',
     },
     {
       item: MapSettings,
-      title: 'Map & GPS Settings',
-      subtitle: 'Manage map related features and setting',
+      title: $t('admin.map_settings'),
+      subtitle: $t('admin.map_settings_description'),
       key: 'location',
     },
     {
       item: NotificationSettings,
-      title: 'Notification Settings',
-      subtitle: 'Manage notification settings, including email',
+      title: $t('admin.notification_settings'),
+      subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
     },
     {
       item: ServerSettings,
-      title: 'Server Settings',
-      subtitle: 'Manage server settings',
+      title: $t('admin.server_settings'),
+      subtitle: $t('admin.server_settings_description'),
       key: 'server',
     },
     {
       item: StorageTemplateSettings,
-      title: 'Storage Template',
-      subtitle: 'Manage the folder structure and file name of the upload asset',
+      title: $t('admin.storage_template_settings'),
+      subtitle: $t('admin.storage_template_settings_description'),
       key: 'storage-template',
     },
     {
       item: ThemeSettings,
-      title: 'Theme Settings',
-      subtitle: 'Manage customization of the Immich web interface',
+      title: $t('admin.theme_settings'),
+      subtitle: $t('admin.theme_settings_description'),
       key: 'theme',
     },
     {
       item: TrashSettings,
-      title: 'Trash Settings',
-      subtitle: 'Manage trash settings',
+      title: $t('admin.trash_settings'),
+      subtitle: $t('admin.trash_settings_description'),
       key: 'trash',
     },
     {
       item: UserSettings,
-      title: 'User Settings',
-      subtitle: 'Manage user settings',
+      title: $t('admin.user_settings'),
+      subtitle: $t('admin.user_settings_description'),
       key: 'user-settings',
     },
     {
       item: NewVersionCheckSettings,
-      title: 'Version Check',
-      subtitle: 'Enable/disable the new version notification',
+      title: $t('admin.version_check_settings'),
+      subtitle: $t('admin.version_check_settings_description'),
       key: 'version-check',
     },
     {
       item: FFmpegSettings,
-      title: 'Video Transcoding Settings',
-      subtitle: 'Manage the resolution and encoding information of the video files',
+      title: $t('admin.transcoding_settings'),
+      subtitle: $t('admin.transcoding_settings_description'),
       key: 'video-transcoding',
     },
   ];
@@ -180,7 +181,7 @@
     <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
       <Icon path={mdiAlert} class="text-yellow-400" size={18} />
       <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-        Config is currently set by a config file
+        {$t('admin.config_set_by_file')}
       </h2>
     </div>
   {/if}
@@ -190,19 +191,19 @@
       <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
-          Copy to Clipboard
+          {$t('copy_to_clipboard')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => downloadConfig()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
-          Export as JSON
+          {$t('export_as_json')}
         </div>
       </LinkButton>
       <LinkButton on:click={() => inputElement?.click()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiUpload} size="18" />
-          Import from JSON
+          {$t('import_from_json')}
         </div>
       </LinkButton>
     </div>

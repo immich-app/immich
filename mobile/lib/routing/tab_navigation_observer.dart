@@ -43,7 +43,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'SharingRoute') {
       ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-      ref.read(assetProvider.notifier).getPartnerAssets();
+      Future(() => ref.read(assetProvider.notifier).getAllAsset());
     }
 
     if (route.name == 'LibraryRoute') {
@@ -57,7 +57,9 @@ class TabNavigationObserver extends AutoRouterObserver {
       // Update user info
       try {
         final userResponseDto =
-            await ref.read(apiServiceProvider).userApi.getMyUserInfo();
+            await ref.read(apiServiceProvider).usersApi.getMyUser();
+        final userPreferences =
+            await ref.read(apiServiceProvider).usersApi.getMyPreferences();
 
         if (userResponseDto == null) {
           return;
@@ -65,7 +67,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
         Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(userResponseDto),
+          User.fromUserDto(userResponseDto, userPreferences),
         );
         ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {

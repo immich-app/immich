@@ -10,28 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  doc-tests:
-    name: Docs
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./docs
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
-
-      - name: Run formatter
-        run: npm run format
-        if: ${{ !cancelled() }}
-
-      - name: Run build
-        run: npm run build
-        if: ${{ !cancelled() }}
-
   server-unit-tests:
     name: Server
     runs-on: ubuntu-latest
@@ -42,6 +20,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
 
       - name: Run npm install
         run: npm ci
@@ -76,7 +59,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: './cli/.nvmrc'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -101,6 +84,38 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  cli-unit-tests-win:
+    name: CLI (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './cli/.nvmrc'
+
+      - name: Setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Install deps
+        run: npm ci
+
+      # Skip linter & formatter in Windows test.
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
+
   web-unit-tests:
     name: Web
     runs-on: ubuntu-latest
@@ -111,6 +126,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './web/.nvmrc'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -155,7 +175,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: './e2e/.nvmrc'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -208,7 +228,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.19.3'
+          flutter-version-file: ./mobile/pubspec.yaml
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -260,9 +280,23 @@ jobs:
     name: OpenAPI Clients
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
+      - name: Install server dependencies
+        run: npm --prefix=server ci
+
+      - name: Build the app
+        run: npm --prefix=server run build
+
       - name: Run API generation
         run: make open-api
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v20
         id: verify-changed-files
@@ -270,6 +304,8 @@ jobs:
           files: |
             mobile/openapi
             open-api/typescript-sdk
+            open-api/immich-openapi-specs.json
+
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -302,6 +338,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
       - name: Install server dependencies
         run: npm ci
 
@@ -332,7 +373,7 @@ jobs:
           exit 1
 
       - name: Run SQL generation
-        run: npm run sql:generate
+        run: npm run sync:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 

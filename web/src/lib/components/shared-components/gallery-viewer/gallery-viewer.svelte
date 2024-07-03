@@ -13,6 +13,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { goto } from '$app/navigation';
+  import { t } from 'svelte-i18n';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -52,7 +53,7 @@
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to the next asset');
+      handleError(error, $t('errors.cannot_navigate_next_asset'));
     }
   };
 
@@ -63,7 +64,7 @@
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to previous asset');
+      handleError(error, $t('errors.cannot_navigate_previous_asset'));
     }
   };
 
@@ -123,7 +124,15 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          onClick={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+          onClick={async (asset, e) => {
+            e.preventDefault();
+
+            if (isMultiSelectionMode) {
+              selectAssetHandler(asset);
+              return;
+            }
+            await viewAssetHandler(asset);
+          }}
           on:select={(e) => selectAssetHandler(e.detail.asset)}
           on:intersected={(event) =>
             i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}

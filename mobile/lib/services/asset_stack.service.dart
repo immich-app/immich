@@ -27,7 +27,7 @@ class AssetStackService {
             .map((e) => e.remoteId!)
             .toList();
 
-        await _api.assetApi.updateAssets(
+        await _api.assetsApi.updateAssets(
           AssetBulkUpdateDto(ids: toAdd, stackParentId: parentAsset.remoteId),
         );
       }
@@ -37,7 +37,7 @@ class AssetStackService {
             .where((e) => e.isRemote)
             .map((e) => e.remoteId!)
             .toList();
-        await _api.assetApi.updateAssets(
+        await _api.assetsApi.updateAssets(
           AssetBulkUpdateDto(ids: toRemove, removeParent: true),
         );
       }
@@ -53,7 +53,7 @@ class AssetStackService {
     }
 
     try {
-      await _api.assetApi.updateStackParent(
+      await _api.assetsApi.updateStackParent(
         UpdateStackParentDto(
           oldParentId: oldParent.remoteId!,
           newParentId: newParent.remoteId!,

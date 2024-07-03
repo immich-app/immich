@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvents } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
-import { DatabaseService } from 'src/services/database.service';
+import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MediaService } from 'src/services/media.service';
@@ -13,17 +14,15 @@ import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
-import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
-import { otelSDK } from 'src/utils/instrumentation';
+import { VersionService } from 'src/services/version.service';
+import { otelShutdown } from 'src/utils/instrumentation';
 
 @Injectable()
-export class MicroservicesService {
+export class MicroservicesService implements OnEvents {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
-    private configService: SystemConfigService,
-    private databaseService: DatabaseService,
     private jobService: JobService,
     private libraryService: LibraryService,
     private mediaService: MediaService,
@@ -35,13 +34,15 @@ export class MicroservicesService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
+    private duplicateService: DuplicateService,
+    private versionService: VersionService,
   ) {}
 
-  async init() {
-    await this.databaseService.init();
-    await this.configService.init();
-    await this.libraryService.init();
-    await this.notificationService.init();
+  async onBootstrapEvent(app: 'api' | 'microservices') {
+    if (app !== 'microservices') {
+      return;
+    }
+
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
@@ -53,6 +54,8 @@ export class MicroservicesService {
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_SMART_SEARCH]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.SMART_SEARCH]: (data) => this.smartInfoService.handleEncodeClip(data),
+      [JobName.QUEUE_DUPLICATE_DETECTION]: (data) => this.duplicateService.handleQueueSearchDuplicates(data),
+      [JobName.DUPLICATE_DETECTION]: (data) => this.duplicateService.handleSearchDuplicates(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),
       [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: (data) => this.storageTemplateService.handleMigrationSingle(data),
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
@@ -84,15 +87,14 @@ export class MicroservicesService {
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
+      [JobName.NOTIFY_ALBUM_INVITE]: (data) => this.notificationService.handleAlbumInvite(data),
+      [JobName.NOTIFY_ALBUM_UPDATE]: (data) => this.notificationService.handleAlbumUpdate(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
+      [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });
-
-    await this.metadataService.init();
   }
 
-  async teardown() {
-    await this.libraryService.teardown();
-    await this.metadataService.teardown();
-    await otelSDK.shutdown();
+  async onShutdown() {
+    await otelShutdown();
   }
 }

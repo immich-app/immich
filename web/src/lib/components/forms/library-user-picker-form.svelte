@@ -4,16 +4,17 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { getAllUsers } from '@immich/sdk';
+  import { searchUsersAdmin } from '@immich/sdk';
   import { user } from '$lib/stores/user.store';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { t } from 'svelte-i18n';
 
   let ownerId: string = $user.id;
 
   let userOptions: { value: string; text: string }[] = [];
 
   onMount(async () => {
-    const users = await getAllUsers({ isAll: true });
+    const users = await searchUsersAdmin({});
     userOptions = users.map((user) => ({ value: user.id, text: user.name }));
   });
 
@@ -27,19 +28,14 @@
   const handleSubmit = () => dispatch('submit', { ownerId });
 </script>
 
-<FullScreenModal
-  id="select-library-owner-modal"
-  title="Select library owner"
-  icon={mdiFolderSync}
-  onClose={handleCancel}
->
+<FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={handleCancel}>
   <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
-    <p class="p-5 text-sm">NOTE: This cannot be changed later!</p>
+    <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-    <Button type="submit" fullwidth form="select-library-owner-form">Create</Button>
+    <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+    <Button type="submit" fullwidth form="select-library-owner-form">{$t('create')}</Button>
   </svelte:fragment>
 </FullScreenModal>

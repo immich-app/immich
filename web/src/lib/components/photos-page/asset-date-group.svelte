@@ -80,15 +80,6 @@
     });
   }
 
-  const assetClickHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
-    if (isSelectionMode || $isMultiSelectState) {
-      assetSelectHandler(asset, assetsInDateGroup, groupTitle);
-      return;
-    }
-
-    assetViewingStore.setAsset(asset);
-  };
-
   const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
 
   const assetSelectHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
@@ -153,7 +144,7 @@
           </div>
         {/if}
 
-        <span class="truncate first-letter:capitalize" title={groupTitle}>
+        <span class="w-full truncate first-letter:capitalize" title={groupTitle}>
           {groupTitle}
         </span>
       </div>
@@ -174,7 +165,15 @@
               {showArchiveIcon}
               {asset}
               {groupIndex}
-              onClick={() => assetClickHandler(asset, groupAssets, groupTitle)}
+              onClick={(asset, event) => {
+                if (isSelectionMode || $isMultiSelectState) {
+                  event.preventDefault();
+                  assetSelectHandler(asset, groupAssets, groupTitle);
+                  return;
+                }
+
+                assetViewingStore.setAsset(asset);
+              }}
               on:select={() => assetSelectHandler(asset, groupAssets, groupTitle)}
               on:mouse-event={() => assetMouseEventHandler(groupTitle, asset)}
               selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}

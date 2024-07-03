@@ -18,7 +18,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -30,7 +29,8 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+} from 'src/config';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 
@@ -131,6 +131,9 @@ export class SystemConfigFFmpegDto {
   @IsEnum(TranscodeHWAccel)
   @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
   accel!: TranscodeHWAccel;
+
+  @ValidateBoolean()
+  accelDecode!: boolean;
 
   @IsEnum(ToneMapping)
   @ApiProperty({ enumName: 'ToneMapping', enum: ToneMapping })
@@ -262,10 +265,15 @@ class SystemConfigMachineLearningDto {
   @IsObject()
   clip!: CLIPConfig;
 
-  @Type(() => RecognitionConfig)
+  @Type(() => DuplicateDetectionConfig)
   @ValidateNested()
   @IsObject()
-  facialRecognition!: RecognitionConfig;
+  duplicateDetection!: DuplicateDetectionConfig;
+
+  @Type(() => FacialRecognitionConfig)
+  @ValidateNested()
+  @IsObject()
+  facialRecognition!: FacialRecognitionConfig;
 }
 
 enum MapTheme {
@@ -386,7 +394,7 @@ class SystemConfigSmtpTransportDto {
   password!: string;
 }
 
-class SystemConfigSmtpDto {
+export class SystemConfigSmtpDto {
   @IsBoolean()
   enabled!: boolean;
 

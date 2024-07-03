@@ -1,107 +1,97 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { getClientLicensePublicKey } from 'src/config';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
+import { mapPreferences, UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { UserEntity, UserStatus } from 'src/entities/user.entity';
+import { mapUser, mapUserAdmin, UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import { UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService {
   private configCore: SystemConfigCore;
-  private userCore: UserCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(IAssetStackRepository) private stackRepository: IAssetStackRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
     this.logger.setContext(UserService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async listUsers(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: true });
+  async search(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.getList({ withDeleted: false });
     return users.map((user) => mapUser(user));
   }
 
-  async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: !isAll });
-    return users.map((user) => mapUser(user));
+  getMe(auth: AuthDto): UserAdminResponseDto {
+    return mapUserAdmin(auth.user);
   }
 
-  async get(userId: string): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(userId, { withDeleted: false });
-    if (!user) {
-      throw new NotFoundException('User not found');
+  async updateMe({ user }: AuthDto, dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
+    if (dto.email) {
+      const duplicate = await this.userRepository.getByEmail(dto.email);
+      if (duplicate && duplicate.id !== user.id) {
+        throw new BadRequestException('Email already in use by another account');
+      }
     }
 
+    const update: Partial<UserEntity> = {
+      email: dto.email,
+      name: dto.name,
+    };
+
+    if (dto.password) {
+      const hashedPassword = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
+      update.password = hashedPassword;
+      update.shouldChangePassword = false;
+    }
+
+    const updatedUser = await this.userRepository.update(user.id, update);
+
+    return mapUserAdmin(updatedUser);
+  }
+
+  getMyPreferences({ user }: AuthDto): UserPreferencesResponseDto {
+    const preferences = getPreferences(user);
+    return mapPreferences(preferences);
+  }
+
+  async updateMyPreferences({ user }: AuthDto, dto: UserPreferencesUpdateDto) {
+    const preferences = mergePreferences(user, dto);
+
+    await this.userRepository.upsertMetadata(user.id, {
+      key: UserMetadataKey.PREFERENCES,
+      value: getPreferencesPartial(user, preferences),
+    });
+
+    return mapPreferences(preferences);
+  }
+
+  async get(id: string): Promise<UserResponseDto> {
+    const user = await this.findOrFail(id, { withDeleted: false });
     return mapUser(user);
-  }
-
-  getMe(auth: AuthDto): Promise<UserResponseDto> {
-    return this.findOrFail(auth.user.id, {}).then(mapUser);
-  }
-
-  async create(dto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.createUser(dto);
-    const tempPassword = user.shouldChangePassword ? dto.password : undefined;
-    if (dto.notify) {
-      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id: user.id, tempPassword } });
-    }
-    return mapUser(user);
-  }
-
-  async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.findOrFail(dto.id, {});
-
-    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
-      await this.userRepository.syncUsage(dto.id);
-    }
-
-    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
-  }
-
-  async delete(auth: AuthDto, id: string, dto: DeleteUserDto): Promise<UserResponseDto> {
-    const { force } = dto;
-    const { isAdmin } = await this.findOrFail(id, {});
-    if (isAdmin) {
-      throw new ForbiddenException('Cannot delete admin user');
-    }
-
-    await this.albumRepository.softDeleteAll(id);
-
-    const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
-    const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
-
-    if (force) {
-      await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });
-    }
-
-    return mapUser(user);
-  }
-
-  async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    await this.findOrFail(id, { withDeleted: true });
-    await this.albumRepository.restoreAll(id);
-    return this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE }).then(mapUser);
   }
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
@@ -135,18 +125,45 @@ export class UserService {
     });
   }
 
-  async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
-    const admin = await this.userRepository.getAdmin();
-    if (!admin) {
-      throw new BadRequestException('Admin account does not exist');
+  getLicense({ user }: AuthDto): LicenseResponseDto {
+    const license = user.metadata.find(
+      (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
+    );
+    if (!license) {
+      throw new NotFoundException();
+    }
+    return license.value;
+  }
+
+  async deleteLicense({ user }: AuthDto): Promise<void> {
+    await this.userRepository.deleteMetadata(user.id, UserMetadataKey.LICENSE);
+  }
+
+  async setLicense(auth: AuthDto, license: LicenseKeyDto): Promise<LicenseResponseDto> {
+    if (!license.licenseKey.startsWith('IMCL-')) {
+      throw new BadRequestException('Invalid license key');
+    }
+    const licenseValid = this.cryptoRepository.verifySha256(
+      license.licenseKey,
+      license.activationKey,
+      getClientLicensePublicKey(),
+    );
+
+    if (!licenseValid) {
+      throw new BadRequestException('Invalid license key');
     }
 
-    const providedPassword = await ask(mapUser(admin));
-    const password = providedPassword || this.cryptoRepository.newPassword(24);
+    const licenseData = {
+      ...license,
+      activatedAt: new Date(),
+    };
 
-    await this.userCore.updateUser(admin, admin.id, { password });
+    await this.userRepository.upsertMetadata(auth.user.id, {
+      key: UserMetadataKey.LICENSE,
+      value: licenseData,
+    });
 
-    return { admin, password, provided: !!providedPassword };
+    return licenseData;
   }
 
   async handleUserSyncUsage(): Promise<JobStatus> {
@@ -156,7 +173,7 @@ export class UserService {
 
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
         this.isReadyForDeletion(user, config.user.deleteDelay)
@@ -168,7 +185,7 @@ export class UserService {
   }
 
   async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return JobStatus.FAILED;
@@ -196,6 +213,7 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
+    await this.stackRepository.deleteAll(user.id);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 

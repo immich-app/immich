@@ -4,51 +4,48 @@
 
 name: immich-dev
 
-x-server-build: &server-common
-  image: immich-server-dev:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-    target: dev
-  restart: always
-  volumes:
-    - ../server:/usr/src/app
-    - ../open-api:/usr/src/open-api
-    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-    - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
-    - /usr/src/app/node_modules
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ulimits:
-    nofile:
-      soft: 1048576
-      hard: 1048576
-
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev', 'immich']
-    <<: *server-common
+    command: ['/usr/src/app/bin/immich-dev']
+    image: immich-server-dev:latest
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
+    restart: always
+    volumes:
+      - ../server:/usr/src/app
+      - ../open-api:/usr/src/open-api
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
+      - /usr/src/app/node_modules
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    environment:
+      IMMICH_REPOSITORY: immich-app/immich
+      IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
+      IMMICH_SOURCE_REF: local
+      IMMICH_SOURCE_COMMIT: af2efbdbbddc27cd06142f22253ccbbbbeec1f55
+      IMMICH_SOURCE_URL: https://github.com/immich-app/immich/commit/af2efbdbbddc27cd06142f22253ccbbbbeec1f55
+      IMMICH_BUILD: '9654404849'
+      IMMICH_BUILD_URL: https://github.com/immich-app/immich/actions/runs/9654404849
+      IMMICH_BUILD_IMAGE: development
+      IMMICH_BUILD_IMAGE_URL: https://github.com/immich-app/immich/pkgs/container/immich-server
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     ports:
       - 3001:3001
       - 9230:9230
     depends_on:
       - redis
       - database
-
-  immich-microservices:
-    container_name: immich_microservices
-    command: ['/usr/src/app/bin/immich-dev', 'microservices']
-    <<: *server-common
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    ports:
-      - 9231:9230
-    depends_on:
-      - database
-      - immich-server
 
   immich-web:
     container_name: immich_web
@@ -97,7 +94,9 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    image: redis:6.2-alpine@sha256:328fe6a5822256d065debb36617a8169dbfbd77b797c525288e465f56c1d392b
+    healthcheck:
+      test: redis-cli ping || exit 1
 
   database:
     container_name: immich_postgres
@@ -113,7 +112,27 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-    command: ["postgres", "-c" ,"shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
+    healthcheck:
+      test: pg_isready --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' || exit 1; Chksum="$$(psql --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
+      interval: 5m
+      start_interval: 30s
+      start_period: 5m
+    command:
+      [
+        'postgres',
+        '-c',
+        'shared_preload_libraries=vectors.so',
+        '-c',
+        'search_path="$$user", public, vectors',
+        '-c',
+        'logging_collector=on',
+        '-c',
+        'max_wal_size=2GB',
+        '-c',
+        'shared_buffers=512MB',
+        '-c',
+        'wal_compression=on',
+      ]
 
   # set IMMICH_METRICS=true in .env to enable metrics
   # immich-prometheus:

@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { serveFile, type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
+  import { getAssetOriginalUrl, getKey } from '$lib/utils';
+  import { AssetMediaSize, AssetTypeEnum, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { getAssetFileUrl, getKey } from '$lib/utils';
-  import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
+  import { t } from 'svelte-i18n';
   export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
 
   const photoSphereConfigs =
@@ -20,9 +21,9 @@
 
   const loadAssetData = async () => {
     if (asset.type === AssetTypeEnum.Video) {
-      return { source: getAssetFileUrl(asset.id, false, false) };
+      return { source: getAssetOriginalUrl(asset.id) };
     }
-    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false, key: getKey() });
+    const data = await viewAsset({ id: asset.id, size: AssetMediaSize.Preview, key: getKey() });
     const url = URL.createObjectURL(data);
     return url;
   };
@@ -35,6 +36,6 @@
   {:then [data, module, adapter, plugins, navbar]}
     <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
   {:catch}
-    Failed to load asset
+    {$t('errors.failed_to_load_asset')}
   {/await}
 </div>

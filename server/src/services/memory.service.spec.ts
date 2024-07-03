@@ -193,15 +193,6 @@ describe(MemoryService.name, () => {
       expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
     });
 
-    it('should require asset access', async () => {
-      accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
-      memoryMock.getAssetIds.mockResolvedValue(new Set(['asset1']));
-      await expect(sut.removeAssets(authStub.admin, 'memory1', { ids: ['asset1'] })).resolves.toEqual([
-        { error: 'no_permission', id: 'asset1', success: false },
-      ]);
-      expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
-    });
-
     it('should remove assets', async () => {
       accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1']));

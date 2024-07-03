@@ -9,6 +9,7 @@
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let notification: Notification;
 
@@ -76,12 +77,14 @@
     <div class="flex place-items-center gap-2">
       <Icon path={icon} color={primaryColor[notification.type]} size="20" />
       <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
-        {notification.type.toString()}
+        {#if notification.type == NotificationType.Error}{$t('error')}
+        {:else if notification.type == NotificationType.Warning}{$t('warning')}
+        {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
     <CircleIconButton
       icon={mdiWindowClose}
-      title="Close"
+      title={$t('close')}
       class="dark:text-immich-dark-gray"
       size="20"
       padding="2"
@@ -101,6 +104,7 @@
   {#if notification.button}
     <p class="pl-[28px] mt-2.5 text-sm">
       <button
+        type="button"
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
         on:click={handleButtonClick}
       >

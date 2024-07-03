@@ -12,7 +12,6 @@ SELECT
   "ActivityEntity"."isLiked" AS "ActivityEntity_isLiked",
   "ActivityEntity__ActivityEntity_user"."id" AS "ActivityEntity__ActivityEntity_user_id",
   "ActivityEntity__ActivityEntity_user"."name" AS "ActivityEntity__ActivityEntity_user_name",
-  "ActivityEntity__ActivityEntity_user"."avatarColor" AS "ActivityEntity__ActivityEntity_user_avatarColor",
   "ActivityEntity__ActivityEntity_user"."isAdmin" AS "ActivityEntity__ActivityEntity_user_isAdmin",
   "ActivityEntity__ActivityEntity_user"."email" AS "ActivityEntity__ActivityEntity_user_email",
   "ActivityEntity__ActivityEntity_user"."storageLabel" AS "ActivityEntity__ActivityEntity_user_storageLabel",
@@ -23,7 +22,6 @@ SELECT
   "ActivityEntity__ActivityEntity_user"."deletedAt" AS "ActivityEntity__ActivityEntity_user_deletedAt",
   "ActivityEntity__ActivityEntity_user"."status" AS "ActivityEntity__ActivityEntity_user_status",
   "ActivityEntity__ActivityEntity_user"."updatedAt" AS "ActivityEntity__ActivityEntity_user_updatedAt",
-  "ActivityEntity__ActivityEntity_user"."memoriesEnabled" AS "ActivityEntity__ActivityEntity_user_memoriesEnabled",
   "ActivityEntity__ActivityEntity_user"."quotaSizeInBytes" AS "ActivityEntity__ActivityEntity_user_quotaSizeInBytes",
   "ActivityEntity__ActivityEntity_user"."quotaUsageInBytes" AS "ActivityEntity__ActivityEntity_user_quotaUsageInBytes"
 FROM

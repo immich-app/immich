@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
+import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
-import 'package:immich_mobile/widgets/settings/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
@@ -33,7 +33,7 @@ enum SettingSection {
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
-        SettingSection.viewer => const ImageViewerQualitySetting(),
+        SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
       };
 

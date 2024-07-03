@@ -5,13 +5,13 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Colorspace } from 'src/entities/system-config.entity';
+import { Colorspace } from 'src/config';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   IMediaRepository,
   ImageDimensions,
   ThumbnailOptions,
-  TranscodeOptions,
+  TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -45,7 +45,7 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
-    const pipeline = sharp(input, { failOn: 'none' })
+    const pipeline = sharp(input, { failOn: 'error', limitInputPixels: false })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .rotate();
 
@@ -97,7 +97,7 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
@@ -150,7 +150,7 @@ export class MediaRepository implements IMediaRepository {
     return { width, height };
   }
 
-  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
     return ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)

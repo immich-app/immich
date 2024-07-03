@@ -11,7 +11,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -19,7 +19,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import {
     type AssetResponseDto,
     searchSmart,
@@ -39,6 +39,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
+  import { t } from 'svelte-i18n';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -141,7 +142,7 @@
 
       nextPage = assets.nextPage ? Number(assets.nextPage) : null;
     } catch (error) {
-      handleError(error, 'Loading search results failed');
+      handleError(error, $t('loading_search_results_failed'));
     } finally {
       isLoading = false;
     }
@@ -161,20 +162,20 @@
 
   function getHumanReadableSearchKey(key: keyof SearchTerms): string {
     const keyMap: Partial<Record<keyof SearchTerms, string>> = {
-      takenAfter: 'Start date',
-      takenBefore: 'End date',
-      isArchived: 'In archive',
-      isFavorite: 'Favorite',
-      isNotInAlbum: 'Not in any album',
-      type: 'Media type',
-      query: 'Context',
-      city: 'City',
-      country: 'Country',
-      state: 'State',
-      make: 'Camera brand',
-      model: 'Camera model',
-      personIds: 'People',
-      originalFileName: 'File name',
+      takenAfter: $t('start_date'),
+      takenBefore: $t('end_date'),
+      isArchived: $t('in_archive'),
+      isFavorite: $t('favorite'),
+      isNotInAlbum: $t('not_in_any_album'),
+      type: $t('media_type'),
+      query: $t('context'),
+      city: $t('city'),
+      country: $t('country'),
+      state: $t('state'),
+      make: $t('camera_brand'),
+      model: $t('camera_model'),
+      personIds: $t('people'),
+      originalFileName: $t('file_name'),
     };
     return keyMap[key] || key;
   }
@@ -185,7 +186,7 @@
         const person = await getPerson({ id: personId });
 
         if (person.name == '') {
-          return 'No Name';
+          return $t('no_name');
         }
 
         return person.name;
@@ -209,20 +210,20 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
-        <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add to...">
+        <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
         <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
-        <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <DeleteAssets menuItem {onAssetDelete} />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
       </AssetSelectControlBar>
     </div>
   {:else}
@@ -275,10 +276,12 @@
   <section class="immich-scrollbar relative overflow-y-auto">
     {#if searchResultAlbums.length > 0}
       <section>
-        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
+        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
         <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
+        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+          {$t('photos_and_videos').toUpperCase()}
+        </div>
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
@@ -294,8 +297,8 @@
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
             <Icon path={mdiImageOffOutline} size="3.5em" />
-            <p class="mt-5 text-3xl font-medium">No results</p>
-            <p class="text-base font-normal">Try a synonym or more general keyword</p>
+            <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
+            <p class="text-base font-normal">{$t('no_results_description')}</p>
           </div>
         </div>
       {/if}

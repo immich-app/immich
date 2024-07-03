@@ -15,6 +15,9 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
+  import { t } from 'svelte-i18n';
+  import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -25,37 +28,54 @@
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-  <SettingAccordion key="app-settings" title="App Settings" subtitle="Manage the app settings">
+  <SettingAccordion key="app-settings" title={$t('app_settings')} subtitle={$t('manage_the_app_settings')}>
     <AppSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="account" title="Account" subtitle="Manage your account">
+  <SettingAccordion key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
     <UserProfileSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="api-keys" title="API Keys" subtitle="Manage your API keys">
+  <SettingAccordion key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
     <UserAPIKeyList bind:keys />
   </SettingAccordion>
 
-  <SettingAccordion key="authorized-devices" title="Authorized Devices" subtitle="Manage your logged-in devices">
+  <SettingAccordion key="authorized-devices" title={$t('authorized_devices')} subtitle={$t('manage_your_devices')}>
     <DeviceList bind:devices={sessions} />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title="Memories" subtitle="Manage what you see in your memories">
-    <MemoriesSettings user={$user} />
+  <SettingAccordion
+    key="download-settings"
+    title={$t('download_settings')}
+    subtitle={$t('download_settings_description')}
+  >
+    <DownloadSettings />
+  </SettingAccordion>
+
+  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
+    <MemoriesSettings />
+  </SettingAccordion>
+
+  <SettingAccordion key="notifications" title={$t('notifications')} subtitle={$t('notifications_setting_description')}>
+    <NotificationsSettings />
   </SettingAccordion>
 
   {#if $featureFlags.loaded && $featureFlags.oauth}
-    <SettingAccordion key="oauth" title="OAuth" subtitle="Manage your OAuth connection" isOpen={oauthOpen || undefined}>
+    <SettingAccordion
+      key="oauth"
+      title={$t('oauth')}
+      subtitle={$t('manage_your_oauth_connection')}
+      isOpen={oauthOpen || undefined}
+    >
       <OAuthSettings user={$user} />
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion key="password" title="Password" subtitle="Change your password">
+  <SettingAccordion key="password" title={$t('password')} subtitle={$t('change_your_password')}>
     <ChangePasswordSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="partner-sharing" title="Partner Sharing" subtitle="Manage sharing with partners">
+  <SettingAccordion key="partner-sharing" title={$t('partner_sharing')} subtitle={$t('manage_sharing_with_partners')}>
     <PartnerSettings user={$user} />
   </SettingAccordion>
 </SettingAccordionState>

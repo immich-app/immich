@@ -7,6 +7,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { mdiShareVariantOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onShowContextMenu: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined =
@@ -33,7 +34,9 @@
         path={mdiShareVariantOutline}
         size="16"
         class="inline ml-1 opacity-70"
-        title={album.ownerId === $user.id ? 'Shared by you' : `Shared by ${album.owner.name}`}
+        title={album.ownerId === $user.id
+          ? $t('shared_by_you')
+          : $t('shared_by_user', { values: { user: album.owner.name } })}
       />
     {/if}
   </td>

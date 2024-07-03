@@ -9,7 +9,6 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
@@ -21,9 +20,11 @@
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
+  import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
   import type { PageData } from './$types';
   import { handlePromiseError } from '$lib/utils';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -32,10 +33,17 @@
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
-  let isShowEmptyConfirmation = false;
 
   const handleEmptyTrash = async () => {
-    isShowEmptyConfirmation = false;
+    const isConfirmed = await dialogController.show({
+      id: 'empty-trash',
+      prompt: $t('empty_trash_confirmation'),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       await emptyTrash();
 
@@ -44,15 +52,23 @@
       assetStore.removeAssets(deletedAssetIds);
 
       notificationController.show({
-        message: `Permanently deleted ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_permanently_deleted_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error emptying trash');
+      handleError(error, $t('errors.unable_to_empty_trash'));
     }
   };
 
   const handleRestoreTrash = async () => {
+    const isConfirmed = await dialogController.show({
+      id: 'restore-trash',
+      prompt: $t('assets_restore_confirmation'),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
     try {
       await restoreTrash();
 
@@ -61,11 +77,11 @@
       assetStore.removeAssets(restoredAssetIds);
 
       notificationController.show({
-        message: `Restored ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_restored_count', { values: { count: numberOfAssets } }),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Error restoring trash');
+      handleError(error, $t('errors.unable_to_restore_trash'));
     }
   };
 </script>
@@ -81,40 +97,25 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     <div class="flex place-items-center gap-2" slot="buttons">
-      <LinkButton on:click={handleRestoreTrash}>
+      <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
-          Restore all
+          {$t('restore_all')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
+      <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
         <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDeleteOutline} size="18" />
-          Empty trash
+          <Icon path={mdiDeleteForeverOutline} size="18" />
+          {$t('empty_trash')}
         </div>
       </LinkButton>
     </div>
 
     <AssetGrid {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
-        Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
+        {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
-      <EmptyPlaceholder text="Trashed photos and videos will show up here." src={empty3Url} slot="empty" />
+      <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} slot="empty" />
     </AssetGrid>
   </UserPageLayout>
-{/if}
-
-{#if isShowEmptyConfirmation}
-  <ConfirmDialogue
-    id="empty-trash-modal"
-    title="Empty trash"
-    confirmText="Empty"
-    onConfirm={handleEmptyTrash}
-    onClose={() => (isShowEmptyConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
-      <p><b>You cannot undo this action!</b></p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}

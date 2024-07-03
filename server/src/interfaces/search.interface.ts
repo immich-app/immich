@@ -37,8 +37,6 @@ export interface SearchExploreItem<T> {
   items: SearchExploreItemSet<T>;
 }
 
-export type Embedding = number[];
-
 export interface SearchAssetIDOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
@@ -47,7 +45,7 @@ export interface SearchAssetIDOptions {
 
 export interface SearchUserIdOptions {
   deviceId?: string;
-  libraryId?: string;
+  libraryId?: string | null;
   userIds?: string[];
 }
 
@@ -106,7 +104,7 @@ export interface SearchExifOptions {
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: Embedding;
+  embedding: number[];
   userIds: string[];
 }
 
@@ -152,15 +150,30 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   maxDistance?: number;
 }
 
+export interface AssetDuplicateSearch {
+  assetId: string;
+  embedding: number[];
+  maxDistance?: number;
+  type: AssetType;
+  userIds: string[];
+}
+
 export interface FaceSearchResult {
   distance: number;
   face: AssetFaceEntity;
+}
+
+export interface AssetDuplicateResult {
+  assetId: string;
+  duplicateId: string | null;
+  distance: number;
 }
 
 export interface ISearchRepository {
   init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
+  searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(assetId: string, embedding: number[]): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;

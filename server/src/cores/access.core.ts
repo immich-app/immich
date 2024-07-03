@@ -274,7 +274,7 @@ export class AccessCore {
       }
 
       case Permission.ASSET_UPLOAD: {
-        return await this.repository.library.checkOwnerAccess(auth.user.id, ids);
+        return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set<string>();
       }
 
       case Permission.ARCHIVE_READ: {
@@ -300,6 +300,10 @@ export class AccessCore {
       }
 
       case Permission.MEMORY_WRITE: {
+        return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.MEMORY_DELETE: {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 

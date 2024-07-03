@@ -76,6 +76,7 @@ services:
   backup:
     container_name: immich_db_dumper
     image: prodrigestivill/postgres-backup-local:14
+    restart: always
     env_file:
       - .env
     environment:
@@ -191,6 +192,6 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 </Tabs>
 
 :::danger
-Do not touch the files inside these folders under any circumstances except taking a backup, changing or removing an asset can cause untracked and missing files.
+Do not touch the files inside these folders under any circumstances except taking a backup. Changing or removing an asset can cause untracked and missing files.
 You can think of it as App-Which-Must-Not-Be-Named, the only access to viewing, changing and deleting assets is only through the mobile or browser interface.
 :::

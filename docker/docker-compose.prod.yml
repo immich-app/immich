@@ -1,39 +1,26 @@
 name: immich-prod
 
-x-server-build: &server-common
-  image: immich-server:latest
-  build:
-    context: ../
-    dockerfile: server/Dockerfile
-  volumes:
-    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  restart: always
-
 services:
   immich-server:
     container_name: immich_server
-    command: ['start.sh', 'immich']
-    <<: *server-common
+    image: immich-server:latest
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+    volumes:
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
     ports:
       - 2283:3001
     depends_on:
       - redis
       - database
-
-  immich-microservices:
-    container_name: immich_microservices
-    command: ['start.sh', 'microservices']
-    <<: *server-common
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    depends_on:
-      - redis
-      - database
-      - immich-server
+    restart: always
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -54,7 +41,9 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    image: redis:6.2-alpine@sha256:328fe6a5822256d065debb36617a8169dbfbd77b797c525288e465f56c1d392b
+    healthcheck:
+      test: redis-cli ping || exit 1
     restart: always
 
   database:
@@ -71,14 +60,20 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    healthcheck:
+      test: pg_isready --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' || exit 1; Chksum="$$(psql --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
+      interval: 5m
+      start_interval: 30s
+      start_period: 5m
     command: ["postgres", "-c" ,"shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
+    restart: always
 
   # set IMMICH_METRICS=true in .env to enable metrics
   immich-prometheus:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:5c435642ca4d8427ca26f4901c11114023004709037880cd7860d5b7176aa731
+    image: prom/prometheus@sha256:075b1ba2c4ebb04bc3a6ab86c06ec8d8099f8fda1c96ef6d104d9bb1def1d8bc
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -90,7 +85,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:10.4.2-ubuntu@sha256:4f55071b556fb03f12b41423c98a185ed6695ed9ff2558e35805f0dd765fd958
+    image: grafana/grafana:11.1.0-ubuntu@sha256:c7fc29ec783d5e7fc1bdfaad6f92345a345cffbc5d21c388ca228175006fc107
     volumes:
       - grafana-data:/var/lib/grafana
 

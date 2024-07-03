@@ -16,6 +16,7 @@
   import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
@@ -79,12 +80,12 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Repaired ${matches.length} items`,
+        message: $t('admin.repaired_items', { values: { count: matches.length } }),
       });
 
       matches = [];
     } catch (error) {
-      handleError(error, 'Unable to repair items');
+      handleError(error, $t('errors.unable_to_repair_items'));
     } finally {
       repairing = false;
     }
@@ -107,9 +108,9 @@
       orphans = report.orphans;
       extras = normalize(report.extras);
 
-      notificationController.show({ message: 'Refreshed', type: NotificationType.Info });
+      notificationController.show({ message: $t('refreshed'), type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to load items');
+      handleError(error, $t('errors.unable_to_load_items'));
     }
   };
 
@@ -117,10 +118,13 @@
     try {
       const matched = await loadAndMatch([filename]);
       if (matched) {
-        notificationController.show({ message: `Matched 1 item`, type: NotificationType.Info });
+        notificationController.show({
+          message: $t('admin.repair_matched_items', { values: { count: 1 } }),
+          type: NotificationType.Info,
+        });
       }
     } catch (error) {
-      handleError(error, 'Unable to check item');
+      handleError(error, $t('errors.repair_unable_to_check_items', { values: { count: 'one' } }));
     }
   };
 
@@ -136,12 +140,15 @@
         count += await loadAndMatch(filenames.slice(index, index + chunkSize));
       }
     } catch (error) {
-      handleError(error, 'Unable to check items');
+      handleError(error, $t('errors.repair_unable_to_check_items', { values: { count: 'other' } }));
     } finally {
       checking = false;
     }
 
-    notificationController.show({ message: `Matched ${count} items`, type: NotificationType.Info });
+    notificationController.show({
+      message: $t('admin.repair_matched_items', { values: { count } }),
+      type: NotificationType.Info,
+    });
   };
 
   const loadAndMatch = async (filenames: string[]) => {
@@ -177,25 +184,25 @@
     <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiWrench} size="18" />
-        Repair All
+        {$t('admin.repair_all')}
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiCheckAll} size="18" />
-        Check All
+        {$t('admin.check_all')}
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiDownload} size="18" />
-        Export
+        {$t('export')}
       </div>
     </LinkButton>
     <LinkButton on:click={() => handleRefresh()}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiRefresh} size="18" />
-        Refresh
+        {$t('refresh')}
       </div>
     </LinkButton>
   </div>
@@ -203,7 +210,7 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
         <div class="w-full">
-          <EmptyPlaceholder fullWidth text="Untracked and missing files will show up here" src={empty4Url} />
+          <EmptyPlaceholder fullWidth text={$t('repair_no_results_message')} src={empty4Url} />
         </div>
       {:else}
         <div class="gap-2">
@@ -214,8 +221,8 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>MATCHES {matches.length > 0 ? `(${matches.length})` : ''}</p>
-                    <p class="text-gray-600 dark:text-gray-300 mt-1">These files are matched by their checksums</p>
+                    <p>{$t('matches').toUpperCase()} {matches.length > 0 ? `(${matches.length})` : ''}</p>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">{$t('admin.these_files_matched_by_checksum')}</p>
                   </div>
                 </th>
               </tr>
@@ -248,9 +255,9 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>OFFLINE PATHS {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
+                    <p>{$t('admin.offline_paths').toUpperCase()} {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These results may be due to manual deletion of files in the default upload library
+                      {$t('admin.offline_paths_description')}
                     </p>
                   </div>
                 </th>
@@ -266,7 +273,7 @@
                   title={orphan.pathValue}
                 >
                   <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -286,10 +293,9 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>UNTRACKED FILES {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>{$t('admin.untracked_files').toUpperCase()} {extras.length > 0 ? `(${extras.length})` : ''}</p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
-                      These files are not tracked by the application. They can be the results of failed moves,
-                      interrupted uploads, or left behind due to a bug
+                      {$t('admin.untracked_files_description')}
                     </p>
                   </div>
                 </th>
@@ -306,7 +312,7 @@
                   title={extra.filename}
                 >
                   <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton title="Copy file path" icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

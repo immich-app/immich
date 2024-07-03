@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { getContextMenuPosition, type ContextMenuPosition } from '$lib/utils/context-menu';
+  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let showOwner = false;
@@ -18,7 +18,7 @@
   const showAlbumContextMenu = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    onShowContextMenu?.(getContextMenuPosition(e));
+    onShowContextMenu?.(getContextMenuPositionFromEvent(e));
   };
 </script>
 
@@ -34,7 +34,7 @@
     >
       <CircleIconButton
         color="opaque"
-        title="Show album options"
+        title={$t('show_album_options')}
         icon={mdiDotsVertical}
         size="20"
         padding="2"
@@ -44,7 +44,7 @@
     </div>
   {/if}
 
-  <AlbumCover {album} {preload} css="h-full w-full transition-all duration-300 hover:shadow-lg" />
+  <AlbumCover {album} {preload} class="h-full w-full transition-all duration-300 hover:shadow-lg" />
 
   <div class="mt-4">
     <p
@@ -61,11 +61,10 @@
       </p>
     {/if}
 
-    <span class="flex gap-2 text-sm" data-testid="album-details">
+    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
       {#if showItemCount}
         <p>
-          {album.assetCount.toLocaleString($locale)}
-          {album.assetCount === 1 ? `item` : `items`}
+          {$t('items_count', { values: { count: album.assetCount } })}
         </p>
       {/if}
 
@@ -75,14 +74,14 @@
 
       {#if showOwner}
         {#if $user.id === album.ownerId}
-          <p>Owned</p>
+          <p>{$t('owned')}</p>
         {:else if album.owner}
-          <p>Shared by {album.owner.name}</p>
+          <p>{$t('shared_by_user', { values: { user: album.owner.name } })}</p>
         {:else}
-          <p>Shared</p>
+          <p>{$t('shared')}</p>
         {/if}
       {:else if album.shared}
-        <p>Shared</p>
+        <p>{$t('shared')}</p>
       {/if}
     </span>
   </div>

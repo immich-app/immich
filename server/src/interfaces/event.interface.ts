@@ -1,8 +1,25 @@
+import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
-import { SystemConfig } from 'src/entities/system-config.entity';
+import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 
 export const IEventRepository = 'IEventRepository';
+
+type MaybePromise<T> = Promise<T> | T;
+
+const noop = () => {};
+const dummyHandlers = {
+  onBootstrapEvent: noop as (app: 'api' | 'microservices') => MaybePromise<void>,
+  onShutdownEvent: noop as () => MaybePromise<void>,
+  onConfigUpdateEvent: noop as (update: SystemConfigUpdate) => MaybePromise<void>,
+  onConfigValidateEvent: noop as (update: SystemConfigUpdate) => MaybePromise<void>,
+};
+
+export type SystemConfigUpdate = { newConfig: SystemConfig; oldConfig: SystemConfig };
+export type EventHandlers = typeof dummyHandlers;
+export type EmitEvent = keyof EventHandlers;
+export type EmitEventHandler<T extends EmitEvent> = (...args: Parameters<EventHandlers[T]>) => MaybePromise<void>;
+export const events = Object.keys(dummyHandlers) as EmitEvent[];
+export type OnEvents = Partial<EventHandlers>;
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
@@ -44,15 +61,10 @@ export interface ServerEventMap {
   [ServerEvent.WEBSOCKET_CONNECT]: { userId: string };
 }
 
-export enum ServerAsyncEvent {
-  CONFIG_VALIDATE = 'config.validate',
-}
-
-export interface ServerAsyncEventMap {
-  [ServerAsyncEvent.CONFIG_VALIDATE]: { newConfig: SystemConfig; oldConfig: SystemConfig };
-}
-
 export interface IEventRepository {
+  on<T extends EmitEvent>(event: T, handler: EmitEventHandler<T>): void;
+  emit<T extends EmitEvent>(event: T, ...args: Parameters<EmitEventHandler<T>>): Promise<void>;
+
   /**
    * Send to connected clients for a specific user
    */
@@ -65,8 +77,4 @@ export interface IEventRepository {
    * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
    */
   serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
-  /**
-   * Notify and wait for responses from listeners in this process. Subscribe to an event with `@OnServerEvent`
-   */
-  serverSendAsync<E extends keyof ServerAsyncEventMap>(event: E, data: ServerAsyncEventMap[E]): Promise<any>;
 }

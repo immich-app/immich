@@ -67,7 +67,7 @@ Yes, with an [External Library](/docs/features/libraries.md).
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
-Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
+Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs-workers/#jobs) page.
 
 ### Why are only photos and not videos being uploaded to Immich?
 
@@ -132,40 +132,6 @@ For example, say you have existing transcodes with the policy "Videos higher tha
 ### Is it possible to compress images during backup?
 
 No. Our design principle is that the original assets should always be untouched.
-
-### How can I move all data (photos, persons, albums, libraries) from one user to another?
-
-This is not officially supported but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the `psql` command), or you can add, for example, an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file so that you can use a web interface.
-
-<details>
-<summary>Steps</summary>
-
-1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
-
-2. Find the ID of both the 'source' and the 'destination' user (it's the id column in the `users` table)
-
-3. Four tables need to be updated:
-
-```sql
-BEGIN;
--- reassign albums
-UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign people
-UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign assets
-UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
- AND CHECKSUM NOT IN (SELECT CHECKSUM FROM assets WHERE "ownerId" = '<destinationId>');
-
--- reassign external libraries
-UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-COMMIT;
-```
-
-4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
-
-</details>
 
 ---
 
@@ -441,5 +407,12 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
 ```
 
 </details>
+
+If corruption is detected, you should immediately make a backup before performing any other work in the database.
+To do so, you may need to set the `zero_damaged_pages=on` flag for the database server to allow `pg_dumpall` to succeed.
+After taking a backup, the recommended next step is to restore the database from a healthy backup before corruption was detected.
+The damaged database dump can be used to manually recover any changes made since the last backup, if needed.
+
+The causes of possible corruption are many, but can include unexpected poweroffs or unmounts, use of a network share for Postgres data, or a poor storage medium such an SD card or failing HDD/SSD.
 
 [huggingface]: https://huggingface.co/immich-app

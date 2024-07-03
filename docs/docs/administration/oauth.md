@@ -110,8 +110,66 @@ Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to 
 
 ## Example Configuration
 
+<details>
+<summary>Authentik Example</summary>
+
+### Authentik Example
+
 Here's an example of OAuth configured for Authentik:
 
-![OAuth Settings](./img/oauth-settings.png)
+Configuration of Authorised redirect URIs (Authentik OAuth2/OpenID Provider)
+
+<img src={require('./img/authentik-redirect-uris-example.webp').default} width='70%' title="Authentik authorised redirect URIs" />
+
+Configuration of OAuth in Immich System Settings
+
+| Setting                      | Value                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Issuer URL                   | `https://example.immich.app/application/o/immich/.well-known/openid-configuration` |
+| Client ID                    | AFCj2rM1f4rps**\*\*\*\***\***\*\*\*\***lCLEum6hH9...                               |
+| Client Secret                | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw...                |
+| Scope                        | openid email profile                                                               |
+| Signing Algorithm            | RS256                                                                              |
+| Storage Label Claim          | preferred_username                                                                 |
+| Storage Quota Claim          | immich_quota                                                                       |
+| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                          |
+| Button Text                  | Sign in with Authentik (optional)                                                  |
+| Auto Register                | Enabled (optional)                                                                 |
+| Auto Launch                  | Enabled (optional)                                                                 |
+| Mobile Redirect URI Override | Disable                                                                            |
+| Mobile Redirect URI          |                                                                                    |
+
+</details>
+
+<details>
+<summary>Google Example</summary>
+
+### Google Example
+
+Here's an example of OAuth configured for Google:
+
+Configuration of Authorised redirect URIs (Google Console)
+
+<img src={require('./img/google-redirect-uris-example.webp').default} width='50%' title="Google authorised redirect URIs" />
+
+Configuration of OAuth in Immich System Settings
+
+| Setting                      | Value                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Issuer URL                   | [https://accounts.google.com](https://accounts.google.com)                                             |
+| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com                           |
+| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                                                        |
+| Scope                        | openid email profile                                                                                   |
+| Signing Algorithm            | RS256                                                                                                  |
+| Storage Label Claim          | preferred_username                                                                                     |
+| Storage Quota Claim          | immich_quota                                                                                           |
+| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                                              |
+| Button Text                  | Sign in with Google (optional)                                                                         |
+| Auto Register                | Enabled (optional)                                                                                     |
+| Auto Launch                  | Enabled                                                                                                |
+| Mobile Redirect URI Override | Enabled (required)                                                                                     |
+| Mobile Redirect URI          | [https://demo.immich.app/api/oauth/mobile-redirect](https://demo.immich.app/api/oauth/mobile-redirect) |
+
+</details>
 
 [oidc]: https://openid.net/connect/

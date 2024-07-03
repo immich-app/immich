@@ -12,6 +12,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
   final Duration hideControlsTimer;
   final bool showControls;
   final bool showDownloadingIndicator;
+  final bool loopVideo;
 
   const VideoPlayerViewer({
     super.key,
@@ -21,6 +22,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
     required this.hideControlsTimer,
     required this.showControls,
     required this.showDownloadingIndicator,
+    required this.loopVideo,
   });
 
   @override
@@ -36,6 +38,7 @@ class VideoPlayerViewer extends HookConsumerWidget {
       ),
       showControls: showControls && !isMotionVideo,
       hideControlsTimer: hideControlsTimer,
+      loopVideo: loopVideo,
     );
 
     return Chewie(

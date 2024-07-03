@@ -11,6 +11,7 @@
   import { cloneDeep } from 'lodash-es';
   import { createEventDispatcher, onMount } from 'svelte';
   import type { SettingsEventType } from './admin-settings';
+  import { t } from 'svelte-i18n';
 
   export let config: SystemConfigDto;
 
@@ -34,13 +35,13 @@
 
       config = cloneDeep(newConfig);
       savedConfig = cloneDeep(newConfig);
-      notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
+      notificationController.show({ message: $t('settings_saved'), type: NotificationType.Info });
 
       await loadConfig();
 
       dispatch('save');
     } catch (error) {
-      handleError(error, 'Unable to save settings');
+      handleError(error, $t('errors.unable_to_save_settings'));
     }
   };
 
@@ -52,7 +53,7 @@
     }
 
     notificationController.show({
-      message: 'Reset settings to the recent saved settings',
+      message: $t('admin.reset_settings_to_recent_saved'),
       type: NotificationType.Info,
     });
   };
@@ -63,7 +64,7 @@
     }
 
     notificationController.show({
-      message: 'Reset settings to default',
+      message: $t('admin.reset_settings_to_default'),
       type: NotificationType.Info,
     });
   };
