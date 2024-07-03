@@ -84,8 +84,6 @@ class BaseSearchDto {
   @Optional()
   state?: string;
 
-  @IsString()
-  @IsNotEmpty()
   @Optional()
   country?: string;
 
