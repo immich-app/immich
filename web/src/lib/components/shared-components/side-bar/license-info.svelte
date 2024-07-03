@@ -1,12 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { serverInfo } from '$lib/stores/server-info.store';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { mdiChartPie, mdiInformation, mdiInformationBox, mdiInformationOutline, mdiLicense } from '@mdi/js';
-  import { t, locale } from 'svelte-i18n';
+  import { mdiInformationOutline, mdiLicense } from '@mdi/js';
 
-  let isLicensed = true;
+  let isLicensed = false;
+  let showMessage = false;
 </script>
 
 <div class="dark:text-immich-dark-fg">
@@ -14,8 +11,14 @@
     <hr class="my-4 ml-5 dark:border-immich-dark-gray" />
   </div>
   <div class="server-status grid grid-cols-[64px_auto]">
-    <div class="pb-11 pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
-      <Icon path={mdiLicense} size="26" />
+    <div class="pb-11 pl-5 pr-6 group-hover:sm:pb-0 md:pb-0">
+      <Icon
+        path={mdiLicense}
+        size="26"
+        class={isLicensed
+          ? 'text-immich-primary dark:text-immich-dark-primary'
+          : 'text-immich-dark-gray/75 dark:text-immich-gray/85'}
+      />
     </div>
 
     <!-- Sample -1  -->
@@ -59,14 +62,22 @@
         <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Licensed</p>
       {:else}
         <div class="flex text-sm gap-1">
-          <p class="font-medium text-immich-dark-gray/75">Unlicensed</p>
+          <p class="font-medium text-immich-dark-gray/75 dark:text-immich-gray/85">Unlicensed</p>
           <p>-</p>
-          <div class="text-immich-primary">
-            <button class="relative flex place-items-center gap-[2px] flex-shrink-0 font-semibold underline"
+          <div class="">
+            <button
+              class="text-immich-primary dark:text-immich-dark-primary relative flex place-items-center gap-[2px] flex-shrink-0 font-semibold underline"
               >Buy
-              <Icon path={mdiInformationOutline}></Icon>
 
-              {#if false}
+              <span
+                role="contentinfo"
+                on:mouseenter={() => (showMessage = true)}
+                on:mouseleave={() => (showMessage = false)}
+              >
+                <Icon path={mdiInformationOutline}></Icon>
+              </span>
+
+              {#if showMessage}
                 <div
                   class="w-[150px] absolute bottom-5 -right-8 bg-white text-black border p-3 border-immich-primary rounded-3xl z-10"
                 >
