@@ -7,6 +7,7 @@ import readLine from 'node:readline';
 import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { NaturalEarthCountriesEntity } from 'src/entities/ne_countries.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -28,6 +29,7 @@ export class MapRepository implements IMapRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(NaturalEarthCountriesEntity) private naturalEarthCountriesRepository: Repository<NaturalEarthCountriesEntity>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -134,7 +136,30 @@ export class MapRepository implements IMapRepository {
       this.logger.warn(
         `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
       );
-      return null;
+      
+      const ne_response = await this.naturalEarthCountriesRepository
+        .createQueryBuilder('ne_10m_admin_0_countries_dump')
+        .where('poly @> point (:longitude, :latitude)', point)
+        .limit(1)
+        .getOne();
+
+        if (!ne_response) {
+          this.logger.warn(
+            `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+          );
+
+          return null;
+        }
+
+        this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'name,', 'type', 'sovereignt', 'admin', 'name_long'], 2)}`);
+
+        const { name_long } = ne_response;
+        const country = name_long;
+        const state = null;
+        const city = null;
+    
+        return { country, state, city };
+
     }
 
     this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);

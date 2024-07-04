@@ -10,6 +10,7 @@ import { AuditEntity } from 'src/entities/audit.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { NaturalEarthCountriesEntity } from 'src/entities/ne_countries.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { MoveEntity } from 'src/entities/move.entity';
@@ -37,6 +38,7 @@ export const entities = [
   ExifEntity,
   FaceSearchEntity,
   GeodataPlacesEntity,
+  NaturalEarthCountriesEntity,
   MemoryEntity,
   MoveEntity,
   PartnerEntity,
