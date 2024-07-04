@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { Theme, defaultLang } from '$lib/constants';
+import { getPreferredLocale } from '$lib/utils/i18n';
 import { persisted } from 'svelte-local-storage-store';
 import { get } from 'svelte/store';
 
@@ -42,7 +43,8 @@ export const locale = persisted<string | undefined>('locale', undefined, {
   },
 });
 
-export const lang = persisted('lang', defaultLang.code, {
+const preferredLocale = browser ? getPreferredLocale() : undefined;
+export const lang = persisted<string>('lang', preferredLocale || defaultLang.code, {
   serializer: {
     parse: (text) => text,
     stringify: (object) => object ?? '',
