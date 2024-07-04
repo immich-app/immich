@@ -144,7 +144,6 @@ export function searchAssetBuilder(
   if (withDeleted) {
     builder.withDeleted();
   }
-  console.log(builder.getQueryAndParameters());
 
   return builder;
 }
