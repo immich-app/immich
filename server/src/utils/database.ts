@@ -54,7 +54,7 @@ export function searchAssetBuilder(
       } else {
         builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });
       }
-    };
+    }
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
