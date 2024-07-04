@@ -47,16 +47,13 @@ export function searchAssetBuilder(
       ? builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo')
       : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
 
-    // AI generated, not sure I trust it
-    builder.andWhere(new Brackets(qb => {
-      Object.entries(exifInfo).forEach(([key, value]) => {
-        if (value === null) {
-          qb.orWhere(`exifInfo.${key} IS NULL`);
-        } else {
-          qb.orWhere(`exifInfo.${key} = :${key}`, { [key]: value });
-        }
-      });
-    }));
+    for (const [key, value] of Object.entries(exifInfo)) {
+      if (value === null) {
+        builder.andWhere(`exifInfo.${key} IS NULL`);
+      } else {
+        builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });
+      }
+    };
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
@@ -147,6 +144,7 @@ export function searchAssetBuilder(
   if (withDeleted) {
     builder.withDeleted();
   }
+  console.log(builder.getQueryAndParameters());
 
   return builder;
 }
