@@ -1689,41 +1689,6 @@
         ]
       }
     },
-    "/assets/stack/parent": {
-      "put": {
-        "operationId": "updateStackParent",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStackParentDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
     "/assets/statistics": {
       "get": {
         "operationId": "getAssetStatistics",
@@ -5564,6 +5529,366 @@
         ]
       }
     },
+    "/stacks": {
+      "delete": {
+        "operationId": "deleteStacks",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "post": {
+        "operationId": "createStack",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
+    "/stacks/{id}": {
+      "delete": {
+        "operationId": "deleteStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "get": {
+        "operationId": "getStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "put": {
+        "operationId": "updateStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
+    "/stacks/{id}/assets": {
+      "delete": {
+        "operationId": "removeAssetFromStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "put": {
+        "operationId": "addAssetsToStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
+    "/stacks/{id}/merge": {
+      "post": {
+        "operationId": "mergeStacks",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
     "/sync/delta-sync": {
       "post": {
         "operationId": "getDeltaSync",
@@ -7462,13 +7787,6 @@
           },
           "longitude": {
             "type": "number"
-          },
-          "removeParent": {
-            "type": "boolean"
-          },
-          "stackParentId": {
-            "format": "uuid",
-            "type": "string"
           }
         },
         "required": [
@@ -8008,18 +8326,11 @@
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
-          "stack": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
           "stackCount": {
-            "nullable": true,
+            "default": 0,
             "type": "integer"
           },
-          "stackParentId": {
-            "nullable": true,
+          "stackId": {
             "type": "string"
           },
           "tags": {
@@ -8064,7 +8375,6 @@
           "originalPath",
           "ownerId",
           "resized",
-          "stackCount",
           "thumbhash",
           "type",
           "updatedAt"
@@ -10599,6 +10909,53 @@
         ],
         "type": "object"
       },
+      "StackCreateDto": {
+        "properties": {
+          "assetIds": {
+            "description": "first asset becomes the primary",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "StackResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assets",
+          "id",
+          "primaryAssetId"
+        ],
+        "type": "object"
+      },
+      "StackUpdateDto": {
+        "properties": {
+          "primaryAssetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "SystemConfigDto": {
         "properties": {
           "ffmpeg": {
@@ -11433,23 +11790,6 @@
         },
         "required": [
           "inTimeline"
-        ],
-        "type": "object"
-      },
-      "UpdateStackParentDto": {
-        "properties": {
-          "newParentId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "oldParentId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "newParentId",
-          "oldParentId"
         ],
         "type": "object"
       },

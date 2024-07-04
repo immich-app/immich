@@ -34,7 +34,7 @@ export class TimelineService {
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.repository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     return !auth.sharedLink || auth.sharedLink?.showExif
-      ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
+      ? assets.map((asset) => mapAsset(asset, { auth }))
       : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
   }
 

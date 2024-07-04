@@ -37,7 +37,7 @@ export class SyncService {
       lastId: dto.lastId,
       limit: dto.limit,
     });
-    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false, withStack: true }));
+    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false }));
   }
 
   async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
@@ -75,14 +75,7 @@ export class SyncService {
       upserted: upserted
         // do not return archived assets for partner users
         .filter((a) => a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && !a.isArchived))
-        .map((a) =>
-          mapAsset(a, {
-            auth,
-            stripMetadata: false,
-            // ignore stacks for non partner users
-            withStack: a.ownerId === auth.user.id,
-          }),
-        ),
+        .map((a) => mapAsset(a, { auth, stripMetadata: false })),
       deleted,
     };
     return result;

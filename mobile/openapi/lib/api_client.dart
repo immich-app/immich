@@ -474,6 +474,12 @@ class ApiClient {
           return SmartInfoResponseDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
+        case 'StackCreateDto':
+          return StackCreateDto.fromJson(value);
+        case 'StackResponseDto':
+          return StackResponseDto.fromJson(value);
+        case 'StackUpdateDto':
+          return StackUpdateDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
@@ -544,8 +550,6 @@ class ApiClient {
           return UpdateLibraryDto.fromJson(value);
         case 'UpdatePartnerDto':
           return UpdatePartnerDto.fromJson(value);
-        case 'UpdateStackParentDto':
-          return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UsageByUserDto':

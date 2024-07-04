@@ -2,7 +2,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('asset_stack')
-export class AssetStackEntity {
+export class StackEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

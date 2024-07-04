@@ -2,10 +2,10 @@ import { BadRequestException, InternalServerErrorException, NotFoundException } 
 import { UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -15,10 +15,10 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newAssetStackRepositoryMock } from 'test/repositories/asset-stack.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newAssetStackRepositoryMock } from 'test/repositories/stack.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
@@ -37,7 +37,7 @@ describe(UserService.name, () => {
 
   let albumMock: Mocked<IAlbumRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let stackMock: Mocked<IAssetStackRepository>;
+  let stackMock: Mocked<IStackRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;

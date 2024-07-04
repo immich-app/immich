@@ -107,7 +107,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
-*AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /assets/stack/parent | 
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
@@ -203,6 +202,14 @@ Class | Method | HTTP request | Description
 *SharedLinksApi* | [**removeSharedLink**](doc//SharedLinksApi.md#removesharedlink) | **DELETE** /shared-links/{id} | 
 *SharedLinksApi* | [**removeSharedLinkAssets**](doc//SharedLinksApi.md#removesharedlinkassets) | **DELETE** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**updateSharedLink**](doc//SharedLinksApi.md#updatesharedlink) | **PATCH** /shared-links/{id} | 
+*StacksApi* | [**addAssetsToStack**](doc//StacksApi.md#addassetstostack) | **PUT** /stacks/{id}/assets | 
+*StacksApi* | [**createStack**](doc//StacksApi.md#createstack) | **POST** /stacks | 
+*StacksApi* | [**deleteStack**](doc//StacksApi.md#deletestack) | **DELETE** /stacks/{id} | 
+*StacksApi* | [**deleteStacks**](doc//StacksApi.md#deletestacks) | **DELETE** /stacks | 
+*StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
+*StacksApi* | [**mergeStacks**](doc//StacksApi.md#mergestacks) | **POST** /stacks/{id}/merge | 
+*StacksApi* | [**removeAssetFromStack**](doc//StacksApi.md#removeassetfromstack) | **DELETE** /stacks/{id}/assets | 
+*StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
@@ -395,6 +402,9 @@ Class | Method | HTTP request | Description
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [StackCreateDto](doc//StackCreateDto.md)
+ - [StackResponseDto](doc//StackResponseDto.md)
+ - [StackUpdateDto](doc//StackUpdateDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
@@ -430,7 +440,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
- - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
