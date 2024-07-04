@@ -22,7 +22,7 @@ import { LibraryEntity } from 'src/entities/library.entity';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdate } from 'src/interfaces/event.interface';
+import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -102,7 +102,7 @@ export class LibraryService implements OnEvents {
     });
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdate) {
+  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
