@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 
-// Redirect URL = app.immich://
+// Redirect URL = app.immich:/// i.e., {scheme}://{resource}
 
 class OAuthService {
   final ApiService _apiService;
@@ -18,7 +18,7 @@ class OAuthService {
     await _apiService.resolveAndSetEndpoint(serverUrl);
 
     final dto = await _apiService.oAuthApi.startOAuth(
-      OAuthConfigDto(redirectUri: '$callbackUrlScheme:/'),
+      OAuthConfigDto(redirectUri: '$callbackUrlScheme:///'),
     );
     return dto?.url;
   }
