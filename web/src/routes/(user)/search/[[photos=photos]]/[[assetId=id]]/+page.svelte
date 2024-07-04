@@ -259,6 +259,8 @@
             {#await getPersonName(value) then personName}
               {personName}
             {/await}
+          {:else if value === null}
+            {$t('unknown')}
           {:else}
             {value}
           {/if}

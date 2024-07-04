@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
   export interface SearchLocationFilter {
-    country?: string;
+    country?: string | null;
     state?: string;
     city?: string;
   }
@@ -28,13 +28,17 @@
     countries = await getSearchSuggestions({
       $type: SearchSuggestionType.Country,
     });
-
+    countries.push($t('unknown'));
     if (filters.country && !countries.includes(filters.country)) {
       filters.country = undefined;
     }
   }
 
-  async function updateStates(country?: string) {
+  async function updateStates(country?: string | null) {
+    if (country === null) {
+      states = [];
+      return;
+    }
     states = await getSearchSuggestions({
       $type: SearchSuggestionType.State,
       country,
@@ -45,7 +49,12 @@
     }
   }
 
-  async function updateCities(country?: string, state?: string) {
+  async function updateCities(country?: string | null, state?: string) {
+    if (country === null) {
+      cities = [];
+      return;
+    }
+
     cities = await getSearchSuggestions({
       $type: SearchSuggestionType.City,
       country,
@@ -65,10 +74,12 @@
     <div class="w-full">
       <Combobox
         label={$t('country')}
-        on:select={({ detail }) => (filters.country = detail?.value)}
+        on:select={({ detail }) => (filters.country = detail?.value === $t('unknown') ? null : detail?.value)}
         options={toComboBoxOptions(countries)}
         placeholder={$t('search_country')}
-        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
+        selectedOption={filters.country || filters.country === null
+          ? { label: filters?.country || $t('unknown'), value: filters.country ?? $t('unknown') }
+          : undefined}
       />
     </div>
 
