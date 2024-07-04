@@ -902,7 +902,7 @@
   "permanent_deletion_warning_setting_description": "Afficher un avertissement avant la suppression définitive d'un média",
   "permanently_delete": "Supprimer définitivement",
   "permanently_delete_assets_count": "Suppression définitive de {count, plural, one {média} other {médias}}",
-  "permanently_delete_assets_prompt": "Êtes-vous sûr de vouloir supprimer définitivement {count, plural, one {ce média ?} other {ces <b>#</b> médias ?}} Cela {count, plural, one {le} other {les}} supprimera aussi de son/ses album(s).",
+  "permanently_delete_assets_prompt": "Êtes-vous sûr de vouloir supprimer définitivement {count, plural, one {ce média ?} other {ces <b>#</b> médias ?}} Cela {count, plural, one {le} other {les}} supprimera aussi de {count, plural, one {son (ses)} other {leur(s)}} album(s).",
   "permanently_deleted_asset": "Média supprimé définitivement",
   "permanently_deleted_assets": "{count, plural, one {# média supprimé} other {# médias supprimés}} définitivement",
   "permanently_deleted_assets_count": "{count, plural, one {# média définitivement supprimé} other {# médias définitivement supprimés}}",
