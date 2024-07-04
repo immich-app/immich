@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AssetStackEntity } from 'src/entities/asset-stack.entity';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { StackEntity } from 'src/entities/stack.entity';
+import { IStackRepository } from 'src/interfaces/stack.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { In, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
-export class AssetStackRepository implements IAssetStackRepository {
-  constructor(@InjectRepository(AssetStackEntity) private repository: Repository<AssetStackEntity>) {}
+export class StackRepository implements IStackRepository {
+  constructor(@InjectRepository(StackEntity) private repository: Repository<StackEntity>) {}
 
-  create(entity: Partial<AssetStackEntity>) {
+  create(entity: Partial<StackEntity>) {
     return this.save(entity);
   }
 
@@ -18,11 +18,11 @@ export class AssetStackRepository implements IAssetStackRepository {
     await this.repository.delete(id);
   }
 
-  update(entity: Partial<AssetStackEntity>) {
+  update(entity: Partial<StackEntity>) {
     return this.save(entity);
   }
 
-  async getById(id: string): Promise<AssetStackEntity | null> {
+  async getById(id: string): Promise<StackEntity | null> {
     return this.repository.findOne({
       where: {
         id,
@@ -41,7 +41,7 @@ export class AssetStackRepository implements IAssetStackRepository {
     await this.repository.delete({ id: In([...stackIds]) });
   }
 
-  private async save(entity: Partial<AssetStackEntity>) {
+  private async save(entity: Partial<StackEntity>) {
     const { id } = await this.repository.save(entity);
     return this.repository.findOneOrFail({
       where: {
