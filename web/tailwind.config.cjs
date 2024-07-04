@@ -24,7 +24,6 @@ module.exports = {
         'immich-dark-warning': 'rgb(var(--immich-dark-warning) / <alpha-value>)',
       },
       fontFamily: {
-        'immich-title': ['Snowburst One', 'cursive'],
         'immich-mono': ['Overpass Mono', 'monospace'],
       },
       spacing: {

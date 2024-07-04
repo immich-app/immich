@@ -21,9 +21,6 @@ module.exports = {
         'immich-dark-fg': '#e5e7eb',
         'immich-dark-gray': '#212121',
       },
-      fontFamily: {
-        'immich-title': ['Snowburst One', 'cursive'],
-      },
     },
   },
   plugins: [],
