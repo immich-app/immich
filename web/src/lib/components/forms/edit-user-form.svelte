@@ -54,7 +54,6 @@
 
   const resetPassword = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'confirm-reset-password',
       prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }),
     });
 

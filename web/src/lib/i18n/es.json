@@ -24,7 +24,7 @@
   "add_to_album": "Añadir a un álbum",
   "add_to_shared_album": "Añadir a un álbum compartido",
   "added_to_archive": "Archivar",
-  "added_to_favorites": "Añadir a favoritos",
+  "added_to_favorites": "Añadido a favoritos",
   "added_to_favorites_count": "{count} añadido a favoritos",
   "admin": {
     "add_exclusion_pattern_description": "Añade patrones de exclusión. Puedes utilizar los caracteres *, ** y ? (globbing). Para ignorar los archivos en cualquier ruta llamada \"Raw\", utiliza \"**/Raw/**\". Para ignorar todos los archivos que terminan en \".tif\", utiliza \"**/*.tif\". Para ignorar una ruta desde la raíz, utiliza \"/carpeta/a/ignorar/**\".",
@@ -1112,7 +1112,7 @@
   "they_will_be_merged_together": "Se fusionarán entre sí",
   "time_based_memories": "Recuerdos basados en tiempo",
   "timezone": "Zona horaria",
-  "to_archive": "Al archivo",
+  "to_archive": "Archivar",
   "to_change_password": "Cambiar contraseña",
   "to_favorite": "A los favoritos",
   "to_login": "Iniciar Sesión",

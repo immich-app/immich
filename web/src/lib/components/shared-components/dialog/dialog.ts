@@ -6,7 +6,6 @@ type DialogActions = {
 };
 
 type DialogOptions = {
-  id?: string;
   title?: string;
   prompt?: string;
   confirmText?: string;
@@ -22,7 +21,7 @@ function createDialogWrapper() {
   const dialog = writable<Dialog | undefined>();
 
   async function show(options: DialogOptions) {
-    return new Promise((resolve) => {
+    return new Promise<boolean>((resolve) => {
       const newDialog: Dialog = {
         ...options,
         onConfirm: () => {

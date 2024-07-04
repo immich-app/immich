@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240625@sha256:3899114e00a55cb4138b02e1a5da4d2bd8d401a30c72a706134e0d5567c296eb as dev
+FROM ghcr.io/immich-app/base-server-dev:20240702@sha256:5d675b67826ac643ee64ecf2ef78adac1e491eef9a845f30818a1c0d1338ecc8 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -41,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240625@sha256:19d095589b75bee07c4fd72f53a25c527cd6c5b78162a723d2d8db8e7cd51483
+FROM ghcr.io/immich-app/base-server-prod:20240702@sha256:419a873052cf2f012ed1977e4a771a38e68ce64ea1c66047cc06232b1a79bafe
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -80,4 +80,4 @@ EXPOSE 3001
 ENTRYPOINT ["tini", "--", "/bin/bash"]
 CMD ["start.sh"]
 
-HEALTHCHECK CMD npm run healthcheck
+HEALTHCHECK CMD immich-healthcheck

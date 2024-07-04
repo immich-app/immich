@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+node /usr/src/app/dist/utils/healthcheck.js
