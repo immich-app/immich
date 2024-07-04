@@ -1,4 +1,5 @@
 {
+  "about": "Om",
   "account": "Konto",
   "account_settings": "Kontoindstillinger",
   "acknowledge": "Anerkend",
@@ -28,7 +29,8 @@
     "add_exclusion_pattern_description": "Tilføj udelukkelsesmønstre. Globbing ved hjælp af *, ** og ? understøttes. For at ignorere alle filer i enhver mappe med navnet \"Raw\", brug \"**/Raw/**\". For at ignorere alle filer, der slutter på \".tif\", brug \"**/*.tif\". For at ignorere en absolut sti, brug \"/sti/til/ignoreret/**\".",
     "authentication_settings": "Godkendelsesindstillinger",
     "authentication_settings_description": "Administrer adgangskode, OAuth og andre godkendelsesindstillinger",
-    "authentication_settings_disable_all": "Er du sikker på du vil deaktivere alle login muligheder? Login vil blive helt deaktiveret",
+    "authentication_settings_disable_all": "Er du sikker på at du vil deaktivere alle login muligheder? Login vil blive helt deaktiveret.",
+    "authentication_settings_reenable": "Brug en <link>server-kommando</link> for at genaktivere.",
     "background_task_job": "Baggrundsopgaver",
     "check_all": "Tjek Alle",
     "cleared_jobs": "Ryddet jobs til: {job}",
@@ -48,6 +50,7 @@
     "face_detection": "Ansigtsopdagelse",
     "face_detection_description": "Genkend ansigterne i aktiver via maskinlæring. For videoer er det kun miniaturebilledet som tages hensyn til. \"Alle\" (gen-)behandler alle aktiver. \"Mangler\" sætter aktiver i kø, som ikke er blevet behandlet endnu. Opdagede ansigter vil blive sat i kø til Ansigtsgenkendelse efter Ansigtsopdagelse er færdig, hvilket grupperer dem til eksisterende eller nye personer.",
     "facial_recognition_job_description": "Grupper opdagede ansigter i personer. Dette trin kører efter Ansigtsopdagelse er færdig. \"Alle\" (gen-)klumper alle ansigter sammen. \"Mangler\" sætter ansigter i kø, som ikke har en person tildelt.",
+    "failed_job_command": "Kommando {command} mislykkedes for job: {job}",
     "force_delete_user_warning": "ADVARSEL: Dette vil øjeblikkeligt fjerne brugeren og alle Billeder/Videoer. Dette kan ikke fortrydes, og filerne kan ikke gendannes.",
     "forcing_refresh_library_files": "Tvinger genopfriskning af alle biblioteksfiler",
     "image_format_description": "WebP producerer mindre filer end JPEG, men er langsommere at komprimere.",
