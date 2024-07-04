@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
-import { Between, Brackets, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
+import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
