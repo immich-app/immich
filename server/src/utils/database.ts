@@ -38,6 +38,7 @@ export function searchAssetBuilder(
 
   const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
   const hasExifQuery = Object.keys(exifInfo).length > 0;
+
   if (options.withExif && !hasExifQuery) {
     builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
   }
