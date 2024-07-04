@@ -3,7 +3,7 @@
 This page contains details about using OAuth in Immich.
 
 :::tip
-Unable to set `app.immich:/` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.
+Unable to set `app.immich:///` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.
 :::
 
 ## Overview
@@ -30,7 +30,7 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
    The **Sign-in redirect URIs** should include:
 
-   - `app.immich:/` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
+   - `app.immich:///` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
    - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
    - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
 
@@ -38,7 +38,7 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 
    Mobile
 
-   - `app.immich:/` (You **MUST** include this for iOS and Android mobile apps to work properly)
+   - `app.immich:///` (You **MUST** include this for iOS and Android mobile apps to work properly)
 
    Localhost
 
@@ -96,16 +96,16 @@ When Auto Launch is enabled, the login page will automatically redirect the user
 
 ## Mobile Redirect URI
 
-The redirect URI for the mobile app is `app.immich:/`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:
+The redirect URI for the mobile app is `app.immich:///`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:
 
-1. Configure an http(s) endpoint to forwards requests to `app.immich:/`
+1. Configure an http(s) endpoint to forwards requests to `app.immich:///`
 2. Whitelist the new endpoint as a valid redirect URI with your provider.
 3. Specify the new endpoint as the `Mobile Redirect URI Override`, in the OAuth settings.
 
 With these steps in place, you should be able to use OAuth from the [Mobile App](/docs/features/mobile-app.mdx) without a custom scheme redirect URI.
 
 :::info
-Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:/`, and can be used for step 1.
+Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///`, and can be used for step 1.
 :::
 
 ## Example Configuration

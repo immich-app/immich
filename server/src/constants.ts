@@ -51,7 +51,7 @@ export const resourcePaths = {
   },
 };
 
-export const MOBILE_REDIRECT = 'app.immich:/';
+export const MOBILE_REDIRECT = 'app.immich:///';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
 
 export enum AuthType {
