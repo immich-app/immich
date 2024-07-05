@@ -51,6 +51,13 @@ test.describe('Shared Links', () => {
     await page.getByText('DOWNLOADING', { exact: true }).waitFor();
   });
 
+  test('download all from shared link', async ({ page }) => {
+    await page.goto(`/share/${sharedLink.key}`);
+    await page.getByRole('heading', { name: 'Test Album' }).waitFor();
+    await page.getByRole('button', { name: 'Download' }).click();
+    await page.getByText('DOWNLOADING', { exact: true }).waitFor();
+  });
+
   test('enter password for a shared link', async ({ page }) => {
     await page.goto(`/share/${sharedLinkPassword.key}`);
     await page.getByPlaceholder('Password').fill('test-password');
