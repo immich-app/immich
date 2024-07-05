@@ -109,8 +109,8 @@
                   curve
                   shadow
                   url={getPeopleThumbnailUrl(person)}
-                  altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                  title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  altText={$getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  title={$getPersonNameWithHiddenValue(person.name, person.isHidden)}
                   widthStyle="90px"
                   heightStyle="90px"
                   thumbhash={null}
@@ -118,7 +118,7 @@
                 />
               </div>
 
-              <p class="mt-1 truncate font-medium" title={getPersonNameWithHiddenValue(person.name, person.isHidden)}>
+              <p class="mt-1 truncate font-medium" title={$getPersonNameWithHiddenValue(person.name, person.isHidden)}>
                 {person.name}
               </p>
             </button>
