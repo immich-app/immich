@@ -1,7 +1,7 @@
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
+import { IStackRepository } from 'src/interfaces/stack.interface';
 import { Mocked, vitest } from 'vitest';
 
-export const newAssetStackRepositoryMock = (): Mocked<IAssetStackRepository> => {
+export const newStackRepositoryMock = (): Mocked<IStackRepository> => {
   return {
     create: vitest.fn(),
     update: vitest.fn(),

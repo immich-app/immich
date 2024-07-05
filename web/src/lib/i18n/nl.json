@@ -63,7 +63,7 @@
     "image_preview_resolution": "Voorbeeldresolutie",
     "image_preview_resolution_description": "Gebruikt bij het tonen van een enkele foto en voor machine learning. Hogere resoluties kunnen meer detail behouden maar duren langer om te verwerken, hebben hogere bestandsgrootte, en kunnen de applicatie langzamer maken.",
     "image_quality": "Kwaliteit",
-    "image_quality_description": "Afbeeldingskwaliteit van 1-100. Een hoger getal zorgt voor betere kwaliteit foto's, maar produceert grotere bestanden. Dit heeft effect op voorbeeldfoto's en thumbnails.",
+    "image_quality_description": "Afbeeldingskwaliteit van 1-100. Een hoger getal zorgt voor een betere fotokwaliteit, maar produceert grotere bestanden. Dit heeft effect op voorbeeldfoto's en thumbnails.",
     "image_settings": "Afbeeldings instellingen",
     "image_settings_description": "Beheer de kwaliteit en resolutie van gegenereerde afbeeldingen",
     "image_thumbnail_format": "Thumbnail bestandsformaat",

@@ -384,7 +384,7 @@ export const immichAppConfig: ConfigModuleOptions = {
   }),
 };
 
-function parseRedisConfig(): RedisOptions {
+export function parseRedisConfig(): RedisOptions {
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl && redisUrl.startsWith('ioredis://')) {
     try {
