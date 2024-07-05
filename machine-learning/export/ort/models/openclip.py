@@ -26,6 +26,17 @@ class OpenCLIPModelConfig:
         self.sequence_length = open_clip_cfg["text_cfg"]["context_length"]
 
 
+def to_torchscript(model_name: str) -> torch.jit.ScriptModule:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        model = MultilingualCLIP.from_pretrained(model_name, cache_dir=tmpdir)
+
+        model.eval()
+        for param in model.parameters():
+            param.requires_grad_(False)
+        
+        return model
+
+
 def to_onnx(
     model_cfg: OpenCLIPModelConfig,
     output_dir_visual: Path | str | None = None,
@@ -51,7 +62,7 @@ def to_onnx(
 
             save_config(open_clip.get_model_preprocess_cfg(model), output_dir_visual / "preprocess_cfg.json")
             save_config(text_vision_cfg, output_dir_visual.parent / "config.json")
-            export_image_encoder(model, model_cfg, visual_path)
+            _image_encoder_to_onnx(model, model_cfg, visual_path)
 
             optimize(visual_path)
 
@@ -61,11 +72,11 @@ def to_onnx(
 
             tokenizer_name = text_vision_cfg["text_cfg"].get("hf_tokenizer_name", "openai/clip-vit-base-patch32")
             AutoTokenizer.from_pretrained(tokenizer_name).save_pretrained(output_dir_textual)
-            export_text_encoder(model, model_cfg, textual_path)
+            _text_encoder_to_onnx(model, model_cfg, textual_path)
             optimize(textual_path)
 
 
-def export_image_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, output_path: Path | str) -> None:
+def _image_encoder_to_onnx(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, output_path: Path | str) -> None:
     output_path = Path(output_path)
 
     def encode_image(image: torch.Tensor) -> torch.Tensor:
@@ -89,7 +100,7 @@ def export_image_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, 
         )
 
 
-def export_text_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, output_path: Path | str) -> None:
+def _text_encoder_to_onnx(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, output_path: Path | str) -> None:
     output_path = Path(output_path)
 
     def encode_text(text: torch.Tensor) -> torch.Tensor:
