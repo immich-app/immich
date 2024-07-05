@@ -3,7 +3,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 
@@ -251,21 +251,6 @@ export class AlbumRepository implements IAlbumRepository {
       .getRawMany<{ assetId: string }>();
 
     return new Set(results.map(({ assetId }) => assetId));
-  }
-
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  hasAsset(asset: AlbumAsset): Promise<boolean> {
-    return this.repository.exist({
-      where: {
-        id: asset.albumId,
-        assets: {
-          id: asset.assetId,
-        },
-      },
-      relations: {
-        assets: true,
-      },
-    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
