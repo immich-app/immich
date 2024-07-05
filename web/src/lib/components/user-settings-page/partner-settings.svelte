@@ -2,6 +2,7 @@
   import {
     createPartner,
     getPartners,
+    PartnerDirection,
     removePartner,
     updatePartner,
     type PartnerResponseDto,
@@ -40,8 +41,8 @@
     partners = [];
 
     const [sharedBy, sharedWith] = await Promise.all([
-      getPartners({ direction: 'shared-by' }),
-      getPartners({ direction: 'shared-with' }),
+      getPartners({ direction: PartnerDirection.SharedBy }),
+      getPartners({ direction: PartnerDirection.SharedWith }),
     ]);
 
     for (const candidate of sharedBy) {
