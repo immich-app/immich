@@ -1,4 +1,5 @@
-import type { AssetResponseDto } from '@immich/sdk';
+import { getFormatterSync } from '$lib/utils/i18n';
+import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -40,24 +41,33 @@ export function getAltText(asset: AssetResponseDto) {
     return asset.exifInfo.description;
   }
 
-  let altText = 'Image taken';
-  if (asset.exifInfo?.city && asset.exifInfo.country) {
-    altText += ` in ${asset.exifInfo.city}, ${asset.exifInfo.country}`;
+  const $t = getFormatterSync();
+  let altText = $t('image_taken', { values: { isVideo: asset.type === AssetTypeEnum.Video } });
+
+  if (asset.exifInfo?.city && asset.exifInfo?.country) {
+    const placeText = $t('image_alt_text_place', {
+      values: { city: asset.exifInfo.city, country: asset.exifInfo.country },
+    });
+    altText += ` ${placeText}`;
   }
 
   const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
-  if (names.length == 1) {
-    altText += ` with ${names[0]}`;
-  }
-  if (names.length > 1 && names.length <= 3) {
-    altText += ` with ${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-  }
-  if (names.length > 3) {
-    altText += ` with ${names.slice(0, 2).join(', ')}, and ${names.length - 2} others`;
+  if (names.length > 0) {
+    const namesText = $t('image_alt_text_people', {
+      values: {
+        count: names.length,
+        person1: names[0],
+        person2: names[1],
+        person3: names[2],
+        others: names.length > 3 ? names.length - 2 : 0,
+      },
+    });
+    altText += ` ${namesText}`;
   }
 
   const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-  altText += ` on ${date}`;
+  const dateText = $t('image_alt_text_date', { values: { date } });
+  altText += ` ${dateText}`;
 
   return altText;
 }
