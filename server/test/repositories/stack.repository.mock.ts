@@ -7,6 +7,5 @@ export const newStackRepositoryMock = (): Mocked<IStackRepository> => {
     update: vitest.fn(),
     delete: vitest.fn(),
     getById: vitest.fn(),
-    deleteAll: vitest.fn(),
   };
 };
