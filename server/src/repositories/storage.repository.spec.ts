@@ -202,7 +202,7 @@ describe(StorageRepository.name, () => {
           .filter((entry) => entry[1])
           .map(([file]) => file);
 
-        expect(actual.sort()).toEqual(expected.sort());
+        expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
   });
