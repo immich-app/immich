@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -32,13 +32,6 @@ export class StackRepository implements IStackRepository {
         assets: true,
       },
     });
-  }
-
-  async deleteAll(userId: string): Promise<void> {
-    // TODO add owner to stack entity
-    const stacks = await this.repository.find({ where: { primaryAsset: { ownerId: userId } } });
-    const stackIds = new Set(stacks.map((stack) => stack.id));
-    await this.repository.delete({ id: In([...stackIds]) });
   }
 
   private async save(entity: Partial<StackEntity>) {
