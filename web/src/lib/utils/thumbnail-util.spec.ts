@@ -11,6 +11,9 @@ describe('getAltText', () => {
     const asset = {
       exifInfo: { description: 'description' },
     } as AssetResponseDto;
+    const mockFormatter = getMockFormatter();
+
+    expect(mockFormatter).not.toHaveBeenCalled();
     expect(getAltText(asset)).toEqual('description');
   });
 
