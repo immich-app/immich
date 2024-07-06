@@ -91,6 +91,7 @@
     "logging_settings": "",
     "machine_learning_clip_model": "",
     "machine_learning_duplicate_detection": "",
+    "machine_learning_duplicate_detection_enabled": "啟用重複檢測",
     "machine_learning_duplicate_detection_enabled_description": "",
     "machine_learning_duplicate_detection_setting_description": "",
     "machine_learning_enabled_description": "",

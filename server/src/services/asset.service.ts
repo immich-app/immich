@@ -23,7 +23,6 @@ import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -37,6 +36,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -54,7 +54,7 @@ export class AssetService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IStackRepository) private stackRepository: IStackRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
@@ -211,14 +211,15 @@ export class AssetService {
       ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
 
       if (stack) {
-        await this.assetStackRepository.update({
+        await this.stackRepository.update({
           id: stack.id,
           primaryAssetId: primaryAsset.id,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       } else {
-        stack = await this.assetStackRepository.create({
+        stack = await this.stackRepository.create({
           primaryAssetId: primaryAsset.id,
+          ownerId: primaryAsset.ownerId,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       }
@@ -233,13 +234,11 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    const stackIdsToDelete = await Promise.all(
-      stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)),
-    );
+    const stackIdsToDelete = await Promise.all(stackIdsToCheckForDelete.map((id) => this.stackRepository.getById(id)));
     const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
-    await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
+    await Promise.all(stacksToDelete.map((as) => this.stackRepository.delete(as.id)));
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
@@ -289,12 +288,12 @@ export class AssetService {
       const stackAssetIds = asset.stack.assets.map((a) => a.id);
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
-        await this.assetStackRepository.update({
+        await this.stackRepository.update({
           id: asset.stack.id,
           primaryAssetId: newPrimaryAssetId,
         });
       } else {
-        await this.assetStackRepository.delete(asset.stack.id);
+        await this.stackRepository.delete(asset.stack.id);
       }
     }
 
@@ -365,7 +364,7 @@ export class AssetService {
       // Get all children of old parent
       childIds.push(oldParent.id, ...(oldParent.stack?.assets.map((a) => a.id) ?? []));
     }
-    await this.assetStackRepository.update({
+    await this.stackRepository.update({
       id: oldParent.stackId,
       primaryAssetId: newParentId,
     });

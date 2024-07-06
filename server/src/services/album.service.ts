@@ -146,8 +146,8 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: true });
 
     if (dto.albumThumbnailAssetId) {
-      const valid = await this.albumRepository.hasAsset({ albumId: id, assetId: dto.albumThumbnailAssetId });
-      if (!valid) {
+      const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
+      if (results.size === 0) {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }

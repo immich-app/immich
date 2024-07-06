@@ -6,13 +6,12 @@ import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
-import { mapPreferences, UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
+import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
-import { mapUser, mapUserAdmin, UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -30,7 +29,6 @@ export class UserService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IAssetStackRepository) private stackRepository: IAssetStackRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -213,7 +211,6 @@ export class UserService {
     }
 
     this.logger.warn(`Removing user from database: ${user.id}`);
-    await this.stackRepository.deleteAll(user.id);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
