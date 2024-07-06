@@ -255,13 +255,11 @@ describe(AssetMediaService.name, () => {
         }
 
         it('should be sorted (valid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(valid).toEqual([...valid].sort());
+          expect(valid).toEqual(valid.toSorted());
         });
 
         it('should be sorted (invalid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(invalid).toEqual([...invalid].sort());
+          expect(invalid).toEqual(invalid.toSorted());
         });
       });
     }
