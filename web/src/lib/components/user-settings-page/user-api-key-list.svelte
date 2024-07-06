@@ -60,11 +60,7 @@
   };
 
   const handleDelete = async (key: ApiKeyResponseDto) => {
-    const isConfirmed = await dialogController.show({
-      id: 'delete-api-key',
-      prompt: $t('delete_api_key_prompt'),
-    });
-
+    const isConfirmed = await dialogController.show({ prompt: $t('delete_api_key_prompt') });
     if (!isConfirmed) {
       return;
     }

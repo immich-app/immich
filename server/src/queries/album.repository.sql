@@ -585,45 +585,6 @@ WHERE
   "albums_assets"."albumsId" = $1
   AND "albums_assets"."assetsId" IN ($2)
 
--- AlbumRepository.getAssetIds (no assets)
-SELECT
-  "albums_assets"."assetsId" AS "assetId"
-FROM
-  "albums_assets_assets" "albums_assets"
-WHERE
-  "albums_assets"."albumsId" = $1
-
--- AlbumRepository.hasAsset
-SELECT
-  1 AS "row_exists"
-FROM
-  (
-    SELECT
-      1 AS dummy_column
-  ) "dummy_table"
-WHERE
-  EXISTS (
-    SELECT
-      1
-    FROM
-      "albums" "AlbumEntity"
-      LEFT JOIN "albums_assets_assets" "AlbumEntity_AlbumEntity__AlbumEntity_assets" ON "AlbumEntity_AlbumEntity__AlbumEntity_assets"."albumsId" = "AlbumEntity"."id"
-      LEFT JOIN "assets" "AlbumEntity__AlbumEntity_assets" ON "AlbumEntity__AlbumEntity_assets"."id" = "AlbumEntity_AlbumEntity__AlbumEntity_assets"."assetsId"
-      AND (
-        "AlbumEntity__AlbumEntity_assets"."deletedAt" IS NULL
-      )
-    WHERE
-      (
-        (
-          ("AlbumEntity"."id" = $1)
-          AND ((("AlbumEntity__AlbumEntity_assets"."id" = $2)))
-        )
-      )
-      AND ("AlbumEntity"."deletedAt" IS NULL)
-  )
-LIMIT
-  1
-
 -- AlbumRepository.addAssetIds
 INSERT INTO
   "albums_assets_assets" ("albumsId", "assetsId")

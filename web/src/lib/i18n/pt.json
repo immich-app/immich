@@ -7,7 +7,7 @@
   "actions": "Ações",
   "active": "Ativo",
   "activity": "Atividade",
-  "activity_changed": "A atividade está {enabled, select, true {enabled} other {disabled}}",
+  "activity_changed": "A atividade está {activada,selecionada , verdadeira{activada} outra{desactivada}}",
   "add": "Adicionar",
   "add_a_description": "Adicionar uma descrição",
   "add_a_location": "Adicionar localização",

@@ -51,7 +51,7 @@
     "@opentelemetry/exporter-prometheus": "^0.52.0",
     "@opentelemetry/sdk-node": "^0.52.0",
     "@react-email/components": "^0.0.19",
-    "@socket.io/postgres-adapter": "^0.3.1",
+    "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^5.1.1",

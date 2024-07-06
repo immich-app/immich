@@ -317,12 +317,9 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const s = (count: number) => (count === 1 ? '' : 's');
-
-export const memoryLaneTitle = (yearsAgo: number) => {
-  const $t = get(t);
-  return $t('years_ago', { values: { years: yearsAgo } });
-};
+export const memoryLaneTitle = derived(t, ($t) => {
+  return (yearsAgo: number) => $t('years_ago', { values: { years: yearsAgo } });
+});
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
   try {

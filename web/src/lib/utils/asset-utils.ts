@@ -21,6 +21,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -100,8 +101,8 @@ export const downloadBlob = (data: Blob, filename: string) => {
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
-  const $preferences = get(preferences);
-  const dto = { ...options, archiveSize: $preferences.download.archiveSize };
+  const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
+  const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
 
   const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: getKey() }));
   if (error) {

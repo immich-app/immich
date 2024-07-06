@@ -152,10 +152,6 @@ export const utils = {
 
       const sql: string[] = [];
 
-      if (tables.includes('asset_stack')) {
-        sql.push('UPDATE "assets" SET "stackId" = NULL;');
-      }
-
       for (const table of tables) {
         if (table === 'system_metadata') {
           // prevent reverse geocoder from being re-initialized

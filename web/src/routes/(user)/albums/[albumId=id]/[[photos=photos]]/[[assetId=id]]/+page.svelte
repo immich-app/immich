@@ -340,7 +340,6 @@
 
   const handleRemoveAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'remove-album',
       prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
     });
 

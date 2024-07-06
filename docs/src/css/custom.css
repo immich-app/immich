@@ -8,7 +8,6 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap');
 
 html,
 button {
@@ -47,8 +46,4 @@ img {
 
 div[class^='announcementBar_'] {
   min-height: 2rem;
-}
-
-.navbar__brand .navbar__title {
-  @apply font-immich-title text-2xl font-normal text-immich-primary dark:text-immich-dark-primary;
 }

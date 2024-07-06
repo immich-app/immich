@@ -1,10 +1,17 @@
 import { AssetEntity } from 'src/entities/asset.entity';
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UserEntity } from 'src/entities/user.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('asset_stack')
-export class AssetStackEntity {
+export class StackEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  owner!: UserEntity;
+
+  @Column()
+  ownerId!: string;
 
   @OneToMany(() => AssetEntity, (asset) => asset.stack)
   assets!: AssetEntity[];

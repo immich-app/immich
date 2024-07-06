@@ -47,20 +47,11 @@
   let totalCount: number[] = [];
   let diskUsage: number[] = [];
   let diskUsageUnit: ByteUnit[] = [];
-
-  let confirmDeleteLibrary: LibraryResponseDto | null = null;
-  let deletedLibrary: LibraryResponseDto | null = null;
-
   let editImportPaths: number | null;
   let editScanSettings: number | null;
   let renameLibrary: number | null;
-
   let updateLibraryIndex: number | null;
-
-  let deleteAssetCount = 0;
-
   let dropdownOpen: boolean[] = [];
-
   let toCreateLibrary = false;
 
   onMount(async () => {
@@ -124,30 +115,6 @@
       await readLibraryList();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_library'));
-    }
-  };
-
-  const handleDelete = async () => {
-    if (confirmDeleteLibrary) {
-      deletedLibrary = confirmDeleteLibrary;
-    }
-
-    if (!deletedLibrary) {
-      return;
-    }
-
-    try {
-      await deleteLibrary({ id: deletedLibrary.id });
-      notificationController.show({
-        message: $t('admin.library_deleted'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_library'));
-    } finally {
-      confirmDeleteLibrary = null;
-      deletedLibrary = null;
-      await readLibraryList();
     }
   };
 
@@ -260,38 +227,40 @@
     }
   };
 
-  const onDeleteLibraryClicked = async (library: LibraryResponseDto, index: number) => {
+  const handleDelete = async (library: LibraryResponseDto, index: number) => {
     closeAll();
 
     if (!library) {
       return;
     }
 
-    const isConfirmedLibrary = await dialogController.show({
-      id: 'delete-library',
+    const isConfirmed = await dialogController.show({
       prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
     });
 
-    if (!isConfirmedLibrary) {
+    if (!isConfirmed) {
       return;
     }
 
     await refreshStats(index);
-    if (totalCount[index] > 0) {
-      deleteAssetCount = totalCount[index];
-
-      const isConfirmedLibraryAssetCount = await dialogController.show({
-        id: 'delete-library-assets',
-        prompt: $t('admin.confirm_delete_library_assets', { values: { count: deleteAssetCount } }),
+    const assetCount = totalCount[index];
+    if (assetCount > 0) {
+      const isConfirmed = await dialogController.show({
+        prompt: $t('admin.confirm_delete_library_assets', { values: { count: assetCount } }),
       });
 
-      if (!isConfirmedLibraryAssetCount) {
+      if (!isConfirmed) {
         return;
       }
-      await handleDelete();
-    } else {
-      deletedLibrary = library;
-      await handleDelete();
+    }
+
+    try {
+      await deleteLibrary({ id: library.id });
+      notificationController.show({ message: $t('admin.library_deleted'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_remove_library'));
+    } finally {
+      await readLibraryList();
     }
   };
 </script>
@@ -404,7 +373,7 @@
                       text={$t('delete_library')}
                       activeColor="bg-red-200"
                       textColor="text-red-600"
-                      onClick={() => onDeleteLibraryClicked(library, index)}
+                      onClick={() => handleDelete(library, index)}
                     />
                   </ButtonContextMenu>
                 </td>
