@@ -13,10 +13,6 @@ export async function getFormatter() {
   return get(t);
 }
 
-export function getFormatterSync() {
-  return get(t);
-}
-
 // https://github.com/kaisermann/svelte-i18n/blob/780932a3e1270d521d348aac8ba03be9df309f04/src/runtime/stores/locale.ts#L11
 function getSubLocales(refLocale: string) {
   return refLocale

@@ -1,5 +1,6 @@
-import { getFormatterSync } from '$lib/utils/i18n';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -41,7 +42,7 @@ export function getAltText(asset: AssetResponseDto) {
     return asset.exifInfo.description;
   }
 
-  const $t = getFormatterSync();
+  const $t = get(t);
   let altText = $t('image_taken', { values: { isVideo: asset.type === AssetTypeEnum.Video } });
 
   if (asset.exifInfo?.city && asset.exifInfo?.country) {
