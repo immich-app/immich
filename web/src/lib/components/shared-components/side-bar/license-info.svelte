@@ -2,30 +2,22 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiInformationOutline, mdiLicense } from '@mdi/js';
 
-  let isLicensed = false;
+  let isLicensed = true;
   let showMessage = false;
 </script>
 
-<div class="license-status ml-4 py-3 px-2 border border-gray-300 dark:border-immich-dark-primary/40 mt-2 rounded-lg">
+<div class="license-status pl-4">
   {#if isLicensed}
-    <Icon
-      path={mdiLicense}
-      size="24"
-      class={isLicensed
-        ? 'text-immich-primary dark:text-immich-dark-primary'
-        : 'text-immich-dark-gray/75 dark:text-immich-gray/85'}
-    />
-    <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Licensed</p>
+    <div class="flex gap-1 mt-4 place-items-center">
+      <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
+      <p class="text-immich-primary dark:text-immich-dark-primary">Licensed</p>
+    </div>
   {:else}
-    <div class="flex justify-between place-items-center place-content-center">
+    <div
+      class="py-3 px-2 flex justify-between place-items-center place-content-center border border-gray-300 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-sm dark:bg-immich-dark-primary/10"
+    >
       <div class="flex place-items-center place-content-center gap-1">
-        <Icon
-          path={mdiLicense}
-          size="18"
-          class={isLicensed
-            ? 'text-immich-primary dark:text-immich-dark-primary'
-            : 'text-immich-dark-gray/75 dark:text-immich-gray/85'}
-        />
+        <Icon path={mdiLicense} size="18" class="text-immich-dark-gray/75 dark:text-immich-gray/85" />
         <p class="text-immich-dark-gray/75 dark:text-immich-gray">Unlicensed</p>
       </div>
 

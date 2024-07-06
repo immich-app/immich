@@ -142,9 +142,11 @@
     <StorageSpace />
   </div>
 
-  <LicenseInfo />
+  <div class="mb-2">
+    <LicenseInfo />
+  </div>
 
-  <div class="mt-2 mb-6">
+  <div class="mb-6">
     <ServerStatus />
   </div>
 </SideBarSection>
