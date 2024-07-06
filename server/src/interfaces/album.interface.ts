@@ -14,24 +14,11 @@ export interface AlbumInfoOptions {
   withAssets: boolean;
 }
 
-export interface AlbumAsset {
-  albumId: string;
-  assetId: string;
-}
-
-export interface AlbumAssets {
-  albumId: string;
-  assetIds: string[];
-}
-
 export interface IAlbumRepository extends IBulkAsset {
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
-  getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>>;
-  hasAsset(asset: AlbumAsset): Promise<boolean>;
   removeAsset(assetId: string): Promise<void>;
-  removeAssetIds(albumId: string, assetIds: string[]): Promise<void>;
   getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]>;
   getInvalidThumbnail(): Promise<string[]>;
   getOwned(ownerId: string): Promise<AlbumEntity[]>;

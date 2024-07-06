@@ -150,6 +150,7 @@ describe(DatabaseService.name, () => {
   for (const version of ['0.2.1', '0.2.0', '0.2.9']) {
     it(`should update the pgvecto.rs extension to ${version}`, async () => {
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
+      databaseMock.getExtensionVersion.mockResolvedValueOnce(void 0);
       databaseMock.getExtensionVersion.mockResolvedValue(version);
 
       await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
@@ -166,6 +167,7 @@ describe(DatabaseService.name, () => {
     it(`should update the pgvectors extension to ${version}`, async () => {
       process.env.DB_VECTOR_EXTENSION = 'pgvector';
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
+      databaseMock.getExtensionVersion.mockResolvedValueOnce(void 0);
       databaseMock.getExtensionVersion.mockResolvedValue(version);
 
       await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
@@ -190,10 +192,10 @@ describe(DatabaseService.name, () => {
     });
   }
 
-  for (const version of ['0.4.0', '1.0.0']) {
+  for (const version of ['0.4.0', '0.7.1', '0.7.2', '1.0.0']) {
     it(`should not upgrade pgvector to ${version}`, async () => {
       process.env.DB_VECTOR_EXTENSION = 'pgvector';
-      databaseMock.getExtensionVersion.mockResolvedValue('0.5.0');
+      databaseMock.getExtensionVersion.mockResolvedValue('0.7.2');
       databaseMock.getAvailableExtensionVersion.mockResolvedValue(version);
 
       await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();

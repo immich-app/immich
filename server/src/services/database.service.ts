@@ -98,8 +98,10 @@ export class DatabaseService implements OnEvents {
         throw error;
       }
 
+      const initialVersion = await this.databaseRepository.getExtensionVersion(extension);
       const availableVersion = await this.databaseRepository.getAvailableExtensionVersion(extension);
-      if (availableVersion && semver.satisfies(availableVersion, extensionRange)) {
+      const isAvailable = availableVersion && semver.satisfies(availableVersion, extensionRange);
+      if (isAvailable && (!initialVersion || semver.gt(availableVersion, initialVersion))) {
         try {
           this.logger.log(`Updating ${name} extension to ${availableVersion}`);
           const { restartRequired } = await this.databaseRepository.updateVectorExtension(extension, availableVersion);

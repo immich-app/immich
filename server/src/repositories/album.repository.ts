@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
-import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { setUnion } from 'src/utils/set';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 
 const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
@@ -215,6 +213,10 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssetIds(albumId: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
     await this.dataSource
       .createQueryBuilder()
       .delete()
@@ -233,42 +235,22 @@ export class AlbumRepository implements IAlbumRepository {
    * @param assetIds Optional list of asset IDs to filter on.
    * @returns Set of Asset IDs for the given album ID.
    */
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] }, { name: 'no assets', params: [DummyValue.UUID] })
-  async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
-    const query = this.dataSource
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @ChunkedSet({ paramIndex: 1 })
+  async getAssetIds(albumId: string, assetIds: string[]): Promise<Set<string>> {
+    if (assetIds.length === 0) {
+      return new Set();
+    }
+
+    const results = await this.dataSource
       .createQueryBuilder()
       .select('albums_assets.assetsId', 'assetId')
       .from('albums_assets_assets', 'albums_assets')
-      .where('"albums_assets"."albumsId" = :albumId', { albumId });
+      .where('"albums_assets"."albumsId" = :albumId', { albumId })
+      .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds })
+      .getRawMany<{ assetId: string }>();
 
-    if (!assetIds?.length) {
-      const result = await query.getRawMany();
-      return new Set(result.map((row) => row['assetId']));
-    }
-
-    return Promise.all(
-      _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        query
-          .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds: idChunk })
-          .getRawMany()
-          .then((result) => new Set(result.map((row) => row['assetId']))),
-      ),
-    ).then((results) => setUnion(...results));
-  }
-
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  hasAsset(asset: AlbumAsset): Promise<boolean> {
-    return this.repository.exist({
-      where: {
-        id: asset.albumId,
-        assets: {
-          id: asset.assetId,
-        },
-      },
-      relations: {
-        assets: true,
-      },
-    });
+    return new Set(results.map(({ assetId }) => assetId));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
