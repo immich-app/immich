@@ -140,7 +140,9 @@ class TestBase:
             ignore_patterns=[],
         )
 
-    def test_throws_exception_if_model_path_does_not_exist(self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock) -> None:
+    def test_throws_exception_if_model_path_does_not_exist(
+        self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock
+    ) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = False
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
@@ -747,7 +749,9 @@ class TestLoad:
         mock_model.clear_cache.assert_not_called()
         mock_model.load.assert_not_called()
 
-    async def test_falls_back_to_onnx_if_other_format_does_not_exist(self, exception: mock.Mock, warning: mock.Mock) -> None:
+    async def test_falls_back_to_onnx_if_other_format_does_not_exist(
+        self, exception: mock.Mock, warning: mock.Mock
+    ) -> None:
         mock_model = mock.Mock(spec=InferenceModel)
         mock_model.model_name = "test_model_name"
         mock_model.model_type = ModelType.VISUAL
