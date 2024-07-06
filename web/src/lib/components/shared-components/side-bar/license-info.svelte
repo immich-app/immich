@@ -1,8 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiInformationOutline, mdiLicense } from '@mdi/js';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
-  let isLicensed = true;
+  let isLicensed = false;
   let showMessage = false;
 </script>
 
@@ -24,7 +25,7 @@
       <div>
         <button
           type="button"
-          class="text-immich-primary dark:text-immich-dark-primary relative flex place-items-center gap-[2px] font-medium"
+          class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium"
           >Buy
 
           <span
@@ -34,18 +35,18 @@
           >
             <Icon path={mdiInformationOutline}></Icon>
           </span>
-
-          {#if showMessage}
-            <div
-              class="w-[150px] absolute bottom-5 -right-8 bg-white text-black border p-3 border-immich-primary rounded-3xl z-10"
-            >
-              <p class="text-sm my-2 text-balance font-medium">
-                You have been using Immich for approximately 3000 days
-              </p>
-            </div>
-          {/if}
         </button>
       </div>
     </div>
   {/if}
 </div>
+
+<Portal target="body">
+  {#if showMessage}
+    <div
+      class="w-[150px] absolute bottom-[75px] left-[255px] bg-white text-black border p-3 border-immich-primary rounded-3xl z-10"
+    >
+      <p class="text-sm my-2 text-balance font-medium">You have been using Immich for approximately 3000 days</p>
+    </div>
+  {/if}
+</Portal>
