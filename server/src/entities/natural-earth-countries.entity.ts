@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, PrimaryColumn, Polygon } from 'typeorm';
 
-@Entity('ne_10m_admin_0_countries_test', { synchronize: false })
-export class NaturalEarthCountriesEntityTest {
+@Entity('naturalearth_countries', { synchronize: false })
+export class NaturalEarthCountriesEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 

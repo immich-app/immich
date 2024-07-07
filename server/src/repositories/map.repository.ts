@@ -4,11 +4,10 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath, naturalEarthPath } from 'src/constants';
+import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath, naturalEarthCountriesPath } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { NaturalEarthCountriesEntity } from 'src/entities/ne_countries.entity';
-import { NaturalEarthCountriesEntityTest } from 'src/entities/ne_countries_test.entity';
+import { NaturalEarthCountriesEntity } from 'src/entities/natural-earth-countries.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -31,7 +30,6 @@ export class MapRepository implements IMapRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @InjectRepository(NaturalEarthCountriesEntity) private naturalEarthCountriesRepository: Repository<NaturalEarthCountriesEntity>,
-    @InjectRepository(NaturalEarthCountriesEntityTest) private naturalEarthCountriesRepositoryTest: Repository<NaturalEarthCountriesEntityTest>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -39,11 +37,12 @@ export class MapRepository implements IMapRepository {
     this.logger.setContext(MapRepository.name);
   }
 
+  private async init_geodata(datePath: string, ): Promise<void> {
+    
+  }
+
   async init(): Promise<void> {
-    
-    this.logger.log('Initializing Natural Earth repository');
-    await this.importNaturalEarthdata();
-    
+        
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile(geodataDatePath, 'utf8');
 
@@ -54,7 +53,8 @@ export class MapRepository implements IMapRepository {
     }
 
     await this.importGeodata();
-    
+    await this.importNaturalEarthCountries();
+
     await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
       lastUpdate: geodataDate,
       lastImportFileName: citiesFile,
@@ -144,8 +144,8 @@ export class MapRepository implements IMapRepository {
       );
       
       const ne_response = await this.naturalEarthCountriesRepository
-        .createQueryBuilder('ne_10m_admin_0_countries_dump')
-        .where('poly @> point (:longitude, :latitude)', point)
+        .createQueryBuilder('naturalearth_countries')
+        .where('coordinates @> point (:longitude, :latitude)', point)
         .limit(1)
         .getOne();
 
@@ -157,10 +157,10 @@ export class MapRepository implements IMapRepository {
           return null;
         }
 
-        this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'name,', 'type', 'sovereignt', 'admin', 'name_long'], 2)}`);
+        this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
-        const { name_long } = ne_response;
-        const country = name_long;
+        const { admin, admin_a3 } = ne_response;
+        const country = getName(admin_a3, 'en') ?? null;
         const state = null;
         const city = null;
     
@@ -182,15 +182,15 @@ export class MapRepository implements IMapRepository {
     return `(${pointsString})`;
   }
 
-  private async importNaturalEarthdata() {
+  private async importNaturalEarthCountries() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
     try {
       await queryRunner.startTransaction();
 
-      await queryRunner.manager.clear(NaturalEarthCountriesEntityTest);
-      await this.insertExtractedGeoJSONDetailsToDB(queryRunner, naturalEarthPath);
+      await queryRunner.manager.clear(NaturalEarthCountriesEntity);
+      await this.loadNaturalEarthCountriesFromFile(naturalEarthCountriesPath);
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -203,11 +203,7 @@ export class MapRepository implements IMapRepository {
   }
 
 
-  public async insertExtractedGeoJSONDetailsToDB(
-    queryRunner: QueryRunner,
-    filePath: string,
-  ) {
-
+  public async loadNaturalEarthCountriesFromFile(filePath: string) {
     const fileContent = await readFile(filePath, 'utf8');
     const geoJSONData = JSON.parse(fileContent);
 
@@ -215,46 +211,25 @@ export class MapRepository implements IMapRepository {
       console.error('Invalid GeoJSON FeatureCollection');
       return;
     }
-    const featureRepository = this.dataSource.getRepository(NaturalEarthCountriesEntityTest)
-    // let bufferNaturalEarth: QueryDeepPartialEntity<NaturalEarthCountriesEntityTest>[] = [];
-    let nextId = 1;
+    const featureRepository = this.dataSource.getRepository(NaturalEarthCountriesEntity)
 
     for (const feature of geoJSONData.features) {      
-
-      if (feature.geometry.type === 'Polygon') {
-        const featureRecord = new NaturalEarthCountriesEntityTest();
-        featureRecord.coordinates = this.transformCoordinatesToPolygon(feature.geometry.coordinates[0]);
+      for (const polygon of feature.geometry.coordinates) {
+        const featureRecord = new NaturalEarthCountriesEntity();
         featureRecord.admin = feature.properties.ADMIN
         featureRecord.admin_a3 = feature.properties.ADM0_A3;
         featureRecord.type = feature.properties.TYPE;
-        // featureRecord.id = nextId++; // Manually incrementing the id
-        // bufferNaturalEarth.push(featureRecord);
-        featureRepository.save(featureRecord)
-      } else if (feature.geometry.type === 'MultiPolygon') {
-        for (const polygon of feature.geometry.coordinates) {
-          const featureRecord = new NaturalEarthCountriesEntityTest();
+        
+        if (feature.geometry.type === 'MultiPolygon') {
           featureRecord.coordinates = this.transformCoordinatesToPolygon(polygon[0]);
-          featureRecord.admin = feature.properties.ADMIN
-          featureRecord.admin_a3 = feature.properties.ADM0_A3;
-          featureRecord.type = feature.properties.TYPE;
-          // featureRecord.id = nextId++; // Manually incrementing the id
-          // bufferNaturalEarth.push(featureRecord);
           featureRepository.save(featureRecord)
+        } else if (feature.geometry.type === 'Polygon') {
+          featureRecord.coordinates = this.transformCoordinatesToPolygon(polygon);
+          featureRepository.save(featureRecord);
+          break;
         }
       }
-
-      // bufferNaturalEarth.push(featureRecord);
-      // if (bufferNaturalEarth.length > 1000) {
-      //   await queryRunner.manager.upsert(NaturalEarthCountriesEntityTest, bufferNaturalEarth, ['id']);
-      //   bufferNaturalEarth = [];
-      // }
-
-
-      // await featureRepository.save(featureRecord);
     }
-    // await queryRunner.manager.upsert(NaturalEarthCountriesEntityTest, bufferNaturalEarth, ['id']);
-
-    console.log('Extracted details from GeoJSON features have been saved to the database.');
   }
 
 
