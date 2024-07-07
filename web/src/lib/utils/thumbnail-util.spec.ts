@@ -14,7 +14,9 @@ describe('getAltText', () => {
       exifInfo: { description: 'description' },
     } as AssetResponseDto;
 
-    expect(getAltText(asset)).toEqual('description');
+    getAltText.subscribe((fn) => {
+      expect(fn(asset)).toEqual('description');
+    });
   });
 
   it('includes the city and country', () => {
@@ -23,7 +25,9 @@ describe('getAltText', () => {
       localDateTime: '2024-01-01T12:00:00.000Z',
     } as AssetResponseDto;
 
-    expect(getAltText(asset)).toEqual('Image taken in city, country on January 1, 2024');
+    getAltText.subscribe((fn) => {
+      expect(fn(asset)).toEqual('Image taken in city, country on January 1, 2024');
+    });
   });
 
   // convert the people tests into an it.each
@@ -44,7 +48,9 @@ describe('getAltText', () => {
       people,
     } as AssetResponseDto;
 
-    expect(getAltText(asset)).toBe(expected);
+    getAltText.subscribe((fn) => {
+      expect(fn(asset)).toEqual(expected);
+    });
   });
 
   it('handles videos, location, people, and date', () => {
@@ -55,8 +61,8 @@ describe('getAltText', () => {
       type: AssetTypeEnum.Video,
     } as AssetResponseDto;
 
-    expect(getAltText(asset)).toBe(
-      'Video taken in city, country with person1, person2, and 3 others on January 1, 2024',
-    );
+    getAltText.subscribe((fn) => {
+      expect(fn(asset)).toEqual('Video taken in city, country with person1, person2, and 3 others on January 1, 2024');
+    });
   });
 });
