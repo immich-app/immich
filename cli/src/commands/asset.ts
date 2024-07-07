@@ -84,7 +84,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
+export const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
@@ -124,6 +124,7 @@ const checkForDuplicates = async (files: string[], { concurrency, skipHash }: Up
   for (const items of chunk(files, concurrency)) {
     await queue.push(items);
   }
+
   await queue.drained();
 
   progressBar.stop();
@@ -142,7 +143,7 @@ const checkForDuplicates = async (files: string[], { concurrency, skipHash }: Up
   return { newFiles, duplicates };
 };
 
-const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptionsDto): Promise<Asset[]> => {
+export const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptionsDto): Promise<Asset[]> => {
   if (files.length === 0) {
     console.log('All assets were already uploaded, nothing to do.');
     return [];
