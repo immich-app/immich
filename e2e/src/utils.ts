@@ -70,7 +70,7 @@ export const immichAdmin = (args: string[]) =>
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
-  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const promise = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
   const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
@@ -86,7 +86,7 @@ const executeCommand = (command: string, args: string[]) => {
     });
   });
 
-  return deferred;
+  return { promise, child };
 };
 
 let client: pg.Client | null = null;
