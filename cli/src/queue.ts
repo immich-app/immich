@@ -1,7 +1,7 @@
 import * as fastq from 'fastq';
 import { uniqueId } from 'lodash-es';
 
-export type Task<T> = {
+export type Task<T, R> = {
   readonly id: string;
   status: 'idle' | 'processing' | 'succeeded' | 'failed';
   data: T;
@@ -9,7 +9,7 @@ export type Task<T> = {
   count: number;
   // TODO: Could be useful to adding progress property.
   // TODO: Could be useful to adding start_at/end_at/duration properties.
-  // TODO: Could be useful to adding result property.
+  result: undefined | R;
 };
 
 export type QueueOptions = {
@@ -34,8 +34,8 @@ export const defaultQueueOptions = {
  * @template R - The type of the worker output data.
  */
 export class Queue<T, R> {
-  private readonly queue: fastq.queueAsPromised<string, R>;
-  private readonly store = new Map<string, Task<T>>();
+  private readonly queue: fastq.queueAsPromised<string, Task<T, R>>;
+  private readonly store = new Map<string, Task<T, R>>();
   readonly options: ComputedQueueOptions;
   readonly worker: (data: T) => Promise<R>;
 
@@ -47,16 +47,24 @@ export class Queue<T, R> {
   constructor(worker: (data: T) => Promise<R>, options?: QueueOptions) {
     this.options = { ...defaultQueueOptions, ...options };
     this.worker = worker;
-    this.store = new Map<string, Task<T>>();
+    this.store = new Map<string, Task<T, R>>();
     this.queue = this.buildQueue();
   }
 
-  get tasks(): Task<T>[] {
-    const tasks: Task<T>[] = [];
+  get tasks(): Task<T, R>[] {
+    const tasks: Task<T, R>[] = [];
     for (const task of this.store.values()) {
       tasks.push(task);
     }
     return tasks;
+  }
+
+  getTask(id: string): Task<T, R> {
+    const task = this.store.get(id);
+    if (!task) {
+      throw new Error(`Task with id ${id} not found`);
+    }
+    return task;
   }
 
   /**
@@ -75,27 +83,23 @@ export class Queue<T, R> {
    * @returns Promise<void> - A Promise that will be fulfilled (rejected) when the task is completed successfully (unsuccessfully).
    * This promise could be ignored as it will not lead to a `unhandledRejection`.
    */
-  async push(data: T): Promise<void> {
+  async push(data: T): Promise<Task<T, R>> {
     const id = uniqueId();
-    const task: Task<T> = { id, status: 'idle', error: undefined, count: 0, data };
+    const task: Task<T, R> = { id, status: 'idle', error: undefined, count: 0, data, result: undefined };
     this.store.set(id, task);
-    // From fastq documentation: This promise could be ignored as it will not lead to a 'unhandledRejection'.
-    await this.queue.push(id);
+    return this.queue.push(id);
   }
 
   // TODO: Support more function delegation to fastq.
 
-  private buildQueue(): fastq.queueAsPromised<string, R> {
+  private buildQueue(): fastq.queueAsPromised<string, Task<T, R>> {
     return fastq.promise((id: string) => {
-      const task = this.store.get(id);
-      if (!task) {
-        throw new Error(`Task with id ${id} not found`);
-      }
+      const task = this.getTask(id);
       return this.work(task);
     }, this.options.concurrency);
   }
 
-  private async work(task: Task<T>): Promise<R> {
+  private async work(task: Task<T, R>): Promise<Task<T, R>> {
     task.count += 1;
     task.error = undefined;
     task.status = 'processing';
@@ -103,12 +107,12 @@ export class Queue<T, R> {
       console.log('[task] processing:', task);
     }
     try {
-      const result = await this.worker(task.data);
+      task.result = await this.worker(task.data);
       task.status = 'succeeded';
       if (this.options.verbose) {
         console.log('[task] succeeded:', task);
       }
-      return result;
+      return task;
     } catch (error) {
       task.error = error;
       task.status = 'failed';
@@ -119,11 +123,9 @@ export class Queue<T, R> {
         if (this.options.verbose) {
           console.log('[task] retry:', task);
         }
-        // From fastq documentation: This promise could be ignored as it will not lead to a 'unhandledRejection'.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        return this.queue.push(task.id);
+        return this.work(task);
       }
-      throw error;
+      return task;
     }
   }
 }
