@@ -61,6 +61,7 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  dropdown_search: ^5.0.6
 
   openapi:
     path: openapi
