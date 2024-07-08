@@ -39,7 +39,7 @@
     } else if (width === 'narrow') {
       modalWidth = 'w-[28rem]';
     } else {
-      modalWidth = 'sm:max-w-lg';
+      modalWidth = 'sm:max-w-4xl';
     }
   }
 </script>

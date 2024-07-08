@@ -4,10 +4,21 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import LicenseModal from '$lib/components/shared-components/license-modal.svelte';
 
   let isLicensed = false;
   let showMessage = false;
+  let isOpen = false;
+
+  const openLicenseModal = () => {
+    isOpen = true;
+    showMessage = false;
+  };
 </script>
+
+{#if isOpen}
+  <LicenseModal onClose={() => (isOpen = false)} />
+{/if}
 
 <div class="license-status pl-4 text-sm">
   {#if isLicensed}
@@ -26,6 +37,7 @@
 
       <div>
         <button
+          on:click={openLicenseModal}
           type="button"
           class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium"
           >Buy
@@ -63,7 +75,7 @@
         >. Please considering purchasing a license to support the continued development of the service
       </p>
       <div class="mt-3">
-        <Button size="sm" fullwidth>Buy license</Button>
+        <Button size="sm" fullwidth on:click={openLicenseModal}>Buy license</Button>
       </div>
     </div>
   {/if}

@@ -50,7 +50,7 @@
 Allow rendering a component in a different part of the DOM.
 
 ### Props
-- `target` - HTMLElement i.e "body", "html"
+- `target` - HTMLElement i.e "body", "html", default is "body"
 
 ### Default Slot
 Used for every occurrence of an HTML tag in a message
