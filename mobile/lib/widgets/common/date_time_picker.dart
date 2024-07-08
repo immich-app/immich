@@ -73,7 +73,6 @@ class _DateTimePicker extends HookWidget {
   // returns a list of location<name> along with it's offset in duration
   List<_TimeZoneOffset> getAllTimeZones() {
     return tz.timeZoneDatabase.locations.values
-        .where((l) => !l.currentTimeZone.abbreviation.contains("0"))
         .map(_TimeZoneOffset.fromLocation)
         .sorted()
         .toList();
