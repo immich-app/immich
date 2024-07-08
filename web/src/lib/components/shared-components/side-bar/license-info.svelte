@@ -1,7 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiInformationOutline, mdiLicense } from '@mdi/js';
+  import { mdiClose, mdiInformationOutline, mdiLicense } from '@mdi/js';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   let isLicensed = false;
   let showMessage = false;
@@ -28,11 +30,7 @@
           class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium"
           >Buy
 
-          <span
-            role="contentinfo"
-            on:mouseenter={() => (showMessage = true)}
-            on:mouseleave={() => (showMessage = false)}
-          >
+          <span role="contentinfo" on:mouseenter={() => (showMessage = true)}>
             <Icon path={mdiInformationOutline}></Icon>
           </span>
         </button>
@@ -44,9 +42,29 @@
 <Portal target="body">
   {#if showMessage}
     <div
-      class="w-[150px] absolute bottom-[75px] left-[255px] bg-white text-black border p-3 border-immich-primary rounded-3xl z-10"
+      class="w-[265px] absolute bottom-[75px] left-[255px] bg-white dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-4 py-5"
     >
-      <p class="my-2 text-balance font-medium">You have been using Immich for approximately 3000 days</p>
+      <div class="flex justify-between place-items-center">
+        <Icon path={mdiLicense} size="44" class="text-immich-dark-gray/75 dark:text-immich-gray" />
+        <CircleIconButton
+          icon={mdiClose}
+          on:click={() => {
+            showMessage = false;
+          }}
+          title="Close"
+          size="18"
+          class="text-immich-dark-gray/85 dark:text-immich-gray"
+        />
+      </div>
+      <h1 class="text-lg font-medium my-3">You are running an Unlicensed version of Immich</h1>
+      <p class="text-immich-dark-gray/80 dark:text-immich-gray text-balance">
+        You have been using Immich for approximately <span
+          class="text-immich-primary dark:text-immich-dark-primary font-semibold">500 days</span
+        >. Please considering purchasing a license to support the continued development of the service
+      </p>
+      <div class="mt-3">
+        <Button size="sm" fullwidth>Buy license</Button>
+      </div>
     </div>
   {/if}
 </Portal>
