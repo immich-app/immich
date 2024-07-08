@@ -928,7 +928,7 @@
   "previous_memory": "Souvenir précédent",
   "previous_or_next_photo": "Photo précédente ou suivante",
   "primary": "Primaire",
-  "profile_image_of_user": "Image de profil de {title}",
+  "profile_image_of_user": "Image de profil de {user}",
   "profile_picture_set": "Photo de profil définie.",
   "public_album": "Album public",
   "public_share": "Partage public",
