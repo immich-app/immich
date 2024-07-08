@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240702@sha256:5d675b67826ac643ee64ecf2ef78adac1e491eef9a845f30818a1c0d1338ecc8 as dev
+FROM ghcr.io/immich-app/base-server-dev:20240708@sha256:2a9e3231c34493cb861299d475c84c031e7f04519dbc895bbebb5017d479a3cb as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -41,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240702@sha256:419a873052cf2f012ed1977e4a771a38e68ce64ea1c66047cc06232b1a79bafe
+FROM ghcr.io/immich-app/base-server-prod:20240708@sha256:0af3a5bb036c9a4b6a5a51becaa6e94fe182f6bc97480d57e8f2e6f994bfa453
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -50,7 +50,7 @@ ENV NODE_ENV=production \
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
-COPY --from=web /usr/src/app/build ./www
+COPY --from=web /usr/src/app/build /build/www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
 COPY server/start*.sh ./

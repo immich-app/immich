@@ -27,13 +27,28 @@ export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
-const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
-
 export const citiesFile = 'cities500.txt';
-export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
-export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
-export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
-export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
+
+const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+
+const folders = {
+  geodata: join(buildFolder, 'geodata'),
+  web: join(buildFolder, 'www'),
+};
+
+export const resourcePaths = {
+  lockFile: join(buildFolder, 'build-lock.json'),
+  geodata: {
+    dateFile: join(folders.geodata, 'geodata-date.txt'),
+    admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
+    admin2: join(folders.geodata, 'admin2Codes.txt'),
+    cities500: join(folders.geodata, citiesFile),
+  },
+  web: {
+    root: folders.web,
+    indexHtml: join(folders.web, 'index.html'),
+  },
+};
 
 export const MOBILE_REDIRECT = 'app.immich:/';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
