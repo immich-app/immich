@@ -28,6 +28,7 @@
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { focusTrap } from '$lib/actions/focus-trap';
 
   export let data: PageData;
 
@@ -376,11 +377,14 @@
 </UserPageLayout>
 
 {#if selectHidden}
-  <!-- TODO: Add focus trap -->
   <section
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
     class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="manage-visibility-title"
+    use:focusTrap
   >
-    <ManagePeopleVisibility bind:people onClose={() => (selectHidden = false)} />
+    <ManagePeopleVisibility bind:people titleId="manage-visibility-title" onClose={() => (selectHidden = false)} />
   </section>
 {/if}

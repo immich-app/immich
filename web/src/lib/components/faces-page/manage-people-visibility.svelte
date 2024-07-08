@@ -25,12 +25,13 @@
 
   export let people: PersonResponseDto[];
   export let onClose: () => void;
+  export let titleId: string | undefined = undefined;
 
   let toggleVisibility = ToggleVisibility.SHOW_ALL;
   let showLoadingSpinner = false;
 
   $: personIsHidden = getPersonIsHidden(people);
-  $: toggleIcon = toggleIconOptions[toggleVisibility];
+  $: toggleButton = toggleButtonOptions[getNextVisibility(toggleVisibility)];
 
   const getPersonIsHidden = (people: PersonResponseDto[]) => {
     const personIsHidden: Record<string, boolean> = {};
@@ -40,11 +41,13 @@
     return personIsHidden;
   };
 
-  const toggleIconOptions: Record<ToggleVisibility, string> = {
-    [ToggleVisibility.HIDE_ALL]: mdiEyeOff,
-    [ToggleVisibility.HIDE_UNNANEMD]: mdiEyeSettings,
-    [ToggleVisibility.SHOW_ALL]: mdiEye,
-  };
+  $: toggleButtonOptions = ((): Record<ToggleVisibility, { icon: string; label: string }> => {
+    return {
+      [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
+      [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
+      [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
+    };
+  })();
 
   const getNextVisibility = (toggleVisibility: ToggleVisibility) => {
     if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
@@ -117,14 +120,14 @@
   <div class="flex items-center">
     <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
     <div class="flex gap-2 items-center">
-      <p class="ml-2">{$t('show_and_hide_people')}</p>
+      <p id={titleId} class="ml-2">{$t('show_and_hide_people')}</p>
       <p class="text-sm text-gray-400 dark:text-gray-600">({people.length.toLocaleString($locale)})</p>
     </div>
   </div>
   <div class="flex items-center justify-end">
     <div class="flex items-center md:mr-4">
       <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} on:click={handleResetVisibility} />
-      <CircleIconButton title={$t('toggle_visibility')} icon={toggleIcon} on:click={handleToggleVisibility} />
+      <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} on:click={handleToggleVisibility} />
     </div>
     {#if !showLoadingSpinner}
       <Button on:click={handleSaveVisibility} size="sm" rounded="lg">{$t('done')}</Button>
@@ -137,14 +140,17 @@
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
   <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
     {#each people as person, index (person.id)}
+      {@const hidden = personIsHidden[person.id]}
       <button
         type="button"
         class="group relative"
-        on:click={() => (personIsHidden[person.id] = !personIsHidden[person.id])}
+        on:click={() => (personIsHidden[person.id] = !hidden)}
+        aria-pressed={hidden}
+        aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
       >
         <ImageThumbnail
           preload={index < 20}
-          hidden={personIsHidden[person.id]}
+          {hidden}
           shadow
           url={getPeopleThumbnailUrl(person)}
           altText={person.name}
