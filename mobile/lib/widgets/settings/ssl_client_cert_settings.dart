@@ -10,7 +10,7 @@ import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 
 class SslClientCertSettings extends StatefulWidget {
   const SslClientCertSettings({super.key, required this.isLoggedIn});
-  
+
   final bool isLoggedIn;
 
   @override
@@ -19,7 +19,7 @@ class SslClientCertSettings extends StatefulWidget {
 
 class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   _SslClientCertSettingsState()
-  : isCertExist = SSLClientCertStoreVal.load() != null;
+      : isCertExist = SSLClientCertStoreVal.load() != null;
 
   bool isCertExist;
 
@@ -40,8 +40,11 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         children: [
           Text(
             "client_cert_subtitle".tr(),
-            style: context.textTheme.bodyMedium,),
-          const SizedBox(height: 6,),
+            style: context.textTheme.bodyMedium,
+          ),
+          const SizedBox(
+            height: 6,
+          ),
           Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -49,12 +52,19 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             children: [
               ElevatedButton(
                 onPressed: widget.isLoggedIn ? null : () => importCert(context),
-                child: Text("client_cert_import".tr()),),
-              const SizedBox(width: 15,),
+                child: Text("client_cert_import".tr()),
+              ),
+              const SizedBox(
+                width: 15,
+              ),
               ElevatedButton(
-                onPressed: widget.isLoggedIn || !isCertExist ? null : () => removeCert(context),
-                child: Text("client_cert_remove".tr()),),
-            ],),
+                onPressed: widget.isLoggedIn || !isCertExist
+                    ? null
+                    : () => removeCert(context),
+                child: Text("client_cert_remove".tr()),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -66,9 +76,13 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       builder: (ctx) => AlertDialog(
         content: Text(msg),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: Text("client_cert_dialog_msg_confirm".tr()),),
+          TextButton(
+            onPressed: () => ctx.pop(),
+            child: Text("client_cert_dialog_msg_confirm".tr()),
+          ),
         ],
-      ),);
+      ),
+    );
   }
 
   void storeCert(BuildContext context, Uint8List data, String? passwd) {
@@ -77,14 +91,17 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     }
     final cert = SSLClientCertStoreVal(data, passwd);
     // Test whether the certificate is valid
-    final isCertValid = HttpSSLCertOverride.setClientCert(SecurityContext(withTrustedRoots: true), cert);
+    final isCertValid = HttpSSLCertOverride.setClientCert(
+        SecurityContext(withTrustedRoots: true), cert);
     if (!isCertValid) {
       showMessage(context, "client_cert_invalid_msg".tr());
       return;
     }
     cert.save();
     HttpOverrides.global = HttpSSLCertOverride();
-    setState(() => isCertExist = true,);
+    setState(
+      () => isCertExist = true,
+    );
     showMessage(context, "client_cert_import_success_msg".tr());
   }
 
@@ -100,19 +117,26 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
           obscuringCharacter: "*",
           decoration: InputDecoration(
             hintText: "client_cert_enter_password".tr(),
-        ),),
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => { ctx.pop(), storeCert(context, data, passwd.text) },
-            child: Text("client_cert_dialog_msg_confirm".tr()),),
+            onPressed: () => {ctx.pop(), storeCert(context, data, passwd.text)},
+            child: Text("client_cert_dialog_msg_confirm".tr()),
+          ),
         ],
-      ),);
+      ),
+    );
   }
 
   Future<void> importCert(BuildContext ctx) async {
     FilePickerResult? res = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['p12', 'pfx',],);
+      allowedExtensions: [
+        'p12',
+        'pfx',
+      ],
+    );
     if (res != null) {
       File file = File(res.files.single.path!);
       final bytes = await file.readAsBytes();
@@ -123,7 +147,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   void removeCert(BuildContext context) {
     SSLClientCertStoreVal.delete();
     HttpOverrides.global = HttpSSLCertOverride();
-    setState(() => isCertExist = false,);
+    setState(
+      () => isCertExist = false,
+    );
     showMessage(context, "client_cert_remove_msg".tr());
   }
 }

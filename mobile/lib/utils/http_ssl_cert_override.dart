@@ -8,8 +8,7 @@ class HttpSSLCertOverride extends HttpOverrides {
   final SSLClientCertStoreVal? _clientCert;
   late final SecurityContext? _ctxWithCert;
 
-  HttpSSLCertOverride()
-  :_clientCert = SSLClientCertStoreVal.load() {
+  HttpSSLCertOverride() : _clientCert = SSLClientCertStoreVal.load() {
     if (_clientCert != null) {
       _ctxWithCert = SecurityContext(withTrustedRoots: true);
       if (_ctxWithCert != null) {
@@ -29,7 +28,7 @@ class HttpSSLCertOverride extends HttpOverrides {
       if (!Platform.isIOS) {
         ctx.useCertificateChainBytes(cert.data, password: cert.password);
       }
-    } catch(e) {
+    } catch (e) {
       _log.severe("Failed to set SSL client cert: $e");
       return false;
     }
@@ -48,7 +47,6 @@ class HttpSSLCertOverride extends HttpOverrides {
 
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
-
         AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
 
         // Check if user has allowed self signed SSL certificates.
