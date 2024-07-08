@@ -49,7 +49,7 @@
 {/if}
 
 <div
-  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg"
+  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),
@@ -61,7 +61,7 @@
     <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
 
     {#if $serverInfo}
-      <p class="text-sm text-gray-500 dark:text-gray-300">
+      <p class="text-gray-500 dark:text-gray-300">
         {$t('storage_usage', {
           values: {
             used: getByteUnitString(usedBytes, $locale),

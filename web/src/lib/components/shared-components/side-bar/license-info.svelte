@@ -7,7 +7,7 @@
   let showMessage = false;
 </script>
 
-<div class="license-status pl-4">
+<div class="license-status pl-4 text-sm">
   {#if isLicensed}
     <div class="flex gap-1 mt-4 place-items-center">
       <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
@@ -46,7 +46,7 @@
     <div
       class="w-[150px] absolute bottom-[75px] left-[255px] bg-white text-black border p-3 border-immich-primary rounded-3xl z-10"
     >
-      <p class="text-sm my-2 text-balance font-medium">You have been using Immich for approximately 3000 days</p>
+      <p class="my-2 text-balance font-medium">You have been using Immich for approximately 3000 days</p>
     </div>
   {/if}
 </Portal>
