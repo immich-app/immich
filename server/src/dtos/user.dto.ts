@@ -140,7 +140,7 @@ export class UserAdminResponseDto extends UserResponseDto {
 }
 
 export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
-  const license = entity.metadata.find(
+  const license = entity.metadata?.find(
     (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
   )?.value;
   return {
