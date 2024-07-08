@@ -691,8 +691,8 @@ export type SearchExploreResponseDto = {
 };
 export type MetadataSearchDto = {
     checksum?: string;
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceAssetId?: string;
@@ -717,7 +717,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     previewPath?: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -765,8 +765,8 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type SmartSearchDto = {
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
@@ -785,7 +785,7 @@ export type SmartSearchDto = {
     personIds?: string[];
     query: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;

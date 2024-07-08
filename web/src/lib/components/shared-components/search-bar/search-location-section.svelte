@@ -1,8 +1,8 @@
 <script lang="ts" context="module">
   export interface SearchLocationFilter {
     country?: string | null;
-    state?: string;
-    city?: string;
+    state?: string | null;
+    city?: string | null;
   }
 </script>
 
@@ -49,8 +49,12 @@
     }
   }
 
-  async function updateCities(country?: string | null, state?: string) {
+  async function updateCities(country?: string | null, state?: string | null) {
     if (country === null) {
+      cities = [];
+      return;
+    }
+    if (state == null) {
       cities = [];
       return;
     }

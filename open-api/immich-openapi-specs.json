@@ -9287,9 +9287,11 @@
             "type": "string"
           },
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -9377,6 +9379,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {
@@ -10483,9 +10486,11 @@
       "SmartSearchDto": {
         "properties": {
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -10554,6 +10559,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {

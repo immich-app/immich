@@ -77,17 +77,17 @@ class BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional({ nullable: true })
-  city?: string;
+  city?: string | null;
 
   @IsString()
   @IsNotEmpty()
   @Optional({ nullable: true })
-  state?: string;
+  state?: string | null;
 
   @IsString()
   @IsNotEmpty()
   @Optional({ nullable: true })
-  country?: string;
+  country?: string | null;
 
   @IsString()
   @IsNotEmpty()

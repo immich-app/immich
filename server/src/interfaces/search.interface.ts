@@ -95,12 +95,12 @@ export interface SearchPathOptions {
 }
 
 export interface SearchExifOptions {
-  city?: string;
-  country?: string;
+  city?: string | null;
+  country?: string | null;
   lensModel?: string;
   make?: string;
   model?: string;
-  state?: string;
+  state?: string | null;
 }
 
 export interface SearchEmbeddingOptions {
