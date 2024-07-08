@@ -47,7 +47,7 @@
     "factory.ts": "^1.4.1",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-sort-json": "^4.0.0",
     "prettier-plugin-svelte": "^3.2.1",
     "rollup-plugin-visualizer": "^5.12.0",
