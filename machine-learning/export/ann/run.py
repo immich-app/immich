@@ -14,6 +14,8 @@ import numpy as np
 import onnxsim
 from shutil import rmtree
 
+# hack: changed Mul op in onnx2tf to skip broadcast if graph_node.o().op == 'Sigmoid'
+
 # i can explain
 # armnn only supports up to 4d tranposes, but the model has a 5d transpose due to a redundant unsqueeze
 # this function folds the unsqueeze+transpose+squeeze into a single 4d transpose
@@ -262,7 +264,7 @@ class ExportBase:
                 rmtree(tflite_model_dir, ignore_errors=True)
             finally:
                 raise e
-        print(f"Finished exporting {self.name} ({self.task}) with fp32 precision")
+        print(f"Finished exporting {self.model_name} ({self.task}) with fp32 precision")
         
         fp16_args = args.copy()
         fp16_args.extend(["-m", tflite_fp16, "-p", armnn_fp16])
@@ -276,7 +278,7 @@ class ExportBase:
                 rmtree(tflite_model_dir, ignore_errors=True)
             finally:
                 raise e
-        print(f"Finished exporting {self.name} ({self.task}) with fp16 precision")
+        print(f"Finished exporting {self.model_name} ({self.task}) with fp16 precision")
         
         return armnn_fp32, armnn_fp16
 
@@ -311,43 +313,29 @@ class MClipTextual(ExportBase):
 def main() -> None:
     if platform.machine() not in ("x86_64", "AMD64"):
         raise RuntimeError(f"Can only run on x86_64 / AMD64, not {platform.machine()}")
-    upload_to_hf = "HF_AUTH_TOKEN" in os.environ
-    if upload_to_hf:
-        login(token=os.environ["HF_AUTH_TOKEN"])
+    hf_token = os.environ.get("HF_AUTH_TOKEN")
+    if hf_token:
+        login(token=hf_token)
     os.environ["LD_LIBRARY_PATH"] = "armnn"
     failed: list[Callable[[], ExportBase]] = [
         lambda: OpenClipVisual("ViT-H-14-378-quickgelu", (1, 3, 378, 378), pretrained="dfn5b"), # flatbuffers: cannot grow buffer beyond 2 gigabytes (will probably work with fp16)
         lambda: OpenClipVisual("ViT-H-14-quickgelu", (1, 3, 224, 224), pretrained="dfn5b"), # flatbuffers: cannot grow buffer beyond 2 gigabytes (will probably work with fp16)
         lambda: OpenClipTextual("nllb-clip-base-siglip", (1, 77), pretrained="v1"), # ERROR (tinynn.converter.base) Unsupported ops: aten::logical_not
         lambda: OpenClipTextual("nllb-clip-large-siglip", (1, 77), pretrained="v1"), # ERROR (tinynn.converter.base) Unsupported ops: aten::logical_not
-        lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion2b_e16"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion2b_e16"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion2b-s34b-b79k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion2b-s34b-b79k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-16", (1, 3, 224, 224), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-16", (1, 77), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-16", (1, 3, 224, 224), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-16", (1, 77), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-B-16-plus-240", (1, 3, 224, 224), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-B-16-plus-240", (1, 77), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion400m_e31"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion400m_e32"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion2b-s32b-b82k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion2b-s32b-b82k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-H-14", (1, 3, 224, 224), pretrained="laion2b-s32b-b79k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-H-14", (1, 77), pretrained="laion2b-s32b-b79k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("ViT-g-14", (1, 3, 224, 224), pretrained="laion2b-s12b-b42k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipTextual("ViT-g-14", (1, 77), pretrained="laion2b-s12b-b42k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("XLM-Roberta-Large-Vit-B-16Plus", (1, 3, 240, 240)), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("XLM-Roberta-Large-ViT-H-14", (1, 3, 224, 224), pretrained="frozen_laion5b_s13b_b90k"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("nllb-clip-base-siglip", (1, 3, 384, 384), pretrained="v1"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
-        lambda: OpenClipVisual("nllb-clip-large-siglip", (1, 3, 384, 384), pretrained="v1"), # ERROR (tinynn.converter.base) Unsupported ops: aten::erf
+        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion400m_e31"),
+        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion400m_e31"),
+        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion400m_e32"),
+        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion400m_e32"),
+        lambda: OpenClipVisual("ViT-L-14", (1, 3, 224, 224), pretrained="laion2b-s32b-b82k"),
+        lambda: OpenClipTextual("ViT-L-14", (1, 77), pretrained="laion2b-s32b-b82k"),
+        lambda: OpenClipVisual("ViT-H-14", (1, 3, 224, 224), pretrained="laion2b-s32b-b79k"),
+        lambda: OpenClipTextual("ViT-H-14", (1, 77), pretrained="laion2b-s32b-b79k"),
+        lambda: OpenClipVisual("ViT-g-14", (1, 3, 224, 224), pretrained="laion2b-s12b-b42k"),
+        lambda: OpenClipTextual("ViT-g-14", (1, 77), pretrained="laion2b-s12b-b42k"),
+        lambda: OpenClipVisual("XLM-Roberta-Large-Vit-B-16Plus", (1, 3, 240, 240)),
+        lambda: OpenClipVisual("XLM-Roberta-Large-ViT-H-14", (1, 3, 224, 224), pretrained="frozen_laion5b_s13b_b90k"),
+        lambda: OpenClipVisual("nllb-clip-base-siglip", (1, 3, 384, 384), pretrained="v1"),
+        lambda: OpenClipVisual("nllb-clip-large-siglip", (1, 3, 384, 384), pretrained="v1"),
         lambda: OpenClipVisual("RN50", (1, 3, 224, 224), pretrained="yfcc15m"), # BatchNorm operation with mean/var output is not implemented
         lambda: OpenClipTextual("RN50", (1, 77), pretrained="yfcc15m"), # BatchNorm operation with mean/var output is not implemented
         lambda: OpenClipVisual("RN50", (1, 3, 224, 224), pretrained="cc12m"), # BatchNorm operation with mean/var output is not implemented
@@ -359,6 +347,20 @@ def main() -> None:
     ]
     
     succeeded: list[Callable[[], ExportBase]] = [
+        # lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion2b_e16"),
+        # lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion2b_e16"),
+        # lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion400m_e31"),
+        # lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion400m_e31"),
+        # lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion400m_e32"),
+        # lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion400m_e32"),
+        # lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="laion2b-s34b-b79k"),
+        # lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="laion2b-s34b-b79k"),
+        # lambda: OpenClipVisual("ViT-B-16", (1, 3, 224, 224), pretrained="laion400m_e31"),
+        # lambda: OpenClipTextual("ViT-B-16", (1, 77), pretrained="laion400m_e31"),
+        # lambda: OpenClipVisual("ViT-B-16", (1, 3, 224, 224), pretrained="laion400m_e32"),
+        # lambda: OpenClipTextual("ViT-B-16", (1, 77), pretrained="laion400m_e32"),
+        # lambda: OpenClipVisual("ViT-B-16-plus-240", (1, 3, 240, 240), pretrained="laion400m_e31"),
+        # lambda: OpenClipTextual("ViT-B-16-plus-240", (1, 77), pretrained="laion400m_e31"),
         # lambda: OpenClipVisual("ViT-B-32", (1, 3, 224, 224), pretrained="openai"),
         # lambda: OpenClipTextual("ViT-B-32", (1, 77), pretrained="openai"),
         lambda: OpenClipVisual("ViT-B-16", (1, 3, 224, 224), pretrained="openai"),
@@ -392,10 +394,14 @@ def main() -> None:
             armnn_fp32, armnn_fp16 = model.to_armnn(output_dir)
             relative_fp32 = os.path.relpath(armnn_fp32, start=model_dir)
             relative_fp16 = os.path.relpath(armnn_fp16, start=model_dir)
-            if upload_to_hf and os.path.isfile(armnn_fp32):
+            if hf_token and os.path.isfile(armnn_fp32):
+                print(f"Uploading {model.model_name} ({model.task}) ARM NN model with fp32 precision")
                 upload_file(path_or_fileobj=armnn_fp32, path_in_repo=relative_fp32, repo_id=model.repo_name)
-            if upload_to_hf and os.path.isfile(armnn_fp16):
+                print(f"Finished uploading {model.model_name} ({model.task}) ARM NN model with fp32 precision")
+            if hf_token and os.path.isfile(armnn_fp16):
+                print(f"Uploading {model.model_name} ({model.task}) ARM NN model with fp16 precision")
                 upload_file(path_or_fileobj=armnn_fp16, path_in_repo=relative_fp16, repo_id=model.repo_name)
+                print(f"Finished uploading {model.model_name} ({model.task}) ARM NN model with fp16 precision")
         except Exception as exc:
             print(f"Failed to export {model.model_name} ({model.task}): {exc}")
             raise exc
