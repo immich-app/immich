@@ -19,6 +19,7 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
+  MPImage2?: BinaryField;
 }
 
 export interface IMetadataRepository {

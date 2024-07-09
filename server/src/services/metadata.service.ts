@@ -217,13 +217,14 @@ export class MetadataService implements OnEvents {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+    console.log(id);
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
     }
 
     const { exifData, tags } = await this.exifData(asset);
-
+    console.log(tags);
     if (asset.type === AssetType.VIDEO) {
       const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
 
@@ -366,7 +367,8 @@ export class MetadataService implements OnEvents {
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
     const hasMotionPhotoVideo = tags.MotionPhotoVideo;
-    const hasEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
+    const hasSamesungEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
+    const hasPixelEmbeddedVideoFile = tags.MotionPhoto && tags.MPImage2; // Google Pixel
     const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
 
     let length = 0;
@@ -386,7 +388,7 @@ export class MetadataService implements OnEvents {
       length = videoOffset;
     }
 
-    if (!length && !hasEmbeddedVideoFile && !hasMotionPhotoVideo) {
+    if (!length && !hasSamesungEmbeddedVideoFile && !hasMotionPhotoVideo && !hasPixelEmbeddedVideoFile) {
       return;
     }
 
@@ -402,8 +404,12 @@ export class MetadataService implements OnEvents {
         video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
       }
       //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
-      else if (hasEmbeddedVideoFile) {
+      else if (hasSamesungEmbeddedVideoFile) {
         video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+      }
+      // Pixel MotionPhoto video extraction
+      else if (hasPixelEmbeddedVideoFile) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'MPImage2');
       }
       // Default video extraction
       else {
