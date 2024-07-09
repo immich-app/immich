@@ -12,7 +12,7 @@
   </div>
 
   <div class="mt-4 dark:text-immich-gray">
-    <p class="text-6xl font-bold">$25<span class="text-2xl font-medium">.99</span></p>
+    <p class="text-6xl font-bold">$24<span class="text-2xl font-medium">.99</span></p>
     <p>per user</p>
   </div>
 
