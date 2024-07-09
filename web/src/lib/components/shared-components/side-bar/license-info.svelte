@@ -20,15 +20,17 @@
   <LicenseModal onClose={() => (isOpen = false)} />
 {/if}
 
-<div class="license-status pl-4 text-sm">
+<div class="hidden md:block license-status pl-4 text-sm">
   {#if isLicensed}
     <div class="flex gap-1 mt-4 place-items-center">
       <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
       <p class="text-immich-primary dark:text-immich-dark-primary">Licensed</p>
     </div>
   {:else}
-    <div
-      class="py-3 px-2 flex justify-between place-items-center place-content-center border border-gray-300 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-sm dark:bg-immich-dark-primary/10"
+    <button
+      on:click={openLicenseModal}
+      on:mouseenter={() => (showMessage = true)}
+      class="py-3 px-2 flex justify-between place-items-center place-content-center border border-gray-300 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-sm dark:bg-immich-dark-primary/10 w-full"
     >
       <div class="flex place-items-center place-content-center gap-1">
         <Icon path={mdiLicense} size="18" class="text-immich-dark-gray/75 dark:text-immich-gray/85" />
@@ -37,17 +39,16 @@
 
       <div>
         <button
-          on:click={openLicenseModal}
           type="button"
           class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium"
           >Buy
 
-          <span role="contentinfo" on:mouseenter={() => (showMessage = true)}>
+          <span role="contentinfo">
             <Icon path={mdiInformationOutline}></Icon>
           </span>
         </button>
       </div>
-    </div>
+    </button>
   {/if}
 </div>
 

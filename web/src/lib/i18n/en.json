@@ -399,6 +399,7 @@
   "bulk_delete_duplicates_confirmation": "Are you sure you want to bulk delete {count, plural, one {# duplicate asset} other {# duplicate assets}}? This will keep the largest asset of each group and permanently delete all other duplicates. You cannot undo this action!",
   "bulk_keep_duplicates_confirmation": "Are you sure you want to keep {count, plural, one {# duplicate asset} other {# duplicate assets}}? This will resolve all duplicate groups without deleting anything.",
   "bulk_trash_duplicates_confirmation": "Are you sure you want to bulk trash {count, plural, one {# duplicate asset} other {# duplicate assets}}? This will keep the largest asset of each group and trash all other duplicates.",
+  "buy": "Purchase License",
   "camera": "Camera",
   "camera_brand": "Camera brand",
   "camera_model": "Camera model",

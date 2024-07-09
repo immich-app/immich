@@ -6,6 +6,7 @@
   import ServerLicense from '$lib/components/shared-components/license/server-license-card.svelte';
   import UserLicense from '$lib/components/shared-components/license/user-license-card.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { user } from '$lib/stores/user.store';
   import { mdiAccount, mdiCheckCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -13,7 +14,7 @@
 </script>
 
 <Portal>
-  <FullScreenModal showLogo title={''} {onClose} width="wide">
+  <FullScreenModal showLogo title={''} {onClose} width={$user.isAdmin ? 'wide' : 'narrow'}>
     <LicenseContent />
   </FullScreenModal>
 </Portal>

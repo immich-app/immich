@@ -11,12 +11,12 @@
     <p class="font-semibold text-lg mt-1">User License</p>
   </div>
 
-  <div class="mt-4">
+  <div class="mt-4 dark:text-immich-gray">
     <p class="text-6xl font-bold">$25<span class="text-2xl font-medium">.99</span></p>
     <p>per user</p>
   </div>
 
-  <div class="flex flex-col justify-between h-[200px]">
+  <div class="flex flex-col justify-between h-[200px] dark:text-immich-gray">
     <div class="mt-6 flex flex-col gap-1">
       <div class="grid grid-cols-[36px_auto]">
         <Icon path={mdiCheckCircleOutline} size="24" class="text-green-500 self-center" />
