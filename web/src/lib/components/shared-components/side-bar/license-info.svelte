@@ -4,7 +4,7 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import LicenseModal from '$lib/components/shared-components/license-modal.svelte';
+  import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
 
   let isLicensed = false;
   let showMessage = false;
