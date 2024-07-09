@@ -1839,7 +1839,12 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         {
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel rkmpp',
+            '-hwaccel_output_format drm_prime',
+            '-afbc rga',
+            '-noautorotate',
+          ]),
           outputOptions: expect.arrayContaining([
             `-c:v h264_rkmpp`,
             '-c:a copy',
