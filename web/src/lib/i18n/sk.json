@@ -1,4 +1,5 @@
 {
+  "about": "O aplikácií",
   "account": "Účet",
   "account_settings": "Nastavenia účtu",
   "acknowledge": "Potvrdiť",
@@ -6,6 +7,7 @@
   "actions": "Akcie",
   "active": "Aktívny",
   "activity": "Aktivita",
+  "activity_changed": "Aktivita je {enabled, select, true{povolená} other {zakázaná}}",
   "add": "Pridať",
   "add_a_description": "Pridať popis",
   "add_a_location": "Pridať polohu",
@@ -21,6 +23,9 @@
   "add_to": "Pridať do...",
   "add_to_album": "Pridať do albumu",
   "add_to_shared_album": "Pridať do zdieľaného albumu",
+  "added_to_archive": "Pridané do archívu",
+  "added_to_favorites": "Pridané do obľúbených",
+  "added_to_favorites_count": "Pridané {count} do obľúbených",
   "admin": {
     "authentication_settings": "Nastavenia overenia",
     "authentication_settings_description": "Spravovať heslo, protokol OAuth a ďalšie nastavenia overenia",

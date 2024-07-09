@@ -337,7 +337,7 @@
                   <td class=" text-ellipsis px-4 text-sm">
                     {totalCount[index]}
                   </td>
-                  <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
+                  <td class=" text-ellipsis px-4 text-sm"> {diskUsage[index]} {ByteUnit[diskUsageUnit[index]]}</td>
                 {/if}
 
                 <td class=" text-ellipsis px-4 text-sm">

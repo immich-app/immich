@@ -45,8 +45,6 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)    |            `log`             | server, machine learning | api, microservices |
 | `IMMICH_MEDIA_LOCATION`             | Media Location                                  |   `./upload`<sup>\*1</sup>   | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                             |                              | server                   | api, microservices |
-| `IMMICH_WEB_ROOT`                   | Path of root index.html                         |      `/usr/src/app/www`      | server                   | api                |
-| `IMMICH_REVERSE_GEOCODING_ROOT`     | Path of reverse geocoding dump directory        |     `/usr/src/resources`     | server                   | microservices      |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Amount of cores available to the immich server  | auto-detected cpu core count | server                   |                    |
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                       |            `8081`            | server                   | api                |

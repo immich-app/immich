@@ -2128,7 +2128,7 @@ export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     }));
 }
 export function getPartners({ direction }: {
-    direction: "shared-by" | "shared-with";
+    direction: PartnerDirection;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3130,6 +3130,10 @@ export enum Type2 {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
+}
+export enum PartnerDirection {
+    SharedBy = "shared-by",
+    SharedWith = "shared-with"
 }
 export enum PathEntityType {
     Asset = "asset",
