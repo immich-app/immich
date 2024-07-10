@@ -7,7 +7,6 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { NotificationService } from 'src/services/notification.service';
-import { PartnerService } from 'src/services/partner.service';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
@@ -54,7 +53,7 @@ const configs = {
   }),
 };
 
-describe(PartnerService.name, () => {
+describe(NotificationService.name, () => {
   let sut: NotificationService;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let notificationMock: Mocked<INotificationRepository>;
