@@ -29,28 +29,15 @@
   import { mdiAlert, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
+  import type { ComponentType, SvelteComponent } from 'svelte';
+  import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
 
   export let data: PageData;
 
   let config = data.configs;
   let handleSave: (update: Partial<SystemConfigDto>) => Promise<void>;
 
-  type Settings =
-    | typeof AuthSettings
-    | typeof JobSettings
-    | typeof LibrarySettings
-    | typeof LoggingSettings
-    | typeof MachineLearningSettings
-    | typeof MapSettings
-    | typeof ServerSettings
-    | typeof StorageTemplateSettings
-    | typeof ThemeSettings
-    | typeof ImageSettings
-    | typeof TrashSettings
-    | typeof NewVersionCheckSettings
-    | typeof NotificationSettings
-    | typeof FFmpegSettings
-    | typeof UserSettings;
+  type SettingsComponent = ComponentType<SvelteComponent<SettingsComponentProps>>;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -76,97 +63,97 @@
   };
 
   const settings: Array<{
-    item: Settings;
+    component: SettingsComponent;
     title: string;
     subtitle: string;
     key: string;
   }> = [
     {
-      item: AuthSettings,
+      component: AuthSettings,
       title: $t('admin.authentication_settings'),
       subtitle: $t('admin.authentication_settings_description'),
       key: 'image',
     },
     {
-      item: ImageSettings,
+      component: ImageSettings,
       title: $t('admin.image_settings'),
       subtitle: $t('admin.image_settings_description'),
       key: 'image',
     },
     {
-      item: JobSettings,
+      component: JobSettings,
       title: $t('admin.job_settings'),
       subtitle: $t('admin.job_settings_description'),
       key: 'job',
     },
     {
-      item: LibrarySettings,
+      component: LibrarySettings,
       title: $t('admin.library_settings'),
       subtitle: $t('admin.library_settings_description'),
       key: 'external-library',
     },
     {
-      item: LoggingSettings,
+      component: LoggingSettings,
       title: $t('admin.logging_settings'),
       subtitle: $t('admin.manage_log_settings'),
       key: 'logging',
     },
     {
-      item: MachineLearningSettings,
+      component: MachineLearningSettings,
       title: $t('admin.machine_learning_settings'),
       subtitle: $t('admin.machine_learning_settings_description'),
       key: 'machine-learning',
     },
     {
-      item: MapSettings,
+      component: MapSettings,
       title: $t('admin.map_settings'),
       subtitle: $t('admin.map_settings_description'),
       key: 'location',
     },
     {
-      item: NotificationSettings,
+      component: NotificationSettings,
       title: $t('admin.notification_settings'),
       subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
     },
     {
-      item: ServerSettings,
+      component: ServerSettings,
       title: $t('admin.server_settings'),
       subtitle: $t('admin.server_settings_description'),
       key: 'server',
     },
     {
-      item: StorageTemplateSettings,
+      component: StorageTemplateSettings,
       title: $t('admin.storage_template_settings'),
       subtitle: $t('admin.storage_template_settings_description'),
       key: 'storage-template',
     },
     {
-      item: ThemeSettings,
+      component: ThemeSettings,
       title: $t('admin.theme_settings'),
       subtitle: $t('admin.theme_settings_description'),
       key: 'theme',
     },
     {
-      item: TrashSettings,
+      component: TrashSettings,
       title: $t('admin.trash_settings'),
       subtitle: $t('admin.trash_settings_description'),
       key: 'trash',
     },
     {
-      item: UserSettings,
+      component: UserSettings,
       title: $t('admin.user_settings'),
       subtitle: $t('admin.user_settings_description'),
       key: 'user-settings',
     },
     {
-      item: NewVersionCheckSettings,
+      component: NewVersionCheckSettings,
       title: $t('admin.version_check_settings'),
       subtitle: $t('admin.version_check_settings_description'),
       key: 'version-check',
     },
     {
-      item: FFmpegSettings,
+      component: FFmpegSettings,
       title: $t('admin.transcoding_settings'),
       subtitle: $t('admin.transcoding_settings_description'),
       key: 'video-transcoding',
@@ -212,12 +199,11 @@
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
           <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-            {#each settings as { item, title, subtitle, key }}
+            {#each settings as { component: Component, title, subtitle, key }}
               <SettingAccordion {title} {subtitle} {key}>
-                <svelte:component
-                  this={item}
-                  on:save={({ detail }) => handleSave(detail)}
-                  on:reset={({ detail }) => handleReset(detail)}
+                <Component
+                  onSave={(config) => handleSave(config)}
+                  onReset={(options) => handleReset(options)}
                   disabled={$featureFlags.configFile}
                   {defaultConfig}
                   {config}

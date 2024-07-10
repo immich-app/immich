@@ -11,9 +11,8 @@
   } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
   import { isEqual, sortBy } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField, {
     SettingInputFieldType,
@@ -29,8 +28,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div>
@@ -368,8 +367,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
-          on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
+          onReset={(options) => onReset({ ...options, configKeys: ['ffmpeg'] })}
+          onSave={() => onSave({ ffmpeg: config.ffmpeg })}
           showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />
