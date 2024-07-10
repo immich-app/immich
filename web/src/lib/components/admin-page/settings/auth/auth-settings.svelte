@@ -8,9 +8,8 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
@@ -18,8 +17,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
   let isConfirmOpen = false;
 
@@ -39,7 +38,7 @@
     }
 
     isConfirmOpen = false;
-    dispatch('save', { passwordLogin: config.passwordLogin, oauth: config.oauth });
+    onSave({ passwordLogin: config.passwordLogin, oauth: config.oauth });
   };
 </script>
 
@@ -240,8 +239,8 @@
           showResetToDefault={!isEqual(savedConfig.passwordLogin, defaultConfig.passwordLogin) ||
             !isEqual(savedConfig.oauth, defaultConfig.oauth)}
           {disabled}
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['passwordLogin', 'oauth'] })}
-          on:save={() => handleSave(false)}
+          onReset={(options) => onReset({ ...options, configKeys: ['passwordLogin', 'oauth'] })}
+          onSave={() => handleSave(false)}
         />
       </div>
     </form>
