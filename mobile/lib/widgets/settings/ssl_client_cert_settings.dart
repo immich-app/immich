@@ -92,7 +92,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     final cert = SSLClientCertStoreVal(data, passwd);
     // Test whether the certificate is valid
     final isCertValid = HttpSSLCertOverride.setClientCert(
-        SecurityContext(withTrustedRoots: true), cert);
+      SecurityContext(withTrustedRoots: true),
+      cert,
+    );
     if (!isCertValid) {
       showMessage(context, "client_cert_invalid_msg".tr());
       return;
