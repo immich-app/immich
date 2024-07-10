@@ -724,6 +724,7 @@
   "has_quota": "Quota",
   "hi_user": "Bonjour {name} ({email})",
   "hide_gallery": "Masquer la galerie",
+  "hide_named_person": "Masquer {name}",
   "hide_password": "Masquer le mot de passe",
   "hide_person": "Masquer la personne",
   "host": "Hôte",
