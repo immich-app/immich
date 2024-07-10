@@ -45,9 +45,7 @@ export interface LoginDetails {
   deviceOS: string;
 }
 
-interface OAuthProfile extends UserinfoResponse {
-  email: string;
-}
+type OAuthProfile = UserinfoResponse;
 
 interface ClaimOptions<T> {
   key: string;
@@ -192,34 +190,35 @@ export class AuthService {
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
     const config = await this.configCore.getConfig({ withCache: false });
     const profile = await this.getOAuthProfile(config, dto.url);
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
 
-    // link existing user
-    if (!user) {
+    // link by email
+    if (!user && profile.email) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
         if (emailUser.oauthId) {
           throw new BadRequestException('User already exists, but is linked to another account.');
-        } else {
-          user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
         }
+        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }
-
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
 
     // register new user
     if (!user) {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${profile.email || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
-      this.logger.verbose(`OAuth Profile: ${JSON.stringify(profile)}`);
+      if (!profile.email) {
+        throw new BadRequestException('OAuth profile does not have an email address');
+      }
+
+      this.logger.log(`Registering new user: ${profile.sub}/${profile.email}`);
 
       const storageLabel = this.getClaim(profile, {
         key: storageLabelClaim,
@@ -311,7 +310,7 @@ export class AuthService {
         client_id: clientId,
         client_secret: clientSecret,
         response_types: ['code'],
-        userinfo_signed_response_alg: profileSigningAlgorithm,
+        userinfo_signed_response_alg: profileSigningAlgorithm === 'none' ? undefined : profileSigningAlgorithm,
         id_token_signed_response_alg: signingAlgorithm,
       });
     } catch (error: any | AggregateError) {

@@ -53,8 +53,7 @@ type AdminSetupOptions = { onboarding?: boolean };
 type AssetData = { bytes?: Buffer; filename: string };
 
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
-const baseUrl = 'http://127.0.0.1:2283';
-
+export const baseUrl = 'http://127.0.0.1:2283';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
