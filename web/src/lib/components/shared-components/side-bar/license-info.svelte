@@ -7,10 +7,17 @@
   import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
   import { user } from '$lib/stores/user.store';
   import * as luxon from 'luxon';
+  import { onMount } from 'svelte';
+  import { licenseStore } from '$lib/stores/license.store';
 
-  let isLicensed = false;
   let showMessage = false;
   let isOpen = false;
+  const { isLicenseActivated, getLicenseStatus } = licenseStore;
+
+  onMount(async () => {
+    // Fetch user license status
+    await getLicenseStatus();
+  });
 
   const openLicenseModal = () => {
     isOpen = true;
@@ -27,7 +34,7 @@
 {/if}
 
 <div class="hidden md:block license-status pl-4 text-sm">
-  {#if isLicensed}
+  {#if $isLicenseActivated}
     <div class="flex gap-1 mt-4 place-items-center">
       <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
       <p class="text-immich-primary dark:text-immich-dark-primary">Licensed</p>

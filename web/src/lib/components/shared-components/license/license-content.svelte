@@ -7,13 +7,15 @@
   import { getActivationKey } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { licenseStore } from '$lib/stores/license.store';
 
   export let onActivate: () => void;
   let licenseKey = '';
   let isLoading = false;
-
+  const { setLicenseStatus } = licenseStore;
   const activate = async () => {
     try {
+      licenseKey = licenseKey.trim();
       isLoading = true;
       let response: LicenseResponseDto;
 
@@ -27,6 +29,7 @@
       }
 
       onActivate();
+      setLicenseStatus(true);
     } catch (error) {
       handleError(error, 'Failed to activate license');
     } finally {
