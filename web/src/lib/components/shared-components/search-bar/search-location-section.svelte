@@ -50,11 +50,7 @@
   }
 
   async function updateCities(country?: string | null, state?: string | null) {
-    if (country === null) {
-      cities = [];
-      return;
-    }
-    if (state == null) {
+    if (country === null || state === null) {
       cities = [];
       return;
     }
