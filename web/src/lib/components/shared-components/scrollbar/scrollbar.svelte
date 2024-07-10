@@ -134,7 +134,7 @@
     {#if isHover || isDragging}
       <div
         id="time-label"
-        class="pointer-events-none absolute right-0 z-[100] w-[100px] rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+        class="pointer-events-none absolute right-0 z-[100] min-w-24 w-fit whitespace-nowrap rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
         style:top="{clamp(hoverY - HOVER_DATE_HEIGHT, 0, height - HOVER_DATE_HEIGHT - 2)}px"
       >
         {hoverLabel}
