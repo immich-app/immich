@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
@@ -9,7 +10,6 @@ import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
-import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
   getAssetInfo,
@@ -63,13 +63,17 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
   if (!album) {
     return;
   }
-  const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
   const $t = get(t);
   notificationController.show({
     type: NotificationType.Info,
     timeout: 5000,
-    message: $t('assets_added_to_name_count', { values: { count: assetIds.length, name: displayName } }),
-    html: true,
+    component: {
+      type: FormatBoldMessage,
+      props: {
+        key: 'assets_added_to_name_count',
+        values: { count: assetIds.length, name: albumName, hasName: !!albumName },
+      },
+    },
     button: {
       text: $t('view_album'),
       onClick() {
