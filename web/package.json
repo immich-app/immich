@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.107.2",
+  "version": "1.108.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -47,7 +47,7 @@
     "factory.ts": "^1.4.1",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-sort-json": "^4.0.0",
     "prettier-plugin-svelte": "^3.2.1",
     "rollup-plugin-visualizer": "^5.12.0",
@@ -83,6 +83,6 @@
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "20.15.0"
+    "node": "20.15.1"
   }
 }

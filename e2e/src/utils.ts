@@ -64,13 +64,13 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]);
+  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
-  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const promise = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
   const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
@@ -86,7 +86,7 @@ const executeCommand = (command: string, args: string[]) => {
     });
   });
 
-  return deferred;
+  return { promise, child };
 };
 
 let client: pg.Client | null = null;

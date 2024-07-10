@@ -4,7 +4,7 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath } from 'src/constants';
+import { citiesFile, resourcePaths } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
@@ -37,7 +37,7 @@ export class MapRepository implements IMapRepository {
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
-    const geodataDate = await readFile(geodataDatePath, 'utf8');
+    const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
     const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
@@ -150,8 +150,8 @@ export class MapRepository implements IMapRepository {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
-    const admin1 = await this.loadAdmin(geodataAdmin1Path);
-    const admin2 = await this.loadAdmin(geodataAdmin2Path);
+    const admin1 = await this.loadAdmin(resourcePaths.geodata.admin1);
+    const admin2 = await this.loadAdmin(resourcePaths.geodata.admin2);
 
     try {
       await queryRunner.startTransaction();
@@ -221,7 +221,7 @@ export class MapRepository implements IMapRepository {
           admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`),
           admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
-      geodataCities500Path,
+      resourcePaths.geodata.cities500,
       { entityFilter: (lineSplit) => lineSplit[7] != 'PPLX' },
     );
   }

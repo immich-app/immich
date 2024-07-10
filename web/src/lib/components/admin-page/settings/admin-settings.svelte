@@ -9,8 +9,8 @@
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { cloneDeep } from 'lodash-es';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import type { SettingsEventType } from './admin-settings';
+  import { onMount } from 'svelte';
+  import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
 
   export let config: SystemConfigDto;
@@ -18,10 +18,8 @@
   let savedConfig: SystemConfigDto;
   let defaultConfig: SystemConfigDto;
 
-  const dispatch = createEventDispatcher<{ save: void }>();
-
-  const handleReset = async (detail: SettingsEventType['reset']) => {
-    await (detail.default ? resetToDefault(detail.configKeys) : reset(detail.configKeys));
+  const handleReset = async (options: SettingsResetOptions) => {
+    await (options.default ? resetToDefault(options.configKeys) : reset(options.configKeys));
   };
 
   export const handleSave = async (update: Partial<SystemConfigDto>) => {
@@ -38,8 +36,6 @@
       notificationController.show({ message: $t('settings_saved'), type: NotificationType.Info });
 
       await loadConfig();
-
-      dispatch('save');
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_settings'));
     }

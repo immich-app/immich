@@ -729,6 +729,9 @@
   "host": "Host",
   "hour": "Godzina",
   "image": "Zdjęcie",
+  "image_alt_text_date": "dnia {date}",
+  "image_alt_text_people": "{count, plural, =1 {z {person1}} =2 {z {person1} i {person2}} =3 {z {person1}, {person2} i {person3}} other {z {person1}, {person2} i {others, number} innymi}}",
+  "image_alt_text_place": "w {city}, {country}",
   "img": "",
   "immich_logo": "Logo Immich",
   "immich_web_interface": "Interfejs internetowy Immich",
@@ -1194,7 +1197,7 @@
   "welcome": "Witaj",
   "welcome_to_immich": "Witamy w immich",
   "year": "Rok",
-  "years_ago": "{years, plural, one {# rok} other {# lat}} temu",
+  "years_ago": "{years, plural, one {# rok} few {# lata} other {# lat}} temu",
   "yes": "Tak",
   "you_dont_have_any_shared_links": "Nie masz żadnych udostępnionych linków",
   "zoom_image": "Powiększ obraz"

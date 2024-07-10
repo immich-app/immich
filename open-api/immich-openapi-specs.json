@@ -3660,11 +3660,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "enum": [
-                "shared-by",
-                "shared-with"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/PartnerDirection"
             }
           }
         ],
@@ -7011,7 +7007,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.107.2",
+    "version": "1.108.0",
     "contact": {}
   },
   "tags": [],
@@ -9472,6 +9468,13 @@
           "year"
         ],
         "type": "object"
+      },
+      "PartnerDirection": {
+        "enum": [
+          "shared-by",
+          "shared-with"
+        ],
+        "type": "string"
       },
       "PartnerResponseDto": {
         "properties": {

@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { isEqual } from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
@@ -44,9 +45,12 @@ export class NotificationService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  async onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  async onConfigValidateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
     try {
-      if (newConfig.notifications.smtp.enabled) {
+      if (
+        newConfig.notifications.smtp.enabled &&
+        !isEqual(oldConfig.notifications.smtp, newConfig.notifications.smtp)
+      ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
     } catch (error: Error | any) {

@@ -103,6 +103,9 @@ String parameterToString(dynamic value) {
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is PartnerDirection) {
+    return PartnerDirectionTypeTransformer().encode(value).toString();
+  }
   if (value is PathEntityType) {
     return PathEntityTypeTypeTransformer().encode(value).toString();
   }
