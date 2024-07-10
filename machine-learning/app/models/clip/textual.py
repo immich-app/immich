@@ -22,11 +22,12 @@ class BaseCLIPTextualEncoder(InferenceModel):
         return res
 
     def _load(self) -> ModelSession:
+        session = super()._load()
         log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
         self.tokenizer = self._load_tokenizer()
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
 
-        return super()._load()
+        return session
 
     @abstractmethod
     def _load_tokenizer(self) -> Tokenizer:

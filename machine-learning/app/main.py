@@ -29,6 +29,7 @@ from .schemas import (
     InferenceEntry,
     InferenceResponse,
     MessageResponse,
+    ModelFormat,
     ModelIdentity,
     ModelTask,
     ModelType,
@@ -195,7 +196,17 @@ async def load(model: InferenceModel) -> InferenceModel:
         if model.load_attempts > 1:
             raise HTTPException(500, f"Failed to load model '{model.model_name}'")
         with lock:
-            model.load()
+            try:
+                model.load()
+            except FileNotFoundError as e:
+                if model.model_format == ModelFormat.ONNX:
+                    raise e
+                log.exception(e)
+                log.warning(
+                    f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it."
+                )
+                model.model_format = ModelFormat.ONNX
+                model.load()
         return model
 
     try:
