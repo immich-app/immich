@@ -14,7 +14,7 @@
 <Portal>
   <FullScreenModal showLogo title={''} {onClose} width={$user.isAdmin ? 'wide' : 'narrow'}>
     {#if showLicenseActivated}
-      <LicenseActivationSuccess />
+      <LicenseActivationSuccess onDone={onClose} />
     {:else}
       <LicenseContent
         onActivate={() => {

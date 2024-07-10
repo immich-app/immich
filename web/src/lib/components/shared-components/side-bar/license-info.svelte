@@ -5,6 +5,8 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
+  import { user } from '$lib/stores/user.store';
+  import * as luxon from 'luxon';
 
   let isLicensed = false;
   let showMessage = false;
@@ -14,6 +16,10 @@
     isOpen = true;
     showMessage = false;
   };
+
+  const createdDate = luxon.DateTime.fromISO($user.createdAt ?? new Date().toISOString());
+  const now = luxon.DateTime.now();
+  const accountAge = now.diff(createdDate, 'days').days.toFixed(0);
 </script>
 
 {#if isOpen}
@@ -72,7 +78,7 @@
       <h1 class="text-lg font-medium my-3">You are running an Unlicensed version of Immich</h1>
       <p class="text-immich-dark-gray/80 dark:text-immich-gray text-balance">
         You have been using Immich for approximately <span
-          class="text-immich-primary dark:text-immich-dark-primary font-semibold">500 days</span
+          class="text-immich-primary dark:text-immich-dark-primary font-semibold">{accountAge} days</span
         >. Please considering purchasing a license to support the continued development of the service
       </p>
       <div class="mt-3">
