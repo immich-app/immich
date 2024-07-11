@@ -12,7 +12,7 @@
 </script>
 
 <Portal>
-  <FullScreenModal showLogo title={''} {onClose} width={$user.isAdmin ? 'wide' : 'narrow'}>
+  <FullScreenModal showLogo title={''} {onClose} width={$user.isAdmin ? 'wide' : 'auto'}>
     {#if showLicenseActivated}
       <LicenseActivationSuccess onDone={onClose} />
     {:else}

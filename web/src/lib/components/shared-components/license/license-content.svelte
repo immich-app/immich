@@ -13,6 +13,7 @@
   let licenseKey = '';
   let isLoading = false;
   const { setLicenseStatus } = licenseStore;
+  
   const activate = async () => {
     try {
       licenseKey = licenseKey.trim();
