@@ -30,9 +30,18 @@ server {
     proxy_redirect     off;
 
     # set timeout
-    proxy_read_timeout 600s;
-    proxy_send_timeout 600s;
-    send_timeout       600s;
+    proxy_read_timeout  600s;
+    proxy_send_timeout  600s;
+    send_timeout        600s;
+    client_body_timeout 120s;
+    keepalive_timeout   150s;
+
+    # improve video streaming for mobile client
+    proxy_buffering off;
+    proxy_buffer_size 16k;
+    proxy_busy_buffers_size 24k;
+    proxy_buffers 64 4k;
+    proxy_force_ranges on;
 
     location / {
         proxy_pass http://<backend_url>:2283;
