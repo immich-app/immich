@@ -6,13 +6,17 @@ import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 
 @immutable
 class EditImagePage extends StatelessWidget {
-  final dynamic imageSource; // Can be either Asset or Image
-  const EditImagePage({super.key, required this.imageSource});
+  final Asset? asset;
+  final Image? image;
+
+  const EditImagePage({
+    super.key,
+    this.image,
+    this.asset,
+  }) : assert((image != null && asset == null) || (image == null && asset != null), 'Must supply one of asset or image');
 
   void _navigateToCropImagePage(BuildContext context) {
     Navigator.of(context).push(
@@ -23,22 +27,22 @@ class EditImagePage extends StatelessWidget {
   }
 
   ImageProvider _getImageProvider() {
-    if (imageSource is Asset) {
-      return ImmichImage.imageProvider(asset: imageSource);
-    } else if (imageSource is Image) {
-      return (imageSource as Image).image;
+    if (asset != null) {
+      return ImmichImage.imageProvider(asset: asset!);
+    } else if (image != null) {
+      return image!.image;
     } else {
-      throw Exception('Invalid image source type');
+      throw Exception('No image source provided');
     }
   }
 
   Image _getImageWidget() {
-    if (imageSource is Asset) {
-      return Image(image: ImmichImage.imageProvider(asset: imageSource));
-    } else if (imageSource is Image) {
-      return imageSource;
+    if (asset != null) {
+      return Image(image: ImmichImage.imageProvider(asset: asset!));
+    } else if (image != null) {
+      return image!;
     } else {
-      throw Exception('Invalid image source type');
+      throw Exception('No image source provided');
     }
   }
 
@@ -51,27 +55,25 @@ class EditImagePage extends StatelessWidget {
         backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
-          onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+          onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
           IconButton(
-              icon:
-                  const Icon(Icons.done_rounded, color: Colors.white, size: 24),
-              onPressed: () {
-                //Save the image into cloud
-                if (imageSource is Asset) {
-                  ImmichToast.show(
-                    durationInSecond: 1,
-                    context: context,
-                    msg: 'No edits made!',
-                    gravity: ToastGravity.BOTTOM,
-                  );
-                  
-                } else {
-                  
-                }
-              }),
+            icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
+            onPressed: () {
+              // Save the image into cloud
+              if (asset != null) {
+                ImmichToast.show(
+                  durationInSecond: 1,
+                  context: context,
+                  msg: 'No edits made!',
+                  gravity: ToastGravity.BOTTOM,
+                );
+              } else {
+                // Handle saving the edited image
+              }
+            },
+          ),
         ],
       ),
       body: Column(
@@ -96,12 +98,12 @@ class EditImagePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             IconButton(
-                icon: Icon(
-                    Platform.isAndroid
-                        ? Icons.crop_rotate_rounded
-                        : Icons.crop_rotate_rounded,
-                    color: Colors.white),
-                onPressed: () => _navigateToCropImagePage(context)),
+              icon: Icon(
+                Platform.isAndroid ? Icons.crop_rotate_rounded : Icons.crop_rotate_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () => _navigateToCropImagePage(context),
+            ),
           ],
         ),
       ),

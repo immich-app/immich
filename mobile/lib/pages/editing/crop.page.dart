@@ -34,12 +34,8 @@ class _CropImagePageState extends State<CropImagePage> {
             icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
             onPressed: () async {
               final croppedImage = await _cropController.croppedImage();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditImagePage(imageSource: croppedImage),
-                ),
-              );
+              
+              Navigator.pop(context, croppedImage);
             },
           ),
         ],

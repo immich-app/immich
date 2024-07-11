@@ -288,11 +288,11 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
       Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => EditImagePage(
-                  imageSource: asset), // Send the Image widget
-            ),
-          );
+        MaterialPageRoute(
+          builder: (context) =>
+              EditImagePage(asset: asset), // Send the Asset object
+        ),
+      );
     }
 
     handleArchive() {
