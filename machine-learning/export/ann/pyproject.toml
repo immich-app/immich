@@ -1,0 +1,56 @@
+[project]
+name = "onnx2ann"
+version = "1.107.2"
+dependencies = [
+    "onnx>=1.16.1",
+    "psutil>=6.0.0",
+    "flatbuffers>=24.3.25",
+    "ml_dtypes>=0.3.1,<1.0.0",
+    "typer-slim>=0.12.3,<1.0.0",
+    "huggingface_hub>=0.23.4,<1.0.0",
+    "onnxruntime>=1.18.1",
+    "onnxsim>=0.4.36,<1.0.0",
+    "onnx2tf>=1.24.0",
+    "onnx_graphsurgeon>=0.5.2,<1.0.0",
+    "simple_onnx_processing_tools>=1.1.32",
+    "tf_keras>=2.16.0",
+    "onnxconverter-common @ git+https://github.com/microsoft/onnxconverter-common"
+]
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["onnx2ann"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.mypy]
+python_version = "3.12"
+follow_imports = "silent"
+warn_redundant_casts = true
+disallow_any_generics = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+extend-select = ["E", "F", "I"]
+extend-ignore = ["FBT001", "FBT002"]
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
