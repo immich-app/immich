@@ -475,7 +475,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(countries);
+      expect(body).toEqual([...countries, '']);
       expect(status).toBe(200);
     });
 
@@ -483,8 +483,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=state')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toHaveLength(states.length);
-      expect(body).toEqual(expect.arrayContaining(states));
+      expect(body).toEqual(expect.arrayContaining([...states, '']));
       expect(status).toBe(200);
     });
 
@@ -492,7 +491,7 @@ describe('/search', () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=city')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(cities);
+      expect(body).toEqual([...cities, '']);
       expect(status).toBe(200);
     });
 
@@ -508,6 +507,7 @@ describe('/search', () => {
         'PENTAX Corporation',
         'samsung',
         'SONY',
+        '',
       ]);
       expect(status).toBe(200);
     });

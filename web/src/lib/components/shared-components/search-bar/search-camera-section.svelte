@@ -22,23 +22,23 @@
   $: handlePromiseError(updateModels(makeFilter));
 
   async function updateMakes(model?: string) {
-    makes = [
-      ...(await getSearchSuggestions({
-        $type: SearchSuggestionType.CameraMake,
-        model: model ?? undefined,
-      })),
-      '',
-    ];
+    makes = await getSearchSuggestions({
+      $type: SearchSuggestionType.CameraMake,
+      model,
+    });
+    if (filters.make && !makes.includes(filters.make)) {
+      filters.make = undefined;
+    }
   }
 
   async function updateModels(make?: string) {
-    models = [
-      ...(await getSearchSuggestions({
-        $type: SearchSuggestionType.CameraModel,
-        make: make ?? undefined,
-      })),
-      '',
-    ];
+    models = await getSearchSuggestions({
+      $type: SearchSuggestionType.CameraModel,
+      make,
+    });
+    if (filters.model && !models.includes(filters.model)) {
+      filters.model = undefined;
+    }
   }
 </script>
 
