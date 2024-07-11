@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:crop_image/crop_image.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'edit.page.dart';
 
 class CropImagePage extends StatefulWidget {
@@ -148,7 +149,7 @@ class _CropImagePageState extends State<CropImagePage> {
             _selectedAspectRatio = aspectRatio;
           }),
         ),
-        Text(label, style: const TextStyle(color: Colors.white)),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }
