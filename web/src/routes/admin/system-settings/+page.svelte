@@ -106,8 +106,8 @@
     },
     {
       component: MapSettings,
-      title: $t('admin.map_settings'),
-      subtitle: $t('admin.map_settings_description'),
+      title: $t('admin.map_gps_settings'),
+      subtitle: $t('admin.map_gps_settings_description'),
       key: 'location',
     },
     {
