@@ -11030,6 +11030,9 @@
           "mobileRedirectUri": {
             "type": "string"
           },
+          "profileSigningAlgorithm": {
+            "type": "string"
+          },
           "scope": {
             "type": "string"
           },
@@ -11054,6 +11057,7 @@
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
+          "profileSigningAlgorithm",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
