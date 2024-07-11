@@ -85,7 +85,7 @@ describe('/search', () => {
     // note: the coordinates here are not the actual coordinates of the images and are random for most of them
     const coordinates = [
       { latitude: 48.853_41, longitude: 2.3488 }, // paris
-      { latitude: 63.0695, longitude: -151.0074 }, // denali
+      { latitude: 35.6895, longitude: 139.691_71 }, // tokyo
       { latitude: 52.524_37, longitude: 13.410_53 }, // berlin
       { latitude: 1.314_663_1, longitude: 103.845_409_3 }, // singapore
       { latitude: 41.013_84, longitude: 28.949_66 }, // istanbul
@@ -101,16 +101,15 @@ describe('/search', () => {
       { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
       { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
       { latitude: 59.938_63, longitude: 30.314_13 }, // st. petersburg
-      { latitude: 35.6895, longitude: 139.691_71 }, // tokyo
     ];
 
-    const updates = assets.map((asset, i) =>
-      updateAsset({ id: asset.id, updateAssetDto: coordinates[i] }, { headers: asBearerAuth(admin.accessToken) }),
+    const updates = coordinates.map((dto, i) =>
+      updateAsset({ id: assets[i].id, updateAssetDto: dto }, { headers: asBearerAuth(admin.accessToken) }),
     );
 
     await Promise.all(updates);
-    for (const asset of assets) {
-      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
+    for (let i = 0; i < coordinates.length; i++) {
+      await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: assets[i].id });
     }
 
     [
@@ -324,12 +323,36 @@ describe('/search', () => {
         deferred: () => ({ dto: { city: 'Accra' }, assets: [assetHeic] }),
       },
       {
+        should: "should search city ('')",
+        deferred: () => ({ dto: { city: '', isVisible: true }, assets: [assetLast] }),
+      },
+      {
+        should: 'should search city (null)',
+        deferred: () => ({ dto: { city: null, isVisible: true }, assets: [assetLast] }),
+      },
+      {
         should: 'should search by state',
         deferred: () => ({ dto: { state: 'New York' }, assets: [assetDensity] }),
       },
       {
+        should: "should search state ('')",
+        deferred: () => ({ dto: { state: '', isVisible: true, withExif: true }, assets: [assetLast, assetNotocactus] }),
+      },
+      {
+        should: 'should search state (null)',
+        deferred: () => ({ dto: { state: null, isVisible: true }, assets: [assetLast, assetNotocactus] }),
+      },
+      {
         should: 'should search by country',
         deferred: () => ({ dto: { country: 'France' }, assets: [assetFalcon] }),
+      },
+      {
+        should: "should search country ('')",
+        deferred: () => ({ dto: { country: '', isVisible: true }, assets: [assetLast] }),
+      },
+      {
+        should: 'should search country (null)',
+        deferred: () => ({ dto: { country: null, isVisible: true }, assets: [assetLast] }),
       },
       {
         should: 'should search by make',
