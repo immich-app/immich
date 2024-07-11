@@ -95,10 +95,10 @@ class _CropImagePageState extends State<CropImagePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             _buildAspectRatioButton(context, null, 'Free'),
-                            _buildAspectRatioButton(context, 1, '1:1'),
-                            _buildAspectRatioButton(context, 16 / 9, '16:9'),
-                            _buildAspectRatioButton(context, 3 / 2, '3:2'),
-                            _buildAspectRatioButton(context, 7 / 5, '7:5'),
+                            _buildAspectRatioButton(context, 1.0, '1:1'),
+                            _buildAspectRatioButton(context, 16.0 / 9.0, '16:9'),
+                            _buildAspectRatioButton(context, 3.0 / 2.0, '3:2'),
+                            _buildAspectRatioButton(context, 7.0 / 5.0, '7:5'),
                           ],
                         ),
                       ],
@@ -141,7 +141,7 @@ class _CropImagePageState extends State<CropImagePage> {
         IconButton(
           icon: Icon(
             iconData,
-            color: _selectedAspectRatio == aspectRatio ? Colors.blue : Colors.white,
+            color: _selectedAspectRatio == aspectRatio ? Colors.indigo : Colors.white,
           ),
           onPressed: () => setState(() {
             _cropController.aspectRatio = aspectRatio;
