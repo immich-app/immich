@@ -382,7 +382,7 @@
   "assets": "Zapisi",
   "assets_added_count": "Dodato {count, plural, one {# datoteka} other {# datoteka}}",
   "assets_added_to_album_count": "Dodato je {count, plural, one {# datoteka} other {# datoteka}} u album",
-  "assets_added_to_name_count": "Dodato {count, plural, one {# datoteka} other {# datoteke}} u {name}",
+  "assets_added_to_name_count": "Dodato {count, plural, one {# datoteka} other {# datoteke}} u {hasName, select, true {<b>{name}</b>} other {novi album}}",
   "assets_count": "{count, plural, one {# datoteka} few {# datoteke} other {# datoteka}}",
   "assets_moved_to_trash": "{count, plural, one {Premeštena # datoteka} few {Premeštene # datoteke} other {Premeštene # datoteka}} u otpad",
   "assets_moved_to_trash_count": "Premešteno {count, plural, one {# datoteka} few {# datoteke} other {# datoteka}} u otpad",
