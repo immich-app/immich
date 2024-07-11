@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:crop_image/crop_image.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'edit.page.dart';
 
 class CropImagePage extends StatefulWidget {
@@ -33,9 +32,11 @@ class _CropImagePageState extends State<CropImagePage> {
           IconButton(
             icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
             onPressed: () async {
-              final croppedImage = await _cropController.croppedImage();
-              
-              Navigator.pop(context, croppedImage);
+              Image croppedImage = await _cropController.croppedImage();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditImagePage(image: croppedImage)),
+              );
             },
           ),
         ],
@@ -69,18 +70,21 @@ class _CropImagePageState extends State<CropImagePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+                          padding: const EdgeInsets.only(
+                              left: 20, right: 20, bottom: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.rotate_left, color: Colors.white),
+                                icon: const Icon(Icons.rotate_left,
+                                    color: Colors.white),
                                 onPressed: () {
                                   _cropController.rotateLeft();
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.rotate_right, color: Colors.white),
+                                icon: const Icon(Icons.rotate_right,
+                                    color: Colors.white),
                                 onPressed: () {
                                   _cropController.rotateRight();
                                 },
@@ -93,7 +97,8 @@ class _CropImagePageState extends State<CropImagePage> {
                           children: <Widget>[
                             _buildAspectRatioButton(context, null, 'Free'),
                             _buildAspectRatioButton(context, 1.0, '1:1'),
-                            _buildAspectRatioButton(context, 16.0 / 9.0, '16:9'),
+                            _buildAspectRatioButton(
+                                context, 16.0 / 9.0, '16:9'),
                             _buildAspectRatioButton(context, 3.0 / 2.0, '3:2'),
                             _buildAspectRatioButton(context, 7.0 / 5.0, '7:5'),
                           ],
@@ -110,7 +115,8 @@ class _CropImagePageState extends State<CropImagePage> {
     );
   }
 
-  Widget _buildAspectRatioButton(BuildContext context, double? aspectRatio, String label) {
+  Widget _buildAspectRatioButton(
+      BuildContext context, double? aspectRatio, String label) {
     IconData iconData;
     switch (label) {
       case 'Free':
@@ -138,7 +144,9 @@ class _CropImagePageState extends State<CropImagePage> {
         IconButton(
           icon: Icon(
             iconData,
-            color: _selectedAspectRatio == aspectRatio ? Colors.indigo : Colors.white,
+            color: _selectedAspectRatio == aspectRatio
+                ? Colors.indigo
+                : Colors.white,
           ),
           onPressed: () => setState(() {
             _cropController.aspectRatio = aspectRatio;
