@@ -9337,6 +9337,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -9348,6 +9349,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "order": {
@@ -10526,6 +10528,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -10537,6 +10540,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "page": {

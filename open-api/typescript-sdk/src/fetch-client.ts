@@ -706,10 +706,10 @@ export type MetadataSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -777,10 +777,10 @@ export type SmartSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     page?: number;
     personIds?: string[];
     query: string;

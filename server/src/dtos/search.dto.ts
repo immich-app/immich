@@ -75,34 +75,28 @@ class BaseSearchDto {
   takenAfter?: Date;
 
   @IsString()
-  @IsNotEmpty()
   @Optional({ nullable: true })
   city?: string | null;
 
   @IsString()
-  @IsNotEmpty()
   @Optional({ nullable: true })
   state?: string | null;
 
   @IsString()
-  @IsNotEmpty()
   @Optional({ nullable: true })
   country?: string | null;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @Optional({ nullable: true })
   make?: string;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  model?: string;
+  @Optional({ nullable: true })
+  model?: string | null;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  lensModel?: string;
+  @Optional({ nullable: true })
+  lensModel?: string | null;
 
   @IsInt()
   @Min(1)

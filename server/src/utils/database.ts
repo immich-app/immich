@@ -49,7 +49,7 @@ export function searchAssetBuilder(
       : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
 
     for (const [key, value] of Object.entries(exifInfo)) {
-      if (value === null) {
+      if (value === null || value === '') {
         builder.andWhere(`exifInfo.${key} IS NULL`);
       } else {
         builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });

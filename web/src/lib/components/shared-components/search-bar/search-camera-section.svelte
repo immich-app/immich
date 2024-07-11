@@ -6,9 +6,9 @@
 </script>
 
 <script lang="ts">
-  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
-  import Combobox, { toComboBoxOptions } from '../combobox.svelte';
+  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
   export let filters: SearchCameraFilter;
@@ -22,17 +22,23 @@
   $: handlePromiseError(updateModels(makeFilter));
 
   async function updateMakes(model?: string) {
-    makes = await getSearchSuggestions({
-      $type: SearchSuggestionType.CameraMake,
-      model,
-    });
+    makes = [
+      ...(await getSearchSuggestions({
+        $type: SearchSuggestionType.CameraMake,
+        model: model ?? undefined,
+      })),
+      '',
+    ];
   }
 
   async function updateModels(make?: string) {
-    models = await getSearchSuggestions({
-      $type: SearchSuggestionType.CameraModel,
-      make,
-    });
+    models = [
+      ...(await getSearchSuggestions({
+        $type: SearchSuggestionType.CameraModel,
+        make: make ?? undefined,
+      })),
+      '',
+    ];
   }
 </script>
 
@@ -44,9 +50,9 @@
       <Combobox
         label={$t('make')}
         on:select={({ detail }) => (filters.make = detail?.value)}
-        options={toComboBoxOptions(makes)}
+        options={asComboboxOptions(makes)}
         placeholder={$t('search_camera_make')}
-        selectedOption={makeFilter ? { label: makeFilter, value: makeFilter } : undefined}
+        selectedOption={asSelectedOption(makeFilter)}
       />
     </div>
 
@@ -54,9 +60,9 @@
       <Combobox
         label={$t('model')}
         on:select={({ detail }) => (filters.model = detail?.value)}
-        options={toComboBoxOptions(models)}
+        options={asComboboxOptions(models)}
         placeholder={$t('search_camera_model')}
-        selectedOption={modelFilter ? { label: modelFilter, value: modelFilter } : undefined}
+        selectedOption={asSelectedOption(modelFilter)}
       />
     </div>
   </div>

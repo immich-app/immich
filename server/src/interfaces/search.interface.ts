@@ -97,9 +97,9 @@ export interface SearchPathOptions {
 export interface SearchExifOptions {
   city?: string | null;
   country?: string | null;
-  lensModel?: string;
-  make?: string;
-  model?: string;
+  lensModel?: string | null;
+  make?: string | null;
+  model?: string | null;
   state?: string | null;
 }
 
