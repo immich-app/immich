@@ -192,7 +192,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,

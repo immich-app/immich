@@ -1,22 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataRepository.name);

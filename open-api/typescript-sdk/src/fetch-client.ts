@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.107.2
+ * 1.108.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1063,6 +1063,7 @@ export type SystemConfigOAuthDto = {
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    profileSigningAlgorithm: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
@@ -2128,7 +2129,7 @@ export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     }));
 }
 export function getPartners({ direction }: {
-    direction: "shared-by" | "shared-with";
+    direction: PartnerDirection;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3130,6 +3131,10 @@ export enum Type2 {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
+}
+export enum PartnerDirection {
+    SharedBy = "shared-by",
+    SharedWith = "shared-with"
 }
 export enum PathEntityType {
     Asset = "asset",

@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -14,15 +13,9 @@ class FaceDetector(InferenceModel):
     depends = []
     identity = (ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
 
-    def __init__(
-        self,
-        model_name: str,
-        min_score: float = 0.7,
-        cache_dir: Path | str | None = None,
-        **model_kwargs: Any,
-    ) -> None:
+    def __init__(self, model_name: str, min_score: float = 0.7, **model_kwargs: Any) -> None:
         self.min_score = model_kwargs.pop("minScore", min_score)
-        super().__init__(model_name, cache_dir, **model_kwargs)
+        super().__init__(model_name, **model_kwargs)
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)

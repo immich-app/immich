@@ -2,8 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { ONE_HOUR, WEB_ROOT } from 'src/constants';
+import { ONE_HOUR, resourcePaths } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
 import { JobService } from 'src/services/job.service';
@@ -56,9 +55,9 @@ export class ApiService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync(join(WEB_ROOT, 'index.html')).toString();
+      index = readFileSync(resourcePaths.web.indexHtml).toString();
     } catch {
-      this.logger.warn('Unable to open `www/index.html, skipping SSR.');
+      this.logger.warn(`Unable to open ${resourcePaths.web.indexHtml}, skipping SSR.`);
     }
 
     return async (request: Request, res: Response, next: NextFunction) => {

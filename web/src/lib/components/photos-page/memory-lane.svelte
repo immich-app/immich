@@ -76,7 +76,7 @@
             <img
               class="h-full w-full rounded-xl object-cover"
               src={getAssetThumbnailUrl(memory.assets[0].id)}
-              alt={`Memory Lane ${getAltText(memory.assets[0])}`}
+              alt={`Memory Lane ${$getAltText(memory.assets[0])}`}
               draggable="false"
             />
             <p class="absolute bottom-2 left-4 z-10 text-lg text-white">

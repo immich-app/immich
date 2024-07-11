@@ -32,7 +32,7 @@
       <!-- THUMBNAIL-->
       <img
         src={getAssetThumbnailUrl(asset.id)}
-        alt={getAltText(asset)}
+        alt={$getAltText(asset)}
         title={assetData}
         class="h-60 object-cover rounded-t-xl w-full"
         draggable="false"

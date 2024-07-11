@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchUsers, getPartners, type UserResponseDto } from '@immich/sdk';
+  import { searchUsers, getPartners, type UserResponseDto, PartnerDirection } from '@immich/sdk';
   import { createEventDispatcher, onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
@@ -21,7 +21,7 @@
     users = users.filter((_user) => _user.id !== user.id);
 
     // exclude partners from the list of users available for selection
-    const partners = await getPartners({ direction: 'shared-by' });
+    const partners = await getPartners({ direction: PartnerDirection.SharedBy });
     const partnerIds = new Set(partners.map((partner) => partner.id));
     availableUsers = users.filter((user) => !partnerIds.has(user.id));
   });

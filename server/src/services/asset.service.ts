@@ -219,6 +219,7 @@ export class AssetService {
       } else {
         stack = await this.stackRepository.create({
           primaryAssetId: primaryAsset.id,
+          ownerId: primaryAsset.ownerId,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       }

@@ -10,6 +10,8 @@ export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity =
   return {
     id: stackId,
     assets: assets,
+    owner: assets[0].owner,
+    ownerId: assets[0].ownerId,
     primaryAsset: assets[0],
     primaryAssetId: assets[0].id,
   };

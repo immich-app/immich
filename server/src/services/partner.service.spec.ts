@@ -21,16 +21,16 @@ describe(PartnerService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getAll', () => {
+  describe('search', () => {
     it("should return a list of partners with whom I've shared my library", async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1, partnerStub.user1ToAdmin1]);
-      await expect(sut.getAll(authStub.user1, PartnerDirection.SharedBy)).resolves.toBeDefined();
+      await expect(sut.search(authStub.user1, { direction: PartnerDirection.SharedBy })).resolves.toBeDefined();
       expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
     });
 
     it('should return a list of partners who have shared their libraries with me', async () => {
       partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1, partnerStub.user1ToAdmin1]);
-      await expect(sut.getAll(authStub.user1, PartnerDirection.SharedWith)).resolves.toBeDefined();
+      await expect(sut.search(authStub.user1, { direction: PartnerDirection.SharedWith })).resolves.toBeDefined();
       expect(partnerMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
     });
   });

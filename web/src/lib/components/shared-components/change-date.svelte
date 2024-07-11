@@ -76,17 +76,12 @@
   onConfirm={handleConfirm}
   onCancel={handleCancel}
 >
-  <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
+  <div class="flex flex-col text-left gap-2" slot="prompt">
     <div class="flex flex-col">
       <label for="datetime">{$t('date_and_time')}</label>
-      <DateInput
-        class="immich-form-input text-sm my-4 w-full"
-        id="datetime"
-        type="datetime-local"
-        bind:value={selectedDate}
-      />
+      <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
     </div>
-    <div class="flex flex-col w-full mt-2">
+    <div>
       <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
     </div>
   </div>

@@ -199,9 +199,12 @@ class SearchInputPage extends HookConsumerWidget {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: LocationPicker(
-                onSelected: handleOnSelect,
-                filter: filter.value.location,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: LocationPicker(
+                  onSelected: handleOnSelect,
+                  filter: filter.value.location,
+                ),
               ),
             ),
           ),
@@ -242,7 +245,7 @@ class SearchInputPage extends HookConsumerWidget {
           onSearch: search,
           onClear: handleClear,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.all(16.0),
             child: CameraPicker(
               onSelect: handleOnSelect,
               filter: filter.value.camera,

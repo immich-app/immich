@@ -186,7 +186,7 @@
         {#if asset.resized}
           <ImageThumbnail
             url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
-            altText={getAltText(asset)}
+            altText={$getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}

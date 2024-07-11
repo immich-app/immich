@@ -270,7 +270,7 @@ describe(AlbumService.name, () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-4']));
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       albumMock.update.mockResolvedValue(albumStub.oneAsset);
-      albumMock.hasAsset.mockResolvedValue(false);
+      albumMock.getAssetIds.mockResolvedValue(new Set());
 
       await expect(
         sut.update(authStub.admin, albumStub.oneAsset.id, {
@@ -278,7 +278,7 @@ describe(AlbumService.name, () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(albumMock.hasAsset).toHaveBeenCalledWith({ albumId: 'album-4', assetId: 'not-in-album' });
+      expect(albumMock.getAssetIds).toHaveBeenCalledWith('album-4', ['not-in-album']);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 

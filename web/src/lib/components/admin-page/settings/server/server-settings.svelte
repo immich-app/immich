@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
@@ -14,8 +13,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div>
@@ -40,8 +39,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['server'] })}
-            on:save={() => dispatch('save', { server: config.server })}
+            onReset={(options) => onReset({ ...options, configKeys: ['server'] })}
+            onSave={() => onSave({ server: config.server })}
             showResetToDefault={!isEqual(savedConfig.server, defaultConfig.server)}
             {disabled}
           />

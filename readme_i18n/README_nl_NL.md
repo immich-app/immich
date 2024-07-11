@@ -42,7 +42,7 @@
 - ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
 
 ## Inhoud
-s
+
 - [Officiële documentatie](https://immich.app/docs)
 - [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
@@ -57,24 +57,15 @@ De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vind
 
 ## Demo
 
-De demo is te bekijken op https://demo.immich.app.
+Je kunt de demo [hier](https://demo.immich.app/) bekijken. De demo server is actief op een Free-tier Oracle VM in Amsterdam met een 2.4GHz quad-core ARM64 CPU en 24GB RAM.
 
-Voor de mobiele app kunt u gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
+Voor de mobiele app kun je gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
 
-```bash title="Demo inloggegevens"
-De inloggegevens
-email: demo@immich.app
-wachtwoord: demo
-```
+### Login gegevens
 
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
-
-## Activiteit
-
-![Activiteit](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image"
-
+| Email           | Wachtwoord |
+| --------------- | ---------- |
+| demo@immich.app | demo       |
 
 # Functies
 
@@ -107,12 +98,15 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Herinneringen (x jaar geleden)                      | Ja     | Ja  |
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
+| Gestapelde foto's                                   | Ja     | Ja  |
 
-## Contributie-leden
+## Vertalingen
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
-</a>
+Je kunt [hier](https://immich.app/docs/developer/translations) meer over vertalingen lezen.
+
+## Repository activiteit
+
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Ster geschiedenis
 
@@ -122,4 +116,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## Contributie-leden
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

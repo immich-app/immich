@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
-import { envName, excludePaths, isDev, serverVersion, WEB_ROOT } from 'src/constants';
+import { envName, excludePaths, isDev, resourcePaths, serverVersion } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
@@ -38,11 +38,11 @@ async function bootstrap() {
   useSwagger(app);
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  if (existsSync(WEB_ROOT)) {
+  if (existsSync(resourcePaths.web.root)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
     app.use(
-      sirv(WEB_ROOT, {
+      sirv(resourcePaths.web.root, {
         etag: true,
         gzip: true,
         brotli: true,

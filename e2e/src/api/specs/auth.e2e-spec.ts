@@ -100,6 +100,12 @@ describe('/auth/*', () => {
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest());
       });
+
+      it('should reject an invalid email', async () => {
+        const { status, body } = await request(app).post('/auth/login').send({ email: [], password });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.invalidEmail);
+      });
     }
 
     it('should accept a correct password', async () => {

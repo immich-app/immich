@@ -26,6 +26,8 @@ services:
     volumes:
       - upload:/usr/src/app/upload
       - ./test-assets:/test-assets
+    extra_hosts:
+      - 'auth-server:host-gateway'
     depends_on:
       - redis
       - database
