@@ -55,7 +55,6 @@
       console.log(get(cropSettings))
       return;
     }
-    cropSettings.set(crop);
     selectedSize = size;
     cropAspectRatio.set(size);
   }
