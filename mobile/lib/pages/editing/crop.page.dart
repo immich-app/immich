@@ -1,29 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:crop_image/crop_image.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart'; 
 import 'edit.page.dart';
 
-class CropImagePage extends StatefulWidget {
+class CropImagePage extends HookWidget {
   final Image image;
   const CropImagePage({super.key, required this.image});
 
   @override
-  State<CropImagePage> createState() => _CropImagePageState();
-}
-
-class _CropImagePageState extends State<CropImagePage> {
-  late CropController _cropController;
-  double? _selectedAspectRatio;
-
-  @override
-  void initState() {
-    super.initState();
-    _cropController = CropController(
-      defaultCrop: const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final cropController = useCropController();
+    final aspectRatio = useState<double?>(null);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -32,7 +21,7 @@ class _CropImagePageState extends State<CropImagePage> {
           IconButton(
             icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
             onPressed: () async {
-              Image croppedImage = await _cropController.croppedImage();
+              Image croppedImage = await cropController.croppedImage();
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => EditImagePage(image: croppedImage)),
@@ -50,8 +39,8 @@ class _CropImagePageState extends State<CropImagePage> {
                 width: constraints.maxWidth * 0.8,
                 height: constraints.maxHeight * 0.6,
                 child: CropImage(
-                  controller: _cropController,
-                  image: widget.image,
+                  controller: cropController,
+                  image: image,
                   gridColor: Colors.white,
                 ),
               ),
@@ -79,14 +68,14 @@ class _CropImagePageState extends State<CropImagePage> {
                                 icon: const Icon(Icons.rotate_left,
                                     color: Colors.white),
                                 onPressed: () {
-                                  _cropController.rotateLeft();
+                                  cropController.rotateLeft();
                                 },
                               ),
                               IconButton(
                                 icon: const Icon(Icons.rotate_right,
                                     color: Colors.white),
                                 onPressed: () {
-                                  _cropController.rotateRight();
+                                  cropController.rotateRight();
                                 },
                               ),
                             ],
@@ -95,12 +84,36 @@ class _CropImagePageState extends State<CropImagePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            _buildAspectRatioButton(context, null, 'Free'),
-                            _buildAspectRatioButton(context, 1.0, '1:1'),
-                            _buildAspectRatioButton(
-                                context, 16.0 / 9.0, '16:9'),
-                            _buildAspectRatioButton(context, 3.0 / 2.0, '3:2'),
-                            _buildAspectRatioButton(context, 7.0 / 5.0, '7:5'),
+                            _AspectRatioButton(
+                              cropController: cropController,
+                              aspectRatio: aspectRatio,
+                              ratio: null,
+                              label: 'Free',
+                            ),
+                            _AspectRatioButton(
+                              cropController: cropController,
+                              aspectRatio: aspectRatio,
+                              ratio: 1.0,
+                              label: '1:1',
+                            ),
+                            _AspectRatioButton(
+                              cropController: cropController,
+                              aspectRatio: aspectRatio,
+                              ratio: 16.0 / 9.0,
+                              label: '16:9',
+                            ),
+                            _AspectRatioButton(
+                              cropController: cropController,
+                              aspectRatio: aspectRatio,
+                              ratio: 3.0 / 2.0,
+                              label: '3:2',
+                            ),
+                            _AspectRatioButton(
+                              cropController: cropController,
+                              aspectRatio: aspectRatio,
+                              ratio: 7.0 / 5.0,
+                              label: '7:5',
+                            ),
                           ],
                         ),
                       ],
@@ -114,9 +127,23 @@ class _CropImagePageState extends State<CropImagePage> {
       ),
     );
   }
+}
 
-  Widget _buildAspectRatioButton(
-      BuildContext context, double? aspectRatio, String label) {
+class _AspectRatioButton extends StatelessWidget {
+  final CropController cropController;
+  final ValueNotifier<double?> aspectRatio;
+  final double? ratio;
+  final String label;
+
+  const _AspectRatioButton({
+    required this.cropController,
+    required this.aspectRatio,
+    required this.ratio,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     IconData iconData;
     switch (label) {
       case 'Free':
@@ -144,14 +171,12 @@ class _CropImagePageState extends State<CropImagePage> {
         IconButton(
           icon: Icon(
             iconData,
-            color: _selectedAspectRatio == aspectRatio
-                ? Colors.indigo
-                : Colors.white,
+            color: aspectRatio.value == ratio ? Colors.indigo : Colors.white,
           ),
-          onPressed: () => setState(() {
-            _cropController.aspectRatio = aspectRatio;
-            _selectedAspectRatio = aspectRatio;
-          }),
+          onPressed: () {
+            aspectRatio.value = ratio;
+            cropController.aspectRatio = ratio;
+          },
         ),
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
       ],
