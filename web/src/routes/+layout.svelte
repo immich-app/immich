@@ -8,8 +8,8 @@
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import { Theme } from '$lib/constants';
-  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
+  import { defaultLang, Theme } from '$lib/constants';
+  import { colorTheme, handleToggleTheme, lang, type ThemeSetting } from '$lib/stores/preferences.store';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
@@ -53,6 +53,7 @@
   onMount(() => {
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+    document.documentElement.lang = $lang || defaultLang.code;
   });
 
   onDestroy(() => {
