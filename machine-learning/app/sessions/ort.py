@@ -86,7 +86,7 @@ class OrtSession:
         options = []
         for provider in self.providers:
             match provider:
-                case "CPUExecutionProvider" | "CUDAExecutionProvider":
+                case "CPUExecutionProvider" | "CUDAExecutionProvider"| "ROCMExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
                     option = {"device_type": "GPU_FP32", "cache_dir": (self.model_path.parent / "openvino").as_posix()}
