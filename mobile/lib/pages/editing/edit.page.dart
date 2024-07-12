@@ -21,22 +21,19 @@ class EditImagePage extends StatelessWidget {
                 (image == null && asset != null),
             'Must supply one of asset or image');
 
-  Image _getImageWidget() {
-    if (asset != null) {
-      return Image(image: ImmichImage.imageProvider(asset: asset!));
-    } else if (image != null) {
-      return image!;
-    } else {
-      throw Exception('Invalid image source type');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final ImageProvider provider = (asset != null) 
-        ? ImmichImage.imageProvider(asset: asset!) 
-        : (image != null) 
-            ? image!.image 
+    final ImageProvider provider = (asset != null)
+        ? ImmichImage.imageProvider(asset: asset!)
+        : (image != null)
+            ? image!.image
+            : throw Exception('Invalid image source type');
+
+    final Image imageWidget = (asset != null)
+        ? Image(image: ImmichImage.imageProvider(asset: asset!))
+        : (image != null)
+            ? image!
             : throw Exception('Invalid image source type');
 
     return Scaffold(
@@ -50,9 +47,8 @@ class EditImagePage extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
-            onPressed: () {
-              
-              if (asset != null) {
+            onPressed: () async {
+              if (image == null) {
                 ImmichToast.show(
                   durationInSecond: 1,
                   context: context,
@@ -60,7 +56,6 @@ class EditImagePage extends StatelessWidget {
                   gravity: ToastGravity.BOTTOM,
                 );
               } else {
-                // Handle saving the edited image
               }
             },
           ),
@@ -97,7 +92,7 @@ class EditImagePage extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CropImagePage(image: _getImageWidget()),
+                  builder: (context) => CropImagePage(image: imageWidget),
                 ),
               ),
             ),
