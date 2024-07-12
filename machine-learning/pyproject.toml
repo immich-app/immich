@@ -47,6 +47,11 @@ optional = true
 [tool.poetry.group.cuda.dependencies]
 onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 
+[tool.poetry.group.rocm]
+optional = true
+
+[tool.poetry.group.rocm.dependencies]
+
 [tool.poetry.group.openvino]
 optional = true
 

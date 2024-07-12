@@ -11,6 +11,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - ARM NN (Mali)
 - CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
+- ROCM (AMD GPUs)
 - OpenVINO (Intel discrete GPUs such as Iris Xe and Arc)
 
 ## Limitations
@@ -41,6 +42,10 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - The installed driver must be >= 535 (it must support CUDA 12.2).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
+#### ROCM
+
+- The GPU must be supported by ROCM (or use `HSA_OVERRIDE_GFX_VERSION=<a supported version, ie 10.3.0>`)
+
 #### OpenVINO
 
 - The server must have a discrete GPU, i.e. Iris Xe or Arc. Expect issues when attempting to use integrated graphics.
@@ -50,12 +55,12 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
-3. Still in `immich-machine-learning`, add one of -[armnn, cuda, openvino] to the `image` section's tag at the end of the line.
+3. Still in `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino] to the `image` section's tag at the end of the line.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
 
 ### Confirming Device Usage
 
-You can confirm the device is being recognized and used by checking its utilization. There are many tools to display this, such as `nvtop` for NVIDIA or Intel and `intel_gpu_top` for Intel.
+You can confirm the device is being recognized and used by checking its utilization. There are many tools to display this, such as `nvtop` for NVIDIA or Intel, `intel_gpu_top` for Intel, and `radeontop` for AMD.
 
 You can also check the logs of the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, or when you search with text in Immich, you should either see a log for `Available ORT providers` containing the relevant provider (e.g. `CUDAExecutionProvider` in the case of CUDA), or a `Loaded ANN model` log entry without errors in the case of ARM NN.
 

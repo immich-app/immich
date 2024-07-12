@@ -7,7 +7,7 @@
 
 This project uses [Poetry](https://python-poetry.org/docs/#installation), so be sure to install it first.
 Running `poetry install --no-root --with dev --with cpu` will install everything you need in an isolated virtual environment.
-CUDA and OpenVINO are supported as acceleration APIs. To use them, you can replace `--with cpu` with either of `--with cuda` or `--with openvino`. In the case of CUDA, a [compute capability](https://developer.nvidia.com/cuda-gpus) of 5.2 or higher is required.
+CUDA, ROCM and OpenVINO are supported as acceleration APIs. To use them, you can replace `--with cpu` with either of `--with cuda`, `--with rocm` or `--with openvino`. In the case of CUDA, a [compute capability](https://developer.nvidia.com/cuda-gpus) of 5.2 or higher is required.
 
 To add or remove dependencies, you can use the commands `poetry add $PACKAGE_NAME` and `poetry remove $PACKAGE_NAME`, respectively.
 Be sure to commit the `poetry.lock` and `pyproject.toml` files with `poetry lock --no-update` to reflect any changes in dependencies.
