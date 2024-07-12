@@ -35,9 +35,9 @@
 
 <div class="hidden md:block license-status pl-4 text-sm">
   {#if $isLicenseActivated}
-    <div class="flex gap-1 mt-4 place-items-center">
+    <div class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-100 py-3 px-2 rounded-lg">
       <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
-      <p class="text-immich-primary dark:text-immich-dark-primary">Licensed</p>
+      <p class="dark:text-gray-100">Licensed</p>
     </div>
   {:else}
     <button
