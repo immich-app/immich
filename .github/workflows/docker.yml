@@ -49,8 +49,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["", "-cuda", "-openvino", "-armnn","-rknn"]
+        suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn', '-rknn']
     steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Re-tag image
+        run: |
+          REGISTRY_NAME="ghcr.io"
+          REPOSITORY=${{ github.repository_owner }}/immich-machine-learning
+          TAG_OLD=main${{ matrix.suffix }}
+          TAG_PR=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
+          TAG_COMMIT=commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
+          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_PR $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_COMMIT $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
         - name: Login to GitHub Container Registry
           uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
           with:
@@ -74,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: [""]
+        suffix: ['']
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
@@ -125,11 +140,16 @@ jobs:
             device: openvino
             suffix: -openvino
 
+          - platforms: linux/amd64
+            runner: mich
+            device: rocm
+            suffix: -rocm
+
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
             device: armnn
             suffix: -armnn
-            
+
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
             device: rknn
@@ -257,7 +277,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
         env:
-          DOCKER_METADATA_PR_HEAD_SHA: "true"
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
           flavor: |
             # Disable latest tag
@@ -411,7 +431,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
         env:
-          DOCKER_METADATA_PR_HEAD_SHA: "true"
+          DOCKER_METADATA_PR_HEAD_SHA: 'true'
         with:
           flavor: |
             # Disable latest tag
