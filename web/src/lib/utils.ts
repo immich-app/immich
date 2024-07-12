@@ -333,3 +333,6 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
 export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
   return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 };
+
+// eslint-disable-next-line unicorn/prefer-code-point
+export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));

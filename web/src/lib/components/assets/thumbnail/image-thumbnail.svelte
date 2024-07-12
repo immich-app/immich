@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import { decodeBase64 } from '$lib/utils';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
-  // eslint-disable-next-line unicorn/prefer-node-protocol
-  import { Buffer } from 'buffer';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
@@ -62,7 +61,7 @@
   <img
     style:width={widthStyle}
     style:height={heightStyle}
-    src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
+    src={thumbHashToDataURL(decodeBase64(thumbhash))}
     alt={altText}
     {title}
     class="absolute top-0 object-cover"
