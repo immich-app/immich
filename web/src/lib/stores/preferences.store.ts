@@ -77,6 +77,7 @@ export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {})
 export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
 
 export const isShowDetail = persisted<boolean>('info-opened', false, {});
+export const isShowEditor = persisted<boolean>('editor-opened', false, {});
 
 export interface AlbumViewSettings {
   view: string;

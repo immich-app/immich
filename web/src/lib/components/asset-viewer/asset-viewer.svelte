@@ -5,7 +5,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { isShowDetail, isShowEditor, showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
@@ -61,6 +61,8 @@
   import { canCopyImagesToClipboard } from 'copy-image-clipboard';
   import { t } from 'svelte-i18n';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import EditorPanel from './editor/editor-panel.svelte';
+  import CropCanvas from './editor/crop-canvas.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -334,6 +336,12 @@
     }
     $isShowDetail = !$isShowDetail;
   };
+  const showEditorHandler = async () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
+    $isShowEditor = !$isShowEditor;
+  };
 
   const trashOrDelete = async (force: boolean = false) => {
     if (force || !isTrashEnabled) {
@@ -532,6 +540,12 @@
     }
   };
 
+  let selectedEditType: string = '';
+
+  function handleUpdateSelectedEditType(event: CustomEvent) {
+    selectedEditType = event.detail;
+  }
+
   $: if (!$user) {
     shouldShowShareModal = false;
   }
@@ -581,6 +595,7 @@
         on:delete={() => trashOrDelete()}
         on:permanentlyDelete={() => trashOrDelete(true)}
         on:favorite={toggleFavorite}
+        on:showEditorHandler={showEditorHandler}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:restoreAsset={() => handleRestoreAsset()}
         on:addToSharedAlbum={() => openAlbumPicker(true)}
@@ -597,7 +612,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !$isShowEditor}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
         <Icon path={mdiChevronLeft} size="36" ariaHidden />
@@ -668,7 +683,11 @@
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
           {:else}
+            {#if $isShowEditor && selectedEditType=='crop'}
+            <CropCanvas {asset}/>
+            {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
+            {/if}
           {/if}
         {:else}
           <VideoViewer
@@ -696,7 +715,7 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !$isShowEditor}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
         <Icon path={mdiChevronRight} size="36" ariaHidden />
@@ -712,6 +731,17 @@
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
+    </div>
+  {/if}
+
+  {#if $isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="detail-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <EditorPanel {asset} on:updateSelectedType={handleUpdateSelectedEditType} on:close={() => ($isShowEditor = false)} />
     </div>
   {/if}
 

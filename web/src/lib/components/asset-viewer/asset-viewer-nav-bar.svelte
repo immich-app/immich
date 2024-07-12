@@ -21,6 +21,7 @@
     mdiHeartOutline,
     mdiHistory,
     mdiImageAlbum,
+    mdiImageEditOutline,
     mdiImageMinusOutline,
     mdiImageOutline,
     mdiImageRefreshOutline,
@@ -166,6 +167,14 @@
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
         title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+      />
+    {/if}
+    {#if isOwner}
+      <CircleIconButton
+        color="opaque"
+        icon={mdiImageEditOutline}
+        on:click={() => dispatch('showEditorHandler')}
+        title={$t('editor')}
       />
     {/if}
 
