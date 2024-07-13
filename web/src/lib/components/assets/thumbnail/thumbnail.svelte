@@ -1,5 +1,5 @@
 <script lang="ts">
-  import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
@@ -24,11 +24,6 @@
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
 
-  const dispatch = createEventDispatcher<{
-    select: { asset: AssetResponseDto };
-    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
-  }>();
-
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
   export let thumbnailSize: number | undefined = undefined;
@@ -40,26 +35,37 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
-  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
+  export let intersectionConfig: {
+    root?: HTMLElement;
+    bottom?: string;
+    top?: string;
+    left?: string;
+    priority?: number;
+  } = {};
+  export let forceDisplay = false;
 
+  export let retrieveElement: boolean = false;
+  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
+  export let onRetrieveElement: ((elmeent: HTMLElement) => void) | undefined = undefined;
   let className = '';
   export { className as class };
 
+  let element: HTMLElement | undefined;
   let mouseOver = false;
+  let intersecting = false;
 
+  const dispatch = createEventDispatcher<{
+    select: { asset: AssetResponseDto };
+    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
+  }>();
+
+  $: if (retrieveElement && element) {
+    onRetrieveElement?.(element);
+  }
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
-
-  $: [width, height] = ((): [number, number] => {
-    if (thumbnailSize) {
-      return [thumbnailSize, thumbnailSize];
-    }
-
-    if (thumbnailWidth && thumbnailHeight) {
-      return [thumbnailWidth, thumbnailHeight];
-    }
-
-    return [235, 235];
-  })();
+  $: width = thumbnailSize || thumbnailWidth || 235;
+  $: height = thumbnailSize || thumbnailHeight || 235;
+  $: display = intersecting || forceDisplay;
 
   const onIconClickedHandler = (e: MouseEvent) => {
     e.stopPropagation();
@@ -91,8 +97,17 @@
   };
 </script>
 
-<IntersectionObserver once={false} on:intersected let:intersecting>
+<div
+  use:intersectionObserver={{
+    ...intersectionConfig,
+    onIntersect: () => (intersecting = true),
+    onSeparate: () => (intersecting = false),
+  }}
+  style:width="{width}px"
+  style:height="{height}px"
+>
   <a
+    bind:this={element}
     href={currentUrlReplaceAssetId(asset.id)}
     style:width="{width}px"
     style:height="{height}px"
@@ -105,7 +120,7 @@
     tabindex={0}
     on:click={handleClick}
   >
-    {#if intersecting}
+    {#if display}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
@@ -232,4 +247,4 @@
       {/if}
     {/if}
   </a>
-</IntersectionObserver>
+</div>

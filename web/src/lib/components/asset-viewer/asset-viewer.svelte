@@ -56,7 +56,6 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import { navigate } from '$lib/utils/navigation';
   import { websocketEvents } from '$lib/stores/websocket';
   import { canCopyImagesToClipboard } from 'copy-image-clipboard';
   import { t } from 'svelte-i18n';
@@ -83,7 +82,7 @@
 
   const dispatch = createEventDispatcher<{
     action: { type: AssetAction; asset: AssetResponseDto };
-    close: void;
+    close: { asset: AssetResponseDto };
     next: void;
     previous: void;
   }>();
@@ -207,7 +206,7 @@
         asset = assetUpdate;
       }
     });
-    await navigate({ targetRoute: 'current', assetId: asset.id });
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -276,10 +275,9 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const closeViewer = async () => {
+  const closeViewer = () => {
     if ($slideshowState === SlideshowState.None) {
-      dispatch('close');
-      await navigate({ targetRoute: 'current', assetId: null });
+      dispatch('close', { asset });
     } else {
       $slideshowState = SlideshowState.StopSlideshow;
     }
@@ -507,7 +505,7 @@
           asset,
         });
       }
-      await closeViewer();
+      closeViewer();
     }
   };
 

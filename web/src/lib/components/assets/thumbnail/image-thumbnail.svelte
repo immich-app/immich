@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { decodeBase64 } from '$lib/utils';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
@@ -20,13 +20,27 @@
   export let preload = true;
   export let hiddenIconClass = 'text-white';
 
+  let duration: number = 150;
   let complete = false;
+  let error = false;
   let img: HTMLImageElement;
 
-  onMount(async () => {
-    await img.decode();
-    await tick();
-    complete = true;
+  onMount(() => {
+    const onload = () => {
+      complete = true;
+    };
+    const onerror = () => {
+      error = true;
+    };
+    if (img.complete) {
+      onload();
+    }
+    img.addEventListener('load', onload);
+    img.addEventListener('error', onerror);
+    return () => {
+      img?.removeEventListener('load', onload);
+      img?.removeEventListener('error', onerror);
+    };
   });
 </script>
 
@@ -38,7 +52,7 @@
   style:filter={hidden ? 'grayscale(50%)' : 'none'}
   style:opacity={hidden ? '0.5' : '1'}
   src={url}
-  alt={altText}
+  alt={complete || error ? altText : ''}
   {title}
   class="object-cover transition duration-300 {border
     ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
@@ -57,7 +71,7 @@
   </div>
 {/if}
 
-{#if thumbhash && !complete}
+{#if thumbhash && (!complete || error)}
   <img
     style:width={widthStyle}
     style:height={heightStyle}
@@ -69,6 +83,6 @@
     class:shadow-lg={shadow}
     class:rounded-full={circle}
     draggable="false"
-    out:fade={{ duration: 300 }}
+    out:fade={{ duration }}
   />
 {/if}

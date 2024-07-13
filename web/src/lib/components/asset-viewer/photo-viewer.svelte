@@ -12,7 +12,7 @@
   import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
@@ -33,6 +33,7 @@
   let imageLoaded: boolean = false;
   let imageError: boolean = false;
   let forceUseOriginal: boolean = false;
+  let loader: HTMLImageElement;
 
   $: isWebCompatible = isWebCompatibleImage(asset);
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
@@ -108,6 +109,26 @@
     event.preventDefault();
     handlePromiseError(copyImage());
   };
+
+  onMount(() => {
+    const onload = () => {
+      imageLoaded = true;
+      assetFileUrl = imageLoaderUrl;
+    };
+    const onerror = () => {
+      imageError = imageLoaded = true;
+    };
+    if (loader.complete) {
+      imageLoaded = true;
+      assetFileUrl = imageLoaderUrl;
+    }
+    loader.addEventListener('load', onload);
+    loader.addEventListener('error', onerror);
+    return () => {
+      loader?.removeEventListener('load', onload);
+      loader?.removeEventListener('error', onerror);
+    };
+  });
 </script>
 
 <svelte:window
@@ -119,6 +140,8 @@
 {#if imageError}
   <div class="h-full flex items-center justify-center">{$t('error_loading_image')}</div>
 {/if}
+<!-- svelte-ignore a11y-missing-attribute -->
+<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
 <div bind:this={element} class="relative h-full select-none">
   <img
     style="display:none"
@@ -128,7 +151,7 @@
     on:error={() => (imageError = imageLoaded = true)}
   />
   {#if !imageLoaded}
-    <div class="flex h-full items-center justify-center">
+    <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
     </div>
   {:else if !imageError}
@@ -159,3 +182,15 @@
     </div>
   {/if}
 </div>
+
+<style>
+  @keyframes delayedVisibility {
+    to {
+      visibility: visible;
+    }
+  }
+  #spinner {
+    visibility: hidden;
+    animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+</style>
