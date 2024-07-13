@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
@@ -25,6 +26,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
+    @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
@@ -266,5 +268,14 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
+  }
+
+  @GenerateSql()
+  async getLatestFaceDate(): Promise<Date | undefined> {
+    const result: { latestDate?: Date } | undefined = await this.jobStatusRepository
+      .createQueryBuilder('jobStatus')
+      .select('MAX(jobStatus.facesRecognizedAt)', 'latestDate')
+      .getRawOne();
+    return result?.latestDate;
   }
 }

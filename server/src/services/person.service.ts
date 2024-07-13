@@ -26,6 +26,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -34,6 +35,7 @@ import {
   IDeferrableJob,
   IEntityJob,
   IJobRepository,
+  INightlyJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
@@ -67,7 +69,7 @@ export class PersonService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
@@ -376,13 +378,26 @@ export class PersonService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueRecognizeFaces({ force }: IBaseJob): Promise<JobStatus> {
+  async handleQueueRecognizeFaces({ force, nightly }: INightlyJob): Promise<JobStatus> {
     const { machineLearning } = await this.configCore.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
     await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
+
+    if (nightly) {
+      const [state, latestFaceDate] = await Promise.all([
+        this.systemMetadataRepository.get(SystemMetadataKey.FACIAL_RECOGNITION_STATE),
+        this.repository.getLatestFaceDate(),
+      ]);
+
+      if (state && state.lastRun && latestFaceDate && state.lastRun > latestFaceDate) {
+        this.logger.debug('Skipping facial recognition nightly since no face has been added since the last run');
+        return JobStatus.SKIPPED;
+      }
+    }
+
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
@@ -394,6 +409,7 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
+    const lastRun = new Date();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
     );
@@ -403,6 +419,8 @@ export class PersonService {
         page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
       );
     }
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.FACIAL_RECOGNITION_STATE, { lastRun });
 
     return JobStatus.SUCCESS;
   }
