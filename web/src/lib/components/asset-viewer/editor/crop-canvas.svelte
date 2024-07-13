@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { cropAspectRatio, cropImageScale, cropImageSize, cropSettings, type CropSettings } from '$lib/stores/asset-editor.store';
+  import {
+    cropAspectRatio,
+    cropImageScale,
+    cropImageSize,
+    cropSettings,
+    type CropSettings,
+  } from '$lib/stores/asset-editor.store';
   import { onMount, afterUpdate, onDestroy } from 'svelte';
   import { derived, get } from 'svelte/store';
 
@@ -33,7 +39,7 @@
   cropAspectRatio.subscribe((value) => {
     aspectRatio = value;
     const newCrop = recalculateCrop(true); // Recalculate the crop when the aspect ratio changes and return the new value
-    if(newCrop){
+    if (newCrop) {
       animateCropChange(newCrop);
     }
   });
@@ -88,7 +94,7 @@
     ctx.fillRect(0, crop.y + crop.height, canvas.width, canvas.height - crop.y - crop.height);
   };
 
-  const fadeOverlay = (toDark:boolean) => {
+  const fadeOverlay = (toDark: boolean) => {
     const targetLevel = toDark ? 0.65 : 0.4;
     const step = toDark ? 0.05 : -0.05;
 
@@ -108,7 +114,7 @@
   };
 
   const resizeCanvas = () => {
-    if(!canvas.parentElement){
+    if (!canvas.parentElement) {
       return;
     }
     const containerWidth = canvas.parentElement.clientWidth;
@@ -139,15 +145,15 @@
 
   const onImageLoad = () => {
     if (canvas) {
-      let newctx = canvas.getContext('2d')
-      if(!newctx){
+      let newctx = canvas.getContext('2d');
+      if (!newctx) {
         return;
       }
       ctx = newctx;
       resizeCanvas();
 
-      const canvasParent = canvas.parentElement
-      if(!canvasParent) {
+      const canvasParent = canvas.parentElement;
+      if (!canvasParent) {
         return;
       }
       const containerWidth = canvasParent.clientWidth;
@@ -233,7 +239,7 @@
     return { mouseX: e.offsetX, mouseY: e.offsetY };
   };
 
-  const isOnCropBoundary = (mouseX:number, mouseY:number) => {
+  const isOnCropBoundary = (mouseX: number, mouseY: number) => {
     const { x, y, width, height } = crop;
     const sensitivity = 10;
     const cornerSensitivity = 15;
@@ -279,12 +285,12 @@
     };
   };
 
-  const isInCropArea = (mouseX:number, mouseY:number) => {
+  const isInCropArea = (mouseX: number, mouseY: number) => {
     const { x, y, width, height } = crop;
     return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
   };
 
-  const setResizeSide = (mouseX:number, mouseY:number) => {
+  const setResizeSide = (mouseX: number, mouseY: number) => {
     const { x, y, width, height } = crop;
     const sensitivity = 10;
 
@@ -309,14 +315,14 @@
     else if (onBottomBoundary) resizeSide = 'bottom';
   };
 
-  const startDragging = (mouseX:number, mouseY:number) => {
+  const startDragging = (mouseX: number, mouseY: number) => {
     isDragging = true;
     dragOffset.x = mouseX - crop.x;
     dragOffset.y = mouseY - crop.y;
     fadeOverlay(false); // Lighten the background
   };
 
-  const moveCrop = (mouseX:number, mouseY:number) => {
+  const moveCrop = (mouseX: number, mouseY: number) => {
     let newX = mouseX - dragOffset.x;
     let newY = mouseY - dragOffset.y;
 
@@ -329,7 +335,7 @@
     draw();
   };
 
-  function keepAspectRatio(newWidth:number, newHeight:number, aspectRatio:string) {
+  function keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: string) {
     switch (aspectRatio) {
       case '1:1':
         return { newWidth: newHeight, newHeight };
@@ -344,7 +350,7 @@
     }
   }
 
-  function resizeCrop(mouseX:number, mouseY:number) {
+  function resizeCrop(mouseX: number, mouseY: number) {
     if (!canvas) return;
     fadeOverlay(false);
 
@@ -489,12 +495,12 @@
     }
   }
 
-  function animateCropChange(newCrop:CropSettings, duration = 100) {
+  function animateCropChange(newCrop: CropSettings, duration = 100) {
     if (!newCrop) return; // Check for undefined
     const startTime = performance.now();
     const initialCrop = { ...crop };
 
-    const animate = (currentTime:number) => {
+    const animate = (currentTime: number) => {
       const elapsedTime = currentTime - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
 
@@ -513,7 +519,7 @@
     requestAnimationFrame(animate);
   }
 
-  const updateCursor = (mouseX:number, mouseY:number) => {
+  const updateCursor = (mouseX: number, mouseY: number) => {
     const { x, y, width, height } = crop;
     const sensitivity = 10;
     const cornerSensitivity = 15;

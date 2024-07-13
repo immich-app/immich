@@ -40,9 +40,9 @@
 
   let selectedSize = 'free';
 
-  function selectType(size:string) {
+  function selectType(size: string) {
     if (size == 'reset') {
-      selectedSize = 'free'
+      selectedSize = 'free';
       let cropImageSizeM = get(cropImageSize);
       let cropImageScaleM = get(cropImageScale);
       cropSettings.set({
@@ -52,7 +52,7 @@
         height: cropImageSizeM[1] * cropImageScaleM - 1,
       });
       cropAspectRatio.set(selectedSize);
-      console.log(get(cropSettings))
+      console.log(get(cropSettings));
       return;
     }
     selectedSize = size;

@@ -682,12 +682,10 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
+          {:else if $isShowEditor && selectedEditType == 'crop'}
+            <CropCanvas {asset} />
           {:else}
-            {#if $isShowEditor && selectedEditType=='crop'}
-            <CropCanvas {asset}/>
-            {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
-            {/if}
           {/if}
         {:else}
           <VideoViewer
@@ -741,7 +739,11 @@
       class="z-[1002] row-start-1 row-span-4 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
-      <EditorPanel {asset} on:updateSelectedType={handleUpdateSelectedEditType} on:close={() => ($isShowEditor = false)} />
+      <EditorPanel
+        {asset}
+        on:updateSelectedType={handleUpdateSelectedEditType}
+        on:close={() => ($isShowEditor = false)}
+      />
     </div>
   {/if}
 
