@@ -2,19 +2,23 @@ import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { getMySharedLink, isHttpError } from '@immich/sdk';
+import { getMySharedLink, isHttpError, getConfig } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   const { key } = params;
   await authenticate({ public: true });
   const asset = await getAssetInfoFromParam(params);
+  const config = await getConfig()
+  const domain = config.server.externalDomain;
 
   try {
     const sharedLink = await getMySharedLink({ key });
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
+    const assetPath =  assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png'
+
     const $t = await getFormatter();
 
     return {
@@ -24,7 +28,7 @@ export const load = (async ({ params }) => {
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : $t('public_share'),
         description: sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
-        imageUrl: assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png',
+        imageUrl: `${domain}${assetPath}`,
       },
     };
   } catch (error) {
