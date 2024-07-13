@@ -336,7 +336,7 @@
     }
     $isShowDetail = !$isShowDetail;
   };
-  const showEditorHandler = async () => {
+  const showEditorHandler = () => {
     if (isShowActivity) {
       isShowActivity = false;
     }

@@ -6,8 +6,8 @@
     cropSettings,
     type CropSettings,
   } from '$lib/stores/asset-editor.store';
-  import { onMount, afterUpdate, onDestroy } from 'svelte';
-  import { derived, get } from 'svelte/store';
+  import { onMount, afterUpdate } from 'svelte';
+  import { get } from 'svelte/store';
 
   export let crop = get(cropSettings);
   export let asset;
@@ -28,7 +28,9 @@
   };
 
   const draw = () => {
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     cropSettings.set(crop);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -95,14 +97,15 @@
   };
 
   const fadeOverlay = (toDark: boolean) => {
-    const targetLevel = toDark ? 0.65 : 0.4;
     const step = toDark ? 0.05 : -0.05;
+    const minDarkness = 0.4;
+    const maxDarkness = 0.65;
 
     const animate = () => {
-      darkenLevel = Math.min(0.65, Math.max(0.4, darkenLevel + step));
+      darkenLevel = Math.min(maxDarkness, Math.max(minDarkness, darkenLevel + step));
       draw();
 
-      if ((toDark && darkenLevel < 0.65) || (!toDark && darkenLevel > 0.4)) {
+      if ((toDark && darkenLevel < maxDarkness) || (!toDark && darkenLevel > minDarkness)) {
         animationFrame = requestAnimationFrame(animate);
       } else {
         cancelAnimationFrame(animationFrame);
@@ -291,9 +294,6 @@
   };
 
   const setResizeSide = (mouseX: number, mouseY: number) => {
-    const { x, y, width, height } = crop;
-    const sensitivity = 10;
-
     const {
       onLeftBoundary,
       onRightBoundary,
@@ -305,14 +305,23 @@
       onBottomRightCorner,
     } = isOnCropBoundary(mouseX, mouseY);
 
-    if (onTopLeftCorner) resizeSide = 'top-left';
-    else if (onTopRightCorner) resizeSide = 'top-right';
-    else if (onBottomLeftCorner) resizeSide = 'bottom-left';
-    else if (onBottomRightCorner) resizeSide = 'bottom-right';
-    else if (onLeftBoundary) resizeSide = 'left';
-    else if (onRightBoundary) resizeSide = 'right';
-    else if (onTopBoundary) resizeSide = 'top';
-    else if (onBottomBoundary) resizeSide = 'bottom';
+    if (onTopLeftCorner) {
+      resizeSide = 'top-left';
+    } else if (onTopRightCorner) {
+      resizeSide = 'top-right';
+    } else if (onBottomLeftCorner) {
+      resizeSide = 'bottom-left';
+    } else if (onBottomRightCorner) {
+      resizeSide = 'bottom-right';
+    } else if (onLeftBoundary) {
+      resizeSide = 'left';
+    } else if (onRightBoundary) {
+      resizeSide = 'right';
+    } else if (onTopBoundary) {
+      resizeSide = 'top';
+    } else if (onBottomBoundary) {
+      resizeSide = 'bottom';
+    }
   };
 
   const startDragging = (mouseX: number, mouseY: number) => {
@@ -337,21 +346,28 @@
 
   function keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: string) {
     switch (aspectRatio) {
-      case '1:1':
+      case '1:1': {
         return { newWidth: newHeight, newHeight };
-      case '16:9':
+      }
+      case '16:9': {
         return { newWidth: (newHeight * 16) / 9, newHeight };
-      case '3:2':
+      }
+      case '3:2': {
         return { newWidth: (newHeight * 3) / 2, newHeight };
-      case '7:5':
+      }
+      case '7:5': {
         return { newWidth: (newHeight * 7) / 5, newHeight };
-      default:
+      }
+      default: {
         return { newWidth, newHeight };
+      }
     }
   }
 
   function resizeCrop(mouseX: number, mouseY: number) {
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
     fadeOverlay(false);
 
     const { x, y, width, height } = crop;
@@ -359,7 +375,7 @@
     let newWidth, newHeight;
 
     switch (resizeSide) {
-      case 'left':
+      case 'left': {
         newWidth = width + x - mouseX;
         newHeight = height;
         if (newWidth >= minSize && mouseX >= 0) {
@@ -369,7 +385,8 @@
           crop.height = Math.min(h, canvas.height);
         }
         break;
-      case 'right':
+      }
+      case 'right': {
         newWidth = mouseX - x;
         newHeight = height;
         if (newWidth >= minSize && mouseX <= canvas.width) {
@@ -378,7 +395,8 @@
           crop.height = Math.min(h, canvas.height);
         }
         break;
-      case 'top':
+      }
+      case 'top': {
         newHeight = height + y - mouseY;
         newWidth = width;
         if (newHeight >= minSize && mouseY >= 0) {
@@ -388,7 +406,8 @@
           crop.width = Math.min(w, canvas.width);
         }
         break;
-      case 'bottom':
+      }
+      case 'bottom': {
         newHeight = mouseY - y;
         newWidth = width;
         if (newHeight >= minSize && mouseY <= canvas.height) {
@@ -397,7 +416,8 @@
           crop.width = Math.min(w, canvas.width);
         }
         break;
-      case 'top-left':
+      }
+      case 'top-left': {
         newWidth = width + x - mouseX;
         newHeight = height + y - mouseY;
         if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY >= 0) {
@@ -408,7 +428,8 @@
           crop.y = Math.max(0, y + height - crop.height);
         }
         break;
-      case 'top-right':
+      }
+      case 'top-right': {
         newWidth = mouseX - x;
         newHeight = height + y - mouseY;
         if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY >= 0) {
@@ -418,7 +439,8 @@
           crop.y = Math.max(0, y + height - crop.height);
         }
         break;
-      case 'bottom-left':
+      }
+      case 'bottom-left': {
         newWidth = width + x - mouseX;
         newHeight = mouseY - y;
         if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY <= canvas.height) {
@@ -428,7 +450,8 @@
           crop.x = Math.max(0, x + width - crop.width);
         }
         break;
-      case 'bottom-right':
+      }
+      case 'bottom-right': {
         newWidth = mouseX - x;
         newHeight = mouseY - y;
         if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY <= canvas.height) {
@@ -437,6 +460,7 @@
           crop.height = Math.min(h, canvas.height);
         }
         break;
+      }
     }
 
     // Ensure the crop does not go outside the canvas
@@ -447,7 +471,9 @@
   }
 
   function recalculateCrop(returnNewCrop = false) {
-    if (!canvas) return null;
+    if (!canvas) {
+      return null;
+    }
     const { width, height, x, y } = crop;
     let newWidth = width;
     let newHeight = height;
@@ -496,7 +522,9 @@
   }
 
   function animateCropChange(newCrop: CropSettings, duration = 100) {
-    if (!newCrop) return; // Check for undefined
+    if (!newCrop) {
+      return;
+    } // Check for undefined
     const startTime = performance.now();
     const initialCrop = { ...crop };
 
@@ -520,10 +548,6 @@
   }
 
   const updateCursor = (mouseX: number, mouseY: number) => {
-    const { x, y, width, height } = crop;
-    const sensitivity = 10;
-    const cornerSensitivity = 15;
-
     const {
       onLeftBoundary,
       onRightBoundary,
@@ -560,10 +584,10 @@
     img = new Image();
     img.src = getAssetUrl(asset.id, asset.checksum);
 
-    img.onload = onImageLoad;
-    img.onerror = () => {
+    img.addEventListener('load', onImageLoad);
+    img.addEventListener('error', () => {
       console.error('Failed to load image');
-    };
+    });
   });
 
   afterUpdate(() => {
@@ -571,7 +595,6 @@
   });
 
   let isDragging = false;
-  let isResizing = false;
   let dragOffset = { x: 0, y: 0 };
   let resizeSide = '';
 </script>

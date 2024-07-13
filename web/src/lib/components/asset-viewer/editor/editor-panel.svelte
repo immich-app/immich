@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiCropRotate, mdiTune } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import CropComponent from './CropComponent.svelte';
-  import TuneComponent from './TuneComponent.svelte';
+  import CropComponent from './crop-tool.svelte';
+  import TuneComponent from './tune-tool.svelte';
 
   export let asset: AssetResponseDto;
 
