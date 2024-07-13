@@ -19,11 +19,13 @@ export const hostMetrics =
 export const apiMetrics =
   process.env.IMMICH_API_METRICS == null ? metricsEnabled : process.env.IMMICH_API_METRICS === 'true';
 export const repoMetrics =
-  process.env.IMMICH_IO_METRICS == null ? metricsEnabled : process.env.IMMICH_IO_METRICS === 'true';
+  process.env.IMMICH_IO_METRICS == null ? metricsEnabled : process.env.IMMICH_IO_METRICS === 'true'; // check usage of repoMetrics. If it is IO related why not call it IO?
+export const userMetrics =
+  process.env.IMMICH_USER_METRICS == null ? metricsEnabled : process.env.IMMICH_IO_METRICS === 'true';
 export const jobMetrics =
   process.env.IMMICH_JOB_METRICS == null ? metricsEnabled : process.env.IMMICH_JOB_METRICS === 'true';
 
-metricsEnabled ||= hostMetrics || apiMetrics || repoMetrics || jobMetrics;
+metricsEnabled ||= hostMetrics || apiMetrics || repoMetrics || jobMetrics || userMetrics;
 if (!metricsEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
   process.env.OTEL_SDK_DISABLED = 'true';
 }

@@ -1,4 +1,4 @@
-import { MetricOptions } from '@opentelemetry/api';
+import {Attributes, MetricOptions} from '@opentelemetry/api';
 
 export const IMetricRepository = 'IMetricRepository';
 
@@ -7,9 +7,9 @@ export interface MetricGroupOptions {
 }
 
 export interface IMetricGroupRepository {
-  addToCounter(name: string, value: number, options?: MetricOptions): void;
-  addToGauge(name: string, value: number, options?: MetricOptions): void;
-  addToHistogram(name: string, value: number, options?: MetricOptions): void;
+  addToCounter(name: string, value: number, options?: MetricOptions, attributes?: Attributes): void;
+  addToGauge(name: string, value: number, options?: MetricOptions, attributes?: Attributes): void;
+  addToHistogram(name: string, value: number, options?: MetricOptions, attributes?: Attributes): void;
   configure(options: MetricGroupOptions): this;
 }
 
@@ -18,4 +18,5 @@ export interface IMetricRepository {
   host: IMetricGroupRepository;
   jobs: IMetricGroupRepository;
   repo: IMetricGroupRepository;
+  user: IMetricGroupRepository;
 }
