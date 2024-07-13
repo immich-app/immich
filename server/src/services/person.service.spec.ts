@@ -3,6 +3,7 @@ import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -539,6 +540,7 @@ describe(PersonService.name, () => {
       await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(systemMock.get).toHaveBeenCalled();
+      expect(systemMock.set).not.toHaveBeenCalled();
     });
 
     it('should skip if recognition jobs are already queued', async () => {
@@ -546,6 +548,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.SKIPPED);
       expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(systemMock.set).not.toHaveBeenCalled();
     });
 
     it('should queue missing assets', async () => {
@@ -564,6 +567,9 @@ describe(PersonService.name, () => {
           data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
+        lastRun: expect.any(Date),
+      });
     });
 
     it('should queue all assets', async () => {
@@ -586,6 +592,59 @@ describe(PersonService.name, () => {
           data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
+        lastRun: expect.any(Date),
+      });
+    });
+
+    it('should run nightly if new face has been added since last run', async () => {
+      personMock.getLatestFaceDate.mockResolvedValue(new Date());
+      personMock.getAllFaces.mockResolvedValue({
+        items: [faceStub.face1],
+        hasNextPage: false,
+      });
+      jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
+      personMock.getAllFaces.mockResolvedValue({
+        items: [faceStub.face1],
+        hasNextPage: false,
+      });
+      await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
+
+      expect(systemMock.get).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE);
+      expect(personMock.getLatestFaceDate).toHaveBeenCalledOnce();
+      expect(personMock.getAllFaces).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.FACIAL_RECOGNITION,
+          data: { id: faceStub.face1.id, deferred: false },
+        },
+      ]);
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
+        lastRun: expect.any(Date),
+      });
+    });
+
+    it('should skip nightly if no new face has been added since last run', async () => {
+      const lastRun = new Date();
+
+      systemMock.get.mockResolvedValue({ lastRun });
+      personMock.getLatestFaceDate.mockResolvedValue(new Date(lastRun.getTime() - 1));
+      personMock.getAllFaces.mockResolvedValue({
+        items: [faceStub.face1],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
+
+      expect(systemMock.get).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE);
+      expect(personMock.getLatestFaceDate).toHaveBeenCalledOnce();
+      expect(personMock.getAllFaces).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(systemMock.set).not.toHaveBeenCalled();
     });
 
     it('should delete existing people and faces if forced', async () => {
