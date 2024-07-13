@@ -74,6 +74,7 @@
     playSlideShow: void;
     unstack: void;
     showShareModal: void;
+    showEditorHandler: void;
   };
 
   const dispatch = createEventDispatcher<EventTypes>();

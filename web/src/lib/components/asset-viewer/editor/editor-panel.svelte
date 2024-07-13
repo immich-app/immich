@@ -27,6 +27,7 @@
 
   const dispatch = createEventDispatcher<{
     updateSelectedType: string;
+    close: void;
   }>();
 
   let editTypes = [
@@ -45,7 +46,6 @@
 
   let selectedType: string = 'tune'
   $: selectedTypeObj = editTypes.find(t => t.name === selectedType)||editTypes[0];
-  $: props = selectedTypeObj.data || {};
   
 
   function selectType(name: string) {

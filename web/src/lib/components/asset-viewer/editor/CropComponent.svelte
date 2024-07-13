@@ -40,7 +40,7 @@
 
   let selectedSize = 'free';
 
-  function selectType(size) {
+  function selectType(size:string) {
     if (size == 'reset') {
       selectedSize = 'free'
       let cropImageSizeM = get(cropImageSize);
