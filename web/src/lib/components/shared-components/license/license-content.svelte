@@ -1,36 +1,27 @@
 <script lang="ts">
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
   import ServerLicenseCard from './server-license-card.svelte';
   import UserLicenseCard from './user-license-card.svelte';
-  import { getActivationKey } from '$lib/utils/license-utils';
+  import { activateLicense } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { licenseStore } from '$lib/stores/license.store';
 
   export let onActivate: () => void;
+
   let licenseKey = '';
   let isLoading = false;
-  const { setLicenseStatus } = licenseStore;
-  
+
   const activate = async () => {
     try {
       licenseKey = licenseKey.trim();
       isLoading = true;
-      let response: LicenseResponseDto;
 
-      const isServerKey = licenseKey.search('IMSV') !== -1;
-      const activationKey = await getActivationKey(licenseKey);
-
-      if (isServerKey) {
-        response = await setServerLicense({ licenseKeyDto: { licenseKey, activationKey } });
-      } else {
-        response = await setUserLicense({ licenseKeyDto: { licenseKey, activationKey } });
-      }
+      await activateLicense(licenseKey);
 
       onActivate();
-      setLicenseStatus(true);
+      licenseStore.setLicenseStatus(true);
     } catch (error) {
       handleError(error, 'Failed to activate license');
     } finally {

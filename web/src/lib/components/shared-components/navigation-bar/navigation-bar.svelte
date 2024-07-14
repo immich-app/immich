@@ -33,13 +33,14 @@
 
   const logOut = async () => {
     const { redirectUri } = await logout();
-    setLicenseStatus(false);
+
     if (redirectUri.startsWith('/')) {
       await goto(redirectUri);
     } else {
       window.location.href = redirectUri;
     }
     resetSavedUser();
+    setLicenseStatus(false);
   };
 </script>
 

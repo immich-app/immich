@@ -1,8 +1,17 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   import Button from '$lib/components/elements/buttons/button.svelte';
 
   import Icon from '$lib/components/elements/icon.svelte';
+  import { getProductLink } from '$lib/utils/license-utils';
   import { mdiCheckCircleOutline, mdiServer } from '@mdi/js';
+  import { onMount } from 'svelte';
+
+  let productUrl = 'https://pay.futo.org';
+
+  onMount(async () => {
+    productUrl = await getProductLink($page.url.origin, 'immich-server');
+  });
 </script>
 
 <!-- SERVER LICENSE -->
@@ -34,6 +43,9 @@
         <p class="self-center">License for all users on the server</p>
       </div>
     </div>
-    <Button fullwidth>Select</Button>
+
+    <a href={productUrl}>
+      <Button fullwidth>Select</Button>
+    </a>
   </div>
 </div>

@@ -7,17 +7,11 @@
   import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
   import { user } from '$lib/stores/user.store';
   import * as luxon from 'luxon';
-  import { onMount } from 'svelte';
   import { licenseStore } from '$lib/stores/license.store';
 
   let showMessage = false;
   let isOpen = false;
-  const { isLicenseActivated, getLicenseStatus } = licenseStore;
-
-  onMount(async () => {
-    // Fetch user license status
-    await getLicenseStatus();
-  });
+  const { isLicenseActivated } = licenseStore;
 
   const openLicenseModal = () => {
     isOpen = true;

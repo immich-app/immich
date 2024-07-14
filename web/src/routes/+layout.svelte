@@ -20,9 +20,10 @@
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import { getAboutInfo, getMyUser, getUserLicense } from '@immich/sdk';
+  import { licenseStore } from '$lib/stores/license.store';
 
   let showNavigationLoadingBar = false;
-
   $: changeTheme($colorTheme);
 
   $: if ($user) {
@@ -50,6 +51,22 @@
     }
   };
 
+  const setLicenseStatus = async () => {
+    const serverInfo = await getAboutInfo();
+    if (serverInfo.licensed) {
+      licenseStore.setLicenseStatus(true);
+      return;
+    }
+
+    const userInfo = await getMyUser();
+    if (userInfo.license?.activatedAt) {
+      licenseStore.setLicenseStatus(true);
+      return;
+    }
+
+    licenseStore.setLicenseStatus(false);
+  };
+
   onMount(() => {
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
@@ -70,8 +87,9 @@
     showNavigationLoadingBar = true;
   });
 
-  afterNavigate(() => {
+  afterNavigate(async () => {
     showNavigationLoadingBar = false;
+    await setLicenseStatus();
   });
 
   onMount(async () => {
