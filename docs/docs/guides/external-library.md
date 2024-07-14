@@ -27,7 +27,7 @@ EXTERNAL_PATH=/home/tenino/photos
 ```
 
 :::info EXTERNAL_PATH design
-The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file in order to make everything easier, so if you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything will break mysteriously.
+The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file is in order to make everything easier. If you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything breaking mysteriously.
 :::
 
 Restart Immich.
