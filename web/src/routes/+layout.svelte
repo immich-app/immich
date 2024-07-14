@@ -10,7 +10,7 @@
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
-  import { loadConfig } from '$lib/stores/server-config.store';
+  import { loadConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { setKey } from '$lib/utils';
@@ -96,13 +96,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content={$page.data.meta.title} />
     <meta property="og:description" content={$page.data.meta.description} />
-    <meta property="og:image" content={$page.data.meta.imageUrl} />
+    <meta property="og:image" content={$serverConfig.externalDomain + $page.data.meta.imageUrl} />
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={$page.data.meta.title} />
     <meta name="twitter:description" content={$page.data.meta.description} />
-    <meta name="twitter:image" content={$page.data.meta.imageUrl} />
+    <meta name="twitter:image" content={$serverConfig.externalDomain + $page.data.meta.imageUrl} />
   {/if}
 </svelte:head>
 
