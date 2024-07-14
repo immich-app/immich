@@ -19,6 +19,7 @@ import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import {IMetricRepository} from "src/interfaces/metric.interface";
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -32,8 +33,10 @@ export class UserAdminService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
+
   ) {
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
+    this.userCore = UserCore.create(cryptoRepository, userRepository, metricRepository);
     this.logger.setContext(UserAdminService.name);
   }
 

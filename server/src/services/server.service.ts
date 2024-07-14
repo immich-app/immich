@@ -22,6 +22,8 @@ import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import {IMetricRepository} from "src/interfaces/metric.interface";
+
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
@@ -37,6 +39,7 @@ export class ServerService implements OnEvents {
     @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.logger.setContext(ServerService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
@@ -147,7 +150,14 @@ export class ServerService implements OnEvents {
       serverStats.videos += usage.videos;
       serverStats.usage += usage.usage;
       serverStats.usageByUser.push(usage);
+
+      this.metricRepository.user.addToGauge(`immich.user.photos`, usage.photos, {},{"userName": user.userName})
+      this.metricRepository.user.addToGauge(`immich.user.videos`, usage.videos, {},{"userName": user.userName})
+      this.metricRepository.user.addToGauge(`immich.user.usage`, usage.usage, {},{"userName": user.userName})
     }
+    this.metricRepository.host.addToGauge(`immich.host.photos`, serverStats.photos)
+    this.metricRepository.host.addToGauge(`immich.host.videos`, serverStats.videos)
+    this.metricRepository.host.addToGauge(`immich.host.usage`, serverStats.usage)
 
     return serverStats;
   }

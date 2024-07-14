@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { MetricOptions, Attributes } from '@opentelemetry/api';
+import { MetricOptions, Attributes  } from '@opentelemetry/api';
 import { MetricService } from 'nestjs-otel';
 import { IMetricGroupRepository, IMetricRepository, MetricGroupOptions } from 'src/interfaces/metric.interface';
-import { apiMetrics, hostMetrics, jobMetrics, repoMetrics, userMetrics } from 'src/utils/instrumentation';
+import { apiMetrics, hostMetrics, jobMetrics, ioMetrics, userMetrics } from 'src/utils/instrumentation';
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
@@ -44,7 +44,8 @@ export class MetricRepository implements IMetricRepository {
     this.api = new MetricGroupRepository(metricService).configure({ enabled: apiMetrics });
     this.host = new MetricGroupRepository(metricService).configure({ enabled: hostMetrics });
     this.jobs = new MetricGroupRepository(metricService).configure({ enabled: jobMetrics });
-    this.repo = new MetricGroupRepository(metricService).configure({ enabled: repoMetrics });
+    this.repo = new MetricGroupRepository(metricService).configure({ enabled: ioMetrics });
     this.user = new MetricGroupRepository(metricService).configure({ enabled: userMetrics });
   }
+
 }

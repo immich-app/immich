@@ -36,6 +36,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import {IMetricRepository} from "src/interfaces/metric.interface";
 import { HumanReadableSize } from 'src/utils/bytes';
 
 export interface LoginDetails {
@@ -66,10 +67,11 @@ export class AuthService {
     @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.logger.setContext(AuthService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
+    this.userCore = UserCore.create(cryptoRepository, userRepository, metricRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }

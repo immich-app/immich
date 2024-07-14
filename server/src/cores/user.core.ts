@@ -4,6 +4,7 @@ import { SALT_ROUNDS } from 'src/constants';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 
 let instance: UserCore | null;
 
@@ -11,11 +12,12 @@ export class UserCore {
   private constructor(
     private cryptoRepository: ICryptoRepository,
     private userRepository: IUserRepository,
+    private metricRepository: IMetricRepository,
   ) {}
 
-  static create(cryptoRepository: ICryptoRepository, userRepository: IUserRepository) {
+  static create(cryptoRepository: ICryptoRepository, userRepository: IUserRepository, metricRepository: IMetricRepository) {
     if (!instance) {
-      instance = new UserCore(cryptoRepository, userRepository);
+      instance = new UserCore(cryptoRepository, userRepository, metricRepository);
     }
 
     return instance;
@@ -45,6 +47,8 @@ export class UserCore {
     if (payload.storageLabel) {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
+
+    this.metricRepository.user.addToCounter(`immich.user.created`, 1)
 
     return this.userRepository.create(payload);
   }

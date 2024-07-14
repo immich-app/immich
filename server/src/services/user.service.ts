@@ -42,6 +42,7 @@ export class UserService {
 
   async search(): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: false });
+    this.metricRepository.user.addToGauge('immich.user.count', users.length);
     return users.map((user) => mapUser(user));
   }
 
@@ -216,7 +217,8 @@ export class UserService {
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
-    this.metricRepository.user.addToCounter(`immich.users.deleted`, 1)
+    this.metricRepository.user.addToCounter(`immich.user.deleted`,1)
+
 
     return JobStatus.SUCCESS;
   }
