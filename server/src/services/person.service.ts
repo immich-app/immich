@@ -392,7 +392,7 @@ export class PersonService {
         this.repository.getLatestFaceDate(),
       ]);
 
-      if (state && state.lastRun && latestFaceDate && state.lastRun > latestFaceDate) {
+      if (state?.lastRun && latestFaceDate && state.lastRun > latestFaceDate) {
         this.logger.debug('Skipping facial recognition nightly since no face has been added since the last run');
         return JobStatus.SKIPPED;
       }
