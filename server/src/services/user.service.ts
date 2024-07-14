@@ -18,6 +18,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
@@ -33,6 +34,7 @@ export class UserService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.logger.setContext(UserService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
@@ -213,6 +215,8 @@ export class UserService {
     this.logger.warn(`Removing user from database: ${user.id}`);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
+
+    this.metricRepository.user.addToCounter(`immich.users.deleted`, 1)
 
     return JobStatus.SUCCESS;
   }
