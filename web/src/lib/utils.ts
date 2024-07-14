@@ -308,8 +308,11 @@ export const findLocale = (code: string | undefined) => {
 };
 
 export const asyncTimeout = (ms: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
+  return new Promise<void>((resolve) => {
+    const timeout = setTimeout(() => {
+      clearTimeout(timeout);
+      resolve();
+    }, ms);
   });
 };
 
