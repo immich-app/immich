@@ -16,12 +16,7 @@ immich-server:
 +       - /mnt/photos2:/usr/src/app/external2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
 ```
 
-Restart Immich.
-
-```
-docker compose down
-docker compose up -d
-```
+Restart Immich by running `docker compose up -d`.
 
 # Create the library
 
