@@ -108,7 +108,7 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^20.14.10",
     "@types/nodemailer": "^6.4.14",
-    "@types/picomatch": "^2.3.3",
+    "@types/picomatch": "^3.0.0",
     "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
