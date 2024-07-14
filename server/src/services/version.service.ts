@@ -11,6 +11,7 @@ import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import {IMetricRepository} from "../interfaces/metric.interface";
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {
@@ -31,6 +32,7 @@ export class VersionService implements OnEvents {
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.logger.setContext(VersionService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
@@ -80,11 +82,14 @@ export class VersionService implements OnEvents {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
         this.eventRepository.clientBroadcast(ClientEvent.NEW_RELEASE, asNotification(metadata));
       }
+
+      this.metricRepository.host.addToGauge(`immich.host.version`, 1, {},{'version': serverVersion.version } )
+      this.metricRepository.host.addToGauge(`immich.host.version.latest`,1, {}, {'version': releaseVersion, 'timestamp': publishedAt} )
+
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
       return JobStatus.FAILED;
     }
-
     return JobStatus.SUCCESS;
   }
 
