@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -178,7 +179,7 @@ export class SharedLinkService {
     return results;
   }
 
-  async getMetadataTags(auth: AuthDto): Promise<null | OpenGraphTags> {
+  async getMetadataTags(auth: AuthDto, externalDomain?: string): Promise<null | OpenGraphTags> {
     if (!auth.sharedLink || auth.sharedLink.password) {
       return null;
     }
@@ -186,13 +187,15 @@ export class SharedLinkService {
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
+    const domain = externalDomain || DEFAULT_EXTERNAL_DOMAIN
+    const imagePath = assetId
+        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
+        : '/feature-panel.png'
 
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: assetId
-        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
-        : '/feature-panel.png',
+      imageUrl: `${domain}${imagePath}`,
     };
   }
 

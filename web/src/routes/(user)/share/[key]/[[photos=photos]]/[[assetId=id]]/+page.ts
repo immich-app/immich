@@ -8,16 +8,19 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params }) => {
   const { key } = params;
   await authenticate({ public: true });
-  const asset = await getAssetInfoFromParam(params);
-  const config = await getConfig()
-  const domain = config.server.externalDomain;
 
   try {
-    const sharedLink = await getMySharedLink({ key });
+    const getSharedLinkPromise = getMySharedLink({ key });
+    const getAssetPromise = getAssetInfoFromParam(params);
+    const getConfigPromise = getConfig()
+
+    const [sharedLink, asset, config] = await Promise.all([getSharedLinkPromise, getAssetPromise, getConfigPromise]);
+
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetPath =  assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png'
+    const domain = config.server.externalDomain;
 
     const $t = await getFormatter();
 
