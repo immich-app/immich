@@ -75,7 +75,7 @@ export class ApiService {
         return next();
       }
 
-      const config = await this.configCore.getConfig({withCache: true})
+      const config = await this.configCore.getConfig({ withCache: true });
       const targets = [
         {
           regex: /^\/share\/(.+)$/,

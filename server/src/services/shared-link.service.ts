@@ -187,10 +187,10 @@ export class SharedLinkService {
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
-    const domain = externalDomain || DEFAULT_EXTERNAL_DOMAIN
+    const domain = externalDomain || DEFAULT_EXTERNAL_DOMAIN;
     const imagePath = assetId
-        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
-        : '/feature-panel.png'
+      ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
+      : '/feature-panel.png';
 
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
