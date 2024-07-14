@@ -12,8 +12,8 @@ If you want Immich to be able to delete the images in the external library, remo
 ```diff
 immich-server:
     volumes:
-+       - /home/user/photos1:/usr/src/app/external:ro
-+       - /mnt/photos2:/usr/src/app/external2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
++       - /home/user/photos1:/home/user/photos1:ro
++       - /mnt/photos2:/mnt/photos2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
 ```
 
 Restart Immich by running `docker compose up -d`.
