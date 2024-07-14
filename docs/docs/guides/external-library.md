@@ -6,29 +6,15 @@ in a directory on the same machine.
 
 # Mount the directory into the containers.
 
-Edit `docker-compose.yml` to add two new mount points in the section `immich-server:` under `volumes:`
+Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
+If you want Immich to be able to delete the images in the external library, remove `:ro` from the end of the mount point.
 
 ```diff
 immich-server:
     volumes:
-+       - ${EXTERNAL_PATH}:/usr/src/app/external
++       - /home/user/photos1:/usr/src/app/external:ro
++       - /mnt/photos2:/usr/src/app/external2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
 ```
-
-Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
-
-```
-EXTERNAL_PATH=<your-path-here>
-```
-
-On my computer, for example, I use this path:
-
-```
-EXTERNAL_PATH=/home/tenino/photos
-```
-
-:::info EXTERNAL_PATH design
-The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file is in order to make everything easier. If you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything breaking mysteriously.
-:::
 
 Restart Immich.
 
