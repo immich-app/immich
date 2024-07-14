@@ -568,7 +568,7 @@ describe(PersonService.name, () => {
         },
       ]);
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
-        lastRun: expect.any(Date),
+        lastRun: expect.any(String),
       });
     });
 
@@ -593,7 +593,7 @@ describe(PersonService.name, () => {
         },
       ]);
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
-        lastRun: expect.any(Date),
+        lastRun: expect.any(String),
       });
     });
 
@@ -624,7 +624,7 @@ describe(PersonService.name, () => {
         },
       ]);
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
-        lastRun: expect.any(Date),
+        lastRun: expect.any(String),
       });
     });
 
