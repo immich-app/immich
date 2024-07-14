@@ -4,7 +4,6 @@
   import LicenseContent from '$lib/components/shared-components/license/license-content.svelte';
 
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { user } from '$lib/stores/user.store';
 
   export let onClose: () => void;
 
@@ -12,7 +11,7 @@
 </script>
 
 <Portal>
-  <FullScreenModal showLogo title={''} {onClose} width={$user.isAdmin ? 'wide' : 'auto'}>
+  <FullScreenModal showLogo title={''} {onClose} width="wide">
     {#if showLicenseActivated}
       <LicenseActivationSuccess onDone={onClose} />
     {:else}

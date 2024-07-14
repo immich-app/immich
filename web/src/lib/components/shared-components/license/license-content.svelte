@@ -43,9 +43,7 @@
   </div>
 
   <div class="mt-6">
-    <p class="dark:text-immich-gray">
-      Have a license? Enter the key below IMCL-TQKF-B2PP-YM9B-D5XD-MNT2-9V2X-YF1N-NNTF
-    </p>
+    <p class="dark:text-immich-gray">Have a license? Enter the key below</p>
     <form class="mt-2 flex gap-2" on:submit={activate}>
       <input
         class="immich-form-input w-full"

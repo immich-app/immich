@@ -35,6 +35,7 @@
     </div>
   {:else}
     <button
+      type="button"
       on:click={openLicenseModal}
       on:mouseenter={() => (showMessage = true)}
       class="py-3 px-2 flex justify-between place-items-center place-content-center border border-gray-300 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-sm dark:bg-immich-dark-primary/10 w-full"
@@ -44,16 +45,12 @@
         <p class="text-immich-dark-gray/75 dark:text-immich-gray">Unlicensed</p>
       </div>
 
-      <div>
-        <button
-          type="button"
-          class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium"
-          >Buy
+      <div class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium">
+        Buy
 
-          <span role="contentinfo">
-            <Icon path={mdiInformationOutline}></Icon>
-          </span>
-        </button>
+        <span role="contentinfo">
+          <Icon path={mdiInformationOutline}></Icon>
+        </span>
       </div>
     </button>
   {/if}
