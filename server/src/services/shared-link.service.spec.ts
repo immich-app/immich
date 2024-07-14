@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import _ from 'lodash';
+import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/entities/shared-link.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -301,7 +302,7 @@ describe(SharedLinkService.name, () => {
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
         imageUrl:
-          '/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
+          `${DEFAULT_EXTERNAL_DOMAIN}/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
         title: 'Public Share',
       });
       expect(shareMock.get).toHaveBeenCalled();
