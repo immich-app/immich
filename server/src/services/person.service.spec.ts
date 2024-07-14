@@ -598,7 +598,7 @@ describe(PersonService.name, () => {
     });
 
     it('should run nightly if new face has been added since last run', async () => {
-      personMock.getLatestFaceDate.mockResolvedValue(new Date());
+      personMock.getLatestFaceDate.mockResolvedValue(new Date().toISOString());
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,
@@ -631,8 +631,8 @@ describe(PersonService.name, () => {
     it('should skip nightly if no new face has been added since last run', async () => {
       const lastRun = new Date();
 
-      systemMock.get.mockResolvedValue({ lastRun });
-      personMock.getLatestFaceDate.mockResolvedValue(new Date(lastRun.getTime() - 1));
+      systemMock.get.mockResolvedValue({ lastRun: lastRun.toISOString() });
+      personMock.getLatestFaceDate.mockResolvedValue(new Date(lastRun.getTime() - 1).toISOString());
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,

@@ -409,7 +409,7 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const lastRun = new Date();
+    const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
     );

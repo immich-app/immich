@@ -271,10 +271,10 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql()
-  async getLatestFaceDate(): Promise<Date | undefined> {
-    const result: { latestDate?: Date } | undefined = await this.jobStatusRepository
+  async getLatestFaceDate(): Promise<string | undefined> {
+    const result: { latestDate?: string } | undefined = await this.jobStatusRepository
       .createQueryBuilder('jobStatus')
-      .select('MAX(jobStatus.facesRecognizedAt)', 'latestDate')
+      .select('MAX(jobStatus.facesRecognizedAt)::text', 'latestDate')
       .getRawOne();
     return result?.latestDate;
   }

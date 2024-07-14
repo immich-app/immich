@@ -23,7 +23,7 @@ export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string }
 
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
   [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
-  [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: Date };
+  [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: string };
   [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
   [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
