@@ -89,9 +89,7 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
-    setLicenseStatus().catch((error) => {
-      handleError(error, 'Failed to check license status');
-    });
+    setLicenseStatus().catch((_) => {});
   });
 
   onMount(async () => {
