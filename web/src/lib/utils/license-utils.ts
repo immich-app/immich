@@ -5,16 +5,15 @@ const PAYMENT_URL =
     ? 'https://futopay-test.azurewebsites.net/api/v1/activate/'
     : 'https://pay.futo.org/api/v1/activate/';
 
-export async function activateLicense(licenseKey: string): Promise<LicenseResponseDto> {
+export async function activateLicense(licenseKey: string, activationKey: string): Promise<LicenseResponseDto> {
   const isServerKey = licenseKey.search('IMSV') !== -1;
-  const activationKey = await _getActivationKey(licenseKey);
 
   return isServerKey
     ? await setServerLicense({ licenseKeyDto: { licenseKey, activationKey } })
     : await setUserLicense({ licenseKeyDto: { licenseKey, activationKey } });
 }
 
-async function _getActivationKey(licenseKey: string): Promise<string> {
+export async function getActivationKey(licenseKey: string): Promise<string> {
   // const testUrl = 'https://futopay-test.azurewebsites.net/api/v1/activate/IMCL-TQKF-B2PP-YM9B-D5XD-MNT2-9V2X-YF1N-NNTF';
   const response = await fetch(PAYMENT_URL + licenseKey);
 
