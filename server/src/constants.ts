@@ -27,6 +27,8 @@ export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
+export const PROCESS_INVALID_IMAGES = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
+
 export const citiesFile = 'cities500.txt';
 
 const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
