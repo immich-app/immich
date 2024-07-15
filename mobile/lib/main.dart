@@ -104,7 +104,7 @@ Future<Isar> loadDb() async {
       if (Platform.isIOS) IOSDeviceAssetSchema,
     ],
     directory: dir.path,
-    maxSizeMiB: 256,
+    maxSizeMiB: 1024,
   );
   Store.init(db);
   return db;

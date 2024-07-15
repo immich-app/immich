@@ -146,6 +146,16 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_profile_signing_algorithm').toUpperCase()}
+                desc={$t('admin.oauth_profile_signing_algorithm_description')}
+                bind:value={config.oauth.profileSigningAlgorithm}
+                required={true}
+                disabled={disabled || !config.oauth.enabled}
+                isEdited={!(config.oauth.profileSigningAlgorithm == savedConfig.oauth.profileSigningAlgorithm)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_label_claim').toUpperCase()}
                 desc={$t('admin.oauth_storage_label_claim_description')}
                 bind:value={config.oauth.storageLabelClaim}
