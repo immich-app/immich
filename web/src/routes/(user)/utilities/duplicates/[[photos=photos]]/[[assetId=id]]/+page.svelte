@@ -6,6 +6,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
@@ -13,8 +14,9 @@
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiCheckOutline, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { stackAssets } from '$lib/utils/asset-utils';
 
   export let data: PageData;
 
@@ -61,6 +63,13 @@
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
     );
+  };
+
+  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+    const ids = assets.flatMap((x) => x.id);
+    await stackAssets(assets);
+    await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
+    data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
 
   const handleDeduplicateAll = async () => {
@@ -116,6 +125,29 @@
       $t('confirm'),
     );
   };
+
+  const handleStackAll = async () => {
+    const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
+    let prompt, confirmText;
+    if ($featureFlags.trash) {
+      prompt = $t('bulk_stack_duplicates_confirmation', { values: { count: ids.length } });
+      confirmText = $t('confirm');
+    }
+
+    return withConfirmation(
+      async () => {
+        for (let i in data.duplicates) {
+          //let parentId = suggestDuplicateByFileSize(data.duplicates[i].assets).id;
+          await stackAssets(data.duplicates[i].assets);
+          await updateAssets({
+            assetBulkUpdateDto: { ids: data.duplicates[i].assets.map((asset) => asset.id), duplicateId: null },
+          });
+        }
+      },
+      prompt,
+      confirmText,
+    );
+  };
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length})`} scrollbar={true}>
@@ -132,6 +164,12 @@
         {$t('keep_all')}
       </div>
     </LinkButton>
+    <LinkButton on:click={() => handleStackAll()} disabled={!hasDuplicates}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiImageMultipleOutline} size="18" />
+        {$t('stack_all')}
+      </div>
+    </LinkButton>
   </div>
 
   <div class="mt-4">
@@ -144,6 +182,7 @@
           assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(data.duplicates[0].duplicateId, assets)}
         />
       {/key}
     {:else}
