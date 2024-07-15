@@ -83,7 +83,7 @@ export const LicenseEmail = () => (
             </Text>
           </Section>
 
-          <Text style={text}>
+          {/* <Text style={text}>
             To activate your instance, you can click the following button or copy and paste the link below to your
             browser
           </Text>
@@ -109,21 +109,28 @@ export const LicenseEmail = () => (
                 {'{{ACTIVATIONKEY}}'}
               </a>
             </Column>
-          </Row>
-
-          <Link href="https://futo.org">
-            <Img
-              src="https://futo.org/images/FutoMainLogo.svg"
-              alt="FUTO"
-              style={{
-                height: '20px',
-                marginTop: '50px',
-              }}
-            />
-          </Link>
+          </Row> */}
         </Section>
 
-        <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '24px' }} />
+        <Section style={{ textAlign: 'center' }}>
+          <Row>
+            <Column align="center">
+              <Link href="https://futo.org">
+                <Img
+                  src="https://futo.org/images/FutoMainLogo.svg"
+                  alt="FUTO"
+                  style={{
+                    height: '24px',
+                    marginTop: '25px',
+                    marginBottom: '25px',
+                  }}
+                />
+              </Link>
+            </Column>
+          </Row>
+        </Section>
+
+        <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '0' }} />
 
         <Section style={{ textAlign: 'center' }}>
           <Row>
@@ -131,6 +138,8 @@ export const LicenseEmail = () => (
               <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich">
                 <Img src={`https://immich.app/img/google-play-badge.png`} height="96px" alt="Immich" />
               </Link>
+            </Column>
+            <Column align="center">
               <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
                 <Img
                   src={`https://immich.app/img/ios-app-store-badge.png`}
