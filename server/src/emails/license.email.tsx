@@ -133,22 +133,18 @@ export const LicenseEmail = () => (
         <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '0' }} />
 
         <Section style={{ textAlign: 'center' }}>
-          <Row>
-            <Column align="center">
-              <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich">
-                <Img src={`https://immich.app/img/google-play-badge.png`} height="96px" alt="Immich" />
-              </Link>
-            </Column>
-            <Column align="center">
-              <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
-                <Img
-                  src={`https://immich.app/img/ios-app-store-badge.png`}
-                  alt="Immich"
-                  style={{ height: '72px', padding: '14px' }}
-                />
-              </Link>
-            </Column>
-          </Row>
+          <Column align="center">
+            <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
+              <Img
+                src={`https://immich.app/img/ios-app-store-badge.png`}
+                alt="Immich"
+                style={{ height: '72px', padding: '14px' }}
+              />
+            </Link>
+            <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich">
+              <Img src={`https://immich.app/img/google-play-badge.png`} height="96px" alt="Immich" />
+            </Link>
+          </Column>
         </Section>
 
         <Text
