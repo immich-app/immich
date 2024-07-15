@@ -15,13 +15,12 @@ import {
 } from '@react-email/components';
 import * as CSS from 'csstype';
 import * as React from 'react';
-import { WelcomeEmailProps as ServerLicenseEmailProps } from 'src/interfaces/notification.interface';
 
 /**
  * Template to be used for FUTOPay project
  * Variable is {{LICENSEKEY}}
  * */
-export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
+export const LicenseEmail = () => (
   <Html>
     <Head />
     <Preview>Your Immich Server License</Preview>
@@ -68,7 +67,7 @@ export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
           <Text style={text}>Thank you for supporting Immich and open-source software</Text>
 
           <Text style={text}>
-            Your <strong>Immich Server</strong> license key is
+            Your <strong>Immich</strong> license key is
           </Text>
 
           <Section
@@ -79,7 +78,9 @@ export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
               marginBottom: '25px',
             }}
           >
-            <Text style={{ fontFamily: 'monospace', fontWeight: 600, color: 'rgb(66, 80, 175)' }}>LICENSEKEY</Text>
+            <Text style={{ fontFamily: 'monospace', fontWeight: 600, color: 'rgb(66, 80, 175)' }}>
+              {'{{LICENSEKEY}}'}
+            </Text>
           </Section>
 
           <Text style={text}>
@@ -89,7 +90,10 @@ export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
 
           <Row>
             <Column align="center">
-              <Button style={button} href={`https://my.immich.app/link?target=activate_license&licenseKey=`}>
+              <Button
+                style={button}
+                href={`https://my.immich.app/link?target=activate_license&licenseKey={{LICENSEKEY}}&activationKey={{ACTIVATIONKEY}}`}
+              >
                 Activate
               </Button>
             </Column>
@@ -97,12 +101,13 @@ export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
 
           <Row>
             <Column align="center">
-              <Link
+              <a
                 style={{ marginTop: '50px', color: 'rgb(66, 80, 175)', fontSize: '0.9rem' }}
-                href={`https://my.immich.app/link?target=activate_license&licenseKey=`}
+                href={`https://my.immich.app/link?target=activate_license&licenseKey={{LICENSEKEY}}&activationKey={{ACTIVATIONKEY}}`}
               >
-                https://my.immich.app/link?target=activate_license&licenseKey=
-              </Link>
+                https://my.immich.app/link?target=activate_license&licenseKey={'{{LICENSEKEY}}'}&activationKey=
+                {'{{ACTIVATIONKEY}}'}
+              </a>
             </Column>
           </Row>
 
@@ -152,7 +157,7 @@ export const LicenseEmail = ({}: ServerLicenseEmailProps) => (
   </Html>
 );
 
-LicenseEmail.PreviewProps = {} as ServerLicenseEmailProps;
+LicenseEmail.PreviewProps = {};
 
 export default LicenseEmail;
 
