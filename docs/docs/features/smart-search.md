@@ -51,7 +51,7 @@ Some search examples:
 
 ## Configuration
 
-Navigating to Administration > Settings > Machine Learning Settings > Smart Search will show the options available.
+Navigating to `Administration > Settings > Machine Learning Settings > Smart Search` will show the options available.
 
 ### CLIP model
 
