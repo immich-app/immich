@@ -44,12 +44,11 @@ export const getAltText = derived(t, ($t) => {
     }
 
     const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-    const hasLocation = asset.exifInfo?.city && asset.exifInfo?.country;
+    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
     const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
     const peopleCount = names.length;
     const isVideo = asset.type === AssetTypeEnum.Video;
 
-    let key = 'image_alt_text_date';
     const values = {
       date,
       city: asset.exifInfo?.city,
@@ -61,26 +60,32 @@ export const getAltText = derived(t, ($t) => {
       additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
     };
 
-    if (hasLocation) {
-      key += '_place';
-    }
-
     if (peopleCount > 0) {
-      key += getPersonSuffix(peopleCount);
+      const key = getPlacePersonKey(peopleCount, hasPlace);
+      return $t(key, { values });
     }
 
-    return $t(key, { values });
+    if (hasPlace) {
+      return $t('image_alt_text_date_place', { values });
+    }
+
+    return $t('image_alt_text_date', { values });
   };
 });
 
-const getPersonSuffix = (count: number) => {
-  if (count === 1) {
-    return '_1_person';
+const getPlacePersonKey = (count: number, hasPlace: boolean) => {
+  switch (count) {
+    case 1: {
+      return hasPlace ? 'image_alt_text_date_place_1_person' : 'image_alt_text_date_1_person';
+    }
+    case 2: {
+      return hasPlace ? 'image_alt_text_date_place_2_people' : 'image_alt_text_date_2_people';
+    }
+    case 3: {
+      return hasPlace ? 'image_alt_text_date_place_3_people' : 'image_alt_text_date_3_people';
+    }
+    default: {
+      return hasPlace ? 'image_alt_text_date_place_4_or_more_people' : 'image_alt_text_date_4_or_more_people';
+    }
   }
-
-  if (count === 2 || count === 3) {
-    return `_${count}_people`;
-  }
-
-  return '_4_or_more_people';
 };
