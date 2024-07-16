@@ -8,7 +8,6 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/config';
-import { PROCESS_INVALID_IMAGES } from 'src/constants';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
@@ -34,7 +33,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { Mocked, mock } from 'vitest';
+import { Mocked } from 'vitest';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
@@ -328,6 +327,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.JPEG,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       );
       expect(assetMock.update).toHaveBeenCalledWith({
@@ -602,10 +602,9 @@ describe(MediaService.name, () => {
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
   });
+
   it('should process invalid images if enabled', async () => {
-    mock('src/constants', () => ({
-      PROCESS_INVALID_IMAGES: 'true',
-    }));
+    vi.stubEnv('IMMICH_PROCESS_INVALID_IMAGES', 'true');
 
     assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
 
@@ -623,6 +622,7 @@ describe(MediaService.name, () => {
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
   });
 
   describe('handleGenerateThumbhash', () => {

@@ -9,7 +9,6 @@ import {
   TranscodeTarget,
   VideoCodec,
 } from 'src/config';
-import { PROCESS_INVALID_IMAGES } from 'src/constants';
 import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -200,7 +199,13 @@ export class MediaService {
         try {
           const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-          const imageOptions = { format, size, colorspace, quality: image.quality, processInvalidImages: PROCESS_INVALID_IMAGES };
+          const imageOptions = {
+            format,
+            size,
+            colorspace,
+            quality: image.quality,
+            processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+          };
 
           const outputPath = useExtracted ? extractedPath : asset.originalPath;
           await this.mediaRepository.generateThumbnail(outputPath, path, imageOptions);

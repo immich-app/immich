@@ -958,6 +958,7 @@ describe(PersonService.name, () => {
             width: 274,
             height: 274,
           },
+          processInvalidImages: false,
         },
       );
       expect(personMock.update).toHaveBeenCalledWith({
@@ -987,6 +988,7 @@ describe(PersonService.name, () => {
             width: 510,
             height: 510,
           },
+          processInvalidImages: false,
         },
       );
     });
@@ -1012,6 +1014,7 @@ describe(PersonService.name, () => {
             width: 408,
             height: 408,
           },
+          processInvalidImages: false,
         },
       );
     });
@@ -1038,6 +1041,7 @@ describe(PersonService.name, () => {
             width: 588,
             height: 588,
           },
+          processInvalidImages: false,
         },
       );
     });
