@@ -88,7 +88,7 @@ class EditImagePage extends StatelessWidget {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
                   ImmichToast.show(
-                    durationInSecond: 10,
+                    durationInSecond: 1,
                     context: context,
                     msg: 'Image Saved!',
                     gravity: ToastGravity.BOTTOM,
@@ -98,7 +98,7 @@ class EditImagePage extends StatelessWidget {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 } catch (e) {
                   ImmichToast.show(
-                    durationInSecond: 10,
+                    durationInSecond: 6,
                     context: context,
                     msg: 'Error: ${e.toString()}',
                     gravity: ToastGravity.BOTTOM,
