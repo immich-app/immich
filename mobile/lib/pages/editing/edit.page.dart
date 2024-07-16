@@ -1,11 +1,14 @@
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'dart:async';
+import 'dart:ui';
 
 @immutable
 class EditImagePage extends StatelessWidget {
@@ -21,6 +24,24 @@ class EditImagePage extends StatelessWidget {
                 (image == null && asset != null),
             'Must supply one of asset or image');
 
+  Future<Uint8List> _imageToUint8List(Image image) async {
+  final Completer<Uint8List> completer = Completer();
+  image.image.resolve(const ImageConfiguration()).addListener(
+    ImageStreamListener(
+      (ImageInfo info, bool _) {
+        info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
+          if (byteData != null) {
+            completer.complete(byteData.buffer.asUint8List());
+          } else {
+            completer.completeError('Failed to convert image to bytes');
+          }
+        });
+      },
+      onError: (exception, stackTrace) => completer.completeError(exception),
+    ),
+  );
+  return completer.future;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +77,36 @@ class EditImagePage extends StatelessWidget {
                   gravity: ToastGravity.BOTTOM,
                 );
               } else {
+                ImmichToast.show(
+                  durationInSecond: 1,
+                  context: context,
+                  msg: 'Processing your Image!',
+                  gravity: ToastGravity.BOTTOM,
+                );
+                try {
+                  final Uint8List imageData = await _imageToUint8List(image!);
+                  ImmichToast.show(
+                    durationInSecond: 10,
+                    context: context,
+                    msg: 'Done with Image conversion!',
+                    gravity: ToastGravity.BOTTOM,
+                  );
+                  final AssetEntity? entity = await PhotoManager.editor.saveImage(imageData, title: "_edited.jpg");
+                  ImmichToast.show(
+                    durationInSecond: 10,
+                    context: context,
+                    msg: 'Image saved successfully!',
+                    gravity: ToastGravity.BOTTOM,
+                  );
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                } catch (e) {
+                  ImmichToast.show(
+                    durationInSecond: 10,
+                    context: context,
+                    msg: 'Error: ${e.toString()}',
+                    gravity: ToastGravity.BOTTOM,
+                  );
+                }
               }
             },
           ),
