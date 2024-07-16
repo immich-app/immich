@@ -1,4 +1,5 @@
-import {Attributes, MetricOptions} from '@opentelemetry/api';
+import { Attributes, MetricOptions } from '@opentelemetry/api';
+import { contextBase } from '@opentelemetry/sdk-node';
 
 export const IMetricRepository = 'IMetricRepository';
 
@@ -11,6 +12,7 @@ export interface IMetricGroupRepository {
   addToGauge(name: string, value: number, options?: MetricOptions, attributes?: Attributes): void;
   addToHistogram(name: string, value: number, options?: MetricOptions, attributes?: Attributes): void;
   configure(options: MetricGroupOptions): this;
+  createObservableGauge(name: string, options?: MetricOptions): contextBase.ObservableGauge<Attributes>;
 }
 
 export interface IMetricRepository {

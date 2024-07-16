@@ -15,10 +15,10 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
@@ -217,8 +217,7 @@ export class UserService {
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
-    this.metricRepository.user.addToCounter(`immich.user.deleted`,1)
-
+    this.metricRepository.user.addToCounter(`immich.user.deleted`, 1);
 
     return JobStatus.SUCCESS;
   }

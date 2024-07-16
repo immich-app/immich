@@ -18,11 +18,11 @@ import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
-import {IMetricRepository} from "src/interfaces/metric.interface";
 
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -151,13 +151,18 @@ export class ServerService implements OnEvents {
       serverStats.usage += usage.usage;
       serverStats.usageByUser.push(usage);
 
-      this.metricRepository.user.addToGauge(`immich.user.photos`, usage.photos, {},{"userName": user.userName})
-      this.metricRepository.user.addToGauge(`immich.user.videos`, usage.videos, {},{"userName": user.userName})
-      this.metricRepository.user.addToGauge(`immich.user.usage`, usage.usage, {},{"userName": user.userName})
+      this.metricRepository.user.createObservableGauge('immich.user.photos').addCallback((value) => {
+        console.log(`Photos: ${usage.photos}`);
+        value.observe(usage.photos);
+      });
+
+      // this.metricRepository.user.addToGauge(`immich.user.photos`, usage.photos, {},{"userName": user.userName})
+      // this.metricRepository.user.addToGauge(`immich.user.videos`, usage.videos, {},{"userName": user.userName})
+      // this.metricRepository.user.addToGauge(`immich.user.usage`, usage.usage, {},{"userName": user.userName})
     }
-    this.metricRepository.host.addToGauge(`immich.host.photos`, serverStats.photos)
-    this.metricRepository.host.addToGauge(`immich.host.videos`, serverStats.videos)
-    this.metricRepository.host.addToGauge(`immich.host.usage`, serverStats.usage)
+    // this.metricRepository.host.addToGauge(`immich.host.photos`, serverStats.photos)
+    // this.metricRepository.host.addToGauge(`immich.host.videos`, serverStats.videos)
+    // this.metricRepository.host.addToGauge(`immich.host.usage`, serverStats.usage)
 
     return serverStats;
   }

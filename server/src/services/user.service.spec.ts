@@ -5,10 +5,10 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import {IMetricRepository} from "src/interfaces/metric.interface";
 import { UserService } from 'src/services/user.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -39,7 +39,7 @@ describe(UserService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let metricMock: Mocked<IMetricRepository>
+  let metricMock: Mocked<IMetricRepository>;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
@@ -50,7 +50,16 @@ describe(UserService.name, () => {
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, storageMock, systemMock, userMock, loggerMock, metricMock);
+    sut = new UserService(
+      albumMock,
+      cryptoRepositoryMock,
+      jobMock,
+      storageMock,
+      systemMock,
+      userMock,
+      loggerMock,
+      metricMock,
+    );
 
     userMock.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),

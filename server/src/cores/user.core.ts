@@ -3,8 +3,8 @@ import sanitize from 'sanitize-filename';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserEntity } from 'src/entities/user.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 
 let instance: UserCore | null;
 
@@ -15,7 +15,11 @@ export class UserCore {
     private metricRepository: IMetricRepository,
   ) {}
 
-  static create(cryptoRepository: ICryptoRepository, userRepository: IUserRepository, metricRepository: IMetricRepository) {
+  static create(
+    cryptoRepository: ICryptoRepository,
+    userRepository: IUserRepository,
+    metricRepository: IMetricRepository,
+  ) {
     if (!instance) {
       instance = new UserCore(cryptoRepository, userRepository, metricRepository);
     }
@@ -48,7 +52,7 @@ export class UserCore {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
 
-    this.metricRepository.user.addToCounter(`immich.user.created`, 1)
+    this.metricRepository.user.addToCounter(`immich.user.created`, 1);
 
     return this.userRepository.create(payload);
   }

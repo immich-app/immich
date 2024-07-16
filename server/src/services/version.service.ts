@@ -80,7 +80,6 @@ export class VersionService implements OnEvents {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
         this.eventRepository.clientBroadcast(ClientEvent.NEW_RELEASE, asNotification(metadata));
       }
-
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
       return JobStatus.FAILED;

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { MetricOptions, Attributes  } from '@opentelemetry/api';
+import { Attributes, MetricOptions, metrics } from '@opentelemetry/api';
+import { contextBase } from '@opentelemetry/sdk-node';
 import { MetricService } from 'nestjs-otel';
 import { IMetricGroupRepository, IMetricRepository, MetricGroupOptions } from 'src/interfaces/metric.interface';
-import { apiMetrics, hostMetrics, jobMetrics, ioMetrics, userMetrics } from 'src/utils/instrumentation';
+import { apiMetrics, hostMetrics, ioMetrics, jobMetrics, userMetrics } from 'src/utils/instrumentation';
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
@@ -26,6 +27,10 @@ class MetricGroupRepository implements IMetricGroupRepository {
     }
   }
 
+  createObservableGauge(name: string, options?: MetricOptions): contextBase.ObservableGauge<Attributes> {
+    return metrics.getMeter('immich').createObservableGauge(name, options);
+  }
+
   configure(options: MetricGroupOptions): this {
     this.enabled = options.enabled;
     return this;
@@ -47,5 +52,4 @@ export class MetricRepository implements IMetricRepository {
     this.repo = new MetricGroupRepository(metricService).configure({ enabled: ioMetrics });
     this.user = new MetricGroupRepository(metricService).configure({ enabled: userMetrics });
   }
-
 }

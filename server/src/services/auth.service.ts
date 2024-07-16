@@ -32,11 +32,11 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import {IMetricRepository} from "src/interfaces/metric.interface";
 import { HumanReadableSize } from 'src/utils/bytes';
 
 export interface LoginDetails {
