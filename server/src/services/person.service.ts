@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ImageFormat } from 'src/config';
-import { FACE_THUMBNAIL_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, PROCESS_INVALID_IMAGES } from 'src/constants';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -559,6 +559,7 @@ export class PersonService {
       colorspace: image.colorspace,
       quality: image.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
+      processInvalidImages: PROCESS_INVALID_IMAGES,
     } as const;
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);

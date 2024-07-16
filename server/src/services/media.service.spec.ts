@@ -8,6 +8,7 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/config';
+import { PROCESS_INVALID_IMAGES } from 'src/constants';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
@@ -33,7 +34,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { Mocked } from 'vitest';
+import { Mocked, mock } from 'vitest';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
@@ -296,6 +297,7 @@ describe(MediaService.name, () => {
         format,
         quality: 80,
         colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
@@ -468,6 +470,7 @@ describe(MediaService.name, () => {
           format,
           quality: 80,
           colorspace: Colorspace.SRGB,
+          processInvalidImages: false,
         });
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
       },
@@ -498,6 +501,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(assetMock.update).toHaveBeenCalledWith({
@@ -524,6 +528,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -548,6 +553,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -570,6 +576,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
@@ -590,6 +597,29 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      },
+    );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+  });
+  it('should process invalid images if enabled', async () => {
+    mock('src/constants', () => ({
+      PROCESS_INVALID_IMAGES: 'true',
+    }));
+
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      assetStub.imageDng.originalPath,
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      {
+        format: ImageFormat.WEBP,
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+        processInvalidImages: true,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
