@@ -31,11 +31,11 @@
 
       {#if $isLicenseActivated}
         <div
-          class="bg-immich-primary/10 text-immich-primary px-4 py-3 rounded-md flex place-items-center place-content-center gap-2 mb-5"
+          class="bg-immich-primary/10 text-immich-primary px-4 py-3 rounded-md flex place-items-center place-content-center gap-2 mb-5 dark:text-black dark:bg-immich-dark-primary"
           role="alert"
         >
           <Icon path={mdiLicense} size="24" />
-          <p>Your account is licensed</p>
+          <p>{$t('license_account_info')}</p>
         </div>
       {/if}
 

@@ -744,6 +744,7 @@
   "library": "Library",
   "library_options": "Library options",
   "license_activated_subtitle": "Thank you for supporting Immich and open-source software",
+  "license_account_info": "Your account is licensed",
   "license_activated_title": "Your license has been successfully activated",
   "license_button_activate": "Activate",
   "license_button_buy": "Buy",
