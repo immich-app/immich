@@ -1170,15 +1170,15 @@ describe('/asset', () => {
     // into the test here.
     it.each([
       {
-        filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-5.jpg',
         checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.jpg',
         checksum: 'lT9Uviw/FFJYCjfIxAGPTjzAmmw=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.heic',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.heic',
         checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
       },
     ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
