@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
@@ -7,9 +10,14 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'dart:async';
-import 'dart:ui';
 
+/// A stateless widget that provides functionality for editing an image.
+/// 
+/// This widget allows users to edit an image provided either as an [Asset] or
+/// directly as an [Image]. It ensures that exactly one of these is provided.
+/// 
+/// It also includes a converstion method to convert an [Image] to a [Uint8List] to save the image on the user's phone
+/// They automatically navigate to the [HomePage] with the edited image saved and they eventually gets backed up to the server.
 @immutable
 class EditImagePage extends StatelessWidget {
   final Asset? asset;
@@ -77,27 +85,16 @@ class EditImagePage extends StatelessWidget {
                   gravity: ToastGravity.BOTTOM,
                 );
               } else {
-                ImmichToast.show(
-                  durationInSecond: 1,
-                  context: context,
-                  msg: 'Processing your Image!',
-                  gravity: ToastGravity.BOTTOM,
-                );
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
                   ImmichToast.show(
                     durationInSecond: 10,
                     context: context,
-                    msg: 'Done with Image conversion!',
+                    msg: 'Image Saved!',
                     gravity: ToastGravity.BOTTOM,
                   );
-                  final AssetEntity? entity = await PhotoManager.editor.saveImage(imageData, title: "_edited.jpg");
-                  ImmichToast.show(
-                    durationInSecond: 10,
-                    context: context,
-                    msg: 'Image saved successfully!',
-                    gravity: ToastGravity.BOTTOM,
-                  );
+                  ///Ignore the warning here, planning to modify this in future PRs
+                  final AssetEntity? entity = await PhotoManager.editor.saveImage(imageData, title: "_edited.jpg"); 
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 } catch (e) {
                   ImmichToast.show(

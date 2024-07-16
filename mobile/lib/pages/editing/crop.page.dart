@@ -4,7 +4,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart'; 
 import 'edit.page.dart';
 
+/// A widget for cropping an image.
+/// 
+/// This widget uses [HookWidget] to manage its lifecycle and state. It allows
+/// users to crop an image and then navigate to the [EditImagePage] with the
+/// cropped image.
 class CropImagePage extends HookWidget {
+  
   final Image image;
   const CropImagePage({super.key, required this.image});
 
