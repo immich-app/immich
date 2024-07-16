@@ -61,8 +61,28 @@ export const getAltText = derived(t, ($t) => {
     };
 
     if (peopleCount > 0) {
-      const key = getPlacePersonKey(peopleCount, hasPlace);
-      return $t(key, { values });
+      switch (peopleCount) {
+        case 1: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_1_person', { values })
+            : $t('image_alt_text_date_1_person', { values });
+        }
+        case 2: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_2_people', { values })
+            : $t('image_alt_text_date_2_people', { values });
+        }
+        case 3: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_3_people', { values })
+            : $t('image_alt_text_date_3_people', { values });
+        }
+        default: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_4_or_more_people', { values })
+            : $t('image_alt_text_date_4_or_more_people', { values });
+        }
+      }
     }
 
     if (hasPlace) {
@@ -72,20 +92,3 @@ export const getAltText = derived(t, ($t) => {
     return $t('image_alt_text_date', { values });
   };
 });
-
-const getPlacePersonKey = (count: number, hasPlace: boolean) => {
-  switch (count) {
-    case 1: {
-      return hasPlace ? 'image_alt_text_date_place_1_person' : 'image_alt_text_date_1_person';
-    }
-    case 2: {
-      return hasPlace ? 'image_alt_text_date_place_2_people' : 'image_alt_text_date_2_people';
-    }
-    case 3: {
-      return hasPlace ? 'image_alt_text_date_place_3_people' : 'image_alt_text_date_3_people';
-    }
-    default: {
-      return hasPlace ? 'image_alt_text_date_place_4_or_more_people' : 'image_alt_text_date_4_or_more_people';
-    }
-  }
-};
