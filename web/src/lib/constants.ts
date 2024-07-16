@@ -310,3 +310,8 @@ export const langs = [
   },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
+
+export enum ImmichLicense {
+  Client = 'immich-client',
+  Server = 'immich-server',
+}

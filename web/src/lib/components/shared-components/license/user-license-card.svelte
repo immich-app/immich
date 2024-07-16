@@ -1,17 +1,10 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { getProductLink } from '$lib/utils/license-utils';
+  import { ImmichLicense } from '$lib/constants';
+  import { getLicenseLink } from '$lib/utils/license-utils';
   import { mdiAccount, mdiCheckCircleOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  let productUrl = 'https://pay.futo.org';
-
-  onMount(async () => {
-    productUrl = await getProductLink($page.url.origin, 'immich-client');
-  });
 </script>
 
 <!-- USER LICENSE -->
@@ -39,7 +32,7 @@
       </div>
     </div>
 
-    <a href={productUrl}>
+    <a href={getLicenseLink(ImmichLicense.Client)}>
       <Button fullwidth>{$t('license_button_select')}</Button>
     </a>
   </div>
