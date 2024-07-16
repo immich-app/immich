@@ -31,16 +31,22 @@ export const load = (({ url }) => {
 
     case LinkTarget.ACTIVATE_LICENSE: {
       // https://my.immich.app/link?target=activate_license&licenseKey=IMCL-76S5-B4KG-4HXA-KRQF-C1G1-7PJ6-9V9V-7WQH
+      // https://my.immich.app/link?target=activate_license&licenseKey=IMCL-9XC3-T4S3-37BU-GGJ5-8MWP-F2Y1-BGEX-AQTF
       const licenseKey = queryParams.get('licenseKey');
       const activationKey = queryParams.get('activationKey');
-
-      if (licenseKey && activationKey) {
-        return redirect(302, `${AppRoute.BUY}?licenseKey=${licenseKey}&activationKey=${activationKey}`);
-      }
+      const redirectUrl = new URL(AppRoute.BUY, url.origin);
 
       if (licenseKey) {
-        return redirect(302, `${AppRoute.BUY}?licenseKey=${licenseKey}`);
+        redirectUrl.searchParams.append('licenseKey', licenseKey);
+
+        if (activationKey) {
+          redirectUrl.searchParams.append('activationKey', activationKey);
+        }
+
+        return redirect(302, redirectUrl);
       }
+
+      break;
     }
   }
 

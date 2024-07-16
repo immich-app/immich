@@ -8,10 +8,12 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertCircleOutline } from '@mdi/js';
+  import { mdiAlertCircleOutline, mdiLicense } from '@mdi/js';
+  import { licenseStore } from '$lib/stores/license.store';
 
   export let data: PageData;
   let showLicenseActivated = false;
+  const { isLicenseActivated } = licenseStore;
 </script>
 
 <UserPageLayout title={$t('buy')}>
@@ -24,6 +26,16 @@
         >
           <Icon path={mdiAlertCircleOutline} size="18" />
           <p>{$t('license_failed_activation')}</p>
+        </div>
+      {/if}
+
+      {#if $isLicenseActivated}
+        <div
+          class="bg-immich-primary/10 text-immich-primary px-4 py-3 rounded-md flex place-items-center place-content-center gap-2 mb-5"
+          role="alert"
+        >
+          <Icon path={mdiLicense} size="24" />
+          <p>Your account is licensed</p>
         </div>
       {/if}
 

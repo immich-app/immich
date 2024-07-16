@@ -1,7 +1,7 @@
+import { licenseStore } from '$lib/stores/license.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
-import type { LicenseResponseDto } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
@@ -21,6 +21,7 @@ export const load = (async ({ url }) => {
       const response = await activateLicense(licenseKey, activationKey);
       if (response.activatedAt !== '') {
         isActivated = true;
+        licenseStore.setLicenseStatus(true);
       }
     }
   } catch (error) {

@@ -1,9 +1,7 @@
 import { getServerConfig, setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
 
-const PAYMENT_URL =
-  process.env.NODE_ENV == 'development'
-    ? 'https://futopay-test.azurewebsites.net/api/v1/activate/'
-    : 'https://pay.futo.org/api/v1/activate/';
+// const PAYMENT_URL = 'https://pay.futo.org/api/v1/activate/';
+const PAYMENT_URL = 'https://futopay-test.azurewebsites.net/api/v1/activate/';
 
 export async function activateLicense(licenseKey: string, activationKey: string): Promise<LicenseResponseDto> {
   const isServerKey = licenseKey.search('IMSV') !== -1;
@@ -28,7 +26,7 @@ export async function getActivationKey(licenseKey: string): Promise<string> {
 
 export async function getProductLink(origin: string, type: 'immich-server' | 'immich-client'): Promise<string> {
   let baseUrl = origin;
-  const buyWebsiteUrl = new URL('http://10.1.15.216:5173');
+  const buyWebsiteUrl = new URL('http://10.1.15.216:5173'); // buy.immich.app
 
   if (buyWebsiteUrl.hostname !== 'https://buy.immich.app') {
     console.warn('CHANGE buyWebsiteUrl THIS IN PRODUCTION');

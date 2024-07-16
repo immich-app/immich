@@ -1,7 +1,8 @@
 import { browser } from '$app/environment';
+import { licenseStore } from '$lib/stores/license.store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
-import { getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
+import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
@@ -15,10 +16,17 @@ export const loadUser = async () => {
   try {
     let user = get(user$);
     let preferences = get(preferences$);
+    let serverInfo;
+
     if ((!user || !preferences) && hasAuthCookie()) {
-      [user, preferences] = await Promise.all([getMyUser(), getMyPreferences()]);
+      [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
       user$.set(user);
       preferences$.set(preferences);
+
+      // Check for license status
+      if (serverInfo.licensed || user.license?.activatedAt) {
+        licenseStore.setLicenseStatus(true);
+      }
     }
     return user;
   } catch {
