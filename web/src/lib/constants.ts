@@ -34,6 +34,7 @@ export enum AppRoute {
   MEMORY = '/memory',
   TRASH = '/trash',
   PARTNERS = '/partners',
+  BUY = '/buy',
 
   AUTH_LOGIN = '/auth/login',
   AUTH_REGISTER = '/auth/register',

@@ -10,20 +10,27 @@ export const load = (async ({ url }) => {
   const $t = await getFormatter();
   const licenseKey = url.searchParams.get('licenseKey');
   let activationKey = url.searchParams.get('activationKey');
-  let activationResult: LicenseResponseDto | undefined;
+  let isActivated: boolean | undefined = undefined;
 
-  if (licenseKey && !activationKey) {
-    activationKey = await getActivationKey(licenseKey);
-  }
+  try {
+    if (licenseKey && !activationKey) {
+      activationKey = await getActivationKey(licenseKey);
+    }
 
-  if (licenseKey && activationKey) {
-    activationResult = await activateLicense(licenseKey, activationKey);
+    if (licenseKey && activationKey) {
+      const response = await activateLicense(licenseKey, activationKey);
+      if (response.activatedAt !== '') {
+        isActivated = true;
+      }
+    }
+  } catch (error) {
+    isActivated = false;
   }
 
   return {
     meta: {
       title: $t('buy'),
     },
-    activationResult,
+    isActivated,
   };
 }) satisfies PageLoad;
