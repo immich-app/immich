@@ -1181,6 +1181,10 @@ describe('/asset', () => {
         filepath: 'formats/motionphoto/samsung-one-ui-6.heic',
         checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
       },
+      {
+        filepath: 'formats/motionphoto/pixel-6-pro.jpg',
+        checksum: 'bFhLGbdK058PSk4FTfrSnoKWykc=',
+      },
     ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
       const response = await utils.createAsset(admin.accessToken, {
         assetData: {
