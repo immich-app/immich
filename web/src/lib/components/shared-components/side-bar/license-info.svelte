@@ -8,6 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import * as luxon from 'luxon';
   import { licenseStore } from '$lib/stores/license.store';
+  import { t } from 'svelte-i18n';
 
   let showMessage = false;
   let isOpen = false;
@@ -31,7 +32,7 @@
   {#if $isLicenseActivated}
     <div class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-100 py-3 px-2 rounded-lg">
       <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
-      <p class="dark:text-gray-100">Licensed</p>
+      <p class="dark:text-gray-100">{$t('license_info_licensed')}</p>
     </div>
   {:else}
     <button
@@ -42,11 +43,11 @@
     >
       <div class="flex place-items-center place-content-center gap-1">
         <Icon path={mdiLicense} size="18" class="text-immich-dark-gray/75 dark:text-immich-gray/85" />
-        <p class="text-immich-dark-gray/75 dark:text-immich-gray">Unlicensed</p>
+        <p class="text-immich-dark-gray/75 dark:text-immich-gray">{$t('license_info_unlicensed')}</p>
       </div>
 
       <div class="text-immich-primary dark:text-immich-dark-primary flex place-items-center gap-[2px] font-medium">
-        Buy
+        {$t('license_button_buy')}
 
         <span role="contentinfo">
           <Icon path={mdiInformationOutline}></Icon>
@@ -73,14 +74,15 @@
           class="text-immich-dark-gray/85 dark:text-immich-gray"
         />
       </div>
-      <h1 class="text-lg font-medium my-3">You are running an Unlicensed version of Immich</h1>
+      <h1 class="text-lg font-medium my-3">{$t('license_trial_info_1')}</h1>
       <p class="text-immich-dark-gray/80 dark:text-immich-gray text-balance">
-        You have been using Immich for approximately <span
-          class="text-immich-primary dark:text-immich-dark-primary font-semibold">{accountAge} days</span
-        >. Please considering purchasing a license to support the continued development of the service
+        {$t('license_trial_info_2')}
+        <span class="text-immich-primary dark:text-immich-dark-primary font-semibold">
+          {$t('license_trial_info_3', { values: { accountAge } })}</span
+        >. {$t('license_trial_info_4')}
       </p>
       <div class="mt-3">
-        <Button size="sm" fullwidth on:click={openLicenseModal}>Buy license</Button>
+        <Button size="sm" fullwidth on:click={openLicenseModal}>{$t('license_button_buy_license')}</Button>
       </div>
     </div>
   {/if}

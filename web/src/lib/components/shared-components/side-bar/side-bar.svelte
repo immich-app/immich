@@ -26,9 +26,7 @@
   import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
-  import LicenseInfo from '$lib/components/shared-components/side-bar/license-info.svelte';
-  import StorageSpace from '$lib/components/shared-components/side-bar/storage-space.svelte';
-  import ServerStatus from './server-status.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -138,15 +136,5 @@
     {/if}
   </nav>
 
-  <div class="mt-auto">
-    <StorageSpace />
-  </div>
-
-  <div class="mb-2">
-    <LicenseInfo />
-  </div>
-
-  <div class="mb-6">
-    <ServerStatus />
-  </div>
+  <BottomInfo />
 </SideBarSection>

@@ -1,9 +1,7 @@
 <script lang="ts">
-  import LicenseInfo from '$lib/components/shared-components/side-bar/license-info.svelte';
-  import ServerStatus from '$lib/components/shared-components/side-bar/server-status.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import SideBarLink from '$lib/components/shared-components/side-bar/side-bar-link.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
-  import StorageSpace from '$lib/components/shared-components/side-bar/storage-space.svelte';
   import { AppRoute } from '$lib/constants';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiTools } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -19,15 +17,5 @@
     <SideBarLink title={$t('repair')} routeId={AppRoute.ADMIN_REPAIR} icon={mdiTools} preloadData={false} />
   </nav>
 
-  <div class="mt-auto">
-    <StorageSpace />
-  </div>
-
-  <div class="mb-2">
-    <LicenseInfo />
-  </div>
-
-  <div class="mb-6">
-    <ServerStatus />
-  </div>
+  <BottomInfo />
 </SideBarSection>

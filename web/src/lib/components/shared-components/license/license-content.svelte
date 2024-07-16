@@ -7,6 +7,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { licenseStore } from '$lib/stores/license.store';
+  import { t } from 'svelte-i18n';
 
   export let onActivate: () => void;
 
@@ -33,8 +34,10 @@
 
 <section class="p-4">
   <div>
-    <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">LICENSE</h1>
-    <p class="text-lg mt-2 dark:text-immich-gray">Buy a license to support Immich</p>
+    <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
+      {$t('license_license_title')}
+    </h1>
+    <p class="text-lg mt-2 dark:text-immich-gray">{$t('license_license_subtitle')}</p>
   </div>
   <div class="flex gap-6 mt-4 justify-between">
     {#if $user.isAdmin}
@@ -44,7 +47,7 @@
   </div>
 
   <div class="mt-6">
-    <p class="dark:text-immich-gray">Have a license? Enter the key below</p>
+    <p class="dark:text-immich-gray">{$t('license_input_suggestion')}</p>
     <form class="mt-2 flex gap-2" on:submit={activate}>
       <input
         class="immich-form-input w-full"
@@ -59,7 +62,7 @@
         >{#if isLoading}
           <LoadingSpinner />
         {:else}
-          Activate
+          {$t('license_button_activate')}
         {/if}</Button
       >
     </form>
