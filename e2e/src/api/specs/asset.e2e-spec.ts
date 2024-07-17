@@ -516,7 +516,7 @@ describe('/asset', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-      const asset = await getAssetInfo({ id: user1Assets[0].id });
+      const asset = await getAssetInfo({ id: user1Assets[0].id, key: user1.accessToken });
       expect(asset).toMatchObject({
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({ city: null, country: 'Kazakhstan' }),
