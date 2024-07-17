@@ -39,7 +39,7 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 ## General
 
 | Variable                            | Description                                         |           Default            | Containers               | Workers            |
-| :---------------------------------- | :----------------------------------------------     | :--------------------------: | :----------------------- | :----------------- |
+| :---------------------------------- | :-------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
 | `TZ`                                | Timezone                                            |                              | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)               |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)        |            `log`             | server, machine learning | api, microservices |
@@ -50,7 +50,6 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                           |            `8081`            | server                   | api                |
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                           |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images |                              | server                   | microservices      |
-
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
