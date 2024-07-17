@@ -96,13 +96,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content={$page.data.meta.title} />
     <meta property="og:description" content={$page.data.meta.description} />
-    <meta property="og:image" content={$serverConfig.externalDomain + $page.data.meta.imageUrl} />
+    <meta property="og:image" content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.host).href} />
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={$page.data.meta.title} />
     <meta name="twitter:description" content={$page.data.meta.description} />
-    <meta name="twitter:image" content={$serverConfig.externalDomain + $page.data.meta.imageUrl} />
+    <meta name="twitter:image" content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.host).href} />
   {/if}
 </svelte:head>
 
