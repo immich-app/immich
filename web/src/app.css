@@ -40,11 +40,6 @@
   ascent-override: 100%;
 }
 
-@font-face {
-  font-family: 'Snowburst One';
-  src: url('$lib/assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
-}
-
 :root {
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */

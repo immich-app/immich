@@ -20,13 +20,11 @@
   {#if $savedSearchTerms.length > 0}
     <div class="flex items-center justify-between px-5 pt-5 text-xs">
       <p>{$t('recent_searches').toUpperCase()}</p>
-      <div class="flex w-18 items-center justify-center">
-        <button
-          type="button"
-          class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
-          on:click={() => dispatch('clearAllSearchTerms')}>{$t('clear_all')}</button
-        >
-      </div>
+      <button
+        type="button"
+        class="rounded-lg p-2 font-semibold text-immich-primary hover:bg-immich-primary/25 dark:text-immich-dark-primary"
+        on:click={() => dispatch('clearAllSearchTerms')}>{$t('clear_all')}</button
+      >
     </div>
   {/if}
 

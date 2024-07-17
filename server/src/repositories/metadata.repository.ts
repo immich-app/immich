@@ -1,58 +1,56 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(MetadataRepository.name);
-    this.exiftool = new ExifTool({
-      defaultVideosToUTC: true,
-      backfillTimezones: true,
-      inferTimezoneFromDatestamps: true,
-      useMWG: true,
-      numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
-      /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
-      geoTz: (lat, lon) => geotz.find(lat, lon)[0],
-      // Enable exiftool LFS to parse metadata for files larger than 2GB.
-      readArgs: ['-api', 'largefilesupport=1'],
-      writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
-    });
   }
-  private exiftool: ExifTool;
 
   async teardown() {
-    await this.exiftool.end();
+    await exiftool.end();
   }
 
   readTags(path: string): Promise<ImmichTags | null> {
-    return this.exiftool.read(path).catch((error) => {
-      this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
-      return null;
-    }) as Promise<ImmichTags | null>;
+    return exiftool
+      .read(path, undefined, {
+        ...DefaultReadTaskOptions,
+
+        // Enable exiftool LFS to parse metadata for files larger than 2GB.
+        optionalArgs: ['-api', 'largefilesupport=1'],
+        defaultVideosToUTC: true,
+        backfillTimezones: true,
+        inferTimezoneFromDatestamps: true,
+        useMWG: true,
+        numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
+        /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
+        geoTz: (lat, lon) => geotz.find(lat, lon)[0],
+      })
+      .catch((error) => {
+        this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
+        return null;
+      }) as Promise<ImmichTags | null>;
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
-    return this.exiftool.extractBinaryTagToBuffer(tagName, path);
+    return exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
-      await this.exiftool.write(path, tags);
+      await exiftool.write(path, tags, ['-overwrite_original']);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }

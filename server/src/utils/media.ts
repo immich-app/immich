@@ -732,7 +732,13 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       throw new Error('No QSV device found');
     }
 
-    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', ...this.getInputThreadOptions()];
+    const options = [
+      '-hwaccel qsv',
+      '-hwaccel_output_format qsv',
+      '-async_depth 4',
+      '-noautorotate',
+      ...this.getInputThreadOptions(),
+    ];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
       options.push(`-qsv_device ${hwDevice}`);
@@ -910,7 +916,7 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       throw new Error('No RKMPP device found');
     }
 
-    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {

@@ -248,6 +248,7 @@ export const defaultLang = { name: 'English', code: 'en', loader: () => import('
 
 export const langs = [
   { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
+  { name: 'Azerbaijani', code: 'az', loader: () => import('$lib/i18n/az.json') },
   { name: 'Bulgarian', code: 'bg', loader: () => import('$lib/i18n/bg.json') },
   { name: 'Bislama', code: 'bi', loader: () => import('$lib/i18n/bi.json') },
   { name: 'Catalan', code: 'ca', loader: () => import('$lib/i18n/ca.json') },

@@ -152,11 +152,14 @@ export function validateCronExpression(expression: string) {
   return true;
 }
 
-type IValue = { value: string };
+type IValue = { value: unknown };
 
-export const toEmail = ({ value }: IValue) => (value ? value.toLowerCase() : value);
+export const toEmail = ({ value }: IValue) => (typeof value === 'string' ? value.toLowerCase() : value);
 
-export const toSanitized = ({ value }: IValue) => sanitize((value || '').replaceAll('.', ''));
+export const toSanitized = ({ value }: IValue) => {
+  const input = typeof value === 'string' ? value : '';
+  return sanitize(input.replaceAll('.', ''));
+};
 
 export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
   const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
