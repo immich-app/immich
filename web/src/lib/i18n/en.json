@@ -973,6 +973,7 @@
   "search": "Search",
   "search_albums": "Search albums",
   "search_by_context": "Search by context",
+  "search_by_filename": "Search by file name or extension",
   "search_camera_make": "Search camera make...",
   "search_camera_model": "Search camera model...",
   "search_city": "Search city...",
