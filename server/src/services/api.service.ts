@@ -3,9 +3,7 @@ import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { ONE_HOUR, resourcePaths } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { AuthService } from 'src/services/auth.service';
 import { JobService } from 'src/services/job.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
@@ -34,18 +32,14 @@ const render = (index: string, meta: OpenGraphTags) => {
 
 @Injectable()
 export class ApiService {
-  private configCore: SystemConfigCore;
-
   constructor(
     private authService: AuthService,
     private jobService: JobService,
     private sharedLinkService: SharedLinkService,
     private versionService: VersionService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
   ) {
     this.logger.setContext(ApiService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   @Interval(ONE_HOUR.as('milliseconds'))
@@ -75,14 +69,13 @@ export class ApiService {
         return next();
       }
 
-      const config = await this.configCore.getConfig({ withCache: true });
       const targets = [
         {
           regex: /^\/share\/(.+)$/,
           onMatch: async (matches: RegExpMatchArray) => {
             const key = matches[1];
             const auth = await this.authService.validateSharedLink(key);
-            return this.sharedLinkService.getMetadataTags(auth, config.server.externalDomain);
+            return this.sharedLinkService.getMetadataTags(auth);
           },
         },
       ];

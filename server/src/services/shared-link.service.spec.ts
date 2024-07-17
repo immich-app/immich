@@ -4,7 +4,9 @@ import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/entities/shared-link.entity';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -12,7 +14,9 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(SharedLinkService.name, () => {
@@ -20,13 +24,17 @@ describe(SharedLinkService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let cryptoMock: Mocked<ICryptoRepository>;
   let shareMock: Mocked<ISharedLinkRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let logMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
+    logMock = newLoggerRepositoryMock();
 
-    sut = new SharedLinkService(accessMock, cryptoMock, shareMock);
+    sut = new SharedLinkService(accessMock, cryptoMock, logMock, shareMock, systemMock);
   });
 
   it('should work', () => {
