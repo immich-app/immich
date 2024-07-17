@@ -4,6 +4,7 @@ import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
+import * as luxon from 'luxon';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
 
@@ -71,4 +72,18 @@ export const requestServerInfo = async () => {
     const data = await getStorage();
     serverInfo.set(data);
   }
+};
+
+export const getAccountAge = (): number => {
+  const user = get(user$);
+
+  if (!user) {
+    return 0;
+  }
+
+  const createdDate = luxon.DateTime.fromISO(user.createdAt);
+  const now = luxon.DateTime.now();
+  const accountAge = now.diff(createdDate, 'days').days.toFixed(0);
+
+  return Number(accountAge);
 };

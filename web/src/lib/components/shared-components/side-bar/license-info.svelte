@@ -5,10 +5,11 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
-  import { user } from '$lib/stores/user.store';
-  import * as luxon from 'luxon';
   import { licenseStore } from '$lib/stores/license.store';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
+  import { getAccountAge } from '$lib/utils/auth';
 
   let showMessage = false;
   let isOpen = false;
@@ -18,10 +19,6 @@
     isOpen = true;
     showMessage = false;
   };
-
-  const createdDate = luxon.DateTime.fromISO($user.createdAt ?? new Date().toISOString());
-  const now = luxon.DateTime.now();
-  const accountAge = now.diff(createdDate, 'days').days.toFixed(0);
 </script>
 
 {#if isOpen}
@@ -30,10 +27,12 @@
 
 <div class="hidden md:block license-status pl-4 text-sm">
   {#if $isLicenseActivated}
-    <div class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-100 py-3 px-2 rounded-lg">
-      <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
-      <p class="dark:text-gray-100">{$t('license_info_licensed')}</p>
-    </div>
+    <button on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)} class="w-full">
+      <div class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-100 py-3 px-2 rounded-lg">
+        <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
+        <p class="dark:text-gray-100">{$t('license_info_licensed')}</p>
+      </div>
+    </button>
   {:else}
     <button
       type="button"
@@ -58,7 +57,7 @@
 </div>
 
 <Portal target="body">
-  {#if showMessage}
+  {#if showMessage && getAccountAge() > 14}
     <div
       class="w-[265px] absolute bottom-[75px] left-[255px] bg-white dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-4 py-5"
     >
@@ -78,7 +77,7 @@
       <p class="text-immich-dark-gray/80 dark:text-immich-gray text-balance">
         {$t('license_trial_info_2')}
         <span class="text-immich-primary dark:text-immich-dark-primary font-semibold">
-          {$t('license_trial_info_3', { values: { accountAge } })}</span
+          {$t('license_trial_info_3', { values: { accountAge: getAccountAge() } })}</span
         >. {$t('license_trial_info_4')}
       </p>
       <div class="mt-3">

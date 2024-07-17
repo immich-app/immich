@@ -25,7 +25,7 @@
       onActivate();
       licenseStore.setLicenseStatus(true);
     } catch (error) {
-      handleError(error, 'Failed to activate license');
+      handleError(error, $t('license_failed_activation'));
     } finally {
       isLoading = false;
     }
