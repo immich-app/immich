@@ -302,8 +302,7 @@ describe(AlbumService.name, () => {
 
   describe('delete', () => {
     it('should throw an error for an album not found', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
-      albumMock.getById.mockResolvedValue(null);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set());
 
       await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(
         BadRequestException,
@@ -329,7 +328,7 @@ describe(AlbumService.name, () => {
       await sut.delete(authStub.admin, albumStub.empty.id);
 
       expect(albumMock.delete).toHaveBeenCalledTimes(1);
-      expect(albumMock.delete).toHaveBeenCalledWith(albumStub.empty);
+      expect(albumMock.delete).toHaveBeenCalledWith(albumStub.empty.id);
     });
   });
 
