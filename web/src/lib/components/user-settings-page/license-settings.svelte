@@ -98,32 +98,32 @@
   <div in:fade={{ duration: 500 }}>
     {#if $isLicenseActivated}
       {#if isServerLicense}
-        <div class="flex place-items-end">
-          <div
-            class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center justify-between gap-4"
-          >
-            <Icon path={mdiLicense} size="48" class="text-immich-primary dark:text-immich-dark-primary" />
+        <div
+          class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
+        >
+          <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
-            <div>
-              <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server License</p>
+          <div>
+            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server License</p>
 
-              {#if $user.isAdmin && serverLicenseInfo?.activatedAt}
-                <p class="dark:text-white text-sm mt-1 col-start-2">
-                  Activated on {new Date(serverLicenseInfo?.activatedAt).toLocaleDateString()}
-                </p>
-              {:else}
-                <p class="dark:text-white">Your license is managed by the admin</p>
-              {/if}
-            </div>
+            {#if $user.isAdmin && serverLicenseInfo?.activatedAt}
+              <p class="dark:text-white text-sm mt-1 col-start-2">
+                Activated on {new Date(serverLicenseInfo?.activatedAt).toLocaleDateString()}
+              </p>
+            {:else}
+              <p class="dark:text-white">Your license is managed by the admin</p>
+            {/if}
           </div>
+        </div>
 
+        <div class="text-right mt-4">
           <Button size="sm" color="red" on:click={removeServerLicense}>Remove license</Button>
         </div>
       {:else}
         <div
           class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon path={mdiLicense} size="48" class="text-immich-primary dark:text-immich-dark-primary" />
+          <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
             <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Individual License</p>

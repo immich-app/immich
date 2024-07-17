@@ -18,7 +18,7 @@
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import { t } from 'svelte-i18n';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
-  import UserLicenseSettings from '$lib/components/user-settings-page/user-license-settings.svelte';
+  import LicenseSettings from '$lib/components/user-settings-page/license-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -58,7 +58,7 @@
     title={$t('user_license_settings')}
     subtitle={$t('user_license_settings_description')}
   >
-    <UserLicenseSettings />
+    <LicenseSettings />
   </SettingAccordion>
 
   <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
