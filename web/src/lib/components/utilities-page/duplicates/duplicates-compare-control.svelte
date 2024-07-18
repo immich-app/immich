@@ -132,6 +132,7 @@
         color="primary"
         class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
         on:click={handleStack}
+        disabled={selectedAssetIds.size !== 1}
       >
         <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}
       </Button>
