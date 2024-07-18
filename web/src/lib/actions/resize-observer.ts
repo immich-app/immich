@@ -29,8 +29,6 @@ export function resizeObserver(element: HTMLElement, onResize: OnResizeCallback)
     });
   }
 
-  const bounds = element.getBoundingClientRect();
-  onResize({ target: element, width: bounds.width, height: bounds.height });
   callbacks.set(element, onResize);
   observer.observe(element);
 

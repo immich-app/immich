@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { resizeObserver } from '$lib/actions/resize-observer';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
-  import { type DateGroup } from '$lib/utils/timeline-util';
+  import { findTotalOffset, TUNABLES, type DateGroup } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
 
   export let element: HTMLElement | undefined = undefined;
   export let isSelectionMode = false;
@@ -25,10 +25,20 @@
   export let bucket: AssetBucket;
   export let assetInteractionStore: AssetInteractionStore;
 
-  export let onScrollTarget: (({ bucket, offset }: { bucket: AssetBucket; offset: number }) => void) | undefined =
-    undefined;
+  export let onScrollTarget:
+    | (({
+        bucket,
+        dateGroup,
+        asset,
+        offset,
+      }: {
+        bucket: AssetBucket;
+        dateGroup: DateGroup;
+        asset: AssetResponseDto;
+        offset: number;
+      }) => void)
+    | undefined = undefined;
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
-  export let onBucketHeight: (bucket: AssetBucket, height: number) => void;
 
   $: bucketDate = bucket.bucketDate;
   $: dateGroups = bucket.dateGroups;
@@ -57,19 +67,10 @@
     void navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
-  const findTotalOffset = (element: HTMLElement, stop: HTMLElement) => {
-    let offset = 0;
-    while (element.offsetParent && element !== stop) {
-      offset += element.offsetTop;
-      element = element.offsetParent as HTMLElement;
-    }
-    return offset;
-  };
-
-  const onRetrieveElement = (element: HTMLElement) => {
+  const onRetrieveElement = (dateGroup: DateGroup, asset: AssetResponseDto, element: HTMLElement) => {
     if (assetGridElement && onScrollTarget) {
       const offset = findTotalOffset(element, assetGridElement) - TITLE_HEIGHT;
-      onScrollTarget({ bucket, offset });
+      onScrollTarget({ bucket, dateGroup, asset, offset });
     }
   };
 
@@ -99,23 +100,18 @@
   };
 </script>
 
-<section
-  id="asset-group-by-date"
-  class="flex flex-wrap gap-x-12"
-  data-bucket-date={bucketDate}
-  use:resizeObserver={({ height }) => onBucketHeight(bucket, height)}
-  bind:this={element}
->
+<section id="asset-group-by-date" class="flex flex-wrap gap-x-12" data-bucket-date={bucketDate} bind:this={element}>
   {#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
     {@const display =
       dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === $assetStore.pendingScrollAssetId)}
 
     <div
+      id="date-group"
       use:intersectionObserver={{
-        onIntersect: () => assetStore.updateBucketDateGroup(dateGroup, { intersecting: true }),
-        onSeparate: () => assetStore.updateBucketDateGroup(dateGroup, { intersecting: false }),
-        top: '0%',
-        bottom: '0%',
+        onIntersect: () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
+        onSeparate: () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
+        top: TUNABLES.DATEGROUP.INTERSECTION_ROOT_TOP,
+        bottom: TUNABLES.DATEGROUP.INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
       }}
       data-display={display}
@@ -124,12 +120,13 @@
       style:width={dateGroup.geometry.containerWidth + 'px'}
       style:overflow={'clip'}
     >
+      {#if !display}
+        <Skeleton count={dateGroup.assets.length} height={dateGroup.height + 'px'} title={dateGroup.groupTitle} />
+      {/if}
       {#if display}
         <!-- Asset Group By Date -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
-          class="flex flex-col"
-          use:resizeObserver={({ height }) => assetStore.updateBucketDateGroup(dateGroup, { height })}
           on:mouseenter={() => {
             isMouseOverGroup = true;
             assetMouseEventHandler(dateGroup.groupTitle, null);
@@ -142,7 +139,7 @@
           <!-- Date group title -->
           <div
             class="flex z-[100] sticky top-0 pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-            style="width: {dateGroup.geometry.containerWidth}px"
+            style:width={dateGroup.geometry.containerWidth + 'px'}
           >
             {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroup.groupTitle))}
               <div
@@ -167,7 +164,8 @@
           <!-- Image grid -->
           <div
             class="relative overflow-clip"
-            style={`height: ${dateGroup.geometry.containerHeight}px; width: ${dateGroup.geometry.containerWidth}px`}
+            style:height={dateGroup.geometry.containerHeight + 'px'}
+            style:width={dateGroup.geometry.containerWidth + 'px'}
           >
             {#each dateGroup.assets as asset, index (asset.id)}
               {@const box = dateGroup.geometry.boxes[index]}
@@ -180,8 +178,12 @@
                   right: `-${viewport.width - 1}px`,
                   root: assetGridElement,
                 }}
+                data-asset-id={asset.id}
                 class="absolute"
-                style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+                style:width={box.width + 'px'}
+                style:height={box.height + 'px'}
+                style:top={box.top + 'px'}
+                style:left={box.left + 'px'}
               >
                 <Thumbnail
                   forceDisplay={$assetStore.pendingScrollAssetId === asset.id}
@@ -192,7 +194,7 @@
                     priority: 1,
                   }}
                   retrieveElement={$assetStore.pendingScrollAssetId === asset.id}
-                  {onRetrieveElement}
+                  onRetrieveElement={(element) => onRetrieveElement(dateGroup, asset, element)}
                   showStackedIcon={withStacked}
                   {showArchiveIcon}
                   {asset}

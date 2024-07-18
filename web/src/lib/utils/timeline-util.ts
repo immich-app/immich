@@ -1,9 +1,25 @@
+import type { AssetBucket } from '$lib/stores/assets.store';
 import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
 import type createJustifiedLayout from 'justified-layout';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 import { get } from 'svelte/store';
+
+export const TUNABLES = {
+  BUCKET: {
+    INTERSECTION_ROOT_TOP: '200%',
+    INTERSECTION_ROOT_BOTTOM: '200%',
+  },
+  DATEGROUP: {
+    INTERSECTION_ROOT_TOP: '150%',
+    INTERSECTION_ROOT_BOTTOM: '150%',
+  },
+  THUMBNAIL: {
+    INTERSECTION_ROOT_TOP: '150%',
+    INTERSECTION_ROOT_BOTTOM: '150%',
+  },
+};
 
 export const fromLocalDateTime = (localDateTime: string) =>
   DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
@@ -15,16 +31,7 @@ export const groupDateFormat: Intl.DateTimeFormatOptions = {
   year: 'numeric',
 };
 
-const dates = {};
-const count = 0;
-
 export function formatGroupTitle(date: DateTime): string {
-  // const d = date.toString();
-  // if (dates[d]) {
-  //     console.log('Could be cached', ++count);
-  //   }
-  //   dates[d] = date;
-
   const today = DateTime.now().startOf('day');
 
   // Today
@@ -62,6 +69,7 @@ export type DateGroup = {
   heightActual: boolean;
   intersecting: boolean;
   geometry: Geometry;
+  bucket: AssetBucket;
 };
 
 type Geometry = ReturnType<typeof createJustifiedLayout> & {
@@ -79,11 +87,11 @@ function emptyGeometry() {
 
 const formatDateGroupTitle = memoize(formatGroupTitle);
 
-export function splitBucketIntoDateGroups(assets: AssetResponseDto[], locale: string | undefined): DateGroup[] {
-  const grouped = groupBy(assets, (asset) =>
+export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | undefined): DateGroup[] {
+  const grouped = groupBy(bucket.assets, (asset) =>
     fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
   );
-  const sorted = sortBy(grouped, (group) => assets.indexOf(group[0]));
+  const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
   return sorted.map((group) => {
     const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
     return {
@@ -94,6 +102,7 @@ export function splitBucketIntoDateGroups(assets: AssetResponseDto[], locale: st
       heightActual: false,
       intersecting: false,
       geometry: emptyGeometry(),
+      bucket: bucket,
     };
   });
 }
@@ -115,4 +124,13 @@ export function calculateWidth(boxes: LayoutBox[]): number {
     }
   }
   return width;
+}
+
+export function findTotalOffset(element: HTMLElement, stop: HTMLElement) {
+  let offset = 0;
+  while (element.offsetParent && element !== stop) {
+    offset += element.offsetTop;
+    element = element.offsetParent as HTMLElement;
+  }
+  return offset;
 }

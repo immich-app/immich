@@ -53,19 +53,25 @@
   let element: HTMLElement | undefined;
   let mouseOver = false;
   let intersecting = false;
+  let lastRetrievedElement: HTMLElement | undefined;
 
   const dispatch = createEventDispatcher<{
     select: { asset: AssetResponseDto };
     'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
   }>();
 
-  $: if (retrieveElement && element) {
+  $: if (!retrieveElement) {
+    lastRetrievedElement = undefined;
+  }
+  $: if (retrieveElement && element && lastRetrievedElement !== element) {
+    lastRetrievedElement = element;
     onRetrieveElement?.(element);
   }
+
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
   $: width = thumbnailSize || thumbnailWidth || 235;
   $: height = thumbnailSize || thumbnailHeight || 235;
-  $: display = intersecting || forceDisplay;
+  $: display = intersecting;
 
   const onIconClickedHandler = (e: MouseEvent) => {
     e.stopPropagation();

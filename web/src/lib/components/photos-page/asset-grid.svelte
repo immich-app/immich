@@ -1,6 +1,10 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -8,25 +12,19 @@
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { navigate } from '$lib/utils/navigation';
+  import { formatGroupTitle, splitBucketIntoDateGroups, TUNABLES } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
-  import { DateTime } from 'luxon';
-  import { afterUpdate, beforeUpdate, createEventDispatcher, onMount } from 'svelte';
+  import { throttle } from 'lodash-es';
+  import { createEventDispatcher, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { archiveAssets, stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { selectAllAssets } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
-  import { page } from '$app/stores';
-  import { throttle } from 'lodash-es';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -55,7 +53,8 @@
   let showSkeleton = true;
   let internalScroll = false;
   let navigating = false;
-  let intersectingBucketElement: HTMLElement;
+  let preMeasure: AssetBucket[] = [];
+  let lastIntersectedBucketDate: string | undefined;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   $: timelineY = element?.scrollTop || 0;
@@ -76,7 +75,7 @@
     if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
       safeViewport.height = viewport.height;
       safeViewport.width = viewport.width;
-      void $assetStore.updateViewport(safeViewport);
+      updateViewport();
     }
   }
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -96,10 +95,17 @@
       return;
     }
     void $assetStore.scheduleScrollToAssetId($gridScrollTarget);
-    $gridScrollTarget?.at ? void 0 : (element.scrollTo({ top: 0 }), (showSkeleton = false));
+    if (!$gridScrollTarget?.at) {
+      element.scrollTo({ top: 0 });
+      showSkeleton = false;
+    }
   };
 
-  afterNavigate(({ complete }) => {
+  afterNavigate((nav) => {
+    const { complete, type } = nav;
+    if (type === 'enter') {
+      return;
+    }
     complete.then(completeNav, completeNav);
   });
 
@@ -114,35 +120,65 @@
     // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
     // preventing skeleton from showing after hmr
     if (import.meta && import.meta.hot) {
-      const afterApdate = () => {
-        const asset = $page.url.searchParams.get('at');
-        $gridScrollTarget = { at: asset };
-        completeNav();
+      const afterApdate = (payload) => {
+        const assetGridUpdate = payload.updates.some(
+          (update) => update.path.endsWith('asset-grid.svelte') || update.path.endsWith('assets-store.ts'),
+        );
+        if (assetGridUpdate) {
+          setTimeout(() => {
+            const asset = $page.url.searchParams.get('at');
+            if (asset) {
+              $gridScrollTarget = { at: asset };
+              void navigate(
+                { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+                { replaceState: true, forceNavigate: true },
+              );
+            } else {
+              element.scrollTo({ top: 0 });
+              showSkeleton = false;
+            }
+          }, 500);
+        }
       };
       import.meta.hot?.on('vite:afterUpdate', afterApdate);
+      import.meta.hot?.on('vite:beforeUpdate', (payload) => {
+        const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('asset-grid.svelte'));
+        if (assetGridUpdate) {
+          assetStore.destroy();
+        }
+      });
+
       return () => import.meta.hot?.off('vite:afterUpdate', afterApdate);
     }
     return () => void 0;
   };
 
-  const loading = new Set();
-  const bucketListener = (bucket: AssetBucket, kind: 'load' | 'cancel') => {
-    if (kind === 'load') {
-      loading.add(bucket);
-      setIntersectingBucketElement();
-    } else {
-      console.log('delete!', bucket.bucketDateFormattted);
-      loading.delete(bucket);
+  const bucketListener = (bucketnotify, kind, dateGroup, delta) => {
+    if (kind === 'intersecting') {
+      const rect = element.getBoundingClientRect();
+      let elem = document.elementFromPoint(rect.x + 1, rect.y + 1);
+      while (elem != null) {
+        if (elem.id === 'buck') {
+          break;
+        }
+        elem = elem.parentElement;
+      }
+      if (elem) {
+        lastIntersectedBucketDate = (elem as HTMLElement).dataset.bucketDate;
+      }
+    }
+    if (kind === 'buckheight' && lastIntersectedBucketDate) {
+      const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
+      const deltaIndex = $assetStore.buckets.indexOf(bucketnotify);
+      if (deltaIndex < currentIndex) {
+        element.scrollBy(0, delta);
+      }
     }
   };
 
   onMount(() => {
-    if ($assetStore.initialized) {
-      showSkeleton = false;
-    } else {
-      $assetStore.connect();
-      void $assetStore.init({ bucketListener }).then(() => $assetStore.updateViewport(safeViewport));
-    }
+    $assetStore.connect();
+    void $assetStore.init({ bucketListener }).then(() => $assetStore.updateViewport(safeViewport));
     if (!participatesInRouting) {
       showSkeleton = false;
     }
@@ -154,6 +190,9 @@
     };
   });
 
+  const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
+  const updateViewport = throttle(_updateViewport, 16);
+
   const _handleScrollTimeline = ({ detail }: { detail: number }) => {
     element.scrollTop = detail;
   };
@@ -164,6 +203,7 @@
   };
   const handleTimelineScroll = throttle(_handleTimelineScroll, 16);
 
+  const clearCurrent = () => {};
   const onAssetInGrid = async (asset: AssetResponseDto) => {
     if (!participatesInRouting || navigating || internalScroll) {
       return;
@@ -176,15 +216,10 @@
     );
   };
 
-  const onScrollTarget = ({ bucket, offset }: { bucket: AssetBucket; offset: number }) => {
+  const onScrollTarget = ({ offset }: { asset: AssetResponseDto; offset: number }) => {
     element.scrollTo({ top: offset });
-    $assetStore.clearPendingScroll();
     showSkeleton = false;
-
-    const bucketElement = document.querySelector('[data-bucket-date="' + bucket.bucketDate + '"]');
-    // Needed to set intersectingBucketElement here, because setIntersectingBucketElement()
-    // may not have been called yet
-    intersectingBucketElement = bucketElement as HTMLElement;
+    $assetStore.clearPendingScroll();
   };
 
   const trashOrDelete = async (force: boolean = false) => {
@@ -269,41 +304,6 @@
       assetInteractionStore.selectAsset(asset);
     }
   };
-
-  const setIntersectingBucketElement = () => {
-    let element = document.elementFromPoint(272, 80.5);
-    while (element) {
-      if (element.id === 'buck') {
-        intersectingBucketElement = element as HTMLElement;
-        break;
-      }
-      element = element.parentElement;
-    }
-  };
-
-  function onBucketHeight(bucket: AssetBucket, actualBucketHeight: number) {
-    if (actualBucketHeight <= 0) {
-      return;
-    }
-    // this is in resize listener we are listening to DOM changes here, this is before the component updates the DOM, but after the load of a bucket.
-    // this is a good place to maintain any scroll positions
-
-    // find out if  bucket param is above the current intersectingBucketElement
-    if (intersectingBucketElement) {
-      const buckets = $assetStore.buckets;
-      const buckIdx = buckets.indexOf(bucket);
-      const currentIdx = buckets.findIndex((b) => b.bucketDate === intersectingBucketElement.dataset.bucketDate);
-
-      if (buckIdx < currentIdx) {
-        const { delta } = $assetStore.updateBucket(bucket.bucketDate, { height: actualBucketHeight });
-        if (delta) {
-          element.scrollBy(0, delta);
-        }
-        return;
-      }
-    }
-    $assetStore.updateBucket(bucket.bucketDate, { height: actualBucketHeight });
-  }
 
   function intersectedHandler(bucketDate: string) {
     $assetStore.updateBucket(bucketDate, { intersecting: true });
@@ -499,11 +499,10 @@
         const bucket = $assetStore.buckets[bucketIndex];
 
         // Split bucket into date groups and check each group
-        const assetsGroupByDate = splitBucketIntoDateGroups(bucket.assets, $locale);
-
+        const assetsGroupByDate = splitBucketIntoDateGroups(bucket, $locale);
         for (const dateGroup of assetsGroupByDate) {
-          const dateGroupTitle = formatGroupTitle(DateTime.fromISO(dateGroup[0].fileCreatedAt).startOf('day'));
-          if (dateGroup.every((a) => $selectedAssets.has(a))) {
+          const dateGroupTitle = formatGroupTitle(dateGroup.date);
+          if (dateGroup.assets.every((a) => $selectedAssets.has(a))) {
             assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
           } else {
             assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
@@ -540,6 +539,10 @@
       e.preventDefault();
     }
   };
+
+  function created(e: HTMLElement, createFn) {
+    createFn(e);
+  }
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -567,11 +570,11 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none pb-[60px] {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}
-  on:scroll={handleTimelineScroll}
+  on:scroll={() => (clearCurrent(), handleTimelineScroll())}
 >
   {#if element}
     <div class:invisible={showSkeleton}>
@@ -589,49 +592,109 @@
       style:height={$assetStore.timelineHeight + 'px'}
     >
       {#each $assetStore.buckets as bucket (bucket.bucketDate)}
-        {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket}
+        {@const isPremeasure = preMeasure.includes(bucket)}
+        {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
         <div
+          id="buck"
           use:intersectionObserver={{
             onIntersect: () => intersectedHandler(bucket.bucketDate),
             onSeparate: () => seperatedHandler(bucket.bucketDate),
-            top: '100%',
-            bottom: '100%',
+            top: TUNABLES.BUCKET.INTERSECTION_ROOT_TOP,
+            bottom: TUNABLES.BUCKET.INTERSECTION_ROOT_BOTTOM,
             root: element,
           }}
           data-bucket-date={bucket.bucketDate}
-          data-bucket-display={display}
           style:height={bucket.bucketHeight + 'px'}
         >
-          {#if !display}
-            <Skeleton
-              count={bucket.bucketCount}
-              height={bucket.bucketHeight + 'px'}
-              title={`${bucket.bucketDateFormattted}`}
-            />
-          {/if}
-          {#if display}
-            <AssetDateGroup
-              assetGridElement={element}
-              renderThumbsAtBottomMargin={'200%'}
-              renderThumbsAtTopMargin={'200%'}
-              {withStacked}
-              {showArchiveIcon}
-              {assetStore}
-              {assetInteractionStore}
-              {isSelectionMode}
-              {singleSelect}
-              {onScrollTarget}
-              {onAssetInGrid}
-              {onBucketHeight}
-              {bucket}
-              viewport={safeViewport}
-              on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
-              on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
-              on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
-            />
+          {#key bucket}
+            {#if display && !bucket.measured}
+              <section
+                id="measure-asset-group-by-date"
+                class="flex flex-wrap gap-x-12"
+                use:created={async (e) => {
+                  try {
+                    await bucket.complete;
+                    let heightPending = bucket.dateGroups.some((group) => !group.heightActual);
+                    if (heightPending) {
+                      const listener = (bucketnotify, kind, dateGroup) => {
+                        if (bucketnotify === bucket && kind === 'height') {
+                          heightPending = bucket.dateGroups.some((group) => !group.heightActual);
+                          if (!heightPending) {
+                            const height = e.getBoundingClientRect().height;
+                            if (height !== 0) {
+                              $assetStore.updateBucket(bucket.bucketDate, { height: height, measured: true });
+                            }
+
+                            $assetStore.removeListener(listener);
+                          }
+                        }
+                      };
+                      assetStore.addListener(listener);
+                    }
+                  } catch {
+                    // ignore if complete rejects (canceled load)
+                  }
+                }}
+              >
+                {#each bucket.dateGroups as dateGroup (dateGroup.date)}
+                  <div id="date-group" data-display={display} data-date-group={dateGroup.date}>
+                    <div
+                      use:resizeObserver={({ height }) =>
+                        $assetStore.updateBucketDateGroup(bucket, dateGroup, { height: height })}
+                    >
+                      <div
+                        class="flex z-[100] sticky top-[-1px] pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+                        style:width={dateGroup.geometry.containerWidth + 'px'}
+                      >
+                        <span class="w-full truncate first-letter:capitalize">
+                          {dateGroup.groupTitle}
+                        </span>
+                      </div>
+
+                      <div
+                        class="relative overflow-clip"
+                        style:height={dateGroup.geometry.containerHeight + 'px'}
+                        style:width={dateGroup.geometry.containerWidth + 'px'}
+                        style:background-color={'white'}
+                      ></div>
+                    </div>
+                  </div>
+                {/each}
+              </section>
+            {/if}
+          {/key}
+          {#if bucket.measured}
+            {#if !display}
+              <Skeleton
+                count={bucket.bucketCount}
+                height={bucket.bucketHeight + 'px'}
+                title={`${bucket.bucketDateFormattted}`}
+              />
+            {/if}
+            {#if display}
+              <AssetDateGroup
+                assetGridElement={element}
+                renderThumbsAtTopMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_TOP}
+                renderThumbsAtBottomMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_BOTTOM}
+                {withStacked}
+                {showArchiveIcon}
+                {assetStore}
+                {assetInteractionStore}
+                {isSelectionMode}
+                {singleSelect}
+                {onScrollTarget}
+                {onAssetInGrid}
+                {bucket}
+                viewport={safeViewport}
+                on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
+                on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
+                on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+              />
+            {/if}
           {/if}
         </div>
       {/each}
+      <div class="h-[60px]"></div>
     </section>
   {/if}
 </section>
