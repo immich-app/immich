@@ -12,6 +12,7 @@ fi
 
 : "${IMMICH_HOST:=[::]}"
 : "${IMMICH_PORT:=3003}"
+: "${MACHINE_LEARNING_WORKERS:=1}"
 
 gunicorn app.main:app \
 	-k app.config.CustomUvicornWorker \
