@@ -140,7 +140,6 @@
     }));
 
     const stackDto: AssetBulkStackDto = { stacks: stacks };
-    console.log(stackDto);
     prompt = $t('bulk_stack_duplicates_confirmation', { values: { count: ids.length } });
     confirmText = $t('confirm');
 
