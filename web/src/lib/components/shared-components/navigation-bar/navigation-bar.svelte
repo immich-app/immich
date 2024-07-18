@@ -19,7 +19,6 @@
   import AccountInfoPanel from './account-info-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { licenseStore } from '$lib/stores/license.store';
 
   export let showUploadButton = true;
 
@@ -29,7 +28,6 @@
   const dispatch = createEventDispatcher<{
     uploadClicked: void;
   }>();
-  const { setLicenseStatus } = licenseStore;
 
   const logOut = async () => {
     const { redirectUri } = await logout();
