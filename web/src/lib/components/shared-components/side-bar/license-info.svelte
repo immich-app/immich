@@ -27,7 +27,11 @@
 
 <div class="hidden md:block license-status pl-4 text-sm">
   {#if $isLicenseActivated}
-    <button on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)} class="w-full">
+    <button
+      on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)}
+      class="w-full"
+      type="button"
+    >
       <div class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-100 py-3 px-2 rounded-lg">
         <Icon path={mdiLicense} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
         <p class="dark:text-gray-100">{$t('license_info_licensed')}</p>

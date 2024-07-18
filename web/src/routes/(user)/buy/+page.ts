@@ -26,6 +26,7 @@ export const load = (async ({ url }) => {
     }
   } catch (error) {
     isActivated = false;
+    console.log('error navigating to /buy', error);
   }
 
   return {
