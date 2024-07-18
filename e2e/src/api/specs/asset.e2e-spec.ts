@@ -507,6 +507,22 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
+    it('should geocode country from gps data in the middle of nowhere', async () => {
+      const { status } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ latitude: 42, longitude: 69 });
+      expect(status).toEqual(200);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+      const asset = await getAssetInfo({ id: user1Assets[0].id }, { headers: asBearerAuth(user1.accessToken) });
+      expect(asset).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({ city: null, country: 'Kazakhstan' }),
+      });
+    });
+
     it('should set the description', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -1170,16 +1186,24 @@ describe('/asset', () => {
     // into the test here.
     it.each([
       {
-        filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-5.jpg',
         checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.jpg',
         checksum: 'lT9Uviw/FFJYCjfIxAGPTjzAmmw=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.heic',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.heic',
         checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
+      },
+      {
+        filepath: 'formats/motionphoto/pixel-6-pro.jpg',
+        checksum: 'bFhLGbdK058PSk4FTfrSnoKWykc=',
+      },
+      {
+        filepath: 'formats/motionphoto/pixel-8a.jpg',
+        checksum: '7YdY+WF0h+CXHbiXpi0HiCMTTjs=',
       },
     ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
       const response = await utils.createAsset(admin.accessToken, {
