@@ -511,7 +511,7 @@ describe('/asset', () => {
       const { status } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ latitude: 69, longitude: 42 });
+        .send({ latitude: 42, longitude: 69 });
       expect(status).toEqual(200);
 
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');

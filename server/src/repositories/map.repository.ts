@@ -134,40 +134,40 @@ export class MapRepository implements IMapRepository {
       .limit(1)
       .getOne();
 
-    if (!response) {
-      this.logger.warn(
-        `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
-      );
+    if (response) {
+      this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
 
-      const ne_response = await this.naturalEarthCountriesRepository
-        .createQueryBuilder('naturalearth_countries')
-        .where('coordinates @> point (:longitude, :latitude)', point)
-        .limit(1)
-        .getOne();
-
-      if (!ne_response) {
-        this.logger.warn(
-          `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
-        );
-
-        return null;
-      }
-
-      this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
-
-      const { admin_a3 } = ne_response;
-      const country = getName(admin_a3, 'en') ?? null;
-      const state = null;
-      const city = null;
+      const { countryCode, name: city, admin1Name } = response;
+      const country = getName(countryCode, 'en') ?? null;
+      const state = admin1Name;
 
       return { country, state, city };
     }
 
-    this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
+    this.logger.warn(
+      `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+    );
 
-    const { countryCode, name: city, admin1Name } = response;
-    const country = getName(countryCode, 'en') ?? null;
-    const state = admin1Name;
+    const ne_response = await this.naturalEarthCountriesRepository
+      .createQueryBuilder('naturalearth_countries')
+      .where('coordinates @> point (:longitude, :latitude)', point)
+      .limit(1)
+      .getOne();
+
+    if (!ne_response) {
+      this.logger.warn(
+        `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+      );
+
+      return null;
+    }
+
+    this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
+
+    const { admin_a3 } = ne_response;
+    const country = getName(admin_a3, 'en') ?? null;
+    const state = null;
+    const city = null;
 
     return { country, state, city };
   }
