@@ -10,15 +10,31 @@
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { getAccountAge } from '$lib/utils/auth';
+  import { fade } from 'svelte/transition';
 
   let showMessage = false;
   let isOpen = false;
+  let hoverMessage = false;
+  let hoverButton = false;
   const { isLicenseActivated } = licenseStore;
 
   const openLicenseModal = () => {
     isOpen = true;
     showMessage = false;
   };
+
+  const onButtonHover = () => {
+    showMessage = true;
+    hoverButton = true;
+  };
+
+  $: if (showMessage && !hoverMessage && !hoverButton) {
+    setTimeout(() => {
+      if (!hoverMessage && !hoverButton) {
+        showMessage = false;
+      }
+    }, 300);
+  }
 </script>
 
 {#if isOpen}
@@ -41,7 +57,10 @@
     <button
       type="button"
       on:click={openLicenseModal}
-      on:mouseenter={() => (showMessage = true)}
+      on:mouseover={onButtonHover}
+      on:mouseleave={() => (hoverButton = false)}
+      on:focus={onButtonHover}
+      on:blur={() => (hoverButton = false)}
       class="py-3 px-2 flex justify-between place-items-center place-content-center border border-gray-300 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-sm dark:bg-immich-dark-primary/10 w-full"
     >
       <div class="flex place-items-center place-content-center gap-1">
@@ -63,7 +82,13 @@
 <Portal target="body">
   {#if showMessage && getAccountAge() > 14}
     <div
-      class="w-[265px] absolute bottom-[75px] left-[255px] bg-white dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-4 py-5"
+      class="w-64 absolute bottom-[75px] left-[255px] bg-white dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-4 py-5"
+      transition:fade={{ duration: 150 }}
+      on:mouseover={() => (hoverMessage = true)}
+      on:mouseleave={() => (hoverMessage = false)}
+      on:focus={() => (hoverMessage = true)}
+      on:blur={() => (hoverMessage = false)}
+      role="dialog"
     >
       <div class="flex justify-between place-items-center">
         <Icon path={mdiLicense} size="44" class="text-immich-dark-gray/75 dark:text-immich-gray" />
@@ -72,7 +97,7 @@
           on:click={() => {
             showMessage = false;
           }}
-          title="Close"
+          title={$t('close')}
           size="18"
           class="text-immich-dark-gray/85 dark:text-immich-gray"
         />
