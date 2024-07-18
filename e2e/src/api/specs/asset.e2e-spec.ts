@@ -507,7 +507,7 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
-    it('should geocode gps data in the middle of nowhere', async () => {
+    it('should geocode country from gps data in the middle of nowhere', async () => {
       const { status } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
