@@ -21,7 +21,7 @@
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
-    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/coverage-v8": "^2.0.0",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
     "commander": "^12.0.0",
@@ -35,7 +35,7 @@
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^1.2.2",
+    "vitest": "^2.0.0",
     "vitest-fetch-mock": "^0.2.2",
     "yaml": "^2.3.1"
   },
