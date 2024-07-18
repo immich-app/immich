@@ -194,6 +194,8 @@ export class AssetService {
 
   async unstackAll(auth: AuthDto, dto: AssetStackDto): Promise<void> {
     const stackIdsToCheckForDelete: string[] = [];
+    let options : Partial<AssetEntity> = {};
+    options.stack = null;
     const assets = await this.assetRepository.getByIds(dto.ids, { stack: true });
     stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
     // This updates the updatedAt column of the parents to indicate that one of its children is removed
@@ -202,6 +204,7 @@ export class AssetService {
       assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!),
       { updatedAt: new Date() },
     );
+    await this.assetRepository.updateAll(dto.ids, options);
     const stackIdsToDelete = await Promise.all(stackIdsToCheckForDelete.map((id) => this.stackRepository.getById(id)));
     const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
