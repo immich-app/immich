@@ -429,7 +429,7 @@
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto outline-none pb-[60px] {isEmpty
     ? 'm-0'
-    : 'ml-4 tall:ml-0 mr-[20px] md:mr-[60px]'}"
+    : 'ml-4 tall:ml-0 md:mr-[60px]'}"
   tabindex="-1"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
