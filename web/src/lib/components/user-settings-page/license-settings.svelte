@@ -116,9 +116,11 @@
           </div>
         </div>
 
-        <div class="text-right mt-4">
-          <Button size="sm" color="red" on:click={removeServerLicense}>Remove license</Button>
-        </div>
+        {#if $user.isAdmin}
+          <div class="text-right mt-4">
+            <Button size="sm" color="red" on:click={removeServerLicense}>Remove license</Button>
+          </div>
+        {/if}
       {:else}
         <div
           class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
