@@ -30,7 +30,7 @@ export interface ImmichTags extends Omit<ImmichTagsBase, 'RegionInfo'> {
       W: number;
       H: number;
       Unit: string;
-    },
+    };
     /** ☆☆☆☆ ✔ Example: [{"Area":{},"Name":"John Doe","Type":"Face"}] */
     RegionList: {
       Area: {
@@ -41,11 +41,11 @@ export interface ImmichTags extends Omit<ImmichTagsBase, 'RegionInfo'> {
         W: number;
         H: number;
         Unit: string;
-      },
+      };
       Rotation?: number;
       Type?: string;
       Name?: string;
-    }[],
+    }[];
   };
 }
 

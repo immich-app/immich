@@ -1,8 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { IsEnum } from 'class-validator';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum SourceType {

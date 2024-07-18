@@ -8,16 +8,17 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { PersonResponseDto } from 'src/dtos/person.dto';
+import { SearchPeopleDto } from 'src/dtos/search.dto';
+import { SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { SourceType } from 'src/entities/asset-face.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ClientEvent, IEventRepository, OnEvents } from 'src/interfaces/event.interface';
-import { BoundingBox } from 'src/interfaces/machine-learning.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -38,8 +39,6 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { usePagination } from 'src/utils/pagination';
-import { SearchPeopleDto } from 'src/dtos/search.dto';
-import { PersonResponseDto } from 'src/dtos/person.dto';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -497,14 +496,14 @@ export class MetadataService implements OnEvents {
     }
   }
 
-  async searchPerson(ownerId: AssetEntity["ownerId"], dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+  async searchPerson(ownerId: AssetEntity['ownerId'], dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.personRepository.getByName(ownerId, dto.name, { withHidden: dto.withHidden });
   }
 
   private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
     this.logger.debug(`Starting faces extraction from tags (${asset.id})`);
 
-    let faceSet = new Set();
+    const faceSet = new Set();
 
     if (!tags.RegionInfo) {
       return true;
@@ -526,28 +525,31 @@ export class MetadataService implements OnEvents {
     }
 
     function toPixels(region: Region, unit: string): Region {
-      var pixelRegion: Region = region;
-      if (unit.toLowerCase() == "normalized") {
-        pixelRegion.boundingBoxX1 = Math.floor(region.boundingBoxX1 * region.imageWidth)
-        pixelRegion.boundingBoxX2 = Math.floor(region.boundingBoxX2 * region.imageWidth)
-        pixelRegion.boundingBoxY1 = Math.floor(region.boundingBoxY1 * region.imageHeight)
-        pixelRegion.boundingBoxY2 = Math.floor(region.boundingBoxY2 * region.imageHeight)
+      const pixelRegion: Region = region;
+      if (unit.toLowerCase() == 'normalized') {
+        pixelRegion.boundingBoxX1 = Math.floor(region.boundingBoxX1 * region.imageWidth);
+        pixelRegion.boundingBoxX2 = Math.floor(region.boundingBoxX2 * region.imageWidth);
+        pixelRegion.boundingBoxY1 = Math.floor(region.boundingBoxY1 * region.imageHeight);
+        pixelRegion.boundingBoxY2 = Math.floor(region.boundingBoxY2 * region.imageHeight);
       }
-      return pixelRegion
+      return pixelRegion;
     }
 
     for (const region of tags.RegionInfo?.RegionList) {
-      let faceResult: MetadataFaceResult = {
+      const faceResult: MetadataFaceResult = {
         Name: region.Name,
         Type: region.Type,
-        Region: toPixels({
-          imageWidth: tags.RegionInfo?.AppliedToDimensions?.W,
-          imageHeight: tags.RegionInfo?.AppliedToDimensions?.H,
-          boundingBoxX1: region.Area.X - (region.Area.W / 2),
-          boundingBoxY1: region.Area.Y - (region.Area.H / 2),
-          boundingBoxX2: region.Area.X + (region.Area.W / 2),
-          boundingBoxY2: region.Area.Y + (region.Area.H / 2),
-        }, region.Area.Unit),
+        Region: toPixels(
+          {
+            imageWidth: tags.RegionInfo?.AppliedToDimensions?.W,
+            imageHeight: tags.RegionInfo?.AppliedToDimensions?.H,
+            boundingBoxX1: region.Area.X - region.Area.W / 2,
+            boundingBoxY1: region.Area.Y - region.Area.H / 2,
+            boundingBoxX2: region.Area.X + region.Area.W / 2,
+            boundingBoxY2: region.Area.Y + region.Area.H / 2,
+          },
+          region.Area.Unit,
+        ),
       };
 
       faceSet.add(faceResult);
@@ -561,38 +563,38 @@ export class MetadataService implements OnEvents {
     await this.personRepository.deleteFaceFromAsset(asset.id, SourceType.EXIF);
 
     for (const face of faces) {
-      const name = face.Name || ""
-      const matches = await this.personRepository.getByName(asset.ownerId, name, { withHidden: true })
+      const name = face.Name || '';
+      const matches = await this.personRepository.getByName(asset.ownerId, name, { withHidden: true });
 
       this.logger.verbose(`${matches.length} persons found for name=${name}: ${matches}`);
 
-      let person = matches[0] || null;
-      let personId = matches[0]?.id || null;
+      const person = matches[0] || null;
       let newPerson: PersonEntity | null = null;
 
       if (!person) {
         this.logger.debug('No matches, creating a new person.');
         newPerson = await this.personRepository.create({ ownerId: asset.ownerId, name: name });
         if (!newPerson) {
-          this.logger.error(`Something went wrong creating person=${name}`)
+          this.logger.error(`Something went wrong creating person=${name}`);
         }
-        personId = newPerson.id;
       }
 
       const currentPerson = newPerson || person;
       const newFaceId = this.cryptoRepository.randomUUID();
-      const faceIds = await this.personRepository.createFaces([{
-        id: newFaceId,
-        personId: currentPerson.id,
-        assetId: asset.id,
-        imageHeight: face.Region.imageHeight,
-        imageWidth: face.Region.imageWidth,
-        boundingBoxX1: face.Region.boundingBoxX1,
-        boundingBoxY1: face.Region.boundingBoxY1,
-        boundingBoxX2: face.Region.boundingBoxX2,
-        boundingBoxY2: face.Region.boundingBoxY2,
-        sourceType: SourceType.EXIF,
-      }]);
+      const faceIds = await this.personRepository.createFaces([
+        {
+          id: newFaceId,
+          personId: currentPerson.id,
+          assetId: asset.id,
+          imageHeight: face.Region.imageHeight,
+          imageWidth: face.Region.imageWidth,
+          boundingBoxX1: face.Region.boundingBoxX1,
+          boundingBoxY1: face.Region.boundingBoxY1,
+          boundingBoxX2: face.Region.boundingBoxX2,
+          boundingBoxY2: face.Region.boundingBoxY2,
+          sourceType: SourceType.EXIF,
+        },
+      ]);
 
       this.logger.debug(`Created ${faceIds.length} faceIds: ${faceIds}`);
 
@@ -604,8 +606,6 @@ export class MetadataService implements OnEvents {
       }
     }
 
-    ;
-
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
       facesRecognizedAt: new Date(),
@@ -613,7 +613,7 @@ export class MetadataService implements OnEvents {
 
     return true;
   }
-  
+
   private async exifData(
     asset: AssetEntity,
   ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {

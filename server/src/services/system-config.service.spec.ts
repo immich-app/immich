@@ -72,8 +72,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
     level: LogLevel.LOG,
   },
-  metadata: {
-    importFaces: false,
+  importFaces: {
+    enabled: false,
   },
   machineLearning: {
     enabled: true,

@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -492,6 +492,7 @@ describe(PersonService.name, () => {
         items: [personStub.withName],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueDetectFaces({ force: true });
 
@@ -506,7 +507,7 @@ describe(PersonService.name, () => {
 
     it('should delete existing people and faces if forced', async () => {
       personMock.getAll.mockResolvedValue({
-        items: [faceStub.face1.person],
+        items: [faceStub.face1.person, personStub.randomPerson],
         hasNextPage: false,
       });
       personMock.getAllFaces.mockResolvedValue({
@@ -517,6 +518,7 @@ describe(PersonService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
 
       await sut.handleQueueDetectFaces({ force: true });
 
@@ -527,8 +529,8 @@ describe(PersonService.name, () => {
           data: { id: assetStub.image.id },
         },
       ]);
-      expect(personMock.delete).toHaveBeenCalledWith([faceStub.face1.person]);
-      expect(storageMock.unlink).toHaveBeenCalledWith(faceStub.face1.person.thumbnailPath);
+      expect(personMock.delete).toHaveBeenCalledWith([personStub.randomPerson]);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
     });
   });
 
@@ -557,10 +559,14 @@ describe(PersonService.name, () => {
         items: [faceStub.face1],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({});
 
-      expect(personMock.getAllFaces).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { personId: IsNull() } });
+      expect(personMock.getAllFaces).toHaveBeenCalledWith(
+        { skip: 0, take: 1000 },
+        { where: { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING } },
+      );
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -582,6 +588,7 @@ describe(PersonService.name, () => {
         items: [faceStub.face1],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
@@ -612,6 +619,8 @@ describe(PersonService.name, () => {
         items: [faceStub.face1],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([]);
+
       await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
 
       expect(systemMock.get).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE);
@@ -637,6 +646,7 @@ describe(PersonService.name, () => {
         items: [faceStub.face1],
         hasNextPage: false,
       });
+      personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
 
@@ -650,25 +660,28 @@ describe(PersonService.name, () => {
     it('should delete existing people and faces if forced', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
       personMock.getAll.mockResolvedValue({
-        items: [faceStub.face1.person],
+        items: [faceStub.face1.person, personStub.randomPerson],
         hasNextPage: false,
       });
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,
       });
+      personMock.deleteAllFaces.mockResolvedValue();
+
+      personMock.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
-      expect(personMock.getAllFaces).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
+      expect(personMock.deleteAllFaces).toHaveBeenCalledWith(SourceType.MACHINE_LEARNING);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
           data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
-      expect(personMock.delete).toHaveBeenCalledWith([faceStub.face1.person]);
-      expect(storageMock.unlink).toHaveBeenCalledWith(faceStub.face1.person.thumbnailPath);
+      expect(personMock.delete).toHaveBeenCalledWith([personStub.randomPerson]);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
     });
   });
 
@@ -742,6 +755,7 @@ describe(PersonService.name, () => {
         boundingBoxY2: 200,
         imageHeight: 500,
         imageWidth: 400,
+        sourceType: SourceType.MACHINE_LEARNING,
         faceSearch: { faceId, embedding: [1, 2, 3, 4] },
       };
 
@@ -1169,6 +1183,7 @@ describe(PersonService.name, () => {
         id: faceStub.face1.id,
         imageHeight: 1024,
         imageWidth: 1024,
+        sourceType: SourceType.MACHINE_LEARNING,
         person: mapPerson(personStub.withName),
       });
     });

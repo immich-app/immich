@@ -50,25 +50,23 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAllFaces(sourceType?: string): Promise<void> {
-    if (!sourceType) {
-      await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
-    } else {
-      await this.assetFaceRepository
-        .createQueryBuilder('asset_faces')
-        .delete()
-        .andWhere("sourceType = :sourceType", { sourceType: sourceType })
-        .execute();
-    }
+    await (sourceType
+      ? this.assetFaceRepository
+          .createQueryBuilder('asset_faces')
+          .delete()
+          .andWhere('sourceType = :sourceType', { sourceType: sourceType })
+          .execute()
+      : this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE'));
   }
 
   async deleteFaceFromAsset(assetId: string, sourceType?: string): Promise<void> {
     let query = this.assetFaceRepository
       .createQueryBuilder('asset_faces')
       .delete()
-      .where("assetId = :assetId", { assetId: assetId })
-    
+      .where('assetId = :assetId', { assetId: assetId });
+
     if (sourceType) {
-      query = query.andWhere("sourceType = :sourceType", { sourceType: sourceType })
+      query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
     }
     await query.execute();
   }

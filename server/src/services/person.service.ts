@@ -332,7 +332,9 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    const ml_faces = asset.faces?.filter((face) => { face.sourceType == SourceType.MACHINE_LEARNING });
+    const ml_faces = asset.faces?.filter((face) => {
+      face.sourceType == SourceType.MACHINE_LEARNING;
+    });
     if (ml_faces?.length > 0) {
       return JobStatus.FAILED;
     }
@@ -414,7 +416,9 @@ export class PersonService {
 
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING } }),
+      this.repository.getAllFaces(pagination, {
+        where: force ? undefined : { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING },
+      }),
     );
 
     for await (const page of facePagination) {
