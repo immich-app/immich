@@ -40,7 +40,6 @@
       window.location.href = redirectUri;
     }
     resetSavedUser();
-    setLicenseStatus(false);
   };
 </script>
 
