@@ -58,7 +58,7 @@ function _drainTasks() {
     key = queue.shift();
   }
 }
-const drain = THROTTLE ? throttle(_drainTasks, THROTTLE_MS) : _drainTasks;
+const drain = THROTTLE ? throttle(_drainTasks, THROTTLE_MS, { leading: false, trailing: true }) : _drainTasks;
 
 function addTask(key: TaskKey, task: Task, priority: number = 0) {
   queue.push(key, priority);

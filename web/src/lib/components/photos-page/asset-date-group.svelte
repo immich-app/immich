@@ -3,7 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import { AssetBucket, queuePostScrollTask, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
   import { findTotalOffset, TUNABLES, type DateGroup } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -108,8 +108,10 @@
     <div
       id="date-group"
       use:intersectionObserver={{
-        onIntersect: () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
-        onSeparate: () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
+        onIntersect: () =>
+          queuePostScrollTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true })),
+        onSeparate: () =>
+          queuePostScrollTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false })),
         top: TUNABLES.DATEGROUP.INTERSECTION_ROOT_TOP,
         bottom: TUNABLES.DATEGROUP.INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
@@ -121,19 +123,22 @@
       style:overflow={'clip'}
     >
       {#if !display}
-        <Skeleton count={dateGroup.assets.length} height={dateGroup.height + 'px'} title={dateGroup.groupTitle} />
+        <Skeleton height={dateGroup.height + 'px'} title={dateGroup.groupTitle} />
       {/if}
       {#if display}
         <!-- Asset Group By Date -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
-          on:mouseenter={() => {
-            isMouseOverGroup = true;
-            assetMouseEventHandler(dateGroup.groupTitle, null);
-          }}
+          on:mouseenter={() =>
+            queuePostScrollTask(() => {
+              isMouseOverGroup = true;
+              assetMouseEventHandler(dateGroup.groupTitle, null);
+            })}
           on:mouseleave={() => {
-            isMouseOverGroup = false;
-            assetMouseEventHandler(dateGroup.groupTitle, null);
+            queuePostScrollTask(() => {
+              isMouseOverGroup = false;
+              assetMouseEventHandler(dateGroup.groupTitle, null);
+            });
           }}
         >
           <!-- Date group title -->
@@ -186,7 +191,7 @@
                 style:left={box.left + 'px'}
               >
                 <Thumbnail
-                  forceDisplay={$assetStore.pendingScrollAssetId === asset.id}
+                  delayIntersectionsDuringScroll={true}
                   intersectionConfig={{
                     root: assetGridElement,
                     bottom: renderThumbsAtBottomMargin,

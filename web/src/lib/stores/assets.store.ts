@@ -4,6 +4,7 @@ import { getAssetRatio } from '$lib/utils/asset-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import { mdiLayersTripleOutline } from '@mdi/js';
 import createJustifiedLayout from 'justified-layout';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -25,6 +26,8 @@ const LAYOUT_OPTIONS = {
 export interface Viewport {
   width: number;
   height: number;
+  x: number;
+  y: number;
 }
 
 interface AssetLookup {
@@ -178,6 +181,8 @@ export class AssetStore {
   pendingScrollBucket: AssetBucket | undefined;
   pendingScrollAssetId: string | undefined;
 
+  listeners: BucketListener[] = [];
+
   constructor(
     options: AssetStoreOptions,
     private albumId?: string,
@@ -275,8 +280,6 @@ export class AssetStore {
     this.emit(true);
   }, 2500);
 
-  listeners: BucketListener[] = [];
-
   addListener(bucketListener: BucketListener) {
     this.listeners.push(bucketListener);
   }
@@ -288,7 +291,6 @@ export class AssetStore {
     if (this.initialized) {
       throw 'Can only init once';
     }
-    this.listeners = [];
     this.addListener(bucketListener);
     // create a promise, and store its resolve callbacks. The initializedSignal callback
     // will be invoked when a the assetstore is initialized.
@@ -316,6 +318,7 @@ export class AssetStore {
   }
 
   public destroy() {
+    this.listeners = [];
     this.initialized = false;
   }
 
@@ -389,7 +392,6 @@ export class AssetStore {
   async loadBucket(bucketDate: string, options: { preventCancel?: boolean; pending?: boolean } = {}): Promise<void> {
     const bucket = this.getBucketByDate(bucketDate);
     if (!bucket) {
-      console.log('no buck');
       return;
     }
     if (bucket.bucketCount === bucket.assets.length) {
@@ -417,9 +419,6 @@ export class AssetStore {
 
     const cancelToken = (bucket.cancelToken = new AbortController());
     try {
-      if (bucket.assets.length > 0) {
-        console.log('WHOA');
-      }
       const assets = await getTimeBucket(
         {
           ...this.options,
@@ -472,7 +471,6 @@ export class AssetStore {
       if ((error as any).name === 'AbortError') {
         return;
       }
-      console.log(error);
       const $t = get(t);
       handleError(error, $t('errors.failed_to_load_assets'));
       bucket.errored();
@@ -812,3 +810,46 @@ export class AssetStore {
 }
 
 export const isSelectingAllAssets = writable(false);
+
+export const lastScrollTime = writable<number>(0);
+
+const tasks: (() => void)[] = [];
+let queueTimer: ReturnType<typeof setTimeout> | undefined;
+
+const MIN_DELAY_MS = Number.parseInt(localStorage.getItem('MIN_DELAY_MS')) || 200;
+const CHECK_INTERVAL_MS = 16;
+
+let disable = false;
+function drain() {
+  if (disable) {
+    return;
+  }
+  for (let t = tasks.shift(); t; t = tasks.shift()) {
+    t();
+  }
+}
+
+function scheduleDrain() {
+  clearTimeout(queueTimer);
+  queueTimer = setTimeout(() => {
+    const delta = Date.now() - get(lastScrollTime);
+    if (delta < MIN_DELAY_MS) {
+      scheduleDrain();
+    } else {
+      drain();
+    }
+  }, CHECK_INTERVAL_MS);
+}
+
+export function queuePostScrollTask(task: () => void) {
+  tasks.push(task);
+  const lastTime = get(lastScrollTime);
+  const delta = Date.now() - lastTime;
+  if (lastTime != 0 && delta < MIN_DELAY_MS) {
+    scheduleDrain();
+  } else {
+    // flush the queue early
+    clearTimeout(queueTimer);
+    drain();
+  }
+}

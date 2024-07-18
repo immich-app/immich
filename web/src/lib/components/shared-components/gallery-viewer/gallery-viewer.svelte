@@ -125,14 +125,13 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          onClick={async (asset, e) => {
+          onClick={(asset, e) => {
             e.preventDefault();
-
             if (isMultiSelectionMode) {
               selectAssetHandler(asset);
               return;
             }
-            await viewAssetHandler(asset);
+            void viewAssetHandler(asset);
           }}
           on:select={(e) => selectAssetHandler(e.detail.asset)}
           on:intersected={(event) =>

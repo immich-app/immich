@@ -3,6 +3,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { queuePostScrollTask } from '$lib/stores/assets.store';
 
   export let url: string;
   export let durationInSeconds = 0;
@@ -39,16 +40,18 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     class="pr-2 pt-2"
-    on:mouseenter={() => {
-      if (playbackOnIconHover) {
-        enablePlayback = true;
-      }
-    }}
-    on:mouseleave={() => {
-      if (playbackOnIconHover) {
-        enablePlayback = false;
-      }
-    }}
+    on:mouseenter={() =>
+      queuePostScrollTask(() => {
+        if (playbackOnIconHover) {
+          enablePlayback = true;
+        }
+      })}
+    on:mouseleave={() =>
+      queuePostScrollTask(() => {
+        if (playbackOnIconHover) {
+          enablePlayback = false;
+        }
+      })}
   >
     {#if enablePlayback}
       {#if loading}

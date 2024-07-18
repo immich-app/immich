@@ -8,7 +8,14 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore, isSelectingAllAssets, type Viewport } from '$lib/stores/assets.store';
+  import {
+    AssetBucket,
+    AssetStore,
+    isSelectingAllAssets,
+    lastScrollTime,
+    queuePostScrollTask,
+    type Viewport,
+  } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -43,8 +50,8 @@
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
-  const viewport: Viewport = { width: 0, height: 0 };
-  const safeViewport: Viewport = { width: 0, height: 0 };
+  const viewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
+  const safeViewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
 
   let element: HTMLElement;
@@ -71,10 +78,14 @@
       const rect = element.getBoundingClientRect();
       viewport.height = rect.height;
       viewport.width = rect.width;
+      viewport.x = rect.x;
+      viewport.y = rect.y;
     }
     if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
       safeViewport.height = viewport.height;
       safeViewport.width = viewport.width;
+      safeViewport.x = viewport.x;
+      safeViewport.y = viewport.y;
       updateViewport();
     }
   }
@@ -85,7 +96,7 @@
   };
 
   const isEqual = (a: Viewport, b: Viewport) => {
-    return a.height == b.height && a.width == b.width;
+    return a.height == b.height && a.width == b.width && a.x === b.x && a.y === b.y;
   };
 
   const completeNav = () => {
@@ -94,8 +105,10 @@
       internalScroll = false;
       return;
     }
-    void $assetStore.scheduleScrollToAssetId($gridScrollTarget);
-    if (!$gridScrollTarget?.at) {
+
+    if ($gridScrollTarget?.at) {
+      void $assetStore.scheduleScrollToAssetId($gridScrollTarget);
+    } else {
       element.scrollTo({ top: 0 });
       showSkeleton = false;
     }
@@ -153,25 +166,33 @@
     return () => void 0;
   };
 
+  const _updateLastIntersectedBucketDate = () => {
+    let elem = document.elementFromPoint(safeViewport.x + 1, safeViewport.y + 1);
+    while (elem != null) {
+      if (elem.id === 'buck') {
+        break;
+      }
+      elem = elem.parentElement;
+    }
+    if (elem) {
+      lastIntersectedBucketDate = (elem as HTMLElement).dataset.bucketDate;
+    }
+  };
+  const updateLastIntersectedBucketDate = throttle(_updateLastIntersectedBucketDate, 16, {
+    leading: false,
+    trailing: true,
+  });
+
   const bucketListener = (bucketnotify, kind, dateGroup, delta) => {
     if (kind === 'intersecting') {
-      const rect = element.getBoundingClientRect();
-      let elem = document.elementFromPoint(rect.x + 1, rect.y + 1);
-      while (elem != null) {
-        if (elem.id === 'buck') {
-          break;
-        }
-        elem = elem.parentElement;
-      }
-      if (elem) {
-        lastIntersectedBucketDate = (elem as HTMLElement).dataset.bucketDate;
-      }
+      updateLastIntersectedBucketDate();
     }
     if (kind === 'buckheight' && lastIntersectedBucketDate) {
       const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
       const deltaIndex = $assetStore.buckets.indexOf(bucketnotify);
+
       if (deltaIndex < currentIndex) {
-        element.scrollBy(0, delta);
+        element?.scrollBy(0, delta);
       }
     }
   };
@@ -182,7 +203,6 @@
     if (!participatesInRouting) {
       showSkeleton = false;
     }
-    element.scrollTo({ top: 0 });
     const dispose = hmrSupport();
     return () => {
       $assetStore.disconnect();
@@ -196,15 +216,14 @@
   const _handleScrollTimeline = ({ detail }: { detail: number }) => {
     element.scrollTop = detail;
   };
-  const handleScrollTimeline = throttle(_handleScrollTimeline, 16);
+  const handleScrollTimeline = throttle(_handleScrollTimeline, 16, { leading: false, trailing: true });
 
   const _handleTimelineScroll = () => {
     timelineY = element?.scrollTop || 0;
   };
-  const handleTimelineScroll = throttle(_handleTimelineScroll, 16);
+  const handleTimelineScroll = throttle(_handleTimelineScroll, 16, { leading: false, trailing: true });
 
-  const clearCurrent = () => {};
-  const onAssetInGrid = async (asset: AssetResponseDto) => {
+  const _onAssetInGrid = async (asset: AssetResponseDto) => {
     if (!participatesInRouting || navigating || internalScroll) {
       return;
     }
@@ -215,9 +234,14 @@
       { replaceState: true, forceNavigate: true },
     );
   };
+  const onAssetInGrid = throttle(_onAssetInGrid, 16, { leading: false, trailing: true });
 
-  const onScrollTarget = ({ offset }: { asset: AssetResponseDto; offset: number }) => {
+  const onScrollTarget = ({ bucket, offset }: { asset: AssetResponseDto; offset: number }) => {
     element.scrollTo({ top: offset });
+
+    if (bucket.measured) {
+      preMeasure.push(bucket);
+    }
     showSkeleton = false;
     $assetStore.clearPendingScroll();
   };
@@ -306,13 +330,17 @@
   };
 
   function intersectedHandler(bucketDate: string) {
-    $assetStore.updateBucket(bucketDate, { intersecting: true });
-    void $assetStore.loadBucket(bucketDate);
+    queuePostScrollTask(() => {
+      $assetStore.updateBucket(bucketDate, { intersecting: true });
+      void $assetStore.loadBucket(bucketDate).catch(() => void 0);
+    });
   }
 
   function seperatedHandler(bucketDate: string) {
-    $assetStore.updateBucket(bucketDate, { intersecting: false });
-    $assetStore.getBucketByDate(bucketDate)?.cancel();
+    queuePostScrollTask(() => {
+      $assetStore.updateBucket(bucketDate, { intersecting: false });
+      $assetStore.getBucketByDate(bucketDate)?.cancel();
+    });
   }
 
   const handlePrevious = async () => {
@@ -574,7 +602,7 @@
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}
-  on:scroll={() => (clearCurrent(), handleTimelineScroll())}
+  on:scroll={() => (($lastScrollTime = Date.now()), handleTimelineScroll())}
 >
   {#if element}
     <div class:invisible={showSkeleton}>
@@ -625,6 +653,7 @@
                               $assetStore.updateBucket(bucket.bucketDate, { height: height, measured: true });
                             }
 
+                            preMeasure = preMeasure.filter((b) => b !== bucket);
                             $assetStore.removeListener(listener);
                           }
                         }
@@ -663,34 +692,28 @@
               </section>
             {/if}
           {/key}
-          {#if bucket.measured}
-            {#if !display}
-              <Skeleton
-                count={bucket.bucketCount}
-                height={bucket.bucketHeight + 'px'}
-                title={`${bucket.bucketDateFormattted}`}
-              />
-            {/if}
-            {#if display}
-              <AssetDateGroup
-                assetGridElement={element}
-                renderThumbsAtTopMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_TOP}
-                renderThumbsAtBottomMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_BOTTOM}
-                {withStacked}
-                {showArchiveIcon}
-                {assetStore}
-                {assetInteractionStore}
-                {isSelectionMode}
-                {singleSelect}
-                {onScrollTarget}
-                {onAssetInGrid}
-                {bucket}
-                viewport={safeViewport}
-                on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
-                on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
-                on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
-              />
-            {/if}
+          {#if !display || !bucket.measured}
+            <Skeleton height={bucket.bucketHeight + 'px'} title={`${bucket.bucketDateFormattted}`} />
+          {/if}
+          {#if display && bucket.measured}
+            <AssetDateGroup
+              assetGridElement={element}
+              renderThumbsAtTopMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_TOP}
+              renderThumbsAtBottomMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_BOTTOM}
+              {withStacked}
+              {showArchiveIcon}
+              {assetStore}
+              {assetInteractionStore}
+              {isSelectionMode}
+              {singleSelect}
+              {onScrollTarget}
+              {onAssetInGrid}
+              {bucket}
+              viewport={safeViewport}
+              on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
+              on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
+              on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+            />
           {/if}
         </div>
       {/each}

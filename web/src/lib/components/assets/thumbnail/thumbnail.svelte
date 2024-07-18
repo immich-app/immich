@@ -23,6 +23,7 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
+  import { queuePostScrollTask } from '$lib/stores/assets.store';
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
@@ -42,8 +43,8 @@
     left?: string;
     priority?: number;
   } = {};
-  export let forceDisplay = false;
 
+  export let delayIntersectionsDuringScroll = false;
   export let retrieveElement: boolean = false;
   export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
   export let onRetrieveElement: ((elmeent: HTMLElement) => void) | undefined = undefined;
@@ -95,38 +96,58 @@
   };
 
   const onMouseEnter = () => {
-    mouseOver = true;
+    if (delayIntersectionsDuringScroll) {
+      queuePostScrollTask(() => (mouseOver = true));
+    } else {
+      mouseOver = true;
+    }
   };
 
   const onMouseLeave = () => {
-    mouseOver = false;
+    if (delayIntersectionsDuringScroll) {
+      queuePostScrollTask(() => (mouseOver = false));
+    } else {
+      mouseOver = false;
+    }
+  };
+  const onIntersect = () => {
+    if (delayIntersectionsDuringScroll) {
+      queuePostScrollTask(() => (intersecting = true));
+    } else {
+      intersecting = true;
+    }
+  };
+  const onSeparate = () => {
+    if (delayIntersectionsDuringScroll) {
+      queuePostScrollTask(() => (intersecting = false));
+    } else {
+      intersecting = false;
+    }
   };
 </script>
 
 <div
+  bind:this={element}
   use:intersectionObserver={{
     ...intersectionConfig,
-    onIntersect: () => (intersecting = true),
-    onSeparate: () => (intersecting = false),
+    onIntersect,
+    onSeparate,
   }}
   style:width="{width}px"
   style:height="{height}px"
+  class="group focus-visible:outline-none flex overflow-hidden {disabled
+    ? 'bg-gray-300'
+    : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
-  <a
-    bind:this={element}
-    href={currentUrlReplaceAssetId(asset.id)}
-    style:width="{width}px"
-    style:height="{height}px"
-    class="group focus-visible:outline-none flex overflow-hidden {disabled
-      ? 'bg-gray-300'
-      : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
-    class:cursor-not-allowed={disabled}
-    on:mouseenter={onMouseEnter}
-    on:mouseleave={onMouseLeave}
-    tabindex={0}
-    on:click={handleClick}
-  >
-    {#if display}
+  {#if display}
+    <a
+      href={currentUrlReplaceAssetId(asset.id)}
+      class:cursor-not-allowed={disabled}
+      on:mouseenter={onMouseEnter}
+      on:mouseleave={onMouseLeave}
+      tabindex={0}
+      on:click={handleClick}
+    >
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
@@ -251,6 +272,6 @@
           out:fade={{ duration: 100 }}
         />
       {/if}
-    {/if}
-  </a>
+    </a>
+  {/if}
 </div>

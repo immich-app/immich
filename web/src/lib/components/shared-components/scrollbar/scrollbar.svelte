@@ -2,7 +2,7 @@
   import type { AssetStore, AssetBucket } from '$lib/stores/assets.store';
   import type { DateTime } from 'luxon';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { clamp } from 'lodash-es';
   import { locale } from '$lib/stores/preferences.store';
 
@@ -14,11 +14,12 @@
   let isHover = false;
   let isDragging = false;
   let isAnimating = false;
-  let hoverLabel = '';
+  let hoverLabel: string | undefined;
   let hoverY = 0;
   let clientY = 0;
   let windowHeight = 0;
   let scrollBar: HTMLElement | undefined;
+  let segments: Segment[] = [];
 
   const toScrollY = (timelineY: number) => (timelineY / $assetStore.timelineHeight) * height;
   const toTimelineY = (scrollY: number) => Math.round((scrollY * $assetStore.timelineHeight) / height);
@@ -26,8 +27,9 @@
   const HOVER_DATE_HEIGHT = 30;
   const MIN_YEAR_LABEL_DISTANCE = 16;
 
+  $: hoverY = clamp(height - windowHeight + clientY, 0, height);
+
   $: {
-    hoverY = clamp(height - windowHeight + clientY, 0, height);
     if (scrollBar) {
       const rect = scrollBar.getBoundingClientRect();
       const x = rect.left + rect.width / 2;
@@ -38,10 +40,23 @@
 
   $: scrollY = toScrollY(timelineY);
 
+  const listener = (bucketnotify, kind, dateGroup, delta) => {
+    if (kind === 'buckheight') {
+      segments = calculateSegments($assetStore.buckets);
+    }
+  };
+
+  onMount(() => {
+    assetStore.addListener(listener);
+    return () => {
+      assetStore.removeListener(listener);
+    };
+  });
+
   class Segment {
     public count = 0;
     public height = 0;
-    public timeGroup = '';
+    public dateFormatted = '';
     public date!: DateTime;
     public hasLabel = false;
   }
@@ -53,8 +68,8 @@
       const segment = new Segment();
       segment.count = bucket.assets.length;
       segment.height = toScrollY(bucket.bucketHeight);
-      segment.timeGroup = bucket.bucketDate;
-      segment.date = fromLocalDateTime(segment.timeGroup);
+      segment.date = fromLocalDateTime(bucket.bucketDate);
+      segment.dateFormatted = bucket.bucketDateFormattted;
 
       if (previous?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
         previous.hasLabel = true;
@@ -67,7 +82,7 @@
     });
   };
 
-  $: segments = calculateSegments($assetStore.buckets);
+  // $: segments = calculateSegments($assetStore.buckets);
 
   const dispatch = createEventDispatcher<{ scrollTimeline: number }>();
   const scrollTimeline = () => dispatch('scrollTimeline', toTimelineY(hoverY));
@@ -77,15 +92,7 @@
     if (!segment) {
       return;
     }
-    const attr = (segment as HTMLElement).dataset.date;
-    if (!attr) {
-      return;
-    }
-    hoverLabel = new Date(attr).toLocaleString($locale, {
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'UTC',
-    });
+    hoverLabel = (segment as HTMLElement).dataset.label;
   };
 
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
@@ -155,20 +162,20 @@
       <div
         id="time-segment"
         class="relative"
-        data-date={segment.date}
+        data-label={segment.dateFormatted}
         style:height={segment.height + 'px'}
-        aria-label={segment.timeGroup + ' ' + segment.count}
+        aria-label={segment.dateFormatted + ' ' + segment.count}
       >
         {#if segment.hasLabel}
           <div
-            aria-label={segment.timeGroup + ' ' + segment.count}
+            aria-label={segment.dateFormatted + ' ' + segment.count}
             class="absolute right-0 bottom-0 z-10 pr-5 text-[12px] dark:text-immich-dark-fg font-immich-mono"
           >
             {segment.date.year}
           </div>
         {:else if segment.height > 5}
           <div
-            aria-label={segment.timeGroup + ' ' + segment.count}
+            aria-label={segment.dateFormatted + ' ' + segment.count}
             class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"
           />
         {/if}

@@ -1,7 +1,6 @@
 <script lang="ts">
   export let title: string | null = null;
   export let height: string | null = null;
-  export let count: number = 100;
 </script>
 
 <div class="overflow-clip" style={`height: ${height}`}>
