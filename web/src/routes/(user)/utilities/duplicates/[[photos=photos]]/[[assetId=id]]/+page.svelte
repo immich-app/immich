@@ -35,9 +35,9 @@
   const duplicateShortcuts: Shortcuts = {
     general: [],
     actions: [
-      { key: ['a'], action: $t('keep_all') },
+      { key: ['a'], action: $t('select_all_duplicates') },
       { key: ['s'], action: $t('view') },
-      { key: ['d'], action: $t('deduplicate_all') },
+      { key: ['d'], action: $t('unselect_all_duplicates') },
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
     ],
   };
