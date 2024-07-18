@@ -11,9 +11,11 @@ import {
 } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
+  AssetBulkStackDto,
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
+  AssetStackDto,
   AssetStatsDto,
   UpdateAssetDto,
   mapStats,
@@ -178,38 +180,61 @@ export class AssetService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
-    // TODO: refactor this logic into separate API calls POST /stack, PUT /stack, etc.
+    for (const id of ids) {
+      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+    }
+
+    await this.assetRepository.updateAll(ids, options);
+
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
+  }
+
+  async unstackAll(auth: AuthDto, dto: AssetStackDto): Promise<void> {
     const stackIdsToCheckForDelete: string[] = [];
-    if (removeParent) {
-      (options as Partial<AssetEntity>).stack = null;
-      const assets = await this.assetRepository.getByIds(ids, { stack: true });
-      stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
-      // This updates the updatedAt column of the parents to indicate that one of its children is removed
-      // All the unique parent's -> parent is set to null
-      await this.assetRepository.updateAll(
-        assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!),
-        { updatedAt: new Date() },
-      );
-    } else if (options.stackParentId) {
-      //Creating new stack if parent doesn't have one already. If it does, then we add to the existing stack
-      await this.access.requirePermission(auth, Permission.ASSET_UPDATE, options.stackParentId);
-      const primaryAsset = await this.assetRepository.getById(options.stackParentId, { stack: { assets: true } });
+    const assets = await this.assetRepository.getByIds(dto.ids, { stack: true });
+    stackIdsToCheckForDelete.push(...new Set(assets.filter((a) => !!a.stackId).map((a) => a.stackId!)));
+    // This updates the updatedAt column of the parents to indicate that one of its children is removed
+    // All the unique parent's -> parent is set to null
+    await this.assetRepository.updateAll(
+      assets.filter((a) => !!a.stack?.primaryAssetId).map((a) => a.stack!.primaryAssetId!),
+      { updatedAt: new Date() },
+    );
+    const stackIdsToDelete = await Promise.all(stackIdsToCheckForDelete.map((id) => this.stackRepository.getById(id)));
+    const stacksToDelete = stackIdsToDelete
+      .flatMap((stack) => (stack ? [stack] : []))
+      .filter((stack) => stack.assets.length < 2);
+    await Promise.all(stacksToDelete.map((as) => this.stackRepository.delete(as.id)));
+  }
+
+  async stackAll(auth: AuthDto, dto: AssetBulkStackDto): Promise<void> {
+    const stacks = dto.stacks;
+    const allIds = [];
+    const stackIdsToCheckForDelete: string[] = [];
+    for (const i in stacks) {
+      let ids = stacks[i].ids;
+      allIds.push(...ids);
+      const stackParentId: string | undefined = stacks[i].stackParentId;
+
+      await this.access.requirePermission(auth, Permission.ASSET_UPDATE, stackParentId);
+
+      const primaryAsset = await this.assetRepository.getById(stackParentId, { stack: { assets: true } });
       if (!primaryAsset) {
         throw new BadRequestException('Asset not found for given stackParentId');
       }
       let stack = primaryAsset.stack;
-
-      ids.push(options.stackParentId);
+      if (!ids.includes(stackParentId)) {
+        ids.push(stackParentId);
+      }
       const assets = await this.assetRepository.getByIds(ids, { stack: { assets: true } });
       stackIdsToCheckForDelete.push(
         ...new Set(assets.filter((a) => !!a.stackId && stack?.id !== a.stackId).map((a) => a.stackId!)),
       );
       const assetsWithChildren = assets.filter((a) => a.stack && a.stack.assets.length > 0);
       ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
-
+      ids = [...new Set(ids)];
       if (stack) {
         await this.stackRepository.update({
           id: stack.id,
@@ -223,23 +248,17 @@ export class AssetService {
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       }
-
-      // Merge stacks
-      options.stackParentId = undefined;
-      (options as Partial<AssetEntity>).updatedAt = new Date();
     }
-
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
-    }
-
-    await this.assetRepository.updateAll(ids, options);
+    const updatedAt = new Date();
+    const stackParentId = undefined;
+    const options = { stackParentId, updatedAt };
+    await this.assetRepository.updateAll(allIds, options);
     const stackIdsToDelete = await Promise.all(stackIdsToCheckForDelete.map((id) => this.stackRepository.getById(id)));
     const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
     await Promise.all(stacksToDelete.map((as) => this.stackRepository.delete(as.id)));
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, allIds);
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {

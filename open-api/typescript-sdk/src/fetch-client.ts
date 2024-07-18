@@ -355,6 +355,13 @@ export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     yearsAgo: number;
 };
+export type AssetStackDto = {
+    ids: string[];
+    stackParentId: string;
+};
+export type AssetBulkStackDto = {
+    stacks: AssetStackDto[];
+};
 export type UpdateStackParentDto = {
     newParentId: string;
     oldParentId: string;
@@ -1598,6 +1605,24 @@ export function getRandom({ count }: {
     }))}`, {
         ...opts
     }));
+}
+export function unstackAssets({ assetStackDto }: {
+    assetStackDto: AssetStackDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/stack", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetStackDto
+    })));
+}
+export function stackAssets({ assetBulkStackDto }: {
+    assetBulkStackDto: AssetBulkStackDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/stack", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetBulkStackDto
+    })));
 }
 export function updateStackParent({ updateStackParentDto }: {
     updateStackParentDto: UpdateStackParentDto;

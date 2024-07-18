@@ -3,8 +3,10 @@ import { ApiTags } from '@nestjs/swagger';
 import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
+  AssetBulkStackDto,
   AssetBulkUpdateDto,
   AssetJobsDto,
+  AssetStackDto,
   AssetStatsDto,
   AssetStatsResponseDto,
   DeviceIdDto,
@@ -70,6 +72,20 @@ export class AssetController {
   @Authenticated()
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
+  }
+
+  @Put('stack')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  stackAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkStackDto): Promise<void> {
+    return this.service.stackAll(auth, dto);
+  }
+
+  @Delete('stack')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
+  unstackAssets(@Auth() auth: AuthDto, @Body() dto: AssetStackDto): Promise<void> {
+    return this.service.unstackAll(auth, dto);
   }
 
   @Put('stack/parent')

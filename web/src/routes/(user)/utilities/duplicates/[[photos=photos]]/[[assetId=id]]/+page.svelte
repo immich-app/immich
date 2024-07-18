@@ -9,14 +9,14 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteAssets, updateAssets } from '@immich/sdk';
+  import { deleteAssets, updateAssets, stackAssets, type AssetBulkStackDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { mdiCheckOutline, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { stackAssets } from '$lib/utils/asset-utils';
+  import { stackAssetsUtil } from '$lib/utils/asset-utils';
 
   export let data: PageData;
 
@@ -65,9 +65,13 @@
     );
   };
 
-  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
-    const ids = assets.flatMap((x) => x.id);
-    await stackAssets(assets);
+  const handleStack = async (
+    duplicateId: string,
+    duplicateAssets: AssetResponseDto[],
+    selectedAssets: AssetResponseDto[],
+  ) => {
+    const ids = duplicateAssets.map((x) => x.id);
+    await stackAssetsUtil(duplicateAssets, selectedAssets[0]);
     await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
     data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
@@ -129,20 +133,27 @@
   const handleStackAll = async () => {
     const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
     let prompt, confirmText;
-    if ($featureFlags.trash) {
-      prompt = $t('bulk_stack_duplicates_confirmation', { values: { count: ids.length } });
-      confirmText = $t('confirm');
-    }
+
+    const stacks = data.duplicates.map((group) => ({
+      ids: group.assets.map((asset) => asset.id),
+      stackParentId: group.assets[0].id,
+    }));
+
+    const stackDto: AssetBulkStackDto = { stacks: stacks };
+    console.log(stackDto);
+    prompt = $t('bulk_stack_duplicates_confirmation', { values: { count: ids.length } });
+    confirmText = $t('confirm');
 
     return withConfirmation(
       async () => {
-        for (let i in data.duplicates) {
-          //let parentId = suggestDuplicateByFileSize(data.duplicates[i].assets).id;
-          await stackAssets(data.duplicates[i].assets);
-          await updateAssets({
-            assetBulkUpdateDto: { ids: data.duplicates[i].assets.map((asset) => asset.id), duplicateId: null },
-          });
-        }
+        await stackAssets({ assetBulkStackDto: stackDto });
+        await updateAssets({
+          assetBulkUpdateDto: { ids, duplicateId: null },
+        });
+        notificationController.show({
+          message: $t('resolved_all_duplicates'),
+          type: NotificationType.Info,
+        });
       },
       prompt,
       confirmText,
@@ -182,7 +193,8 @@
           assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(data.duplicates[0].duplicateId, assets)}
+          onStack={(duplicateAssets, selectedAssets) =>
+            handleStack(data.duplicates[0].duplicateId, duplicateAssets, selectedAssets)}
         />
       {/key}
     {:else}

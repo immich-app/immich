@@ -105,6 +105,8 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | 
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
+*AssetsApi* | [**stackAssets**](doc//AssetsApi.md#stackassets) | **PUT** /assets/stack | 
+*AssetsApi* | [**unstackAssets**](doc//AssetsApi.md#unstackassets) | **DELETE** /assets/stack | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
 *AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /assets/stack/parent | 
@@ -266,6 +268,7 @@ Class | Method | HTTP request | Description
  - [AlbumUserRole](doc//AlbumUserRole.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
+ - [AssetBulkStackDto](doc//AssetBulkStackDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
@@ -287,6 +290,7 @@ Class | Method | HTTP request | Description
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
+ - [AssetStackDto](doc//AssetStackDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)

@@ -1689,6 +1689,74 @@
         ]
       }
     },
+    "/assets/stack": {
+      "delete": {
+        "operationId": "unstackAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetStackDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      },
+      "put": {
+        "operationId": "stackAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetBulkStackDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
     "/assets/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
@@ -7431,6 +7499,20 @@
         ],
         "type": "object"
       },
+      "AssetBulkStackDto": {
+        "properties": {
+          "stacks": {
+            "items": {
+              "$ref": "#/components/schemas/AssetStackDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "stacks"
+        ],
+        "type": "object"
+      },
       "AssetBulkUpdateDto": {
         "properties": {
           "dateTimeOriginal": {
@@ -8064,6 +8146,26 @@
           "thumbhash",
           "type",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssetStackDto": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "stackParentId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ids",
+          "stackParentId"
         ],
         "type": "object"
       },
