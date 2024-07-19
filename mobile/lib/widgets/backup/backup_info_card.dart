@@ -38,7 +38,9 @@ class BackupInfoCard extends StatelessWidget {
           padding: const EdgeInsets.only(top: 4.0, right: 18.0),
           child: Text(
             subtitle,
-            style: context.textTheme.bodyMedium,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colorScheme.onSurface.withOpacity(.7),
+            ),
           ),
         ),
         trailing: Column(

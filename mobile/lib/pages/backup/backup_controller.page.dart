@@ -151,7 +151,9 @@ class BackupControllerPage extends HookConsumerWidget {
                 children: [
                   Text(
                     "backup_controller_page_to_backup",
-                    style: context.textTheme.bodyMedium,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colorScheme.onSurface.withOpacity(.7),
+                    ),
                   ).tr(),
                   buildSelectedAlbumName(),
                   buildExcludedAlbumName(),

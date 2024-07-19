@@ -181,8 +181,10 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                 child: LinearProgressIndicator(
                   minHeight: 10.0,
                   value: uploadProgress / 100.0,
-                  backgroundColor: Colors.grey,
-                  color: context.primaryColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                  backgroundColor:
+                      context.isDarkTheme ? Colors.grey[700] : Colors.grey[400],
+                  color: context.colorScheme.primary,
                 ),
               ),
               Text(
@@ -214,8 +216,10 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
               child: LinearProgressIndicator(
                 minHeight: 10.0,
                 value: uploadProgress / 100.0,
-                backgroundColor: Colors.grey,
-                color: context.primaryColor,
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                backgroundColor:
+                    context.isDarkTheme ? Colors.grey[700] : Colors.grey[400],
+                color: context.colorScheme.primary,
               ),
             ),
             Text(

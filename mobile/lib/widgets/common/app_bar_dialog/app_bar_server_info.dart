@@ -42,9 +42,7 @@ class AppBarServerInfo extends HookConsumerWidget {
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
-          color: context.isDarkTheme
-              ? context.scaffoldBackgroundColor
-              : const Color.fromARGB(255, 225, 229, 240),
+          color: context.colorScheme.surfaceContainer,
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),

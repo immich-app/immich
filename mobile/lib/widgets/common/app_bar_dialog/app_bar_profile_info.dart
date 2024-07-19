@@ -79,9 +79,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: context.isDarkTheme
-              ? context.scaffoldBackgroundColor
-              : const Color.fromARGB(255, 225, 229, 240),
+          color: context.colorScheme.surfaceContainer,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(10),
             topRight: Radius.circular(10),

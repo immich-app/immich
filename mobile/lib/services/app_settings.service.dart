@@ -1,4 +1,9 @@
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+
+String getC() {
+  return "bleu";
+}
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
@@ -8,6 +13,11 @@ enum AppSettingsEnum<T> {
     "themeMode",
     "system",
   ), // "light","dark","system"
+  primaryColor<String>(
+    StoreKey.primaryColor,
+    "primaryColor",
+    defaultPrimaryColorType,
+  ),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
   dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
   groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),

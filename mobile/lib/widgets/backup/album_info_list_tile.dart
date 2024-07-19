@@ -47,9 +47,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
 
     buildIcon() {
       if (isSelected) {
-        return const Icon(
+        return Icon(
           Icons.check_circle_rounded,
-          color: Colors.green,
+          color: context.colorScheme.primary,
         );
       }
 

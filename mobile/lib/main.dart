@@ -196,9 +196,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,
-        themeMode: ref.watch(immichThemeProvider),
-        darkTheme: immichDarkTheme,
-        theme: immichLightTheme,
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: ref.watch(immichThemeDataProvider).darkThemeData,
+        theme: ref.watch(immichThemeDataProvider).lightThemeData,
         routeInformationParser: router.defaultRouteParser(),
         routerDelegate: router.delegate(
           navigatorObservers: () => [TabNavigationObserver(ref: ref)],

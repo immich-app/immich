@@ -83,7 +83,9 @@ class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
     });
 
     return Theme(
-      data: _isDarkTheme ? immichDarkTheme : immichLightTheme,
+      data: _isDarkTheme
+          ? ref.watch(immichThemeDataProvider).darkThemeData
+          : ref.watch(immichThemeDataProvider).lightThemeData,
       child: widget.mapBuilder.call(
         ref.watch(
           mapStateNotifierProvider.select(

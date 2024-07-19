@@ -194,6 +194,8 @@ enum StoreKey<T> {
   mapwithPartners<bool>(125, type: bool),
   enableHapticFeedback<bool>(126, type: bool),
   customHeaders<String>(127, type: String),
+
+  primaryColor<String>(128, type: String),
   ;
 
   const StoreKey(

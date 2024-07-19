@@ -77,7 +77,7 @@ class AlbumTitleTextField extends ConsumerWidget {
         ),
         focusColor: Colors.grey[300],
         fillColor: isDarkTheme
-            ? const Color.fromARGB(255, 32, 33, 35)
+            ? const Color.fromARGB(255, 22, 22, 22)
             : Colors.grey[200],
         filled: isAlbumTitleTextFieldFocus.value,
       ),

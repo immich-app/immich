@@ -23,8 +23,6 @@ class AlbumThumbnailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkTheme = context.isDarkTheme;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         var cardSize = constraints.maxWidth;
@@ -34,12 +32,13 @@ class AlbumThumbnailCard extends StatelessWidget {
             height: cardSize,
             width: cardSize,
             decoration: BoxDecoration(
-              color: isDarkTheme ? Colors.grey[800] : Colors.grey[200],
+              color: context.colorScheme.surfaceContainerHigh,
             ),
             child: Center(
               child: Icon(
                 Icons.no_photography,
                 size: cardSize * .15,
+                color: context.colorScheme.primary,
               ),
             ),
           );
@@ -65,6 +64,9 @@ class AlbumThumbnailCard extends StatelessWidget {
           return RichText(
             overflow: TextOverflow.fade,
             text: TextSpan(
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.colorScheme.onSurface.withOpacity(.65),
+              ),
               children: [
                 TextSpan(
                   text: album.assetCount == 1
@@ -72,14 +74,9 @@ class AlbumThumbnailCard extends StatelessWidget {
                           .tr(args: ['${album.assetCount}'])
                       : 'album_thumbnail_card_items'
                           .tr(args: ['${album.assetCount}']),
-                  style: context.textTheme.bodyMedium,
                 ),
                 if (owner != null) const TextSpan(text: ' · '),
-                if (owner != null)
-                  TextSpan(
-                    text: owner,
-                    style: context.textTheme.bodyMedium,
-                  ),
+                if (owner != null) TextSpan(text: owner),
               ],
             ),
           );
@@ -112,7 +109,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                           album.name,
                           overflow: TextOverflow.ellipsis,
                           style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.primaryColor,
+                            color: context.colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

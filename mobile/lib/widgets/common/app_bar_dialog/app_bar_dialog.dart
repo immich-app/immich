@@ -146,9 +146,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: context.isDarkTheme
-                ? context.scaffoldBackgroundColor
-                : const Color.fromARGB(255, 225, 229, 240),
+            color: context.colorScheme.surfaceContainer,
           ),
           child: ListTile(
             minLeadingWidth: 50,
@@ -173,7 +171,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     child: LinearProgressIndicator(
                       minHeight: 5.0,
                       value: percentage,
-                      backgroundColor: Colors.grey,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
+                      backgroundColor: context.isDarkTheme
+                          ? Colors.grey[700]
+                          : Colors.grey[400],
                       color: theme.primaryColor,
                     ),
                   ),
@@ -248,7 +250,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         right: horizontalPadding,
         bottom: isHorizontal ? 20 : 100,
       ),
-      backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
