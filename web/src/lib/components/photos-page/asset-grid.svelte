@@ -642,6 +642,7 @@
                 use:created={async (e) => {
                   try {
                     await bucket.complete;
+                    const t1 = Date.now();
                     let heightPending = bucket.dateGroups.some((group) => !group.heightActual);
                     if (heightPending) {
                       const listener = (bucketnotify, kind, dateGroup) => {
@@ -655,6 +656,8 @@
 
                             preMeasure = preMeasure.filter((b) => b !== bucket);
                             $assetStore.removeListener(listener);
+                            const t2 = Date.now();
+                            console.log(t2 - t1);
                           }
                         }
                       };
@@ -743,7 +746,7 @@
 
 <style>
   #asset-grid {
-    contain: layout;
+    contain: strict;
     scrollbar-width: none;
   }
 </style>

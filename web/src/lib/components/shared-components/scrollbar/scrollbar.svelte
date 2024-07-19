@@ -187,6 +187,6 @@
 <style>
   #immich-scrubbable-scrollbar,
   #time-segment {
-    contain: layout;
+    contain: layout size style;
   }
 </style>

@@ -224,6 +224,6 @@
 
 <style>
   #asset-group-by-date {
-    contain: layout;
+    contain: layout paint style;
   }
 </style>
