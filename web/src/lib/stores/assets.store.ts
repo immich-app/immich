@@ -817,7 +817,7 @@ const tasks: (() => void)[] = [];
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
 const MIN_DELAY_MS = Number.parseInt(localStorage.getItem('MIN_DELAY_MS')) || 200;
-const CHECK_INTERVAL_MS = 16;
+const CHECK_INTERVAL_MS = 32;
 
 let disable = false;
 function drain() {
@@ -834,6 +834,7 @@ function scheduleDrain() {
   queueTimer = setTimeout(() => {
     const delta = Date.now() - get(lastScrollTime);
     if (delta < MIN_DELAY_MS) {
+      tasks.shift()?.();
       scheduleDrain();
     } else {
       drain();
@@ -842,6 +843,7 @@ function scheduleDrain() {
 }
 
 export function queuePostScrollTask(task: () => void) {
+  task();
   tasks.push(task);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;

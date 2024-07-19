@@ -2,19 +2,21 @@
   import type { AssetStore, AssetBucket } from '$lib/stores/assets.store';
   import type { DateTime } from 'luxon';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { clamp } from 'lodash-es';
-  import { locale } from '$lib/stores/preferences.store';
 
   export let timelineY = 0;
   export let height = 0;
   export let assetStore: AssetStore;
   export let invisible = false;
+  export let onScrub: ((position: number) => void) | undefined;
+  export let startScrub: ((bucketDate?: string) => void) | undefined;
+  export let stopScrub: ((bucketDate?: string) => void) | undefined;
 
   let isHover = false;
   let isDragging = false;
-  let isAnimating = false;
   let hoverLabel: string | undefined;
+  let bucketDate: string | undefined;
   let hoverY = 0;
   let clientY = 0;
   let windowHeight = 0;
@@ -56,8 +58,9 @@
   class Segment {
     public count = 0;
     public height = 0;
-    public dateFormatted = '';
-    public date!: DateTime;
+    public dateFormatted: string | undefined;
+    public bucketDate: string | undefined;
+    public date: DateTime | undefined;
     public hasLabel = false;
   }
 
@@ -68,6 +71,7 @@
       const segment = new Segment();
       segment.count = bucket.assets.length;
       segment.height = toScrollY(bucket.bucketHeight);
+      segment.bucketDate = bucket.bucketDate;
       segment.date = fromLocalDateTime(bucket.bucketDate);
       segment.dateFormatted = bucket.bucketDateFormattted;
 
@@ -82,17 +86,13 @@
     });
   };
 
-  // $: segments = calculateSegments($assetStore.buckets);
-
-  const dispatch = createEventDispatcher<{ scrollTimeline: number }>();
-  const scrollTimeline = () => dispatch('scrollTimeline', toTimelineY(hoverY));
-
   const updateLabel = (cursorX: number, cursorY: number) => {
     const segment = document.elementsFromPoint(cursorX, cursorY).find(({ id }) => id === 'time-segment');
     if (!segment) {
       return;
     }
     hoverLabel = (segment as HTMLElement).dataset.label;
+    bucketDate = (segment as HTMLElement).dataset.timeSegmentBucketDate;
   };
 
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
@@ -102,19 +102,17 @@
     clientY = event.clientY;
 
     if (wasDragging === false && isDragging) {
-      scrollTimeline();
+      startScrub?.(bucketDate);
+      onScrub?.(toTimelineY(hoverY));
+    }
+    if (wasDragging && !isDragging) {
+      stopScrub?.(bucketDate);
     }
 
-    if (!isDragging || isAnimating) {
+    if (!isDragging) {
       return;
     }
-
-    isAnimating = true;
-
-    window.requestAnimationFrame(() => {
-      scrollTimeline();
-      isAnimating = false;
-    });
+    onScrub?.(toTimelineY(hoverY));
   };
 </script>
 
@@ -162,6 +160,7 @@
       <div
         id="time-segment"
         class="relative"
+        data-time-segment-bucket-date={segment.date}
         data-label={segment.dateFormatted}
         style:height={segment.height + 'px'}
         aria-label={segment.dateFormatted + ' ' + segment.count}

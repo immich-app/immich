@@ -183,17 +183,23 @@
     trailing: true,
   });
 
-  const bucketListener = (bucketnotify, kind, dateGroup, delta) => {
-    if (kind === 'intersecting') {
-      updateLastIntersectedBucketDate();
-    }
-    if (kind === 'buckheight' && lastIntersectedBucketDate) {
+  const scrollTolastIntersectedBucket = (adjustedBucket: AssetBucket, delta: number) => {
+    if (lastIntersectedBucketDate) {
       const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
-      const deltaIndex = $assetStore.buckets.indexOf(bucketnotify);
+      const deltaIndex = $assetStore.buckets.indexOf(adjustedBucket);
 
       if (deltaIndex < currentIndex) {
         element?.scrollBy(0, delta);
       }
+    }
+  };
+
+  const bucketListener = (bucketnotify, kind, dateGroup, delta) => {
+    if (kind === 'intersecting') {
+      updateLastIntersectedBucketDate();
+    }
+    if (kind === 'buckheight') {
+      scrollTolastIntersectedBucket(bucketnotify, delta);
     }
   };
 
@@ -213,10 +219,10 @@
   const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
   const updateViewport = throttle(_updateViewport, 16);
 
-  const _handleScrollTimeline = ({ detail }: { detail: number }) => {
-    element.scrollTop = detail;
+  const _handleScrub = (position: number) => {
+    element.scrollTop = position;
   };
-  const handleScrollTimeline = throttle(_handleScrollTimeline, 16, { leading: false, trailing: true });
+  const handleScrub = throttle(_handleScrub, 16, { leading: false, trailing: true });
 
   const _handleTimelineScroll = () => {
     timelineY = element?.scrollTop || 0;
@@ -592,7 +598,12 @@
   {assetStore}
   height={safeViewport.height}
   {timelineY}
-  on:scrollTimeline={handleScrollTimeline}
+  onScrub={handleScrub}
+  stopScrub={(bucketDate) => {
+    // const bucket = document.querySelector('[data-bucket-date="' + bucketDate + '"]');
+    // setTimeout(() => bucket?.scrollIntoView(), 1000);
+    // console.log(bucket);
+  }}
 />
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
