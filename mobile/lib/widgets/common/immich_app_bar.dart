@@ -8,7 +8,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
-
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
@@ -170,11 +169,22 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   }
                   return Padding(
                     padding: const EdgeInsets.only(top: 3.0),
-                    child: SvgPicture.asset(
-                      context.isDarkTheme
-                          ? 'assets/immich-logo-inline-dark.svg'
-                          : 'assets/immich-logo-inline-light.svg',
-                      height: 40,
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/immich-logo.svg',
+                          height: 28,
+                        ),
+                        const SizedBox(width: 8),
+                        SvgPicture.asset(
+                          'assets/immich-text-dark.svg',
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            context.primaryColor,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
