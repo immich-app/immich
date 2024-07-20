@@ -25,6 +25,7 @@
                 }
                 onMeasured();
                 $assetStore.removeListener(listener);
+                // TODO: track average time to measure, and use this to populate TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS
                 // const t2 = Date.now();
                 // console.log(t2 - t1);
               }

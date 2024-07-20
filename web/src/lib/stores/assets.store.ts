@@ -379,14 +379,15 @@ export class AssetStore {
     this.initialized = false;
   }
 
-  async updateViewport(viewport: Viewport) {
+  async updateViewport(viewport: Viewport, force?: boolean) {
     if (!this.initialized) {
       return;
     }
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
-    if (this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
+
+    if (!force && this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
       return;
     }
 
@@ -408,8 +409,6 @@ export class AssetStore {
         bucket.scrollBarPercentage = bucket.bucketHeight / totalHeight;
       }
     }
-
-    // this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     const loaders = [];
     let height = 0;

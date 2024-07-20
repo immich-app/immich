@@ -162,8 +162,10 @@
         const assetGridUpdate = payload.updates.some(
           (update) => update.path.endsWith('asset-grid.svelte') || update.path.endsWith('assets-store.ts'),
         );
+
         if (assetGridUpdate) {
           setTimeout(() => {
+            void $assetStore.updateViewport(safeViewport, true);
             const asset = $page.url.searchParams.get('at');
             if (asset) {
               $gridScrollTarget = { at: asset };

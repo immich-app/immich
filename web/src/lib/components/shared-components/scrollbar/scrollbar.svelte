@@ -62,6 +62,7 @@
     }
   };
 
+  debugger;
   assetStore.addListener(listener);
 
   type Segment = {

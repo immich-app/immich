@@ -4,13 +4,15 @@ let observer: ResizeObserver;
 let callbacks: WeakMap<HTMLElement, OnResizeCallback>;
 
 /**
- * Installs a resizeObserver on the given element - when the element changes size, invokes a callback
- * function with the width/height. Intended as a replacement for bind:clientWidth and
- * bind:clientHeight in svelte4 which use an iframe to measure the size of the element, which can be
- * bad for performance and memory usage. In svelte5, they adapted bind:clientHeight and
+ * Installs a resizeObserver on the given element - when the element changes
+ * size, invokes a callback function with the width/height. Intended as a
+ * replacement for bind:clientWidth and bind:clientHeight in svelte4 which use
+ * an iframe to measure the size of the element, which can be bad for
+ * performance and memory usage. In svelte5, they adapted bind:clientHeight and
  * bind:clientWidth to use an internal resize observer.
  *
- * TODO: When svelte5 is ready, go back to bind:clientWidth and bind:clientHeight.
+ * TODO: When svelte5 is ready, go back to bind:clientWidth and
+ * bind:clientHeight.
  */
 export function resizeObserver(element: HTMLElement, onResize: OnResizeCallback) {
   if (!observer) {
