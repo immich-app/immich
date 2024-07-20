@@ -25,11 +25,11 @@ export class MetadataRepository implements IMetadataRepository {
 
   readTags(path: string): Promise<ImmichTags | null> {
     return exiftool
-      .read(path, undefined, {
+      .read(path, {
         ...DefaultReadTaskOptions,
 
         // Enable exiftool LFS to parse metadata for files larger than 2GB.
-        // optionalArgs: ['-api', 'largefilesupport=1'],
+        readArgs: ['-api', 'largefilesupport=1'],
         defaultVideosToUTC: true,
         backfillTimezones: true,
         inferTimezoneFromDatestamps: true,
