@@ -559,6 +559,7 @@ export class PersonService {
       colorspace: image.colorspace,
       quality: image.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     } as const;
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);

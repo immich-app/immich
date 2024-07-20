@@ -21,12 +21,12 @@
     mdiToolbox,
     mdiToolboxOutline,
   } from '@mdi/js';
-  import StatusBox from '../status-box.svelte';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
   import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -136,8 +136,5 @@
     {/if}
   </nav>
 
-  <!-- Status Box -->
-  <div class="mb-6 mt-auto">
-    <StatusBox />
-  </div>
+  <BottomInfo />
 </SideBarSection>

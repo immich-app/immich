@@ -507,6 +507,22 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
+    it.skip('should geocode country from gps data in the middle of nowhere', async () => {
+      const { status } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ latitude: 42, longitude: 69 });
+      expect(status).toEqual(200);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+      const asset = await getAssetInfo({ id: user1Assets[0].id }, { headers: asBearerAuth(user1.accessToken) });
+      expect(asset).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({ city: null, country: 'Kazakhstan' }),
+      });
+    });
+
     it('should set the description', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
