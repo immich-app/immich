@@ -3,14 +3,15 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { AssetBucket, queuePostScrollTask, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import { AssetBucket, queueScrollSensitiveTask, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, TUNABLES, type DateGroup } from '$lib/utils/timeline-util';
+  import { findTotalOffset, type DateGroup } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { TUNABLES } from '$lib/utils/tunables';
 
   export let element: HTMLElement | undefined = undefined;
   export let isSelectionMode = false;
@@ -43,23 +44,23 @@
   $: bucketDate = bucket.bucketDate;
   $: dateGroups = bucket.dateGroups;
 
+  const {
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+  } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
-  // const ASSET_GRID_PADDING = 60;
 
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
   const dispatch = createEventDispatcher<{
     select: { title: string; assets: AssetResponseDto[] };
     selectAssets: AssetResponseDto;
     selectAssetCandidates: AssetResponseDto | null;
-    shift: { heightDelta: number };
   }>();
 
   let isMouseOverGroup = false;
   let hoveredDateGroup = '';
 
-  const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto, event: Event) => {
-    event.preventDefault();
+  const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
     if (isSelectionMode || $isMultiSelectState) {
       assetSelectHandler(asset, assets, groupTitle);
       return;
@@ -109,11 +110,11 @@
       id="date-group"
       use:intersectionObserver={{
         onIntersect: () =>
-          queuePostScrollTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true })),
+          queueScrollSensitiveTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true })),
         onSeparate: () =>
-          queuePostScrollTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false })),
-        top: TUNABLES.DATEGROUP.INTERSECTION_ROOT_TOP,
-        bottom: TUNABLES.DATEGROUP.INTERSECTION_ROOT_BOTTOM,
+          queueScrollSensitiveTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false })),
+        top: INTERSECTION_ROOT_TOP,
+        bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
       }}
       data-display={display}
@@ -130,12 +131,12 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           on:mouseenter={() =>
-            queuePostScrollTask(() => {
+            queueScrollSensitiveTask(() => {
               isMouseOverGroup = true;
               assetMouseEventHandler(dateGroup.groupTitle, null);
             })}
           on:mouseleave={() => {
-            queuePostScrollTask(() => {
+            queueScrollSensitiveTask(() => {
               isMouseOverGroup = false;
               assetMouseEventHandler(dateGroup.groupTitle, null);
             });
@@ -204,9 +205,9 @@
                   {showArchiveIcon}
                   {asset}
                   {groupIndex}
-                  onClick={(asset, event) => onClick(dateGroup.assets, dateGroup.groupTitle, asset, event)}
-                  on:select={() => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
-                  on:mouse-event={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
+                  onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
+                  onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
+                  onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
                   selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
                   selectionCandidate={$assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}

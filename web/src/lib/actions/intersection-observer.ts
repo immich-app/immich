@@ -1,4 +1,5 @@
 import { PriorityQueue } from '$lib/utils/data-structure';
+import { TUNABLES } from '$lib/utils/tunables';
 import { throttle } from 'lodash-es';
 
 type Config = IntersectionObserverActionProperties & {
@@ -36,13 +37,13 @@ type Task = () => void;
 const queue = new PriorityQueue<TaskKey>();
 const queueMap = new Map<TaskKey, Task>();
 
-const RESPONSIVENESS_FACTOR = 50;
-const THROTTLE_MS = 16;
-const THROTTLE = true;
+const {
+  INTERSECTION_OBSERVER: { THROTTLE, THROTTLE_MS, RESPONSIVENESS_FACTOR },
+} = TUNABLES;
 
-function _drainTasks() {
+function _drainTasks(factor: number) {
   let key = queue.shift();
-  let count = RESPONSIVENESS_FACTOR;
+  let count = 0;
   while (key) {
     const task = queueMap.get(key);
     if (task) {
@@ -50,7 +51,7 @@ function _drainTasks() {
       // which produce gaps, just ignore these as we loop
       queueMap.delete(key);
       task();
-      if (--count < 0) {
+      if (count++ >= factor) {
         drain();
         break;
       }
@@ -58,7 +59,8 @@ function _drainTasks() {
     key = queue.shift();
   }
 }
-const drain = THROTTLE ? throttle(_drainTasks, THROTTLE_MS, { leading: false, trailing: true }) : _drainTasks;
+const _drain = _drainTasks.bind(undefined, RESPONSIVENESS_FACTOR);
+const drain = THROTTLE ? throttle(_drain, THROTTLE_MS, { leading: false, trailing: true }) : _drain;
 
 function addTask(key: TaskKey, task: Task, priority: number = 0) {
   queue.push(key, priority);
@@ -126,17 +128,20 @@ const observe = (key: HTMLElement | string, target: HTMLElement, properties: Int
   elementToConfig.set(key, { ...properties, observer });
 };
 
-function _intersectionObserver(
-  key: HTMLElement | string,
-  element: HTMLElement,
-  properties: IntersectionObserverActionProperties,
-) {
+function configure(key: HTMLElement | string, element: HTMLElement, properties: IntersectionObserverActionProperties) {
   elementToConfig.set(key, properties);
   if (properties.immediate) {
     observe(key, element, properties);
   } else {
     addTask(key, () => observe(key, element, properties), properties.priority);
   }
+}
+function _intersectionObserver(
+  key: HTMLElement | string,
+  element: HTMLElement,
+  properties: IntersectionObserverActionProperties,
+) {
+  configure(key, element, properties);
   return {
     update(properties: IntersectionObserverActionProperties) {
       const config = elementToConfig.get(key);
@@ -146,6 +151,8 @@ function _intersectionObserver(
       if (isEquivalent(config, properties)) {
         return;
       }
+      drain();
+      configure(key, element, properties);
     },
     destroy: () => {
       const config = elementToConfig.get(key);

@@ -93,9 +93,7 @@
   {/if}
 </header>
 
-<main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[calc(var(--navbar-height)-1px)] dark:bg-immich-dark-bg"
->
+<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   <AssetGrid participatesInRouting={true} {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->

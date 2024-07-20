@@ -119,8 +119,7 @@
       imageError = imageLoaded = true;
     };
     if (loader.complete) {
-      imageLoaded = true;
-      assetFileUrl = imageLoaderUrl;
+      onload();
     }
     loader.addEventListener('load', onload);
     loader.addEventListener('error', onerror);

@@ -5,7 +5,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { handleError } from '$lib/utils/handle-error';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
@@ -16,13 +16,12 @@
   import { t } from 'svelte-i18n';
   import { handlePromiseError } from '$lib/utils';
 
-  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement } }>();
-
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
+  export let onIntersected: (() => void) | undefined = undefined;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
@@ -125,17 +124,15 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          onClick={(asset, e) => {
-            e.preventDefault();
+          onClick={(asset) => {
             if (isMultiSelectionMode) {
               selectAssetHandler(asset);
               return;
             }
             void viewAssetHandler(asset);
           }}
-          on:select={(e) => selectAssetHandler(e.detail.asset)}
-          on:intersected={(event) =>
-            i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
+          onSelect={(asset) => selectAssetHandler(asset)}
+          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
           thumbnailWidth={geometry.boxes[i].width}

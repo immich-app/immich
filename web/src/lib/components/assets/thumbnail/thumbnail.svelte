@@ -18,12 +18,12 @@
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { queuePostScrollTask } from '$lib/stores/assets.store';
+  import { queueScrollSensitiveTask } from '$lib/stores/assets.store';
   import { thumbHashToDataURL } from 'thumbhash';
 
   export let asset: AssetResponseDto;
@@ -47,8 +47,13 @@
 
   export let delayIntersectionsDuringScroll = false;
   export let retrieveElement: boolean = false;
-  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
-  export let onRetrieveElement: ((elmeent: HTMLElement) => void) | undefined = undefined;
+  export let onIntersected: (() => void) | undefined = undefined;
+  export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onRetrieveElement: ((elment: HTMLElement) => void) | undefined = undefined;
+  export let onSelect: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onMouseEvent: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined =
+    undefined;
+
   let className = '';
   export { className as class };
 
@@ -56,13 +61,7 @@
   let mouseOver = false;
   let intersecting = false;
   let lastRetrievedElement: HTMLElement | undefined;
-  let tag = 'div';
   let loaded = false;
-
-  const dispatch = createEventDispatcher<{
-    select: { asset: AssetResponseDto };
-    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
-  }>();
 
   $: if (!retrieveElement) {
     lastRetrievedElement = undefined;
@@ -72,57 +71,67 @@
     onRetrieveElement?.(element);
   }
 
-  $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
   $: width = thumbnailSize || thumbnailWidth || 235;
   $: height = thumbnailSize || thumbnailHeight || 235;
   $: display = intersecting;
 
-  const onIconClickedHandler = (e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const onIconClickedHandler = () => {
     if (!disabled) {
-      dispatch('select', { asset });
+      onSelect?.(asset);
     }
   };
 
+  const callClickHandlers = () => {
+    if (selected) {
+      onIconClickedHandler();
+      return;
+    }
+    onClick?.(asset);
+  };
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       return;
     }
-
-    if (selected) {
-      onIconClickedHandler(e);
-      return;
-    }
-
-    onClick?.(asset, e);
+    e.stopPropagation();
+    e.preventDefault();
+    callClickHandlers();
   };
 
+  const _onMouseEnter = () => {
+    mouseOver = true;
+    onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
+  };
   const onMouseEnter = () => {
     if (delayIntersectionsDuringScroll) {
-      queuePostScrollTask(() => (mouseOver = true));
+      queueScrollSensitiveTask(() => _onMouseEnter());
     } else {
-      mouseOver = true;
+      _onMouseEnter();
     }
   };
 
   const onMouseLeave = () => {
     if (delayIntersectionsDuringScroll) {
-      queuePostScrollTask(() => (mouseOver = false));
+      queueScrollSensitiveTask(() => (mouseOver = false));
     } else {
       mouseOver = false;
     }
   };
+
+  const _onIntersect = () => {
+    intersecting = true;
+    onIntersected?.();
+  };
   const onIntersect = () => {
     if (delayIntersectionsDuringScroll) {
-      queuePostScrollTask(() => (intersecting = true));
+      queueScrollSensitiveTask(() => _onIntersect());
     } else {
-      intersecting = true;
+      _onIntersect();
     }
   };
+
   const onSeparate = () => {
     if (delayIntersectionsDuringScroll) {
-      queuePostScrollTask(() => (intersecting = false));
+      queueScrollSensitiveTask(() => (intersecting = false));
     } else {
       intersecting = false;
     }
@@ -155,16 +164,34 @@
   {#if display}
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
-    <svelte:element
-      this={tag}
+    <div
       class:cursor-not-allowed={disabled}
       class:cursor-pointer={!disabled}
       on:mouseenter={onMouseEnter}
       on:mouseleave={onMouseLeave}
+      on:keypress={(evt) => {
+        if (evt.key === 'Enter') {
+          callClickHandlers();
+        }
+      }}
       tabindex={0}
       on:click={handleClick}
       role="link"
     >
+      {#if mouseOver}
+        <!-- lazy show the url on mouse over-->
+        <a
+          class="absolute z-30 {className}"
+          style:cursor="unset"
+          style:width="{width}px"
+          style:height="{height}px"
+          href={currentUrlReplaceAssetId(asset.id)}
+          on:click={(evt) => (evt.stopPropagation(), evt.preventDefault)}
+          tabindex={0}
+          aria-hidden="true"
+        >
+        </a>
+      {/if}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
@@ -290,6 +317,6 @@
           out:fade={{ duration: 100 }}
         />
       {/if}
-    </svelte:element>
+    </div>
   {/if}
 </div>

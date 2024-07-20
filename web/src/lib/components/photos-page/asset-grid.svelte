@@ -13,8 +13,9 @@
     AssetStore,
     isSelectingAllAssets,
     lastScrollTime,
-    queuePostScrollTask,
+    queueScrollSensitiveTask,
     type Viewport,
+    type ViewportXY,
   } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
@@ -23,15 +24,17 @@
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, formatGroupTitle, splitBucketIntoDateGroups, TUNABLES } from '$lib/utils/timeline-util';
+  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
-  import { indexOf, throttle } from 'lodash-es';
+  import { throttle } from 'lodash-es';
   import { createEventDispatcher, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import type { UpdatePayload } from 'vite';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -52,8 +55,8 @@
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
 
-  const viewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
-  const safeViewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
+  const viewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
+  const safeViewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
   let element: HTMLElement;
   let timelineElement: HTMLElement;
   let showShortcuts = false;
@@ -93,13 +96,25 @@
       updateViewport();
     }
   }
+  const {
+    ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
+    BUCKET: {
+      INTERSECTION_ROOT_TOP: BUCKET_INTERSECTION_ROOT_TOP,
+      INTERSECTION_ROOT_BOTTOM: BUCKET_INTERSECTION_ROOT_BOTTOM,
+    },
+    THUMBNAIL: {
+      INTERSECTION_ROOT_TOP: THUMBNAIL_INTERSECTION_ROOT_TOP,
+      INTERSECTION_ROOT_BOTTOM: THUMBNAIL_INTERSECTION_ROOT_BOTTOM,
+    },
+  } = TUNABLES;
+
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   const isViewportOrigin = () => {
     return viewport.height === 0 && viewport.width === 0;
   };
 
-  const isEqual = (a: Viewport, b: Viewport) => {
+  const isEqual = (a: ViewportXY, b: ViewportXY) => {
     return a.height == b.height && a.width == b.width && a.x === b.x && a.y === b.y;
   };
 
@@ -137,7 +152,7 @@
     // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
     // preventing skeleton from showing after hmr
     if (import.meta && import.meta.hot) {
-      const afterApdate = (payload) => {
+      const afterApdate = (payload: UpdatePayload) => {
         const assetGridUpdate = payload.updates.some(
           (update) => update.path.endsWith('asset-grid.svelte') || update.path.endsWith('assets-store.ts'),
         );
@@ -297,7 +312,9 @@
       { replaceState: true, forceNavigate: true },
     );
   };
-  const onAssetInGrid = throttle(_onAssetInGrid, 16, { leading: false, trailing: true });
+  const onAssetInGrid = NAVIGATE_ON_ASSET_IN_VIEW
+    ? throttle(_onAssetInGrid, 16, { leading: false, trailing: true })
+    : () => void 0;
 
   const onScrollTarget = ({ bucket, offset }: { asset: AssetResponseDto; offset: number }) => {
     element.scrollTo({ top: offset });
@@ -411,7 +428,7 @@
     }
   }
   function intersectedHandler(bucketDate: string) {
-    queuePostScrollTask(() => {
+    queueScrollSensitiveTask(() => {
       $assetStore.updateBucket(bucketDate, { intersecting: true });
       let bucket = assetStore.getBucketByDate(bucketDate);
       void loadBucketIt(bucket);
@@ -419,7 +436,7 @@
   }
 
   function seperatedHandler(bucketDate: string) {
-    queuePostScrollTask(() => {
+    queueScrollSensitiveTask(() => {
       $assetStore.updateBucket(bucketDate, { intersecting: false });
       $assetStore.getBucketByDate(bucketDate)?.cancel();
     });
@@ -762,8 +779,8 @@
           use:intersectionObserver={{
             onIntersect: () => intersectedHandler(bucket.bucketDate),
             onSeparate: () => seperatedHandler(bucket.bucketDate),
-            top: TUNABLES.BUCKET.INTERSECTION_ROOT_TOP,
-            bottom: TUNABLES.BUCKET.INTERSECTION_ROOT_BOTTOM,
+            top: BUCKET_INTERSECTION_ROOT_TOP,
+            bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
             root: element,
           }}
           data-bucket-date={bucket.bucketDate}
@@ -836,8 +853,8 @@
           {#if display && bucket.measured}
             <AssetDateGroup
               assetGridElement={element}
-              renderThumbsAtTopMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_TOP}
-              renderThumbsAtBottomMargin={TUNABLES.THUMBNAIL.INTERSECTION_ROOT_BOTTOM}
+              renderThumbsAtTopMargin={THUMBNAIL_INTERSECTION_ROOT_TOP}
+              renderThumbsAtBottomMargin={THUMBNAIL_INTERSECTION_ROOT_BOTTOM}
               {withStacked}
               {showArchiveIcon}
               {assetStore}

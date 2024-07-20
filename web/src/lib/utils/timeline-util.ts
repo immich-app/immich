@@ -22,21 +22,6 @@ export type ScrollBarListener = (
   bucketScrollPercent: number,
 ) => void;
 
-export const TUNABLES = {
-  BUCKET: {
-    INTERSECTION_ROOT_TOP: localStorage.getItem('BUCKET.INTERSECTION_ROOT_TOP') || '200%',
-    INTERSECTION_ROOT_BOTTOM: localStorage.getItem('BUCKET.INTERSECTION_ROOT_BOTTOM') || '200%',
-  },
-  DATEGROUP: {
-    INTERSECTION_ROOT_TOP: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_TOP') || '150%',
-    INTERSECTION_ROOT_BOTTOM: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_BOTTOM') || '150%',
-  },
-  THUMBNAIL: {
-    INTERSECTION_ROOT_TOP: localStorage.getItem('THUMBNAIL.INTERSECTION_ROOT_TOP') || '150%',
-    INTERSECTION_ROOT_BOTTOM: localStorage.getItem('THUMBNAIL.INTERSECTION_ROOT_TOP') || '150%',
-  },
-};
-
 export const fromLocalDateTime = (localDateTime: string) =>
   DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
 

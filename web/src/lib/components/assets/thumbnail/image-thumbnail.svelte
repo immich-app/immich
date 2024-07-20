@@ -5,6 +5,7 @@
   import { thumbHashToDataURL } from 'thumbhash';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { TUNABLES } from '$lib/utils/tunables';
 
   export let url: string;
   export let altText: string | undefined;
@@ -21,7 +22,10 @@
   export let hiddenIconClass = 'text-white';
   export let onComplete: (() => void) | undefined = undefined;
 
-  let duration: number = 150;
+  let {
+    IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
+  } = TUNABLES;
+
   let loaded = false;
   let errored = false;
   let img: HTMLImageElement;
@@ -84,6 +88,6 @@
     class:shadow-lg={shadow}
     class:rounded-full={circle}
     draggable="false"
-    out:fade={{ duration }}
+    out:fade={{ duration: THUMBHASH_FADE_DURATION }}
   />
 {/if}

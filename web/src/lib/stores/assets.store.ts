@@ -3,8 +3,8 @@ import { getKey } from '$lib/utils';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
+import { TUNABLES } from '$lib/utils/tunables';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import { mdiLayersTripleOutline } from '@mdi/js';
 import createJustifiedLayout from 'justified-layout';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -26,9 +26,11 @@ const LAYOUT_OPTIONS = {
 export interface Viewport {
   width: number;
   height: number;
+}
+export type ViewportXY = Viewport & {
   x: number;
   y: number;
-}
+};
 
 interface AssetLookup {
   bucket: AssetBucket;
@@ -836,14 +838,7 @@ export const lastScrollTime = writable<number>(0);
 const tasks: (() => void)[] = [];
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
-const MIN_DELAY_MS = Number.parseInt(localStorage.getItem('MIN_DELAY_MS')) || 200;
-const CHECK_INTERVAL_MS = Number.parseInt(localStorage.getItem('CHECK_INTERVAL_MS')) || 32;
-
-let disable = false;
 function drain() {
-  if (disable) {
-    return;
-  }
   for (let t = tasks.shift(); t; t = tasks.shift()) {
     t();
   }
@@ -853,20 +848,20 @@ function scheduleDrain() {
   clearTimeout(queueTimer);
   queueTimer = setTimeout(() => {
     const delta = Date.now() - get(lastScrollTime);
-    if (delta < MIN_DELAY_MS) {
+    if (delta < TUNABLES.ASSETS_STORE.MIN_DELAY_MS) {
       tasks.shift()?.();
       scheduleDrain();
     } else {
       drain();
     }
-  }, CHECK_INTERVAL_MS);
+  }, TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS);
 }
 
-export function queuePostScrollTask(task: () => void) {
+export function queueScrollSensitiveTask(task: () => void) {
   tasks.push(task);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;
-  if (lastTime != 0 && delta < MIN_DELAY_MS) {
+  if (lastTime != 0 && delta < TUNABLES.ASSETS_STORE.MIN_DELAY_MS) {
     scheduleDrain();
   } else {
     // flush the queue early

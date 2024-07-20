@@ -490,9 +490,7 @@
     }
   };
 
-  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
-    const { isMouseOver } = e.detail;
-
+  const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
@@ -730,12 +728,11 @@
                 ? 'bg-transparent border-2 border-white'
                 : 'bg-gray-700/40'} inline-block hover:bg-transparent"
               asset={stackedAsset}
-              onClick={(stackedAsset, event) => {
-                event.preventDefault();
+              onClick={(stackedAsset) => {
                 asset = stackedAsset;
                 preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
               }}
-              on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}
