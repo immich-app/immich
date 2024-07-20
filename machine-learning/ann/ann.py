@@ -120,6 +120,8 @@ class Ann(metaclass=_Singleton):
             save_cached_network,
             cached_network_path.encode() if cached_network_path is not None else None,
         )
+        if net_id < 0:
+            raise ValueError("Cannot load model!")
 
         self.input_shapes[net_id] = tuple(
             self.shape(net_id, input=True, index=i) for i in range(self.tensors(net_id, input=True))

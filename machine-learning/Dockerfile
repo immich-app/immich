@@ -13,7 +13,7 @@ FROM builder-cpu as builder-armnn
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
 RUN mkdir /opt/armnn && \
-    curl -SL "https://github.com/ARM-software/armnn/releases/download/v23.11/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
+    curl -SL "https://github.com/ARM-software/armnn/releases/download/v24.05/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
@@ -54,7 +54,7 @@ FROM prod-cpu as prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn
 
-RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
+RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir --parents /etc/OpenCL/vendors && \
     echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd && \
