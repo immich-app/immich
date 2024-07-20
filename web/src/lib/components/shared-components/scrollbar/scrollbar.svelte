@@ -62,15 +62,14 @@
     }
   };
 
-  debugger;
   assetStore.addListener(listener);
 
   type Segment = {
     count: number;
     height: number;
-    dateFormatted?: string;
-    bucketDate?: string;
-    date?: DateTime;
+    dateFormatted: string;
+    bucketDate: string;
+    date: DateTime;
     hasLabel: boolean;
   };
 
@@ -146,7 +145,7 @@
     if (!bucketDate) {
       return;
     }
-    // console.log(hoverY, scrollPercent);
+
     if (wasDragging === false && isDragging) {
       void startScrub?.(bucketDate, scrollPercent, bucketPercentY);
       void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
