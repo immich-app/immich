@@ -31,6 +31,7 @@
   import { t } from 'svelte-i18n';
   import type { ComponentType, SvelteComponent } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
+  import AdminLicenseSettings from '$lib/components/admin-page/settings/license-settings/admin-license-settings.svelte';
 
   export let data: PageData;
 
@@ -91,6 +92,12 @@
       title: $t('admin.library_settings'),
       subtitle: $t('admin.library_settings_description'),
       key: 'external-library',
+    },
+    {
+      component: AdminLicenseSettings,
+      title: $t('admin.license_settings'),
+      subtitle: $t('admin.license_settings_description'),
+      key: 'license',
     },
     {
       component: LoggingSettings,

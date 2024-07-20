@@ -836,6 +836,7 @@ export type ServerFeaturesDto = {
     passwordLogin: boolean;
     reverseGeocoding: boolean;
     search: boolean;
+    showLicensePanel: boolean;
     sidecar: boolean;
     smartSearch: boolean;
     trash: boolean;
@@ -1015,6 +1016,9 @@ export type SystemConfigLibraryDto = {
     scan: SystemConfigLibraryScanDto;
     watch: SystemConfigLibraryWatchDto;
 };
+export type SystemConfigLicenseDto = {
+    showLicensePanel: boolean;
+};
 export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
@@ -1099,6 +1103,7 @@ export type SystemConfigDto = {
     image: SystemConfigImageDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
+    license: SystemConfigLicenseDto;
     logging: SystemConfigLoggingDto;
     machineLearning: SystemConfigMachineLearningDto;
     map: SystemConfigMapDto;

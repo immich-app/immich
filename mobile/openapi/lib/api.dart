@@ -216,6 +216,7 @@ part 'model/system_config_job_dto.dart';
 part 'model/system_config_library_dto.dart';
 part 'model/system_config_library_scan_dto.dart';
 part 'model/system_config_library_watch_dto.dart';
+part 'model/system_config_license_dto.dart';
 part 'model/system_config_logging_dto.dart';
 part 'model/system_config_machine_learning_dto.dart';
 part 'model/system_config_map_dto.dart';

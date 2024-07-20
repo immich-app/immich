@@ -23,6 +23,7 @@ class ServerFeaturesDto {
     required this.passwordLogin,
     required this.reverseGeocoding,
     required this.search,
+    required this.showLicensePanel,
     required this.sidecar,
     required this.smartSearch,
     required this.trash,
@@ -48,6 +49,8 @@ class ServerFeaturesDto {
 
   bool search;
 
+  bool showLicensePanel;
+
   bool sidecar;
 
   bool smartSearch;
@@ -66,6 +69,7 @@ class ServerFeaturesDto {
     other.passwordLogin == passwordLogin &&
     other.reverseGeocoding == reverseGeocoding &&
     other.search == search &&
+    other.showLicensePanel == showLicensePanel &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
     other.trash == trash;
@@ -83,12 +87,13 @@ class ServerFeaturesDto {
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (search.hashCode) +
+    (showLicensePanel.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, showLicensePanel=$showLicensePanel, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -102,6 +107,7 @@ class ServerFeaturesDto {
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'search'] = this.search;
+      json[r'showLicensePanel'] = this.showLicensePanel;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
       json[r'trash'] = this.trash;
@@ -126,6 +132,7 @@ class ServerFeaturesDto {
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
         reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
         search: mapValueOfType<bool>(json, r'search')!,
+        showLicensePanel: mapValueOfType<bool>(json, r'showLicensePanel')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
         smartSearch: mapValueOfType<bool>(json, r'smartSearch')!,
         trash: mapValueOfType<bool>(json, r'trash')!,
@@ -186,6 +193,7 @@ class ServerFeaturesDto {
     'passwordLogin',
     'reverseGeocoding',
     'search',
+    'showLicensePanel',
     'sidecar',
     'smartSearch',
     'trash',

@@ -490,6 +490,8 @@ class ApiClient {
           return SystemConfigLibraryScanDto.fromJson(value);
         case 'SystemConfigLibraryWatchDto':
           return SystemConfigLibraryWatchDto.fromJson(value);
+        case 'SystemConfigLicenseDto':
+          return SystemConfigLicenseDto.fromJson(value);
         case 'SystemConfigLoggingDto':
           return SystemConfigLoggingDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':

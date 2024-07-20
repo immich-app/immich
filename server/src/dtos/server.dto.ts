@@ -137,6 +137,7 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
+  showLicensePanel!: boolean;
 }
 
 export interface ReleaseNotification {

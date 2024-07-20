@@ -2,16 +2,17 @@
   import LicenseInfo from './license-info.svelte';
   import ServerStatus from './server-status.svelte';
   import StorageSpace from './storage-space.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
 </script>
 
 <div class="mt-auto">
   <StorageSpace />
 </div>
 
-<div class="mb-2">
+{#if $featureFlags.showLicensePanel}
   <LicenseInfo />
-</div>
+{/if}
 
-<div class="mb-6">
+<div class="mb-6 mt-2">
   <ServerStatus />
 </div>

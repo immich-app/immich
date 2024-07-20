@@ -10084,6 +10084,9 @@
           "search": {
             "type": "boolean"
           },
+          "showLicensePanel": {
+            "type": "boolean"
+          },
           "sidecar": {
             "type": "boolean"
           },
@@ -10105,6 +10108,7 @@
           "passwordLogin",
           "reverseGeocoding",
           "search",
+          "showLicensePanel",
           "sidecar",
           "smartSearch",
           "trash"
@@ -10616,6 +10620,9 @@
           "library": {
             "$ref": "#/components/schemas/SystemConfigLibraryDto"
           },
+          "license": {
+            "$ref": "#/components/schemas/SystemConfigLicenseDto"
+          },
           "logging": {
             "$ref": "#/components/schemas/SystemConfigLoggingDto"
           },
@@ -10661,6 +10668,7 @@
           "image",
           "job",
           "library",
+          "license",
           "logging",
           "machineLearning",
           "map",
@@ -10911,6 +10919,17 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLicenseDto": {
+        "properties": {
+          "showLicensePanel": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "showLicensePanel"
         ],
         "type": "object"
       },
