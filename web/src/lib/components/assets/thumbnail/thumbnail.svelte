@@ -75,7 +75,9 @@
   $: height = thumbnailSize || thumbnailHeight || 235;
   $: display = intersecting;
 
-  const onIconClickedHandler = () => {
+  const onIconClickedHandler = (e?: MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!disabled) {
       onSelect?.(asset);
     }
@@ -181,7 +183,7 @@
       {#if mouseOver}
         <!-- lazy show the url on mouse over-->
         <a
-          class="absolute z-30 {className}"
+          class="absolute z-30 {className} top-[41px]"
           style:cursor="unset"
           style:width="{width}px"
           style:height="{height}px"
