@@ -65,7 +65,7 @@ export class AssetBucket {
   intersecting: boolean = false;
   measured: boolean = false;
   measuredPromise!: Promise<void>;
-  scrollBarPercentage: number;
+  scrollBarPercentage: number = 0;
 
   constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
     Object.assign(this, props);
@@ -719,7 +719,7 @@ export class AssetStore {
 
   private async getBucketInfoForAsset(
     { id, localDateTime }: Pick<AssetResponseDto, 'id' | 'localDateTime'>,
-    options: { preventCancel?: boolean; pending?: boolean },
+    options: { preventCancel?: boolean; pending?: boolean } = {},
   ) {
     const bucketInfo = this.assetToBucket[id];
     if (bucketInfo) {

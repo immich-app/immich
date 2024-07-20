@@ -457,7 +457,7 @@
     }
   };
 
-  async function loadBucketIt(bucket: AssetBucket) {
+  async function loadIt(bucket: AssetBucket) {
     // here in lies a great battle between load and cancel. If you scrub up and down many times over the
     // section, there will be multiple outstanding loads/cancels. cancel you only need to do once, since
     // multiple loads on the same bucket will wait on promise, and if canceled, all will stop.
@@ -479,7 +479,9 @@
     queueScrollSensitiveTask(() => {
       $assetStore.updateBucket(bucketDate, { intersecting: true });
       let bucket = assetStore.getBucketByDate(bucketDate);
-      void loadBucketIt(bucket);
+      if (bucket) {
+        void loadIt(bucket);
+      }
     });
   }
 
