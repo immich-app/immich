@@ -3,8 +3,8 @@ import { render } from '@testing-library/svelte';
 
 describe('ImageThumbnail component', () => {
   beforeAll(() => {
-    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
-      value: vi.fn(),
+    Object.defineProperty(HTMLImageElement.prototype, 'complete', {
+      value: true,
     });
   });
 
