@@ -17,10 +17,21 @@ export type DateGroup = {
   bucket: AssetBucket;
 };
 export type ScrollBarListener = (
-  bucketDate: string | undefined,
+  bucketDate: string,
   overallScrollPercent: number,
   bucketScrollPercent: number,
-) => void;
+) => void | Promise<void>;
+export type ScrollTargetListener = ({
+  bucket,
+  dateGroup,
+  asset,
+  offset,
+}: {
+  bucket: AssetBucket;
+  dateGroup: DateGroup;
+  asset: AssetResponseDto;
+  offset: number;
+}) => void;
 
 export const fromLocalDateTime = (localDateTime: string) =>
   DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });

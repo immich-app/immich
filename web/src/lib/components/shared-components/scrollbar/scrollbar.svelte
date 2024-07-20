@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssetStore, AssetBucket } from '$lib/stores/assets.store';
+  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets.store';
   import type { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrollBarListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
@@ -54,42 +54,15 @@
   };
   $: scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
 
-  // const listener = (bucketnotify, kind, dateGroup, delta) => {
-  //   if (kind === 'buckheight') {
-  //     segments = calculateSegments($assetStore.buckets);
-  //   }
-  // };
-  // let unsubscribe: (() => void) | undefined;
-  //   const initialBucketsListener = () => {
-  //     debugger;
-
-  //     calculateSegments(assetStore.buckets);
-  //     unsubscribe?.();
-  //   };
-  //   unsubscribe = assetStore.subscribe(initialBucketsListener);
-  //   return unsubscribe;
-
-  const listener = (bucketnotify, kind, dateGroup, delta) => {
-    if (kind === 'viewport') {
+  const listener: BucketListener = (event) => {
+    const { type } = event;
+    if (type === 'viewport') {
       segments = calculateSegments($assetStore.buckets);
       assetStore.removeListener(listener);
     }
   };
 
   assetStore.addListener(listener);
-
-  // onMount(() => {
-  // const listener = (bucketnotify, kind, dateGroup, delta) => {
-  //   if (kind === 'buckheight') {
-  //     segments = calculateSegments($assetStore.buckets);
-  //   }
-  // };
-  // $assetStore.complete.then(() => calculateSegments(assetStore.buckets));
-  // assetStore.addListener(listener);
-  // return () => {
-  //   assetStore.removeListener(listener);
-  // };
-  // });
 
   type Segment = {
     count: number;
@@ -169,19 +142,22 @@
 
     const scrollPercent = toTimelineY(hoverY);
 
+    if (!bucketDate) {
+      return;
+    }
     // console.log(hoverY, scrollPercent);
     if (wasDragging === false && isDragging) {
-      startScrub?.(bucketDate, scrollPercent, bucketPercentY);
-      onScrub?.(bucketDate, scrollPercent, bucketPercentY);
+      void startScrub?.(bucketDate, scrollPercent, bucketPercentY);
+      void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
     }
     if (wasDragging && !isDragging) {
-      stopScrub?.(bucketDate, scrollPercent, bucketPercentY);
+      void stopScrub?.(bucketDate, scrollPercent, bucketPercentY);
     }
 
     if (!isDragging) {
       return;
     }
-    onScrub?.(bucketDate, scrollPercent, bucketPercentY);
+    void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
   };
 </script>
 

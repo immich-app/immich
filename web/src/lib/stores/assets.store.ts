@@ -154,11 +154,50 @@ export const photoViewer = writable<HTMLImageElement | null>(null);
 
 type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
 
-type BucketListener = (
-  bucket: AssetBucket,
-  kind: 'load' | 'loaded' | 'cancel' | 'intersecting' | 'height',
-  dateGroup: DateGroup,
+export type BucketListener = (
+  event:
+    | ViewPortEvent
+    | BucketLoadEvent
+    | BucketLoadedEvent
+    | BucketCancelEvent
+    | BucketHeightEvent
+    | DateGroupIntersecting
+    | DateGroupHeightEvent,
 ) => void;
+
+type ViewPortEvent = {
+  type: 'viewport';
+};
+type BucketLoadEvent = {
+  type: 'load';
+  bucket: AssetBucket;
+};
+type BucketLoadedEvent = {
+  type: 'loaded';
+  bucket: AssetBucket;
+};
+type BucketCancelEvent = {
+  type: 'cancel';
+  bucket: AssetBucket;
+};
+type BucketHeightEvent = {
+  type: 'buckheight';
+  bucket: AssetBucket;
+  delta: number;
+};
+type DateGroupIntersecting = {
+  type: 'intersecting';
+  bucket: AssetBucket;
+  dateGroup: DateGroup;
+};
+type DateGroupHeightEvent = {
+  type: 'height';
+  bucket: AssetBucket;
+  dateGroup: DateGroup;
+  delta: number;
+  height: number;
+};
+
 export class AssetStore {
   private assetToBucket: Record<string, AssetLookup> = {};
   private pendingChanges: PendingChange[] = [];
@@ -294,13 +333,27 @@ export class AssetStore {
   removeListener(bucketListener: BucketListener) {
     this.listeners = this.listeners.filter((l) => l != bucketListener);
   }
-
-  async init({ bucketListener }) {
+  private notifyListeners(
+    event:
+      | ViewPortEvent
+      | BucketLoadEvent
+      | BucketLoadedEvent
+      | BucketCancelEvent
+      | BucketHeightEvent
+      | DateGroupIntersecting
+      | DateGroupHeightEvent,
+  ) {
+    for (const fn of this.listeners) {
+      fn(event);
+    }
+  }
+  async init({ bucketListener }: { bucketListener?: BucketListener } = {}) {
     if (this.initialized) {
       throw 'Can only init once';
     }
-    this.addListener(bucketListener);
-
+    if (bucketListener) {
+      this.addListener(bucketListener);
+    }
     //  uncaught rejection go away
     this.complete.catch(() => void 0);
     this.timelineHeight = 0;
@@ -368,9 +421,7 @@ export class AssetStore {
       loaders.push(this.loadBucket(bucket.bucketDate));
     }
     await Promise.all(loaders);
-    for (const fn of this.listeners) {
-      fn(null, 'viewport', null);
-    }
+    this.notifyListeners({ type: 'viewport' });
     this.emit(false);
   }
 
@@ -433,10 +484,7 @@ export class AssetStore {
     if (options.pending) {
       this.pendingScrollBucket = bucket;
     }
-    for (const fn of this.listeners) {
-      fn(bucket, 'load', null);
-    }
-
+    this.notifyListeners({ type: 'load', bucket });
     bucket.isPreventCancel = !!options.preventCancel;
 
     const cancelToken = (bucket.cancelToken = new AbortController());
@@ -451,10 +499,7 @@ export class AssetStore {
       );
 
       if (cancelToken.signal.aborted) {
-        for (const fn of this.listeners) {
-          fn(bucket, 'cancel', null);
-        }
-
+        this.notifyListeners({ type: 'cancel', bucket });
         return;
       }
 
@@ -469,10 +514,7 @@ export class AssetStore {
           { signal: cancelToken.signal },
         );
         if (cancelToken.signal.aborted) {
-          for (const fn of this.listeners) {
-            fn(bucket, 'cancel', null);
-          }
-
+          this.notifyListeners({ type: 'cancel', bucket });
           return;
         }
         for (const asset of albumAssets) {
@@ -485,9 +527,7 @@ export class AssetStore {
       this.updateGeometry(bucket, true);
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();
-      for (const fn of this.listeners) {
-        fn(bucket, 'loaded', null);
-      }
+      this.notifyListeners({ type: 'loaded', bucket });
     } catch (error) {
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       if ((error as any).name === 'AbortError') {
@@ -514,9 +554,7 @@ export class AssetStore {
       bucket.isBucketHeightActual = true;
       bucket.bucketHeight = height;
       this.timelineHeight += delta;
-      for (const fn of this.listeners) {
-        fn(bucket, 'buckheight', null, delta);
-      }
+      this.notifyListeners({ type: 'buckheight', bucket, delta });
     }
     if ('intersecting' in properties) {
       bucket.intersecting = properties.intersecting!;
@@ -533,28 +571,23 @@ export class AssetStore {
 
   updateBucketDateGroup(
     bucket: AssetBucket,
-    bucketDateGroup: DateGroup,
+    dateGroup: DateGroup,
     properties: { height?: number; intersecting?: boolean },
   ) {
     let delta = 0;
     if ('height' in properties) {
       const height = properties.height!;
       if (height > 0) {
-        delta = height - bucketDateGroup.height;
-        bucketDateGroup.heightActual = true;
-        bucketDateGroup.height = height;
-
-        for (const fn of this.listeners) {
-          fn(bucket, 'height', bucketDateGroup);
-        }
+        delta = height - dateGroup.height;
+        dateGroup.heightActual = true;
+        dateGroup.height = height;
+        this.notifyListeners({ type: 'height', bucket, dateGroup, delta, height });
       }
     }
     if ('intersecting' in properties) {
-      bucketDateGroup.intersecting = properties.intersecting!;
-      if (bucketDateGroup.intersecting) {
-        for (const fn of this.listeners) {
-          fn(bucket, 'intersecting', bucketDateGroup);
-        }
+      dateGroup.intersecting = properties.intersecting!;
+      if (dateGroup.intersecting) {
+        this.notifyListeners({ type: 'intersecting', bucket, dateGroup });
       }
     }
     this.emit(false);

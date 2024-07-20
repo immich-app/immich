@@ -5,7 +5,7 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetBucket, queueScrollSensitiveTask, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, type DateGroup } from '$lib/utils/timeline-util';
+  import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
@@ -26,19 +26,7 @@
   export let bucket: AssetBucket;
   export let assetInteractionStore: AssetInteractionStore;
 
-  export let onScrollTarget:
-    | (({
-        bucket,
-        dateGroup,
-        asset,
-        offset,
-      }: {
-        bucket: AssetBucket;
-        dateGroup: DateGroup;
-        asset: AssetResponseDto;
-        offset: number;
-      }) => void)
-    | undefined = undefined;
+  export let onScrollTarget: ScrollTargetListener | undefined = undefined;
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
 
   $: bucketDate = bucket.bucketDate;
