@@ -49,26 +49,23 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.clear();
   }
 
-  async deleteAllFaces(sourceType?: string): Promise<void> {
-    await (sourceType
-      ? this.assetFaceRepository
-          .createQueryBuilder('asset_faces')
-          .delete()
-          .andWhere('sourceType = :sourceType', { sourceType: sourceType })
-          .execute()
-      : this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE'));
-  }
-
-  async deleteFaceFromAsset(assetId: string, sourceType?: string): Promise<void> {
-    let query = this.assetFaceRepository
-      .createQueryBuilder('asset_faces')
-      .delete()
-      .where('assetId = :assetId', { assetId: assetId });
-
-    if (sourceType) {
-      query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+  async deleteAllFaces(sourceType: string | null): Promise<void> {
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (sourceType === undefined) {
+      await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+    } else if (sourceType === null) {
+      await this.assetFaceRepository
+        .createQueryBuilder('asset_faces')
+        .delete()
+        .andWhere('sourceType is null')
+        .execute();
+    } else {
+      await this.assetFaceRepository
+        .createQueryBuilder('asset_faces')
+        .delete()
+        .andWhere('sourceType = :sourceType', { sourceType: sourceType })
+        .execute();
     }
-    await query.execute();
   }
 
   getAllFaces(
@@ -270,6 +267,21 @@ export class PersonRepository implements IPersonRepository {
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
     const res = await this.assetFaceRepository.save(entities);
     return res.map((row) => row.id);
+  }
+
+  async upsertFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: string): Promise<string[]> {
+    return await this.assetFaceRepository.manager.transaction(async (manager) => {
+      const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
+      let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
+
+      if (sourceType) {
+        query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+      }
+      await query.execute();
+
+      const res = await manager.save(AssetFaceEntity, entities);
+      return res.map((row) => row.id);
+    });
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {

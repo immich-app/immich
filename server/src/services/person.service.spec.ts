@@ -565,7 +565,7 @@ describe(PersonService.name, () => {
 
       expect(personMock.getAllFaces).toHaveBeenCalledWith(
         { skip: 0, take: 1000 },
-        { where: { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING } },
+        { where: { personId: IsNull(), sourceType: IsNull() } },
       );
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
@@ -1183,7 +1183,6 @@ describe(PersonService.name, () => {
         id: faceStub.face1.id,
         imageHeight: 1024,
         imageWidth: 1024,
-        sourceType: SourceType.MACHINE_LEARNING,
         person: mapPerson(personStub.withName),
       });
     });

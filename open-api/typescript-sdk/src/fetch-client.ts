@@ -1081,6 +1081,10 @@ export type SystemConfigPasswordLoginDto = {
 export type SystemConfigReverseGeocodingDto = {
     enabled: boolean;
 };
+export type SystemConfigServerDto = {
+    externalDomain: string;
+    loginPageMessage: string;
+};
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
@@ -1092,6 +1096,9 @@ export type SystemConfigThemeDto = {
 export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
+};
+export type SystemConfigUserDto = {
+    deleteDelay: number;
 };
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
@@ -1107,10 +1114,11 @@ export type SystemConfigDto = {
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
-    server: object;
+    server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
+    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];

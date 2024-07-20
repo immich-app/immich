@@ -10,7 +10,7 @@ import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import { SearchPeopleDto } from 'src/dtos/search.dto';
-import { SourceType } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -25,6 +25,7 @@ import {
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobItem,
   JobName,
   JobStatus,
   QueueName,
@@ -32,7 +33,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
+import { IMetadataRepository, ImmichTags, MetadataFaceResult, MetadataRegion } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -500,53 +501,40 @@ export class MetadataService implements OnEvents {
     return this.personRepository.getByName(ownerId, dto.name, { withHidden: dto.withHidden });
   }
 
-  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
-    this.logger.debug(`Starting faces extraction from tags (${asset.id})`);
+  private toPixels(region: MetadataRegion, unit: string): MetadataRegion {
+    const pixelRegion: MetadataRegion = region;
+    if (unit.toLowerCase() == 'normalized') {
+      pixelRegion.x1 = Math.floor(region.x1 * region.imageWidth);
+      pixelRegion.x2 = Math.floor(region.x2 * region.imageWidth);
+      pixelRegion.y1 = Math.floor(region.y1 * region.imageHeight);
+      pixelRegion.y2 = Math.floor(region.y2 * region.imageHeight);
+    }
+    return pixelRegion;
+  }
 
-    const faceSet = new Set();
+  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
+    this.logger.debug(`Extracting face metadata from (${asset.id})`);
+
+    const faceSet = new Set<MetadataFaceResult>();
+    const peopleSet = new Set<PersonEntity>();
+    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
 
     if (!tags.RegionInfo) {
       return true;
-    }
-
-    interface Region {
-      imageWidth: number;
-      imageHeight: number;
-      boundingBoxX1: number;
-      boundingBoxX2: number;
-      boundingBoxY1: number;
-      boundingBoxY2: number;
-    }
-
-    interface MetadataFaceResult {
-      Name?: string;
-      Type?: string;
-      Region: Region;
-    }
-
-    function toPixels(region: Region, unit: string): Region {
-      const pixelRegion: Region = region;
-      if (unit.toLowerCase() == 'normalized') {
-        pixelRegion.boundingBoxX1 = Math.floor(region.boundingBoxX1 * region.imageWidth);
-        pixelRegion.boundingBoxX2 = Math.floor(region.boundingBoxX2 * region.imageWidth);
-        pixelRegion.boundingBoxY1 = Math.floor(region.boundingBoxY1 * region.imageHeight);
-        pixelRegion.boundingBoxY2 = Math.floor(region.boundingBoxY2 * region.imageHeight);
-      }
-      return pixelRegion;
     }
 
     for (const region of tags.RegionInfo?.RegionList) {
       const faceResult: MetadataFaceResult = {
         Name: region.Name,
         Type: region.Type,
-        Region: toPixels(
+        Region: this.toPixels(
           {
             imageWidth: tags.RegionInfo?.AppliedToDimensions?.W,
             imageHeight: tags.RegionInfo?.AppliedToDimensions?.H,
-            boundingBoxX1: region.Area.X - region.Area.W / 2,
-            boundingBoxY1: region.Area.Y - region.Area.H / 2,
-            boundingBoxX2: region.Area.X + region.Area.W / 2,
-            boundingBoxY2: region.Area.Y + region.Area.H / 2,
+            x1: region.Area.X - region.Area.W / 2,
+            y1: region.Area.Y - region.Area.H / 2,
+            x2: region.Area.X + region.Area.W / 2,
+            y2: region.Area.Y + region.Area.H / 2,
           },
           region.Area.Unit,
         ),
@@ -555,12 +543,8 @@ export class MetadataService implements OnEvents {
       faceSet.add(faceResult);
     }
 
-    const faces = [...faceSet] as MetadataFaceResult[];
-
+    const faces = [...faceSet];
     this.logger.debug(`${faces.length} faces detected in ${asset.originalPath}`);
-
-    // cleanup faces imported from metadata so we can update them if we're re-reading to avoid duplications
-    await this.personRepository.deleteFaceFromAsset(asset.id, SourceType.EXIF);
 
     for (const face of faces) {
       const name = face.Name || '';
@@ -580,31 +564,32 @@ export class MetadataService implements OnEvents {
       }
 
       const currentPerson = newPerson || person;
+      peopleSet.add(currentPerson);
+
       const newFaceId = this.cryptoRepository.randomUUID();
-      const faceIds = await this.personRepository.createFaces([
-        {
-          id: newFaceId,
-          personId: currentPerson.id,
-          assetId: asset.id,
-          imageHeight: face.Region.imageHeight,
-          imageWidth: face.Region.imageWidth,
-          boundingBoxX1: face.Region.boundingBoxX1,
-          boundingBoxY1: face.Region.boundingBoxY1,
-          boundingBoxX2: face.Region.boundingBoxX2,
-          boundingBoxY2: face.Region.boundingBoxY2,
-          sourceType: SourceType.EXIF,
-        },
-      ]);
-
-      this.logger.debug(`Created ${faceIds.length} faceIds: ${faceIds}`);
-
-      // Updates Person when faceAssetId has not been asigned yet
-      if (!currentPerson.faceAssetId) {
-        this.logger.debug(`Setting Person ${currentPerson.id} with faceAssetId: ${newFaceId}`);
-        await this.personRepository.update({ id: currentPerson.id, faceAssetId: newFaceId });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: currentPerson.id } });
-      }
+      discoveredFaces.push({
+        id: newFaceId,
+        personId: currentPerson.id,
+        assetId: asset.id,
+        imageHeight: face.Region.imageHeight,
+        imageWidth: face.Region.imageWidth,
+        boundingBoxX1: face.Region.x1,
+        boundingBoxY1: face.Region.y1,
+        boundingBoxX2: face.Region.x2,
+        boundingBoxY2: face.Region.y2,
+        sourceType: SourceType.EXIF,
+      });
     }
+
+    const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
+
+    this.logger.debug(`Created ${faceIds.length} faceIds: ${faceIds}`);
+
+    // Updates Person when faceAssetId has not been asigned yet
+    const jobs: JobItem[] = [];
+
+    jobs.push(...(await this.updatePersonsFaceAsset([...peopleSet])));
+    await this.jobRepository.queueAll(jobs);
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
@@ -612,6 +597,23 @@ export class MetadataService implements OnEvents {
     });
 
     return true;
+  }
+
+  async updatePersonsFaceAsset(people: PersonEntity[]): Promise<JobItem[]> {
+    const jobs: JobItem[] = [];
+    for (const person of people) {
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
+        }
+
+        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+      }
+
+      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+    }
+    return jobs;
   }
 
   private async exifData(

@@ -3,9 +3,10 @@ import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-export enum SourceType {
-  MACHINE_LEARNING = 'machine-learning',
-  EXIF = 'exif',
+// eslint-disable-next-line unicorn/no-static-only-class
+export class SourceType {
+  static MACHINE_LEARNING = null;
+  static EXIF = 'exif';
 }
 
 @Entity('asset_faces', { synchronize: false })
@@ -42,8 +43,8 @@ export class AssetFaceEntity {
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
 
-  @Column({ type: 'varchar', default: SourceType.MACHINE_LEARNING })
-  sourceType!: SourceType;
+  @Column({ nullable: true, type: 'varchar' })
+  sourceType?: string | null;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

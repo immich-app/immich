@@ -7623,6 +7623,7 @@
             "nullable": true
           },
           "sourceType": {
+            "nullable": true,
             "type": "string"
           }
         },
@@ -7634,8 +7635,7 @@
           "id",
           "imageHeight",
           "imageWidth",
-          "person",
-          "sourceType"
+          "person"
         ],
         "type": "object"
       },
@@ -7695,6 +7695,7 @@
             "type": "integer"
           },
           "sourceType": {
+            "nullable": true,
             "type": "string"
           }
         },
@@ -7705,8 +7706,7 @@
           "boundingBoxY2",
           "id",
           "imageHeight",
-          "imageWidth",
-          "sourceType"
+          "imageWidth"
         ],
         "type": "object"
       },

@@ -24,12 +24,12 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
 
     reassignFaces: vitest.fn(),
     createFaces: vitest.fn(),
+    upsertFaces: vitest.fn(),
     getFaces: vitest.fn(),
     reassignFace: vitest.fn(),
     getFaceById: vitest.fn(),
     getFaceByIdWithAssets: vitest.fn(),
     getNumberOfPeople: vitest.fn(),
     getLatestFaceDate: vitest.fn(),
-    deleteFaceFromAsset: vitest.fn(),
   };
 };

@@ -52,7 +52,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { isFacialRecognitionEnabled, isImportFacesFromMetadataEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
@@ -417,7 +417,7 @@ export class PersonService {
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.repository.getAllFaces(pagination, {
-        where: force ? undefined : { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING },
+        where: force ? undefined : { personId: IsNull(), sourceType: IsNull() },
       }),
     );
 
@@ -527,8 +527,8 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, image } = await this.configCore.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning)) {
+    const { machineLearning, importFaces, image } = await this.configCore.getConfig({ withCache: true });
+    if (![isFacialRecognitionEnabled(machineLearning), isImportFacesFromMetadataEnabled(importFaces)].includes(true)) {
       return JobStatus.SKIPPED;
     }
 

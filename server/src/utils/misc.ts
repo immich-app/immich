@@ -64,6 +64,7 @@ export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machin
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
 export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
+export const isImportFacesFromMetadataEnabled = (importFaces: SystemConfig['importFaces']) => importFaces.enabled;
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 

@@ -49,6 +49,21 @@ export interface ImmichTags extends Omit<ImmichTagsBase, 'RegionInfo'> {
   };
 }
 
+export interface MetadataRegion {
+  imageWidth: number;
+  imageHeight: number;
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+}
+
+export interface MetadataFaceResult {
+  Name?: string;
+  Type?: string;
+  Region: MetadataRegion;
+}
+
 export interface IMetadataRepository {
   teardown(): Promise<void>;
   readTags(path: string): Promise<ImmichTags | null>;
