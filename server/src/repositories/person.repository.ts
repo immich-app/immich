@@ -49,7 +49,7 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.clear();
   }
 
-  async deleteAllFaces(sourceType: string | null): Promise<void> {
+  async deleteAllFaces(sourceType?: string | null): Promise<void> {
     // eslint-disable-next-line unicorn/prefer-ternary
     if (sourceType === undefined) {
       await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
