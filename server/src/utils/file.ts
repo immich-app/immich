@@ -11,6 +11,10 @@ export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
 }
 
+export function getFilenameExtension(path: string): string {
+  return extname(path);
+}
+
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
   return getFileNameWithoutExtension(stillName) + extname(motionName);
 }
