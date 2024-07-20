@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Mørk modus",
   "theme_setting_image_viewer_quality_subtitle": "Juster kvaliteten på bilder i detaljvisning",
   "theme_setting_image_viewer_quality_title": "Kvalitet på bildevisning",
+  "theme_setting_primary_color_title": "Primærfarge",
+  "theme_setting_primary_color_summary": "Velg en farge for primære handlinger og aksenter.",
   "theme_setting_system_theme_switch": "Automatisk (følg systeminnstillinger)",
   "theme_setting_theme_subtitle": "Velg app-ens temainnstilling",
   "theme_setting_theme_title": "Tema",

@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "الوضع المظلم",
   "theme_setting_image_viewer_quality_subtitle": "اضبط جودة عارض الصورة التفصيلية",
   "theme_setting_image_viewer_quality_title": "جودة عارض الصورة",
+  "theme_setting_primary_color_title": "اللون الأساسي",
+  "theme_setting_primary_color_summary": "اختر لونًا للإجراءات الرئيسية والألوان التكميلية.",
   "theme_setting_system_theme_switch": "تلقائي (اتبع إعداد النظام)",
   "theme_setting_theme_subtitle": "اختر إعدادات مظهر التطبيق",
   "theme_setting_theme_title": "مظهر",

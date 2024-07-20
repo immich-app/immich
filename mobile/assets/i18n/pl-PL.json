@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Ciemny Motyw",
   "theme_setting_image_viewer_quality_subtitle": "Dostosuj jakość podglądu szczegółowości",
   "theme_setting_image_viewer_quality_title": "Jakość przeglądania obrazów",
+  "theme_setting_primary_color_title": "Kolor Podstawowy",
+  "theme_setting_primary_color_summary": "Wybierz kolor dla działań głównych i akcentów.",
   "theme_setting_system_theme_switch": "Automatyczny (Postępuj zgodnie z ustawieniami systemu)",
   "theme_setting_theme_subtitle": "Wybierz ustawienia motywu aplikacji",
   "theme_setting_theme_title": "Motyw",

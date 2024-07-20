@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Tumma teema",
   "theme_setting_image_viewer_quality_subtitle": "Säädä kuvien katselun laatua",
   "theme_setting_image_viewer_quality_title": "Kuvien katseluohjelman laatu",
+  "theme_setting_primary_color_title": "Pääväri",
+  "theme_setting_primary_color_summary": "Valitse väri ensisijaisille toiminnoille ja korostuksille.",
   "theme_setting_system_theme_switch": "Automaattinen (seuraa järjestelmän asetusta)",
   "theme_setting_theme_subtitle": "Valitse sovelluksen teema-asetukset",
   "theme_setting_theme_title": "Teema",

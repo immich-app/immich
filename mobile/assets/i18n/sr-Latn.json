@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Tamni Mod",
   "theme_setting_image_viewer_quality_subtitle": "Prilagodite kvalitet prikaza za detaljno pregledavanje slike",
   "theme_setting_image_viewer_quality_title": "Kvalitet pregledača slika",
+  "theme_setting_primary_color_title": "Osnovna Boja",
+  "theme_setting_primary_color_summary": "Izaberite boju za primarne radnje i akcente.",
   "theme_setting_system_theme_switch": "Automatski (Prati opcije sistema)",
   "theme_setting_theme_subtitle": "Odaberi temu sistema",
   "theme_setting_theme_title": "Teme",

@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Тёмная тема",
   "theme_setting_image_viewer_quality_subtitle": "Настройка качества просмотра полноэкранных изображения",
   "theme_setting_image_viewer_quality_title": "Качество просмотра изображений",
+  "theme_setting_primary_color_title": "Основной Цвет",
+  "theme_setting_primary_color_summary": "Выберите цвет для основных действий и акцентов.",
   "theme_setting_system_theme_switch": "Автоматически (как в системе)",
   "theme_setting_theme_subtitle": "Настройка темы приложения",
   "theme_setting_theme_title": "Тема",

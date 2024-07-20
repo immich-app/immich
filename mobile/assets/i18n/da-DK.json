@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Mørk tilstand",
   "theme_setting_image_viewer_quality_subtitle": "Juster kvaliteten i billedfremviseren",
   "theme_setting_image_viewer_quality_title": "Billedfremviserkvalitet",
+  "theme_setting_primary_color_title": "Primær Farve",
+  "theme_setting_primary_color_summary": "Vælg en farve til primære handlinger og accenter.",
   "theme_setting_system_theme_switch": "Automatisk (Følg systemindstillinger)",
   "theme_setting_theme_subtitle": "Vælg appens temaindstilling",
   "theme_setting_theme_title": "Tema",

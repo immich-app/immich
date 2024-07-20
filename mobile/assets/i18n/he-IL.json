@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "מצב כהה",
   "theme_setting_image_viewer_quality_subtitle": "התאם את האיכות של תצוגת התמונות המפורטת",
   "theme_setting_image_viewer_quality_title": "איכות מציג תמונות",
+  "theme_setting_primary_color_title": "צבע ראשי",
+  "theme_setting_primary_color_summary": "בחר צבע לפעולות ראשיות ולהדגשות.",
   "theme_setting_system_theme_switch": "אוטומטי (עקוב אחרי הגדרת מערכת)",
   "theme_setting_theme_subtitle": "בחר/י את הגדרת ערכת הנושא של היישום",
   "theme_setting_theme_title": "ערכת נושא",

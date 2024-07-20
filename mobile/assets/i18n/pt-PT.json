@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Modo escuro",
   "theme_setting_image_viewer_quality_subtitle": "Ajuste a qualidade do visualizador de imagens detalhadas",
   "theme_setting_image_viewer_quality_title": "Qualidade do visualizador de imagens",
+  "theme_setting_primary_color_title": "Cor Primária",
+  "theme_setting_primary_color_summary": "Escolha uma cor para ações primárias e destaques.",
   "theme_setting_system_theme_switch": "Automático (Siga a configuração do sistema)",
   "theme_setting_theme_subtitle": "Escolha a configuração do tema do aplicativo",
   "theme_setting_theme_title": "Tema",

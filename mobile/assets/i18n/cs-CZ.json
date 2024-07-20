@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Tmavé téma",
   "theme_setting_image_viewer_quality_subtitle": "Přizpůsobení kvality detailů prohlížeče obrázků",
   "theme_setting_image_viewer_quality_title": "Kvalita prohlížeče obrázků",
+  "theme_setting_primary_color_title": "Primární Barva",
+  "theme_setting_primary_color_summary": "Vyberte barvu pro primární akce a akcenty.",
   "theme_setting_system_theme_switch": "Automaticky (podle systemového nastavení)",
   "theme_setting_theme_subtitle": "Vyberte nastavení tématu aplikace",
   "theme_setting_theme_title": "Téma",

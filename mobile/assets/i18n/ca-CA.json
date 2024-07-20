@@ -456,6 +456,8 @@
   "theme_setting_dark_mode_switch": "Modes fosc",
   "theme_setting_image_viewer_quality_subtitle": "Adjust the quality of the detail image viewer",
   "theme_setting_image_viewer_quality_title": "Image viewer quality",
+  "theme_setting_primary_color_title": "Color Principal",
+  "theme_setting_primary_color_summary": "Tria un color per a les accions principals i els accents.",
   "theme_setting_system_theme_switch": "Automatic (Follow system setting)",
   "theme_setting_theme_subtitle": "Choose the app's theme setting",
   "theme_setting_theme_title": "Tema",

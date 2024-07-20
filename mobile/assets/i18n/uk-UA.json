@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "Темна тема",
   "theme_setting_image_viewer_quality_subtitle": "Налаштування якості перегляду повноекранних зображень",
   "theme_setting_image_viewer_quality_title": "Якість перегляду зображень",
+  "theme_setting_primary_color_title": "Основний Колір",
+  "theme_setting_primary_color_summary": "Виберіть колір для основних дій та акцентів.",
   "theme_setting_system_theme_switch": "Автоматично (як у системі)",
   "theme_setting_theme_subtitle": "Налаштування теми додатка",
   "theme_setting_theme_title": "Тема",

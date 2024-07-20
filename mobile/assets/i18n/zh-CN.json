@@ -501,6 +501,8 @@
   "theme_setting_dark_mode_switch": "深色模式",
   "theme_setting_image_viewer_quality_subtitle": "调整查看大图时的图像质量",
   "theme_setting_image_viewer_quality_title": "图像质量",
+  "theme_setting_primary_color_title": "主颜色",
+  "theme_setting_primary_color_summary": "选择一个主操作和强调的颜色。",
   "theme_setting_system_theme_switch": "自动（跟随系统设置）",
   "theme_setting_theme_subtitle": "选择应用主题",
   "theme_setting_theme_title": "主题",
