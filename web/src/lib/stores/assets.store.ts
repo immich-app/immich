@@ -63,6 +63,7 @@ export class AssetBucket {
   intersecting: boolean = false;
   measured: boolean = false;
   measuredPromise!: Promise<void>;
+  scrollBarPercentage: number;
 
   constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
     Object.assign(this, props);
@@ -188,6 +189,11 @@ export class AssetStore {
     private albumId?: string,
   ) {
     this.options = { ...options, size: TimeBucketSize.Month };
+    // create a promise, and store its resolve callbacks. The initializedSignal callback
+    // will be invoked when a the assetstore is initialized.
+    this.complete = new Promise((resolve) => {
+      this.initializedSignal = resolve;
+    });
     this.store$.set(this);
   }
 
@@ -292,11 +298,7 @@ export class AssetStore {
       throw 'Can only init once';
     }
     this.addListener(bucketListener);
-    // create a promise, and store its resolve callbacks. The initializedSignal callback
-    // will be invoked when a the assetstore is initialized.
-    this.complete = new Promise((resolve) => {
-      this.initializedSignal = resolve;
-    });
+
     //  uncaught rejection go away
     this.complete.catch(() => void 0);
     this.timelineHeight = 0;
@@ -323,21 +325,36 @@ export class AssetStore {
   }
 
   async updateViewport(viewport: Viewport) {
-    if (!this.initialized && this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
+    if (!this.initialized) {
       return;
     }
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
+    if (this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
+      return;
+    }
+
     // changing width invalidates the actual height, and needs to be remeasured, since width changes causes
     // layout reflows.
-    const changedWidth = this.viewport != viewport.width;
+    const changedWidth = this.viewport.width != viewport.width;
     this.viewport = { ...viewport };
 
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
-    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
+    const totalHeight = (this.timelineHeight = this.buckets.reduce(
+      (accumulator, b) => accumulator + b.bucketHeight,
+      0,
+    ));
+    // 2nd pass to set the initial percentage heights for scrollbar
+    for (const bucket of this.buckets) {
+      if (!bucket.isBucketHeightActual) {
+        bucket.scrollBarPercentage = bucket.bucketHeight / totalHeight;
+      }
+    }
+
+    // this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     const loaders = [];
     let height = 0;
@@ -349,6 +366,9 @@ export class AssetStore {
       loaders.push(this.loadBucket(bucket.bucketDate));
     }
     await Promise.all(loaders);
+    for (const fn of this.listeners) {
+      fn(null, 'viewport', null);
+    }
     this.emit(false);
   }
 
@@ -401,8 +421,8 @@ export class AssetStore {
 
     if (bucket.cancelToken != null && bucket.bucketCount !== bucket.assets.length) {
       // if promise is pending, and preventCancel is requested, then don't overwrite it
-      if (!bucket.isPreventCancel) {
-        bucket.isPreventCancel = !!options.preventCancel;
+      if (!bucket.isPreventCancel && options.preventCancel) {
+        bucket.isPreventCancel = options.preventCancel;
       }
       await bucket.complete;
       return;
@@ -817,7 +837,7 @@ const tasks: (() => void)[] = [];
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
 const MIN_DELAY_MS = Number.parseInt(localStorage.getItem('MIN_DELAY_MS')) || 200;
-const CHECK_INTERVAL_MS = 32;
+const CHECK_INTERVAL_MS = Number.parseInt(localStorage.getItem('CHECK_INTERVAL_MS')) || 32;
 
 let disable = false;
 function drain() {
@@ -843,7 +863,6 @@ function scheduleDrain() {
 }
 
 export function queuePostScrollTask(task: () => void) {
-  task();
   tasks.push(task);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;

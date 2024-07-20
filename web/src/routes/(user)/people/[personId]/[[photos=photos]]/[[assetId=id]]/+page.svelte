@@ -439,7 +439,9 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[calc(var(--navbar-height)-1px)] dark:bg-immich-dark-bg"
+>
   {#key refreshAssetGrid}
     <AssetGrid
       participatesInRouting={true}

@@ -23,9 +23,9 @@
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { formatGroupTitle, splitBucketIntoDateGroups, TUNABLES } from '$lib/utils/timeline-util';
+  import { findTotalOffset, formatGroupTitle, splitBucketIntoDateGroups, TUNABLES } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
-  import { throttle } from 'lodash-es';
+  import { indexOf, throttle } from 'lodash-es';
   import { createEventDispatcher, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
@@ -48,12 +48,12 @@
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
 
+  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
+
   const viewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
   const safeViewport: Viewport = { width: 0, height: 0, x: 0, y: 0 };
-  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
-
   let element: HTMLElement;
   let timelineElement: HTMLElement;
   let showShortcuts = false;
@@ -62,9 +62,13 @@
   let navigating = false;
   let preMeasure: AssetBucket[] = [];
   let lastIntersectedBucketDate: string | undefined;
+  let scrubBucketPercent = 0;
+  let scrubBucket: AssetBucket | undefined;
+  let scrubOverallPercent: number = 0;
+  let topSectionHeight = 0;
+  let topSectionOffset = 0;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
-  $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
   $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
   $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
@@ -216,16 +220,69 @@
     };
   });
 
+  function getOffset(bucketDate: string) {
+    let offset = 0;
+    for (let a = 0; a < assetStore.buckets.length; a++) {
+      if (assetStore.buckets[a].bucketDate === bucketDate) {
+        break;
+      }
+      offset += assetStore.buckets[a].bucketHeight;
+    }
+    return offset;
+  }
   const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
   const updateViewport = throttle(_updateViewport, 16);
 
-  const _handleScrub = (position: number) => {
-    element.scrollTop = position;
+  const _handleScrub = (bucketDate: string | undefined, scrollPercent: number, bucketScrollPercent: number) => {
+    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+      // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
+
+      // 60 is the bottom spacer element at 60px
+      const maxScroll = topSectionHeight + 60 + (timelineElement.clientHeight - element.clientHeight);
+      const offset = maxScroll * scrollPercent;
+
+      element.scrollTop = offset;
+    } else {
+      // const bucketElem = element.querySelector('[data-bucket-date="' + bucketDate + '"]');
+      // const toffset = findTotalOffset(bucket as HTMLElement, element);
+
+      // note - using findTotalOffset in timeline-utils.ts is a bit more accurate, because this
+      // relies on offsetTop which is rouded to integer
+      const toffset = getOffset(bucketDate) + topSectionHeight + topSectionOffset;
+      const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
+      if (bucket) {
+        const delta = bucket.bucketHeight * bucketScrollPercent;
+
+        element.scrollTop = toffset + delta;
+      }
+    }
   };
   const handleScrub = throttle(_handleScrub, 16, { leading: false, trailing: true });
 
   const _handleTimelineScroll = () => {
-    timelineY = element?.scrollTop || 0;
+    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+      // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
+      const maxScroll = topSectionHeight + 60 + (timelineElement.clientHeight - element.clientHeight);
+      scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
+
+      // console.log(scrubOverallPercent);
+      scrubBucket = undefined;
+      scrubBucketPercent = 0;
+    } else {
+      let top = element?.scrollTop;
+      top -= topSectionHeight;
+
+      for (let i = 0; i < assetStore.buckets.length; i++) {
+        const bucket = assetStore.buckets[i];
+        let next = top - bucket.bucketHeight;
+        if (next < 0) {
+          scrubBucket = assetStore.buckets[i];
+          scrubBucketPercent = top / bucket.bucketHeight;
+          break;
+        }
+        top = next;
+      }
+    }
   };
   const handleTimelineScroll = throttle(_handleTimelineScroll, 16, { leading: false, trailing: true });
 
@@ -245,7 +302,7 @@
   const onScrollTarget = ({ bucket, offset }: { asset: AssetResponseDto; offset: number }) => {
     element.scrollTo({ top: offset });
 
-    if (bucket.measured) {
+    if (!bucket.measured) {
       preMeasure.push(bucket);
     }
     showSkeleton = false;
@@ -335,10 +392,29 @@
     }
   };
 
+  async function loadBucketIt(bucket: AssetBucket) {
+    // here in lies a great battle between load and cancel. If you scrub up and down many times over the
+    // section, there will be multiple outstanding loads/cancels. cancel you only need to do once, since
+    // multiple loads on the same bucket will wait on promise, and if canceled, all will stop.
+    // However, loading a bucket that is was loaded before, but is canceled will canel the load. But we
+    // really need it to be loaded, at least, while its still 'intersecting'. That is why we don't use
+    // preventCancel here - we want to allow it to cancel, but only under the right conditions.
+
+    // lets try 5 times, because we really want the bucket to load, we don't want any queues cancels interfering
+    let count = 5;
+    while (bucket.intersecting && count-- > 0) {
+      try {
+        await $assetStore.loadBucket(bucket.bucketDate);
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+  }
   function intersectedHandler(bucketDate: string) {
     queuePostScrollTask(() => {
       $assetStore.updateBucket(bucketDate, { intersecting: true });
-      void $assetStore.loadBucket(bucketDate).catch(() => void 0);
+      let bucket = assetStore.getBucketByDate(bucketDate);
+      void loadBucketIt(bucket);
     });
   }
 
@@ -597,11 +673,56 @@
   invisible={showSkeleton}
   {assetStore}
   height={safeViewport.height}
-  {timelineY}
+  timelineTopOffset={topSectionHeight}
+  {scrubOverallPercent}
+  {scrubBucketPercent}
+  {scrubBucket}
   onScrub={handleScrub}
-  stopScrub={(bucketDate) => {
-    // const bucket = document.querySelector('[data-bucket-date="' + bucketDate + '"]');
-    // setTimeout(() => bucket?.scrollIntoView(), 1000);
+  stopScrub={async (bucketDate, scrollPercent, bucketScrollPercent) => {
+    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+      // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
+      return;
+    }
+
+    const toffset = getOffset(bucketDate) + topSectionHeight + topSectionOffset;
+    const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
+    if (!bucket) {
+      return;
+    }
+    const delta = bucket.bucketHeight * bucketScrollPercent;
+    const offset = toffset + delta;
+
+    if (bucket && !bucket.measured) {
+      preMeasure.push(bucket);
+      let deltas = 0;
+      const listen = (bucketnotify, kind, dateGroup, delta) => {
+        if (kind === 'buckheight') {
+          // console.log('hi', bucketnotify, dateGroup, delta);
+          // using full buckets here, instead of sub-bucket offsets - but should be close enough
+          const currentIndex = $assetStore.buckets.indexOf(bucket);
+          const deltaIndex = $assetStore.buckets.indexOf(bucketnotify);
+
+          if (deltaIndex < currentIndex) {
+            deltas += delta;
+          } else {
+            // console.log('no delta');
+          }
+        }
+      };
+      assetStore.addListener(listen);
+      if (!bucket.loaded) {
+        await assetStore.loadBucket(bucket.bucketDate);
+      }
+      // here, collect the deltas that show up above the offset...
+      await bucket.measuredPromise;
+      // console.log('fulldelta', deltas);
+      assetStore.removeListener(listen);
+      element.scrollTo({ top: offset + deltas });
+      // const belem = document.querySelector('[data-bucket-date="' + bucketDate + '"]');
+      // belem?.scrollIntoView();
+      // setTimeout(() => bucket?.scrollIntoView(),);
+    }
+
     // console.log(bucket);
   }}
 />
@@ -616,13 +737,16 @@
   on:scroll={() => (($lastScrollTime = Date.now()), handleTimelineScroll())}
 >
   {#if element}
-    <div class:invisible={showSkeleton}>
+    <section
+      use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
+      class:invisible={showSkeleton}
+    >
       <slot />
       {#if isEmpty}
         <!-- (optional) empty placeholder -->
         <slot name="empty" />
       {/if}
-    </div>
+    </section>
 
     <section
       bind:this={timelineElement}
@@ -668,7 +792,7 @@
                             preMeasure = preMeasure.filter((b) => b !== bucket);
                             $assetStore.removeListener(listener);
                             const t2 = Date.now();
-                            console.log(t2 - t1);
+                            // console.log(t2 - t1);
                           }
                         }
                       };
@@ -679,7 +803,7 @@
                   }
                 }}
               >
-                {#each bucket.dateGroups as dateGroup (dateGroup.date)}
+                {#each bucket.dateGroups as dateGroup}
                   <div id="date-group" data-display={display} data-date-group={dateGroup.date}>
                     <div
                       use:resizeObserver={({ height }) =>

@@ -6,6 +6,22 @@ import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime, Interval } from 'luxon';
 import { get } from 'svelte/store';
 
+export type DateGroup = {
+  date: DateTime;
+  groupTitle: string;
+  assets: AssetResponseDto[];
+  height: number;
+  heightActual: boolean;
+  intersecting: boolean;
+  geometry: Geometry;
+  bucket: AssetBucket;
+};
+export type ScrollBarListener = (
+  bucketDate: string | undefined,
+  overallScrollPercent: number,
+  bucketScrollPercent: number,
+) => void;
+
 export const TUNABLES = {
   BUCKET: {
     INTERSECTION_ROOT_TOP: localStorage.getItem('BUCKET.INTERSECTION_ROOT_TOP') || '200%',
@@ -60,17 +76,6 @@ export function formatGroupTitle(date: DateTime): string {
 
   return date.toLocaleString(groupDateFormat);
 }
-
-export type DateGroup = {
-  date: DateTime;
-  groupTitle: string;
-  assets: AssetResponseDto[];
-  height: number;
-  heightActual: boolean;
-  intersecting: boolean;
-  geometry: Geometry;
-  bucket: AssetBucket;
-};
 
 type Geometry = ReturnType<typeof createJustifiedLayout> & {
   containerWidth: number;

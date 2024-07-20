@@ -538,7 +538,7 @@
     {/if}
 
     <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[calc(var(--navbar-height)-1px)] dark:bg-immich-dark-bg"
       style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->

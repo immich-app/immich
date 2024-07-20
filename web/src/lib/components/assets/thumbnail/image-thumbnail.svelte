@@ -19,27 +19,30 @@
   export let border = false;
   export let preload = true;
   export let hiddenIconClass = 'text-white';
+  export let onComplete: (() => void) | undefined = undefined;
 
   let duration: number = 150;
-  let complete = false;
-  let error = false;
+  let loaded = false;
+  let errored = false;
   let img: HTMLImageElement;
 
   onMount(() => {
-    const onload = () => {
-      complete = true;
+    const _onload = () => {
+      loaded = true;
+      onComplete?.();
     };
-    const onerror = () => {
-      error = true;
+    const _onerror = () => {
+      errored = true;
+      onComplete?.();
     };
     if (img.complete) {
-      onload();
+      _onload();
     }
-    img.addEventListener('load', onload);
-    img.addEventListener('error', onerror);
+    img.addEventListener('load', _onload);
+    img.addEventListener('error', _onerror);
     return () => {
-      img?.removeEventListener('load', onload);
-      img?.removeEventListener('error', onerror);
+      img?.removeEventListener('load', _onload);
+      img?.removeEventListener('error', _onerror);
     };
   });
 </script>
@@ -52,16 +55,14 @@
   style:filter={hidden ? 'grayscale(50%)' : 'none'}
   style:opacity={hidden ? '0.5' : '1'}
   src={url}
-  alt={complete || error ? altText : ''}
+  alt={loaded || errored ? altText : ''}
   {title}
-  class="object-cover transition duration-300 {border
-    ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
-    : ''}"
+  class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
   class:rounded-xl={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}
   class:aspect-square={circle || !heightStyle}
-  class:opacity-0={!thumbhash && !complete}
+  class:opacity-0={!thumbhash && !loaded}
   draggable="false"
 />
 
@@ -71,7 +72,7 @@
   </div>
 {/if}
 
-{#if thumbhash && (!complete || error)}
+{#if thumbhash && (!loaded || errored)}
   <img
     style:width={widthStyle}
     style:height={heightStyle}
