@@ -1,3 +1,21 @@
+<script lang="ts" context="module">
+  const recentTimes: number[] = [];
+  // TODO: track average time to measure, and use this to populate TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function adjustTunables(avg: number) {}
+  function addMeasure(time: number) {
+    recentTimes.push(time);
+    if (recentTimes.length > 10) {
+      recentTimes.shift();
+    }
+    const sum = recentTimes.reduce((acc: number, val: number) => {
+      return acc + val;
+    }, 0);
+    const avg = sum / recentTimes.length;
+    adjustTunables(avg);
+  }
+</script>
+
 <script lang="ts">
   import { resizeObserver } from '$lib/actions/resize-observer';
   import type { AssetBucket, AssetStore, BucketListener } from '$lib/stores/assets.store';
@@ -9,7 +27,7 @@
   async function _measure(element: Element) {
     try {
       await bucket.complete;
-      // const t1 = Date.now();
+      const t1 = Date.now();
       let heightPending = bucket.dateGroups.some((group) => !group.heightActual);
       if (heightPending) {
         const listener: BucketListener = (event) => {
@@ -25,9 +43,9 @@
                 }
                 onMeasured();
                 $assetStore.removeListener(listener);
-                // TODO: track average time to measure, and use this to populate TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS
-                // const t2 = Date.now();
-                // console.log(t2 - t1);
+                const t2 = Date.now();
+
+                addMeasure((t2 - t1) / bucket.bucketCount);
               }
             }
           }
