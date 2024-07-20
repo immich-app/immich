@@ -40,6 +40,7 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import type { UpdatePayload } from 'vite';
+  import MeasureDateGroup from '$lib/components/photos-page/measure-date-group.svelte';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -711,10 +712,6 @@
       e.preventDefault();
     }
   };
-
-  function created(e: HTMLElement, createFn) {
-    createFn(e);
-  }
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -787,67 +784,11 @@
         >
           {#key bucket}
             {#if display && !bucket.measured}
-              <section
-                id="measure-asset-group-by-date"
-                class="flex flex-wrap gap-x-12"
-                use:created={async (e) => {
-                  try {
-                    await bucket.complete;
-                    const t1 = Date.now();
-                    let heightPending = bucket.dateGroups.some((group) => !group.heightActual);
-                    if (heightPending) {
-                      const listener = (event) => {
-                        const { type } = event;
-                        if (type === 'height') {
-                          const { bucket: changedBucket } = event;
-                          if (changedBucket === bucket && type === 'height') {
-                            heightPending = bucket.dateGroups.some((group) => !group.heightActual);
-                            if (!heightPending) {
-                              const height = e.getBoundingClientRect().height;
-                              if (height !== 0) {
-                                $assetStore.updateBucket(bucket.bucketDate, { height: height, measured: true });
-                              }
-
-                              preMeasure = preMeasure.filter((b) => b !== bucket);
-                              $assetStore.removeListener(listener);
-                              const t2 = Date.now();
-                              // console.log(t2 - t1);
-                            }
-                          }
-                        }
-                      };
-                      assetStore.addListener(listener);
-                    }
-                  } catch {
-                    // ignore if complete rejects (canceled load)
-                  }
-                }}
-              >
-                {#each bucket.dateGroups as dateGroup}
-                  <div id="date-group" data-display={display} data-date-group={dateGroup.date}>
-                    <div
-                      use:resizeObserver={({ height }) =>
-                        $assetStore.updateBucketDateGroup(bucket, dateGroup, { height: height })}
-                    >
-                      <div
-                        class="flex z-[100] sticky top-[-1px] pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-                        style:width={dateGroup.geometry.containerWidth + 'px'}
-                      >
-                        <span class="w-full truncate first-letter:capitalize">
-                          {dateGroup.groupTitle}
-                        </span>
-                      </div>
-
-                      <div
-                        class="relative overflow-clip"
-                        style:height={dateGroup.geometry.containerHeight + 'px'}
-                        style:width={dateGroup.geometry.containerWidth + 'px'}
-                        style:background-color={'white'}
-                      ></div>
-                    </div>
-                  </div>
-                {/each}
-              </section>
+              <MeasureDateGroup
+                {bucket}
+                {assetStore}
+                onMeasured={() => (preMeasure = preMeasure.filter((b) => b !== bucket))}
+              ></MeasureDateGroup>
             {/if}
           {/key}
           {#if !display || !bucket.measured}
