@@ -501,8 +501,6 @@
   "theme_setting_dark_mode_switch": "Temni način",
   "theme_setting_image_viewer_quality_subtitle": "Prilagodite kakovost podrobnega pregledovalnika slik",
   "theme_setting_image_viewer_quality_title": "Kakovost pregledovalnika slik",
-  "theme_setting_primary_color_title": "Primarna Barva",
-  "theme_setting_primary_color_summary": "Izberite barvo za primarna dejanja in poudarke.",
   "theme_setting_system_theme_switch": "Samodejno (Sledi nastavitvi sistema)",
   "theme_setting_theme_subtitle": "Izberi nastavitev teme aplikacije",
   "theme_setting_theme_title": "Tema",

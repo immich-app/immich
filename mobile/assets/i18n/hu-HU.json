@@ -501,8 +501,6 @@
   "theme_setting_dark_mode_switch": "Sötét mód",
   "theme_setting_image_viewer_quality_subtitle": "Részletes képmegjelenítő minőségének beállítása",
   "theme_setting_image_viewer_quality_title": "Képmegjelenítő minősége",
-  "theme_setting_primary_color_title": "Elsődleges Szín",
-  "theme_setting_primary_color_summary": "Válasszon színt az elsődleges műveletekhez és kiemelésekhez.",
   "theme_setting_system_theme_switch": "Automatikus (követi a rendszer témáját)",
   "theme_setting_theme_subtitle": "Alkalmazás témájának választása",
   "theme_setting_theme_title": "Téma",

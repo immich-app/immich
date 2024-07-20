@@ -501,8 +501,6 @@
   "theme_setting_dark_mode_switch": "ダークモード",
   "theme_setting_image_viewer_quality_subtitle": "画像ビューの画質の設定",
   "theme_setting_image_viewer_quality_title": "画像ビュー",
-  "theme_setting_primary_color_title": "原色",
-  "theme_setting_primary_color_summary": "主要なアクションとアクセントの色を選択します。",
   "theme_setting_system_theme_switch": "自動 (デバイスの設定を反映)",
   "theme_setting_theme_subtitle": "テーマ設定",
   "theme_setting_theme_title": "テーマ",
