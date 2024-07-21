@@ -42,6 +42,13 @@ jobs:
             context: machine-learning
             file: machine-learning/Dockerfile
             platforms: linux/amd64
+            device: rocm
+            suffix: -rocm
+
+          - image: immich-machine-learning
+            context: machine-learning
+            file: machine-learning/Dockerfile
+            platforms: linux/amd64
             device: openvino
             suffix: -openvino
 
